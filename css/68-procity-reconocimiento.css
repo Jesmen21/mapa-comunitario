@@ -1342,3 +1342,18 @@
 .pcr-vac-f>span{font-size:.84rem;color:#4a5b68}
 .pcr-vac-doc{font-style:italic}
 .pcr-vac-ok{border-color:var(--edu-ok,#1f8a4c);background:rgba(31,138,76,.07)}
+
+/* ── La puerta de la primera plantilla de campo (v934) ──────────────────
+   Hereda del grupo de los vacíos (.pcr-vac-g) y se separa por el borde: un
+   papel se pide en una ventanilla y una plantilla se camina, y son dos cosas
+   distintas en la misma pestaña. Verde y no ámbar, como el «cómo se consigue»
+   de la v880: el ámbar dice «esto no lo tenemos» y esto es donde se anota lo
+   que ya se midió. */
+.pcr-act-g { border-left: 3px solid var(--edu-ok, #15803D); }
+/* Cada cuadra es un bloque, para que sus tres medidas y su marca no se
+   mezclen con las de la de al lado al mirarlas en un teléfono. */
+.pcr-act-f { border-top: 1px dashed #CFDCE6; padding-top: 8px; margin-top: 8px; }
+.pcr-act-f:first-of-type { border-top: 0; padding-top: 0; margin-top: 0; }
+.pcr-act-r { display: flex; align-items: center; gap: 8px; margin: 6px 0 2px;
+             font-size: 13px; color: #33505F; cursor: pointer; }
+.pcr-act-r input { width: 16px; height: 16px; flex: none; }

@@ -1,4 +1,4 @@
-const URBIS_CACHE = 'urbis-v933-un-hueco-es-donde-se-trae-un-papel';
+const URBIS_CACHE = 'urbis-v934-el-paramento-se-camina';
 const URBIS_ASSETS = [
   './',
   './index.html',

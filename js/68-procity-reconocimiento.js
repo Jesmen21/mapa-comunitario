@@ -1069,6 +1069,13 @@
     var fd = fechaDeDato(f.fechaDoc);
     var fo = fechaDeDato(f.fechaObtencion);
     var vh = fechaDeDato(f.vigenciaHasta);
+    /* EL CIERRE DE UN RANGO (v934). Una plantilla de campo puede levantarse
+       en más de un día —ocho cuadras a un cuarto de hora no siempre caben en
+       una tarde— y entonces `fechaDoc` es el primero y esto el último. Se
+       valida como fecha por la misma razón que las otras tres: con texto
+       libre adentro, la comparación de abajo no compara nada y el rango
+       saldría impreso al revés sin que nada lo dijera (v931). */
+    var fh = fechaDeDato(f.fechaHasta);
     if (e.estado === 'confirmado') {
       if (!String(f.quien || '').trim()) falta.push('quién responde por el dato');
       if (!fd) {
@@ -1079,6 +1086,14 @@
     }
     if (String(f.fechaObtencion || '').trim() && !fo) falta.push('la fecha en que se consiguió, en forma de fecha');
     if (String(f.vigenciaHasta || '').trim() && !vh) falta.push('la vigencia, en forma de fecha');
+    if (String(f.fechaHasta || '').trim() && !fh) falta.push('el cierre del rango, en forma de fecha');
+    /* Un rango al revés no se guarda «tal cual»: saldría impreso «entre el 9
+       y el 2 de septiembre», que es una cifra correcta dicha de una manera
+       que no se puede leer (v874) — y peor, se leería como un descuido de
+       quien firma la hoja. */
+    if (fd && fh && finDe(fh) < finDe(fd)) {
+      falta.push('que el cierre del rango (' + fh + ') no sea anterior a su inicio (' + fd + ')');
+    }
     if (falta.length) {
       return { ok: false, error: (e.estado === 'confirmado'
           ? 'Una entrada confirmada no puede quedar sin procedencia: falta '
@@ -1093,7 +1108,7 @@
       hueco: String(e.hueco), sub: subs.length ? String(e.sub) : null,
       estado: e.estado, valor: e.valor === undefined ? null : e.valor,
       fuente: { como: f.como, quien: String(f.quien || '').trim().slice(0, 80),
-                fechaDoc: fd, fechaObtencion: fo,
+                fechaDoc: fd, fechaObtencion: fo, fechaHasta: fh,
                 /* `null` donde no caduca es una decisión y se guarda como
                    tal; `undefined` sería el silencio por omisión que la v926
                    dejó prohibido. */
@@ -1284,9 +1299,7 @@
     if (!tc || !tc.hay || !tc.fuentes.length) return '';
     return tc.fuentes.map(function (f) {
       if (f.clase === 'edificios') {
-        var cuando = (f.desde && f.hasta)
-          ? (f.desde === f.hasta ? ' el ' + f.desde : ' entre el ' + f.desde + ' y el ' + f.hasta)
-          : '';
+        var cuando = cuandoTexto(f.desde, f.hasta);
         /* El vacío se DECLARA, no se calla ni se rellena (v849). Sin esta
            frase, una procedencia sin autor se lee igual que una que no lo
            necesita, y el lector no tiene cómo saber cuál de las dos es. */
@@ -1373,6 +1386,101 @@
                   fechaDoc: fd, docto: String(f.documento || '').trim() }
       }
     };
+  }
+
+  /* ── LA PRIMERA PLANTILLA DE CAMPO: ACTIVIDAD EN PRIMER PISO (v934) ──
+     De las seis plantillas de la v883, esta es la única que la lámina se
+     nombra a sí misma como su relleno, y lo hace TRES veces —contra una de
+     las otras cinco juntas—. Dos de ellas son casillas que hoy imprimen SIN
+     MEDIR, y una promete con todas las letras que «esta casilla se calcula
+     sola» cuando alguien la llene. Hasta la v933 nada podía cumplirlo.
+
+     Lo que cierra es el defecto de la v899: con cero huellas mapeadas sobre
+     la cuadra, `pctLleno` da cero siempre y no mide un frente —mide una capa
+     vacía—. Caminar la cuadra con una cinta lo mide de verdad.
+
+     LA FORMA, medida antes de elegirla:
+
+     · **Una entrada por plantilla, no por cuadra.** La casilla necesita UNA
+       cuadra —`laCuadraDelLote` exige el lote, busca la vía más cercana a su
+       centroide y se queda con un solo tramo—, así que partir por cuadra
+       resolvería un problema que la casilla no tiene. Y las cuadras no son
+       una lista cerrada, así que `sub` no aplica: aflojarlo para que
+       aceptara texto libre volvería a abrir el cajón que la v932 cerró.
+     · **`fechaDoc` puede ser un rango**, porque ocho cuadras a un cuarto de
+       hora cada una no siempre caben en un día. El precedente es del propio
+       módulo: los edificios de campo imprimen «entre el 2 y el 9 de
+       septiembre» desde la v929. `cuandoTexto` es de los dos, y no una
+       segunda copia —eso es la clase B, y se separa a la tanda siguiente—.
+     · **`quien` es una PERSONA**, no una entidad. Lo dejó dicho la v931:
+       donde el dato lo levantó alguien caminando, es su nombre quien
+       responde por ese conteo.
+
+     LO QUE ESTA FORMA NO DISTINGUE, y va declarado en vez de inventado: si
+     dos personas caminan cuadras distintas, la entrada guarda un solo
+     `quien`. El remedio con precedente está identificado y NO se hace acá —
+     sería una columna «Quién informó», como la que «Cupo real de
+     equipamientos» ya lleva desde la v883 justamente porque cada cupo lo
+     dice una portería distinta—. Cambiar las columnas cambia la plantilla
+     impresa y sus aserciones, así que es su propia tanda. */
+  var HUECO_ACTIVIDAD = 'actividad-en-primer-piso';
+
+  /* El rango de fechas, en UN solo sitio. Lo usan la procedencia de los
+     edificios de campo y la de esta plantilla: dos maneras de escribir la
+     misma frase divergen a la tanda siguiente (v879). */
+  function cuandoTexto(desde, hasta) {
+    if (!desde && !hasta) return '';
+    if (!hasta || desde === hasta) return ' el ' + (desde || hasta);
+    return ' entre el ' + desde + ' y el ' + hasta;
+  }
+
+  /* Una fila sirve si tiene frente total y el activo cabe dentro de él. Lo
+     de «cabe dentro» no es quisquilloso: con activo > total el porcentaje
+     pasaría de 100 y saldría impreso, que es exactamente lo que la v859
+     encontró con los fondos de saco. */
+  function filaActividadUtil(f) {
+    if (!f) return false;
+    var t = Number(f.total), a = Number(f.activo);
+    return isFinite(t) && t > 0 && isFinite(a) && a >= 0 && a <= t;
+  }
+
+  /* SIEMPRE un objeto con su `estado`, nunca null: son situaciones que piden
+     acciones distintas —anotar, marcar cuál cuadra es la del lote, o nada— y
+     un null las juntaría en una (v876). */
+  function actividadDeCampo(llave) {
+    var vacio = function (est, razon) {
+      return { estado: est, razon: razon, hay: false, filas: [], delLote: null, pctLleno: null };
+    };
+    if (!llave) return vacio('sin-sector', 'sin sector al que enlazar lo levantado');
+    var e;
+    try {
+      e = confirmadasDeCampo(llave).filter(function (x) { return x.hueco === HUECO_ACTIVIDAD; })[0];
+    } catch (err) { return vacio('sin-sector', 'no se pudo leer lo guardado'); }
+    if (!e) return vacio('sin-anotar', 'nadie ha anotado todavía la plantilla de campo');
+    var filas = ((e.valor && e.valor.filas) || []).filter(filaActividadUtil);
+    if (!filas.length) return vacio('sin-filas', 'la plantilla está guardada y no tiene una sola fila con medidas');
+    /* Con UNA fila no hay ambigüedad: esa es la cuadra. Con varias hay que
+       decir cuál es la del lote, y si nadie lo dijo la casilla NO se calcula
+       — usar todas sería publicar una cifra de SECTOR en una casilla rotulada
+       «predio», que es el error de escala que `ESCALA_PANEL` existe para
+       impedir (v854). */
+    var marcada = filas.filter(function (f) { return !!f.esLaDelLote; })[0] || null;
+    var delLote = filas.length === 1 ? filas[0] : marcada;
+    var fl = fuenteLeida(e.fuente);
+    var base = {
+      filas: filas, fuente: fl,
+      desde: fl.fechaDoc || null, hasta: (e.fuente && e.fuente.fechaHasta) || null,
+      cuando: cuandoTexto(fl.fechaDoc || null, (e.fuente && e.fuente.fechaHasta) || null)
+    };
+    if (!delLote) {
+      return Object.assign(vacio('sin-marcar',
+        'la plantilla trae ' + filas.length + ' cuadras y ninguna está marcada como la del lote'), base);
+    }
+    return Object.assign({
+      estado: 'ok', hay: true, razon: '',
+      delLote: delLote,
+      pctLleno: Math.round(100 * Number(delLote.activo) / Number(delLote.total))
+    }, base);
   }
 
   function leerFichas() {
@@ -12242,6 +12350,75 @@ function donaHTML(datos, colorDe, nombreDe) {
           if (S.corrida === 'post') { S.corrida = 'sector'; S.resultado = S.corridas.sector; } }
         pintar(); return;
       }
+      if (acc === 'act-guardar' || acc === 'act-borrar') {
+        var llA = llaveDeSector(S.resultado && S.resultado.meta);
+        var soltarPost = function () {
+          /* La corrida post vieja se suelta: se calculó sin este dato, y
+             servirla ahora sería presentar como post-sector una cuenta que no
+             lo incluye (v897). */
+          if (S.corridas) { S.corridas.post = null;
+            if (S.corrida === 'post') { S.corrida = 'sector'; S.resultado = S.corridas.sector; } }
+        };
+        if (acc === 'act-borrar') {
+          var yaA = confirmadasDeCampo(llA).filter(function (x) {
+            return x.hueco === HUECO_ACTIVIDAD; })[0];
+          if (yaA) borrarEntradaCampo(llA, yaA.id);
+          S.avisoPestana = 'Se quitó lo levantado. La casilla del paramento vuelve a decir SIN MEDIR.';
+          soltarPost(); pintar(); return;
+        }
+        var leeA = function (k, i) {
+          var sel = '[data-pcr-act="' + k + '"]' + (i === undefined ? '' : '[data-i="' + i + '"]');
+          var el = document.querySelector(sel);
+          return el ? String(el.value || '').trim() : '';
+        };
+        var marcadaA = document.querySelector('[data-pcr-act="lote"]:checked');
+        var iMarcada = marcadaA ? Number(marcadaA.getAttribute('data-i')) : -1;
+        var filasA = [];
+        document.querySelectorAll('[data-pcr-act="cuadra"]').forEach(function (el) {
+          var i = Number(el.getAttribute('data-i'));
+          var tot = leeA('total', i), act = leeA('activo', i);
+          /* Una fila vacía no es un error: son los renglones de sobra que la
+             puerta ofrece para seguir anotando. Se descartan en silencio. */
+          if (!String(el.value || '').trim() && !tot && !act) return;
+          filasA.push({ cuadra: String(el.value || '').trim().slice(0, 80),
+                        total: Number(String(tot).replace(',', '.')),
+                        activo: Number(String(act).replace(',', '.')),
+                        esLaDelLote: i === iMarcada });
+        });
+        var utiles = filasA.filter(filaActividadUtil);
+        if (!utiles.length) {
+          /* «Falta una medida» y «la medida no cuadra» son dos cosas
+             distintas para quien está escribiendo, y un solo mensaje para
+             las dos manda a revisar lo que está bien. Se separan por lo que
+             de verdad pasó en las filas. */
+          var pasadas = filasA.filter(function (x) {
+            return isFinite(x.total) && x.total > 0 && isFinite(x.activo) && x.activo > x.total;
+          });
+          S.avisoPestana = !filasA.length
+            ? 'Falta anotar por lo menos una cuadra con sus dos medidas.'
+            : pasadas.length
+              ? 'Los metros con puerta o vitrina no pueden pasarse del frente total: ' +
+                pasadas.map(function (x) { return x.activo + ' de ' + x.total; }).join(', ') + '.'
+              : 'Cada cuadra necesita su frente total y cuántos metros tienen puerta o vitrina.';
+          pintar(); return;
+        }
+        if (utiles.length > 1 && !utiles.some(function (x) { return x.esLaDelLote; })) {
+          S.avisoPestana = 'Marque cuál de las cuadras es la del lote: la casilla se mide sobre ' +
+            'una sola, y promediarlas publicaría una cifra del sector donde va una del predio.';
+          pintar(); return;
+        }
+        var rA = guardarEntradaCampo(llA, {
+          hueco: HUECO_ACTIVIDAD, estado: 'confirmado',
+          valor: { filas: utiles },
+          fuente: { como: 'campo', quien: leeA('quien'),
+                    fechaDoc: leeA('fechaDoc'), fechaHasta: leeA('fechaHasta') } });
+        S.avisoPestana = rA.ok
+          ? 'Quedó anotado. El paramento de la cuadra ya sale medido en campo, y este sector ' +
+            'tiene análisis post-sector.'
+          : rA.error;
+        if (rA.ok) soltarPost();
+        pintar(); return;
+      }
       if (acc === 'norma-confirmar') {
         var mn;
         try { mn = normaDesdeIndices(); } catch (e) { mn = null; }
@@ -19982,7 +20159,16 @@ function donaHTML(datos, colorDe, nombreDe) {
        cero siempre y no mide un frente: mide una capa vacía. `cu.edificios`
        es el discriminante y ya existía —igual que `puntos` en la v875—, solo
        había que dejar de leer el cero como si fuera una medición. */
-    if (cu && cu.pctLleno != null && Number(cu.edificios) > 0) {
+    /* El campo entra por `laCuadraDelLote`, así que acá basta con preguntar
+       de dónde salió. La cifra LLEVA su procedencia pegada (v867): «medido en
+       campo» y «de las huellas de OpenStreetMap» son dos cosas distintas y no
+       se pueden leer igual. */
+    if (cu && cu.pctLleno != null && cu.origen === 'campo') {
+      F('Continuidad del paramento',
+        cu.pctLleno + ' % del frente de la cuadra con fachada · medido en campo' +
+          (cu.campo && cu.campo.cuando ? cu.campo.cuando : ''),
+        cu.pctLleno >= 70 ? 'frente continuo: el proyecto se alinea al paramento y no lo rompe' : 'frente roto: el proyecto puede cerrar la cuadra, y eso vale más que un retroceso');
+    } else if (cu && cu.pctLleno != null && Number(cu.edificios) > 0) {
       F('Continuidad del paramento', cu.pctLleno + ' % del frente de la cuadra con fachada',
         cu.pctLleno >= 70 ? 'frente continuo: el proyecto se alinea al paramento y no lo rompe' : 'frente roto: el proyecto puede cerrar la cuadra, y eso vale más que un retroceso');
     } else if (cu && cu.pctLleno != null) {
@@ -23573,15 +23759,34 @@ function donaHTML(datos, colorDe, nombreDe) {
       ? Math.round(frentes[Math.floor(frentes.length / 2)]) : null;
 
     var pctLleno = Math.round(100 * lleno / largoTramo);
+
+    /* LO LEVANTADO EN CAMPO MANDA, Y ENTRA POR ACÁ Y NO EN CADA CONSUMIDOR.
+       Los cuatro sitios que imprimen el paramento llaman a esta función, así
+       que pegarle acá lo medido en la calle es lo que hace que ninguno tenga
+       que acordarse — la regla del aviso de origen (v867).
+
+       Manda sobre las huellas porque mide otra cosa y la mide mejor: una
+       huella de OpenStreetMap dice que hay un edificio, no que tenga puerta
+       o vitrina a la calle, que es lo que hace un paramento activo. Y la
+       procedencia VIAJA con la cifra, no con la pantalla: un post-sector
+       archivado se vuelve a componer con este código. */
+    var actC = null;
+    try { actC = actividadDeCampo(llaveDeSector(S.resultado && S.resultado.meta)); } catch (eA) {}
+    var campoOk = !!(actC && actC.estado === 'ok' && actC.pctLleno != null);
     return {
       frenteTipicoM: frenteTipico,
       via: via.nombre || '', clase: via.clase || '',
       jerarquia: (jerarquiaVialDe(via.clase) || {}).etq || '',
-      largoM: Math.round(largoTramo), llenoM: Math.round(lleno), pctLleno: pctLleno,
+      largoM: Math.round(largoTramo), llenoM: Math.round(lleno),
+      pctLleno: campoOk ? actC.pctLleno : pctLleno,
+      pctLlenoMapa: pctLleno,
+      origen: campoOk ? 'campo' : 'mapa',
+      campo: campoOk ? actC : null,
       edificios: edificios, huecos: huecos.length, mayorHuecoM: mayorHueco,
       usos: usos, nUsos: nUsos, esquinas: listaEsq,
       // La lectura, que es lo que se defiende.
-      continua: pctLleno >= 70, rota: pctLleno < 40,
+      continua: (campoOk ? actC.pctLleno : pctLleno) >= 70,
+      rota: (campoOk ? actC.pctLleno : pctLleno) < 40,
       tramo: tramo.slice(),
       // Y dónde cae cada cosa a lo largo del tramo, en metros desde su
       // arranque: los trozos con fachada y la posición del lote. Es lo que
@@ -25230,6 +25435,93 @@ function donaHTML(datos, colorDe, nombreDe) {
       'no se mide, no se pinta y no tiene dónde anotarse. Si el POT del municipio la declara, por ahora ' +
       'no cabe en esta lista — y agregarle el renglón sin que nada la mida sería inventar una casilla ' +
       'que la hoja no sabe llenar.</p>';
+  }
+
+  /* ── LA PUERTA DE LA PRIMERA PLANTILLA DE CAMPO (v934) ───────────────
+     Un papel se pide en una ventanilla; una plantilla se camina. Por eso va
+     en un bloque APARTE del de los vacíos y no como una puerta más: es la
+     misma separación que la v883 hizo en la lámina entre los tres paneles de
+     percepción y los seis formularios de medición, y el contenido la
+     justifica — acá nadie radica nada, sale con una cinta.
+
+     La fila marcada es la del LOTE, y eso no es un detalle de interfaz: la
+     casilla que esto llena está rotulada a escala de predio, así que promediar
+     las ocho cuadras publicaría una cifra de sector en una casilla de predio,
+     que es el error que `ESCALA_PANEL` existe para impedir (v854). Con una
+     sola fila no hay que marcar nada; con varias, sí, y si nadie marcó la
+     casilla NO se calcula y lo dice. */
+  function htmlPuertaActividad(llave) {
+    var act = actividadDeCampo(llave);
+    var ya = act.estado === 'ok' || act.estado === 'sin-marcar' || act.estado === 'sin-filas';
+    var cab = '<p class="pcr-lab">' + esc(nombreDeHueco(HUECO_ACTIVIDAD)) + '</p>' +
+      '<p class="pcr-vac-doc">Se camina la cuadra midiendo cuántos metros del frente tienen ' +
+      'puerta o vitrina abierta a la calle. Con cinta, o con pasos contados y calibrados antes ' +
+      'de salir.</p>';
+    if (act.estado === 'ok') {
+      var f = act.delLote;
+      return '<div class="pcr-vac-g pcr-act-g">' + cab +
+        '<p class="pcr-conc pcr-fuente-ok"><b>' + act.pctLleno + ' % del frente con puerta o ' +
+        'vitrina</b> en ' + esc(f.cuadra || 'la cuadra del lote') + ' — ' +
+        Math.round(Number(f.activo)) + ' m de ' + Math.round(Number(f.total)) + ' m, ' +
+        'levantado por ' + esc(act.fuente.quien) + esc(act.cuando) + '.' +
+        (act.filas.length > 1
+          ? ' Se anotaron ' + act.filas.length + ' cuadras; la casilla usa la del lote.'
+          : '') +
+        ' La casilla «Continuidad del paramento» ya no dice SIN MEDIR.</p>' +
+        '<button type="button" class="pcr-mini" data-pcr="act-borrar">' + ico('borrar', 16) +
+          'Quitar lo anotado</button>' +
+        '</div>';
+    }
+    var guardadas = act.filas || [];
+    var slots = guardadas.slice(0, 8);
+    while (slots.length < guardadas.length + 2 && slots.length < 8) slots.push(null);
+    if (!slots.length) { slots = [null, null]; }
+    var filas = slots.map(function (g, i) {
+      var v = g || {};
+      return '<div class="pcr-act-f">' +
+        '<label class="pcr-campo-linea"><span>Cuadra y lado</span>' +
+          '<input type="text" maxlength="80" data-pcr-act="cuadra" data-i="' + i + '" ' +
+            'value="' + esc(v.cuadra || '') + '" placeholder="Calle 10 entre 5 y 6, lado norte" /></label>' +
+        '<label class="pcr-campo-linea"><span>Frente total (m)</span>' +
+          '<input type="text" inputmode="decimal" maxlength="8" data-pcr-act="total" data-i="' + i + '" ' +
+            'value="' + esc(v.total != null ? String(v.total) : '') + '" placeholder="84" /></label>' +
+        '<label class="pcr-campo-linea"><span>Con puerta o vitrina (m)</span>' +
+          '<input type="text" inputmode="decimal" maxlength="8" data-pcr-act="activo" data-i="' + i + '" ' +
+            'value="' + esc(v.activo != null ? String(v.activo) : '') + '" placeholder="51" /></label>' +
+        '<label class="pcr-act-r"><input type="radio" name="pcr-act-lote" data-pcr-act="lote" ' +
+            'data-i="' + i + '"' + (v.esLaDelLote ? ' checked' : '') + ' />' +
+          '<span>Esta es la cuadra del lote</span></label>' +
+        '</div>';
+    }).join('');
+    var aviso = (act.estado === 'sin-marcar')
+      ? '<p class="pcr-conc pcr-ojo"><b>Falta decir cuál es la cuadra del lote.</b> ' +
+        'Se anotaron ' + act.filas.length + ' y la casilla se mide sobre una sola: promediarlas ' +
+        'sería publicar una cifra del sector en una casilla que dice «predio».</p>'
+      : '';
+    return '<div class="pcr-vac-g pcr-act-g">' + cab + aviso + filas +
+      '<label class="pcr-campo-linea"><span>Quién lo levantó</span>' +
+        '<input type="text" maxlength="80" data-pcr-act="quien" ' +
+          'value="' + esc((act.fuente && act.fuente.quien) || '') + '" ' +
+          'placeholder="El nombre de quien caminó la cuadra" /></label>' +
+      '<label class="pcr-campo-linea"><span>Día del levantamiento</span>' +
+        '<input type="text" maxlength="40" data-pcr-act="fechaDoc" ' +
+          'value="' + esc((act.desde) || '') + '" placeholder="2026-09-14" /></label>' +
+      '<label class="pcr-campo-linea"><span>Y hasta (si tomó varios días)</span>' +
+        '<input type="text" maxlength="40" data-pcr-act="fechaHasta" ' +
+          'value="' + esc((act.hasta) || '') + '" placeholder="se deja vacío si fue un solo día" /></label>' +
+      '<button type="button" class="pcr-mini" data-pcr="act-guardar">' + ico('ok', 16) +
+        'Guardar lo levantado en campo</button>' +
+      '</div>';
+  }
+
+  function bloquePlantillas() {
+    if (!S.resultado) return '';
+    var llave = llaveDeSector(S.resultado.meta);
+    return h4('via', 'Lo que se levanta en la calle') +
+      '<p class="pcr-pista">La lámina imprime seis plantillas en blanco para llenar caminando. ' +
+      'Acá se anota lo que ya se midió, y la cifra entra en la hoja con <b>quién la levantó y ' +
+      'cuándo</b>. Por ahora está conectada la primera; las otras cinco siguen en el papel.</p>' +
+      htmlPuertaActividad(llave);
   }
 
   /* ── LA PRIMERA DE LAS CUATRO PUERTAS DE VACÍO (v931) ────────────────
@@ -27372,6 +27664,7 @@ function donaHTML(datos, colorDe, nombreDe) {
            vive lo que le FALTA al sector —el botón de medirlo todo y lo que
            queda sin señal—, y un papel por radicar es exactamente eso. */
         bloqueVacios() +
+        bloquePlantillas() +
         // Las capas ordenan el mapa; esto ordena el papel.
         bloquePliego(res) +
         /* Entre los controles y la exportación: «esto es lo que hay», «esto
@@ -29560,6 +29853,7 @@ function donaHTML(datos, colorDe, nombreDe) {
     /* v932 · la lista cerrada de partes, para que la suite compruebe que el
        almacén la valida y no la reescriba por su cuenta. */
     subsDeHueco: subsDeHueco,
+    actividadDeCampo: actividadDeCampo,
     fechaDeDato: fechaDeDato,
     cerrar: cerrar,
     /* Que el botón flotante se pinte al entrar a Pro City. Lo llama js/20 en
@@ -29773,6 +30067,31 @@ function donaHTML(datos, colorDe, nombreDe) {
            que es la regla de la v871. Va la LISTA y no un booleano: la
            guarda de la migración tiene que poder decir cuáles faltan. */
         indicesPuestos: Object.keys(S.indicesPuestos || {}),
+        /* Lo que una prueba necesita leer se agrega a `estado()` en vez de
+           alcanzarlo por un lado (v871). El paramento se expone con su
+           ORIGEN, que es lo que distingue una cifra medida en campo de una
+           sacada de las huellas — sin él, las dos se ven iguales. */
+        paramento: (function () {
+          var c = null; try { c = laCuadraDelLote(); } catch (e) { c = null; }
+          if (!c) return null;
+          return { pctLleno: c.pctLleno, pctLlenoMapa: c.pctLlenoMapa,
+                   origen: c.origen, edificios: c.edificios,
+                   cuando: (c.campo && c.campo.cuando) || '',
+                   quien: (c.campo && c.campo.fuente && c.campo.fuente.quien) || '' };
+        })(),
+        actividad: (function () {
+          try { return actividadDeCampo(llaveDeSector(S.resultado && S.resultado.meta)); }
+          catch (e) { return null; }
+        })(),
+        /* La llave del sector y el último aviso de la pestaña. Los dos por la
+           regla de la v871: una prueba que quiera comprobar el ALMACÉN —y no
+           la pantalla— necesita la llave con la que se guardó, y una que mida
+           un rechazo necesita leer lo que el rechazo dijo. Alcanzarlos por un
+           lado sería reimplementar cómo se arman, que es la clase B. */
+        llaveCampo: (function () {
+          try { return llaveDeSector(S.resultado && S.resultado.meta); } catch (e) { return ''; }
+        })(),
+        aviso: S.avisoPestana || '',
         pliegoNombresDobles: (function () {
           try { return Object.keys(nombresDobles(S.resultado)); }
           catch (e) { return []; }

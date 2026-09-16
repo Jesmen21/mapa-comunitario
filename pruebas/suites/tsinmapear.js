@@ -199,7 +199,100 @@ const cotaDe = ln => 300 + Math.round(30 * Math.sin(ln * 800));
     R.abrir(); await esperar(400);
     const bl2 = H().querySelector('[data-pcr="lamina-doble"]') || H().querySelector('[data-pcr="lamina-ver"]');
     if (bl2) { bl2.click(); await esperar(1400); }
-    o.docSinHuellas = capturado;
+    o.docSinHuellas = capturado; capturado = '';
+
+    /* ══ v934 · LA TERCERA RAMA: LA MISMA CUADRA, YA CAMINADA ═══════════
+       Las dos de arriba son «con huellas» y «sin huellas». Falta la que la
+       propia hoja promete: con la plantilla de campo llena, «esta casilla se
+       calcula sola». Hasta la v933 nada podía cumplirlo.
+
+       Va acá y no en `tpostsector` porque el material vive acá: aquella
+       suite no mide el trazado, así que `laCuadraDelLote` devuelve null y la
+       comprobación pasaría por no tener nada que rechazar — el agujero que
+       este proyecto lleva veintidós tandas persiguiendo. Acá el segundo lote
+       está sobre una cuadra con calles y sin una sola huella, que es
+       exactamente el sector de quien tiene que salir a medirla.
+
+       Se guarda por la PUERTA de verdad y no escribiéndole al almacén: es la
+       regla de la v871, y de paso ejercita el manejador —que es justo lo que
+       la v932 pagó en tres vueltas por no hacer—. */
+    o.paramAntes = ((R.estado() || {}).paramento) || null;
+    const pg = H().querySelector('[data-pcr="pestana"][data-p="general"]');
+    if (pg) { pg.click(); await esperar(400); }
+    o.puertaAct = !!document.querySelector('[data-pcr-act="cuadra"][data-i="0"]');
+
+    const ponAct = (k, i, val) => {
+      const sel = '[data-pcr-act="' + k + '"]' + (i === null ? '' : '[data-i="' + i + '"]');
+      const el = document.querySelector(sel);
+      if (el) { el.value = val; el.dispatchEvent(new Event('input', { bubbles: true })); }
+      return !!el;
+    };
+    const guardarAct = async () => {
+      const b = H().querySelector('[data-pcr="act-guardar"]');
+      if (b) { b.click(); await esperar(500); }
+      return !!b;
+    };
+
+    /* (a) Una fila a la que le falta la medida NO se guarda a medias. */
+    ponAct('cuadra', 0, 'Calle de arriba, lado sur');
+    ponAct('quien', null, 'Ana Ruiz');
+    ponAct('fechaDoc', null, '2026-09-14');
+    await guardarAct();
+    o.rechazoSinMedida = ((R.estado() || {}).actividad || {}).estado;
+    o.avisoSinMedida = ((R.estado() || {}).aviso) || '';
+
+    /* (b) Y el activo no puede pasarse del total: un porcentaje por encima
+           de 100 saldría impreso, que es el defecto de la v859. */
+    ponAct('cuadra', 0, 'Calle de arriba, lado sur');
+    ponAct('total', 0, '80'); ponAct('activo', 0, '120');
+    ponAct('quien', null, 'Ana Ruiz'); ponAct('fechaDoc', null, '2026-09-14');
+    await guardarAct();
+    o.rechazoActivoMayor = ((R.estado() || {}).actividad || {}).estado;
+    o.avisoActivoMayor = ((R.estado() || {}).aviso) || '';
+
+    /* (c) Y un rango al revés tampoco: «entre el 9 y el 2» no se lee. */
+    ponAct('cuadra', 0, 'Calle de arriba, lado sur');
+    ponAct('total', 0, '80'); ponAct('activo', 0, '34');
+    ponAct('quien', null, 'Ana Ruiz');
+    ponAct('fechaDoc', null, '2026-09-14'); ponAct('fechaHasta', null, '2026-09-02');
+    await guardarAct();
+    o.rechazoRangoAlReves = ((R.estado() || {}).actividad || {}).estado;
+    o.avisoRango = ((R.estado() || {}).aviso) || '';
+
+    /* (c-bis) DOS cuadras y ninguna marcada. Es la que de verdad protege:
+           promediarlas publicaría una cifra de SECTOR en una casilla rotulada
+           «predio», que es el error de escala de la v854. No se guarda, y el
+           aviso dice por qué en vez de elegir por el lector. */
+    ponAct('cuadra', 0, 'Calle de arriba, lado sur');
+    ponAct('total', 0, '80'); ponAct('activo', 0, '34');
+    ponAct('cuadra', 1, 'Calle de arriba, lado norte');
+    ponAct('total', 1, '80'); ponAct('activo', 1, '72');
+    ponAct('quien', null, 'Ana Ruiz');
+    ponAct('fechaDoc', null, '2026-09-12'); ponAct('fechaHasta', null, '');
+    await guardarAct();
+    o.rechazoSinMarcar = ((R.estado() || {}).actividad || {}).estado;
+    o.avisoSinMarcar = ((R.estado() || {}).aviso) || '';
+
+    /* (d) Ahora bien: una cuadra, sus dos medidas, quién y un rango de dos
+           días —que es lo que pasa cuando ocho cuadras no caben en una
+           tarde—. El precedente del rango es de los edificios de campo. */
+    ponAct('cuadra', 0, 'Calle de arriba, lado sur');
+    ponAct('total', 0, '80'); ponAct('activo', 0, '34');
+    ponAct('quien', null, 'Ana Ruiz');
+    ponAct('fechaDoc', null, '2026-09-12'); ponAct('fechaHasta', null, '2026-09-14');
+    o.guardoAct = await guardarAct();
+    o.actGuardada = ((R.estado() || {}).actividad || {});
+    o.paramDespues = ((R.estado() || {}).paramento) || null;
+    o.campoGuardado = (R.leerCampo(((R.estado() || {}).llaveCampo) || '') || [])
+      .filter(x => x.hueco === 'actividad-en-primer-piso')
+      .map(x => ({ filas: ((x.valor || {}).filas || []).length,
+                   quien: x.fuente.quien, desde: x.fuente.fechaDoc, hasta: x.fuente.fechaHasta }));
+
+    /* Y la hoja se vuelve a componer: lo que importa es lo que el lector
+       encuentra en el papel, no lo que la variable dice (v879). */
+    const bl3 = H().querySelector('[data-pcr="lamina-doble"]') || H().querySelector('[data-pcr="lamina-ver"]');
+    if (bl3) { bl3.click(); await esperar(1400); }
+    o.docCaminada = capturado; capturado = '';
     return o;
   }, { C, POL, LOTE, LOTE_SIN_HUELLAS });
   await pg.close(); await ctx.close(); await b.close();
@@ -371,6 +464,80 @@ const cotaDe = ln => 300 + Math.round(30 * Math.sin(ln * 800));
   T('y no concluye «frente roto» sobre una cuadra que nadie mapeó',
     !!pSin && !/frente roto|cerrar la cuadra/.test(pSin.v + ' ' + pSin.l),
     pSin ? (pSin.v + ' · ' + pSin.l).slice(0, 110) : '—');
+
+  /* ══ v934 · LA TERCERA RAMA: LA MISMA CUADRA, YA CAMINADA ═══════════
+     La hoja promete, en la casilla que sale SIN MEDIR, que «esta casilla se
+     calcula sola» cuando alguien llene la plantilla. Esto mide esa promesa.
+
+     La guarda de MATERIAL va primero (v920): sin la cuadra del lote medida
+     —que es lo que `laCuadraDelLote` necesita y `tpostsector` no tiene— todo
+     lo de abajo pasaría por no tener nada que rechazar. */
+  console.log('\n  -- §934 · la plantilla de campo llena la casilla --');
+  T('MATERIAL · la cuadra sin huellas está medida y la puerta se pinta',
+    !!r.paramAntes && r.paramAntes.origen === 'mapa' &&
+      Number(r.paramAntes.edificios) === 0 && r.puertaAct === true,
+    r.paramAntes
+      ? ('origen ' + r.paramAntes.origen + ' · ' + r.paramAntes.edificios +
+         ' huellas · puerta ' + r.puertaAct)
+      : 'sin cuadra medida');
+
+  /* Las tres rechazan, y cada una DICE POR QUÉ: sin mirar el aviso, un
+     rechazo por el motivo equivocado pasaría igual —es medir otra cosa de la
+     que se dice medir—. */
+  T('una fila sin sus medidas no se guarda a medias, y dice qué falta',
+    r.rechazoSinMedida !== 'ok' && /frente total/.test(r.avisoSinMedida || ''),
+    r.rechazoSinMedida + ' · ' + (r.avisoSinMedida || '(sin aviso)').slice(0, 90));
+  T('ni una con más frente activo que frente total, y lo dice con la cifra',
+    r.rechazoActivoMayor !== 'ok' && /no pueden pasarse del frente total: 120 de 80/.test(r.avisoActivoMayor || ''),
+    r.rechazoActivoMayor + ' · ' + (r.avisoActivoMayor || '(sin aviso)').slice(0, 90));
+  /* La que protege la ESCALA: con varias cuadras hay que decir cuál es la
+     del lote. Promediarlas sería publicar una cifra del sector donde va una
+     del predio (v854), y esta casilla está rotulada «predio». */
+  T('con varias cuadras exige decir cuál es la del lote, por la escala',
+    r.rechazoSinMarcar !== 'ok' && /cuál de las cuadras es la del lote/.test(r.avisoSinMarcar || '') &&
+      /sector|predio/.test(r.avisoSinMarcar || ''),
+    r.rechazoSinMarcar + ' · ' + (r.avisoSinMarcar || '(sin aviso)').slice(0, 120));
+  /* Un rango al revés se imprimiría «entre el 14 y el 12», que es una cifra
+     correcta dicha de una manera que no se puede leer (v874). */
+  T('ni un rango de fechas al revés, y dice por qué',
+    r.rechazoRangoAlReves !== 'ok' && /no sea anterior a su inicio/.test(r.avisoRango || ''),
+    (r.avisoRango || '(sin aviso)').slice(0, 120));
+
+  T('con la cuadra caminada, la plantilla queda guardada con su procedencia',
+    r.guardoAct === true && (r.campoGuardado || []).length === 1 &&
+      r.campoGuardado[0].filas === 1 && r.campoGuardado[0].quien === 'Ana Ruiz' &&
+      r.campoGuardado[0].desde === '2026-09-12' && r.campoGuardado[0].hasta === '2026-09-14',
+    JSON.stringify(r.campoGuardado || []));
+
+  /* 34 de 80 m son 43 %, y NO el 0 % de las huellas. La cifra que cambia es
+     la del papel, así que el origen también tiene que cambiar: sin él, una
+     medida de campo y una de OpenStreetMap se leen igual (v867). */
+  T('y el paramento pasa a medirse en campo, no en el mapa',
+    !!r.paramDespues && r.paramDespues.origen === 'campo' &&
+      r.paramDespues.pctLleno === 43 && r.paramDespues.pctLlenoMapa === 0,
+    r.paramDespues
+      ? (r.paramDespues.pctLleno + ' % · origen ' + r.paramDespues.origen +
+         ' · el mapa daba ' + r.paramDespues.pctLlenoMapa + ' %')
+      : 'sin paramento');
+
+  const pCam = paramDe(String(r.docCaminada || ''));
+  T('la casilla del papel deja de decir SIN MEDIR y trae la cifra',
+    !!pCam && !/SIN MEDIR/.test(pCam.v) && /43 % del frente de la cuadra/.test(pCam.v),
+    pCam ? pCam.v : 'no sale el cruce');
+  /* La procedencia VIAJA con la cifra: el rango de días es el mismo que los
+     edificios de campo ya imprimían, y por la misma función (v879). */
+  T('y dice que se midió en campo, con su rango de días',
+    !!pCam && /medido en campo/.test(pCam.v) &&
+      /entre el 2026-09-12 y el 2026-09-14/.test(pCam.v),
+    pCam ? pCam.v.slice(0, 140) : '—');
+
+  /* Y el chequeo cruzado que la v910 dejó en «sin dato» ya se puede correr:
+     era la otra mitad de la promesa. */
+  const cohCam = filasCoh(String(r.docCaminada || ''));
+  const tramaCam = cohCam.filter(x => /trama y el paramento/i.test(x.txt))[0];
+  T('el chequeo cruzado que esperaba la plantilla ya se corre',
+    !!tramaCam && tramaCam.est !== 'sin-dato' && !/SIN MEDIR/i.test(tramaCam.txt),
+    tramaCam ? tramaCam.est + ' · ' + tramaCam.txt.slice(0, 120) : 'no sale el chequeo');
 
   console.log('\n  -- §10 · una sola fuente por magnitud: los edificios --');
   /* «Es el mismo dato contado dos veces en el mismo código». Este sector es

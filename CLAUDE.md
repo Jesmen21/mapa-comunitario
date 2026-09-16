@@ -7785,6 +7785,138 @@ aspecto y el pie de un panel en las hojas compuestas, así que mueve aserciones 
 lo que se midió, en vez de hecho a ojo de paso: es la decisión de la v903 con las
 cuatro cifras de §10.
 
+## El paramento se camina (v934)
+
+La primera de las seis plantillas de campo de la v883 conectada al almacén. No
+se eligió por gusto: medido, **«Actividad en primer piso» es la única que la
+hoja se nombra a sí misma como su relleno**, y lo hace tres veces —las otras
+cinco suman una entre todas—. Las tres son casillas que hoy imprimen SIN MEDIR,
+y una de ellas promete con todas las letras que **«esta casilla se calcula
+sola»** cuando alguien la llene. Hasta la v933 nada podía cumplirlo.
+
+    v933   Continuidad del paramento · SIN MEDIR · «el cero es del mapa y no del frente»
+    v934   43 % del frente de la cuadra con fachada · medido en campo entre el 12 y el 14
+
+Lo que cierra es el defecto de la v899: con cero huellas mapeadas sobre la
+cuadra, `pctLleno` da cero siempre y no mide un frente — mide una capa vacía.
+Caminar la cuadra con una cinta lo mide de verdad.
+
+### La forma se midió antes de elegirla, y la premisa con la que se abrió era falsa
+
+Yo había planteado la duda como «¿una entrada por cuadra, ya que `sub` no
+aplica?». Medido, la pregunta estaba mal puesta:
+
+* **La casilla necesita UNA cuadra, no varias.** `laCuadraDelLote` exige el
+  lote, busca la vía más cercana a su centroide y se queda con **un solo
+  tramo**; los cuatro consumidores del paramento leen esa misma cuadra.
+  Partir por cuadra resolvería un problema que la casilla no tiene.
+* **Las cuadras no son una lista cerrada**, así que `sub` no aplica — y
+  aflojarlo para que aceptara texto libre volvería a abrir el cajón que la
+  v932 cerró. La condición del usuario era correcta y acá se sostiene sola.
+* **El proyecto ya había decidido dónde va la atribución cuando varía por
+  fila, y es una COLUMNA.** De las seis plantillas, una sola lleva «Quién
+  informó»: «Cupo real de equipamientos», donde cada cupo lo dice una portería
+  distinta. Las otras cinco no la llevan porque el levantamiento es de una
+  persona. Eso es una decisión de la v883, no un descuido.
+* **Y ya existía un precedente para varias fechas sin `sub`:** los edificios
+  de campo imprimen «entre el 2 y el 9 de septiembre» desde la v929.
+
+Así que: **una entrada por plantilla**, con las filas en `valor`; `fechaDoc`
+más `fechaHasta` para el rango; y `quien` como **persona**, que es lo que la
+v931 dejó dicho para un dato que alguien levantó caminando.
+
+#### El rango se escribe en UN solo sitio
+
+`cuandoTexto(desde, hasta)` lo usan la procedencia de los edificios de campo y
+la de esta plantilla. Estaba escrito en línea dentro de `textoDeProcedencia`, y
+copiarlo habría sido comprar de antemano la **clase B** —dos maneras de
+escribir la misma frase se separan a la tanda siguiente— en la misma tanda en
+que se nombró la clase.
+
+Y un rango al revés **no se guarda**: saldría impreso «entre el 14 y el 12»,
+que es una cifra correcta dicha de una manera que no se puede leer (v874) y que
+se lee como un descuido de quien firma la hoja. Se valida como fecha por lo
+mismo que las otras tres de la v931: con texto libre adentro la comparación no
+compara nada y el fallo sería silencioso.
+
+### La fila marcada es la del lote, y eso es una regla de ESCALA
+
+La casilla «Continuidad del paramento» está declarada a escala **predio**. Con
+varias cuadras anotadas, promediarlas publicaría una cifra de **sector** en esa
+casilla — que es exactamente el error que `ESCALA_PANEL` existe para impedir
+(v854), y el más caro de un análisis urbano porque no se ve.
+
+Así que con una sola fila no hay que marcar nada; con varias, hay que decir
+cuál es la del lote, y si nadie lo dijo **la casilla no se calcula** y el aviso
+dice por qué. Falla cerrado, que es la decisión de la v880.
+
+### Entra por el punto único, no consumidor por consumidor
+
+Lo levantado en campo se pega dentro de `laCuadraDelLote()`, que es por donde
+pasan los cuatro sitios que imprimen el paramento. Es la regla del aviso de
+origen (v867): **una casilla nueva lo hereda sin que su autor se acuerde**, que
+es lo único que impide que esto se pierda otra vez.
+
+Y manda sobre las huellas porque mide otra cosa y la mide mejor: una huella de
+OpenStreetMap dice que hay un edificio, no que tenga puerta o vitrina a la
+calle, que es lo que hace un paramento activo. La cifra **lleva su procedencia
+pegada** —«medido en campo entre el … y el …»— porque un post-sector archivado
+se vuelve a componer con este código, y sin el origen una medida de campo y una
+de OpenStreetMap se leen igual.
+
+De paso, `pctLlenoMapa` se conserva al lado: las dos cifras existen y son
+distintas —43 % contra 0 %—, y tirar la del mapa sería perder con qué
+contrastar.
+
+### La puerta va en un bloque aparte
+
+Un papel se pide en una ventanilla; una plantilla se camina. Es la misma
+separación que la v883 hizo en la lámina entre los tres paneles de percepción y
+los seis formularios de medición, y acá el contenido la justifica: nadie radica
+nada, sale con una cinta. Verde y no ámbar, por la razón de la v880.
+
+### Dónde vive la comprobación, y por qué no en `tpostsector`
+
+En **`tsinmapear`**, y no fue una preferencia: `tpostsector` **no mide el
+trazado**, así que `laCuadraDelLote` devuelve null ahí y las nueve aserciones
+habrían pasado por no tener nada que rechazar — el agujero que este proyecto
+lleva veintidós tandas persiguiendo. `tsinmapear` ya tiene, desde la v899, un
+segundo lote sobre una cuadra con calles y **sin una sola huella**: es
+exactamente el sector de quien tiene que salir a medirla. Como en la v881, no
+hizo falta empobrecer ningún material — ya había uno en otra suite.
+
+La guarda de MATERIAL va primero (v920): que esa cuadra esté medida, con cero
+huellas, y que la puerta se pinte. Si eso deja de ser cierto, se pone roja ella
+y lo de abajo no significa nada.
+
+Y cada rechazo **dice su propia causa**, que es lo que los hace distinguibles:
+la primera versión daba el mismo mensaje a «falta una medida» y a «la medida no
+cuadra», así que las dos aserciones pasaban por la misma frase y no medían dos
+cosas. Son distintas para quien está escribiendo, y un solo mensaje manda a
+revisar lo que está bien.
+
+### Lo que esta plantilla NO cierra, medido
+
+La hoja la nombra en tres sitios y solo cierra **dos**. El tercero es «Mezcla de
+usos», que pide cuánto de cada edificio es vivienda — y las columnas de esta
+plantilla son frente total, con puerta o vitrina, muro ciego y cerrado ese día.
+Ninguna dice vivienda. Esa casilla la cierra el mapeo por edificio, que es lo
+que el propio texto nombra al lado; la mención de la plantilla ahí es una
+inferencia, no una medición, y **no se tocó para no afirmar de más**.
+
+### Y lo que la forma no distingue, declarado
+
+Si dos personas caminan cuadras distintas, la entrada guarda **un solo
+`quien`**. El remedio con precedente está identificado y no se hace acá: sería
+una columna «Quién informó», como la que «Cupo real de equipamientos» ya lleva
+desde la v883 justamente porque cada cupo lo dice una portería distinta.
+Cambiar las columnas cambia la plantilla impresa y sus aserciones en
+`tlaminaedu`, así que es su propia tanda.
+
+Quedan **cinco** plantillas por conectar, y las tres de percepción — que además
+necesitan entrar en `huecosDeCampo` antes de tener formulario, porque hoy el
+almacén no las acepta.
+
 ## La lista viva: lo que al pliego educativo todavía le falta (v866)
 
 Esta lista se quedó vieja **cinco veces**. Cuatro dentro de la hoja —la
