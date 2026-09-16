@@ -142,6 +142,52 @@ sin respuesta y los análisis salen vacíos sin decir por qué.
 Si de golpe fallan cuarenta suites con «Cannot read properties of null», casi
 siempre es el motor caído, no una regresión.
 
+## Una señal de éxito que no lo es
+
+La familia de trampas que más caro sale en este contenedor no son los fallos:
+son los **éxitos aparentes**. Una orden que no hizo su trabajo y no lo dice, y
+la tanda que sigue creyendo que sí. Ya se cobró cuatro veces y las cuatro por
+lo mismo, así que van juntas y arriba, donde se leen antes de trabajar y no
+dentro de la bitácora de la versión que las pagó.
+
+### Un parche por anclas o escribe entero o no escribe
+
+Lo último, y lo más barato de evitar. Un `python3` de tres anclas abortó en la
+tercera —un parche anterior había separado dos líneas que esperaba juntas—, así
+que **no escribió nada**. La corrida siguiente repitió el mismo rojo de antes, yo
+lo leí como el fallo conocido, y **reporté el arreglo como aplicado**. El
+`AssertionError` estaba impreso encima de los resultados.
+
+Que el parche no escriba a medias es lo CORRECTO: medio archivo parcheado es
+mucho peor. El fallo es de lectura, así que la regla es de lectura:
+
+* **todo parche por anclas termina imprimiendo su confirmación** —`print('ok
+  parcheado')` después del último `write`—;
+* y **esa confirmación se comprueba antes de creerle a la corrida siguiente**.
+  Sin ella, «la prueba sigue roja» y «el parche no entró» se ven idénticos.
+
+### Las otras tres de la misma familia
+
+* **`git merge` con el árbol sucio ABORTA**, y su primera línea dice
+  `Updating a914a88..609550e`. Se comprueba la HISTORIA y no el mensaje
+  (`git merge-base --is-ancestor origin/main HEAD`). Está entera arriba, en
+  «Una fusión que falla y no se nota», porque costó dos versiones publicadas.
+* **Una salida vacía no es una salida buena.** Grepear la salida de una suite
+  por `✗|fallaron` y no encontrar nada se leyó como verde; la suite había
+  reventado con un `ReferenceError` y no imprimió ninguna de las dos cosas. Una
+  comprobación que busca señales de FALLO tiene que buscar también la señal de
+  ÉXITO, o el silencio pasa por aprobación.
+* **`echo $?` después de un `| tail` mide el `tail`.** Casi cuesta «arreglar»
+  `correr.js` por un código de salida que no era el suyo.
+
+### Por qué esto no es una comprobación de `revisar.js`
+
+Porque no hay nada en el repositorio que mirar: el fallo está en la orden que se
+teclea, no en el código que queda. Y este proyecto tiene escrito desde la v878
+que una guarda que no puede fallar es un verde, así que conviene decir qué hace
+que esta muerda de verdad: **la confirmación impresa**. Sin ese renglón la regla
+es un buen propósito; con él, saltársela se ve en el acto.
+
 ## El motor
 
 Vive en un repositorio privado aparte (`../urbis-motor`). Las reglas de
@@ -512,6 +558,42 @@ tandas largas, y el motor no se entera —sigue en pie, sirviendo análisis, con
 motor**, porque su conexión se resolvió al arrancar y no se vuelve a intentar.
 La pista es `service postgresql status`, que cuesta un segundo, antes de
 sospechar de una regresión que no existe.
+
+#### Y a veces no es que se cayera: es que el esquema no está
+
+Peor que la base caída, porque se parece. En un contenedor recién levantado la
+BASE puede existir y el ESQUEMA no, y entonces `migrar.js` hay que correrlo
+otra vez —no es solo `service postgresql start`—. La señal en `tvision` es la
+misma de siempre, «Cannot read properties of null (reading 'deficit')», así que
+antes de sospechar de una regresión se miran las dos cosas:
+
+```bash
+service postgresql status                                   # ¿está en pie?
+su postgres -c "psql -d urbis_vt_pruebas -tc \
+  'select count(*) from vt.territorios'"                    # ¿tiene datos?
+```
+
+Y `semilla.js` es idempotente: sobre una base ya sembrada contesta «ya estaba»
+y no es un error.
+
+#### Contar filas sin el territorio puesto da CERO, y parece una base vacía
+
+La trampa de arriba tiene una gemela que cuesta más. La RLS filtra por el
+territorio de la sesión, así que una consulta sin `set_config` devuelve cero
+filas —es el fallo seguro y está dicho más arriba—, pero al diagnosticar se lee
+como «la semilla no entró». Dos detalles que lo empeoran y conviene tener
+escritos:
+
+* **lo que la RLS espera es el `territorio_id`, no el código DANE.** Poner
+  `'54001'` donde va el uuid devuelve cero con la misma cara que ponerlo bien;
+* **las tablas son PLURALES** —`vt.territorios`, `vt.equipamientos`,
+  `vt.manzanas`—, y con el nombre en singular el error sí se ve, que es lo de
+  menos.
+
+Para diagnosticar de verdad se cuenta como `postgres`, que **sí** salta la RLS
+por ser superusuario. `FORCE` alcanza al DUEÑO de la tabla (`vt_migrador`), que
+es lo que impide que una función `SECURITY DEFINER` cruce territorios; no
+alcanza al superusuario.
 
 **El secreto tiene que ser EXACTAMENTE ese**: es el que `tvision.js` usa para
 firmar sus licencias de prueba, y con otro la firma no valida —401— y el
