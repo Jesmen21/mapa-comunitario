@@ -1690,6 +1690,79 @@ console.log('\n  -- un nombre, una cosa --');
     cuerpoPuerta ? 'puedeCeder lee el peldaño' : 'NO se encontró puedeCeder');
 }
 
+/* ── UN HUECO ES DONDE SE TRAE UN PAPEL, Y ESO LO DICE `panelVacio` ────────
+   El almacén de campo solo acepta un `hueco` que la lámina declare, porque un
+   dato de campo cierra algo que la hoja dice que le falta; si no, no hay dónde
+   pintarlo (v929). Pero la lista del almacén se derivaba de `PANELES_DE_VACIO`,
+   que es la lista de MAQUETACIÓN —las baldosas que no ceden—, y esas dos cosas
+   dejaron de coincidir en la v880, cuando «Servicios públicos» salió de los
+   vacíos obligatorios porque la capa del censo lo llena.
+
+   Nadie se enteró durante tres versiones, y no se podía ver: el panel sigue
+   maquetado como baldosa ámbar. Lo que cambió es que su caja ya NO pasa por
+   `panelVacio` —no dice «sin dato oficial disponible», imprime lo que la capa
+   conteste—. O sea que el discriminante estaba en el código y nadie lo miraba,
+   que es la forma de la v875 con `puntos` y de la v899 con `cu.edificios`.
+
+   La guarda liga las dos listas en las DOS direcciones, que es lo que la hace
+   servir: un panel que deja de pasar por `panelVacio` y se queda en la lista de
+   huecos sale en rojo, y uno que empieza a pasar por ahí y no está, también.
+   Así, la próxima vez que una fuente nueva llene un vacío, el almacén no se
+   entera solo. */
+{
+  const F = 'js/68-procity-reconocimiento.js';
+  const src = leer(F);
+  const lista = (nombre) => {
+    const m = src.match(new RegExp('var ' + nombre + ' = \\[([^\\]]*)\\]'));
+    return m ? (m[1].match(/'([^']+)'/g) || []).map(x => x.slice(1, -1)) : [];
+  };
+  const maqueta = lista('TITULOS_DE_VACIO');
+  const huecos  = lista('TITULOS_DE_HUECO');
+
+  /* La guarda de material va PRIMERO (v920): si las listas no se pudieron
+     leer, las de abajo pasarían por no tener nada que comparar. */
+  comprobar('MATERIAL · las dos listas de vacío se leen del módulo',
+    maqueta.length >= 2 && huecos.length >= 2 && huecos.length <= maqueta.length,
+    'maqueta ' + maqueta.length + ' · huecos ' + huecos.length);
+
+  /* Cada caja se mide DENTRO de su propio trozo y no sobre el archivo entero,
+     que es la lección de la v854: buscar `panelVacio(` suelto encontraría el de
+     la caja de al lado. Los cortes son las propias llamadas a `caja(`. */
+  const marcas = maqueta
+    .map(t => ({ t: t, i: src.indexOf("caja('" + t + "',") }))
+    .filter(x => x.i >= 0)
+    .sort((a, b) => a.i - b.i);
+  const conPanelVacio = marcas.filter(x => {
+    const sig = src.indexOf("caja('", x.i + 6);
+    return /panelVacio\s*\(/.test(src.slice(x.i, sig > 0 ? sig : x.i + 9000));
+  }).map(x => x.t);
+
+  comprobar('MATERIAL · las cinco cajas de vacío se encuentran en el módulo',
+    marcas.length === maqueta.length,
+    marcas.length + ' de ' + maqueta.length +
+      (marcas.length === maqueta.length ? '' :
+        ' — falta ' + maqueta.filter(t => !marcas.some(m => m.t === t)).join(', ')));
+
+  const sobran = conPanelVacio.filter(t => huecos.indexOf(t) === -1);
+  const faltan = huecos.filter(t => conPanelVacio.indexOf(t) === -1);
+  comprobar('todo hueco de vacío lo pinta panelVacio, y todo lo que pinta es un hueco',
+    sobran.length === 0 && faltan.length === 0,
+    (sobran.length || faltan.length)
+      ? (sobran.length ? 'pinta vacío y NO es hueco: ' + sobran.join(', ') + '. ' : '') +
+        (faltan.length ? 'es hueco y NO lo pinta: ' + faltan.join(', ') +
+          ' — si dejó de ser un vacío, sáquelo de TITULOS_DE_HUECO.' : '')
+      : conPanelVacio.length + ' de ' + maqueta.length + ' pasan por panelVacio: ' +
+        conPanelVacio.join(' · '));
+
+  /* Y la guarda de la guarda: si `huecosDeCampo` dejara de leer la lista de
+     huecos, todo lo de arriba seguiría en verde sin vigilar el almacén — el
+     patrón de la v878 con su propia lista. */
+  const cuerpoHuecos = (src.match(/function huecosDeCampo\([^]*?\n  \}/) || [''])[0];
+  comprobar('y el almacén sigue leyendo la lista de huecos, no la de maquetación',
+    /HUECOS_DE_VACIO/.test(cuerpoHuecos) && !/PANELES_DE_VACIO/.test(cuerpoHuecos),
+    cuerpoHuecos ? 'huecosDeCampo lee HUECOS_DE_VACIO' : 'NO se encontró huecosDeCampo');
+}
+
   comprobar('ningún nombre de window es función en un archivo y lista en otro',
     chocan.length === 0,
     chocan.length

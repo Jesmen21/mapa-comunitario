@@ -841,7 +841,7 @@
      nueva escrita al lado. */
   function huecosDeCampo() {
     var v = [], p = [];
-    try { v = PANELES_DE_VACIO || []; } catch (e) { v = []; }
+    try { v = HUECOS_DE_VACIO || []; } catch (e) { v = []; }
     try { p = (PLANTILLAS_DE_CAMPO || []).map(function (x) { return x.id; }); } catch (e) { p = []; }
     return v.concat(p);
   }
@@ -17922,6 +17922,29 @@ function donaHTML(datos, colorDe, nombreDe) {
   var TITULOS_DE_VACIO = ['Riesgo oficial', 'Servicios públicos', 'Norma urbana',
                           'Movilidad real', 'Información legal del predio'];
   var PANELES_DE_VACIO = TITULOS_DE_VACIO.map(function (t) { return slugPliego(t); });
+  /* Los CINCO de arriba son de MAQUETACIÓN: las baldosas que no ceden y que
+     en la hoja acostada van entre las cifras. Cuatro de ellos son además un
+     HUECO, y no es lo mismo: un hueco es donde alguien anota el papel que
+     trajo de una ventanilla, y lo que lo dice es `panelVacio` —«Sin dato
+     oficial disponible»—, que es la forma de declarar que ningún dato
+     publicado lo trae.
+
+     «Servicios públicos» dejó de serlo en la v880: lo llena la misma capa
+     del censo por manzana que el módulo ya consulta, así que su caja NO pasa
+     por `panelVacio` —imprime lo que la capa conteste, o declara con la
+     lista de campos como prueba lo que no exponga— y su trámite a la
+     Superservicios es un respaldo, no un vacío. Se quedó en `huecosDeCampo`
+     tres versiones porque la lista del almacén se derivaba de la de
+     maquetación, que es la que no cambió.
+
+     Son dos listas porque son dos cosas, y no pueden separarse en silencio:
+     `revisar.js` exige que el conjunto de los que pasan por `panelVacio` sea
+     EXACTAMENTE este, en las dos direcciones. El día que un panel deje de
+     ser un vacío —porque una fuente nueva lo llene—, el almacén no se entera
+     solo: la comprobación se pone roja hasta que alguien lo saque de acá. */
+  var TITULOS_DE_HUECO = ['Riesgo oficial', 'Norma urbana', 'Movilidad real',
+                          'Información legal del predio'];
+  var HUECOS_DE_VACIO = TITULOS_DE_HUECO.map(function (t) { return slugPliego(t); });
   var PRIORIDAD_MAPA = ['sombra-proyecto', 'anillos', 'llega', 'ruido', 'masa', 'agua', 'estratos',
                         'calor:categoria', 'comercial', 'sombras', 'acuerdos', 'intangible', 'curvas',
                         'hitos', 'caminar', 'caminata', 'vias', 'alturas', 'llenos', 'cobertura'];

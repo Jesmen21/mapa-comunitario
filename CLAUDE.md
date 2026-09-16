@@ -7602,6 +7602,94 @@ no escribe**, y hay que comprobar su señal de éxito antes de creerle a la corr
 que viene después. Es la misma regla de la v880 —«una salida vacía no es una
 salida buena»— dicha para el parche en vez de para la suite.
 
+## Un hueco es donde se trae un papel (v933)
+
+Salió de una pregunta del usuario sobre el inventario de puertas, y de medir su
+premisa antes de actuar, que es la regla de la v916. La premisa era: «si la v880
+ya decidió que servicios públicos no es un vacío obligatorio, sácalo de
+`huecosDeCampo`». Se sostiene, y el discriminante que él nombró resultó ser
+exactamente el correcto.
+
+### Dos listas que significaban cosas distintas y se derivaban una de otra
+
+`huecosDeCampo()` salía de `PANELES_DE_VACIO`, que es la lista de
+**MAQUETACIÓN**: las baldosas que no ceden en ningún formato y que en la hoja
+acostada van entre las cifras. Un **HUECO** es otra cosa: el sitio donde alguien
+anota el papel que trajo de una ventanilla.
+
+Coincidieron hasta la v880, cuando «Servicios públicos» dejó de ser un vacío
+obligatorio —lo llena la misma capa del censo por manzana que el módulo ya
+consulta—. La lista de maquetación no cambió, porque el panel sigue maquetado
+igual, así que el almacén siguió aceptando un papel para él **tres versiones sin
+que nadie se enterara**.
+
+### El discriminante estaba en el código y nadie lo miraba
+
+Es `panelVacio`, y medido separa los cinco sin ninguna ambigüedad:
+
+| Caja | ¿pasa por `panelVacio`? |
+|---|---|
+| Riesgo oficial · Norma urbana · Movilidad real · Información legal | **sí** |
+| Servicios públicos | **no** |
+
+`panelVacio` es lo que imprime «Sin dato oficial disponible», que es la forma de
+declarar que ningún dato publicado lo trae. La caja de servicios públicos no pasa
+por ahí: arma su propio cuerpo —las barras que la capa conteste, o la declaración
+con la lista de campos como prueba— y llama a `comoSeConsigue` como respaldo.
+
+Que el discriminante existiera y nadie lo mirara es la forma de la v875 con
+`puntos` y de la v899 con `cu.edificios`. Tercera vez, y como las otras dos **no
+hizo falta tocar nada más**: solo dejar de derivar una lista de la otra.
+
+`TITULOS_DE_HUECO` son ahora los cuatro, al lado de los cinco de maquetación, y
+la guarda las liga.
+
+### Lo que cuesta, dicho
+
+El trámite de servicios públicos —derecho de petición a la empresa prestadora, o
+el SUI de la Superservicios— **se queda sin dónde anotarse**. Es el precio y es
+chico: ese trámite es el respaldo para cuando la capa del censo no contesta, no
+un vacío, y ninguna puerta lo ofrecía nunca —las únicas cuatro son las de la v931
+y la v932—, así que no hay una sola entrada guardada que se pierda.
+
+### La guarda va en las DOS direcciones, o no sirve
+
+En `revisar.js`, y es lo que el usuario pidió con estas palabras: «para que la
+próxima vez que algo deje de ser vacío, el almacén no se entere solo».
+
+* un panel que **deja de pasar** por `panelVacio` y se queda en la lista de
+  huecos sale en rojo, con el remedio escrito;
+* y uno que **empieza a pasar** por ahí y no está en la lista, también.
+
+Sin la segunda, el arreglo podría ser vaciar `TITULOS_DE_HUECO` y la guarda
+pasaría sin vigilar nada. Cada caja se mide **dentro de su propio trozo** —los
+cortes son las propias llamadas a `caja(`—, que es la lección de la v854: un
+`panelVacio(` buscado suelto encontraría el de la caja de al lado.
+
+Y lleva su guarda de guarda: si `huecosDeCampo` volviera a leer la lista de
+maquetación, todo lo de arriba seguiría en verde sin vigilar el almacén. Es el
+patrón de la v878 con su propia lista.
+
+Demostrada en las dos direcciones: devolviendo «Servicios públicos» a
+`TITULOS_DE_HUECO` sale «es hueco y NO lo pinta»; quitando «Riesgo oficial» sale
+«pinta vacío y NO es hueco».
+
+### Lo que salió al medir y NO se tocó
+
+La caja de servicios públicos cierra con `'g3 caja-vacio'` **sin condición**,
+mientras su comentario dice que «sigue siendo una caja ámbar mientras la capa no
+conteste». O sea que cuando la capa SÍ contesta, sus barras se imprimen dentro de
+una caja ámbar a trazos —que en esta hoja significa «esto no lo tenemos»— y
+además **pierde su pie de método**, porque `caja()` lo suprime en las
+`caja-vacio` desde la v880. Son dos afirmaciones falsas sobre un dato medido, o
+sea la clase de la v861.
+
+El arreglo es una línea —el ternario que «Norma urbana» ya tiene— pero cambia el
+aspecto y el pie de un panel en las hojas compuestas, así que mueve aserciones de
+`tdoslaminas` y `tlaminaedu` y pide su propia medición. Queda declarado acá con
+lo que se midió, en vez de hecho a ojo de paso: es la decisión de la v903 con las
+cuatro cifras de §10.
+
 ## La lista viva: lo que al pliego educativo todavía le falta (v866)
 
 Esta lista se quedó vieja **cinco veces**. Cuatro dentro de la hoja —la
