@@ -1283,3 +1283,50 @@
    impide que un rótulo colgado en la pared se lea como una afirmación sobre
    la ciudad entera. */
 .pcr-ojo{ color:#B45309; }
+
+/* ── Las dos corridas: sector y post-sector (v929) ──────────────────────
+   El interruptor entre lo que se sabe del sector ANTES de pisarlo y lo que
+   se sabe después. Las dos pestañas se pintan SIEMPRE: la de post-sector
+   deshabilitada y con la razón a la vista mientras no haya campo levantado.
+   Esconderla sería esconder el vacío, que es lo contrario de lo que hace
+   este módulo — y además es lo único que le dice a un estudiante que hay
+   algo que se gana saliendo a la calle.
+
+   El ámbar de `pcr-corrida-falta` es el mismo de los vacíos obligatorios
+   (--edu-warn): significa «esto no lo tenemos todavía», no «esto está mal».
+   Rojo se reserva para la contradicción, como en la lámina. */
+.pcr-corrida{
+  display:flex; flex-direction:column; gap:8px;
+  margin:2px 0 4px;
+}
+.pcr-corrida-sw{
+  display:flex; gap:3px; padding:3px;
+  background:#eef2f6; border-radius:10px;
+}
+.pcr-corrida-sw button{
+  flex:1; border:none; background:none; cursor:pointer;
+  font:inherit; font-size:.78rem; font-weight:600; color:#5a6878;
+  padding:7px 9px; border-radius:8px; line-height:1.25;
+  transition:background .18s, color .18s;
+}
+.pcr-corrida-sw button.activa{
+  background:#fff; color:#0F1F2E;
+  box-shadow:0 1px 3px rgba(15,31,46,.12);
+}
+.pcr-corrida-sw button:disabled{ opacity:.5; cursor:not-allowed; }
+.pcr-corrida-sw button:not(:disabled):not(.activa):hover{ color:#0A6F9E; }
+.pcr-corrida-sw button:focus-visible{ outline:2px solid #0A6F9E; outline-offset:1px; }
+
+.pcr-corrida-por{
+  margin:0; font-size:.74rem; line-height:1.5; color:#5a6878;
+}
+.pcr-corrida-por b{ color:#0F1F2E; }
+.pcr-corrida-falta{
+  color:#8a5a00; background:#fff8ea; border:1px dashed #e0b978;
+  border-radius:9px; padding:9px 11px;
+}
+.pcr-corrida-mal{
+  margin:0; font-size:.76rem; line-height:1.45; color:#9a3412;
+  background:#fff3ea; border:1px solid #fcd9bd;
+  border-radius:9px; padding:9px 11px;
+}

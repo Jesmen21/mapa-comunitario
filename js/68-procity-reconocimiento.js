@@ -66,6 +66,20 @@
 
   var S = {
     abierto: false,
+    /* ── Las dos corridas (v929) ──────────────────────────────────
+       `sector` sale solo de fuentes publicadas; `post` es el MISMO sector
+       recalculado con lo levantado en campo dentro. Ninguna reemplaza a la
+       otra: las dos quedan disponibles y el interruptor dice cuál se mira.
+       La activa se copia a `S.resultado` para que los treinta mil renglones
+       que ya leen de ahí no tengan que enterarse. */
+    corrida: 'sector',
+    corridas: null,
+    corridaCargando: false,
+    corridaAviso: '',
+    /* La petición con la que se corrió el sector, para reusarla tal cual en
+       el post-sector: misma área, mismo censo, misma dirección. Armar una
+       segunda sería la divergencia de la v879 y pediría repetir consultas. */
+    peticionSector: null,
     /* Qué pestaña de la ficha se está mirando. Arranca en «General» porque
        es el tablero de mandos —las capas y lo que falta medir—: lo primero
        que alguien necesita después de analizar no es leer, es saber qué
@@ -756,6 +770,238 @@
        amarillo, «no le hizo el medio del lote, lo hizo por fuera». */
     S.centroDe = 'trazo';
     return true;
+  }
+
+
+  /* ── EL DATO DE CAMPO, Y LA CORRIDA POST-SECTOR (v929) ───────────────
+     Hasta la v928 `tipoEstudio` valía siempre 'completo' y no había ninguna
+     distinción entre lo que se sabe del sector ANTES de pisarlo y lo que se
+     sabe después. Esta es esa distinción:
+
+       · **Análisis de sector** — solo fuentes publicadas: OpenStreetMap, el
+         DANE, el satélite, el motor. La fotografía de arranque.
+       · **Análisis post-sector** — el MISMO sector, recalculado, cuando hay
+         al menos un dato de campo. No es una copia editada a mano: es la
+         misma corrida del motor con lo levantado dentro, y lo que el campo
+         no cerró sigue marcado SIN MEDIR con su trámite.
+
+     EL CAMPO NO ES UNA SOLA COSA, y por eso esto tiene dos mitades que no se
+     pueden juntar sin mentir:
+
+       · Lo **georreferenciado** —puntos y edificios mapeados, con sus pisos y
+         sus usos por planta— es de un SITIO, no de un trazo: se filtra por
+         geometría al leerlo, que es lo que `edificiosDeCampo` ya hace desde
+         la v754. Entra POR EL MOTOR, porque tiene forma de elemento de
+         OpenStreetMap y el motor sabe clasificarlo.
+       · Lo **de trazo** —las seis plantillas de la v883, los cuatro vacíos
+         con trámite de la v880— NO tiene forma de elemento y no pasa por el
+         motor: una frecuencia de ruta o una resolución de curaduría no
+         tienen etiqueta OSM. Entra donde hoy se imprime SIN MEDIR, igual que
+         `S.indicesPuestos` hace con la norma urbana desde la v903.
+
+     Pasar una plantilla por el motor «para que todo entre por el mismo
+     sitio» sería inventar un elemento que nadie mapeó. La asimetría va
+     escrita y no disimulada.
+
+     LA IDENTIDAD ES `llaveDeSector`, LA DE LA v915. Un sector analizado sin
+     trazo guardado no tiene `trazoId` —se puede analizar un radio sin haber
+     guardado nada— así que colgar el campo del trazo dejaría fuera el caso
+     más común. La llave de la v915 sirve con trazo y sin él, y usar una
+     segunda identidad sería la divergencia de la v879 comprada por
+     adelantado. */
+  var CAMPO_KEY = 'pcr_campo_v1';
+  var MAX_CAMPO_POR_SECTOR = 120;
+
+  /* EL INVENTARIO DE HUECOS NO ES UNA LISTA NUEVA.
+     Sale de las mismas listas que ya deciden qué imprime la lámina: los
+     cuatro vacíos obligatorios, las seis plantillas de campo y los tres
+     índices del POT. Una segunda lista de huecos se separaría de la primera
+     a la tanda siguiente —es la v879— y además dejaría entrar una entrada
+     que cierra algo que la hoja no declara. Se rechaza al guardar. */
+  var INDICES_POT = ['ocupacion', 'construccion', 'altura'];
+  function huecosDeCampo() {
+    var v = [], p = [];
+    try { v = PANELES_DE_VACIO || []; } catch (e) { v = []; }
+    try { p = (PLANTILLAS_DE_CAMPO || []).map(function (x) { return x.id; }); } catch (e) { p = []; }
+    return v.concat(p).concat(INDICES_POT);
+  }
+  function esHuecoConocido(id) { return huecosDeCampo().indexOf(String(id || '')) !== -1; }
+
+  function leerCampoTodo() {
+    try {
+      var g = JSON.parse(localStorage.getItem(CAMPO_KEY) || '{}');
+      return (g && typeof g === 'object' && !Array.isArray(g)) ? g : {};
+    } catch (e) { return {}; }
+  }
+  function escribirCampoTodo(g) {
+    try { localStorage.setItem(CAMPO_KEY, JSON.stringify(g)); return true; }
+    catch (e) { return false; }
+  }
+  function leerCampo(llave) {
+    if (!llave) return [];
+    var g = leerCampoTodo()[String(llave)];
+    return (g && Array.isArray(g.entradas)) ? g.entradas : [];
+  }
+
+  /* LA PROCEDENCIA ES OBLIGATORIA Y NO TIENE VALOR POR OMISIÓN.
+     Es la regla que la v926 le puso al PDF de Visión Territorial: o el texto
+     de la advertencia, o `false`, que es decidir — no hay silencio por
+     omisión. Acá: un dato de campo sin quién y sin cuándo es indistinguible
+     de uno inventado, y la lámina lo va a imprimir como medido. Así que una
+     entrada sin `fuente` completa no se guarda, y el error dice qué falta.
+
+     `estado` separa el borrador del confirmado, y solo el confirmado cuenta.
+     Es la escalera del módulo presidencial dicha acá: un señalamiento no
+     pesa, un caso confirmado sí. Alguien que empieza a llenar una plantilla
+     y la deja a medias no convierte el sector en post-sector. */
+  var ESTADOS_CAMPO = ['borrador', 'confirmado'];
+  var COMO_CAMPO = ['campo', 'tramite'];
+  function guardarEntradaCampo(llave, entrada) {
+    if (!llave) return { ok: false, error: 'Sin sector al que enlazar el dato de campo.' };
+    var e = entrada || {};
+    if (!esHuecoConocido(e.hueco)) {
+      return { ok: false, error: 'El hueco «' + String(e.hueco || '') + '» no está en el inventario ' +
+        'de la lámina. Un dato de campo cierra algo que la hoja declara; si no, no se puede pintar.' };
+    }
+    if (ESTADOS_CAMPO.indexOf(e.estado) === -1) {
+      return { ok: false, error: 'Falta el estado: «borrador» o «confirmado».' };
+    }
+    var f = e.fuente || {};
+    var falta = [];
+    if (COMO_CAMPO.indexOf(f.como) === -1) falta.push('cómo se consiguió («campo» o «tramite»)');
+    if (!String(f.quien || '').trim()) falta.push('quién lo levantó');
+    if (!String(f.cuando || '').trim()) falta.push('cuándo');
+    if (falta.length) {
+      return { ok: false, error: 'La procedencia no puede quedar en blanco: falta ' +
+        falta.join(', ') + '. Un dato sin procedencia se imprime como medido y no se puede defender.' };
+    }
+    var g = leerCampoTodo();
+    var k = String(llave);
+    var lista = (g[k] && Array.isArray(g[k].entradas)) ? g[k].entradas : [];
+    var reg = {
+      id: e.id || ('cp' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6)),
+      hueco: String(e.hueco), estado: e.estado, valor: e.valor === undefined ? null : e.valor,
+      fuente: { como: f.como, quien: String(f.quien).trim().slice(0, 80),
+                cuando: String(f.cuando).trim().slice(0, 40),
+                docto: String(f.docto || '').trim().slice(0, 120) },
+      ts: Date.now()
+    };
+    /* Un hueco se ACTUALIZA, no se duplica. Es la regla del módulo
+       presidencial: un caso que avanza se actualiza, y dos entradas del
+       mismo hueco dejarían a la lámina eligiendo cuál cree. */
+    var i = -1;
+    lista.forEach(function (x, j) { if (x.hueco === reg.hueco) i = j; });
+    if (i >= 0) { reg.id = lista[i].id; lista[i] = reg; } else { lista.unshift(reg); }
+    if (lista.length > MAX_CAMPO_POR_SECTOR) lista = lista.slice(0, MAX_CAMPO_POR_SECTOR);
+    g[k] = { v: 1, entradas: lista };
+    if (!escribirCampoTodo(g)) {
+      return { ok: false, error: 'No quedó espacio en el teléfono para guardar el dato de campo.' };
+    }
+    return { ok: true, id: reg.id };
+  }
+  function borrarEntradaCampo(llave, id) {
+    var g = leerCampoTodo(), k = String(llave || '');
+    if (!g[k] || !Array.isArray(g[k].entradas)) return false;
+    g[k].entradas = g[k].entradas.filter(function (x) { return x.id !== id; });
+    return escribirCampoTodo(g);
+  }
+  function confirmadasDeCampo(llave) {
+    return leerCampo(llave).filter(function (x) {
+      return x.estado === 'confirmado' && esHuecoConocido(x.hueco);
+    });
+  }
+
+  /* ── ¿ESTE SECTOR TIENE CAMPO? ───────────────────────────────────────
+     Dos maneras, y las dos cuentan:
+
+       · una entrada CONFIRMADA de un hueco del inventario, o
+       · al menos un edificio levantado con sus pisos contados dentro del
+         área — que es dato de campo tanto como una plantilla, y pedirle una
+         plantilla a quien ya levantó cuarenta edificios sería absurdo.
+
+     Y NO cuenta haber medido cosas desde el escritorio. Medidas las diez
+     casillas que imprimen SIN MEDIR en la síntesis, casi ninguna es un hueco
+     de campo: «sin trazado medido», «sin red vial medida», «sin referencia
+     de ciudad» se cierran pulsando un botón sin que nadie pise el sitio. Si
+     «tiene campo» se midiera contra «cerró algún SIN MEDIR», el post-sector
+     se habilitaría desde un computador, que es exactamente lo contrario de
+     lo que significa.
+
+     Devuelve SIEMPRE un objeto, nunca un booleano suelto: el toggle
+     deshabilitado tiene que decir POR QUÉ, y un `false` no lo dice. Es la
+     regla de la v876 con `censoCiudad`. */
+  function tieneCampo(llave, opts) {
+    var o = opts || {};
+    var conf = confirmadasDeCampo(llave);
+    var edif = [];
+    if (o.edificios !== undefined) edif = o.edificios || [];
+    else { try { edif = edificiosDeCampo(); } catch (e) { edif = []; } }
+    var conPisos = edif.filter(function (e) { return e && e.pisos != null; });
+
+    var fuentes = [];
+    if (conPisos.length) {
+      var fechas = conPisos.map(function (e) { return String(e.fecha || '').slice(0, 10); })
+        .filter(Boolean).sort();
+      fuentes.push({
+        clase: 'edificios', hueco: null, n: conPisos.length, total: edif.length,
+        que: conPisos.length === 1 ? 'un edificio levantado en campo, con sus pisos contados'
+                                   : conPisos.length + ' edificios levantados en campo, con sus pisos contados',
+        desde: fechas[0] || '', hasta: fechas[fechas.length - 1] || '', como: 'campo'
+      });
+    }
+    conf.forEach(function (x) {
+      fuentes.push({
+        clase: 'hueco', hueco: x.hueco, n: 1, que: nombreDeHueco(x.hueco),
+        quien: x.fuente.quien, cuando: x.fuente.cuando,
+        docto: x.fuente.docto || '', como: x.fuente.como
+      });
+    });
+
+    if (!fuentes.length) {
+      return { hay: false, fuentes: [], razon:
+        'Todavía no hay nada levantado en este sector. El análisis post-sector se ' +
+        'habilita con el primer dato de campo: un edificio mapeado con sus pisos, ' +
+        'una plantilla llena o un vacío cerrado con su trámite.' };
+    }
+    return { hay: true, fuentes: fuentes, razon: '' };
+  }
+
+  /* El nombre legible de un hueco, para la declaración de procedencia. Sale
+     del mismo sitio que la lámina lo imprime —las plantillas traen su título
+     y los vacíos su caja— y no de una tabla paralela. */
+  function nombreDeHueco(id) {
+    var s = String(id || '');
+    try {
+      var p = (PLANTILLAS_DE_CAMPO || []).filter(function (x) { return x.id === s; })[0];
+      if (p) return p.t;
+    } catch (e) {}
+    if (INDICES_POT.indexOf(s) !== -1) return 'Índice de ' + s + ' del POT';
+    return s.replace(/-/g, ' ').replace(/^./, function (c) { return c.toUpperCase(); });
+  }
+
+  /* ── LA PROCEDENCIA, PEGADA A LA CIFRA ───────────────────────────────
+     Un sector que nace post-sector por tener edificios ya mapeados NO se
+     puede presentar igual que uno donde alguien llenó una plantilla. La
+     lámina post-sector dice, en la propia cifra, qué la cerró y de dónde
+     salió: «43 edificios contados en campo entre el 2 y el 9 de septiembre»,
+     no «43 edificios».
+
+     Y donde la cifra NO cambió respecto de la corrida de sector no se
+     declara nada: declarar procedencia de campo sobre un dato que sigue
+     siendo de OpenStreetMap es la falta de la v867 al revés. */
+  function textoDeProcedencia(tc) {
+    if (!tc || !tc.hay || !tc.fuentes.length) return '';
+    return tc.fuentes.map(function (f) {
+      if (f.clase === 'edificios') {
+        var cuando = (f.desde && f.hasta)
+          ? (f.desde === f.hasta ? ' el ' + f.desde : ' entre el ' + f.desde + ' y el ' + f.hasta)
+          : '';
+        return f.que + cuando;
+      }
+      var c = f.como === 'tramite' ? 'conseguido por trámite' : 'levantado en campo';
+      return f.que + ', ' + c + ' por ' + f.quien + ' el ' + f.cuando +
+        (f.docto ? ' (' + f.docto + ')' : '');
+    }).join(' · ');
   }
 
   function leerFichas() {
@@ -1908,6 +2154,10 @@
       try { if (!puntoDentroDelSector({ lat: lat, lng: lng })) return; } catch (e) { return; }
       var f = EDIF.leer(p.descripcion);
       salida.push({ lat: lat, lng: lng, nombre: cabeza,
+        /* La fecha del levantamiento, para la procedencia del post-sector
+           (v929): la lámina dice «contados en campo entre el 2 y el 9 de
+           septiembre», y sin esto solo podría decir «contados en campo». */
+        fecha: String(p.fecha || ''),
         pisos: f.pisosRegistrados ? f.pisos : null,
         plantas: (f.usosPorPiso || []).length,
         mixto: !!(f.mezcla && f.mezcla.mixto),
@@ -2453,21 +2703,32 @@
 
   /* Toma una ficha guardada, pide al servidor que clasifique lo que el curso
      mapeó DENTRO de esa misma área, y devuelve la comparación. */
-  async function compararConCampo(ficha) {
+  /* Los puntos que el curso mapeó, con forma de elemento de OpenStreetMap:
+     es lo que el motor sabe clasificar. Lo usan DOS caminos —la comparación
+     contra lo publicado y la corrida post-sector de la v929— y por eso vive
+     acá y no dentro de uno de ellos: dos maneras de armar la misma lista no
+     divergen el día que se escriben, divergen la tanda siguiente (v879). */
+  function elementosDeCampoOSM() {
     if (!window.URBIS_EDU || !window.URBIS_EDU.puntoAElemento) {
       throw new Error('Falta el módulo educativo (js/64). Recarga la página.');
     }
-    var crudos = puntosDelCurso();
-    if (!crudos.length) {
-      throw new Error('El curso todavía no tiene puntos mapeados en este dispositivo.');
-    }
-
     var elementos = [];
-    crudos.forEach(function (p, i) {
+    puntosDelCurso().forEach(function (p, i) {
       var els = window.URBIS_EDU.puntoAElemento(p, i);
       if (Array.isArray(els)) elementos = elementos.concat(els);
       else if (els) elementos.push(els);
     });
+    return elementos;
+  }
+
+  async function compararConCampo(ficha) {
+    if (!window.URBIS_EDU || !window.URBIS_EDU.puntoAElemento) {
+      throw new Error('Falta el módulo educativo (js/64). Recarga la página.');
+    }
+    var elementos = elementosDeCampoOSM();
+    if (!elementos.length) {
+      throw new Error('El curso todavía no tiene puntos mapeados en este dispositivo.');
+    }
 
     var peticion = {
       elementos: elementos,
@@ -2503,6 +2764,133 @@
     comp.totalCampo = (res.pois || []).length;
     comp.ficha = ficha;
     return comp;
+  }
+
+  /* ── LA CORRIDA POST-SECTOR (v929) ───────────────────────────────────
+     SE CORRE EL MOTOR UNA VEZ SOBRE LA UNIÓN, NO SE FUSIONAN DOS RESULTADOS.
+
+     El plan con el que se abrió esta tanda decía «fusionar las dos corridas»,
+     y al escribirlo se ve que eso es falso: sumar dos `stats` sería hacer
+     aritmética sobre cantidades DERIVADAS —la densidad, el índice de mezcla,
+     la cobertura de equipamientos— y ninguna de las tres se puede promediar.
+     Dos sectores con mezcla 0,4 y 0,3 no dan un sector con mezcla 0,35.
+
+     Así que el post-sector es literalmente lo que su nombre dice: la MISMA
+     corrida del motor, con la misma petición, sobre una lista de elementos
+     que además trae lo levantado en campo. Una sola ruta de cálculo, que es
+     la regla de la v879 y la misma decisión que la v902 tomó con la
+     referencia municipal: correr el análisis de siempre en vez de escribir
+     una cuenta nueva «para la ciudad».
+
+     LA PETICIÓN NO SE VUELVE A ARMAR, SE REUSA. `analizar` guarda la que usó
+     (`S.peticionSector`), y acá se clona cambiando solo los elementos. Armar
+     una segunda con el mismo polígono, el mismo DANE y la misma dirección
+     sería la divergencia de la v879 comprada por adelantado — y encima
+     pediría repetir las consultas de ubicación y censo. */
+
+  /* LA UNIÓN NO ES UNA CONCATENACIÓN.
+     Un punto que el curso mapeó y que además está en OpenStreetMap es UN
+     punto: sumarlo dos veces infla la densidad y no se ve en ninguna parte,
+     que es la peor forma de equivocarse. Se deja fuera el elemento de campo
+     que tenga uno publicado a menos de `MISMO_SITIO_M` —la misma constante
+     que usa `compararListas`, no una segunda— y se cuenta cuántos se
+     omitieron, porque un sector donde el campo no agregó nada tiene que
+     poder decirlo.
+
+     Lo que NO hace esta regla es resolver las discrepancias: cuando los dos
+     están y dicen cosas distintas, decidir cuál gana en silencio sería
+     inventar. Esa sigue declarada donde ya estaba, en la comparación. */
+  function elementosPostSector(osm, campo) {
+    var base = (osm || []).filter(Boolean);
+    var coords = base.map(function (e) {
+      var la = Number(e.lat != null ? e.lat : (e.center && e.center.lat));
+      var lo = Number(e.lon != null ? e.lon : (e.center && e.center.lon));
+      return (isFinite(la) && isFinite(lo)) ? { lat: la, lng: lo } : null;
+    }).filter(Boolean);
+
+    var sumados = [], omitidos = 0;
+    (campo || []).forEach(function (c) {
+      if (!c) return;
+      var la = Number(c.lat), lo = Number(c.lon);
+      if (!isFinite(la) || !isFinite(lo)) { sumados.push(c); return; }
+      var yaEsta = coords.some(function (p) {
+        return haversineM(p, { lat: la, lng: lo }) <= MISMO_SITIO_M;
+      });
+      if (yaEsta) omitidos++; else sumados.push(c);
+    });
+    return { elementos: base.concat(sumados), sumados: sumados.length, omitidos: omitidos };
+  }
+
+  /* Corre el post-sector y lo deja en `S.corridas.post`. NO se corre solo al
+     analizar: es una segunda llamada al motor, y quien abrió un sector
+     quería ver el sector. Se corre cuando alguien pide verlo, y se guarda —
+     volver a pedirlo no vuelve a costar. */
+  async function correrPostSector() {
+    var tc = tieneCampo(llaveDeSector(S.resultado && S.resultado.meta));
+    if (!tc.hay) return { ok: false, error: tc.razon };
+    if (!S.peticionSector) {
+      return { ok: false, error: 'Este análisis se abrió desde una ficha guardada, así que ' +
+        'no está la consulta original con la que compararlo. Vuelva a analizar el sector ' +
+        'para poder ver el post-sector.' };
+    }
+    if (!window.AIA_MOTOR || !window.AIA_MOTOR.analizar) {
+      return { ok: false, error: 'Falta el motor de análisis. Recarga la página.' };
+    }
+    var campo;
+    try { campo = elementosDeCampoOSM(); }
+    catch (e) { return { ok: false, error: (e && e.message) || 'No se pudo leer lo levantado en campo.' }; }
+
+    var u = elementosPostSector(S.peticionSector.elementos || [], campo);
+    var peticion = Object.assign({}, S.peticionSector, { elementos: u.elementos });
+    var res = await window.AIA_MOTOR.analizar(peticion);
+
+    /* Lo que hacía el sector, también acá: la ubicación, la referencia
+       municipal y el conteo se le PEGAN al resultado y no se leen después
+       desde el panel (v890, v902, v915). Un post-sector archivado se vuelve a
+       componer con este código. */
+    if (S.resultado && S.resultado.ubicacion) res.ubicacion = S.resultado.ubicacion;
+    try { ponerCiudadOSM(res); } catch (e) {}
+
+    /* LA PROCEDENCIA VIAJA CON LA CIFRA, no con la pantalla (v867). Un sector
+       que nace post-sector por tener edificios ya mapeados no se puede
+       presentar igual que uno donde alguien llenó una plantilla, así que acá
+       queda escrito qué lo cerró y de dónde salió. */
+    res.corrida = 'post';
+    res.campoProcedencia = {
+      fuentes: tc.fuentes, texto: textoDeProcedencia(tc),
+      sumados: u.sumados, omitidos: u.omitidos,
+      /* Y esto es lo que impide leer de más: cuántos elementos aportó el
+         campo de verdad. Con `sumados` en cero, el post-sector tiene las
+         mismas cifras que el sector y la hoja lo dice en vez de presentarse
+         como una medición nueva. */
+      aporto: u.sumados > 0
+    };
+    S.corridas.post = res;
+    return { ok: true, res: res };
+  }
+
+  /* El interruptor entre las dos corridas. Cambia `S.resultado` en vez de
+     hacer que cada lector elija: el módulo tiene treinta mil líneas leyendo
+     `S.resultado`, y meterles a todas un ternario sería treinta mil sitios
+     donde se puede olvidar uno. Las dos corridas viven en `S.corridas` y la
+     activa es la que está puesta. */
+  async function verCorrida(cual) {
+    var q = (cual === 'post') ? 'post' : 'sector';
+    if (!S.corridas || !S.corridas.sector) return { ok: false, error: 'No hay ningún análisis abierto.' };
+    if (q === 'sector') {
+      S.corrida = 'sector'; S.resultado = S.corridas.sector; S.corridaAviso = '';
+      return { ok: true };
+    }
+    if (!S.corridas.post) {
+      S.corridaCargando = true; S.corridaAviso = ''; pintar();
+      var r;
+      try { r = await correrPostSector(); }
+      catch (e) { r = { ok: false, error: (e && e.message) || 'No se pudo correr el post-sector.' }; }
+      S.corridaCargando = false;
+      if (!r.ok) { S.corridaAviso = r.error; pintar(); return r; }
+    }
+    S.corrida = 'post'; S.resultado = S.corridas.post; S.corridaAviso = '';
+    return { ok: true };
   }
 
   // ── Ver los reconocimientos en el mapa ────────────────────────────────
@@ -11441,6 +11829,12 @@ function donaHTML(datos, colorDe, nombreDe) {
         S.aviso = 'Se descartó el sector anterior, con lo que tenía sin guardar. ' +
                   'La hoja arranca de cero con el área nueva.';
         pintar(); return;
+      }
+      if (acc === 'corrida') {
+        var cual = b.getAttribute('data-c') || 'sector';
+        if (cual === S.corrida) return;
+        verCorrida(cual).then(function () { pintar(); });
+        return;
       }
       if (acc === 'pestana') {
         var pes = b.getAttribute('data-t') || 'general';
@@ -26150,6 +26544,69 @@ function donaHTML(datos, colorDe, nombreDe) {
     '</div>';
   }
 
+  /* ── EL INTERRUPTOR ENTRE LAS DOS CORRIDAS (v929) ────────────────────
+     Las dos se muestran SIEMPRE, y la de post-sector se muestra deshabilitada
+     con la razón a la vista cuando todavía no hay campo. Esconderla sería
+     esconder el vacío, que es lo contrario de lo que hace este módulo entero:
+     un vacío se declara, no se oculta (v849). Y además es lo único que le
+     dice a un estudiante que existe algo que puede ganarse saliendo a la
+     calle. */
+  function htmlCorrida() {
+    if (!S.resultado) return '';
+    var tc = tieneCampo(llaveDeSector(S.resultado.meta));
+    var enPost = S.corrida === 'post';
+    var pro = (S.resultado.campoProcedencia) || null;
+
+    var pie;
+    if (S.corridaAviso) {
+      pie = '<p class="pcr-corrida-mal">' + esc(S.corridaAviso) + '</p>';
+    } else if (enPost && pro) {
+      /* La procedencia va pegada a la cifra y no a la pantalla (v867), así que
+         acá se dice entera: qué la cerró, de dónde salió y cuánto aportó de
+         verdad. Con cero elementos sumados, el post-sector tiene las MISMAS
+         cifras que el sector, y decirlo es la diferencia entre una medición
+         nueva y una repetición con otro nombre. */
+      pie = '<p class="pcr-corrida-por"><b>De dónde sale lo que cambió:</b> ' +
+        esc(pro.texto || 'sin declarar') + '.</p>' +
+        '<p class="pcr-corrida-por">' +
+          (pro.aporto
+            ? esc(pro.sumados + (pro.sumados === 1 ? ' punto levantado en campo entra'
+                                                   : ' puntos levantados en campo entran') +
+                  ' al análisis' +
+                  (pro.omitidos ? ', y ' + pro.omitidos +
+                    (pro.omitidos === 1 ? ' ya estaba publicado, así que no se cuenta dos veces'
+                                        : ' ya estaban publicados, así que no se cuentan dos veces')
+                   : '') + '.')
+            : 'Lo levantado en campo ya estaba todo publicado, así que las cifras de usos son ' +
+              'las mismas que las del análisis de sector. Lo que sí cambia es lo que solo el ' +
+              'campo trae —los pisos contados edificio por edificio—.') +
+        '</p>' +
+        '<p class="pcr-corrida-por">Los vacíos que el campo no cerró siguen marcados ' +
+          '<b>SIN MEDIR</b> con su trámite, acá y en la lámina.</p>';
+    } else if (enPost) {
+      pie = '';
+    } else if (!tc.hay) {
+      pie = '<p class="pcr-corrida-por pcr-corrida-falta">' + esc(tc.razon) + '</p>';
+    } else {
+      pie = '<p class="pcr-corrida-por">Solo fuentes publicadas: OpenStreetMap, el DANE y ' +
+        'el satélite. Es la fotografía de arranque, antes de que nadie pise el sitio. ' +
+        'Hay campo levantado en este sector: el post-sector lo recalcula con eso dentro.</p>';
+    }
+
+    return '<div class="pcr-corrida">' +
+      '<div class="pcr-corrida-sw" role="group" aria-label="Qué corrida del análisis se está viendo">' +
+        '<button type="button" data-pcr="corrida" data-c="sector"' +
+          (enPost ? '' : ' class="activa" aria-pressed="true"') +
+          (S.corridaCargando ? ' disabled' : '') + '>Análisis de sector</button>' +
+        '<button type="button" data-pcr="corrida" data-c="post"' +
+          (enPost ? ' class="activa" aria-pressed="true"' : '') +
+          ((!tc.hay || S.corridaCargando) ? ' disabled' : '') +
+          (tc.hay ? '' : ' title="' + esc(tc.razon) + '"') + '>' +
+          (S.corridaCargando ? 'Recalculando…' : 'Análisis post-sector') + '</button>' +
+      '</div>' + pie +
+    '</div>';
+  }
+
   function htmlPestanas(P) {
     var conAlgo = PESTANAS.filter(function (p) {
       var h = P[p.id] || '';
@@ -26570,6 +27027,11 @@ function donaHTML(datos, colorDe, nombreDe) {
         '<button type="button" data-pcr="otro" class="pcr-mini pcr-otro">' +
           ico('atras', 16) + 'Analizar otro sector</button>' +
 
+        /* El interruptor va ARRIBA de los KPI: son las primeras cifras que
+           cambian entre una corrida y otra, y un interruptor debajo de lo que
+           cambia se descubre cuando ya se leyó el número equivocado. */
+        htmlCorrida() +
+
         '<div class="pcr-kpis">' +
           '<div class="pcr-kpi"><b>' + (st.total || 0) + '</b><small>usos registrados</small></div>' +
           '<div class="pcr-kpi"><b>' + radioTxt + '</b><small>' + radioEtiqueta + '</small></div>' +
@@ -26714,6 +27176,14 @@ function donaHTML(datos, colorDe, nombreDe) {
       /* Y el total de la corrida anterior de ESTE mismo sector, por la misma
          razón y en el mismo sitio: pegado al resultado, no leído después. */
       registrarConteo(res);
+      /* v929 · esta es la corrida de SECTOR, y queda declarada como tal. La
+         de post-sector se corre cuando alguien la pide, reusando esta misma
+         petición con los elementos de campo dentro. */
+      res.corrida = 'sector';
+      S.peticionSector = peticion;
+      S.corridas = { sector: res, post: null };
+      S.corrida = 'sector';
+      S.corridaAviso = '';
       S.resultado = res;
       S.huellaAnalizada = huellaDelArea(S.forma, S.poligono, S.centro, S.radioM);
       // De dónde salió el punto que se acaba de consultar, congelado acá: lo
@@ -27490,6 +27960,12 @@ function donaHTML(datos, colorDe, nombreDe) {
        ficha: se nota meses después, cuando los datos ya no se pueden creer.
        Lo probó la suite de la lámina en cuanto lo rompí otra vez. */
     S.clima = null; S.cliAviso = ''; S.campo = null;
+    /* v929 · las dos corridas son de ESTE sector. Sin soltarlas, el
+       post-sector del anterior sobreviviría al siguiente y el interruptor
+       mostraría lo levantado en otro barrio como si fuera de acá — que es
+       el defecto que la v897 evitó con el acuse de guardado. */
+    S.corridas = null; S.corrida = 'sector'; S.corridaAviso = '';
+    S.corridaCargando = false; S.peticionSector = null;
     S.amenaza = null; S.amenazaAviso = '';
     S.nombreGuardado = ''; S.nombreSugerido = '';
     S.nombreProyecto = ''; S.ubicacionAdmin = '';
@@ -27553,6 +28029,12 @@ function donaHTML(datos, colorDe, nombreDe) {
          otro barrio— pegada encima. Nadie lo nota mirando la ficha; se nota
          meses después, cuando los datos ya no se pueden creer. */
     S.clima = null; S.nombreGuardado = ''; S.nombreSugerido = ''; S.campo = null;
+    /* v929 · las dos corridas son de ESTE sector. Sin soltarlas, el
+       post-sector del anterior sobreviviría al siguiente y el interruptor
+       mostraría lo levantado en otro barrio como si fuera de acá — que es
+       el defecto que la v897 evitó con el acuse de guardado. */
+    S.corridas = null; S.corrida = 'sector'; S.corridaAviso = '';
+    S.corridaCargando = false; S.peticionSector = null;
     S.nombreProyecto = ''; S.ubicacionAdmin = '';
     S.trzVias = null;
       // El lote pertenece al sector que se estaba mirando. Con otro sector es
@@ -28441,6 +28923,17 @@ function donaHTML(datos, colorDe, nombreDe) {
 
   window.URBIS_PC_RECON = {
     abrir: abrir,
+    /* v929 · el dato de campo y las dos corridas. Se exportan porque la
+       suite tiene que poder sembrar una entrada y medir la unión sin montar
+       trece formularios que todavía no existen. */
+    guardarEntradaCampo: guardarEntradaCampo,
+    borrarEntradaCampo: borrarEntradaCampo,
+    leerCampo: leerCampo,
+    huecosDeCampo: huecosDeCampo,
+    tieneCampo: tieneCampo,
+    llaveDeSector: llaveDeSector,
+    elementosPostSector: elementosPostSector,
+    textoDeProcedencia: textoDeProcedencia,
     cerrar: cerrar,
     /* Que el botón flotante se pinte al entrar a Pro City. Lo llama js/20 en
        el único sitio por el que pasan la entrada y la salida del módulo.
@@ -28623,6 +29116,31 @@ function donaHTML(datos, colorDe, nombreDe) {
            esta lista: la recalcula por su cuenta, porque medir contra la
            misma tabla que usa el código solo diría que la tabla es igual a
            sí misma (v911). */
+        /* ── Las dos corridas (v929) ────────────────────────────────
+           `corrida` dice cuál se está mirando; `corridaPost` si ya está
+           calculada; `campoHay` y `campoRazon` son lo que decide si el
+           interruptor se puede tocar, y la razón tiene que poder leerse
+           porque es lo que el botón deshabilitado enseña. */
+        corrida: S.corrida || 'sector',
+        /* La llave del sector, que es donde se cuelga el campo. Se expone
+           porque una prueba tiene que poder sembrar una entrada sin volver
+           a calcular la llave por su cuenta — dos maneras de armar la misma
+           cadena no divergen el día que se escriben (v879). */
+        campoLlave: (function () {
+          try { return llaveDeSector(S.resultado && S.resultado.meta); }
+          catch (e) { return ''; }
+        })(),
+        corridaPost: !!(S.corridas && S.corridas.post),
+        corridaAviso: S.corridaAviso || '',
+        campoHay: (function () {
+          try { return tieneCampo(llaveDeSector(S.resultado && S.resultado.meta)).hay; }
+          catch (e) { return false; }
+        })(),
+        campoRazon: (function () {
+          try { return tieneCampo(llaveDeSector(S.resultado && S.resultado.meta)).razon; }
+          catch (e) { return ''; }
+        })(),
+        campoProcedencia: (S.resultado && S.resultado.campoProcedencia) || null,
         pliegoNombresDobles: (function () {
           try { return Object.keys(nombresDobles(S.resultado)); }
           catch (e) { return []; }

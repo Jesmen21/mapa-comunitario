@@ -6894,6 +6894,213 @@ de la lista viva quedó reescrito con lo que falta de verdad y su cláusula
 `probar-vt` **31**, `tvision` **48**, y la batería del repositorio público
 **120/120**.
 
+## Análisis de sector y análisis post-sector (v929)
+
+Pedido para la vista de escritorio y resuelto como lo que era: **lógica de
+negocio nueva, no un cableado de vista.** Hasta la v928 `tipoEstudio` valía
+siempre `'completo'` y la aplicación no distinguía entre lo que se sabe de un
+sector ANTES de pisarlo y lo que se sabe después.
+
+* **Análisis de sector** — solo fuentes publicadas: OpenStreetMap, el DANE, el
+  satélite. La fotografía de arranque.
+* **Análisis post-sector** — el MISMO sector, recalculado, cuando hay al menos
+  un dato de campo levantado. Lo que el campo no cerró sigue marcado SIN MEDIR
+  con su trámite.
+
+### Media corrida ya estaba escrita, y se estaba botando
+
+Auditado antes de tocar nada —la regla de la v863—, `compararConCampo`
+(js/68) hacía ya tres cuartas partes de esto desde hace tandas: toma los
+puntos del curso, los convierte a elementos con forma de OpenStreetMap
+(`URBIS_EDU.puntoAElemento`) y **los corre por el MISMO motor** con la misma
+petición —mismo polígono o mismo radio—. Eso es, literalmente, un análisis
+completo del sector hecho solo con lo levantado en campo.
+
+Y lo **tiraba**: usaba `res.pois` para el diff y descartaba el resto en la
+línea siguiente. Así que el post-sector se venía calculando y botando.
+
+### No se fusionan dos resultados: se corre el motor una vez sobre la unión
+
+El plan con el que se abrió la tanda decía «fusionar las dos corridas», y al
+escribirlo se ve que es falso: sumar dos `stats` sería aritmética sobre
+cantidades **derivadas** —la densidad, el índice de mezcla, la cobertura de
+equipamientos— y ninguna se puede promediar. Dos sectores con mezcla 0,4 y 0,3
+no dan uno con 0,35.
+
+Así que el post-sector es lo que su nombre dice: la misma corrida, con la
+misma petición, sobre una lista de elementos que además trae el campo. Una
+sola ruta de cálculo (v879), y la misma decisión que la v902 tomó con la
+referencia municipal.
+
+**La petición no se vuelve a armar, se reusa.** `analizar` guarda la que usó
+en `S.peticionSector` y el post-sector la clona cambiando solo los elementos.
+Armar una segunda con el mismo polígono, el mismo censo y la misma dirección
+sería la divergencia de la v879 comprada por adelantado — y pediría repetir
+las consultas de ubicación y censo.
+
+#### La unión no es una concatenación
+
+Un punto que el curso mapeó y que además está publicado es UN punto: sumarlo
+dos veces infla la densidad y no se ve en ninguna parte, que es la peor forma
+de equivocarse. Se deja fuera el elemento de campo con uno publicado a menos
+de `MISMO_SITIO_M` —**la misma constante que usa `compararListas`**, no una
+segunda— y se cuenta cuántos se omitieron, porque un sector donde el campo no
+agregó nada tiene que poder decirlo.
+
+Lo que esa regla NO hace es resolver las discrepancias: cuando los dos están y
+dicen cosas distintas, decidir cuál gana en silencio sería inventar. Esa sigue
+declarada donde ya estaba.
+
+### El almacén: `pcr_campo_v1`, colgado de la llave de la v915
+
+Aparte de las fichas por la razón de la v871 —una entrada son décimas de
+kilobyte y una ficha es el trabajo de una tarde— y, sobre todo, porque **el
+campo es del SITIO y no de un análisis**, que es lo que permite recalcular el
+mismo trazo las veces que haga falta.
+
+**La identidad es `llaveDeSector`, la que la v915 ya escribió.** Un sector
+analizado sin trazo guardado no tiene `trazoId` —se puede analizar un radio
+sin guardar nada— así que colgar el campo del trazo dejaría fuera el caso más
+común. Usar una segunda identidad habría sido la v879 otra vez.
+
+Cinco decisiones, cada una con su precedente:
+
+* **`hueco` sale del inventario que ya existe** —los cuatro vacíos
+  obligatorios, las seis plantillas y los tres índices del POT— y no de una
+  lista nueva. Una entrada cuyo hueco la lámina no declara **se rechaza al
+  guardar**: un dato de campo cierra algo que la hoja dice que le falta; si no,
+  no hay dónde pintarlo.
+* **`estado: 'confirmado'` es lo único que cuenta.** Un borrador no convierte
+  el sector en post-sector. Es la escalera del módulo presidencial: un
+  señalamiento no pesa.
+* **`fuente` es obligatoria y sin valor por omisión** —cómo, quién y cuándo, o
+  la entrada no se guarda—. Es la regla que la v926 le puso al PDF: no hay
+  silencio por omisión. Un dato de campo sin procedencia es indistinguible de
+  uno inventado, y la lámina lo va a imprimir como medido.
+* **Un hueco se actualiza, no se duplica.** Dos entradas del mismo hueco
+  dejarían a la hoja eligiendo a cuál creerle.
+* **Los edificios mapeados NO se guardan por llave.** Son puntos del
+  dispositivo y se filtran por geometría al leer, que es lo que
+  `edificiosDeCampo` hace desde la v754. Son dos clases de dato de campo con
+  dos relaciones distintas con el sector, y meterlas en la misma tabla sería
+  forzar una de las dos.
+
+### `tieneCampo` no es lo que yo había supuesto, y la corrección vale la tanda
+
+El plan decía que el post-sector se habilita cuando el campo cierra alguno de
+los SIN MEDIR de la lámina. **Medidas las diez casillas que los imprimen, casi
+ninguna es un hueco de campo**: «sin trazado medido», «sin red vial medida»,
+«sin referencia de ciudad» se cierran pulsando un botón dentro de la
+aplicación, sin que nadie pise el sitio.
+
+Con esa regla el post-sector se habilitaría desde un computador, que es
+exactamente lo contrario de lo que significa. Los huecos que de verdad cierra
+el campo son los cuatro vacíos obligatorios y las seis plantillas.
+
+Así que `tieneCampo` cuenta dos cosas y solo dos: una entrada **confirmada** de
+un hueco del inventario, o **al menos un edificio levantado con sus pisos
+contados** dentro del área. Pedirle una plantilla a quien ya levantó cuarenta
+edificios sería absurdo.
+
+Y devuelve **siempre un objeto, nunca un booleano** —`{ hay, fuentes, razon }`—
+porque el interruptor deshabilitado tiene que decir POR QUÉ, y un `false` no lo
+dice. Es la regla de la v876 con `censoCiudad`.
+
+**Consecuencia asumida a propósito:** con esa regla, varios sectores ya
+existentes nacen siendo post-sector. El dato está ahí y es real; lo que no
+puede pasar es que se presente igual que uno donde alguien llenó una
+plantilla, y de eso responde la procedencia.
+
+### La procedencia viaja con la cifra, no con la pantalla
+
+`res.campoProcedencia` se le pega al resultado y no se lee después desde el
+panel: es la regla de la v890 con el área y la de la v902 con la referencia
+municipal. Un post-sector archivado se vuelve a componer con este código.
+
+Dice **qué lo cerró y de dónde salió**: «3 edificios levantados en campo, con
+sus pisos contados entre el 2026-09-02 y el 2026-09-09», no «3 edificios». Y
+lleva `aporto`, que es lo que impide leer de más: **con cero elementos
+sumados, el post-sector tiene las mismas cifras de usos que el sector**, y la
+pantalla lo dice —«lo levantado ya estaba todo publicado»— en vez de
+presentarse como una medición nueva.
+
+Donde la cifra no cambió no se declara nada: declarar procedencia de campo
+sobre un dato que sigue siendo de OpenStreetMap es la falta de la v867 al
+revés.
+
+### El interruptor se MUESTRA apagado, no se esconde
+
+Sin campo levantado, el botón de post-sector sale deshabilitado y con la razón
+impresa debajo, en ámbar y a trazos —el código visual de los vacíos de la
+v849—. Esconderlo sería esconder el vacío, que es lo contrario de lo que hace
+este módulo entero; y además es lo único que le dice a un estudiante que hay
+algo que se gana saliendo a la calle.
+
+**El interruptor cambia `S.resultado` en vez de hacer que cada lector elija.**
+El módulo tiene treinta mil líneas leyendo de ahí, y meterles a todas un
+ternario serían treinta mil sitios donde se puede olvidar uno. Las dos
+corridas viven en `S.corridas` y la activa es la que está puesta.
+
+Y **las dos se sueltan al cambiar de sector**. Sin eso, el post-sector del
+anterior sobreviviría al siguiente y el interruptor mostraría lo levantado en
+otro barrio como si fuera de acá — el defecto que la v897 evitó con el acuse
+de guardado.
+
+### `tpostsector.js` · las dos ramas del interruptor en la misma corrida
+
+Suite propia, y la razón es el material: hacen falta **sin campo y con campo**
+en la misma corrida, y ninguna suite de la batería puede darlas —las que
+siembran puntos del curso los tienen desde el principio, y las de la lámina no
+siembran ninguno—. Sin las dos, la comprobación pasaría por no tener nada que
+rechazar. Es la vigésima vez.
+
+El sector de prueba trae un uso publicado **exactamente donde después se pone
+un punto de campo**: sin ese solapamiento, la regla de no contar dos veces
+pasaría sin tener nada que descartar.
+
+Veintiuna aserciones: las dos ramas del interruptor, las tres guardas del
+almacén —hueco desconocido, entrada sin procedencia, borrador que no
+habilita—, la unión medida aparte sobre listas de mentira, la procedencia con
+sus fechas, y que volver al sector devuelva exactamente las cifras de antes.
+
+#### La cabecera de un punto es «Uso · Tipo», y el Tipo tiene que existir
+
+Costó una aserción en rojo y no se deduce leyendo. El fixture inventaba
+`'Farmacia de la esquina · Comercial'`, y con un tipo que no está en el
+catálogo de js/64 `puntoAElemento` devuelve **null**: el punto no entra al
+motor. Lo que despistaba es que `edificiosDeCampo` **sí** los contaba —mira
+otra cosa— así que la procedencia decía «3 edificios» mientras la unión daba
+`0 sumados · 0 omitidos`.
+
+Dos partes del mismo módulo leen el mismo punto con criterios distintos, y una
+puede estar bien mientras la otra falla en silencio. La aserción que lo cazó
+es la que mide la unión APARTE del conteo total: sobre sesenta usos, un error
+de dos no se ve.
+
+#### La demostración contra la v928 es tosca, y se dice
+
+Con `git stash` de js/68 y css/68 la suite no enseña texto viejo: revienta con
+`R.huecosDeCampo is not a function`. Para una capacidad que no existía no hay
+texto viejo que imprimir — es el mismo caso de la v844 y la v871, y es la
+lección de la v875 sobre el stash completo vista por el otro lado.
+
+### Lo que esta versión NO hace, y queda para después
+
+Las **trece puertas de entrada** que faltan: las seis plantillas de campo de la
+v883, los cuatro vacíos con trámite de la v880 y los tres paneles de
+percepción. Cada una tiene una forma de dato distinta —un perfil vial son
+tramos con medidas, una frecuencia son horas de paso, el riesgo oficial es un
+documento con su número— y son una tanda por familia.
+
+Lo que esta versión deja listo es el otro lado: el almacén las acepta con su
+`hueco` y su procedencia, `tieneCampo` las cuenta, y el precedente de cómo se
+conecta una está escrito desde la v903 con `S.indicesPuestos` y la norma
+urbana.
+
+**Y la vista de escritorio tampoco entra acá.** El interruptor vive en la
+ficha que existe hoy; cuando llegue la vista de dos columnas leerá el mismo
+`S.corrida` en vez de tener el suyo.
+
 ## La lista viva: lo que al pliego educativo todavía le falta (v866)
 
 Esta lista se quedó vieja **cinco veces**. Cuatro dentro de la hoja —la

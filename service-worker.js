@@ -1,4 +1,4 @@
-const URBIS_CACHE = 'urbis-v928-seguimiento-presidencial-16-sep';
+const URBIS_CACHE = 'urbis-v929-analisis-post-sector';
 const URBIS_ASSETS = [
   './',
   './index.html',
