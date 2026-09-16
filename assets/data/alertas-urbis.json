@@ -1,6 +1,6 @@
 {
   "_comentario": "Alertas EDITORIALES del equipo URBIS (desastres verificados). Se publican editando este archivo — no requieren la hoja de cálculo ni credenciales. El mapa las dibuja junto a las que ya están en la base; si coinciden las coordenadas, se muestra una sola. Reglas: solo desastres naturales de fuente oficial, nunca violencia ni homicidios; coordenadas geocodificadas, jamás estimadas a ojo; sin fuente no se publica.",
-  "actualizado": "2026-09-15",
+  "actualizado": "2026-09-16",
   "alertas": [
     {
       "tipo": "Zona de inundación activa",
@@ -111,6 +111,22 @@
       ],
       "fuente": "Servicio Geológico Colombiano (SGC) / prensa nacional",
       "url": "https://www.infobae.com/colombia/2026/09/14/se-reportaron-dos-sismos-en-choco-en-menos-de-5-minutos-con-profundidades-de-40-y-39-kilometros/"
+    },
+    {
+      "tipo": "Sismo",
+      "titulo": "Sismo de magnitud 4,5 — 16 de septiembre de 2026, Istmina, Chocó",
+      "lat": 4.5114,
+      "lng": -76.7674,
+      "desde": "2026-09-16",
+      "expira": "2026-09-30",
+      "lineas": [
+        "📅 Ocurrió en la madrugada del miércoles 16 de septiembre de 2026, con el primer y mayor movimiento a la 1:18 a. m. (hora de Colombia).",
+        "📊 Magnitud 4,5 · profundidad 43 km · epicentro a unos 24 km del municipio de Sipí, Chocó (Servicio Geológico Colombiano). Fue el mayor de al menos cinco sismos registrados esa madrugada (magnitudes 4,5, 4,4, 3,4, 2,9 y 2,6), dos de ellos con epicentro cerca de Bahía Solano. El SGC no reportó daños ni heridos hasta el momento.",
+        "🌎 Se sintió en Cali, Pereira, Armenia, Manizales y El Cerrito. Es parte del enjambre sísmico que sigue activo en el Chocó desde el terremoto de magnitud 7,4 del 10 de agosto de 2026: el SGC reportó 26 sismos en menos de 24 horas entre el 14 y el 15 de septiembre, con epicentros en Istmina, Sipí, Medio San Juan, Medio Baudó y El Carmen del Darién.",
+        "ℹ️ Alerta informativa del equipo URBIS con base en el Servicio Geológico Colombiano y prensa nacional (El Tiempo, Pulzo, Infobae). No es un reporte ciudadano."
+      ],
+      "fuente": "Servicio Geológico Colombiano (SGC) / prensa nacional",
+      "url": "https://www.eltiempo.com/colombia/otras-ciudades/temblor-hoy-en-colombia-reportan-seguidilla-de-sismos-en-choco-durante-la-madrugada-de-este-16-de-septiembre-el-mayor-fue-de-magnitud-4-5-detalles-3586399"
     }
   ]
 }

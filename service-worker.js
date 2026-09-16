@@ -1,4 +1,4 @@
-const URBIS_CACHE = 'urbis-v926-la-hoja-de-deficit-se-compone-en-el-servidor';
+const URBIS_CACHE = 'urbis-v927-alerta-sismo-istmina-16-sep';
 const URBIS_ASSETS = [
   './',
   './index.html',

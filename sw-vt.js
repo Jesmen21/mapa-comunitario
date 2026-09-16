@@ -13,7 +13,7 @@
 
    La versión va acá y en vision-territorial.html, idéntica, como en los
    otros siete archivos de versión del sitio: revisar.js lo comprueba. */
-const VT_CACHE = 'urbis-vt-v926-la-hoja-de-deficit-se-compone-en-el-servidor';
+const VT_CACHE = 'urbis-vt-v927-alerta-sismo-istmina-16-sep';
 const VT_ASSETS = [
   './vision-territorial.html',
   './css/90-vt.css',
