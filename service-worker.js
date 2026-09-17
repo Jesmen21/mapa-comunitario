@@ -1,4 +1,4 @@
-const URBIS_CACHE = 'urbis-v936-la-malla-dice-si-es-fiable';
+const URBIS_CACHE = 'urbis-v937-barrido-alertas-choco';
 const URBIS_ASSETS = [
   './',
   './index.html',
