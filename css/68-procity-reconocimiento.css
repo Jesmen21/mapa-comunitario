@@ -1357,3 +1357,10 @@
 .pcr-act-r { display: flex; align-items: center; gap: 8px; margin: 6px 0 2px;
              font-size: 13px; color: #33505F; cursor: pointer; }
 .pcr-act-r input { width: 16px; height: 16px; flex: none; }
+
+/* ── La afluencia sobre el mapa (v935) ──────────────────────────────────
+   Hereda de los chips que ya existen; lo único propio es el estado encendido
+   y el aire alrededor del bloque. El dibujo y la rampa son de js/56. */
+.pcr-afl { margin: 6px 0 10px; }
+.pcr-chip-b { cursor: pointer; border: 1px solid #CFDCE6; background: #fff; }
+.pcr-chip-b.on { background: #12202e; color: #fff; border-color: #12202e; }

@@ -7917,6 +7917,107 @@ Quedan **cinco** plantillas por conectar, y las tres de percepción — que adem
 necesitan entrar en `huecosDeCampo` antes de tener formulario, porque hoy el
 almacén no las acepta.
 
+## La afluencia se pinta donde se mide (v935)
+
+Pedido como «agregar al módulo educativo el análisis de aglomeración y flujo
+de personas que ya existe en el empresarial, con su mapa de calor». Medido
+antes de escribir —la regla de la v916— la premisa resultó **medio falsa**, y
+la mitad falsa es la que decide la tanda.
+
+### Las palabras no existían, y el análisis sí
+
+`aglomeración`, `flujo de personas`, `afluencia` y `footfall`: **cero
+apariciones** en el repositorio público. Lo que existe se llama `flujo`, lo
+calcula `motor-reglas.js` y lo publica en `stats.movilidad.flujo`.
+
+Y **el educativo ya lo tiene**. `js/56-calor.js` lo dice en su propia
+cabecera: existe para que no haya tres copias de la rampa, porque lo pintan
+**empresas (js/62), el curso (js/65) y el informe en papel (js/63)**.
+
+Lo que pasa es que hay **dos superficies educativas**, y solo una lo tenía:
+
+| | flujo | mapa de calor |
+|---|---|---|
+| `js/64` + `js/65` — el panel de `?app=educativo` | sí | **sí**, capa sobre el mapa incluida |
+| `js/68` — el pliego, la ficha y la lámina | sí, en 6 sitios | **no**: cero `mapaCalor` |
+
+O sea: **el pliego venía calculando la malla en cada corrida y botándola.**
+
+### `calor` ya estaba tomado, y significa otra cosa
+
+`S.calor` y `alternarCalor` existen en js/68 desde la v877 y son el calor de
+**densidad de usos** —cuántos usos de una categoría hay cerca—. Llamar `calor`
+a la malla de flujo habría sido el tropiezo de `trazoDe` (v892) y
+`nombreDeParte` (v932) por tercera vez, con un agravante: **la guarda de la
+v885 no lo habría visto**, porque no serían dos declaraciones del mismo nombre
+sino dos nombres para un concepto — que es la clase B y no tiene guarda.
+
+Se llama **`afluencia`**, medido libre en todo el repositorio antes de usarlo.
+
+### El dibujo no se reimplementa, y hay una razón concreta
+
+`js/56` usa la **misma conversión metros→grados** que el motor usó para armar
+la malla. Su propio comentario dice por qué importa: *«si acá se usara otra
+fórmula, la mancha caería una cuadra corrida del dato y nadie lo notaría,
+porque una mancha de calor se ve igual de convincente en cualquier parte»*.
+
+Escribir una cuarta copia de la rampa habría sido la clase B otra vez, en la
+misma tanda en que se nombró.
+
+### Tres declaraciones que el panel no puede callar
+
+Un mapa de calor es de lo más convincente que hay, así que es de lo que más
+hay que declarar. Cada una tiene su aserción porque las tres se pierden por
+separado:
+
+* es un **potencial modelado, no un conteo** — el motor lo declara de sí
+  mismo, y la hoja lo repite desde la v858 para el flujo de hora pico;
+* cada capa se normaliza contra **su propio máximo**, así que dice **dónde
+  más**, nunca cuántos: un sector tranquilo también tiene su punto más rojo;
+* y el **aforo de hora pico** sigue en la lista viva. Si en este panel
+  apareciera un número de personas, sería inventado.
+
+El **foco en palabras** es lo que convierte la mancha en algo que se puede ir
+a mirar: «lo más concurrido a pie, de día, cae a unos 76 m hacia el oriente».
+Lo calcula el motor; acá no se deduce.
+
+### El recorte: se declara, no se borra
+
+`flujoLigero` guarda las dos mallas peatonales y suelta la vehicular — 676
+números que el pliego no dibuja. Dos decisiones:
+
+* **se recorta al GUARDAR, no al leer**: una ficha anterior la trae y se
+  respeta, que es la regla de la v932 con las entradas sin parte;
+* y lo que no se guarda queda **declarado** —`vehicular: null`,
+  `recortado: ['vehicular']` y su razón— en vez de desaparecido. Sin eso, un
+  lector no puede distinguir «el motor no la calculó» de «se recortó a
+  propósito», que es la distinción que la v899 estrenó.
+
+Medido antes de recortar que nada la lee desde una ficha guardada: js/62 y
+js/63 son otra página, y js/65 pinta desde una corrida viva
+(`URBIS_EDU.analizar`), no desde `pcr_fichas_v1`.
+
+### Una ventana de caracteres no es un bloque
+
+`tmasanalisis` capturaba el flujo con `Quién pasa por acá[^]{0,240}` — o sea
+medía «los próximos 240 caracteres», no «lo que dice el bloque». Al meter el
+panel nuevo entre el título y las cifras, las dos aserciones se pusieron rojas
+sin que nada estuviera mal.
+
+Se ancló a la primera cifra del bloque y **el panel nuevo se mide aparte**:
+así, si uno de los dos crece, el otro no queda fuera de cuadro. Es la regla de
+siempre —una prueba que falla por un cambio legítimo se hace más precisa— y la
+lección concreta es que **un ancla por distancia envejece; un ancla por
+contenido no**.
+
+### Lo que esta versión NO hace
+
+El mapa en la **lámina B**. Toca `mapasDisponibles`, `METODO_PANEL`,
+`ESCALA_PANEL`, `PELDANO_PLIEGO` y los pisos de §21 —cada uno con su regla— y
+va en su propia tanda. La pantalla primero, el papel después.
+
+Y no se tocó `?app=educativo`: ahí ya está y funciona.
+
 ## La lista viva: lo que al pliego educativo todavía le falta (v866)
 
 Esta lista se quedó vieja **cinco veces**. Cuatro dentro de la hoja —la

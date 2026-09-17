@@ -244,7 +244,14 @@ const CAPAS_IDEAM = [
     // ── 3 · el flujo, en la ficha en pantalla.
     const hoja = txt(H());
     o.flujoEnFicha = /Quién pasa por acá/.test(hoja);
-    o.flujoDice = (hoja.match(/Quién pasa por acá[^]{0,240}/) || [''])[0];
+    /* Anclado al BLOQUE y no a una ventana de caracteres: la v935 metió el
+       panel de afluencia entre el título y las cifras, y una ventana fija de
+       240 medía «los próximos 240», no «lo que dice el flujo». Se corta desde
+       la primera cifra del bloque, que es lo que la aserción quiere leer. */
+    o.flujoDice = (hoja.match(/flujo a pie \/100[^]{0,320}/) || [''])[0];
+    /* Y el panel nuevo se mide APARTE, para que los dos no se tapen: si el
+       de afluencia creciera, el de flujo volvería a quedar fuera de cuadro. */
+    o.afluenciaDice = (hoja.match(/Quién pasa por acá[^]{0,420}/) || [''])[0];
 
     // ── 5 · la capa de vías, sobre el mapa.
     const formas = () => document.querySelectorAll('.leaflet-overlay-pane path').length;
@@ -379,6 +386,30 @@ const CAPAS_IDEAM = [
   T('y con la lectura, no solo el número',
     /Manda el|No pasa casi nadie|parejos/.test(r.flujoDice || ''),
     (r.flujoDice || '').replace(/^[^]*?(Manda el|No pasa|Peatón y carro)/, '$1').slice(0, 90));
+  /* ── v935 · la afluencia: DÓNDE, no cuánto ────────────────────────────
+     El motor devuelve la malla desde hace tandas y este módulo la botaba.
+     Tres cosas que la caja no puede callar, y cada una tiene su aserción
+     porque las tres se pueden perder por separado. */
+  T('la ficha ofrece las dos capas de afluencia a pie',
+    /A pie · día/.test(r.afluenciaDice || '') && /A pie · noche/.test(r.afluenciaDice || ''),
+    (r.afluenciaDice || 'no sale').slice(0, 100));
+  /* El foco en palabras es lo que convierte una mancha en una instrucción:
+     «a unos 180 m hacia el nororiente» se puede ir a mirar. */
+  T('y dice dónde cae lo más concurrido, en palabras',
+    /cae <b>(sobre el lote mismo|a unos \d+ m hacia)/.test(r.afluenciaHTML || '') ||
+      /cae (sobre el lote mismo|a unos \d+ m hacia)/.test(r.afluenciaDice || ''),
+    ((r.afluenciaDice || '').match(/cae[^.]{0,70}/) || ['no lo dice'])[0]);
+  /* Y lo declara por lo que es. Un mapa de calor es de lo más convincente que
+     hay, así que es de lo que más hay que declarar: potencial modelado, no
+     conteo, y normalizado contra su propio máximo — «dónde más», no cuántos. */
+  T('y lo declara como potencial modelado, no como un conteo',
+    /potencial modelado, no un conteo/.test(r.afluenciaDice || '') &&
+      /nadie contó personas/.test(r.afluenciaDice || ''),
+    /potencial modelado/.test(r.afluenciaDice || '') ? 'declarado' : 'no lo declara');
+  T('y que dice dónde más, nunca cuántos',
+    /dónde más/.test(r.afluenciaDice || '') && !/\d+ personas por/.test(r.afluenciaDice || ''),
+    /dónde más/.test(r.afluenciaDice || '') ? 'lo dice' : 'no lo dice');
+
   T('y llega al pliego', /Flujo a pie contra en carro/.test(CL),
     (CL.match(/Flujo a pie contra en carro<\/span><b>[^<]*/) || ['no llega'])[0].replace(/<[^>]*>/g, ' '));
 

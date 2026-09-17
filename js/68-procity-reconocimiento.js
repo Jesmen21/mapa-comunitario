@@ -224,6 +224,16 @@
     // análisis personalizados— porque la pregunta interesante casi nunca es
     // "dónde hay comercio" sino "dónde coinciden comercio y educación".
     calor: [],
+    /* La malla de AFLUENCIA sobre el mapa vivo (v935). Se llama así y no
+       «calor» a propósito: en este módulo `S.calor` es desde la v877 el calor
+       de DENSIDAD DE USOS —cuántos usos de una categoría hay cerca—, que es
+       otra cosa. Dos conceptos con el mismo nombre en el mismo archivo es el
+       tropiezo de `trazoDe` (v892) y `nombreDeParte` (v932), y acá la guarda
+       de la v885 no lo vería: serían dos nombres distintos para un concepto,
+       no dos declaraciones del mismo nombre.
+       Vale '', 'dia' o 'noche'. La vehicular no se guarda en la ficha, así
+       que tampoco se ofrece acá: ver `flujoLigero`. */
+    afluencia: '',
     // La ficha que se guardó sola al terminar el último análisis. Ponerle
     // nombre la actualiza en vez de duplicarla.
     fichaActualId: '',
@@ -1492,6 +1502,32 @@
      vuelven a leer (cada tramo de vía, cada punto de cada anillo) y que
      llenarían el localStorage del celular en tres fichas. Se conserva lo que
      la pestaña vuelve a dibujar y nada más. */
+  /* ── LA MALLA DE AFLUENCIA, RECORTADA AL GUARDAR (v935) ──────────────
+     `flujo` se guardaba entero en cada ficha, y eso son TRES mallas de 26×26
+     —2.028 números— de las cuales el pliego dibuja dos: la de a pie de día y
+     la de noche. La vehicular se pagaba sin que nada la leyera.
+
+     Se recorta al guardar y NO al leer: una ficha vieja la trae y se respeta
+     (v932), y lo que no se guarda queda DECLARADO en vez de desaparecido —
+     `null` con su `recortado` al lado—. Sin eso, un lector no puede
+     distinguir «el motor no la calculó» de «se recortó a propósito», que es
+     la distinción que la v899 estrenó entre «sin dato» y «panel fuera».
+
+     Si algún día el pliego dibuja la vehicular, se quita este recorte: no hay
+     nada más que deshacer. */
+  function flujoLigero(fl) {
+    if (!fl) return null;
+    var mc = fl.mapaCalor;
+    if (!mc) return fl;
+    return Object.assign({}, fl, {
+      mapaCalor: Object.assign({}, mc, {
+        vehicular: null, focoVehicular: null,
+        recortado: ['vehicular'],
+        porQue: 'la malla vehicular no se guarda: el pliego no la dibuja. Se recalcula volviendo a analizar.'
+      })
+    });
+  }
+
   function statsLigero(st) {
     if (!st) return {};
     var mv = st.movilidad || null;
@@ -1523,7 +1559,7 @@
            manda, el reparto por franjas y si la calle sigue viva de noche. Es
            lo que decide el formato de un proyecto, así que una ficha reabierta
            sin él perdería la caja entera de «cómo se llega». */
-        flujo: mv.flujo || null
+        flujo: flujoLigero(mv.flujo)
       } : null,
       // Población y demografía: es la mitad del informe que no depende del
       // mapeo, así que sin ella la ficha guardada quedaría coja.
@@ -11377,6 +11413,62 @@ function donaHTML(datos, colorDe, nombreDe) {
      al lado de su función es una capa que alguien olvida apagar. */
   var capaCurvas = null, capaSombras = null, capaCortes = null, capaVias = null;
 
+  /* ── LA AFLUENCIA, SOBRE EL MAPA VIVO (v935) ─────────────────────────
+     El motor devuelve `movilidad.flujo.mapaCalor` desde hace tandas —tres
+     mallas de 26×26 con el movimiento estimado en cada celda— y este módulo
+     lo venía calculando y BOTANDO: cero lecturas de `mapaCalor` en treinta
+     mil líneas, mientras el panel del curso (js/65) y el de empresas (js/62)
+     sí lo pintan. Medido, no recordado.
+
+     El dibujo y la capa NO se escriben acá: los hace `js/56-calor.js`, que
+     existe justamente para que los tres módulos que pintan calor no tengan
+     cada uno su copia de la rampa. Escribir una cuarta sería la clase B.
+
+     Y hay una razón concreta para no reimplementarlo aunque parezca fácil:
+     js/56 usa la MISMA conversión metros→grados que el motor usó para armar
+     la malla. Con otra fórmula la mancha cae una cuadra corrida del dato y
+     nadie lo nota, porque una mancha de calor se ve igual de convincente en
+     cualquier parte. */
+  var afluenciaCtl = null;
+  function afluenciaEnMapa() {
+    if (afluenciaCtl) return afluenciaCtl;
+    try {
+      var m = mapa();
+      if (m && window.URBIS_CALOR) afluenciaCtl = window.URBIS_CALOR.enMapa(m);
+    } catch (e) { afluenciaCtl = null; }
+    return afluenciaCtl;
+  }
+
+  /* La malla de la corrida a la vista. Se lee del RESULTADO y no de un
+     almacén aparte: una ficha archivada se vuelve a componer con este código
+     y tiene que pintar la suya, no la del sector que esté abierto (v890). */
+  function mallaDeAfluencia() {
+    var st = S.resultado && S.resultado.stats;
+    var mv = st && st.movilidad;
+    return (mv && mv.flujo && mv.flujo.mapaCalor) || null;
+  }
+
+  function alternarAfluencia(id) {
+    var ctl = afluenciaEnMapa();
+    var mc = mallaDeAfluencia();
+    if (!ctl || !mc) {
+      /* El vacío se declara, no se calla (v849). Y se separan las dos
+         razones, que piden cosas distintas: sin malla hay que volver a
+         analizar; sin el módulo de dibujo, es un archivo que no cargó. */
+      S.aviso = !mc
+        ? 'Este análisis no trae la malla de afluencia. Vuelva a analizar el sector para que el motor la calcule.'
+        : 'No se pudo cargar el dibujo de la malla (js/56).';
+      pintar(); return;
+    }
+    var nuevo = (S.afluencia === id) ? '' : id;
+    S.afluencia = nuevo;
+    try { ctl.mostrar(nuevo ? mc : null, nuevo, { encuadrar: 'auto' }); } catch (e) {}
+    /* Verla es bajar la hoja, como los estratos — pero no mientras corre
+       «medir todo», que se llevaría por delante la barra de progreso (v907). */
+    if (nuevo && !S.midiendoTodo) { S.encogida = true; S.encogidaAMano = false; }
+    pintar();
+  }
+
   function quitarDelMapa() {
     var m = mapa();
     [capaPuntos, capaEstratos, capaLlenos, capaCurvas, capaSombras, capaCortes,
@@ -11387,6 +11479,11 @@ function donaHTML(datos, colorDe, nombreDe) {
     capaCurvas = null; capaSombras = null; capaCortes = null; capaVias = null;
     S.llenosEnMapa = false; S.curvasEnMapa = false; S.sombrasEnMapa = false;
     S.cortesEnMapa = false; S.viasEnMapa = false;
+    /* La afluencia también: es del análisis, no del lugar, y dejarla puesta
+       al soltar el sector es justo lo que la v906 vino a arreglar — marcar el
+       centro nuevo encima de la mancha del anterior. */
+    try { if (afluenciaCtl) afluenciaCtl.mostrar(null, ''); } catch (e) {}
+    S.afluencia = '';
   }
 
   /* Los llenos y vacíos, dibujados. Las cifras dicen QUÉ PROPORCIÓN del área
@@ -12215,6 +12312,7 @@ function donaHTML(datos, colorDe, nombreDe) {
         return;
       }
       if (acc === 'calor') { alternarCalor(b.getAttribute('data-cal')); return; }
+      if (acc === 'afluencia') { alternarAfluencia(b.getAttribute('data-a') || 'dia'); return; }
       if (acc === 'calor-off') { S.calor = []; aplicarCalor(); pintar(); return; }
       if (acc === 'guardar-area') {
         var A2 = window.URBIS_PC_ANALISIS;
@@ -12828,7 +12926,7 @@ function donaHTML(datos, colorDe, nombreDe) {
        buscándolo. */
     var hayCapa = S.calor.length > 0 || S.cobEnMapa || S.llenosEnMapa || !!S.estratos ||
                   S.caminataEnMapa || S.curvasEnMapa || S.sombrasEnMapa ||
-                  S.cortesEnMapa || S.viasEnMapa;
+                  S.cortesEnMapa || S.viasEnMapa || !!S.afluencia;
     /* Dibujando el lote la hoja se encoge SIEMPRE: no se puede marcar las
        esquinas de un terreno sobre un mapa tapado por un panel. */
     /* `encogidaAMano` es la diferencia entre «se encogió sola porque encendí
@@ -25971,6 +26069,63 @@ function donaHTML(datos, colorDe, nombreDe) {
      y a qué hora sirve. Un local de barrio en una calle vehicular con la
      puerta a la calle está mal resuelto, y eso no lo dice el índice de
      ocupación. */
+  /* ── DÓNDE se concentra, no cuánta gente hay (v935) ──────────────────
+     La cifra de arriba dice CUÁNTO —«flujo a pie 62/100»— y no dice dónde.
+     La malla dice dónde, y las dos juntas son lo que sirve para decidir por
+     qué frente se abre un proyecto.
+
+     Tres cosas que la caja tiene que decir y no puede callar:
+
+     · Es un POTENCIAL MODELADO a partir de los usos y la malla vial, no un
+       conteo. El motor lo declara de sí mismo con esas palabras, y la hoja
+       lo repite desde la v858 para el flujo de hora pico. Un mapa de calor
+       es de lo más convincente que hay y por eso es de lo que más hay que
+       declarar.
+     · Cada capa está normalizada contra SU PROPIO MÁXIMO, así que responde
+       «dónde más», nunca «cuántos». Un sector tranquilo y uno lleno se ven
+       igual de rojos en su punto más caliente.
+     · Y lo que NO cierra: el aforo de hora pico, que sigue en la lista viva
+       y pide un conteo en campo o el de la secretaría, con su fecha. Si acá
+       apareciera un número de personas, sería inventado.
+
+     La vehicular no se ofrece: no se guarda en la ficha (`flujoLigero`), así
+     que ofrecerla daría un botón que después de reabrir no pinta nada. */
+  function bloqueAfluencia(f) {
+    var mc = f && f.mapaCalor;
+    if (!mc) {
+      return '<p class="pcr-pista">Este análisis no trae la malla de afluencia: vuelva a ' +
+        'analizar el sector para que el motor la calcule.</p>';
+    }
+    var BOT = [['dia', 'A pie · día', 'de la mañana a la tarde'],
+               ['noche', 'A pie · noche', 'después de las 7 p.m.']];
+    var foco = function (id) {
+      var fo = id === 'noche' ? mc.focoNoche : mc.focoDia;
+      return (fo && fo.texto) ? fo.texto : '';
+    };
+    return '<div class="pcr-afl">' +
+      '<div class="pcr-chips">' +
+        BOT.map(function (b) {
+          return '<button type="button" class="pcr-chip pcr-chip-b' +
+            (S.afluencia === b[0] ? ' on' : '') + '" data-pcr="afluencia" data-a="' + b[0] + '">' +
+            esc(b[1]) + '</button>';
+        }).join('') +
+      '</div>' +
+      /* El foco en palabras es lo que convierte el mapa en una instrucción:
+         «a unos 180 m hacia el nororiente» se puede ir a mirar; una mancha
+         no. Lo calcula el motor, no se deduce acá. */
+      (foco('dia')
+        ? '<p class="pcr-conc">Lo más concurrido a pie, de día, cae <b>' + esc(foco('dia')) + '</b>' +
+          (foco('noche') && foco('noche') !== foco('dia')
+            ? '; de noche, <b>' + esc(foco('noche')) + '</b>' : '') + '.</p>'
+        : '') +
+      '<p class="pcr-pista"><b>Es un potencial modelado, no un conteo.</b> Sale de los usos ' +
+      'registrados y de la malla vial: nadie contó personas en la esquina. Y cada capa se ' +
+      'normaliza contra su propio máximo, así que dice <b>dónde más</b>, nunca cuántos — un ' +
+      'sector tranquilo también tiene su punto más rojo. El aforo de verdad se cuenta en la ' +
+      'calle o se pide a la secretaría de tránsito, con su fecha.</p>' +
+      '</div>';
+  }
+
   function bloqueFlujo(mv) {
     var f = mv && mv.flujo;
     if (!f) return '';
@@ -25989,6 +26144,7 @@ function donaHTML(datos, colorDe, nombreDe) {
                'un flujo que no existe: tiene que traer su propia gente.'
     };
     return '<p class="pcr-lab">Quién pasa por acá</p>' +
+      bloqueAfluencia(f) +
       '<div class="pcr-kpis">' +
         '<div class="pcr-kpi"><b>' + (f.peatonal || 0) + '</b><small>flujo a pie /100</small></div>' +
         '<div class="pcr-kpi"><b>' + (f.vehicular || 0) + '</b><small>flujo en carro /100</small></div>' +
