@@ -3,8 +3,8 @@
  "presidente": "Abelardo de la Espriella",
  "periodo": "2026 – 2030",
  "posesion": "2026-08-07",
- "actualizado": "2026-09-16",
- "proximaActualizacion": "2026-09-17",
+ "actualizado": "2026-09-17",
+ "proximaActualizacion": "2026-09-18",
  "categorias": {
   "gobierno": {
    "nombre": "Gobierno y decretos",
@@ -73,6 +73,170 @@
   }
  },
  "entradas": [
+  {
+   "fecha": "2026-09-17",
+   "precision": "exacta",
+   "categoria": "gobierno",
+   "titulo": "De la Espriella confirma la captura en Medellín de alias 'El Flaco', principal cabecilla de la estructura criminal 'La Miel'",
+   "detalle": "El presidente Abelardo de la Espriella confirmó el 17 de septiembre la captura en Medellín de Andrés Felipe Velásquez, alias 'El Flaco', señalado como principal cabecilla de 'La Miel' y uno de los hombres más buscados de Antioquia, con más de 25 años delinquiendo. Según las autoridades, la estructura mantenía una alianza con el Clan del Golfo y estaría vinculada a homicidios, extorsiones, narcotráfico, desplazamiento forzado y laboratorios de cocaína, con ingresos estimados en cerca de $4.000 millones mensuales; la Gobernación de Antioquia había ofrecido hasta $200 millones de recompensa por información que permitiera su ubicación. El presidente publicó el operativo en sus redes con el mensaje «los voy a acabar».",
+   "tipoFuente": "verificado",
+   "fuentes": [
+    {
+     "n": "El Tiempo · Capturaron a 'El Flaco' en Medellín, cabecilla de la estructura 'La Miel' y uno de los más buscados en Antioquia",
+     "u": "https://www.eltiempo.com/colombia/medellin/capturaron-a-el-flaco-en-medellin-cabecilla-de-la-estructura-la-miel-y-uno-de-los-mas-buscados-en-antioquia-dijo-el-presidente-de-la-espriella-3586698"
+    },
+    {
+     "n": "Infobae · Abelardo de la Espriella confirmó la captura de alias el Flaco, cabecilla del grupo La Miel y uno de los más buscados de Antioquia",
+     "u": "https://www.infobae.com/colombia/2026/09/17/abelardo-de-la-espriella-confirmo-la-captura-de-alias-el-flaco-cabecilla-del-grupo-la-miel-y-uno-de-los-mas-buscados-de-antioquia/"
+    },
+    {
+     "n": "El País (Cali) · Capturan a alias El Flaco, señalado cabecilla de La Miel, en Medellín",
+     "u": "https://www.elpais.com.co/judicial/alias-el-flaco-cabecilla-principal-de-la-miel-fue-capturado-en-medellin-esto-dijo-el-presidente-sobre-el-operativo-1742.html"
+    },
+    {
+     "n": "Semana · Cayó alias el Flaco, cabecilla de temible organización criminal en Antioquia",
+     "u": "https://www.semana.com/nacion/medellin/articulo/cayo-alias-el-flaco-cabecilla-de-temible-organizacion-criminal-en-antioquia-estaria-involucrado-en-homicidios-y-otros-crimenes/202635/"
+    }
+   ]
+  },
+  {
+   "fecha": "2026-09-16",
+   "precision": "exacta",
+   "categoria": "gobierno",
+   "titulo": "El Gobierno reporta 85 extradiciones firmadas en los primeros 40 días de mandato",
+   "detalle": "El presidente Abelardo de la Espriella anunció el 16 de septiembre que ha firmado 85 extradiciones en 40 días de gobierno, principalmente hacia Estados Unidos por delitos relacionados con narcotráfico. Publicó en video el momento de la firma y afirmó: «aquí no hay contemplaciones: sigo firmando sin descanso, cumpliendo con firmeza cada uno de los compromisos internacionales, y aplicando rigurosamente los mecanismos de cooperación para combatir directamente y derrotar al crimen organizado». La cifra se suma a los reportes previos de 41 extradiciones al 28 de agosto y 70 al 9 de septiembre.",
+   "tipoFuente": "verificado",
+   "fuentes": [
+    {
+     "n": "El Heraldo · De la Espriella confirma que van 85 extradiciones desde el inicio de su gobierno: «aquí no hay contemplaciones»",
+     "u": "https://www.elheraldo.co/colombia/2026/09/17/de-la-espriella-confirma-que-van-85-extradiciones-desde-el-inicio-de-su-gobierno-aqui-no-hay-contemplaciones/"
+    },
+    {
+     "n": "El Universal · Abelardo de la Espriella acelera las extradiciones: ya van 85 en 40 días",
+     "u": "https://www.eluniversal.com.co/colombia/2026/09/16/abelardo-de-la-espriella-acelera-las-extradiciones-ya-van-85-en-40-dias/"
+    },
+    {
+     "n": "Radio Santa Fe · De la Espriella acelera procesos de extradición: «Van 85 y sigo firmando sin descanso»",
+     "u": "https://www.radiosantafe.com/2026/09/17/de-la-espriella-acelera-procesos-de-extradicion-van-85-y-sigo-firmando-sin-descanso/"
+    }
+   ]
+  },
+  {
+   "fecha": "2026-09-16",
+   "precision": "exacta",
+   "categoria": "corrupcion",
+   "titulo": "El Gobierno firma la Directiva Presidencial 02 para reorganizar las funciones del liquidado Ministerio de la Igualdad y acusa de «negligencia» a la administración Petro",
+   "detalle": "El presidente Abelardo de la Espriella firmó la Directiva Presidencial 02, que ordena a los ministerios del Interior, Hacienda, Justicia, al Departamento Administrativo de la Función Pública y a Prosperidad Social coordinar un plan de acción para reubicar programas, proyectos y recursos del liquidado Ministerio de la Igualdad y la Equidad, de modo que ninguna población quede desatendida. El vocero presidencial, Miller Soto, calificó la creación del ministerio como «una vitrina ideológica, más preocupada por el discurso que por los resultados», y habló de «la negligencia con la que el gobierno anterior dejó esos derechos colgando de un hilo» en relación con personas con discapacidad, mujeres y comunidades étnicas.",
+   "contrapunto": "La caracterización del Ministerio de la Igualdad como «vitrina ideológica» y la acusación de «negligencia» en su cierre son la lectura del actual Gobierno sobre una entidad creada por la administración Petro y liquidada por orden de la Corte Constitucional al declarar inexequible su ley de creación; hasta esta actualización, Petro ni exfuncionarios del ministerio han respondido públicamente a esos calificativos.",
+   "tipoFuente": "declaracion",
+   "fuentes": [
+    {
+     "n": "Semana · Abelardo De La Espriella firmó la directiva presidencial 02 sobre el MinIgualdad de Petro: «Se fundó como una vitrina ideológica»",
+     "u": "https://www.semana.com/politica/articulo/abelardo-de-la-espriella-firmo-la-directiva-presidencial-02-sobre-el-minigualdad-de-petro-se-fundo-como-una-vitrina-ideologica/202659/"
+    },
+    {
+     "n": "Infobae · Vocero de Abelardo de la Espriella acusó de «negligencia» a Petro por polémica liquidación del Ministerio de Igualdad",
+     "u": "https://www.infobae.com/colombia/2026/09/16/vocero-de-abelardo-de-la-espriella-acuso-de-negligencia-a-petro-por-polemica-liquidacion-del-ministerio-de-igualdad-se-fundo-como-una-vitrina-ideologica/"
+    },
+    {
+     "n": "El Espectador · De la Espriella emitió directiva para el proceso liquidatorio de MinIgualdad: esto dice",
+     "u": "https://www.elespectador.com/politica/de-la-espriella-emitio-directiva-para-el-proceso-liquidatorio-de-minigualdad-esto-dice/"
+    },
+    {
+     "n": "El Heraldo · Vocero del Gobierno explica cómo los programas de Minigualdad serán asumidos por otras carteras",
+     "u": "https://www.elheraldo.co/colombia/2026/09/16/vocero-del-gobierno-explica-como-los-programas-de-minigualdad-seran-asumidos-por-otras-carteras/"
+    }
+   ]
+  },
+  {
+   "fecha": "2026-09-16",
+   "precision": "exacta",
+   "categoria": "gobierno",
+   "titulo": "De la Espriella sostiene su primer encuentro con comunidades indígenas en Barranquilla; el Gobierno señala posibles irregularidades por $350.000 millones en transferencias del gobierno anterior",
+   "detalle": "El presidente Abelardo de la Espriella se reunió el 16 de septiembre en la sede alterna de la Presidencia en Barranquilla con representantes de once comunidades indígenas, en su primer encuentro directo con este sector, junto al jefe de Gabinete Nicolás Gómez, el viceministro de Diálogo Social Jorge Ernesto Roa y el asesor Carlos Alonso Lucio. El ministro del Interior, Rodrigo Lara, señaló que la trazabilidad de recursos girados a asuntos indígenas ha sido mínima o inexistente y que podría haber más de $350.000 millones en transferencias de este tipo que habrían financiado movilizaciones y mingas durante el gobierno anterior, además de advertir sobre conflictos limítrofes, en particular en el Cauca. El Gobierno anunció que en el marco del debate del Presupuesto 2027 aplicará una política de austeridad similar a la de 2026, con la salvedad de mantener recursos en áreas sensibles como derechos humanos.",
+   "contrapunto": "La cifra de $350.000 millones en presuntas irregularidades es una estimación del ministro del Interior sobre transferencias giradas en el gobierno anterior, sin que a la fecha de esta actualización exista una denuncia formal radicada, una auditoría independiente o una respuesta pública de la administración Petro o de las organizaciones indígenas señaladas.",
+   "tipoFuente": "disputado",
+   "fuentes": [
+    {
+     "n": "El Espectador · Gobierno establece ruta para diálogo con comunidades indígenas: habrá ajuste en sus recursos",
+     "u": "https://www.elespectador.com/politica/gobierno-de-la-espriella-trazo-estrategia-para-dialogo-con-comunidades-indigenas-lara-hablo-de-irregularidades-en-recursos/"
+    },
+    {
+     "n": "Pulzo · Primera reunión de Abelardo de la Espriella con comunidades indígenas en Barranquilla",
+     "u": "https://www.pulzo.com/nacion/primera-reunion-de-abelardo-de-la-espriella-con-comunidades-indigenas-en-barranquilla-PP5305246A"
+    },
+    {
+     "n": "Semana · Primer cara a cara entre Abelardo De La Espriella y comunidades indígenas: el presidente dejó mensaje que llamó la atención",
+     "u": "https://www.semana.com/politica/articulo/primer-cara-a-cara-entre-abelardo-de-la-espriella-y-comunidades-indigenas-el-presidente-dejo-mensaje-que-llamo-la-atencion/202602/"
+    },
+    {
+     "n": "El Tiempo · Presidente Abelardo De La Espriella se reunió con representantes de comunidades indígenas en Barranquilla: ¿de qué hablaron?",
+     "u": "https://www.eltiempo.com/politica/gobierno/presidente-abelardo-de-la-espriella-se-reunio-con-representantes-de-comunidades-indigenas-en-barranquilla-de-que-hablaron-3586728"
+    }
+   ]
+  },
+  {
+   "fecha": "2026-09-16",
+   "precision": "exacta",
+   "categoria": "corrupcion",
+   "titulo": "El director del Dapre denuncia ante el Congreso que la contratación por prestación de servicios creció 595 % durante el gobierno de Petro",
+   "detalle": "Carlos Ríos, director del Departamento Administrativo de la Presidencia (Dapre), afirmó el 16 de septiembre ante la Comisión Primera de la Cámara de Representantes, en el debate sobre el Presupuesto 2027, que los contratos de prestación de servicios (OPS) en la entidad crecieron 595 % durante el gobierno de Gustavo Petro, con un incremento del 228 % solo entre 2025 y 2026. Según Ríos, el 84 % de la contratación de ese periodo se hizo por contratación directa —que debería ser la excepción y se volvió la regla— y más de la mitad de ese porcentaje se firmó durante el calendario electoral, lo que convirtió al Dapre en «uno de los mayores contratistas del Estado». El funcionario anunció una revisión individual de los contratos vigentes, dijo que la entidad ya redujo en cerca de 65 % la contratación de personal, y que el presupuesto del Dapre para 2027 bajará de los $4,1 billones asignados en el gobierno anterior a $924.000 millones.",
+   "contrapunto": "La cifra fue presentada por un funcionario del actual Gobierno en un debate presupuestal ante el Congreso, sin que se conozca a la fecha de esta actualización una auditoría independiente (Contraloría o Procuraduría) que la corrobore, ni una respuesta pública de Gustavo Petro o de la anterior dirección del Dapre.",
+   "tipoFuente": "declaracion",
+   "fuentes": [
+    {
+     "n": "Semana · Director del Dapre, Carlos Ríos, denunció que la contratación en la entidad durante el gobierno Petro creció un 595 %",
+     "u": "https://www.semana.com/politica/articulo/director-del-dapre-carlos-rios-denuncio-que-la-contratacion-en-la-entidad-durante-el-gobierno-petro-crecio-un-595/202609/"
+    },
+    {
+     "n": "Infobae · La contratación por prestación de servicios aumentó 595 % durante el gobierno de Gustavo Petro, denunció el director del Dapre",
+     "u": "https://www.infobae.com/colombia/2026/09/16/la-contratacion-por-prestacion-de-servicios-aumento-595-durante-el-gobierno-de-gustavo-petro-denuncio-el-director-del-dapre/"
+    },
+    {
+     "n": "El Espectador · Denuncian aumento del 590 % de contratos del Dapre en gobierno Petro: «mandamos a parar»",
+     "u": "https://www.elespectador.com/politica/gobierno-de-la-espriella-denuncia-aumento-en-la-contratacion-del-dapre-en-mas-del-500-esto-dicen-del-gobierno-petro/"
+    },
+    {
+     "n": "El País (Cali) · Director del Dapre denuncia aumento de contratos durante el gobierno Petro y anuncia drástica reducción",
+     "u": "https://www.elpais.com.co/politica/director-del-dapre-denuncia-aumento-de-contratos-durante-el-gobierno-petro-y-anuncia-drastica-reduccion-1640.html"
+    },
+    {
+     "n": "Pulzo · Contratación directa en el Dapre creció durante el gobierno de Gustavo Petro y concentró el 84 % de los contratos",
+     "u": "https://www.pulzo.com/nacion/contratacion-directa-en-dapre-crecio-595-durante-gobierno-de-gustavo-petro-en-colombia-PP5305149A"
+    }
+   ]
+  },
+  {
+   "fecha": "2026-09-15",
+   "precision": "exacta",
+   "categoria": "creditos",
+   "titulo": "Gustavo Petro ejerce su derecho de réplica en cadena nacional, rechaza la acusación de corrupción y cuestiona el recálculo fiscal del Gobierno; protagoniza un tropiezo con un «cuadro invisible»",
+   "detalle": "En la noche del martes 15 de septiembre, Gustavo Petro ejerció, desde Bruselas y al amparo del Estatuto de la Oposición (Ley 1909 de 2018), su derecho de réplica a la alocución del 13 de septiembre en la que Abelardo de la Espriella atribuyó la crisis fiscal al «despilfarro» y la «corrupción» de su gobierno. En una intervención de cerca de 24 minutos, Petro afirmó «rechazo la acusación de corrupción a mi gobierno», dijo de De la Espriella que «no sabe dividir, no sabe dónde está parado», defendió el manejo de la deuda pública durante su mandato y cuestionó las cifras del presupuesto y del recálculo del déficit presentadas por el nuevo Gobierno. Durante la réplica, en un momento que generó fuerte reacción en redes, pidió mirar «el cuadro que está a mi espalda» para respaldar sus cifras, pero la gráfica nunca apareció en pantalla.",
+   "contrapunto": "Esta réplica extiende el intercambio ya registrado el 15 de septiembre a raíz del anuncio de la «Ley de Rescate»: las dos series de cifras sobre déficit y deuda —la del gobierno saliente y la del entrante— corresponden a metodologías o supuestos distintos que ningún organismo de control independiente ha reconciliado a la fecha de esta actualización.",
+   "tipoFuente": "disputado",
+   "fuentes": [
+    {
+     "n": "Vanguardia · Petro le respondió a De la Espriella por la crisis fiscal y habló de una gráfica que no apareció: «Miren el cuadro que está a mi espalda»",
+     "u": "https://www.vanguardia.com/colombia/2026/09/16/petro-le-respondio-a-de-la-espriella-por-la-crisis-fiscal-y-hablo-de-una-grafica-que-no-aparecio-miren-el-cuadro-que-esta-a-mi-espalda/"
+    },
+    {
+     "n": "Infobae · Con un «cuadro invisible», Gustavo Petro trató de responder los señalamientos de Abelardo de la Espriella sobre la crisis fiscal en Colombia",
+     "u": "https://www.infobae.com/colombia/2026/09/16/con-un-cuadro-invisible-gustavo-petro-trato-de-responder-los-senalamientos-de-abelardo-de-la-espriella-sobre-la-crisis-fiscal-en-colombia/"
+    },
+    {
+     "n": "Infobae · Gustavo Petro replicó las acusaciones de un déficit fiscal por parte de De la Espriella: «No sabe dividir, no sabe dónde está parado»",
+     "u": "https://www.infobae.com/colombia/2026/09/16/gustavo-petro-replico-las-acusaciones-de-un-deficit-fiscal-por-parte-de-de-la-espriella-no-sabe-dividir-no-sabe-donde-esta-parado/"
+    },
+    {
+     "n": "El Tiempo · Oposición hace réplica a la alocución presidencial de Abelardo De La Espriella sobre las finanzas de la Nación",
+     "u": "https://www.eltiempo.com/politica/partidos-politicos/oposicion-hace-replica-a-la-alocucion-presidencial-de-abelardo-de-la-espriella-sobre-las-finanzas-de-la-nacion-3586360"
+    },
+    {
+     "n": "Noticias RCN · Este fue el mensaje de Gustavo Petro con el que respondió al presidente De la Espriella",
+     "u": "https://www.noticiasrcn.com/colombia/gustavo-petro-lanzo-contundente-mensaje-en-replica-al-presidente-de-la-espriella-1061200"
+    }
+   ]
+  },
   {
    "fecha": "2026-09-15",
    "precision": "exacta",
