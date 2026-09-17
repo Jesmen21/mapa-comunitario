@@ -252,6 +252,13 @@ const CAPAS_IDEAM = [
     /* Y el panel nuevo se mide APARTE, para que los dos no se tapen: si el
        de afluencia creciera, el de flujo volvería a quedar fuera de cuadro. */
     o.afluenciaDice = (hoja.match(/Quién pasa por acá[^]{0,420}/) || [''])[0];
+    /* El aviso de malla poco fiable (v936) se busca por su propio texto y no
+       dentro de la ventana de arriba: va DESPUÉS de la pista, así que a 420
+       caracteres queda fuera de cuadro y la aserción mediría el recorte en
+       vez del panel. Es la lección que la v935 dejó escrita dos renglones más
+       arriba —un ancla por distancia envejece; una por contenido no—. */
+    o.avisoMalla = /Pocos usos para esta malla/.test(hoja);
+    o.fiable = (R.estado() || {}).afluenciaFiable;
 
     // ── 5 · la capa de vías, sobre el mapa.
     const formas = () => document.querySelectorAll('.leaflet-overlay-pane path').length;
@@ -409,6 +416,27 @@ const CAPAS_IDEAM = [
   T('y que dice dónde más, nunca cuántos',
     /dónde más/.test(r.afluenciaDice || '') && !/\d+ personas por/.test(r.afluenciaDice || ''),
     /dónde más/.test(r.afluenciaDice || '') ? 'lo dice' : 'no lo dice');
+
+  /* ── LA MALLA DICE DE SÍ MISMA SI ES FIABLE (v936) ───────────────────
+     `mapaCalor.fiable` lo pone el motor en false con menos de 25 usos
+     mapeados, y los otros tres módulos que pintan esta malla lo declaran
+     —empresas, el curso y el informe en papel—. El panel de la v935 era el
+     único que lo callaba: el discriminante venía en el MISMO objeto, al lado
+     del foco que sí se leía. Clase A.
+
+     Acá vive la rama CONTRARIA, que es la que de verdad guarda: con usos de
+     sobra el aviso NO puede salir. Sin ella, el arreglo podría ser imprimirlo
+     en todas partes y la comprobación pasaría igual — y un aviso que sale
+     siempre deja de significar algo, que es como muere una alarma (v886).
+     La rama que SÍ avisa se mide en `tmedir`, cuyo sector tiene doce usos.
+
+     Y la guarda de MATERIAL va primero (v920): si este sector dejara de tener
+     usos de sobra, la aserción de abajo pasaría por no tener nada que
+     rechazar. */
+  T('MATERIAL: este sector tiene usos de sobra, así que la malla es fiable',
+    r.fiable === true, 'fiable=' + r.fiable);
+  T('y con la malla fiable el aviso de pocos usos NO se imprime',
+    r.avisoMalla === false, r.avisoMalla ? 'lo imprime igual' : 'no lo imprime');
 
   T('y llega al pliego', /Flujo a pie contra en carro/.test(CL),
     (CL.match(/Flujo a pie contra en carro<\/span><b>[^<]*/) || ['no llega'])[0].replace(/<[^>]*>/g, ' '));

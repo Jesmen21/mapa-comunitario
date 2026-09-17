@@ -235,6 +235,31 @@ const MASA={"AREA_KM":1135.66,"DEPARTAMEN":"Norte de Santander","MUNICIPIO":"Cú
                        /disipación de energía/.test(txt()),
                cobertura:!!(R.cobertura && R.cobertura()) };
     })();
+    /* ── LA MALLA POCO FIABLE (v936) ─────────────────────────────────
+       Este sector tiene DOCE usos, por debajo de los 25 con los que el motor
+       marca `mapaCalor.fiable`. Es el único material de la batería que puede
+       ejercitar la rama que avisa — no hizo falta empobrecer ningún fixture,
+       ya había uno pobre en otra suite, igual que en la v881 y la v898.
+
+       Va DESPUÉS de `o.estado` y de `o.textoFinal` a propósito: `txt()` es la
+       pestaña que esté PUESTA, así que cambiar de pestaña antes dejaría a las
+       aserciones de la cadena midiendo otra hoja de la que dicen — y las que
+       esperan un `false`, como el clima caído, pasarían igual por el motivo
+       equivocado. Es la lección de la v874 con `.hit`: se lee donde está lo
+       que se quiere leer.
+
+       Se llega por el BOTÓN de la pestaña y no escribiendo en `S` (v871), que
+       además ejercita el manejador. */
+    o.mallaFiable=(R.estado?R.estado():{}).afluenciaFiable;
+    const bMov=H().querySelector('[data-pcr="pestana"][data-t="movilidad"]');
+    o.hayPestanaMovilidad=!!bMov;
+    if(bMov){ bMov.click(); await esperar(600); }
+    o.movilidadDice=txt();
+    /* Y se vuelve a «General», que es donde estaba: lo que sigue lee la hoja
+       y una pestaña dejada a medio camino cambia lo que mide. */
+    const bGen=H().querySelector('[data-pcr="pestana"][data-t="general"]');
+    if(bGen){ bGen.click(); await esperar(500); }
+
     o.despues=(function(){
       const c=H().querySelector('.pcr-medir');
       return c?(c.textContent||'').replace(/\s+/g,' ').trim():'';
@@ -472,6 +497,33 @@ const MASA={"AREA_KM":1135.66,"DEPARTAMEN":"Norte de Santander","MUNICIPIO":"Cú
     !r.capasTrasOtro.cortes && !r.capasTrasOtro.curvas && !r.capasTrasOtro.llenos &&
     !r.capasTrasOtro.vias && !r.capasTrasOtro.estratos && !r.capasTrasOtro.puntos,
     JSON.stringify(r.capasTrasOtro));
+
+  console.log('\n  -- v936 · la malla dice de sí misma que es poco fiable --');
+  /* Este sector tiene DOCE usos, por debajo de los 25 con los que el motor
+     marca `mapaCalor.fiable`. Es el único material de la batería que puede
+     ejercitar la rama que avisa: los demás sectores tienen usos de sobra y
+     la comprobación pasaría por no tener nada que rechazar.
+
+     La guarda de MATERIAL va primero (v920): si este sector se enriqueciera,
+     la aserción de abajo dejaría de significar algo y se pone roja ella. */
+  T('MATERIAL: con doce usos el motor marca la malla como poco fiable',
+    r.mallaFiable===false, 'fiable='+r.mallaFiable);
+  T('la pestaña de movilidad se abre por su botón', r.hayPestanaMovilidad===true);
+  /* Y lo declara. Los otros tres módulos que pintan esta malla lo decían
+     —empresas, el curso y el informe en papel—; el panel de la v935 era el
+     único que lo callaba, teniendo el campo en el MISMO objeto que el foco
+     que sí leía. Con pocos puntos un mapa de calor es una mancha bonita que
+     se ve igual de convincente. */
+  T('y el panel lo declara, en vez de pintar la mancha y callarlo',
+    /Pocos usos para esta malla/.test(r.movilidadDice||''),
+    /Pocos usos para esta malla/.test(r.movilidadDice||'')
+      ? ((r.movilidadDice.match(/Pocos usos para esta malla[^.]{0,90}/)||[''])[0])
+      : 'lo calla');
+  /* Y no se queda en el rótulo: dice qué hacer. Un aviso que no dice cómo se
+     resuelve es la mitad del trabajo (v880). */
+  T('y dice qué hacer con ella, no solo que es poco fiable',
+    /contrastarla caminando/.test(r.movilidadDice||''),
+    /contrastarla caminando/.test(r.movilidadDice||'') ? 'lo dice' : 'no lo dice');
 
   console.log('');
   T('sin errores de JavaScript', r.err.length===0, r.err.join(' | ')||'ninguno');

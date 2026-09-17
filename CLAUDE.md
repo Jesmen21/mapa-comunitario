@@ -8018,6 +8018,126 @@ va en su propia tanda. La pantalla primero, el papel después.
 
 Y no se tocó `?app=educativo`: ahí ya está y funciona.
 
+## La malla dice de sí misma si es fiable (v936)
+
+Salió midiendo para lo anterior, y es un defecto de verdad que la v935 dejó:
+`mapaCalor.fiable` lo pone el motor en false con menos de 25 usos mapeados, y
+su propio comentario dice por qué —«sin datos suficientes un mapa de calor es
+una mancha bonita que no dice nada, y se ve igual de convincente»—.
+
+**Los otros TRES módulos que pintan esta malla lo declaran** —empresas
+(`js/62`), el curso (`js/65`) y el informe en papel (`js/63`)—. El panel de la
+v935 era el único que lo callaba, y es el único que además iba camino de una
+hoja de 60 × 90.
+
+Es la **clase A** en su forma más limpia: el discriminante venía en el MISMO
+objeto, al lado de `focoDia`, que el panel sí leía. Como `puntos` en la v875,
+`cu.edificios` en la v899 y `S.indicesPuestos` en la v903. Cuarta vez.
+
+No hizo falta tocar el motor: solo dejar de leer la mancha como si fuera una
+medición.
+
+El aviso vive en una función con nombre aunque hoy lo llame un solo sitio,
+porque el día que la malla llegue al papel esa frase tiene que salir de ahí y
+no escribirse otra vez. Y usa la clase ámbar con la que este módulo ya dice
+«OpenStreetMap no tiene nada registrado»: es la misma advertencia, y darle una
+clase nueva sería enseñar dos códigos para un significado, además de inventar
+una que nadie pinta (v895).
+
+### Las dos ramas, y ninguna hizo falta empobrecer
+
+Otra vez el material decide si una comprobación significa algo. Y la tercera
+—como en la v881 y la v898— en que **no hizo falta empobrecer nada: ya había
+un fixture pobre en otra suite**:
+
+* **`tmedir`** tiene **doce usos**, por debajo del corte del motor: ahí se mide
+  que el panel avisa, y que dice qué hacer con la malla y no solo que es poco
+  fiable (v880).
+* **`tmasanalisis`** tiene usos de sobra: ahí se mide que el aviso **NO** sale.
+  Esa es la que de verdad guarda — sin ella, el arreglo podría ser imprimirlo
+  en todas partes, y un aviso que sale siempre deja de significar algo, que es
+  como muere una alarma (v886).
+
+Las dos llevan su guarda de material primero (v920), leyendo `afluenciaFiable`
+de `estado()` —lo que una prueba necesita leer se agrega ahí (v871)—: si el
+sector de cualquiera de las dos cambiara de lado del corte, se pone roja la
+guarda y no la afirmación.
+
+### Demostrado contra la v935
+
+Revirtiendo **solo el hunk que imprime** —el `estado()` y las capturas se
+quedan, porque son lo que la suite necesita para LEER, que es la lección de la
+v875 sobre el `git stash` completo vista por el otro lado—: dos en rojo con el
+estado viejo impreso, «lo calla» y «no lo dice», sobre un sector cuya malla el
+propio motor marcó como poco fiable.
+
+## La banda de movilidad está llena, y eso se midió (v936)
+
+El punto 3 del plan aprobado era el mapa de afluencia en la lámina B, después
+de la capa viva y del panel de la ficha (v935). Se escribió entero —inventario,
+compositor, método, peldaño— y **no se publica**, porque medirlo devolvió un
+precio que no se puede pagar en silencio.
+
+    v935                   ceden 2 paneles
+    v936 con el mapa      ceden 12, y la afluencia entre ellos
+
+Diez paneles medidos a cambio de un potencial modelado que **cede igual**. La
+hoja paga por un mapa que no imprime.
+
+### La cuarta medición fue la que explicó las tres primeras
+
+Es la regla de la v919 —una decisión de espacio se juzga midiendo las dos
+composiciones, no leyendo la lista— llevada hasta encontrar la causa:
+
+| Banda de movilidad | Ceden |
+|---|---|
+| 4 mapas (v935) | 2 |
+| 5 mapas, la afluencia en el peldaño 2 | 12, la afluencia entre ellos |
+| 5 mapas, la afluencia en el peldaño 3 | 12, y cede el MAPA de anillos |
+| la afluencia en otra banda, 4 en movilidad | **2** |
+| 4 en movilidad, uno de ellos la afluencia | **2** |
+
+Las dos últimas son las que cierran el caso: **no es un mapa de más en la
+hoja, es un mapa de más en ESA banda.** La misma figura en otra banda cuesta
+cero —lista de cesión idéntica al punto de partida—, y la banda con cuatro
+mapas cuesta cero sea cual sea el cuarto. El corte está exactamente en el
+quinto.
+
+Y el peldaño no lo mueve: con el 2 cede la afluencia, con el 3 cede el mapa de
+anillos, y en los dos casos se van los mismos diez paneles. **El peldaño ordena
+QUÉ se pierde; no cambia CUÁNTO.**
+
+### La bisección cede global cuando el desborde es local
+
+Esa es la causa de fondo y vale más que este mapa. La banda de movilidad se
+desborda, y para devolverla a cuatro mapas la bisección recorre **un prefijo
+de la lista ordenada** (v919) que empieza lejos de ahí: se lleva diez cajas de
+otras bandas antes de llegar a un mapa de movilidad.
+
+Arreglarlo —que la bisección sepa qué banda se desbordó— es su propia tanda y
+no se toca acá. Hacerlo de paso, para que el mapa quepa, sería el arreglo
+estructural que este proyecto ya deshizo tres veces: la mudanza de la v882, la
+bisección de la v886 y la fila de texto de la v901.
+
+### Lo que NO se hizo, y por qué queda escrito
+
+Se encontró una salida y no se tomó, porque el motivo no aguanta ser leído.
+**«Hasta dónde se camina desde el lote» declara escala PREDIO** en
+`ESCALA_PANEL` —se mide desde el lote y necesita un lote dibujado— y su mapa
+vive en una banda de SECTOR. Mudarlo a la banda del lote dejaría cuatro mapas
+en movilidad y el problema desaparecería.
+
+El argumento de contenido es real y está ahí desde antes. Pero lo encontré
+**buscando una salida**, después de medir el precio, y ese es exactamente el
+orden que produce la mudanza de la v882 —«un arreglo estructural hecho para
+callar una comprobación es un arreglo sin causa»—. Queda medido y nombrado
+para quien quiera tomarlo por su propio motivo, no aplicado por el mío.
+
+### La afluencia no se pierde
+
+Sigue donde la v935 la puso: la capa sobre el mapa vivo y el panel de la ficha,
+con sus tres declaraciones. Lo que no llega es el papel.
+
 ## La lista viva: lo que al pliego educativo todavía le falta (v866)
 
 Esta lista se quedó vieja **cinco veces**. Cuatro dentro de la hoja —la

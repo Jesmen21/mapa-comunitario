@@ -11448,6 +11448,28 @@ function donaHTML(datos, colorDe, nombreDe) {
     return (mv && mv.flujo && mv.flujo.mapaCalor) || null;
   }
 
+  /* Lo que la malla dice de SÍ MISMA, y que la v935 no leía.
+     `mapaCalor.fiable` lo pone el motor en false con menos de 25 usos
+     mapeados en el radio, y su propio comentario dice por qué: «sin datos
+     suficientes un mapa de calor es una mancha bonita que no dice nada, y se
+     ve igual de convincente». Los otros TRES módulos que pintan esta malla lo
+     declaran —empresas (js/62), el curso (js/65) y el informe en papel
+     (js/63)—; el panel de la v935 era el único que lo callaba, y es el único
+     que además se imprime en una hoja de 60 x 90.
+
+     Es la clase A: el discriminante venía en el mismo objeto, al lado del
+     foco que sí se leía —como `puntos` en la v875 y `cu.edificios` en la
+     v899—. Y va en una función con nombre, aunque hoy la llame un solo
+     sitio, porque el día que la malla llegue al papel esa frase tiene que
+     salir de acá y no escribirse otra vez: dos copias de una advertencia se
+     separan a la tanda siguiente (clase B). */
+  function avisoDeMalla(mc) {
+    return (mc && mc.fiable === false)
+      ? 'Con pocos usos mapeados en el radio, esta malla es apenas indicativa: ' +
+        'conviene contrastarla caminando antes de apoyar una decisión en ella.'
+      : '';
+  }
+
   function alternarAfluencia(id) {
     var ctl = afluenciaEnMapa();
     var mc = mallaDeAfluencia();
@@ -26123,6 +26145,13 @@ function donaHTML(datos, colorDe, nombreDe) {
       'normaliza contra su propio máximo, así que dice <b>dónde más</b>, nunca cuántos — un ' +
       'sector tranquilo también tiene su punto más rojo. El aforo de verdad se cuenta en la ' +
       'calle o se pide a la secretaría de tránsito, con su fecha.</p>' +
+      (avisoDeMalla(mc)
+        /* La misma clase ámbar con la que este módulo ya dice «OpenStreetMap
+           no tiene nada registrado»: es la misma advertencia —pocos datos
+           mapeados— y darle una clase nueva sería enseñar dos códigos para
+           un solo significado, además de inventar una que nadie pinta (v895). */
+        ? '<p class="pcr-vacio-todo"><b>Pocos usos para esta malla.</b> ' + esc(avisoDeMalla(mc)) + '</p>'
+        : '') +
       '</div>';
   }
 
@@ -30182,6 +30211,15 @@ function donaHTML(datos, colorDe, nombreDe) {
         // Si está consultando. Sin esto, una prueba que ve «no pasó nada» no
         // puede distinguir un análisis que falló de otro que ni empezó.
         consultando: !!S.cargando,
+        /* Lo que la malla de afluencia dice de sí misma (v936). Va acá
+           porque la guarda de MATERIAL de las dos ramas lo necesita: un
+           sector con usos de sobra no puede ejercitar el aviso, y uno pobre
+           no puede ejercitar su ausencia. Sin poder leerlo, las dos
+           comprobaciones pasarían por no tener nada que rechazar. */
+        afluenciaFiable: (function () {
+          var mc = mallaDeAfluencia();
+          return mc ? !!mc.fiable : null;
+        })(),
         // La composición del pliego: el tamaño de letra elegido y las cajas
         // que ese tamaño dejó fuera en la última lámina que se armó.
         pliegoLetra: S.pliegoLetra || 'todo',
