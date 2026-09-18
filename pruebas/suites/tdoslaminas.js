@@ -1672,6 +1672,38 @@ usos.push({ type: 'node', id: 3105, lat: C.lat + 0.0019, lon: C.lng + 0.0018,
     /pcr-sec-anden-sup/.test(CPERF),
     /pcr-sec-anden-sup/.test(CPERF) ? 'a trazos' : 'relleno como la calzada');
 
+  /* ── LA GUARDA DEL ANDÉN CAMINADO (v942) ─────────────────────────
+     Este sector NO tiene la plantilla de andenes levantada, y por eso sirve:
+     mide que la hoja no inventa un ancho libre donde nadie caminó. Sin esta
+     mitad, un «caminado» puesto en todas partes pasaría igual — que es la
+     mentira contraria y la que de verdad se rompe sin que nadie se entere. */
+  console.log('\n  -- el ancho libre, sin nadie que haya caminado --');
+  const cajaB0 = t => ((r.soloB || '').split('<section class="caja')
+    .filter(x => new RegExp('<h2>' + t + '</h2>').test(x))[0] || '');
+  T('MATERIAL · la caja del perfil está compuesta y habla del andén',
+    !!CPERF && /andén/.test(CPERF), CPERF ? 'compuesta' : 'sin caja del perfil');
+  /* «Ancho libre» a secas SÍ aparece, y con razón: la plantilla EN BLANCO
+     describe con esas palabras lo que va a medir. Lo que no puede aparecer
+     es la CIFRA —el rótulo de la fila y la prosa de la ficha—, que es lo que
+     solo existe cuando alguien caminó. Lo cazó esta misma aserción en su
+     primera versión, y es la lección de la v854: se busca la forma medida,
+     no la palabra. */
+  T('sin plantilla caminada no aparece ninguna CIFRA de ancho libre',
+    !/Ancho libre caminado/.test(r.soloB || '') &&
+    !/m de ancho libre/.test(r.soloB || ''),
+    ((r.soloB || '').match(/(Ancho libre caminado|m de ancho libre)[^<]{0,60}/) || ['ninguna'])[0]);
+  T('ni ningún tramo caminado, ni una rampa contada',
+    !/tramos? caminados?/i.test(r.soloB || '') && !/esquinas? sin rampa/i.test(r.soloB || ''),
+    ((r.soloB || '').match(/tramos? caminados?[^<]{0,50}/i) || ['ninguno'])[0]);
+  T('y la carencia del perfil sigue entera, sin encogerse por algo que nadie midió',
+    /El perfil acotado/.test(r.soloB || ''),
+    /El perfil acotado/.test(r.soloB || '') ? 'entera' : 'se encogió sin material');
+  T('la plantilla sigue impresa en blanco, con el destino que de verdad tiene',
+    /Estado de andenes por tramo/.test(r.soloB || '') &&
+    !/«Movilidad real»/.test(cajaB0('Estado de andenes por tramo')),
+    (cajaB0('Estado de andenes por tramo').match(/Dónde se pega<\/i><span>([^<]{0,80})/) ||
+      ['', 'no lo dice'])[1]);
+
   console.log('\n  -- §18 · las seis plantillas de medición --');
   const cajaB = t => ((r.soloB || '').split('<section class="caja')
     .filter(x => new RegExp('<h2>' + t + '</h2>').test(x))[0] || '');

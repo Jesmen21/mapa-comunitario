@@ -1573,6 +1573,119 @@
     };
   }
 
+  /* La frase del ancho libre se escribe UNA vez: la usan las dos ramas de la
+     carencia del perfil, y dos copias de una advertencia se separan a la
+     tanda siguiente (v867, v934). */
+  function anchoLibreDicho(pf) {
+    var cm = pf && pf.anden && pf.anden.caminado;
+    if (!cm || !cm.hay) return '';
+    return ' De <b>' + cm.tramos + (cm.tramos === 1 ? ' tramo' : ' tramos') +
+      '</b> sí se caminó el andén con cinta: <b>' + conComa(cm.anchoLibreM) +
+      ' m</b> de ancho libre de media, el más estrecho ' + conComa(cm.anchoLibreMinM) +
+      ' m. No es el ancho del andén —descuenta postes, materas y vitrinas— y llevarlo a ' +
+      'toda la red sería extrapolar.';
+  }
+
+  /* ── LA CUARTA PLANTILLA: ESTADO DE ANDENES POR TRAMO (v942) ────────
+     Medido antes de escribir, que es la regla de la v863, y de las tres que
+     quedaban es la que cierra el hueco más limpio:
+
+       · el motor publica del andén EXACTAMENTE tres cifras —`conAndenPct`,
+         `sinAndenPct`, `sinDatoPct`, comprobado en `motor-reglas.js`—, que
+         dicen si OpenStreetMap REGISTRA un andén en cada metro de vía.
+         Ninguna dice cuánto mide, de qué es, cómo está ni qué lo tapa;
+       · «Conteo de alturas por manzana» ya tiene camino —`building:levels`
+         por el mapeo por edificio— y conectarla sería una segunda ruta para
+         el mismo hecho, o sea la clase B a sabiendas;
+       · «Cupo real de equipamientos» no cierra ninguna carencia declarada.
+
+     EL ANCHO LIBRE NO ES EL ANCHO DEL ANDÉN, y es la distinción que decide
+     todo lo demás. La plantilla del perfil (v939) mide la pieza de la sección
+     —de la cuneta al paramento—; esta mide lo que queda para caminar después
+     de los postes, las materas y las vitrinas. Publicar una como la otra
+     sería la clase de la v934, así que las dos se guardan, las dos se
+     imprimen y cada una dice cuál es.
+
+     Y LO QUE NO SE HACE: recalcular el porcentaje de red. Caminar tres tramos
+     no dice nada de los otros noventa y siete, y llevarlo al total sería
+     extrapolar — es lo mismo que la v939 declinó para el descuento de la
+     calzada. Lo caminado se publica como su propia cifra, con cuántos tramos,
+     al lado de la de la red y sin mezclarse con ella. */
+  var HUECO_ANDENES = 'estado-de-andenes-por-tramo';
+
+  /* Sí / no / sin anotar. Es una lista CERRADA por la misma razón que el
+     `sub` de la v932: con texto libre, «no hay» y «NO» y «ninguna» son tres
+     valores distintos y el conteo deja de contar. Lo que no case se lee como
+     sin anotar, que es un estado y no un cero. */
+  function siNo(v) {
+    var t = String(v == null ? '' : v).trim().toLowerCase();
+    if (!t) return null;
+    if (/^(si|sí|s|hay|1)$/.test(t)) return true;
+    if (/^(no|n|0|ninguna|ninguno)$/.test(t)) return false;
+    return null;
+  }
+
+  /* Una fila sirve si trae TRAMO y ANCHO LIBRE: sin el ancho no mide un
+     andén, y sin el nombre del tramo no se puede volver a él. El material, el
+     estado, lo que obstruye y la rampa pueden faltar — un tramo con su ancho
+     medido y sin material anotado sigue siendo una medida. */
+  function filaAndenUtil(f) {
+    return !!f && String((f && f.tramo) || '').trim() !== '' &&
+           numPos(f.ancho) !== null && Number(f.ancho) > 0;
+  }
+
+  /* SIEMPRE un objeto con su `estado`, nunca null (v876). */
+  function andenesDeCampo(llave) {
+    var vacio = function (est, razon) {
+      return { estado: est, razon: razon, hay: false, filas: [] };
+    };
+    if (!llave) return vacio('sin-sector', 'sin sector al que enlazar lo caminado');
+    var e;
+    try {
+      e = confirmadasDeCampo(llave).filter(function (x) { return x.hueco === HUECO_ANDENES; })[0];
+    } catch (err) { return vacio('sin-sector', 'no se pudo leer lo guardado'); }
+    if (!e) return vacio('sin-anotar', 'nadie ha caminado todavía la plantilla de andenes');
+    var filas = ((e.valor && e.valor.filas) || []).filter(filaAndenUtil);
+    if (!filas.length) return vacio('sin-filas', 'la plantilla está guardada y no tiene una sola fila con el ancho libre medido');
+
+    var anchos = filas.map(function (f) { return numPos(f.ancho); })
+                      .filter(function (v) { return v !== null; });
+    var media = Math.round(10 * anchos.reduce(function (a, b) { return a + b; }, 0) / anchos.length) / 10;
+    var minimo = Math.round(10 * Math.min.apply(null, anchos)) / 10;
+    /* El MÍNIMO importa más que la media y por eso se publica al lado: un
+       andén se camina al ancho de su punto más estrecho, y una media de 1,8 m
+       con un tramo de 0,6 no es un andén de 1,8 m. */
+
+    var conRampa = 0, sinRampa = 0, rampaSinAnotar = 0;
+    filas.forEach(function (f) {
+      var r = siNo(f.rampa);
+      if (r === true) conRampa++; else if (r === false) sinRampa++; else rampaSinAnotar++;
+    });
+    /* Lo que OBSTRUYE y el MATERIAL se listan sin taxonomía: son texto de
+       quien caminó, y agruparlos en categorías sería inventar una
+       clasificación que la plantilla impresa no tiene. */
+    var obstruye = [], materiales = [];
+    filas.forEach(function (f) {
+      var o = String(f.obstruye || '').trim(), m = String(f.material || '').trim();
+      if (o && obstruye.indexOf(o) < 0) obstruye.push(o);
+      if (m && materiales.indexOf(m) < 0) materiales.push(m);
+    });
+    var conEstado = filas.filter(function (f) { return String(f.estado || '').trim() !== ''; }).length;
+
+    var fl = fuenteLeida(e.fuente);
+    var hasta = (e.fuente && e.fuente.fechaHasta) || null;
+    return {
+      estado: 'ok', hay: true, razon: '',
+      filas: filas, tramos: filas.length,
+      anchoLibreM: media, anchoLibreMinM: minimo,
+      conRampa: conRampa, sinRampa: sinRampa, rampaSinAnotar: rampaSinAnotar,
+      obstruye: obstruye, materiales: materiales, conEstado: conEstado,
+      fuente: fl,
+      desde: fl.fechaDoc || null, hasta: hasta,
+      cuando: cuandoTexto(fl.fechaDoc || null, hasta)
+    };
+  }
+
   /* ── EL PUNTO ÚNICO, QUE NO EXISTÍA ─────────────────────────────────
      Ocho sitios leen `trz.perfil` directo —la sección dibujada, el KPI de la
      ficha, la caja de la lámina, el informe en hojas, la FODA, la cascada de
@@ -1590,9 +1703,20 @@
        sitios: `llaveDeSector()` sin argumento devuelve cadena vacía —lo
        comprobó la suite con `sin-sector` sobre un sector analizado— y eso
        no es un fallo visible, es un almacén que nunca encuentra nada. */
-    var campo = perfilDeCampo(llaveDeSector(S.resultado && S.resultado.meta));
+    var llave = llaveDeSector(S.resultado && S.resultado.meta);
+    var campo = perfilDeCampo(llave);
+    /* Lo caminado entra por el MISMO punto único que la v939 creó, y no por
+       uno propio: los siete sitios que imprimen algo del andén ya pasan por
+       acá, así que lo heredan sin que su autor se acuerde (v867). Va dentro
+       de `anden` y NO toca los tres porcentajes de la red: son otra cosa. */
+    var cam = andenesDeCampo(llave);
+    var conAnden = function (a) {
+      return cam.hay ? Object.assign({}, a, { caminado: cam }) : a;
+    };
     if (!campo.hay) {
-      return Object.assign({}, pf, { origen: 'mapa', campo: campo });
+      return Object.assign({}, pf, {
+        anden: conAnden(pf.anden || {}),
+        origen: cam.hay ? 'mapa+andenes' : 'mapa', campo: campo, andenes: cam });
     }
     var an = pf.anden || {};
     /* La ALTURA sigue siendo del mapa: la plantilla mide la sección, no los
@@ -1607,10 +1731,15 @@
          tirar una sería perder con qué contrastar (v934). */
       anchoMedioMapaM: pf.anchoMedioM,
       relacion: rel,
-      anden: Object.assign({}, an, { anchoMedioM: campo.andenM }),
+      /* `anchoMedioM` es la PIEZA de la sección, medida con el perfil; el
+         ancho LIBRE de lo caminado va aparte y con su nombre. Son dos
+         medidas del mismo andén y la segunda es siempre la menor: juntarlas
+         publicaría una como la otra, que es la clase de la v934. */
+      anden: conAnden(Object.assign({}, an, { anchoMedioM: campo.andenM })),
       acotado: campo,
-      origen: 'campo',
-      campo: campo
+      origen: cam.hay ? 'campo' : 'campo',
+      campo: campo,
+      andenes: cam
     });
   }
 
@@ -7816,7 +7945,19 @@ function donaHTML(datos, colorDe, nombreDe) {
               '<b>arborización</b>, que no tiene columna: se anota aparte, con el porte y la ' +
               'especie. Y son ' + ac.tramos + ' de toda la red: el resto sigue con el ancho de ' +
               'OpenStreetMap, que cubre el <b>' + (pf.coberturaAncho || 0) + ' %</b> de los ' +
-              'metros de vía.</p>';
+              'metros de vía.' +
+              /* Acá es donde MÁS importa decirlo: con las dos plantillas
+                 levantadas conviven dos medidas del mismo andén —la pieza de
+                 la sección y lo que queda para caminar— y las dos se imprimen
+                 en metros a un palmo una de otra. */
+              anchoLibreDicho(pf) +
+              /* Y el porcentaje de red sin dato SIGUE nombrado en las dos
+                 ramas: tres tramos no dicen nada de los otros noventa y
+                 siete, y callarlo acá dejaría la carencia a medias. */
+              (pf.anden && pf.anden.sinDatoPct != null
+                ? ' Del andén no se sabe en el <b>' + conComa(pf.anden.sinDatoPct) +
+                  ' %</b> de la red, y eso no lo mueve lo caminado.'
+                : '') + '</p>';
           }
           return '<p class="vacio-falta"><b>El perfil acotado, medido en campo.</b> El ancho de ' +
             'acá sale de <b>' + (pf.anchoDe === 'width' ? 'la etiqueta de ancho de OpenStreetMap'
@@ -7827,7 +7968,13 @@ function donaHTML(datos, colorDe, nombreDe) {
               ? ' —del andén no se sabe en el ' + conComa(pf.anden.sinDatoPct) + ' % de la red—'
               : '') + '. Para acotar un perfil con sus andenes, antejardines y arborización hay ' +
             'que medirlo en la calle: la plantilla «Perfil vial acotado» lo levanta tramo a ' +
-            'tramo y entra por la pestaña del sector.</p>';
+            'tramo y entra por la pestaña del sector.' +
+            /* Lo caminado NO borra esta carencia y por eso se suma en vez de
+               sustituirla: el porcentaje de red sin dato sigue siendo el
+               mismo —tres tramos no dicen nada de los otros noventa y siete—
+               y lo que cambia es que de esos tres sí se sabe el ancho libre.
+               Borrarla sería la mentira contraria a la de la v861. */
+            anchoLibreDicho(pf) + '</p>';
         })() +
         /* La isócrona NO va en esta lista, y esto es una corrección: la
            v858 la declaró faltante y no lo estaba. Se calcula recorriendo el
@@ -8331,6 +8478,25 @@ function donaHTML(datos, colorDe, nombreDe) {
       }).join('') +
       fila('Vía con andén registrado', String(an.conAndenPct).replace('.', ',') + '%') +
       fila('Sin dato de andén', String(an.sinDatoPct).replace('.', ',') + '%') +
+      /* EL ANCHO LIBRE VA APARTE Y CON SU NOMBRE. Las dos filas de arriba son
+         de la RED —qué parte de los metros de vía tiene andén registrado en
+         OpenStreetMap— y esta es de los tramos que alguien caminó con cinta.
+         Meterla entre ellas la leería como un porcentaje más de lo mismo. */
+      (function () {
+        var cm = an.caminado;
+        if (!cm || !cm.hay) return '';
+        return fila('Ancho libre caminado',
+          conComa(cm.anchoLibreM) + ' m de media · el más estrecho, ' +
+          conComa(cm.anchoLibreMinM) + ' m') +
+          '<p class="lee"><b>' + cm.tramos + (cm.tramos === 1 ? ' tramo caminado' : ' tramos caminados') +
+          '</b> por ' + esc(cm.fuente.quien) + esc(cm.cuando) + '. El ancho LIBRE no es el ancho ' +
+          'del andén: descuenta postes, materas y vitrinas, así que siempre es el menor de los ' +
+          'dos. Y son ' + cm.tramos + ' tramos, no la red: los porcentajes de arriba siguen ' +
+          'siendo los de OpenStreetMap, porque llevar lo caminado al total sería extrapolar.' +
+          (cm.sinRampa ? ' <b>' + cm.sinRampa + (cm.sinRampa === 1 ? ' esquina sin rampa' : ' esquinas sin rampa') + '</b>.' : '') +
+          (cm.obstruye.length ? ' Lo que obstruye: ' + esc(cm.obstruye.join(', ')) + '.' : '') +
+          '</p>';
+      })() +
       '<p class="lee">' + esc(pf.lectura || '') + '</p>' +
       '</div>' +
       '</div>' +
@@ -13084,6 +13250,72 @@ function donaHTML(datos, colorDe, nombreDe) {
             'sector tiene análisis post-sector.'
           : rR.error;
         if (rR.ok) soltarPostR();
+        pintar(); return;
+      }
+      if (acc === 'and-guardar' || acc === 'and-borrar') {
+        var llAn = llaveDeSector(S.resultado && S.resultado.meta);
+        var soltarPostAn = function () {
+          /* La corrida post vieja se suelta: se calculó sin este dato (v897). */
+          if (S.corridas) { S.corridas.post = null;
+            if (S.corrida === 'post') { S.corrida = 'sector'; S.resultado = S.corridas.sector; } }
+        };
+        if (acc === 'and-borrar') {
+          var yaAn = confirmadasDeCampo(llAn).filter(function (x) {
+            return x.hueco === HUECO_ANDENES; })[0];
+          if (yaAn) borrarEntradaCampo(llAn, yaAn.id);
+          S.avisoPestana = 'Se quitó lo caminado. Del andén vuelve a saberse solo si ' +
+            'OpenStreetMap lo registra, nunca cuánto se puede caminar.';
+          soltarPostAn(); pintar(); return;
+        }
+        var leeAn = function (k, i) {
+          var sel = '[data-pcr-and="' + k + '"]' + (i === undefined ? '' : '[data-i="' + i + '"]');
+          var el = document.querySelector(sel);
+          return el ? String(el.value || '').trim() : '';
+        };
+        var filasAn = [], anchoMalo = [];
+        document.querySelectorAll('[data-pcr-and="tramo"]').forEach(function (el) {
+          var i = Number(el.getAttribute('data-i'));
+          var tramo = String(el.value || '').trim();
+          var anchoT = leeAn('ancho', i);
+          var material = leeAn('material', i), est = leeAn('estado', i);
+          var obst = leeAn('obstruye', i), rampa = leeAn('rampa', i);
+          /* Una fila enteramente vacía son los renglones de sobra que la
+             puerta ofrece para seguir anotando: se descartan en silencio. */
+          if (!tramo && !anchoT && !material && !est && !obst && !rampa) return;
+          var n = anchoT ? Number(String(anchoT).replace(',', '.')) : null;
+          if (anchoT && !(isFinite(n) && n > 0)) anchoMalo.push(tramo || ('fila ' + (i + 1)));
+          filasAn.push({ tramo: tramo.slice(0, 80), ancho: n,
+                         material: material.slice(0, 60), estado: est.slice(0, 60),
+                         obstruye: obst.slice(0, 60), rampa: rampa.slice(0, 20) });
+        });
+        var utilesAn = filasAn.filter(filaAndenUtil);
+        if (!utilesAn.length) {
+          /* Cada rechazo dice SU causa: «no anotó nada», «eso no es un
+             ancho» y «falta el nombre del tramo» son tres cosas distintas
+             para quien está escribiendo, y un solo mensaje manda a revisar
+             lo que está bien (v934). */
+          var sinNombre = filasAn.filter(function (x) {
+            return !x.tramo && x.ancho !== null && isFinite(x.ancho) && x.ancho > 0; });
+          S.avisoPestana = !filasAn.length
+            ? 'Falta caminar por lo menos un tramo y anotar su ancho libre.'
+            : anchoMalo.length
+              ? 'El ancho libre va en metros y tiene que ser mayor que cero: revise ' +
+                anchoMalo.join(', ') + '.'
+              : sinNombre.length
+                ? 'Cada tramo necesita su nombre: sin él no se puede volver a caminarlo.'
+                : 'Cada tramo necesita su nombre y su ancho libre en metros.';
+          pintar(); return;
+        }
+        var rAn = guardarEntradaCampo(llAn, {
+          hueco: HUECO_ANDENES, estado: 'confirmado',
+          valor: { filas: utilesAn },
+          fuente: { como: 'campo', quien: leeAn('quien'),
+                    fechaDoc: leeAn('fechaDoc'), fechaHasta: leeAn('fechaHasta') } });
+        S.avisoPestana = rAn.ok
+          ? 'Quedó anotado. El andén sale con su ancho libre caminado, y este sector tiene ' +
+            'análisis post-sector.'
+          : rAn.error;
+        if (rAn.ok) soltarPostAn();
         pintar(); return;
       }
       if (acc === 'norma-confirmar') {
@@ -18739,7 +18971,12 @@ function donaHTML(datos, colorDe, nombreDe) {
       que: 'si el andén se puede usar: ancho libre de verdad, material, estado y qué lo obstruye',
       con: 'cinta y la vista; se camina el tramo',
       demora: 'unos 5 minutos por tramo',
-      pega: '«Movilidad real», que hoy se declara sin dato oficial',
+      /* El destino estaba MAL, y se vio midiendo: «Movilidad real» pide
+         rutas, paraderos, frecuencias y aforos —comprobado en su propio
+         `panelVacio`— y no dice una palabra de andenes. Donde de verdad
+         aterriza es el perfil de la calle, que hoy publica si OpenStreetMap
+         registra un andén y nunca cuánto mide ni si se puede caminar. */
+      pega: '«El perfil de la calle», que hoy dice si hay andén y nunca cuánto se puede caminar',
       cols: ['Tramo', 'Ancho libre (m)', 'Material', 'Estado', 'Qué lo obstruye', 'Rampa en esquina'],
       filas: 8 },
     { t: 'Rutas observadas y su frecuencia',
@@ -21932,6 +22169,23 @@ function donaHTML(datos, colorDe, nombreDe) {
           '<span><b>' + String(an.sinDatoPct).replace('.', ',') + '%</b> sin dato</span>' +
         '</div>' +
       '</div>' +
+      /* El ancho LIBRE caminado va DEBAJO de la barra y no dentro: la barra
+         reparte los metros de vía de la red y esto son unos tramos medidos
+         con cinta. Meterlo entre los tres porcentajes lo leería como uno
+         más de lo mismo, que es la clase de la v934. */
+      (function () {
+        var cm = an.caminado;
+        if (!cm || !cm.hay) return '';
+        return '<p class="pcr-conc pcr-fuente-ok"><b>' + conComa(cm.anchoLibreM) +
+          ' m de ancho libre</b> en ' + cm.tramos +
+          (cm.tramos === 1 ? ' tramo caminado' : ' tramos caminados') +
+          '; el más estrecho, ' + conComa(cm.anchoLibreMinM) + ' m. Caminados por ' +
+          esc(cm.fuente.quien) + esc(cm.cuando) + '. <b>No es el ancho del andén</b>: ' +
+          'descuenta postes, materas y vitrinas, así que siempre es el menor de los dos. ' +
+          'Y son ' + cm.tramos + ' tramos, no la red: los porcentajes de arriba no cambian.' +
+          (cm.sinRampa ? ' ' + cm.sinRampa + (cm.sinRampa === 1 ? ' esquina sin rampa.' : ' esquinas sin rampa.') : '') +
+          '</p>';
+      })() +
       (an.sinDatoPct >= 50
         ? '<p class="pcr-conc">De <b>' + String(an.sinDatoPct).replace('.', ',') + '%</b> de las vías nadie ' +
           'ha dicho si tienen andén. Caminar el sector anotando dónde hay y dónde no es un levantamiento ' +
@@ -26402,16 +26656,90 @@ function donaHTML(datos, colorDe, nombreDe) {
       '</div>';
   }
 
+  /* ── LA PUERTA DE LA CUARTA PLANTILLA (v942) ─────────────────────────
+     «Estado de andenes por tramo». Las casillas son las seis de la plantilla
+     impresa. Dos cosas de la forma que cuesta recordar:
+
+       · el ancho es el LIBRE y el marcador de posición lo dice, porque es lo
+         único que separa esta plantilla de la del perfil: quien mide de la
+         cuneta al paramento está llenando la otra;
+       · la rampa es sí / no / en blanco, y el blanco NO es un no. Se cuenta
+         aparte y se dice, que es la decisión de la v939 con las piezas sin
+         anotar de la sección. */
+  function htmlPuertaAndenes(llave) {
+    var av = andenesDeCampo(llave);
+    var cab = '<p class="pcr-lab">' + esc(nombreDeHueco(HUECO_ANDENES)) + '</p>' +
+      '<p class="pcr-vac-doc">Se camina el tramo y se mide el ancho <b>LIBRE</b>: lo que queda ' +
+      'para caminar después de los postes, las materas y las vitrinas. No es el ancho del andén ' +
+      '—ese lo levanta «Perfil vial acotado»— y siempre es el menor de los dos.</p>';
+    if (av.estado === 'ok') {
+      return '<div class="pcr-vac-g pcr-act-g">' + cab +
+        '<p class="pcr-conc pcr-fuente-ok"><b>' + conComa(av.anchoLibreM) + ' m de ancho libre</b>, ' +
+        'media de ' + av.tramos + (av.tramos === 1 ? ' tramo caminado' : ' tramos caminados') +
+        '; el más estrecho, ' + conComa(av.anchoLibreMinM) + ' m. Caminados por ' +
+        esc(av.fuente.quien) + esc(av.cuando) + '.' +
+        (av.sinRampa ? ' <b>' + av.sinRampa + (av.sinRampa === 1 ? ' esquina sin rampa' : ' esquinas sin rampa') + '</b>' +
+          (av.rampaSinAnotar ? ' y ' + av.rampaSinAnotar + ' sin anotar' : '') + '.' : '') +
+        (av.obstruye.length ? ' Lo que obstruye: ' + esc(av.obstruye.join(', ')) + '.' : '') +
+        ' Los porcentajes de andén de la hoja NO cambian: son de la red entera y estos son ' +
+        av.tramos + ' tramos.</p>' +
+        '<button type="button" class="pcr-mini" data-pcr="and-borrar">' + ico('borrar', 16) +
+          'Quitar lo anotado</button>' +
+        '</div>';
+    }
+    var guardadas = av.filas || [];
+    var slots = guardadas.slice(0, 8);
+    while (slots.length < guardadas.length + 2 && slots.length < 8) slots.push(null);
+    if (!slots.length) { slots = [null, null]; }
+    var cel = function (k, i, v, etq, ph, modo) {
+      return '<label class="pcr-campo-linea"><span>' + etq + '</span>' +
+        '<input type="text"' + (modo ? ' inputmode="' + modo + '"' : '') + ' maxlength="60" ' +
+          'data-pcr-and="' + k + '" data-i="' + i + '" ' +
+          'value="' + esc(v != null ? String(v) : '') + '" placeholder="' + ph + '" /></label>';
+    };
+    var filas = slots.map(function (g, i) {
+      var v = g || {};
+      return '<div class="pcr-act-f">' +
+        cel('tramo', i, v.tramo, 'Tramo', 'Calle 11 entre carreras 3 y 4') +
+        cel('ancho', i, v.ancho, 'Ancho libre (m)', '1,2', 'decimal') +
+        cel('material', i, v.material, 'Material', 'concreto, adoquín, tierra') +
+        cel('estado', i, v.estado, 'Estado', 'bueno, regular, malo') +
+        cel('obstruye', i, v.obstruye, 'Qué lo obstruye', 'postes, materas, vitrinas') +
+        cel('rampa', i, v.rampa, 'Rampa en esquina', 'sí / no') +
+        '</div>';
+    }).join('');
+    return '<div class="pcr-vac-g pcr-act-g">' + cab + filas +
+      '<label class="pcr-campo-linea"><span>Quién lo caminó</span>' +
+        '<input type="text" maxlength="80" data-pcr-and="quien" ' +
+          'value="' + esc((av.fuente && av.fuente.quien) || '') + '" ' +
+          'placeholder="El nombre de quien caminó con la cinta" /></label>' +
+      '<label class="pcr-campo-linea"><span>Día del recorrido</span>' +
+        '<input type="text" maxlength="40" data-pcr-and="fechaDoc" ' +
+          'value="' + esc(av.desde || '') + '" placeholder="2026-09-18" /></label>' +
+      '<label class="pcr-campo-linea"><span>Y hasta (si tomó varios días)</span>' +
+        '<input type="text" maxlength="40" data-pcr-and="fechaHasta" ' +
+          'value="' + esc(av.hasta || '') + '" placeholder="se deja vacío si fue un solo día" /></label>' +
+      '<button type="button" class="pcr-mini" data-pcr="and-guardar">' + ico('ok', 16) +
+        'Guardar lo caminado en campo</button>' +
+      '</div>';
+  }
+
   function bloquePlantillas() {
     if (!S.resultado) return '';
     var llave = llaveDeSector(S.resultado.meta);
+    /* El conteo de puertas SE CALCULA y no se teclea: escrito a mano dentro
+       de la frase es una cifra que envejece sola, que es lo que la v903
+       corrigió en la conclusión de banda. */
+    var conectadas = 4, total = PLANTILLAS_DE_CAMPO.length;
     return h4('via', 'Lo que se levanta en la calle') +
-      '<p class="pcr-pista">La lámina imprime seis plantillas en blanco para llenar caminando. ' +
-      'Acá se anota lo que ya se midió, y la cifra entra en la hoja con <b>quién la levantó y ' +
-      'cuándo</b>. Por ahora están conectadas tres; las otras tres siguen en el papel.</p>' +
+      '<p class="pcr-pista">La lámina imprime ' + total + ' plantillas en blanco para llenar ' +
+      'caminando. Acá se anota lo que ya se midió, y la cifra entra en la hoja con <b>quién la ' +
+      'levantó y cuándo</b>. Por ahora están conectadas ' + conectadas + '; las otras ' +
+      (total - conectadas) + ' siguen en el papel.</p>' +
       htmlPuertaActividad(llave) +
       htmlPuertaPerfil(llave) +
-      htmlPuertaRutas(llave);
+      htmlPuertaRutas(llave) +
+      htmlPuertaAndenes(llave);
   }
 
   /* ── LA PRIMERA DE LAS CUATRO PUERTAS DE VACÍO (v931) ────────────────
@@ -31017,6 +31345,26 @@ function donaHTML(datos, colorDe, nombreDe) {
                    totalM: pf.acotado ? pf.acotado.totalM : null,
                    sinMedir: pf.acotado ? pf.acotado.sinMedir : [],
                    estadoCampo: pf.campo ? pf.campo.estado : null };
+        })(),
+        /* Lo que una prueba necesita leer se agrega acá y no se alcanza por
+           un lado, que es la regla de la v871. Va aparte del perfil porque
+           el ancho LIBRE y el ancho del andén son dos medidas distintas del
+           mismo andén, y juntarlas en un campo las publicaría como una. */
+        andenes: (function () {
+          var pf = null;
+          try { pf = perfilDeLaCalle(S.trazado); } catch (e) { return null; }
+          var cm = pf && pf.anden && pf.anden.caminado;
+          var an = (pf && pf.anden) || {};
+          var base = { estadoCampo: (pf && pf.andenes) ? pf.andenes.estado : null,
+                       conAndenPct: an.conAndenPct != null ? an.conAndenPct : null,
+                       sinDatoPct: an.sinDatoPct != null ? an.sinDatoPct : null,
+                       hay: false };
+          if (!cm || !cm.hay) return base;
+          return Object.assign(base, { hay: true, tramos: cm.tramos,
+            anchoLibreM: cm.anchoLibreM, anchoLibreMinM: cm.anchoLibreMinM,
+            conRampa: cm.conRampa, sinRampa: cm.sinRampa,
+            rampaSinAnotar: cm.rampaSinAnotar,
+            obstruye: cm.obstruye, materiales: cm.materiales, quien: cm.fuente.quien });
         })(),
         afluenciaFiable: (function () {
           var mc = mallaDeAfluencia();

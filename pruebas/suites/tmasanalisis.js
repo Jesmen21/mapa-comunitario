@@ -481,6 +481,83 @@ const CAPAS_IDEAM = [
        verdad se encoge, y se lee donde el lector la encuentra (v879). */
     o.laminaRutas = window.URBIS_PC_RECON.laminaA({ hoja: 'B' });
 
+    /* ── 10 · EL ANDÉN CAMINADO (v942) ─────────────────────────────
+       Va acá y no en `tsinmapear` por lo mismo que el perfil: este sector
+       tiene `sidewalk` en sus vías, así que el motor publica los tres
+       porcentajes de red y se puede medir que lo caminado NO los mueve. En
+       un sector sin una sola vía con andén registrado no habría contra qué
+       contrastar, y «no los mueve» pasaría por no haber nada que mover. */
+    await pesGen();
+    /* GUARDA DE MATERIAL, primero (v920): los porcentajes de red existen. */
+    o.andenMapa = (R.estado() || {}).andenes;
+    o.puertaAndenes = !!H().querySelector('[data-pcr="and-guardar"]');
+
+    const and = (k, i, v) => {
+      const sel = '[data-pcr-and="' + k + '"]' + (i === undefined ? '' : '[data-i="' + i + '"]');
+      const el = document.querySelector(sel);
+      if (el) { el.value = v; el.dispatchEvent(new Event('input', { bubbles: true })); }
+      return !!el;
+    };
+    const guardarAnd = async () => {
+      const b4 = H().querySelector('[data-pcr="and-guardar"]');
+      if (b4) { b4.click(); await esperar(500); }
+      await abrir();
+    };
+
+    // 1 · Un tramo sin ancho: no mide un andén, y se dice por qué.
+    and('tramo', 0, 'Calle 11 entre carreras 3 y 4');
+    and('material', 0, 'concreto');
+    await guardarAnd();
+    o.andRechazoSinAncho = ((R.estado() || {}).andenes || {}).estadoCampo;
+    o.andAvisoSinAncho = String((R.estado() || {}).aviso || '');
+
+    // 2 · Un ancho que no es un número: OTRO error, dicho distinto.
+    and('ancho', 0, 'angostico');
+    await guardarAnd();
+    o.andRechazoNoNumero = ((R.estado() || {}).andenes || {}).estadoCampo;
+    o.andAvisoNoNumero = String((R.estado() || {}).aviso || '');
+
+    // 3 · Un ancho medido y SIN nombre de tramo: el tercer error.
+    and('tramo', 0, '');
+    and('ancho', 0, '1,2');
+    await guardarAnd();
+    o.andAvisoSinNombre = String((R.estado() || {}).aviso || '');
+
+    // 4 · Tres tramos caminados de verdad, con su procedencia.
+    and('tramo', 0, 'Calle 11 entre carreras 3 y 4');
+    and('ancho', 0, '1,2'); and('material', 0, 'concreto');
+    and('estado', 0, 'regular'); and('obstruye', 0, 'postes'); and('rampa', 0, 'no');
+    and('tramo', 1, 'Carrera 3 entre calles 11 y 12');
+    and('ancho', 1, '0,6'); and('material', 1, 'adoquín');
+    and('estado', 1, 'malo'); and('obstruye', 1, 'materas'); and('rampa', 1, 'sí');
+    and('quien', undefined, 'Cleri Rodríguez');
+    and('fechaDoc', undefined, '2026-09-17');
+    await guardarAnd();
+    o.andenCampo = (R.estado() || {}).andenes;
+    o.entradaAnden = (function () {
+      try {
+        return (R.leerCampo(((R.estado() || {}).llaveCampo) || '') || [])
+          .filter(x => x.hueco === 'estado-de-andenes-por-tramo')
+          .map(x => ({ estado: x.estado, quien: (x.fuente || {}).quien,
+                       filas: ((x.valor || {}).filas || []).length }));
+      } catch (e) { return [{ error: String(e) }]; }
+    })();
+
+    // 5 · Lo que la ficha y el papel imprimen ya con la cinta adentro.
+    await pesGen();
+    o.puertaAndDice = (txt(H()).match(/Estado de andenes por tramo[^]{0,480}/) || [''])[0];
+    const bMov3 = H().querySelector('[data-pcr="pestana"][data-t="movilidad"]');
+    if (bMov3) { bMov3.click(); await esperar(400); }
+    await abrir();
+    const tabMov3 = () => H().querySelector('[data-tab="movilidad"]') || H();
+    /* La FICHA y la LÁMINA no dicen lo mismo con las mismas palabras: la
+       lámina rotula una fila «Ancho libre caminado» y la ficha lo escribe en
+       prosa debajo de la barra. Buscar la etiqueta de la lámina en la ficha
+       es medir otra superficie de la que se dice (v854). */
+    o.fichaAnden = (txt(tabMov3()).match(/m de ancho libre[^]{0,520}/) || [''])[0];
+    await pesGen();
+    o.laminaAnden = window.URBIS_PC_RECON.laminaA({ hoja: 'B' });
+
     // Y que todo esto viaje con la ficha archivada.
     o.guardado = (function () {
       try {
@@ -1213,6 +1290,67 @@ const CAPAS_IDEAM = [
   T('sin imágenes traídas de fuera, que el PDF dejaría en blanco',
     !conImagen(LAM) && !conImagen(PDF) &&
     !/(src|href)="https?:[^"]*(instagram|tiktok)/i.test(LAM + PDF));
+
+  console.log('\n  -- 10 · el andén caminado: ancho libre no es ancho de andén --');
+  {
+    const am = r.andenMapa || {}, ac = r.andenCampo || {};
+    const LA = r.laminaAnden || '';
+    // MATERIAL · los porcentajes de red existen, o «no los mueve» no mide nada.
+    T('MATERIAL · el motor publica los porcentajes de andén de la RED, y la puerta se pinta',
+      am.conAndenPct != null && am.sinDatoPct != null && r.puertaAndenes === true,
+      'con andén ' + am.conAndenPct + '% · sin dato ' + am.sinDatoPct + '% · puerta ' + r.puertaAndenes);
+    T('un tramo sin ancho libre no entra, y el aviso dice que falta el ancho',
+      r.andRechazoSinAncho !== 'ok' && /ancho libre/i.test(r.andAvisoSinAncho),
+      r.andRechazoSinAncho + ' · ' + r.andAvisoSinAncho.slice(0, 90));
+    T('y un ancho que no es un número lo dice DISTINTO, no con el mismo mensaje',
+      r.andRechazoNoNumero !== 'ok' && /metros|mayor que cero/i.test(r.andAvisoNoNumero) &&
+      r.andAvisoNoNumero !== r.andAvisoSinAncho,
+      r.andAvisoNoNumero.slice(0, 100));
+    T('y un ancho medido sin nombre de tramo, también distinto',
+      /nombre/i.test(r.andAvisoSinNombre) && r.andAvisoSinNombre !== r.andAvisoNoNumero,
+      r.andAvisoSinNombre.slice(0, 100));
+    T('dos tramos caminados quedan con su ancho libre y su procedencia',
+      ac.hay === true && ac.tramos === 2 && ac.anchoLibreM === 0.9 && ac.quien === 'Cleri Rodríguez',
+      ac.tramos + ' tramos · ' + ac.anchoLibreM + ' m de media · ' + ac.quien);
+    /* EL MÍNIMO se publica porque un andén se camina al ancho de su punto
+       más estrecho: 0,9 de media con un tramo de 0,6 no es un andén de 0,9. */
+    T('y el MÁS ESTRECHO va al lado de la media, que es al ancho que se camina',
+      ac.anchoLibreMinM === 0.6, 'mínimo ' + ac.anchoLibreMinM + ' m de media ' + ac.anchoLibreM);
+    T('la rampa se cuenta en sí / no y el blanco NO es un no',
+      ac.conRampa === 1 && ac.sinRampa === 1 && ac.rampaSinAnotar === 0,
+      'con ' + ac.conRampa + ' · sin ' + ac.sinRampa + ' · sin anotar ' + ac.rampaSinAnotar);
+    // LA QUE MÁS VALE: lo caminado NO se lleva al porcentaje de la red.
+    T('lo caminado NO mueve los porcentajes de la red: son tres tramos, no la red',
+      ac.conAndenPct === am.conAndenPct && ac.sinDatoPct === am.sinDatoPct,
+      'antes ' + am.conAndenPct + '/' + am.sinDatoPct + ' · después ' + ac.conAndenPct + '/' + ac.sinDatoPct);
+    T('la entrada quedó confirmada en el almacén, con su autor',
+      (r.entradaAnden || []).length === 1 && r.entradaAnden[0].estado === 'confirmado' &&
+      r.entradaAnden[0].filas === 2,
+      JSON.stringify(r.entradaAnden));
+    T('la puerta lo resume con el mínimo y con que los porcentajes no cambian',
+      /ancho libre/i.test(r.puertaAndDice) && /m[aá]s estrecho/i.test(r.puertaAndDice) &&
+      /NO cambian|no cambian/.test(r.puertaAndDice),
+      r.puertaAndDice.replace(/\s+/g, ' ').slice(0, 170) || 'no lo dice');
+    T('la ficha imprime el ancho libre y dice que no es el ancho del andén',
+      /ancho libre/i.test(r.fichaAnden) && /no es el ancho/i.test(r.fichaAnden),
+      r.fichaAnden.replace(/\s+/g, ' ').slice(0, 170) || 'no lo dice');
+    // Y en el PAPEL, que es donde el lector lo encuentra.
+    T('y el papel lleva el ancho libre con cuántos tramos se caminaron',
+      /Ancho libre caminado/.test(LA) && /tramos caminados/.test(LA),
+      (LA.match(/Ancho libre caminado[^<]{0,80}/) || ['no está'])[0]);
+    T('el papel dice que extrapolar a la red sería extrapolar, y no lo hace',
+      /extrapolar/.test(LA) && /siguen\s+siendo los de OpenStreetMap/.test(LA.replace(/\s+/g, ' ')),
+      /extrapolar/.test(LA) ? 'lo dice' : 'no lo dice');
+    /* Y la del papel se mide con la mayúscula incluida: la primera rama de
+       la carencia —la que corre con la plantilla del perfil levantada, que
+       es el caso de esta suite— abre la frase, así que dice «Del». Un ancla
+       sensible a la caja mide la rama equivocada. */
+    /* La carencia del perfil se SUMA, no se sustituye: el porcentaje de red
+       sin dato sigue ahí y borrarlo sería la mentira contraria a la v861. */
+    T('la carencia del perfil sigue nombrando el % de red sin dato, y suma lo caminado',
+      /del andén no se sabe en el/i.test(LA) && /sí se caminó el andén con cinta/.test(LA),
+      /del andén no se sabe en el/i.test(LA) ? 'las dos cosas' : 'perdió el % de red');
+  }
 
   console.log('\n  -- y todo viaja con la ficha --');
   T('la inundación queda archivada', (r.guardado || {}).inundacion === true);

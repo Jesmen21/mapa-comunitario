@@ -8592,6 +8592,137 @@ Queda escrito para que la tanda siguiente no vuelva a medirlo:
   que el eje B no se puede publicar sin la media histórica de Petro, Duque y
   Santos: es trabajo de archivo, no de código.
 
+## El ancho libre no es el ancho del andén (v942)
+
+La cuarta de las seis plantillas de campo. La elección la decidió la misma
+medición de siempre y esta vez separó limpio, porque las tres que quedaban no
+empatan en lo que de verdad importa:
+
+| Plantilla | ¿Otro camino ya lo hace? |
+|---|---|
+| **Estado de andenes por tramo** | **no** — el motor publica del andén EXACTAMENTE tres cifras |
+| Conteo de alturas por manzana | **sí** — `building:levels` por el mapeo por edificio (v754) |
+| Cupo real de equipamientos | no, pero no cierra ninguna carencia declarada |
+
+Medido en `motor-reglas.js`: del andén salen `conAndenPct`, `sinAndenPct` y
+`sinDatoPct`, y las tres dicen lo mismo —si OpenStreetMap REGISTRA un andén en
+cada metro de vía—. **Ninguna dice cuánto mide, de qué es, cómo está ni qué lo
+tapa.** Caminarlo con cinta es el único camino.
+
+### El hallazgo: el destino de la plantilla estaba mal
+
+La plantilla declara desde la v883 que se pega en «Movilidad real». Medido
+contra el `panelVacio` de esa caja, **ese vacío pide rutas, paraderos,
+frecuencias y aforos, y no dice una palabra de andenes**. Donde de verdad
+aterriza es «El perfil de la calle», que es la caja que hoy imprime los tres
+porcentajes.
+
+No es un detalle de redacción: «Dónde se pega» es el campo que separa esta
+plantilla de un anexo (v883), y apuntando al panel equivocado manda a quien
+vuelve de la calle a buscar su dato donde no está.
+
+### Dos medidas del mismo andén, y la segunda es siempre la menor
+
+Es la distinción que decide todo lo demás. La plantilla del perfil (v939) mide
+la **pieza de la sección** —de la cuneta al paramento—; esta mide **lo que
+queda para caminar** después de los postes, las materas y las vitrinas.
+Publicar una como la otra sería la clase de la v934, así que las dos se
+guardan, las dos se imprimen y cada una dice cuál es.
+
+Y el **mínimo** va al lado de la media, no como adorno: un andén se camina al
+ancho de su punto más estrecho. En el sector de prueba sale 0,9 m de media con
+un tramo de 0,6, y una media de 0,9 sin ese 0,6 describe un andén que no
+existe — es la misma razón por la que la v880 imprime la moda al lado de la
+media de pisos.
+
+### Lo que NO se hace: llevar lo caminado a la red
+
+Caminar dos tramos no dice nada de los otros noventa y ocho, así que los tres
+porcentajes **no se tocan** y hay una aserción dedicada a que no se muevan.
+Es lo mismo que la v939 declinó para el descuento de la calzada, y acá es más
+tentador porque el número quedaría más redondo.
+
+La carencia tampoco se borra, **y esa es la mitad que cuesta**: el porcentaje
+de red sin dato sigue siendo cierto. Se SUMA lo caminado en vez de
+sustituirlo — borrarlo sería la mentira contraria a la de la v861.
+
+#### La frase vive en un solo sitio, porque la carencia tiene dos ramas
+
+Salió al primer rojo y vale escribirlo: la carencia del perfil tiene una rama
+para cuando la plantilla del perfil está levantada y otra para cuando no, y la
+suite corre por la PRIMERA. Escribí el añadido solo en la segunda, así que la
+aserción se puso roja midiendo una rama que no corre.
+
+Las dos ramas llaman ahora a `anchoLibreDicho(pf)`. Y la primera es donde más
+importa: es la única donde conviven las dos medidas del mismo andén, en metros
+y a un palmo una de otra.
+
+### Entra por el punto único que la v939 creó
+
+No se abrió uno nuevo. `perfilDeLaCalle(trz)` ya es por donde pasan los siete
+sitios que imprimen algo del andén, así que lo caminado va dentro de `anden` y
+lo heredan sin que su autor se acuerde (v867). Un segundo punto habría sido la
+clase B comprada a sabiendas, en la misma tanda en que se cita.
+
+### La rampa es sí / no / en blanco, y el blanco no es un no
+
+Lista **cerrada**, por la misma razón que el `sub` de la v932: con texto libre,
+«no hay», «NO» y «ninguna» son tres valores distintos y el conteo deja de
+contar. Lo que no case se lee como sin anotar, que es un estado y no un cero —
+la decisión de la v939 con las piezas sin anotar de la sección.
+
+Lo que obstruye y el material se listan **sin taxonomía**: son texto de quien
+caminó, y agruparlos en categorías sería inventar una clasificación que la
+plantilla impresa no tiene.
+
+### Dónde vive cada rama
+
+* **`tmasanalisis`** · sus vías traen `sidewalk`, así que el motor publica los
+  tres porcentajes de red y se puede medir que lo caminado NO los mueve. En un
+  sector sin una sola vía con andén registrado, «no los mueve» pasaría por no
+  haber nada que mover. Ahí van la puerta, los tres rechazos y las cifras.
+* **`tdoslaminas`** · sin plantilla caminada: la guarda de que la hoja no
+  inventa un ancho libre donde nadie caminó.
+
+Cada rechazo dice **su** causa —falta el ancho, eso no es un número, falta el
+nombre del tramo—, que es la regla de la v934: un solo mensaje manda a revisar
+lo que está bien.
+
+#### Y la guarda cazó una ambigüedad de verdad
+
+La primera versión buscaba «ancho libre» en toda la hoja B y salió roja. No
+era un fallo del código: **la plantilla EN BLANCO describe con esas mismas
+palabras lo que va a medir**. Lo que no puede aparecer sin material es la
+CIFRA —el rótulo de la fila y la prosa de la ficha—, así que la guarda busca
+la forma medida y no la palabra. Es la lección de la v854 otra vez.
+
+### Demostrado contra la v941
+
+Revirtiendo **solo lo que imprime** —la puerta y el almacén se quedan, porque
+son lo que la suite necesita para LEER (v875)—: seis en rojo con el estado
+viejo impreso.
+
+```
+✗ dos tramos caminados quedan con su ancho libre  — undefined tramos · undefined m
+✗ y el MÁS ESTRECHO va al lado de la media        — mínimo undefined
+✗ la rampa se cuenta en sí / no                   — con undefined · sin undefined
+✗ la ficha imprime el ancho libre                 — no lo dice
+✗ y el papel lleva el ancho libre                 — no está
+✗ el papel dice que extrapolar sería extrapolar   — no lo dice
+```
+
+### Lo que esta plantilla NO cierra, medido
+
+El **estado** del andén —bueno, regular, malo— se guarda y se imprime, pero es
+un JUICIO y el propio método de la plantilla lo dice desde la v883: «dos
+personas califican distinto el mismo andén». No se cuenta ni se promedia, y no
+se convierte en una cifra de sector: eso pediría una escala acordada antes de
+salir, que es trabajo de curso y no de código.
+
+Quedan **dos** plantillas por conectar —«Conteo de alturas por manzana», que
+tiene otro camino, y «Cupo real de equipamientos»— y las tres de percepción,
+que además necesitan entrar en `huecosDeCampo` antes de tener formulario.
+
 ## La lista viva: lo que al pliego educativo todavía le falta (v866)
 
 Esta lista se quedó vieja **cinco veces**. Cuatro dentro de la hoja —la
