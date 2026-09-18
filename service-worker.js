@@ -1,4 +1,4 @@
-const URBIS_CACHE = 'urbis-v944-la-sexta-plantilla-declara-su-ruta';
+const URBIS_CACHE = 'urbis-v945-el-preterito-en-ste-es-tuteo';
 const URBIS_ASSETS = [
   './',
   './index.html',

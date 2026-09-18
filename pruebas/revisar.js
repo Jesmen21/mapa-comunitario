@@ -1543,12 +1543,29 @@ console.log('\n  -- el FODA del curso --');
      porque ese código aparece dos veces en el mismo renglón —en el `value` y
      en el rótulo— y solo una de las dos lleva al lado lo que lo identifica. */
   const NO_ES_TUTEO = [['js/13i-vitrina.js', 'te aromatica'],
-                       ['index.html', 'tarjeta de identidad (ti)']];
+                       ['index.html', 'tarjeta de identidad (ti)'],
+                       /* «ganaste» es la CLAVE con la que se guarda un aviso
+                          de premio, no un texto: la v909 la dejó escrita como
+                          lo que no se toca —cambiarla deja mudos los avisos
+                          que una persona ya tiene guardados—. El título que
+                          sí se lee ya habla de usted. */
+                       ['js/13j-premio.js', "sub: 'ganaste'"],
+                       ['js/13j-premio.js', "n.sub === 'ganaste'"]];
   /* Lo que termina en -ás y no es un futuro de tú. Corto a propósito: si
      entra una palabra nueva cuesta un renglón y se ve en rojo hasta que
      alguien la agregue, que es lo contrario de una guarda que falla abierto. */
   const NO_ES_FUTURO = ['quizás', 'jamás', 'además', 'atrás', 'detrás', 'demás',
     'compás', 'más', 'Tomás', 'Acacías'];
+  /* Lo que termina en -ste y NO es un pretérito de tú: sustantivos,
+     adjetivos, los puntos cardinales compuestos y los verbos en -sistir /
+     -sestar, que en tercera persona acaban igual. Corto a propósito, como
+     `NO_ES_FUTURO`: una palabra nueva cuesta un renglón y se ve en rojo
+     hasta que alguien la agregue. */
+  const NO_ES_PRETERITO = ['este', 'oeste', 'noreste', 'noroeste', 'sureste', 'suroeste',
+    'sudeste', 'sudoeste', 'celeste', 'triste', 'chiste', 'poste', 'coste', 'ajuste',
+    'desajuste', 'reajuste', 'contraste', 'desgaste', 'gaste', 'guste', 'liste', 'conteste',
+    'existe', 'consiste', 'asiste', 'insiste', 'persiste', 'resiste', 'subsiste', 'desiste',
+    'preste', 'reste', 'baste', 'aste', 'peste', 'agreste', 'hueste', 'este.', 'waste'];
 
   const arch = fs.readdirSync(R('js')).filter(f => /\.js$/.test(f)).map(f => 'js/' + f)
     .concat(fs.readdirSync(RAIZ).filter(f => /\.html$/.test(f)));
@@ -1580,6 +1597,24 @@ console.log('\n  -- el FODA del curso --');
       if (NO_ES_FUTURO.some(w => w.toLowerCase() === m[0].toLowerCase())) continue;
       apunta(m.index, m[0].length);
     }
+    /* Y el PRETÉRITO en -ste, que es la tercera mitad estructural (v945).
+       En castellano `-ste` no es desinencia de ninguna otra persona: «fuiste»,
+       «marcaste», «viste» solo pueden ser tú. Lo que colisiona no son otras
+       personas sino SUSTANTIVOS y los verbos en -sistir/-sestar, y esos se
+       listan —se lista lo permitido y se denuncia todo lo demás, que es la
+       forma de la guarda del voseo en -á (v880)—. */
+    const reSTE = /[A-Za-zÁÉÍÓÚÜÑáéíóúüñ]+ste(?![A-Za-zÁÉÍÓÚÜÑáéíóúüñ])/g;
+    while ((m = reSTE.exec(txt))) {
+      if (!cad[m.index]) continue;
+      if (NO_ES_PRETERITO.some(w => w.toLowerCase() === m[0].toLowerCase())) continue;
+      /* Una mayúscula DENTRO de la palabra no existe en la prosa castellana:
+         es un identificador dentro de una cadena —`urbisProCityGeoAjuste` en
+         un `oninput`—, y esos no le hablan a nadie. Se descarta por la FORMA
+         y no con un renglón de lista, que es lo que hace que un
+         identificador nuevo no cueste una excepción. */
+      if (/[A-ZÁÉÍÓÚÜÑ]/.test(m[0].slice(1))) continue;
+      apunta(m.index, m[0].length);
+    }
   });
 
   /* La guarda se comprueba contra casos de respuesta conocida, y los casos
@@ -1597,12 +1632,29 @@ console.log('\n  -- el FODA del curso --');
       'el «te» de código ' + (c[iCod] ? 'SE DENUNCIARÍA' : 'queda fuera') +
       ', el `${}` ' + (c[iHas] ? 'SE DENUNCIARÍA' : 'queda fuera') +
       ' y el «tu» del texto ' + (c[iTxt] ? 'se ve' : 'NO SE VERÍA'));
+
+    /* Y la regla del pretérito, contra su propio caso de respuesta conocida:
+       sin esto podría quedarse sin morder —una lista de permitidas que se
+       coma la regla, un `continue` de más— y todo seguiría en verde, que es
+       como pasó la v878 con su propia lista. */
+    const re = /[A-Za-zÁÉÍÓÚÜÑáéíóúüñ]+ste(?![A-Za-zÁÉÍÓÚÜÑáéíóúüñ])/g;
+    const ok = w => { re.lastIndex = 0; const x = re.exec(w); return !!x &&
+      !NO_ES_PRETERITO.some(z => z.toLowerCase() === x[0].toLowerCase()) &&
+      !/[A-ZÁÉÍÓÚÜÑ]/.test(x[0].slice(1)); };
+    comprobar('la del pretérito en -ste caza el tuteo y deja pasar lo que no lo es',
+      ok('fuiste') && ok('marcaste') && ok('leíste') &&
+      !ok('este') && !ok('existe') && !ok('noreste') && !ok('urbisProCityGeoAjuste'),
+      'tuteo: fuiste ' + ok('fuiste') + ' · marcaste ' + ok('marcaste') +
+      ' · leíste ' + ok('leíste') + ' — no lo es: este ' + ok('este') +
+      ' · existe ' + ok('existe') + ' · noreste ' + ok('noreste') +
+      ' · urbisProCityGeoAjuste ' + ok('urbisProCityGeoAjuste'));
   })();
 
   comprobar('ningún tuteo en el texto que ve el usuario (§9)', tuteos.length === 0,
     tuteos.length ? tuteos.slice(0, 40).join(' · ') + (tuteos.length > 40 ? ' …y ' + (tuteos.length - 40) + ' más' : '')
-                  : 'revisados ' + arch.length + ' archivos; los pronombres y el futuro en -ás son estructurales, ' +
-                    'el presente y los imperativos NO se pueden separar de la tercera persona y esa mitad no la cubre nadie');
+                  : 'revisados ' + arch.length + ' archivos; los pronombres, el futuro en -ás y el pretérito ' +
+                    'en -ste son estructurales; el presente y los imperativos NO se pueden separar de la ' +
+                    'tercera persona y esa mitad no la cubre nadie');
 })();
 
 console.log('\n  -- un nombre, una cosa --');

@@ -8958,6 +8958,97 @@ es justo lo que la tabla de arriba desaconseja.
 Quedan los **tres paneles de percepción**, que además necesitan entrar en
 `huecosDeCampo` antes de tener formulario: hoy el almacén no los acepta.
 
+## El pretérito en -ste es tuteo, y nadie lo miraba (v945)
+
+Salió abriendo `js/68` para medir los tres paneles de percepción, que es la
+tanda siguiente. En la caja «Percepción del lugar», impresa en la lámina de
+60 × 90:
+
+> A la hora que **fuiste**, con los cinco sentidos: anote día y hora…
+
+Tuteo y usted en la MISMA frase, que es como se ven las cosas cuando alguien
+corrigió medio aviso. Es el mismo hallazgo de la v914 con los dos `imprimí`, y
+por la misma vía: se abre un archivo para otra cosa y el defecto está ahí.
+
+### Y la guarda no podía verlo, por construcción
+
+La de la v909 cubre **dos** familias estructurales —los pronombres y el futuro
+en -ás— y su propio mensaje de éxito lo declara: *«el presente y los
+imperativos NO se pueden separar de la tercera persona y esa mitad no la cubre
+nadie»*.
+
+Lo que ninguna de las dos tandas midió es que hay una **tercera** familia que
+sí se puede separar: **en castellano `-ste` no es desinencia de ninguna otra
+persona.** «Fuiste», «marcaste», «viste» solo pueden ser tú; la primera es
+«fui», «marqué», «vi», y la tercera «fue», «marcó», «vio». No hay ambigüedad
+que resolver.
+
+Lo que colisiona no son otras personas: son **sustantivos y adjetivos** —este,
+oeste, celeste, chiste, poste, ajuste— y los verbos en **-sistir / -sestar**,
+que en tercera persona acaban igual: existe, consiste, insiste, persiste. Esos
+se listan, como `NO_ES_FUTURO`: se lista lo permitido y se denuncia todo lo
+demás, que es la forma de la guarda del voseo en -á (v880).
+
+### Un identificador se descarta por la FORMA, no con un renglón de lista
+
+El primer barrido denunció `urbisProCityGeoAjuste`, que vive dentro de un
+`oninput` y por tanto dentro de una cadena. Meterlo en la lista habría sido
+empezar a coleccionar identificadores.
+
+**Una mayúscula DENTRO de la palabra no existe en la prosa castellana.** Así
+que se descarta por eso, y un identificador nuevo no cuesta una excepción. Va
+después de la lista de permitidas y antes de denunciar.
+
+La única excepción que sí quedó es `'ganaste'`, y con su razón escrita al lado:
+es la **clave** con la que se guarda un aviso de premio —la v909 la dejó
+anotada como lo que no se toca, porque cambiarla deja mudos los avisos que una
+persona ya tiene guardados—. El título que sí se lee ya hablaba de usted.
+
+### Diez en el módulo educativo, corregidos uno por uno
+
+Medidos dentro de cadenas: quince denuncias, y de ellas **diez son texto que
+ve el usuario**, todas en `js/68`:
+
+| Salía | Dice |
+|---|---|
+| el centro del trazo guardado que **abriste** | que **abrió** |
+| A la hora que **fuiste** | A la hora en la que **estuvo** |
+| lo que **trazaste**. Si lo **redibujas**, vuelve a tocar | lo que **trazó**. Si lo **vuelve a dibujar**, **toque** otra vez |
+| De dónde los **sacaste** | De dónde los **sacó** |
+| si **leíste** la foto | si **leyó** la foto |
+| Seguir donde **quedaste** (×2) | Seguir donde **quedó** |
+| **Cambiaste** de área | **Cambió** de área |
+| Todavía no **analizaste** ningún sector | Todavía no **ha analizado** ningún sector |
+| Cada sector que **analizaste** | Cada sector que **analizó** |
+
+**Uno por uno y no con un reemplazo masivo**, que es la lección de la v878: la
+tercera fila no se arregla cambiando una palabra —«redibujas» es presente de tú
+y «vuelve a tocar» es un imperativo que también cambia—, y un barrido que solo
+mirara el `-ste` habría dejado media frase en tuteo.
+
+Una suite citaba el texto viejo (`torigen`, «De dónde los sacaste») y se
+actualizó, como las catorce de la v878 y las ocho de la v909.
+
+### La guarda se defiende sola
+
+Si la regla nueva se quedara sin morder —una lista de permitidas que se coma el
+caso, un `continue` de más— todo seguiría en verde y nadie se enteraría. Hay
+una comprobación aparte, contra casos de respuesta conocida: que `fuiste`,
+`marcaste` y `leíste` se denuncien, y que `este`, `existe`, `noreste` y
+`urbisProCityGeoAjuste` no. Es el patrón de la v878 con su propia lista de
+voseo.
+
+Y el mensaje de éxito se corrigió: ahora dice que son **tres** las familias
+estructurales, no dos. Una guarda que declara cubrir menos de lo que cubre es
+tan engañosa como una que declara cubrir más.
+
+### Lo que sigue sin cubrirse, y queda dicho
+
+El **presente** y los **imperativos** de tú siguen sin regla, y por la razón
+que la v909 ya escribió: la forma de tú es idéntica a la de tercera persona, y
+a veces a un sustantivo. «Marca el punto» y «la app marca el punto» se escriben
+igual. Esa mitad se caza leyendo, como se cazó «redibujas» acá.
+
 ## La lista viva: lo que al pliego educativo todavía le falta (v866)
 
 Esta lista se quedó vieja **cinco veces**. Cuatro dentro de la hoja —la

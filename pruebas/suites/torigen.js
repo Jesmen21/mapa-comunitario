@@ -143,7 +143,7 @@ for(let i=0;i<40;i++){ const a=i*9*Math.PI/180, d=(140+(i%4)*50)/111320;
     }
     await abrir();
     let t=(H().textContent||'').replace(/\s+/g,' ').trim();
-    o.pideLaFuente=/De dónde los sacaste/.test(t);
+    o.pideLaFuente=/De dónde los sacó/.test(t);
     o.avisaSinFuente=/Dos líneas ahora le ahorran/.test(t);
     // Y se anota de dónde salieron.
     const doc=H().querySelector('[data-pcr-fuente="documento"]');

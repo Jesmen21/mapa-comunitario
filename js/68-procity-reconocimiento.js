@@ -3055,7 +3055,7 @@
        procedencia es peor que no declararla: la ficha se lee como fundada
        en algo que no es. Un origen nuevo entra ACÁ el mismo día que se
        inventa. */
-    trazo: 'el centro del trazo guardado que abriste'
+    trazo: 'el centro del trazo guardado que abrió'
   };
 
   function comoSeEligioElCentro(id) {
@@ -9033,7 +9033,7 @@ function donaHTML(datos, colorDe, nombreDe) {
         'g3 caja-vacio') +
 
       caja('Percepción del lugar',
-        panelCampo('A la hora que fuiste, con los cinco sentidos: anote día y hora, y lo que estas cifras no ven.',
+        panelCampo('A la hora en la que estuvo, con los cinco sentidos: anote día y hora, y lo que estas cifras no ven.',
           ['Día y hora', 'Ruido: de qué y cuánto', 'Olores', 'Luz y sombra', 'Quién está en la calle', 'Dónde se sintió a gusto, y dónde no']),
         'fam-campo caja-campo') +
       caja('Lo que no cambia',
@@ -14508,7 +14508,7 @@ function donaHTML(datos, colorDe, nombreDe) {
           '<label class="pcr-lab">Área dibujada</label>' +
           '<p class="pcr-areainfo">' + (S.poligono ? S.poligono.length : 0) + ' vértices' +
             (areaDelPoligono() ? ' · ' + formatearArea(areaDelPoligono()) : '') + '</p>' +
-          '<small class="pcr-pista">Se analiza exactamente lo que trazaste. Si lo redibujas, vuelve a tocar «El área dibujada».</small>' +
+          '<small class="pcr-pista">Se analiza exactamente lo que trazó. Si lo vuelve a dibujar, toque otra vez «El área dibujada».</small>' +
         '</div>'
       : '<div class="pcr-campo">' +
           '<label class="pcr-lab">Centro del sector</label>' +
@@ -27167,7 +27167,7 @@ function donaHTML(datos, colorDe, nombreDe) {
           'dónde salieron</b>. No se pueden citar en una entrega sin volver a buscar la fuente.</p>';
     }
     return '<div class="pcr-cabe-fuente">' +
-      '<p class="pcr-lab">De dónde los sacaste</p>' +
+      '<p class="pcr-lab">De dónde los sacó</p>' +
       '<label class="pcr-campo-linea">' +
         '<span>Documento</span>' +
         '<input type="text" maxlength="120" data-pcr-fuente="documento" ' +
@@ -28988,7 +28988,7 @@ function donaHTML(datos, colorDe, nombreDe) {
     return '' +
       h4('exportar', 'Llevarlo a otro programa') +
       '<p class="pcr-tarea-intro">Sale <b>georreferenciado y en vectores</b>: el contorno, cada uso con su ' +
-      'categoría y su distancia, y —si leíste la foto— las manchas de vegetación como polígonos de verdad, ' +
+      'categoría y su distancia, y —si leyó la foto— las manchas de vegetación como polígonos de verdad, ' +
       'editables y acotables. El DXF va en <b>metros UTM reales</b>: en AutoCAD 1 unidad = 1 metro.</p>' +
       (d.campo
         ? '<p class="pcr-pista">Van <b>las dos mitades</b>: lo que OpenStreetMap tenía registrado y lo que ' +
@@ -30296,7 +30296,7 @@ function donaHTML(datos, colorDe, nombreDe) {
     } catch (e) {}
 
     return '<div class="pcr-medir pcr-reanudar">' +
-      '<p class="pcr-lab">Seguir donde quedaste</p>' +
+      '<p class="pcr-lab">Seguir donde quedó</p>' +
       '<p class="pcr-conc"><b>' + esc(f.nombre || 'Sector sin nombre') + '</b>' +
       (cuando ? ' · ' + esc(cuando) : '') + ' · ' + (f.total || 0) + ' usos' +
       (medido.length ? ', con ' + esc(medido.join(', ')) : '') + '.</p>' +
@@ -30634,7 +30634,7 @@ function donaHTML(datos, colorDe, nombreDe) {
       if (hecho.lote) piezas.push('el lote');
       if (hecho.indices) piezas.push('los índices del POT');
       if (hecho.campo) piezas.push('lo levantado en campo');
-      S.aviso = 'Cambiaste de área, así que la hoja arranca de cero. ' +
+      S.aviso = 'Cambió de área, así que la hoja arranca de cero. ' +
         (comoSeLlamaba ? '«' + comoSeLlamaba + '»' : 'El sector anterior') +
         ' quedó guardado con ' + listaEnTexto(piezas) +
         ': está en la pestaña «Sector», y con «Retomar» vuelve a trabajarlo.';
@@ -30781,7 +30781,7 @@ function donaHTML(datos, colorDe, nombreDe) {
       if (reciente.terreno) med.push('el terreno');
       if (reciente.lote) med.push('el lote');
       el.innerHTML = ico('atras', 18) +
-        '<span><b>Seguir donde quedaste</b>' +
+        '<span><b>Seguir donde quedó</b>' +
         '<small>' + esc(reciente.nombre || 'Sector sin nombre') + ' · ' +
         (reciente.total || 0) + ' usos' + (med.length ? ', con ' + esc(med.join(', ')) : '') +
         '</small></span>' + asaPlegar();
@@ -31138,7 +31138,7 @@ function donaHTML(datos, colorDe, nombreDe) {
     var fichas = leerFichas();
     if (!fichas.length) {
       return '<div class="u52-empty-card"><span class="pcr-vacio-ico">' + ico('lupa', 26) + '</span><div>' +
-        '<b>Todavía no analizaste ningún sector</b>' +
+        '<b>Todavía no ha analizado ningún sector</b>' +
         '<small>Con la lupa del mapa mira qué hay en un sector antes de ir a mapearlo. ' +
         'Cada análisis queda guardado acá.</small></div></div>' +
         '<div class="pcr-pest-pie">' +
@@ -31148,7 +31148,7 @@ function donaHTML(datos, colorDe, nombreDe) {
     var hayCampo = puntosDelCurso().length > 0;
 
     return '<div class="pcr-pestana">' +
-      '<p class="pcr-pista">Cada sector que analizaste queda acá con su informe completo, ' +
+      '<p class="pcr-pista">Cada sector que analizó queda acá con su informe completo, ' +
       'aunque cierre la app. Cargue el área para que los mapeos del curso se sumen a lo que ya se sabía.</p>' +
       bloqueCurso() +
       bloqueCotejo() +
