@@ -6419,8 +6419,16 @@ function donaHTML(datos, colorDe, nombreDe) {
           '<div class="pl-c"><i>Qué se mide</i><span>' + esc(p.que) + '</span></div>' +
           '<div class="pl-c"><i>Con qué</i><span>' + esc(p.con) + '</span></div>' +
           '<div class="pl-c"><i>Cuánto demora</i><span>' + esc(p.demora) + '</span></div>' +
-          '<div class="pl-c pl-pega"><i>Dónde se pega</i><span>' + esc(p.pega) + '</span></div>' +
+          /* «Dónde se pega» dice a qué panel llega la cifra. La que entra por
+             un camino DISTINTO del común lo añade acá mismo, en la misma
+             celda: un renglón propio cuesta cuatro milímetros de papel a las
+             otras tres plantillas —medido— y las deja bajo el piso de 45 mm.
+             El camino común lo dice la conclusión de la banda, una vez
+             (v877). */
+          '<div class="pl-c pl-pega"><i>Dónde se pega</i><span>' + esc(p.pega) +
+'</span></div>' +
         '</div>' +
+
         '<table class="ancha pl-rej"><thead><tr>' +
           p.cols.map(function (c) { return '<th>' + esc(c) + '</th>'; }).join('') +
         '</tr></thead><tbody>' +
@@ -9427,8 +9435,31 @@ function donaHTML(datos, colorDe, nombreDe) {
             /* §8 (v903) · igual acá: «Seis plantillas» eran seis el día que se
                escribió, y el día que entre la séptima nadie se va a acordar
                de este renglón. */
+            /* Y DÓNDE SE TECLEA, una vez y no seis (v944). La v877 dejó la
+               regla escrita para el método de los mapas de categoría: ocho
+               párrafos idénticos son la repetición que este pliego prohíbe,
+               y medido cuestan papel — con la frase bajo las seis, tres
+               plantillas caían por debajo del piso de 45 mm. Así que la
+               común va acá, y solo la que entra por OTRO camino lo dice en
+               su propia caja. */
+            var conPuerta = PLANTILLAS_DE_CAMPO.filter(function (x) { return x.via === 'puerta'; });
+            var otroCamino = PLANTILLAS_DE_CAMPO.filter(function (x) { return x.via !== 'puerta'; });
             return (function (n) { return n === 1 ? 'Una plantilla en blanco' : n + ' plantillas en blanco'; })(PLANTILLAS_DE_CAMPO.length) +
                    ', cada una con dónde se pega lo que se traiga. ' +
+                   'Lo levantado se teclea en la ficha del sector, pestaña General, en «Lo que se ' +
+                   'levanta en la calle»: ' +
+                   (conPuerta.length === 1 ? 'una tiene ahí su formulario'
+                                           : conPuerta.length + ' tienen ahí su formulario') +
+                   (otroCamino.length
+                     /* Solo la RUTA, no lo que esa ruta deja fuera. Medido: la
+                        frase de `noCarga` gana un renglón en la hoja acostada y
+                        con él tres plantillas caen a 44,4 mm, bajo el piso de
+                        45. Su lector es quien TECLEA, y ahí ya está impresa —en
+                        el bloque de la ficha—, donde no cuesta papel. */
+                     ? '. ' + otroCamino.map(function (x) {
+                         return '«' + x.t + '» no: entra ' + (x.comoEntra || 'por otro camino');
+                       }).join(' ')
+                     : '.') + ' ' +
                    'Una plantilla vacía no mide nada: las carencias que cierran —la frecuencia ' +
                    'de las rutas, el perfil acotado, el cupo— siguen abiertas hasta que alguien ' +
                    'las llene en la calle.';
@@ -11543,6 +11574,7 @@ function donaHTML(datos, colorDe, nombreDe) {
       '.caja-plantilla .pl-pega{ grid-column:1 / -1; border-top:.2mm solid #D8E2EA; padding-top:1mm }' +
       '.caja-plantilla .pl-pega i{ color:#1B6B4A }' +
       '.caja-plantilla .pl-pega span{ font-weight:700 }' +
+
       '.pl-rej{ table-layout:fixed }' +
       '.pl-rej th{ font-size:2.3mm; line-height:1.15; vertical-align:bottom; padding-bottom:.6mm }' +
       '.pl-rej td{ height:5.2mm; border:.2mm solid #C7D7E4; background:#fff; padding:0 }' +
@@ -19133,6 +19165,21 @@ function donaHTML(datos, colorDe, nombreDe) {
       con: 'a ojo, con la libreta; una persona sola',
       demora: 'unos 20 minutos por manzana',
       pega: '«Potencial edificatorio» y el mapa de alturas',
+      /* Esta NO tiene puerta propia, y es la única: sus pisos y su uso en
+         planta baja entran punto por punto con el mapeo por edificio, que
+         los cuenta para post-sector desde la v754. Una puerta aparte sería
+         una segunda ruta para el mismo hecho (v879). Lo que esa ruta no
+         carga —la columna de observación— va dicho abajo. */
+      via: 'edificio',
+      /* Cortas a propósito: las dos se imprimen en la lámina, y ahí cada
+         renglón se paga en milímetros de papel. El porqué de que no tenga
+         formulario propio va en el comentario de arriba y en la bitácora,
+         que es donde lo lee quien programa; al pliego le basta con adónde
+         se teclea y qué se queda sin sitio. */
+      comoEntra: 'punto por punto, con el mapeo por edificio: se marca cada construcción y se ' +
+        'le anotan los pisos y el uso de la planta baja.',
+      noCarga: 'la columna de observación —la duda del altillo o el semisótano— no tiene dónde ' +
+        'quedar ahí: se resuelve al contar.',
       cols: ['Manzana', 'Lado o dirección', 'Pisos', 'Uso en planta baja', 'Observación'],
       filas: 10 },
     { t: 'Perfil vial acotado',
@@ -19184,6 +19231,49 @@ function donaHTML(datos, colorDe, nombreDe) {
      v857 dejó advertido y la v878 volvió a encontrar. Derivándolo no puede
      repetirse: cambiar el título cambia el id solo. */
   PLANTILLAS_DE_CAMPO.forEach(function (x) { x.id = slugPliego(x.t); });
+
+  /* ── LA SEXTA PLANTILLA NO LLEVA PUERTA, Y ESO SE DECLARA (v944) ─────
+     Medido antes de escribir, que es la regla de la v863, y esta vez la
+     medición dice que NO se conecte:
+
+       · la ficha del mapeo por edificio (`js/04`, `EDIF.leer`) devuelve
+         `pisos`, `pisosRegistrados`, `usosPorPiso` y `plantaBaja`, cada uno
+         con su punto y su fecha, y `edificiosDeCampo` los cuenta para
+         post-sector desde la v754;
+       · las cinco columnas de «Conteo de alturas por manzana» son
+         Manzana · Lado o dirección · Pisos · Uso en planta baja ·
+         Observación, y CUATRO de las cinco ya tienen sitio ahí, con más
+         precisión: el punto ubica mejor que «lado de la manzana».
+
+     Así que una puerta propia sería una segunda ruta para el mismo hecho, o
+     sea la clase B a sabiendas — y la prueba de la clase lo confirma: no
+     existe un cambio razonable que deba mover el conteo de pisos de una
+     manera en el mapeo y de otra en la plantilla.
+
+     Lo que SÍ faltaba es que la plantilla dijera CÓMO entra su dato. Sin
+     eso, quien la llena caminando busca un formulario que no existe, no lo
+     encuentra, y la hoja se queda en la carpeta. `via` lo dice, y de `via`
+     sale el conteo de conectadas — que hasta la v943 iba TECLEADO debajo de
+     un comentario que decía que se calculaba.
+
+     Y lo que la ruta del mapeo NO carga va dicho también: la columna
+     «Observación», que es donde el propio método de la plantilla manda
+     anotar la duda del altillo o el semisótano. Un dato de campo que no
+     tiene dónde aterrizar se declara, no se calla (v849). */
+  PLANTILLAS_DE_CAMPO.forEach(function (x) {
+    if (!x.via) x.via = 'puerta';
+  });
+
+  /* El registro de puertas: cada `htmlPuertaX` se apunta acá al declararse.
+     De él salen el CONTEO y el RENDER, así que una puerta nueva sube la
+     cifra sin que su autor se acuerde — y no puede haber una puerta que se
+     pinte y no se cuente, que es lo que pasa con dos listas (v879). */
+  var PUERTAS_DE_PLANTILLA = {};
+  function puertasConectadas() {
+    return PLANTILLAS_DE_CAMPO.filter(function (x) {
+      return typeof PUERTAS_DE_PLANTILLA[x.id] === 'function';
+    });
+  }
   var PANELES_DE_CAMPO = ['percepcion-del-lugar', 'lo-que-no-cambia', 'voces-de-quien-vive-aca']
     .concat(PLANTILLAS_DE_CAMPO.map(function (x) { return x.id; }));
   /* Los cinco vacíos obligatorios (v849): baldosas que no ceden en ningún
@@ -26689,6 +26779,8 @@ function donaHTML(datos, colorDe, nombreDe) {
      tramo cuenta igual— mientras que la del motor pesa por metros de vía.
      Son dos promedios distintos de la misma cantidad, y callarlo sería
      presentar cuatro tramos medidos como si fueran la red entera. */
+  PUERTAS_DE_PLANTILLA[HUECO_ACTIVIDAD] = htmlPuertaActividad;
+
   function htmlPuertaPerfil(llave) {
     var pv = perfilDeCampo(llave);
     var cab = '<p class="pcr-lab">' + esc(nombreDeHueco(HUECO_PERFIL)) + '</p>' +
@@ -26761,6 +26853,8 @@ function donaHTML(datos, colorDe, nombreDe) {
      Y no hay fila que marcar, a diferencia del paramento (v934): cada fila es
      una RUTA distinta y todas cuentan. Lo que decide cuál es cuál es el
      letrero, que es como se enganchan a las de OpenStreetMap. */
+  PUERTAS_DE_PLANTILLA[HUECO_PERFIL] = htmlPuertaPerfil;
+
   function htmlPuertaRutas(llave) {
     var rv = rutasDeCampo(llave);
     var cab = '<p class="pcr-lab">' + esc(nombreDeHueco(HUECO_RUTAS)) + '</p>' +
@@ -26841,6 +26935,8 @@ function donaHTML(datos, colorDe, nombreDe) {
        · la rampa es sí / no / en blanco, y el blanco NO es un no. Se cuenta
          aparte y se dice, que es la decisión de la v939 con las piezas sin
          anotar de la sección. */
+  PUERTAS_DE_PLANTILLA[HUECO_RUTAS] = htmlPuertaRutas;
+
   function htmlPuertaAndenes(llave) {
     var av = andenesDeCampo(llave);
     var cab = '<p class="pcr-lab">' + esc(nombreDeHueco(HUECO_ANDENES)) + '</p>' +
@@ -26910,6 +27006,8 @@ function donaHTML(datos, colorDe, nombreDe) {
      entrada es quien hizo la ronda —quien responde por el levantamiento— y
      `informo` de cada fila es quien contestó en esa portería. Juntarlas
      pondría a una persona a responder por lo que dijo otra. */
+  PUERTAS_DE_PLANTILLA[HUECO_ANDENES] = htmlPuertaAndenes;
+
   function htmlPuertaCupo(llave) {
     var cv = cupoDeCampo(llave);
     var cab = '<p class="pcr-lab">' + esc(nombreDeHueco(HUECO_CUPO)) + '</p>' +
@@ -26969,23 +27067,51 @@ function donaHTML(datos, colorDe, nombreDe) {
       '</div>';
   }
 
+  PUERTAS_DE_PLANTILLA[HUECO_CUPO] = htmlPuertaCupo;
+
   function bloquePlantillas() {
     if (!S.resultado) return '';
     var llave = llaveDeSector(S.resultado.meta);
     /* El conteo de puertas SE CALCULA y no se teclea: escrito a mano dentro
        de la frase es una cifra que envejece sola, que es lo que la v903
        corrigió en la conclusión de banda. */
-    var conectadas = 5, total = PLANTILLAS_DE_CAMPO.length;
+    var con = puertasConectadas(), total = PLANTILLAS_DE_CAMPO.length;
+    var otraVia = PLANTILLAS_DE_CAMPO.filter(function (x) { return x.via !== 'puerta'; });
+    var sinSitio = total - con.length - otraVia.length;
     return h4('via', 'Lo que se levanta en la calle') +
       '<p class="pcr-pista">La lámina imprime ' + total + ' plantillas en blanco para llenar ' +
       'caminando. Acá se anota lo que ya se midió, y la cifra entra en la hoja con <b>quién la ' +
-      'levantó y cuándo</b>. Por ahora están conectadas ' + conectadas + '; las otras ' +
-      (total - conectadas) + ' siguen en el papel.</p>' +
-      htmlPuertaActividad(llave) +
-      htmlPuertaPerfil(llave) +
-      htmlPuertaRutas(llave) +
-      htmlPuertaAndenes(llave) +
-      htmlPuertaCupo(llave);
+      'levantó y cuándo</b>. ' +
+      (con.length === 1 ? 'Una tiene su puerta acá' : con.length + ' tienen su puerta acá') +
+      (otraVia.length
+        ? '; ' + (otraVia.length === 1 ? 'otra entra' : otraVia.length + ' entran') +
+          ' por otro camino, dicho abajo'
+        : '') +
+      (sinSitio > 0
+        ? '; ' + (sinSitio === 1 ? 'la otra sigue' : 'las otras ' + sinSitio + ' siguen') +
+          ' en el papel'
+        : '') + '.</p>' +
+      /* Se recorre la LISTA y no cinco llamadas escritas a mano: así el
+         conteo de arriba y lo que se pinta salen del mismo sitio, y una
+         puerta nueva no puede pintarse sin contarse (v879). */
+      PLANTILLAS_DE_CAMPO.map(function (x) {
+        var f = PUERTAS_DE_PLANTILLA[x.id];
+        if (typeof f === 'function') return f(llave);
+        if (x.via === 'puerta') return '';
+        /* La que entra por otro camino lo DICE, en vez de faltar: quien
+           llenó la hoja caminando tiene que saber dónde se teclea, o la
+           plantilla se queda en la carpeta. Verde y no ámbar: no es un
+           vacío, es una ruta distinta (v880). */
+        return '<div class="pcr-vac-g pcr-act-g">' +
+          '<p class="pcr-lab">' + esc(x.t) + '</p>' +
+          '<p class="pcr-conc pcr-fuente-ok"><b>Esta no se teclea acá.</b> Entra ' +
+          esc(x.comoEntra || 'por otro camino de la aplicación') + '</p>' +
+          (x.noCarga
+            ? '<p class="pcr-vac-doc"><b>Y lo que ese camino no carga:</b> ' +
+              esc(x.noCarga) + '</p>'
+            : '') +
+          '</div>';
+      }).join('');
   }
 
   /* ── LA PRIMERA DE LAS CUATRO PUERTAS DE VACÍO (v931) ────────────────
@@ -31623,6 +31749,19 @@ function donaHTML(datos, colorDe, nombreDe) {
             conRampa: cm.conRampa, sinRampa: cm.sinRampa,
             rampaSinAnotar: cm.rampaSinAnotar,
             obstruye: cm.obstruye, materiales: cm.materiales, quien: cm.fuente.quien });
+        })(),
+        /* Las seis plantillas con su RUTA declarada (v944). Va la lista y no
+           un conteo: una guarda tiene que poder decir CUÁL entra por dónde,
+           y con un número no se distingue «la sexta entra por el mapeo» de
+           «la sexta se quedó sin sitio». */
+        plantillas: (function () {
+          try {
+            return PLANTILLAS_DE_CAMPO.map(function (x) {
+              return { id: x.id, t: x.t, via: x.via,
+                       puerta: typeof PUERTAS_DE_PLANTILLA[x.id] === 'function',
+                       noCarga: x.noCarga || '' };
+            });
+          } catch (e) { return null; }
         })(),
         afluenciaFiable: (function () {
           var mc = mallaDeAfluencia();

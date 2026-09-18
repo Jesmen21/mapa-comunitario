@@ -8836,6 +8836,128 @@ Queda **una** plantilla por conectar —«Conteo de alturas por manzana», que
 tiene otro camino ya medido— y las tres de percepción, que además necesitan
 entrar en `huecosDeCampo` antes de tener formulario.
 
+## La sexta plantilla no se conecta, y eso se declara (v944)
+
+La última de las seis, y la medición dice que **NO se conecte**. Es la primera
+vez en esta serie que el resultado de medir es no escribir la puerta, y por eso
+vale escribir por qué.
+
+### Cuatro de las cinco columnas ya tienen sitio, con más precisión
+
+Leído `EDIF.leer` en `js/04` en vez de recordarlo (v863), la ficha del mapeo
+por edificio devuelve `pisos`, `pisosRegistrados`, `usosPorPiso` y
+**`plantaBaja`**, cada uno con su punto y su fecha, y `edificiosDeCampo` los
+cuenta para post-sector desde la v754. Contra las cinco columnas de la
+plantilla:
+
+| Columna | Dónde ya vive |
+|---|---|
+| Manzana · Lado o dirección | el punto, que ubica mejor que «lado de la manzana» |
+| Pisos | `pisos` + `pisosRegistrados` |
+| Uso en planta baja | `plantaBaja`, y de ahí sale `frenteActivo` |
+| **Observación** | **en ninguna parte** |
+
+Así que una puerta propia sería una segunda ruta para el mismo hecho — la
+**clase B** a sabiendas, en la misma serie de tandas en que se nombró. Y la
+prueba de la clase lo confirma: *no existe un cambio razonable que deba mover
+el conteo de pisos de una manera en el mapeo y de otra en la plantilla.*
+
+Las notas de la v940 y la v942 ya lo decían. Lo que ninguna de las dos hizo es
+lo que faltaba de verdad.
+
+### La plantilla no decía CÓMO entra su dato
+
+«Dónde se pega» dice a qué panel llega la cifra —«Potencial edificatorio» y el
+mapa de alturas— y eso es cierto. Lo que no dice es dónde se teclea, y para
+esta plantilla la respuesta no es la de las otras cinco.
+
+Quien la llena caminando busca un formulario, no lo encuentra, y la hoja se
+queda en la carpeta — que es exactamente lo que la v883 quiso evitar al
+separarla de un anexo. Ahora la hoja lo dice:
+
+> Lo levantado se teclea en la ficha del sector, pestaña General, en «Lo que se
+> levanta en la calle»: 5 tienen ahí su formulario. «Conteo de alturas por
+> manzana» no: entra punto por punto, con el mapeo por edificio.
+
+Y en la ficha, la sexta aparece **entre las otras cinco** con su renglón en
+verde en vez de faltar: verde y no ámbar, porque no es un vacío, es otra ruta
+(v880).
+
+### El conteo iba TECLEADO debajo de un comentario que decía que se calculaba
+
+`var conectadas = 5`, y encima:
+
+> El conteo de puertas SE CALCULA y no se teclea: escrito a mano dentro de la
+> frase es una cifra que envejece sola.
+
+Es la falta de la v926 con la marca de capacidad: **un comentario que afirma
+una propiedad que el código no tiene**, y que se lee como si la tuviera.
+
+Ahora hay un registro, `PUERTAS_DE_PLANTILLA`, donde cada `htmlPuertaX` se
+apunta al declararse, y de él salen **el conteo y el render**. Una puerta nueva
+sube la cifra sin que su autor se acuerde, y no puede haber una que se pinte y
+no se cuente — que es lo que pasa con dos listas (v879). El bloque de la ficha
+recorre la LISTA en vez de llamar a cinco funciones escritas a mano.
+
+### La frase va donde no cuesta papel, y eso se midió
+
+Aquí la medición cambió el diseño tres veces, y cada vuelta está en el número.
+La regla de la v919 —una decisión de espacio se juzga midiendo las dos
+composiciones— con el piso de 45 mm de `tlaminaedu` como vara:
+
+| Dónde va «dónde se teclea» | Parada | Acostada |
+|---|---|---|
+| v943, sin decirlo | 50,7 · 48,7 | 50 · **45,1** |
+| celda propia bajo las SEIS | 57,1 · **40,8** | — |
+| celda propia bajo la sexta | 52,4 · 45,5 | 50,7 · **44,3** |
+| dentro de «dónde se pega» de la sexta | 52,4 · 45,5 | 50,7 · **44,3** |
+| **en la conclusión de la banda** | **50 · 47,9** | **50 · 45,1** |
+
+La última fila es **exactamente el baseline**: cuesta cero. Las otras bajan
+tres plantillas por debajo del piso, y una plantilla que no se lee no se llena.
+
+Dos cosas que la tabla enseña y no se deducen leyendo:
+
+* **la hoja acostada tenía 0,1 mm de margen** en ese piso antes de esta tanda.
+  Cualquier renglón nuevo bajo una caja de campo la rompe, y eso no lo
+  introdujo la v944: estaba así desde antes y ahora está medido;
+* **repetir la misma frase bajo las seis cuesta más que decirla una vez**, que
+  es la regla de la v877 con el método de los mapas de categoría —ocho párrafos
+  idénticos en la banda más grande de la hoja—, ahora con su precio en
+  milímetros.
+
+Y lo que **no** llega al papel es `noCarga` —que la columna de observación no
+tiene dónde aterrizar—: gana un renglón en la acostada y se lleva las tres
+plantillas a 44,4. Su lector es quien TECLEA, y ahí sí está impresa, en el
+bloque de la ficha, donde no cuesta papel.
+
+De paso salió una regla de CSS muerta: la clase que se escribió para la celda
+propia se quedó sin un solo elemento al mover la frase. Se retiró, que es lo
+que la v885 enseñó sobre dejar código que nadie llama.
+
+### Demostrado contra la v943
+
+Revirtiendo **solo lo que imprime** —el registro, `via` y lo que `estado()`
+expone se quedan, porque son lo que la suite necesita para LEER (v875)—:
+
+```
+✗ el bloque cuenta las que tienen puerta, y no dice un número tecleado  — conectadas 5
+✗ y nombra la que entra por otro camino, con dónde se teclea            — la deja sin nombrar
+✗ parada: la banda dice dónde se teclea y nombra la que entra por otro  — no lo dice
+✗ acostada: la banda dice dónde se teclea y nombra la que entra por otro — no lo dice
+```
+
+Tres pasan a propósito y son guardas o material, no afirmaciones nuevas: que
+las seis se lean con cinco puertas registradas, que ninguna de las cinco se
+declare como de otro camino, y que la frase **no** se repita bajo cada
+plantilla — sin esa última, el arreglo podría ser imprimirla seis veces, que
+es justo lo que la tabla de arriba desaconseja.
+
+### Las seis, cerradas
+
+Quedan los **tres paneles de percepción**, que además necesitan entrar en
+`huecosDeCampo` antes de tener formulario: hoy el almacén no los acepta.
+
 ## La lista viva: lo que al pliego educativo todavía le falta (v866)
 
 Esta lista se quedó vieja **cinco veces**. Cuatro dentro de la hoja —la

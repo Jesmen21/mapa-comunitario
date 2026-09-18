@@ -1,4 +1,4 @@
-const URBIS_CACHE = 'urbis-v943-el-cupo-se-pregunta-en-porteria';
+const URBIS_CACHE = 'urbis-v944-la-sexta-plantilla-declara-su-ruta';
 const URBIS_ASSETS = [
   './',
   './index.html',

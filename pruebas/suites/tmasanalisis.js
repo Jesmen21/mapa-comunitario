@@ -558,6 +558,14 @@ const CAPAS_IDEAM = [
     await pesGen();
     o.laminaAnden = window.URBIS_PC_RECON.laminaA({ hoja: 'B' });
 
+    /* ── 12 · LA SEXTA PLANTILLA DECLARA SU RUTA (v944) ─────────────
+       No se conecta: sus pisos y su uso en planta baja ya entran por el
+       mapeo por edificio, y una puerta propia sería una segunda ruta para
+       el mismo hecho. Lo que se mide es que lo DIGA, y que el conteo de
+       conectadas salga del registro y no de un número tecleado. */
+    o.plantillas = (R.estado() || {}).plantillas;
+    o.bloquePlantillas = (txt(H()).match(/Lo que se levanta en la calle[^]{0,900}/) || [''])[0];
+
     /* ── 11 · EL CUPO PREGUNTADO EN PORTERÍA (v943) ─────────────────
        La única de las seis con atribución POR FILA: cada cupo lo dice una
        portería distinta, así que hay dos `quien` y significan cosas
@@ -1459,6 +1467,41 @@ const CAPAS_IDEAM = [
     T('con 2 de N preguntados NO afirma cuánta gente tiene puesto',
       /no se puede decir cuánta gente tiene puesto/.test(LC) && /extrapolar/.test(LC),
       /extrapolar/.test(LC) ? 'lo declara' : 'lo calla');
+  }
+
+  console.log('\n  -- 12 · la sexta plantilla declara su ruta --');
+  {
+    const PL = r.plantillas || [];
+    const BP = r.bloquePlantillas || '';
+    const alturas = PL.filter(x => x.id === 'conteo-de-alturas-por-manzana')[0] || {};
+    const conPuerta = PL.filter(x => x.puerta);
+    /* MATERIAL · sin las seis y sin las cinco puertas registradas, lo de
+       abajo pasaría por no tener nada que rechazar (v920). */
+    T('MATERIAL · las seis plantillas se leen, y cinco tienen su puerta registrada',
+      PL.length === 6 && conPuerta.length === 5,
+      PL.length + ' plantillas · ' + conPuerta.length + ' con puerta');
+
+    T('la sexta NO tiene puerta propia: entra por otro camino',
+      alturas.puerta === false && alturas.via === 'edificio',
+      'puerta ' + alturas.puerta + ' · via ' + alturas.via);
+    T('y declara qué NO carga ese camino',
+      /observaci[oó]n/i.test(alturas.noCarga || ''),
+      alturas.noCarga || '(nada)');
+
+    /* El conteo sale del registro: contra la v943 iba TECLEADO («conectadas
+       5») debajo de un comentario que decía que se calculaba. Si una puerta
+       se agrega y el número no se mueve, esta se pone roja. */
+    T('el bloque cuenta las que tienen puerta, y no dice un número tecleado',
+      new RegExp(conPuerta.length + ' tienen su puerta acá').test(BP),
+      (BP.match(/\d+ tienen su puerta acá|conectadas \d+/) || ['no lo dice'])[0]);
+    T('y nombra la que entra por otro camino, con dónde se teclea',
+      /Esta no se teclea acá/.test(BP) && /mapeo por edificio/.test(BP),
+      /Esta no se teclea acá/.test(BP) ? 'lo dice' : 'la deja sin nombrar');
+    /* Guarda contra pasarse: las cinco conectadas NO pueden llevar el
+       renglón de «entra por otro camino». Contra la v943 se cumple sola. */
+    T('y ninguna de las cinco con puerta se declara como de otro camino',
+      (BP.match(/Esta no se teclea acá/g) || []).length <= 1,
+      (BP.match(/Esta no se teclea acá/g) || []).length + ' renglones');
   }
 
   console.log('\n  -- y todo viaja con la ficha --');

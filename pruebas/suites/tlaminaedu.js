@@ -317,12 +317,27 @@ usos.push({ type: 'node', id: 3002, lat: C.lat - 0.0025, lon: C.lng + 0.002,
            etiquetas de instrucción —qué, con qué, cuánto demora, dónde se
            pega— y una cuadrícula de celdas en blanco. Pedirle `.lee` a una
            plantilla es medir la marca de la otra. */
+        /* La conclusión de la banda de campo: es donde la hoja dice, una vez,
+           dónde se teclea lo levantado (v944). Se busca por la banda que
+           CONTIENE las cajas de campo y no por su título, porque el reparto
+           por filas puede moverla de sitio (v857). */
+        cierreCampo: (function () {
+          const b = (document.querySelector('.caja-campo') || {}).closest
+            ? document.querySelector('.caja-campo').closest('.banda') : null;
+          return b ? ((b.querySelector('.b-cierre') || {}).textContent || '') : '';
+        })(),
         campo: [...document.querySelectorAll('.caja-campo')].map(c => ({
           t: (c.querySelector('h2') || {}).textContent || '?', alto: mm(rect(c).height),
           casillas: c.querySelectorAll('.cf').length, renglones: !!c.querySelector('.renglones'),
           plantilla: c.classList.contains('caja-plantilla'),
           comoN: c.querySelectorAll('.pl-como .pl-c').length,
           pega: !!c.querySelector('.pl-pega'),
+          /* Dos mitades del mismo camino (v944): «dónde se pega» es a qué
+             panel llega la cifra, «dónde se teclea» es dónde se escribe.
+             Sin la segunda, quien llena la hoja caminando busca un
+             formulario, no lo encuentra, y la plantilla se queda en la
+             carpeta — que es lo que la v883 quiso evitar. */
+          teclea: ((c.querySelector('.pl-teclea span') || {}).textContent || '').trim(),
           columnas: c.querySelectorAll('.pl-rej th').length,
           celdas: [...c.querySelectorAll('.pl-rej td')].filter(td => !td.textContent.trim()).length,
           instruccion: (c.querySelector('.lee') || {}).textContent || '' })),
@@ -727,9 +742,26 @@ usos.push({ type: 'node', id: 3002, lat: C.lat - 0.0025, lon: C.lng + 0.002,
     const plantillas = o.campo.filter(c => c.plantilla);
     T(nom + ': las plantillas traen las cuatro instrucciones, su cuadrícula y dónde se pegan',
       plantillas.length > 0 &&
-      plantillas.every(c => c.alto >= 45 && c.comoN === 4 && c.pega && c.columnas >= 5 && c.celdas >= 35),
-      plantillas.map(c => c.t.split(' ')[0] + ' ' + c.alto + 'mm/' + c.columnas + 'col/' + c.celdas + 'celdas')
-        .join(' · ') || 'ninguna impresa');
+      plantillas.every(c => c.alto >= 45 && c.comoN >= 4 && c.pega && c.columnas >= 5 && c.celdas >= 35),
+      plantillas.map(c => c.t.split(' ')[0] + ' ' + c.alto + 'mm/' + c.comoN + 'etq/' +
+        c.columnas + 'col/' + c.celdas + 'celdas').join(' · ') || 'ninguna impresa');
+    /* DÓNDE SE TECLEA (v944), y se mide donde de verdad se imprime: en la
+       CONCLUSIÓN de la banda, una vez, que es la regla de la v877 con el
+       método de los mapas de categoría. Medido, es el único sitio que no
+       cuesta papel: bajo cada caja, tres plantillas caen a 44,4 mm y se van
+       bajo el piso de 45. Y se mide en las dos direcciones —que el camino
+       común esté, y que la que entra por otro se NOMBRE— porque sin la
+       segunda, cinco formularios y uno que no existe se leen igual. */
+    T(nom + ': la banda dice dónde se teclea y nombra la que entra por otro camino',
+      /pesta[ñn]a General/.test(o.cierreCampo) &&
+      /Conteo de alturas por manzana/.test(o.cierreCampo) &&
+      /mapeo por edificio/.test(o.cierreCampo),
+      (o.cierreCampo.match(/Lo levantado se teclea[^]{0,190}/) || ['no lo dice'])[0]);
+    /* Guarda contra pasarse: la frase común va UNA vez, no seis. Contra la
+       v943 se cumple sola porque no existe. */
+    T(nom + ': y no la repite bajo cada plantilla',
+      plantillas.filter(c => c.teclea).length === 0,
+      plantillas.filter(c => c.teclea).length + ' cajas la repiten');
   });
 
   /* ── Tanda 3 (v849): los vacíos obligatorios y los cruces ──────────── */
