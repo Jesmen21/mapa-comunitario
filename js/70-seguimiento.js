@@ -1537,6 +1537,155 @@
     return r;
   }
 
+  /* ═══ CAPA 2 DEL PLIEGO PRESIDENCIAL · LOS INDICADORES ════════════════
+     «Solo cuentas. No interpretas.» Cada indicador tiene que poder
+     calcularse igual para cualquier gobierno nacional de Colombia con datos
+     públicos — es el principio 1, la simetría.
+
+     LA NORMALIZACIÓN ES OBLIGATORIA y el pliego dice por qué: «sin esto,
+     comparar un mes contra cuatro años reproduce exactamente el error de
+     períodos desiguales que este módulo existe para detectar». Así que todo
+     sale por 100 días de gobierno, y el crudo va al lado — la tasa sin el
+     conteo es tan ciega como el conteo sin la tasa.
+
+     TRES DE LOS SIETE SE DECLARAN Y NO SE DEDUCEN. Los mecanismos
+     excepcionales, los choques con órganos autónomos y la información
+     obtenida por tutela no salen del texto de una entrada: decidir que un
+     hecho es «un choque con un órgano autónomo» es una lectura, y deducirla
+     de que el título nombre al DANE metería en la cuenta la entrada de la
+     inflación, que cita al DANE como FUENTE. Van declarados en el registro,
+     como el nivel de gobierno de la v941, y lo que no está declarado no
+     cuenta y se dice cuántos hay así.
+
+     DOS SALEN DE LA CAPA 1 y por eso aquella iba primero: la actividad
+     reportada y los resultados verificados son `tipoMedicion`, y el
+     principio 5 manda que no se sumen nunca. Acá van en renglones distintos
+     y no hay ninguna línea que los junte. */
+  var INDICADORES = {
+    'I-04': { t: 'Mecanismos excepcionales usados', dec: true,
+              d: 'Emergencias, decretos de conmoción, aplazamientos de plazos legales y directivas que alteran la difusión de información pública.' },
+    'I-05': { t: 'Choques con órganos autónomos', dec: true,
+              d: 'CNSC, DANE, Corte Constitucional, Consejo de Estado, JEP, Banco de la República, Procuraduría, Contraloría, Registraduría y CNE.' },
+    'I-07': { t: 'Información pública obtenida por tutela', dec: true,
+              d: 'Solicitudes que solo se respondieron después de una acción judicial.' },
+    'I-06': { t: 'Registros sin respuesta oficial', dec: false,
+              d: 'Hechos en los que se buscó la respuesta del Gobierno y no la hay. Sale de la Capa 1.' },
+    'I-09': { t: 'Actividad reportada', dec: false,
+              d: 'Lo que el Gobierno hizo. No es lo mismo que lo que cambió, y no se suma con ello.' },
+    'I-10': { t: 'Resultados medidos', dec: false,
+              d: 'Lo que cambió en el país. Que se mida no dice quién lo causó.' }
+  };
+  /* El orden de la tabla no es el alfabético: los tres declarados primero
+     —son los del eje B— y después los que salen solos. */
+  var ORDEN_IND = ['I-04', 'I-05', 'I-07', 'I-06', 'I-09', 'I-10'];
+
+  /* «Con menos de 180 días de gobierno, los indicadores describen un arranque,
+     no una tendencia.» El pliego obliga a publicarlo siempre, así que va
+     pegado al resultado y no en una nota al pie. */
+  function poderPredictivo(dias) {
+    if (dias >= 540) return { id: 'alto', t: 'alto',
+      d: 'Con año y medio de gobierno la serie ya describe una tendencia.' };
+    if (dias >= 180) return { id: 'medio', t: 'medio',
+      d: 'Con medio año hay serie, pero todavía cabe que un trimestre la mueva entera.' };
+    return { id: 'bajo', t: 'bajo',
+      d: 'Con menos de 180 días esto describe un arranque, no una tendencia. Un mes distinto cambia la cifra.' };
+  }
+
+  function indicadoresDe(dd, corte) {
+    if (!dd) dd = {};
+    var ent = hechosDelMandato(dd, corte);
+    var hasta = corte || (dd.entrega) || (new Date()).toISOString().slice(0, 10);
+    var dias = Math.max(1, Math.round(
+      (new Date(hasta + 'T00:00:00') - new Date((dd.posesion || hasta) + 'T00:00:00')) / 86400000));
+    var por100 = function (n) { return Math.round(1000 * n / dias) / 10; };
+
+    var c1 = capaUnoDe_conjunto(ent);
+    var crudo = { 'I-06': c1.contra.ausente, 'I-09': c1.medicion.actividad, 'I-10': c1.medicion.resultado,
+                  'I-04': 0, 'I-05': 0, 'I-07': 0 };
+    var sinDeclarar = 0;
+    ent.forEach(function (e) {
+      var lista = (e && e.indicadores) || [];
+      if (!lista.length) sinDeclarar++;
+      lista.forEach(function (k) { if (crudo[k] !== undefined && INDICADORES[k].dec) crudo[k]++; });
+    });
+
+    var filas = ORDEN_IND.map(function (k) {
+      var ind = INDICADORES[k];
+      var f = { id: k, t: ind.t, d: ind.d, declarado: ind.dec, n: crudo[k], por100: por100(crudo[k]) };
+      /* I-06 es el único que no se puede publicar como cero: un cero ahí
+         diría que el Gobierno respondió a todo, cuando lo que pasa es que
+         nadie lo ha revisado. Es la distinción de los tres estados de la
+         Capa 1, dicha en la cuenta. */
+      if (k === 'I-06' && c1.contra.sinRevisar) {
+        f.sinCalcular = true;
+        f.razon = c1.contra.sinRevisar + ' de ' + c1.n + ' hechos están sin revisar, así que un cero acá ' +
+                  'diría que el Gobierno respondió a todo y lo que pasa es que nadie lo ha mirado.';
+      }
+      return f;
+    });
+
+    return { dias: dias, hasta: hasta, desde: dd.posesion || null, hechos: ent.length,
+             por100Hechos: por100(ent.length), sinDeclarar: sinDeclarar,
+             poder: poderPredictivo(dias), filas: filas,
+             /* La cobertura del registro, tal como el propio archivo la
+                declara. La lee `comparabilidad` para decidir si dos tasas se
+                pueden poner una al lado de la otra. */
+             cobertura: dd.cobertura || null, exhaustivo: !dd.cobertura };
+  }
+
+  /* ¿SE PUEDEN COMPARAR DOS GOBIERNOS? La respuesta de este módulo, hoy, es
+     NO — y esta función existe para decirlo con los números en la mano en vez
+     de publicar la tasa y dejar que el lector saque la conclusión.
+
+     El pliego lo pide en su control de calidad: «¿Cada comparación entre
+     gobiernos usa períodos de igual duración y el mismo corte del calendario?
+     Si no, marca `no_comparable` y NO publiques la tasa — ni cuando favorezca
+     tu lectura ni cuando la contradiga.»
+
+     Acotar el período es la mitad fácil y se hace: se recorta el registro del
+     otro gobierno a los MISMOS días desde su posesión. Lo que no se arregla
+     recortando es que los dos registros NO SON LA MISMA CLASE DE OBJETO. Uno
+     es una bitácora diaria llevada en tiempo real; el otro, treinta y dos
+     hechos escogidos de cuatro años — lo dice su propio campo `cobertura`, y
+     hasta hoy no lo leía nadie.
+
+     Medido el día que se escribió esto: 400 hechos por 100 días contra 2,4.
+     Esa diferencia no es de los dos gobiernos, es de los dos registros, y
+     publicarla como tasa comparada sería la `comparacion_invalida` que este
+     módulo existe para detectar, cometida por el módulo. */
+  function comparabilidad(a, b) {
+    /* Sin argumentos toma los dos registros cargados. Así la ficha y una
+       prueba llaman a LA MISMA función sobre los mismos datos, en vez de que
+       la prueba arme su propio par y acabe midiendo otra cosa. */
+    a = a || D; b = b || DA;
+    if (!a || !b) return { a: null, b: null, comparable: false, razones: ['sin-registro'],
+                           texto: 'Falta uno de los dos registros, así que no hay nada que comparar.' };
+    var ia = indicadoresDe(a), ib = indicadoresDe(b, b && b.posesion ? fechaMas(b.posesion, ia.dias) : null);
+    var razones = [];
+    if (!ia.exhaustivo || !ib.exhaustivo) razones.push('registro-no-exhaustivo');
+    if (ib.hechos < 10) razones.push('muestra-insuficiente');
+    return {
+      a: ia, b: ib, comparable: razones.length === 0, razones: razones,
+      /* El texto se arma acá y no en la pantalla: es una advertencia, y dos
+         copias de una advertencia se separan (v867). */
+      texto: razones.length === 0 ? '' :
+        'Las dos tasas NO se pueden poner una al lado de la otra. Se recortó el registro del otro gobierno a ' +
+        'sus primeros ' + ia.dias + ' días, que es la mitad fácil; lo que no se arregla recortando es que los ' +
+        'dos registros no son la misma clase de objeto. ' +
+        (ia.exhaustivo ? '' : 'El actual declara su propia cobertura. ') +
+        (ib.exhaustivo ? '' : 'El del gobierno anterior es una selección de hechos de todo un cuatrienio, no una ' +
+          'bitácora diaria, y así lo dice el propio registro. ') +
+        'En esa ventana el actual trae ' + ia.hechos + ' hechos y el anterior ' + ib.hechos + ': la diferencia ' +
+        'es de los registros, no de los gobiernos.'
+    };
+  }
+
+  function fechaMas(iso, dias) {
+    var d = new Date(iso + 'T00:00:00');
+    d.setDate(d.getDate() + dias);
+    return d.toISOString().slice(0, 10);
+  }
+
   function casosDeCx(dd) { return (((dd || D).contradicciones || {}).casos || []); }
   function casosDeCorrupcion(dd) { return (((dd || D).casos || {}).lista || []); }
 
@@ -1783,7 +1932,11 @@
                              serie: serieFicha, escalera: ESCALERA, techos: TECHOS,
                              estadosCaso: ESTADOS_CASO, rasgos: RASGOS,
                              polemica: polemicaDe, ordenar: porDiaYPolemica,
-                             minimos: { casos: FICHA_MIN_CASOS, hechos: FICHA_MIN_HECHOS } };
+                             minimos: { casos: FICHA_MIN_CASOS, hechos: FICHA_MIN_HECHOS },
+                             // Capa 2 del pliego: lo que una prueba necesita leer se
+                             // agrega acá en vez de alcanzarlo por un lado (v871).
+                             indicadores: indicadoresDe, comparabilidad: comparabilidad,
+                             catalogoIndicadores: INDICADORES, capaUno: capaUnoDe_conjunto };
 
   // ── Piezas de dibujo ──────────────────────────────────────────────────────
   // Barra apilada: cada tramo es una CUENTA, no un porcentaje inventado. Si un
@@ -2326,6 +2479,66 @@
         'como declarados: un valor mal escrito que pasara por bueno es peor que uno vacío.'));
     }
     izq.appendChild(s1);
+
+    // ── 1c · Capa 2: los indicadores, por 100 días de gobierno ─────────────
+    var ind = indicadoresDe(D, f.corte);
+    var s2 = seccionFicha('sp-fi-secc sp-fi-c2', 'Los indicadores, por 100 días de gobierno',
+      'Cuentas, no lecturas. Van normalizadas porque comparar un mes contra cuatro años reproduce el ' +
+      'error de períodos desiguales que este módulo existe para detectar — y el conteo crudo va al lado, ' +
+      'porque una tasa sin su número es tan ciega como un número sin su tasa.');
+
+    var enc = el('p', 'sp-c2-enc');
+    enc.appendChild(el('b', null, ind.dias + (ind.dias === 1 ? ' día' : ' días') + ' de gobierno'));
+    enc.appendChild(el('span', null, ' · poder predictivo ' + ind.poder.t + '. ' + ind.poder.d));
+    s2.appendChild(enc);
+
+    var tb = el('ul', 'sp-c2-tabla');
+    ind.filas.forEach(function (fi) {
+      var li = el('li', 'sp-c2-fila' + (fi.sinCalcular ? ' sin' : ''));
+      li.appendChild(el('span', 'sp-c2-id', fi.id));
+      var mid = el('div', 'sp-c2-mid');
+      mid.appendChild(el('b', null, fi.t));
+      mid.appendChild(el('span', null, fi.d));
+      if (fi.sinCalcular) mid.appendChild(el('span', 'sp-c2-razon', 'No se puede calcular todavía: ' + fi.razon));
+      li.appendChild(mid);
+      var cif = el('div', 'sp-c2-cif');
+      if (fi.sinCalcular) cif.appendChild(el('b', null, '—'));
+      else {
+        cif.appendChild(el('b', null, String(fi.por100).replace('.', ',')));
+        cif.appendChild(el('span', null, 'por 100 días'));
+        cif.appendChild(el('span', 'sp-c2-crudo', fi.n + ' en total'));
+      }
+      li.appendChild(cif);
+      tb.appendChild(li);
+    });
+    s2.appendChild(tb);
+
+    /* Los tres declarados son los del eje B, y sin declarar no cuentan. Se
+       dice cuántas entradas no declaran ninguno: sin ese renglón, un I-04 de
+       seis se lee como «el Gobierno usó seis mecanismos excepcionales» cuando
+       lo que consta es que seis están declarados y 161 sin revisar. */
+    if (ind.sinDeclarar) {
+      s2.appendChild(el('p', 'sp-c2-pend',
+        ind.sinDeclarar + ' de ' + ind.hechos + ' hechos no declaran qué indicador alimentan. Los tres de arriba ' +
+        'que se declaran —mecanismos excepcionales, choques con órganos autónomos e información obtenida por ' +
+        'tutela— cuentan solo lo declarado: decidir que un hecho es un choque con un órgano autónomo es una ' +
+        'lectura sobre un gobierno real, y este módulo no la deduce del texto.'));
+    }
+
+    /* Y la comparación con el gobierno anterior, que es justamente la que NO
+       se publica. Va acá y no escondida, porque el pliego manda publicar la
+       marca de la falla: callarla dejaría la tasa de arriba pareciendo
+       comparable con cualquier cosa. */
+    if (DA) {
+      var cmp = comparabilidad(D, DA);
+      if (!cmp.comparable) {
+        var cb = el('div', 'sp-c2-nocomp');
+        cb.appendChild(el('b', null, 'Esta tasa NO se compara con la del gobierno anterior'));
+        cb.appendChild(el('p', null, cmp.texto));
+        s2.appendChild(cb);
+      }
+    }
+    izq.appendChild(s2);
 
     // ── 2 · Casos de corrupción ────────────────────────────────────────────
     var sc = seccionFicha('sp-fi-secc', 'Casos de corrupción',

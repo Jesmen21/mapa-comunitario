@@ -1058,6 +1058,63 @@ console.log('\n  -- la ficha del gobernante --');
       'js/70 resuelve los tres y cuenta el conjunto');
   }
 
+  /* ═══ CAPA 2 DEL PLIEGO · LOS INDICADORES ══════════════════════════════
+     Tres de los siete se DECLARAN por entrada, como el nivel de gobierno de
+     la v941: decidir que un hecho es «un choque con un órgano autónomo» es
+     una lectura sobre un gobierno real y no se deduce del texto. Deducirla de
+     que el título nombre al DANE metería en la cuenta la entrada de la
+     inflación, que lo cita como FUENTE.
+
+     Acá se vigila que lo declarado sea de la tabla, y que solo se declaren
+     los que de verdad se declaran: un `I-09` escrito a mano en una entrada
+     estaría contando dos veces, porque ése sale de la Capa 1. */
+  {
+    const j70c2 = leer('js/70-seguimiento.js');
+    const iniI = j70c2.indexOf('var INDICADORES = {');
+    const cuerpoI = iniI < 0 ? '' : j70c2.slice(iniI, j70c2.indexOf('\n  };', iniI));
+    const TODOS = (cuerpoI.match(/'(I-\d\d)':/g) || []).map((x) => x.replace(/[^I\d-]/g, ''));
+    const DECLARABLES = (cuerpoI.match(/'(I-\d\d)': \{ t: '[^']*', dec: true/g) || [])
+      .map((x) => x.slice(1, 5));
+
+    comprobar('MATERIAL · el catálogo de indicadores se lee de js/70',
+      TODOS.length === 6 && DECLARABLES.length === 3,
+      TODOS.join('·') + ' · declarables: ' + DECLARABLES.join('·'));
+
+    const malos = [];
+    let conInd = 0;
+    REGISTROS.forEach((ruta) => {
+      const quien = ruta.split('-').pop().replace('.json', '');
+      ((JSON.parse(leer(ruta)).entradas) || []).forEach((e) => {
+        const lista = e.indicadores;
+        if (lista === undefined) return;
+        if (!Array.isArray(lista)) { malos.push(quien + '/' + e.fecha + ' indicadores no es una lista'); return; }
+        conInd++;
+        lista.forEach((k) => {
+          if (TODOS.indexOf(k) < 0) malos.push(quien + '/' + e.fecha + ' indicador desconocido: ' + k);
+          else if (DECLARABLES.indexOf(k) < 0) malos.push(quien + '/' + e.fecha + ' ' + k + ' no se declara: sale de la Capa 1');
+        });
+      });
+    });
+    comprobar('los indicadores declarados son de la tabla, y solo los que se declaran',
+      malos.length === 0,
+      malos.length ? malos.join(' · ') : conInd + ' entradas declaran indicador, todas con valores conocidos');
+
+    /* La guarda de la guarda: si la ficha dejara de llamar a `indicadoresDe`
+       o a `comparabilidad`, todo lo de arriba seguiría en verde sobre un
+       campo que nadie lee y sobre una advertencia que nadie imprime. */
+    comprobar('y la ficha calcula los indicadores y publica la no-comparabilidad',
+      /indicadoresDe\(D, f\.corte\)/.test(j70c2) && /comparabilidad\(D, DA\)/.test(j70c2),
+      'la ficha llama a las dos');
+
+    /* La normalización es obligatoria: ningún indicador se puede publicar sin
+       su tasa. Lo que se vigila acá es que la división exista y sea por 100
+       —`por100` no puede ser una copia del crudo—, y `tficha` lo mide sobre
+       una ficha compuesta de verdad. */
+    comprobar('los indicadores salen normalizados por 100 días, no en crudo',
+      /Math\.round\(1000 \* n \/ dias\) \/ 10/.test(j70c2) && /por100: por100\(crudo\[k\]\)/.test(j70c2),
+      'la tasa se calcula sobre los días de gobierno');
+  }
+
   /* La regla que el propio módulo se puso: una contradicción exige LAS DOS
      declaraciones documentadas. Con una sola no es un cambio de postura, es
      una postura — y como cada cambio contado baja un peldaño, dejar entrar

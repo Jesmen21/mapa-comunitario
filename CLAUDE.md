@@ -9963,6 +9963,118 @@ Las tres capas que faltan, con lo que cada una necesita:
   las palabras de quien opera URBIS: los supuestos de valor los declara una
   persona, no se deducen.
 
+## La tasa existe; la comparación entre gobiernos, no (v958)
+
+Capa 2 del pliego presidencial: los indicadores contables, normalizados por 100
+días de gobierno. La normalización es **obligatoria** y el pliego dice por qué:
+*«sin esto, comparar un mes contra cuatro años reproduce exactamente el error de
+períodos desiguales que este módulo existe para detectar»*.
+
+Se hizo. Y al medirla salió lo que decide la tanda entera.
+
+### 378,6 contra 1 no es una diferencia entre dos gobiernos
+
+Medido sobre los dos registros de verdad, con el del gobierno anterior recortado
+a los **mismos 42 días** desde su posesión:
+
+| | Hechos en la ventana | Por 100 días |
+|---|---|---|
+| Gobierno actual | 159 | **378,6** |
+| Gobierno anterior, misma ventana | **1** | — |
+| Gobierno anterior, cuatrienio entero | 32 | 2,2 |
+
+Acotar el período es la mitad fácil y se hace. Lo que no se arregla recortando
+es que **los dos registros no son la misma clase de objeto**: uno es una
+bitácora diaria llevada en tiempo real, el otro son treinta y dos hechos
+escogidos de cuatro años. Lo dice el propio campo `cobertura` del archivo desde
+que existe —*«Este registro NO es exhaustivo»*— y **hasta hoy no lo leía nadie**.
+
+Publicar «378,6 contra 2,2 hechos por 100 días» sería la `comparacion_invalida`
+que este módulo existe para detectar, cometida por el módulo. Así que la tasa se
+publica —dentro de un registro sí significa algo— y la comparación **no**, con
+las dos cifras impresas al lado de la razón. El pliego lo pide con esas
+palabras: *«marca `no_comparable` y NO publiques la tasa — ni cuando favorezca
+tu lectura ni cuando la contradiga»*.
+
+`comparabilidad()` devuelve el par con sus razones y el texto armado en un solo
+sitio: dos copias de una advertencia se separan (v867).
+
+### Tres de los siete se declaran, y cuatro salen solos
+
+| | De dónde sale |
+|---|---|
+| I-04 mecanismos excepcionales · I-05 choques con órganos autónomos · I-07 información obtenida por tutela | **se declaran** por entrada, como el nivel de gobierno de la v941 |
+| I-09 actividad · I-10 resultados | de `tipoMedicion`, la Capa 1 |
+| I-06 sin respuesta oficial | de `contrargumentoOficial`, la Capa 1 |
+| I-08 días de gobierno | de la posesión |
+
+**Los tres primeros no se deducen del texto, y la razón es concreta**: decidir
+que un hecho es «un choque con un órgano autónomo» es una lectura sobre un
+gobierno real. Y deducirlo de que el título nombre al DANE metería en la cuenta
+la entrada de la inflación, que lo cita como **fuente**. Lo declarado es lo que
+el propio pliego clasifica en su anexo —los concursos de mérito, el DANE, el
+paquete de once decretos— más los mecanismos que el título enuncia sin lectura
+de por medio: una emergencia económica declarada, un desastre nacional
+declarado, la suspensión de la programación de veinte emisoras.
+
+Siete entradas declaran indicador. Las otras 161 no, y la ficha lo dice: sin ese
+renglón, un I-04 de seis se lee como «el Gobierno usó seis mecanismos
+excepcionales» cuando lo que consta es que seis están declarados.
+
+Que la Capa 1 fuera primero no fue orden alfabético: **tres de los siete
+indicadores no existirían sin ella.**
+
+#### I-06 no se puede publicar como cero
+
+Es el único indicador que sale marcado «no se puede calcular todavía», y es la
+misma distinción de los tres estados del contrargumento: con 200 hechos sin
+revisar, un cero ahí diría **que el Gobierno respondió a todo**, cuando lo que
+pasa es que nadie lo ha mirado. Un cero que miente es peor que un guion.
+
+#### El Decreto 1012 se declara y no cuenta, que es lo correcto
+
+Es del gobierno anterior —6 de agosto, víspera de la posesión— y el pliego lo
+nombra como la simetría obligatoria del caso de los concursos. Se declara I-04 y
+`hechosDelMandato` lo deja fuera de la cuenta por su fecha. La puerta que ya
+existía hace el trabajo sin que nadie se acuerde.
+
+### El poder predictivo se calcula, no se opina
+
+*«Con menos de 180 días de gobierno, los indicadores describen un arranque, no
+una tendencia»*, y el pliego obliga a publicarlo siempre. Sale de los días
+transcurridos —bajo por debajo de 180, medio hasta 540, alto por encima— y va
+pegado al resultado, no en una nota al pie. Hoy son 42 días: **bajo**.
+
+### El material tenía que poder distinguir una tasa buena de una mala
+
+Con un solo registro, `por100` mal calculado y bien calculado se ven igual. La
+prueba compone **dos registros con los mismos 20 hechos y distinta duración** —20
+días y 365— y exige 100 contra 5,5. Demostrada devolviendo `por100` al crudo:
+sale **«20 contra 20 por 100 días»**.
+
+Y la no-comparabilidad, demostrada quitándole sus dos razones: sale
+**«las dos tasas NO se declaran comparables, y se dice por qué ()»** con el
+paréntesis vacío, que es exactamente el módulo publicando una comparación que no
+puede sostener.
+
+### Una colisión de nombre que el arnés cazó en el acto
+
+`const cmp` ya existía sesenta líneas más abajo en `tficha`, y el módulo tiene
+desde la v885 la guarda de las funciones declaradas dos veces — pero eso es para
+`js/`, no para una suite. Acá lo cazó el propio JavaScript: `Identifier 'cmp'
+has already been declared`. Se llama `cpb`.
+
+### Lo que el pliego pide y esta versión NO hace
+
+* **I-01, I-02 e I-03 —las promesas—** necesitan `mismo_objeto_verificado`, que
+  no existe: el pliego es explícito en que una contradicción retórica sin
+  identidad de objeto NO baja el eje A, y sin ese campo las contradicciones del
+  registro no se pueden separar en las dos clases.
+* **El bloque D de alerta temprana** pide series de Medicina Legal, Procuraduría
+  y Defensoría, y el propio pliego dice que sin serie histórica de gobiernos
+  anteriores esos indicadores no significan nada.
+* **Los ejes** (Capa 3) y **el marco declarado con el editorial** (Capa 4).
+
 ## La lista viva: lo que al pliego educativo todavía le falta (v866)
 
 Esta lista se quedó vieja **cinco veces**. Cuatro dentro de la hoja —la

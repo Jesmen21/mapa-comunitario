@@ -445,6 +445,10 @@
    "titulo": "De la Espriella declara insubsistente al director del Dane, Ricardo Valencia, tras tres semanas en el cargo, y nombra a Juan Manuel Alvarado Nivia",
    "categoriaProbatoria": "hecho-probado",
    "tipoMedicion": "actividad",
+   "indicadores": [
+    "I-04",
+    "I-05"
+   ],
    "detalle": "El presidente Abelardo de la Espriella firmó el decreto que declara insubsistente a Ricardo Valencia Ramírez como director del Departamento Administrativo Nacional de Estadística (Dane), cargo que había asumido el 19 de agosto, y designó en su reemplazo a Juan Manuel Alvarado Nivia, economista de la región Caribe cuya gestión, según la Presidencia, el propio mandatario conoció durante la organización de ayudas para las víctimas del terremoto. Según explicó la Casa de Nariño, la decisión se tomó después de que Valencia afirmara, en su primera rueda de prensa al frente de la entidad, que no había hallado ninguna anomalía en los indicadores del Dane correspondientes a julio —mes en que el desempleo se ubicó en 8,1 %, la cifra más baja para ese mes desde 2001, y que fue producida durante el último mes del gobierno de Gustavo Petro— sin haberlos sometido antes a una auditoría exhaustiva.",
    "contrapunto": "Varios medios enmarcaron la salida de Valencia como una consecuencia directa de haber respaldado la cifra de empleo heredada del gobierno de Petro, en momentos en que el propio presidente atribuye la crisis fiscal a la administración anterior; Publimetro tituló que se la «cobraron» tras afirmar que Petro no manipuló las cifras. El otro episodio que le costó el cargo, según Semana, fue la cancelación —treinta minutos antes de empezar— de la rueda de prensa donde el Dane iba a presentar la inflación de agosto, en aplicación de una directriz presidencial que exige autorización del Gobierno para que las entidades hablen con la prensa; la cifra sí se publicó a la hora prevista, pero Valencia no pudo explicarla ante los medios. Ninguna de las dos versiones —la oficial, centrada en la falta de auditoría, y la de la prensa, que la lee como una salida por defender cifras del gobierno anterior— ha sido confirmada o desmentida por un tercero independiente a la fecha de esta actualización.",
    "tipoFuente": "disputado",
@@ -862,6 +866,10 @@
    "titulo": "El Gobierno aplaza por decreto los concursos de mérito hasta 2027, entre ellos el de docentes con más de 28.000 vacantes, citando la emergencia del terremoto",
    "categoriaProbatoria": "hecho-probado",
    "tipoMedicion": "actividad",
+   "indicadores": [
+    "I-04",
+    "I-05"
+   ],
    "detalle": "Mediante el Decreto 1384 de 2026, conocido el 11 de septiembre, el Gobierno ordenó el aplazamiento temporal de los concursos de mérito y los procesos de selección de empleo público, invocando la emergencia económica declarada tras el terremoto de magnitud 7,4 del 10 de agosto, para «proteger la igualdad de oportunidades» de aspirantes afectados. El aplazamiento puede extenderse hasta el 31 de diciembre de 2026 y los procesos se retomarían en 2027. Entre los afectados están el concurso docente (más de 28.000 vacantes, con inscripciones previstas entre noviembre y diciembre), los procesos de las Corporaciones Autónomas Regionales (más de 1.000 cargos) y los de entidades del orden nacional (más de 1.600 cargos). El decreto deja abierta la posibilidad de que una entidad continúe una etapa si demuestra, de forma motivada, que no hay entre los inscritos aspirantes domiciliados o afectados por la emergencia, y faculta a la Comisión Nacional del Servicio Civil (CNSC) para suspender o aplazar pruebas y otras etapas.",
    "tipoFuente": "verificado",
    "fuentes": [
@@ -1112,6 +1120,9 @@
    "titulo": "Tras seis horas de consejo de ministros, el Gobierno firma 11 decretos de reconstrucción por el terremoto y crea el Fondo Patria Milagro",
    "categoriaProbatoria": "hecho-probado",
    "tipoMedicion": "actividad",
+   "indicadores": [
+    "I-04"
+   ],
    "detalle": "El presidente encabezó el 9 de septiembre un consejo de ministros de cerca de seis horas dedicado a la reconstrucción tras el terremoto del 10 de agosto, al cabo del cual se firmaron 11 decretos dentro del marco de la emergencia económica, social y ecológica declarada por el decreto 1261. Entre las medidas: la creación del Fondo Patria Milagro, que canalizará donaciones internacionales y aportes privados para la reconstrucción y que dirigirá el empresario Jaime Andrés Uribe, con el modelo del Fondo para la Reconstrucción del Eje Cafetero (Forec) de 1999 como referencia; el uso excepcional y por una sola vez de recursos del Fonpet —destinados a pensiones territoriales— para que los gobiernos locales financien procesos de reconstrucción; el uso de recursos del Fondes para reparar infraestructura eléctrica afectada; y la autorización para que la actividad académica se desarrolle temporalmente en espacios distintos a las sedes oficiales cuando estas hayan sufrido daños considerables. El Gobierno había ajustado antes el decreto de emergencia para excluir a Putumayo e incluir a Caquetá y Santander, con lo que la cobertura llegó a 16 departamentos y 496 municipios.",
    "contrapunto": "Los decretos expedidos bajo un estado de excepción del artículo 215 de la Constitución están sujetos a control automático de constitucionalidad por la Corte Constitucional y a control político del Congreso; a la fecha de esta entrada no se ha reportado un pronunciamiento de la Corte sobre estos 11 decretos en particular, y el Gobierno no ha publicado un monto total consolidado de los recursos que movilizará el Fondo Patria Milagro.",
    "tipoFuente": "verificado",
@@ -3739,6 +3750,9 @@
    "titulo": "El Gobierno suspende la programación de las 20 emisoras de paz y la FLIP alerta",
    "categoriaProbatoria": "hecho-probado",
    "tipoMedicion": "actividad",
+   "indicadores": [
+    "I-04"
+   ],
    "detalle": "Las 20 emisoras de paz, creadas por el Acuerdo de 2016 en municipios afectados por el conflicto, pasaron a emitir solo música desde el 18 de agosto. La Fundación para la Libertad de Prensa alertó por la suspensión. El Gobierno sostuvo que bajo la administración anterior se habían vuelto un «aparato de propaganda»; el senador Enrique Gómez las llamó «altavoces oficiales de las Farc para adoctrinar regiones».",
    "contrapunto": "Dos hechos distintos que se están mezclando en el debate: que se investigue si fueron usadas como propaganda es una cosa, y que se apaguen mientras tanto es otra. Lo segundo es lo que la FLIP objeta.",
    "tipoFuente": "verificado",
@@ -4003,6 +4017,9 @@
    "titulo": "Anuncia emergencia económica por el terremoto",
    "categoriaProbatoria": "hecho-probado",
    "tipoMedicion": "actividad",
+   "indicadores": [
+    "I-04"
+   ],
    "detalle": "Herramienta para acelerar el giro de recursos a la reconstrucción. El Gobierno afirmó que “cada peso girado quedará expuesto” a control público.",
    "fuente": "Infobae",
    "url": "https://www.infobae.com/colombia/2026/08/13/terremoto-en-colombia-que-es-la-emergencia-economica-que-declarara-abelardo-de-la-espriella-y-por-que-cada-peso-girado-quedara-expuesto/"
@@ -4070,6 +4087,9 @@
    "titulo": "Decreto 1171: declara desastre nacional en 12 departamentos",
    "categoriaProbatoria": "hecho-probado",
    "tipoMedicion": "actividad",
+   "indicadores": [
+    "I-04"
+   ],
    "detalle": "Firmado la noche del 11 de agosto tras el terremoto. La medida dura doce meses, prorrogables por un periodo igual.",
    "fuente": "Moncloa",
    "url": "https://www.moncloa.com/2026/08/13/reconstruccion-colombia-empresas-espanolas-3414876/"
@@ -4204,6 +4224,9 @@
    "titulo": "Decreto 1012: suspende por 15 días los requisitos de meritocracia para cargos de libre nombramiento",
    "categoriaProbatoria": "hecho-probado",
    "tipoMedicion": "actividad",
+   "indicadores": [
+    "I-04"
+   ],
    "detalle": "Expedido por el gobierno saliente un día antes de la posesión, para agilizar la conformación del nuevo gabinete.",
    "fuente": "El Heraldo",
    "url": "https://www.elheraldo.co/colombia/2026/08/06/este-es-el-decreto-que-facilitara-a-abelardo-de-la-espriella-el-nombramiento-de-su-gabinete-desde-el-7-de-agosto/"

@@ -420,6 +420,40 @@ const server = http.createServer((req, res) => {
                             claridad: fx.techos.claridad.i });
     o.oro = { sin: foto(fC1(sinNada)), con: foto(fC1(conTodo)) };
 
+    /* ── CAPA 2 · los indicadores por 100 días ─────────────────────────
+       Dos registros de mentira con la MISMA cantidad de hechos y distinta
+       duración: es lo único que demuestra que la normalización hace algo. Con
+       uno solo, una tasa mal calculada y una bien calculada se ven igual. */
+    const regInd = (nHechos, posesion, corte, indic) => ({
+      posesion: posesion, categorias: { gobierno: {} },
+      entradas: Array.from({ length: nHechos }, (_, i) => Object.assign(
+        { fecha: posesion, categoria: 'gobierno', tipoFuente: 'verificado',
+          categoriaProbatoria: 'hecho-probado', tipoMedicion: i % 2 ? 'actividad' : 'resultado' },
+        (indic && i < indic.length) ? { indicadores: indic[i] } : {})),
+      contradicciones: { casos: [] }, casos: { lista: [] }
+    });
+    const iA = api.indicadores(regInd(20, '2026-08-07', null, [['I-04'], ['I-04', 'I-05']]), '2026-08-27');
+    const iB = api.indicadores(regInd(20, '2026-08-07'), '2027-08-07');
+    o.ind = {
+      cortoDias: iA.dias, cortoPor100: iA.por100Hechos, cortoPoder: iA.poder.id,
+      largoDias: iB.dias, largoPor100: iB.por100Hechos, largoPoder: iB.poder.id,
+      i04: (iA.filas.filter(x => x.id === 'I-04')[0] || {}),
+      i05: (iA.filas.filter(x => x.id === 'I-05')[0] || {}),
+      i06: (iA.filas.filter(x => x.id === 'I-06')[0] || {}),
+      i09: (iA.filas.filter(x => x.id === 'I-09')[0] || {}),
+      i10: (iA.filas.filter(x => x.id === 'I-10')[0] || {}),
+      sinDeclarar: iA.sinDeclarar
+    };
+
+    /* La comparabilidad, medida sobre los DOS REGISTROS DE VERDAD, que es
+       donde vive el hallazgo: uno es una bitácora diaria y el otro una
+       selección de treinta y dos hechos de cuatro años. */
+    const cmpReal = api.comparabilidad();
+    o.cmp = { comparable: cmpReal.comparable, razones: cmpReal.razones,
+              aHechos: cmpReal.a.hechos, aPor100: cmpReal.a.por100Hechos, aDias: cmpReal.a.dias,
+              bHechos: cmpReal.b.hechos, bDias: cmpReal.b.dias,
+              texto: (cmpReal.texto || '').slice(0, 900) };
+
     // ── Los rasgos, con registros de mentira ─────────────────────────
     const fr = (ent, cxs) => (api.calcularCon({ posesion: '2026-08-07', categorias: { gobierno: {} }, entradas: ent,
       contradicciones: { casos: cxs || [] }, casos: { lista: [] } }, '2026-08-20').rasgos || []).map(x => x.id);
@@ -564,6 +598,43 @@ const server = http.createServer((req, res) => {
   chk(oro.sin && oro.con && JSON.stringify(oro.sin) === JSON.stringify(oro.con),
       'REGLA DE ORO · los tres campos NO mueven el veredicto ni ninguno de los tres techos (' +
       JSON.stringify(oro.sin) + ' contra ' + JSON.stringify(oro.con) + ')');
+
+  console.log('\n── La Capa 2: los indicadores por 100 días ────');
+  const ind = r.ind || {};
+  console.log('  ' + JSON.stringify(ind));
+  // MATERIAL · los dos registros tienen los MISMOS 20 hechos y duraciones
+  // distintas. Sin eso, una tasa mal calculada se vería igual que una bien.
+  chk(ind.cortoDias === 20 && ind.largoDias === 365,
+      'MATERIAL · dos registros con los mismos 20 hechos y distinta duración (' +
+      ind.cortoDias + ' días contra ' + ind.largoDias + ')');
+  chk(ind.cortoPor100 === 100 && ind.largoPor100 === 5.5,
+      'la misma cantidad de hechos da tasas distintas según los días de gobierno (' +
+      ind.cortoPor100 + ' contra ' + ind.largoPor100 + ' por 100 días)');
+  chk(ind.cortoPoder === 'bajo' && ind.largoPoder === 'medio',
+      'y el poder predictivo sale de los días transcurridos, no de una opinión (' +
+      ind.cortoPoder + ' · ' + ind.largoPoder + ')');
+  chk(ind.i04 && ind.i04.n === 2 && ind.i05 && ind.i05.n === 1,
+      'los indicadores declarados se cuentan por entrada (I-04 ' + (ind.i04 || {}).n +
+      ' · I-05 ' + (ind.i05 || {}).n + ')');
+  chk(ind.i09 && ind.i09.n === 10 && ind.i10 && ind.i10.n === 10 && ind.i09.n === ind.i10.n,
+      'PRINCIPIO 5 · actividad y resultado se cuentan en renglones distintos y no se suman (' +
+      (ind.i09 || {}).n + ' actividad · ' + (ind.i10 || {}).n + ' resultados)');
+  // La que guarda: un cero en I-06 diría que el Gobierno respondió a todo.
+  chk(ind.i06 && ind.i06.sinCalcular === true && /sin revisar/.test(ind.i06.razon || ''),
+      'I-06 no se publica como cero mientras haya hechos sin revisar, y dice por qué (' +
+      String((ind.i06 || {}).razon).slice(0, 60) + ')');
+
+  const cpb = r.cmp || {};
+  console.log('  comparabilidad: ' + JSON.stringify({ comparable: cpb.comparable, razones: cpb.razones,
+    a: cpb.aHechos + ' en ' + cpb.aDias + ' d = ' + cpb.aPor100 + '/100d', b: cpb.bHechos + ' en la misma ventana' }));
+  chk(cpb.comparable === false && (cpb.razones || []).length > 0,
+      'las dos tasas NO se declaran comparables, y se dice por qué (' + (cpb.razones || []).join(', ') + ')');
+  chk(cpb.aDias === cpb.bDias,
+      'el registro del otro gobierno se recorta a los MISMOS días desde su posesión (' +
+      cpb.aDias + ' contra ' + cpb.bDias + ')');
+  chk(/no son la misma clase de objeto/.test(cpb.texto || '') &&
+      /es de los registros, no de los gobiernos/.test(cpb.texto || ''),
+      'y el texto nombra la causa real: los dos registros no son la misma clase de objeto');
 
   const nd = r.nivelDOM || {};
   chk(nd.aviso === false && nd.tarjetasFuera === 0 && nd.diceNivel === false,
