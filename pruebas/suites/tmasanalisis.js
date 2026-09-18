@@ -558,6 +558,68 @@ const CAPAS_IDEAM = [
     await pesGen();
     o.laminaAnden = window.URBIS_PC_RECON.laminaA({ hoja: 'B' });
 
+    /* ── 11 · EL CUPO PREGUNTADO EN PORTERÍA (v943) ─────────────────
+       La única de las seis con atribución POR FILA: cada cupo lo dice una
+       portería distinta, así que hay dos `quien` y significan cosas
+       distintas —quien hizo la ronda y quien contestó en cada sitio—. */
+    await pesGen();
+    o.cupoAntes = (R.estado() || {}).cupo;
+    o.puertaCupo = !!H().querySelector('[data-pcr="cup-guardar"]');
+
+    const cup = (k, i, v) => {
+      const sel = '[data-pcr-cup="' + k + '"]' + (i === undefined ? '' : '[data-i="' + i + '"]');
+      const el = document.querySelector(sel);
+      if (el) { el.value = v; el.dispatchEvent(new Event('input', { bubbles: true })); }
+      return !!el;
+    };
+    const guardarCup = async () => {
+      const b5 = H().querySelector('[data-pcr="cup-guardar"]');
+      if (b5) { b5.click(); await esperar(500); }
+      await abrir();
+    };
+
+    // 1 · Un equipamiento sin cupo: no mide nada, y se dice por qué.
+    cup('nombre', 0, 'Colegio San José');
+    cup('tipo', 0, 'colegio');
+    await guardarCup();
+    o.cupRechazoSinCupo = ((R.estado() || {}).cupo || {}).estadoCampo;
+    o.cupAvisoSinCupo = String((R.estado() || {}).aviso || '');
+
+    // 2 · Un cupo que no es un número: OTRO error, dicho distinto.
+    cup('cupo', 0, 'bastantes');
+    await guardarCup();
+    o.cupAvisoNoNumero = String((R.estado() || {}).aviso || '');
+
+    // 3 · Un cupo sin nombre de equipamiento: el tercero.
+    cup('nombre', 0, '');
+    cup('cupo', 0, '540');
+    await guardarCup();
+    o.cupAvisoSinNombre = String((R.estado() || {}).aviso || '');
+
+    // 4 · Dos equipamientos preguntados, uno SIN quién informó.
+    cup('nombre', 0, 'Colegio San José');
+    cup('cupo', 0, '540'); cup('jornadas', 0, 'mañana y tarde');
+    cup('cobra', 0, 'no'); cup('informo', 0, 'Rectoría, sec. académica');
+    cup('nombre', 1, 'Puesto de salud La Playa');
+    cup('tipo', 1, 'puesto de salud'); cup('cupo', 1, '120');
+    cup('cobra', 1, 'no');
+    cup('quien', undefined, 'Cleri Rodríguez');
+    cup('fechaDoc', undefined, '2026-09-18');
+    await guardarCup();
+    o.cupoCampo = (R.estado() || {}).cupo;
+    o.entradaCupo = (function () {
+      try {
+        return (R.leerCampo(((R.estado() || {}).llaveCampo) || '') || [])
+          .filter(x => x.hueco === 'cupo-real-de-equipamientos')
+          .map(x => ({ estado: x.estado, quien: (x.fuente || {}).quien,
+                       filas: ((x.valor || {}).filas || []).length,
+                       informos: ((x.valor || {}).filas || []).map(f => f.informo || '') }));
+      } catch (e) { return [{ error: String(e) }]; }
+    })();
+    await pesGen();
+    o.puertaCupoDice = (txt(H()).match(/Cupo real de equipamientos[^]{0,520}/) || [''])[0];
+    o.laminaCupo = window.URBIS_PC_RECON.laminaA({ hoja: 'B' });
+
     // Y que todo esto viaje con la ficha archivada.
     o.guardado = (function () {
       try {
@@ -1350,6 +1412,53 @@ const CAPAS_IDEAM = [
     T('la carencia del perfil sigue nombrando el % de red sin dato, y suma lo caminado',
       /del andén no se sabe en el/i.test(LA) && /sí se caminó el andén con cinta/.test(LA),
       /del andén no se sabe en el/i.test(LA) ? 'las dos cosas' : 'perdió el % de red');
+  }
+
+  console.log('\n  -- 11 · el cupo preguntado en portería --');
+  {
+    const ca = r.cupoAntes || {}, cc = r.cupoCampo || {};
+    const LC = r.laminaCupo || '';
+    // MATERIAL · hay equipamientos mapeados, o el denominador no existe.
+    T('MATERIAL · el sector tiene equipamientos mapeados y la puerta se pinta',
+      ca.mapeados > 0 && r.puertaCupo === true,
+      ca.mapeados + ' mapeados · puerta ' + r.puertaCupo);
+    T('un equipamiento sin cupo no entra, y el aviso dice que falta el cupo',
+      r.cupRechazoSinCupo !== 'ok' && /cupo/i.test(r.cupAvisoSinCupo),
+      r.cupAvisoSinCupo.slice(0, 90));
+    T('y un cupo que no es un número lo dice DISTINTO',
+      /n[uú]mero de personas|mayor que cero/i.test(r.cupAvisoNoNumero) &&
+      r.cupAvisoNoNumero !== r.cupAvisoSinCupo,
+      r.cupAvisoNoNumero.slice(0, 100));
+    T('y un cupo sin nombre de equipamiento, también distinto',
+      /nombre/i.test(r.cupAvisoSinNombre) && r.cupAvisoSinNombre !== r.cupAvisoNoNumero,
+      r.cupAvisoSinNombre.slice(0, 100));
+    T('dos equipamientos preguntados suman sus puestos, con quien hizo la ronda',
+      cc.hay === true && cc.equipamientos === 2 && cc.cupoTotal === 660 &&
+      cc.quien === 'Cleri Rodríguez',
+      cc.equipamientos + ' equipamientos · ' + cc.cupoTotal + ' puestos · ' + cc.quien);
+    /* LA QUE DE VERDAD GUARDA: los dos `quien` no son el mismo. La entrada
+       lleva quien hizo la ronda; cada fila, quien contestó en esa portería.
+       Juntarlos pondría a una persona a responder por lo que dijo otra. */
+    T('quién informó va POR FILA, y la que no lo trae se cuenta aparte',
+      cc.conQuien === 1 && cc.sinQuien === 1,
+      'con quién ' + cc.conQuien + ' · sin quién ' + cc.sinQuien);
+    T('y el `quien` de la entrada es quien hizo la RONDA, no quien contestó',
+      (r.entradaCupo || [])[0] && r.entradaCupo[0].quien === 'Cleri Rodríguez' &&
+      (r.entradaCupo[0].informos || []).indexOf('Rectoría, sec. académica') >= 0,
+      JSON.stringify(r.entradaCupo));
+    T('la puerta avisa de la fila sin quién informó, que es la que no se puede repreguntar',
+      /sin quién informó/i.test(r.puertaCupoDice),
+      r.puertaCupoDice.replace(/\s+/g, ' ').slice(0, 160) || 'no lo dice');
+    // Y en el PAPEL, al lado de la cobertura y nunca sumado.
+    T('el papel imprime los puestos al lado de la cobertura',
+      /puestos<\/b> en 2 equipamientos/.test(LC) || /660 puestos/.test(LC),
+      (LC.match(/[\d.]+ puestos[^<]{0,60}/) || ['no está'])[0]);
+    T('y dice que llegar caminando y tener puesto son DOS preguntas',
+      /dos preguntas/.test(LC) && /cubre en el mapa y no en la práctica/.test(LC),
+      /dos preguntas/.test(LC) ? 'lo dice' : 'no lo dice');
+    T('con 2 de N preguntados NO afirma cuánta gente tiene puesto',
+      /no se puede decir cuánta gente tiene puesto/.test(LC) && /extrapolar/.test(LC),
+      /extrapolar/.test(LC) ? 'lo declara' : 'lo calla');
   }
 
   console.log('\n  -- y todo viaja con la ficha --');

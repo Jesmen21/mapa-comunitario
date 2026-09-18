@@ -8723,6 +8723,119 @@ Quedan **dos** plantillas por conectar —«Conteo de alturas por manzana», que
 tiene otro camino, y «Cupo real de equipamientos»— y las tres de percepción,
 que además necesitan entrar en `huecosDeCampo` antes de tener formulario.
 
+## El cupo se pregunta en portería, y no se extrapola (v943)
+
+La quinta de las seis plantillas de campo, y la elección **corrigió una nota
+mía de la v940**. Aquella tabla decía que «Cupo real de equipamientos» no
+cierra ninguna carencia declarada, porque «Quién queda por fuera» nombra otro
+refinamiento —la población por manzana cruzada con cada radio—. Falso: la
+conclusión de la banda de campo nombra el cupo con todas las letras, al lado
+de las dos que ya están hechas:
+
+> las carencias que cierran —la frecuencia de las rutas, el perfil acotado,
+> **el cupo**— siguen abiertas hasta que alguien las llene en la calle.
+
+O sea que era la única que quedaba de esas tres, y la nota que la apartaba se
+escribió mirando un panel y no la hoja entera. Es la misma forma de las cinco
+declaraciones de ausencia falsas (v861 a v888): **se midió un sitio y se
+concluyó sobre todos**.
+
+### Llegar y tener puesto son dos preguntas, y no se suman
+
+`pctSinCubrir` mide si se puede **llegar** caminando; el cupo, si hay
+**puesto** al llegar. Un colegio a 300 m y lleno cubre en el mapa y no en la
+práctica — que es la frase que la hoja de déficit de Visión Territorial ya usa
+desde la v926, por el mismo motivo y en otro módulo.
+
+Sumarlas daría una tercera cifra que no mide ninguna de las dos. Así que el
+cupo se imprime **al lado** de la tabla de cobertura, con su propia frase, y
+la tabla no cambia una sola celda. Es la decisión de la v934 con el paramento
+y la de la v939 con el perfil: las dos cifras existen, cada una se nombra, y
+ninguna se tira.
+
+### El denominador es lo que impide leerlo como una medición del sector
+
+Preguntarle el cupo a **dos de cuarenta** y a **dos de dos** son cosas
+distintas, y sin el denominador se leen igual. Sale de
+`accesibilidad.categorias[].puntos` —el mismo campo con el que la v875
+descubrió que un 100 % podía ser una capa vacía—, así que no hizo falta tocar
+el motor.
+
+Con N de M preguntados la frase dice, con esas palabras, que **no se puede
+decir cuánta gente tiene puesto**: llevar el cupo de dos equipamientos al
+sector entero sería extrapolar. Y con todos preguntados dice la otra mitad,
+que también hay que decir: la suma es la del sector y **sigue sin ser la de
+quien de verdad los usa**, que puede venir de otro barrio.
+
+Es la misma acotación que la v942 escribió para el ancho libre y la v939 para
+el perfil. La regla, ya en tres tandas: **lo levantado en campo se publica con
+su denominador y ahí para.**
+
+### La única plantilla con atribución POR FILA
+
+Las otras cinco guardan un solo `quien` —quien caminó la cuadra, quien midió
+los tramos, quien se sentó en la parada—. Esta no, y no es un capricho de esta
+tanda: la v883 le puso columna «Quién informó» **a esta sola de las seis**,
+justamente porque cada cupo lo dice una portería distinta.
+
+Así que la entrada guarda las dos cosas y significan cosas distintas:
+
+| | Qué es |
+|---|---|
+| `quien` de la entrada | quien hizo la ronda y responde por la plantilla |
+| `informo` de cada fila | quién contestó en ESA portería |
+
+Y las filas que no lo traen **se cuentan y se dicen**: «2 filas no dicen quién
+informó, y sin eso el cupo no se puede volver a preguntar». Un cupo sin su
+fuente no se puede verificar ni actualizar, que es lo que lo separa de un
+número recordado.
+
+Este es el precedente que la v934 y la v939 dejaron identificado para el día
+que dos personas se repartan una plantilla — y ahora está escrito y probado en
+una de ellas, en vez de solo nombrado.
+
+### Tres rechazos, cada uno con su causa
+
+Como en la v934 y la v940: un solo mensaje manda a revisar lo que está bien.
+Falta el nombre —sin él no se puede volver a preguntar—, el cupo no es un
+número mayor que cero, o no hay ni una fila. Son tres cosas distintas para
+quien está escribiendo.
+
+### Dónde vive cada rama
+
+* **`tmasanalisis`** · tiene equipamientos mapeados, así que el denominador
+  existe y la frase puede decir «2 de N». Ahí viven la puerta, los tres
+  rechazos y la atribución por fila.
+* **`tdoslaminas`** · ningún cupo preguntado: ahí vive la guarda —sin
+  plantilla, la hoja no inventa una cifra de puestos ni dice quién informó—.
+
+Sin la segunda, un «preguntado en portería» puesto en todas partes pasaría
+igual. La guarda de material va primero en las dos (v920).
+
+### Demostrado contra la v942
+
+Revirtiendo **solo lo que imprime** —la puerta y el almacén se quedan, porque
+son lo que la suite necesita para LEER (v875)—: tres en rojo con el estado
+viejo impreso.
+
+```
+✗ el papel imprime los puestos al lado de la cobertura        — no está
+✗ y dice que llegar caminando y tener puesto son DOS preguntas — no lo dice
+✗ con 2 de N preguntados NO afirma cuánta gente tiene puesto   — lo declara
+```
+
+### Lo que esta plantilla NO cierra, medido
+
+La carencia de «Quién queda por fuera» **se queda entera**, y no por descuido:
+lo que declara faltando es la población por manzana cruzada con cada radio —el
+supuesto de que la gente se reparte por igual sobre la superficie—, y eso el
+cupo no lo toca. Encogerla porque llegó una plantilla de otra cosa sería la
+mentira contraria a la v861.
+
+Queda **una** plantilla por conectar —«Conteo de alturas por manzana», que
+tiene otro camino ya medido— y las tres de percepción, que además necesitan
+entrar en `huecosDeCampo` antes de tener formulario.
+
 ## La lista viva: lo que al pliego educativo todavía le falta (v866)
 
 Esta lista se quedó vieja **cinco veces**. Cuatro dentro de la hoja —la

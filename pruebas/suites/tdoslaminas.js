@@ -1704,6 +1704,22 @@ usos.push({ type: 'node', id: 3105, lat: C.lat + 0.0019, lon: C.lng + 0.0018,
     (cajaB0('Estado de andenes por tramo').match(/Dónde se pega<\/i><span>([^<]{0,80})/) ||
       ['', 'no lo dice'])[1]);
 
+  /* ── LA GUARDA DEL CUPO (v943) ───────────────────────────────────
+     Sin nadie que haya preguntado en portería, la hoja no puede inventar un
+     puesto. Y la cobertura tiene que seguir entera: el cupo se suma al lado,
+     nunca la sustituye. */
+  console.log('\n  -- el cupo, sin nadie que haya preguntado --');
+  const CQUE = cajaB0('Quién queda por fuera');
+  T('MATERIAL · la caja de cobertura está compuesta y reparte la población',
+    !!CQUE && /NO servidas/.test(CQUE),
+    CQUE ? 'compuesta' : 'sin caja de cobertura');
+  T('sin portería preguntada no aparece ningún puesto',
+    !/puestos<\/b> en/.test(r.soloB || '') && !/preguntado en portería/i.test(r.soloB || ''),
+    ((r.soloB || '').match(/puestos[^<]{0,50}/) || ['ninguno'])[0]);
+  T('y la cobertura sigue entera: el cupo se suma al lado, no la sustituye',
+    /NO servidas/.test(CQUE) && /Cómo se reparte/.test(CQUE),
+    /Cómo se reparte/.test(CQUE) ? 'entera' : 'perdió el supuesto');
+
   console.log('\n  -- §18 · las seis plantillas de medición --');
   const cajaB = t => ((r.soloB || '').split('<section class="caja')
     .filter(x => new RegExp('<h2>' + t + '</h2>').test(x))[0] || '');

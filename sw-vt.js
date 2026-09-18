@@ -13,7 +13,7 @@
 
    La versión va acá y en vision-territorial.html, idéntica, como en los
    otros siete archivos de versión del sitio: revisar.js lo comprueba. */
-const VT_CACHE = 'urbis-vt-v942-el-anden-se-camina';
+const VT_CACHE = 'urbis-vt-v943-el-cupo-se-pregunta-en-porteria';
 const VT_ASSETS = [
   './vision-territorial.html',
   './css/90-vt.css',

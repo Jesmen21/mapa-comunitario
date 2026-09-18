@@ -1573,6 +1573,118 @@
     };
   }
 
+  /* ── LA QUINTA PLANTILLA: CUPO REAL DE EQUIPAMIENTOS (v943) ─────────
+     CORRECCIÓN de lo que la v940 dejó escrito, y como cambia cuál es la
+     siguiente se corrige acá y no se deja pasar: aquella nota dijo que esta
+     plantilla «no cierra ninguna carencia declarada» porque «Quién queda por
+     fuera» declara otro refinamiento —la población por manzana cruzada con
+     cada radio—. Es cierto de ESE panel y **falso de la hoja**: la conclusión
+     de la banda de campo nombra el cupo con esa palabra, al lado de las otras
+     dos que ya se cerraron —«la frecuencia de las rutas, el perfil acotado,
+     el cupo— siguen abiertas hasta que alguien las llene en la calle»—. Y la
+     hoja de déficit de Visión Territorial lo declara igual desde la v926.
+
+     Así que era la última de las tres que la propia hoja promete.
+
+     LA COBERTURA Y EL CUPO SON DOS PREGUNTAS, y no se mezclan. La cobertura
+     dice si se puede LLEGAR caminando; el cupo, si hay PUESTO al llegar. Un
+     colegio a 300 m y lleno cubre en el mapa y no en la práctica — es la
+     frase que la hoja de déficit ya usa. Sumarlas daría una tercera cifra que
+     no mide ninguna de las dos.
+
+     Y NO SE EXTRAPOLA: con el cupo de dos equipamientos de cuarenta no se
+     puede decir cuántas personas tienen puesto. Se publica lo preguntado con
+     su denominador —cuántos de cuántos mapeados— y ahí para, que es la misma
+     decisión de la v942 con el ancho libre. */
+  var HUECO_CUPO = 'cupo-real-de-equipamientos';
+
+  /* Una fila sirve si trae NOMBRE y CUPO: sin el nombre no se puede volver a
+     preguntar, y sin el cupo no mide nada. El tipo, las jornadas, si cobra y
+     quién informó pueden faltar — aunque quién informó es el que más vale, y
+     por eso se cuenta aparte cuántas filas lo traen. */
+  function filaCupoUtil(f) {
+    return !!f && String((f && f.nombre) || '').trim() !== '' &&
+           numPos(f.cupo) !== null && Number(f.cupo) > 0;
+  }
+
+  /* SIEMPRE un objeto con su `estado`, nunca null (v876). */
+  function cupoDeCampo(llave) {
+    var vacio = function (est, razon) {
+      return { estado: est, razon: razon, hay: false, filas: [] };
+    };
+    if (!llave) return vacio('sin-sector', 'sin sector al que enlazar lo preguntado');
+    var e;
+    try {
+      e = confirmadasDeCampo(llave).filter(function (x) { return x.hueco === HUECO_CUPO; })[0];
+    } catch (err) { return vacio('sin-sector', 'no se pudo leer lo guardado'); }
+    if (!e) return vacio('sin-anotar', 'nadie ha preguntado todavía el cupo en portería');
+    var filas = ((e.valor && e.valor.filas) || []).filter(filaCupoUtil);
+    if (!filas.length) return vacio('sin-filas', 'la plantilla está guardada y no tiene una sola fila con el cupo preguntado');
+
+    var total = filas.reduce(function (a, f) { return a + (numPos(f.cupo) || 0); }, 0);
+    var conQuien = filas.filter(function (f) { return String(f.informo || '').trim() !== ''; }).length;
+    var cobran = filas.filter(function (f) { return siNo(f.cobra) === true; }).length;
+    var gratis = filas.filter(function (f) { return siNo(f.cobra) === false; }).length;
+    var tipos = [];
+    filas.forEach(function (f) {
+      var t = String(f.tipo || '').trim();
+      if (t && tipos.indexOf(t) < 0) tipos.push(t);
+    });
+    var fl = fuenteLeida(e.fuente);
+    var hasta = (e.fuente && e.fuente.fechaHasta) || null;
+    return {
+      estado: 'ok', hay: true, razon: '',
+      filas: filas, equipamientos: filas.length,
+      cupoTotal: Math.round(total),
+      conQuien: conQuien, sinQuien: filas.length - conQuien,
+      cobran: cobran, gratis: gratis, tipos: tipos,
+      fuente: fl,
+      desde: fl.fechaDoc || null, hasta: hasta,
+      cuando: cuandoTexto(fl.fechaDoc || null, hasta)
+    };
+  }
+
+  /* Cuántos equipamientos hay MAPEADOS, que es el denominador de lo
+     preguntado. Sale de `accesibilidad.categorias[].puntos`, el mismo campo
+     que la v875 usa para saber si una capa está vacía: preguntarle el cupo a
+     dos de cuarenta y a dos de dos son cosas distintas, y sin el denominador
+     las dos se leen igual. */
+  function equipamientosMapeados(st) {
+    var ac = st && st.accesibilidad;
+    if (!ac || !(ac.categorias || []).length) return null;
+    return ac.categorias.reduce(function (a, c) { return a + (Number(c.puntos) || 0); }, 0);
+  }
+
+  /* La frase del cupo se escribe UNA vez y la leen la lámina y la ficha:
+     dos copias de una advertencia se separan a la tanda siguiente (v867). */
+  function cupoDicho(st) {
+    var cp;
+    try { cp = cupoDeCampo(llaveDeSector(S.resultado && S.resultado.meta)); }
+    catch (e) { return ''; }
+    if (!cp.hay) return '';
+    var mapeados = equipamientosMapeados(st);
+    var hab = Number((st && (st.poblacionProyectada || st.poblacionEstimada)) || 0);
+    return '<p class="nota nota-campo"><b>Y el cupo, preguntado en portería.</b> ' +
+      '<b>' + cp.cupoTotal.toLocaleString('es-CO') + ' puestos</b> en ' + cp.equipamientos +
+      (cp.equipamientos === 1 ? ' equipamiento' : ' equipamientos') +
+      (mapeados ? ' de los ' + mapeados + ' mapeados' : '') + ', preguntados por ' +
+      esc(cp.fuente.quien) + esc(cp.cuando) + '. ' +
+      'La tabla de arriba dice si se puede <b>llegar</b> caminando; esto dice si hay ' +
+      '<b>puesto</b> al llegar, y son dos preguntas: un colegio a 300 m y lleno cubre en el ' +
+      'mapa y no en la práctica. ' +
+      (mapeados && cp.equipamientos < mapeados
+        ? 'Con ' + cp.equipamientos + ' de ' + mapeados + ' preguntados <b>no se puede decir ' +
+          'cuánta gente tiene puesto</b>' + (hab ? ' de los ' + hab.toLocaleString('es-CO') +
+          ' habitantes' : '') + ': llevar estos puestos al sector entero sería extrapolar.'
+        : 'Con todos los mapeados preguntados, la suma es la del sector — y sigue sin ser la ' +
+          'de quien de verdad los usa, que puede venir de otro barrio.') +
+      (cp.sinQuien
+        ? ' <b>' + cp.sinQuien + (cp.sinQuien === 1 ? ' fila no dice' : ' filas no dicen') +
+          ' quién informó</b>, y sin eso el cupo no se puede volver a preguntar.'
+        : ' Las ' + cp.equipamientos + ' dicen quién informó.') +
+      '</p>';
+  }
+
   /* La frase del ancho libre se escribe UNA vez: la usan las dos ramas de la
      carencia del perfil, y dos copias de una advertencia se separan a la
      tanda siguiente (v867, v934). */
@@ -7785,7 +7897,12 @@ function donaHTML(datos, colorDe, nombreDe) {
         ' puntos repartidos por el área, así que pasar de «% del área» a «personas» ' +
         '<b>reparte la población del sector por igual sobre su superficie</b>. Si la gente vive ' +
         'concentrada justo en la mitad que sí tiene colegio, la cifra sobra; si vive en la que no, ' +
-        'falta. Para afinarlo haría falta la población por manzana cruzada con cada radio.</p>';
+        'falta. Para afinarlo haría falta la población por manzana cruzada con cada radio.</p>' +
+        /* EL CUPO VA AL LADO Y NO SUMADO. La tabla de arriba dice si se puede
+           LLEGAR caminando; el cupo, si hay PUESTO al llegar. Un colegio a
+           300 m y lleno cubre en el mapa y no en la práctica, y una tercera
+           cifra que las mezclara no mediría ninguna de las dos. */
+        cupoDicho(st);
       })(), 'g3') +
 
       /* ── Cómo se mueve el sector ───────────────────────────────────────
@@ -13316,6 +13433,64 @@ function donaHTML(datos, colorDe, nombreDe) {
             'análisis post-sector.'
           : rAn.error;
         if (rAn.ok) soltarPostAn();
+        pintar(); return;
+      }
+      if (acc === 'cup-guardar' || acc === 'cup-borrar') {
+        var llCu = llaveDeSector(S.resultado && S.resultado.meta);
+        var soltarPostCu = function () {
+          if (S.corridas) { S.corridas.post = null;
+            if (S.corrida === 'post') { S.corrida = 'sector'; S.resultado = S.corridas.sector; } }
+        };
+        if (acc === 'cup-borrar') {
+          var yaCu = confirmadasDeCampo(llCu).filter(function (x) {
+            return x.hueco === HUECO_CUPO; })[0];
+          if (yaCu) borrarEntradaCampo(llCu, yaCu.id);
+          S.avisoPestana = 'Se quitó lo preguntado. La hoja vuelve a decir solo quién LLEGA ' +
+            'caminando, nunca si hay puesto.';
+          soltarPostCu(); pintar(); return;
+        }
+        var leeCu = function (k, i) {
+          var sel = '[data-pcr-cup="' + k + '"]' + (i === undefined ? '' : '[data-i="' + i + '"]');
+          var el = document.querySelector(sel);
+          return el ? String(el.value || '').trim() : '';
+        };
+        var filasCu = [], cupoMalo = [];
+        document.querySelectorAll('[data-pcr-cup="nombre"]').forEach(function (el) {
+          var i = Number(el.getAttribute('data-i'));
+          var nombre = String(el.value || '').trim();
+          var cupoT = leeCu('cupo', i), tipo = leeCu('tipo', i);
+          var jor = leeCu('jornadas', i), cobra = leeCu('cobra', i), inf = leeCu('informo', i);
+          if (!nombre && !cupoT && !tipo && !jor && !cobra && !inf) return;
+          var n = cupoT ? Number(String(cupoT).replace(/[.,\s]/g, '')) : null;
+          if (cupoT && !(isFinite(n) && n > 0)) cupoMalo.push(nombre || ('fila ' + (i + 1)));
+          filasCu.push({ nombre: nombre.slice(0, 70), tipo: tipo.slice(0, 70), cupo: n,
+                         jornadas: jor.slice(0, 70), cobra: cobra.slice(0, 20),
+                         informo: inf.slice(0, 70) });
+        });
+        var utilesCu = filasCu.filter(filaCupoUtil);
+        if (!utilesCu.length) {
+          var sinNom = filasCu.filter(function (x) {
+            return !x.nombre && x.cupo !== null && isFinite(x.cupo) && x.cupo > 0; });
+          S.avisoPestana = !filasCu.length
+            ? 'Falta preguntar por lo menos un equipamiento y anotar su cupo.'
+            : cupoMalo.length
+              ? 'El cupo es un número de personas y tiene que ser mayor que cero: revise ' +
+                cupoMalo.join(', ') + '.'
+              : sinNom.length
+                ? 'Cada equipamiento necesita su nombre: sin él no se puede volver a preguntar.'
+                : 'Cada equipamiento necesita su nombre y su cupo.';
+          pintar(); return;
+        }
+        var rCu = guardarEntradaCampo(llCu, {
+          hueco: HUECO_CUPO, estado: 'confirmado',
+          valor: { filas: utilesCu },
+          fuente: { como: 'campo', quien: leeCu('quien'),
+                    fechaDoc: leeCu('fechaDoc'), fechaHasta: leeCu('fechaHasta') } });
+        S.avisoPestana = rCu.ok
+          ? 'Quedó anotado. La hoja dice ahora quién llega caminando Y cuántos puestos hay, que ' +
+            'son dos preguntas; y este sector tiene análisis post-sector.'
+          : rCu.error;
+        if (rCu.ok) soltarPostCu();
         pintar(); return;
       }
       if (acc === 'norma-confirmar') {
@@ -26724,13 +26899,83 @@ function donaHTML(datos, colorDe, nombreDe) {
       '</div>';
   }
 
+  /* ── LA PUERTA DE LA QUINTA PLANTILLA (v943) ─────────────────────────
+     «Cupo real de equipamientos», y es la ÚNICA de las seis con atribución
+     POR FILA. No es un capricho de esta tanda: la v883 le puso la columna
+     «Quién informó» a esta y solo a esta, porque cada cupo lo dice una
+     portería distinta. Las v934 y v939 lo dejaron escrito como el precedente
+     para cuando hiciera falta, y acá hace falta.
+
+     Así que hay DOS atribuciones y significan cosas distintas: `quien` de la
+     entrada es quien hizo la ronda —quien responde por el levantamiento— y
+     `informo` de cada fila es quien contestó en esa portería. Juntarlas
+     pondría a una persona a responder por lo que dijo otra. */
+  function htmlPuertaCupo(llave) {
+    var cv = cupoDeCampo(llave);
+    var cab = '<p class="pcr-lab">' + esc(nombreDeHueco(HUECO_CUPO)) + '</p>' +
+      '<p class="pcr-vac-doc">Se pregunta en la portería a cuánta gente atiende de verdad cada ' +
+      'equipamiento. <b>Quién informó va por fila</b>: cada cupo lo dice una portería distinta, y ' +
+      'sin ese nombre la cifra no se puede volver a preguntar.</p>';
+    if (cv.estado === 'ok') {
+      return '<div class="pcr-vac-g pcr-act-g">' + cab +
+        '<p class="pcr-conc pcr-fuente-ok"><b>' + cv.cupoTotal.toLocaleString('es-CO') +
+        ' puestos</b> en ' + cv.equipamientos +
+        (cv.equipamientos === 1 ? ' equipamiento preguntado' : ' equipamientos preguntados') +
+        ', por ' + esc(cv.fuente.quien) + esc(cv.cuando) + '.' +
+        (cv.sinQuien
+          ? ' <b>' + cv.sinQuien + (cv.sinQuien === 1 ? ' fila sin' : ' filas sin') +
+            ' quién informó</b>: la cifra queda sin a quién volver a preguntarle.'
+          : ' Las ' + cv.equipamientos + ' dicen quién informó.') +
+        (cv.cobran ? ' ' + cv.cobran + (cv.cobran === 1 ? ' cobra.' : ' cobran.') : '') +
+        ' La cobertura de la hoja NO cambia: llegar caminando y tener puesto son dos preguntas.</p>' +
+        '<button type="button" class="pcr-mini" data-pcr="cup-borrar">' + ico('borrar', 16) +
+          'Quitar lo anotado</button>' +
+        '</div>';
+    }
+    var guardadas = cv.filas || [];
+    var slots = guardadas.slice(0, 7);
+    while (slots.length < guardadas.length + 2 && slots.length < 7) slots.push(null);
+    if (!slots.length) { slots = [null, null]; }
+    var cel = function (k, i, v, etq, ph, modo) {
+      return '<label class="pcr-campo-linea"><span>' + etq + '</span>' +
+        '<input type="text"' + (modo ? ' inputmode="' + modo + '"' : '') + ' maxlength="70" ' +
+          'data-pcr-cup="' + k + '" data-i="' + i + '" ' +
+          'value="' + esc(v != null ? String(v) : '') + '" placeholder="' + ph + '" /></label>';
+    };
+    var filas = slots.map(function (g, i) {
+      var v = g || {};
+      return '<div class="pcr-act-f">' +
+        cel('nombre', i, v.nombre, 'Equipamiento', 'Colegio San José') +
+        cel('tipo', i, v.tipo, 'Tipo', 'colegio, puesto de salud, biblioteca') +
+        cel('cupo', i, v.cupo, 'Cupo o capacidad', '540', 'numeric') +
+        cel('jornadas', i, v.jornadas, 'Jornadas', 'mañana y tarde') +
+        cel('cobra', i, v.cobra, 'Cobra', 'sí / no') +
+        cel('informo', i, v.informo, 'Quién informó', 'la portería, con nombre y cargo') +
+        '</div>';
+    }).join('');
+    return '<div class="pcr-vac-g pcr-act-g">' + cab + filas +
+      '<label class="pcr-campo-linea"><span>Quién hizo la ronda</span>' +
+        '<input type="text" maxlength="80" data-pcr-cup="quien" ' +
+          'value="' + esc((cv.fuente && cv.fuente.quien) || '') + '" ' +
+          'placeholder="Quien fue a preguntar, no quien contestó" /></label>' +
+      '<label class="pcr-campo-linea"><span>Día de la ronda</span>' +
+        '<input type="text" maxlength="40" data-pcr-cup="fechaDoc" ' +
+          'value="' + esc(cv.desde || '') + '" placeholder="2026-09-18" /></label>' +
+      '<label class="pcr-campo-linea"><span>Y hasta (si tomó varios días)</span>' +
+        '<input type="text" maxlength="40" data-pcr-cup="fechaHasta" ' +
+          'value="' + esc(cv.hasta || '') + '" placeholder="se deja vacío si fue un solo día" /></label>' +
+      '<button type="button" class="pcr-mini" data-pcr="cup-guardar">' + ico('ok', 16) +
+        'Guardar lo preguntado en portería</button>' +
+      '</div>';
+  }
+
   function bloquePlantillas() {
     if (!S.resultado) return '';
     var llave = llaveDeSector(S.resultado.meta);
     /* El conteo de puertas SE CALCULA y no se teclea: escrito a mano dentro
        de la frase es una cifra que envejece sola, que es lo que la v903
        corrigió en la conclusión de banda. */
-    var conectadas = 4, total = PLANTILLAS_DE_CAMPO.length;
+    var conectadas = 5, total = PLANTILLAS_DE_CAMPO.length;
     return h4('via', 'Lo que se levanta en la calle') +
       '<p class="pcr-pista">La lámina imprime ' + total + ' plantillas en blanco para llenar ' +
       'caminando. Acá se anota lo que ya se midió, y la cifra entra en la hoja con <b>quién la ' +
@@ -26739,7 +26984,8 @@ function donaHTML(datos, colorDe, nombreDe) {
       htmlPuertaActividad(llave) +
       htmlPuertaPerfil(llave) +
       htmlPuertaRutas(llave) +
-      htmlPuertaAndenes(llave);
+      htmlPuertaAndenes(llave) +
+      htmlPuertaCupo(llave);
   }
 
   /* ── LA PRIMERA DE LAS CUATRO PUERTAS DE VACÍO (v931) ────────────────
@@ -31345,6 +31591,18 @@ function donaHTML(datos, colorDe, nombreDe) {
                    totalM: pf.acotado ? pf.acotado.totalM : null,
                    sinMedir: pf.acotado ? pf.acotado.sinMedir : [],
                    estadoCampo: pf.campo ? pf.campo.estado : null };
+        })(),
+        cupo: (function () {
+          var cp;
+          try { cp = cupoDeCampo(llaveDeSector(S.resultado && S.resultado.meta)); }
+          catch (e) { return null; }
+          var st0 = (S.resultado && S.resultado.stats) || null;
+          var base = { estadoCampo: cp.estado, hay: false,
+                       mapeados: equipamientosMapeados(st0) };
+          if (!cp.hay) return base;
+          return Object.assign(base, { hay: true, equipamientos: cp.equipamientos,
+            cupoTotal: cp.cupoTotal, conQuien: cp.conQuien, sinQuien: cp.sinQuien,
+            cobran: cp.cobran, gratis: cp.gratis, quien: cp.fuente.quien });
         })(),
         /* Lo que una prueba necesita leer se agrega acá y no se alcanza por
            un lado, que es la regla de la v871. Va aparte del perfil porque
