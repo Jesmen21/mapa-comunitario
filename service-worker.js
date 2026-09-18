@@ -1,4 +1,4 @@
-const URBIS_CACHE = 'urbis-v939-el-perfil-vial-acotado';
+const URBIS_CACHE = 'urbis-v940-rutas-observadas-con-reloj';
 const URBIS_ASSETS = [
   './',
   './index.html',

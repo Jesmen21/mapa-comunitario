@@ -399,6 +399,88 @@ const CAPAS_IDEAM = [
     await pesGen();
     o.laminaCampo = window.URBIS_PC_RECON.laminaA({});
 
+    /* ── LA TERCERA PLANTILLA: «Rutas observadas y su frecuencia» (v940) ─
+       Va acá y no en `tdoslaminas` por el material, y por el lado contrario
+       del perfil: este sector tiene CUATRO paradas y NINGUNA relación de ruta
+       en OpenStreetMap, así que es exactamente el caso donde lo observado
+       encuentra rutas que nadie mapeó — que es el hallazgo que la carencia
+       anuncia con todas las letras. En `tdoslaminas` hay tres rutas
+       registradas y ahí vive la rama contraria: sin campo, la tabla no
+       inventa una columna de intervalo. */
+    await pesGen();
+
+    /* GUARDA DE MATERIAL, primero (v920): si este sector empezara a traer
+       rutas de OpenStreetMap, «solo observada» dejaría de tener nada que
+       demostrar y las de abajo pasarían sin rechazar nada. */
+    o.rutasMapa = (R.estado() || {}).rutas;
+    o.puertaRutas = !!H().querySelector('[data-pcr="rut-guardar"]');
+
+    const rut = (k, i, v) => {
+      const sel = '[data-pcr-rut="' + k + '"]' + (i === undefined ? '' : '[data-i="' + i + '"]');
+      const el = document.querySelector(sel);
+      if (el) { el.value = v; el.dispatchEvent(new Event('input', { bubbles: true })); }
+      return !!el;
+    };
+    const guardarRut = async () => {
+      const b3 = H().querySelector('[data-pcr="rut-guardar"]');
+      if (b3) { b3.click(); await esperar(500); }
+      await abrir();
+    };
+
+    // 1 · Una hora que no es una hora: lo dice por su forma.
+    rut('ref', 0, 'A-12'); rut('parada', 0, 'Calle 10 con carrera 5');
+    rut('p1', 0, 'temprano');
+    await guardarRut();
+    o.rechazoMalHora = ((R.estado() || {}).rutas || {}).estadoCampo;
+    o.avisoMalHora = String((R.estado() || {}).aviso || '');
+
+    // 2 · Horas al revés: es OTRO error y nombra la medianoche.
+    rut('p1', 0, '07:20'); rut('p2', 0, '06:40');
+    await guardarRut();
+    o.rechazoAlReves = ((R.estado() || {}).rutas || {}).estadoCampo;
+    o.avisoAlReves = String((R.estado() || {}).aviso || '');
+
+    /* 3 · Dos rutas observadas: una con tres pasos, otra con uno solo.
+       El letrero y la parada se vuelven a escribir, y NO es un descuido de la
+       prueba: un rechazo repinta la hoja y el formulario vuelve vacío, así que
+       es literalmente lo que le toca hacer a una persona. El defecto está
+       medido y declarado en la bitácora — es de las tres puertas, no de esta. */
+    rut('ref', 0, 'A-12'); rut('parada', 0, 'Calle 10 con carrera 5');
+    rut('p1', 0, '06:40'); rut('p2', 0, '06:57'); rut('p3', 0, '07:14');
+    rut('ref', 1, 'B-3'); rut('parada', 1, 'Calle 10 con carrera 5');
+    rut('p1', 1, '06:52');
+    rut('quien', undefined, 'Cleri Rodríguez');
+    rut('fechaDoc', undefined, '2026-09-17');
+    await guardarRut();
+    o.rutasCampo = (R.estado() || {}).rutas;
+    o.entradaRutas = (function () {
+      try {
+        return (R.leerCampo(((R.estado() || {}).llaveCampo) || '') || [])
+          .filter(x => x.hueco === 'rutas-observadas-y-su-frecuencia')
+          .map(x => ({ estado: x.estado, quien: (x.fuente || {}).quien,
+                       desde: (x.fuente || {}).fechaDoc,
+                       filas: ((x.valor || {}).filas || []).length }));
+      } catch (e) { return [{ error: String(e) }]; }
+    })();
+    o.postRutas = (function () {
+      try { const t = R.tieneCampo(((R.estado() || {}).llaveCampo) || '');
+             return { hay: !!t.hay, fuentes: (t.fuentes || []).slice() }; }
+      catch (e) { return { error: String(e) }; }
+    })();
+
+    // 4 · Lo que la ficha imprime ya con el reloj adentro.
+    await pesGen();
+    o.puertaRutasDice = (txt(H()).match(/Rutas observadas y su frecuencia[^]{0,520}/) || [''])[0];
+    const bMov2 = H().querySelector('[data-pcr="pestana"][data-t="movilidad"]');
+    if (bMov2) { bMov2.click(); await esperar(400); }
+    await abrir();
+    const tabMov2 = () => H().querySelector('[data-tab="movilidad"]') || H();
+    o.fichaRutas = (txt(tabMov2()).match(/Rutas que recogen acá[^]{0,520}/) || [''])[0];
+    await pesGen();
+    /* Y el papel, compuesto DESPUÉS de guardar: la carencia es lo que de
+       verdad se encoge, y se lee donde el lector la encuentra (v879). */
+    o.laminaRutas = window.URBIS_PC_RECON.laminaA({ hoja: 'B' });
+
     // Y que todo esto viaje con la ficha archivada.
     o.guardado = (function () {
       try {
@@ -525,6 +607,89 @@ const CAPAS_IDEAM = [
 
   T('y llega al pliego', /Flujo a pie contra en carro/.test(CL),
     (CL.match(/Flujo a pie contra en carro<\/span><b>[^<]*/) || ['no llega'])[0].replace(/<[^>]*>/g, ' '));
+
+  /* ── La tercera plantilla: «Rutas observadas y su frecuencia» (v940) ──
+     De las cuatro que quedaban es la única que cierra una carencia que la
+     hoja declara en sus palabras: «cada cuánto pasan no está en ninguna
+     parte». Y este sector es el material exacto: cuatro paradas y NINGUNA
+     relación de ruta en OpenStreetMap, así que lo observado produce rutas que
+     nadie mapeó — la rama que más vale y la que allá no existiría. */
+  console.log('\n  -- 9 · las rutas observadas con reloj en la parada --');
+
+  const RM = r.rutasMapa || {}, RC = r.rutasCampo || {};
+  T('MATERIAL: este sector no tiene NINGUNA ruta en OpenStreetMap, solo paradas',
+    RM.n === 0, RM.n + ' rutas registradas');
+  T('MATERIAL: y la puerta de la plantilla se pinta en la ficha',
+    r.puertaRutas === true, r.puertaRutas ? 'está' : 'no hay puerta');
+
+  /* Cada rechazo dice SU causa, y son tres distintas (v934). */
+  T('una hora que no tiene forma de hora no se guarda, y lo dice por la forma',
+    r.rechazoMalHora === 'sin-anotar' && /forma de hora/i.test(r.avisoMalHora || ''),
+    r.avisoMalHora || 'sin aviso');
+  T('y las horas al revés lo dicen DISTINTO, nombrando la medianoche',
+    r.rechazoAlReves === 'sin-anotar' &&
+    /de menor a mayor/i.test(r.avisoAlReves || '') &&
+    /medianoche/i.test(r.avisoAlReves || '') &&
+    r.avisoAlReves !== r.avisoMalHora,
+    r.avisoAlReves || 'sin aviso');
+
+  /* La afirmación: el intervalo SE CALCULA de los pasos, no se escribe. */
+  const rA12 = (RC.lista || []).filter(x => x.ref === 'A-12')[0] || {};
+  const rB3 = (RC.lista || []).filter(x => x.ref === 'B-3')[0] || {};
+  T('el intervalo sale de restar pasos consecutivos, no de una casilla',
+    rA12.intervaloMin === 17, 'A-12: ' + rA12.intervaloMin + ' min (06:40 · 06:57 · 07:14)');
+  T('y con un solo paso NO hay intervalo: se guarda la ruta y se dice por qué',
+    rB3.intervaloMin === null && rB3.razonSinIntervalo === 'un-solo-paso',
+    'B-3: ' + rB3.intervaloMin + ' · ' + rB3.razonSinIntervalo);
+  T('la franja se dice con las horas del reloj, sin clasificarla en pico o valle',
+    /^\d{2}:\d{2} y \d{2}:\d{2}$/.test(rA12.franja || '') &&
+    !/pico|valle/i.test(rA12.franja || ''),
+    rA12.franja || 'sin franja');
+
+  /* Y el hallazgo: una ruta que pasa y que OpenStreetMap no conoce. */
+  T('una ruta observada que el mapa no lista entra igual, marcada como tal',
+    RC.n === 2 && RC.nuevasDeCampo === 2 &&
+    (RC.lista || []).every(x => x.origen === 'solo-campo'),
+    RC.n + ' rutas · ' + RC.nuevasDeCampo + ' solo de campo');
+
+  const ER = (r.entradaRutas || [])[0] || {};
+  T('la entrada guarda su procedencia: quién observó y qué día',
+    ER.estado === 'confirmado' && ER.quien === 'Cleri Rodríguez' &&
+    ER.desde === '2026-09-17' && ER.filas === 2,
+    JSON.stringify(ER));
+  T('y el sector pasa a tener análisis post-sector por la plantilla',
+    !!(r.postRutas || {}).hay &&
+    (r.postRutas.fuentes || []).some(x => /rutas-observadas/.test(String((x || {}).hueco || ''))),
+    JSON.stringify((r.postRutas || {}).fuentes || []));
+
+  /* LA PROCEDENCIA VIAJA CON LA CIFRA (v867): un intervalo observado media
+     hora en una parada y uno publicado por la secretaría se leen igual. */
+  T('la ficha declara que los intervalos están OBSERVADOS, y por quién',
+    /observados con reloj en la parada/i.test(r.fichaRutas || '') &&
+    /Cleri Rodríguez/.test(r.fichaRutas || ''),
+    (r.fichaRutas || '').slice(0, 200) || 'no lo dice');
+  T('y dice que valen para su franja, no para el día entero',
+    /no para el día entero/i.test(r.fichaRutas || ''),
+    'no acota la franja');
+  /* LA CARENCIA SE ENCOGE, NO SE BORRA. Dejarla entera sería declarar
+     ausente lo que está observado (v861); borrarla sería la mentira
+     contraria, porque media hora en una parada no es el cuadro del día y el
+     RECORRIDO no lo levanta nadie ahí. */
+  const LR = String(r.laminaRutas || '');
+  T('con lo observado, la hoja ya NO dice que cada cuánto pasan no esté en ninguna parte',
+    !/cada cuánto pasan no está en ninguna parte/.test(LR),
+    /cada cuánto pasan no está en ninguna parte/.test(LR) ? 'lo sigue diciendo' : 'lo corrigió');
+  T('lo dice observado, y acota que es esa franja y no el horario del día',
+    /cada cuánto pasan <b>sí está observado<\/b>/.test(LR) && /no el horario del día/.test(LR),
+    (LR.match(/sí está observado[^<]{0,90}/) || ['no lo dice'])[0]);
+  T('y el RECORRIDO sigue declarado: una parada no lo levanta',
+    /recorrido<\/b> tampoco lo levanta una parada/.test(LR),
+    /recorrido/.test(LR) ? 'lo nombra sin acotarlo' : 'lo borró');
+
+  T('y nombra las que no están en OpenStreetMap como el paso que sigue',
+    /no est[áa]n? en OpenStreetMap/i.test(r.fichaRutas || '') &&
+    /mapearlas/i.test(r.fichaRutas || ''),
+    (r.fichaRutas || '').slice(0, 260) || 'no lo nombra');
 
   /* ── La segunda plantilla de campo: «Perfil vial acotado» (v939) ──────
      Hasta la v938 no había ni un solo sitio por donde lo medido con cinta

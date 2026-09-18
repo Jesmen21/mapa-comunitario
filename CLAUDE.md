@@ -8277,6 +8277,130 @@ Quedan **cuatro** plantillas por conectar, y las tres de percepción — que ade
 necesitan entrar en `huecosDeCampo` antes de tener formulario, porque hoy el
 almacén no las acepta.
 
+## El intervalo se resta, y una ruta sin mapear es un hallazgo (v940)
+
+La tercera de las seis plantillas de campo. La elección no fue por gusto: con
+la misma medición de la v934 —cuántas veces la hoja se nombra a sí misma como
+relleno de una plantilla— **las cuatro que quedaban empatan en cero**, porque
+sus únicas menciones son las cuatro casillas del inventario. Así que decidió
+el criterio de fondo, que es cuál cierra más de lo que la hoja declara
+faltando:
+
+| Plantilla | ¿Otro camino ya lo hace? | ¿Cierra una carencia declarada? |
+|---|---|---|
+| Conteo de alturas por manzana | **sí** — `building:levels` por el mapeo por edificio, que ya cuenta para post-sector desde la v754 | no |
+| Estado de andenes por tramo | a medias — `sidewalk` es una etiqueta de mapeo | el vacío ya tiene su puerta de papel (v932) |
+| **Rutas observadas y su frecuencia** | **no** | **sí** — «cada cuánto pasan no está en ninguna parte» |
+| Cupo real de equipamientos | no | no: «Quién queda por fuera» declara OTRO refinamiento —la población por manzana cruzada con cada radio— y no el cupo |
+
+Las tres que se apartan quedan con su razón medida, que es lo que le falta a
+la tanda que las tome. Y la primera fila es la que más vale como aviso:
+conectar el conteo de alturas como hueco aparte sería **una segunda ruta para
+un hecho que ya tiene la suya**, o sea la clase B comprada a sabiendas.
+
+### El dato no es del sector: es de cada RUTA
+
+Es en lo que esta plantilla se separa de las dos anteriores, y decide todo lo
+demás. El paramento (v934) mide UNA cuadra y hay que marcarla; el perfil
+(v939) promedia tramos y publica una media de sector. Acá **no se promedia
+nada**: cada observación se engancha a su ruta por el letrero, y las rutas ya
+existen como entidad en `movilidad.rutas`.
+
+Y el enganche tiene un caso que es el más valioso de todos: **una ruta
+observada que OpenStreetMap no lista entra igual**, marcada `solo-campo`. Es
+literalmente lo que la carencia anuncia desde la v863 —«no dice que no pasen
+busetas, dice que nadie las mapeó»— y descartarla por no estar en el mapa
+habría tirado el hallazgo por el que se va a la parada.
+
+### El intervalo SE CALCULA, y por eso no tiene casilla
+
+El método de la plantilla lo dice desde la v883: «el intervalo sale de restar
+pasos consecutivos». La plantilla impresa lleva su columna «Intervalo» y eso
+está bien —en la parada se resta a mano para tenerlo ahí—, pero ofrecerla
+**escribible en la puerta** habría dejado dos rutas de cálculo para la misma
+cantidad (v879), y la escrita a mano no se puede comprobar contra nada. Se
+teclean los pasos y la resta la hace el programa.
+
+**Dos pasos son el mínimo.** Con uno se sabe que la ruta pasa y no cada
+cuánto: llamarle frecuencia a un solo paso sería la clase de la v875, una
+cifra que no mide lo que su rótulo dice. Se guarda igual —que una ruta pase
+por acá ya es un hallazgo— y se imprime «un solo paso: no da intervalo».
+
+#### La franja se dice con el reloj y NO se clasifica
+
+El error típico que la v883 declaró es que «media hora en una sola franja no
+da la frecuencia del día». La tentación era rotular la observación como «hora
+pico» u «hora valle» — y qué es hora pico lo define cada municipio, así que
+sería un juicio disfrazado de medición. Se imprime **«entre las 06:40 y las
+07:14»**, que cualquiera comprueba.
+
+#### Las horas al revés no se arreglan suponiendo la medianoche
+
+Un paso a las 23:50 y otro a las 00:07 es real y daría −1.423 minutos.
+Suponer el cruce de medianoche convertiría un error de tecleo en una cifra
+creíble, así que se rechaza **nombrando ese caso**: quien lo tenga lo anota
+como dos observaciones. Y es un mensaje distinto del de «eso no es una hora»,
+porque son dos cosas distintas para quien está escribiendo (v934).
+
+### Tampoco había punto único, y son seis consumidores
+
+Como en la v939: el informe en hojas, la tabla de la lámina, la carencia, la
+síntesis, el bloque de la ficha y lo que falta del sector leían
+`movilidad.rutas` directo. `rutasDelSector(st)` es el punto, y los seis pasan
+por él — un consumidor nuevo hereda lo observado sin que su autor se acuerde
+(v867).
+
+De paso, `bloqueRutas` pasa a recibir `st` y no `mv`: leer `S.resultado.stats`
+adentro habría sido una segunda ruta al mismo objeto que el llamador ya tiene
+en la mano.
+
+### La carencia se encoge, y conserva el recorrido
+
+Con lo observado, «cada cuánto pasan no está en ninguna parte» es **falso** y
+dejarlo sería la falta de la v861. Borrarlo sería la mentira contraria por dos
+razones que van impresas: media hora en una parada **no es el cuadro del día**
+—para eso sigue haciendo falta la secretaría o un GTFS— y el **recorrido** no
+lo levanta nadie sentado en un paradero.
+
+### Dónde vive cada rama, y otra vez sin empobrecer nada
+
+* **`tmasanalisis`** · cuatro paradas y **ninguna relación de ruta** en
+  OpenStreetMap: es exactamente el sector donde lo observado encuentra rutas
+  que nadie mapeó. Ahí viven la puerta, los tres rechazos y el `solo-campo`.
+* **`tdoslaminas`** · tres rutas registradas y ningún campo: ahí vive la
+  guarda —sin plantilla la tabla no inventa una columna de intervalo, ninguna
+  ruta se marca «solo observada» y la carencia sigue entera—.
+
+Sin la segunda, un «observado» puesto en todas partes pasaría igual. La guarda
+de material va primero en las dos (v920).
+
+### El defecto que salió al medir, y que NO se arregla acá
+
+Una fila desapareció entre el rechazo y el guardado, y la causa no era la
+suite: **un rechazo repinta la hoja y el formulario vuelve vacío**, así que
+quien tecleó ocho filas y se equivocó en una hora las pierde todas. Medido, es
+de **las tres puertas** —la v934 y la v939 tienen la misma forma— y solo se vio
+acá porque el campo obligatorio de esta plantilla está entre los que la prueba
+no reescribía.
+
+No se arregla en esta tanda, y la razón es que arreglarlo en una sola puerta
+crearía justo lo que este proyecto lleva veinte tandas evitando: tres puertas
+con dos comportamientos. El camino con precedente está identificado —el estado
+`borrador` que la v931 diseñó existe para exactamente esto: poder volver a un
+formulario a medio llenar— y es su propia tanda. Queda medido y escrito, como
+la v933 hizo con el `caja-vacio` de servicios públicos.
+
+### Demostrado contra la v939
+
+Tres aserciones en rojo, revirtiendo **solo los consumidores** —el núcleo, la
+puerta y lo que `estado()` expone se quedan, porque son lo que la suite
+necesita para LEER (v875)—: la ficha sin una palabra de que los intervalos
+están observados, sin acotar la franja y sin nombrar las rutas que no están en
+OpenStreetMap.
+
+Quedan **tres** plantillas por conectar y las tres de percepción, que además
+necesitan entrar en `huecosDeCampo` antes de tener formulario.
+
 ## La lista viva: lo que al pliego educativo todavía le falta (v866)
 
 Esta lista se quedó vieja **cinco veces**. Cuatro dentro de la hoja —la
@@ -8313,11 +8437,12 @@ que se ve a simple vista: la cláusula está o no está.
 * **El área URBANA del municipio** (IGAC o el POT), para una densidad contra
   el perímetro y no contra lo censado.
   `ya: la densidad de la ciudad sobre el área de sus manzanas censales, declarada con ese nombre y no como «área urbana»`
-* **El recorrido de cada ruta y su frecuencia** — un GTFS, o el cuadro de la
-  secretaría de tránsito. La plantilla de campo levanta la frecuencia parada
-  por parada, pero **una plantilla en blanco no es una medición**: el renglón
-  se queda hasta que alguien la llene.
-  `ya: el nombre, la referencia y el tipo de cada ruta que recoge en las paradas del sector, y la plantilla de campo para anotar las horas de paso con su intervalo`
+* **El RECORRIDO de cada ruta, y el cuadro de horarios del DÍA** — un GTFS,
+  o el cuadro de la secretaría de tránsito. Lo observado en una parada da lo
+  que pasó en esa franja, no el horario completo, y un recorrido no se levanta
+  sentado en un paradero: el renglón se queda por eso y no porque falte el
+  camino.
+  `ya: el nombre, la referencia y el tipo de cada ruta que recoge en las paradas del sector, y la frecuencia observada con reloj en la parada entra al análisis por su puerta en la ficha —el intervalo sale de restar pasos consecutivos, se dice en qué franja se observó, y una ruta que pasa y que OpenStreetMap no lista entra marcada como solo observada—, con quién la observó y qué día`
 * **El aforo de hora pico** — un conteo en campo o el de la secretaría, con su
   fecha. `ya: el flujo modelado a partir de los usos y la jerarquía, rotulado como modelado y no como contado`
 * **La ARBORIZACIÓN de la calle, y el perfil acotado del RESTO de la red** —

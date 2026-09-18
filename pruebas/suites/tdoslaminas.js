@@ -1613,6 +1613,33 @@ usos.push({ type: 'node', id: 3105, lat: C.lat + 0.0019, lon: C.lng + 0.0018,
      La aserción que más vale no es que estén: es que **cada una diga en qué
      panel se pega su resultado**. Sin eso es un anexo —una hoja que se
      llena, se archiva y no cambia nada— y el pliego pidió lo contrario. */
+  /* ── LAS RUTAS SIN CAMPO: LA RAMA CONTRARIA (v940) ───────────────────
+     Este sector tiene TRES rutas registradas en OpenStreetMap y ninguna
+     observación de campo, así que acá vive la guarda: sin plantilla levantada
+     la tabla no inventa una columna de intervalo, ninguna ruta se marca «solo
+     observada» y la carencia sigue diciendo que cada cuánto pasan no está en
+     ninguna parte. La rama que SÍ observa vive en `tmasanalisis`, cuyo sector
+     no tiene una sola relación de ruta — sin las dos, un «observado» puesto
+     en todas partes pasaría igual. */
+  console.log('\n  -- las rutas, sin nada observado en campo --');
+  const CRUT = ((r.soloB || '').split('<section class="caja')
+    .filter(x => /<h2>Cómo se mueve el sector<\/h2>/.test(x))[0] || '');
+  T('MATERIAL: la hoja trae la tabla de rutas registradas',
+    /Las rutas que paran acá/.test(CRUT),
+    CRUT ? 'la caja de movilidad está compuesta' : 'sin caja de movilidad');
+  T('sin campo, la tabla NO abre columna de intervalo',
+    !/<th>Cada<\/th>/.test(CRUT),
+    /<th>Cada<\/th>/.test(CRUT) ? 'la abre vacía' : 'tres columnas');
+  T('y ninguna ruta se marca como solo observada',
+    !/solo observada/.test(CRUT),
+    (CRUT.match(/solo observada[^<]{0,40}/) || ['ninguna'])[0]);
+  T('la carencia sigue diciendo que cada cuánto pasan no está en ninguna parte',
+    /cada cuánto pasan no está en ninguna parte/.test(CRUT),
+    (CRUT.match(/cada cuánto pasan[^<]{0,80}/) || ['no lo dice'])[0]);
+  T('y nombra la plantilla que lo mide, que es lo que la vuelve una tarea',
+    /Rutas observadas y su frecuencia/.test(CRUT) && /reloj en la\s+parada/.test(CRUT),
+    (CRUT.match(/plantilla de campo «[^»]*»[^<]{0,60}/) || ['no la nombra'])[0]);
+
   /* ── EL ANDÉN DIBUJADO, MEDIDO O SUPUESTO (v939) ─────────────────────
      El motor NO publica ancho de andén —`anden` trae los tres porcentajes y
      nada más—, así que hasta la v938 `seccionDibujada` caía siempre al 1,5 m

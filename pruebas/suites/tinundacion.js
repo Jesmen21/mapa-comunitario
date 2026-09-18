@@ -287,8 +287,13 @@ const T=(q,c,d)=>{ (c?ok:mal).push(q); console.log('  '+(c?'✓':'✗')+' '+q+(d
      por falta de la de cobertura y no por falta de manchas. */
   T('llegan las dos consultas por capa, no solo la del punto',
     relevos >= 13, relevos+' consultas: 1 catálogo + 6 capas × 2');
+  /* El límite de palabra NO es decoración: sin él, `no se sabe` casa DENTRO
+     de «con uno se sabe», porque «uno» acaba en «no». Lo destapó la puerta de
+     rutas de la v940 —«con uno se sabe que pasa, no cada cuánto»— y es la
+     lección de la v885 en una expresión regular: un trozo a caballo entre dos
+     palabras fabrica una frase que nadie escribió. */
   T('y la lectura es la misma que por el camino directo',
-    /sí está modelado/i.test(r.txt) && !/no se sabe/i.test(r.txt));
+    /sí está modelado/i.test(r.txt) && !/\bno se sabe\b/i.test(r.txt));
 
   console.log('\n  -- el servicio está caído: no se sabe, y se dice --');
   modo='caido'; pedidas.length=0;
@@ -296,8 +301,8 @@ const T=(q,c,d)=>{ (c?ok:mal).push(q); console.log('  '+(c?'✓':'✗')+' '+q+(d
   r=await pedirAgua();
   T('NO se dice que quede fuera de las manchas',
     !/queda fuera/i.test(r.txt) && !/no cae/i.test(r.txt));
-  T('se dice explícitamente que no se sabe', /no se sabe/i.test(r.txt),
-    (r.txt.match(/[^.]*no se sabe[^.]*\./i)||[''])[0].trim().slice(0,120));
+  T('se dice explícitamente que no se sabe', /\bno se sabe\b/i.test(r.txt),
+    (r.txt.match(/[^.]*\bno se sabe\b[^.]*\./i)||[''])[0].trim().slice(0,120));
   T('y el sismo sigue llegando, que es de otro servidor', r.txt.indexOf('0,35')!==-1);
 
   console.log('\n  -- el texto que se copia --');

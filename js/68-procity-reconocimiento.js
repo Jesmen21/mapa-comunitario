@@ -1614,6 +1614,169 @@
     });
   }
 
+  /* ── LA TERCERA PLANTILLA: RUTAS OBSERVADAS Y SU FRECUENCIA (v940) ───
+     De las cuatro que quedaban, medido, es la única que cierra una carencia
+     que la hoja declara **en sus propias palabras**: «cada cuánto pasan no
+     está en ninguna parte». Las otras tres se apartan por razones distintas
+     y quedan escritas para la tanda que las tome:
+
+       · «Conteo de alturas por manzana» ya tiene camino — contar pisos desde
+         la acera se anota como `building:levels` por el mapeo por edificio, y
+         `edificiosDeCampo` ya lo cuenta para post-sector desde la v754.
+         Conectarla como hueco aparte sería una segunda ruta para el mismo
+         hecho, que es la clase B;
+       · «Estado de andenes por tramo» lo mismo a medias: `sidewalk` es una
+         etiqueta de mapeo. Lo que NO tiene camino es el ancho libre, el
+         material y qué lo obstruye;
+       · «Cupo real de equipamientos» no cierra ninguna carencia declarada:
+         «Quién queda por fuera» declara OTRO refinamiento —la población por
+         manzana cruzada con cada radio— y no el cupo.
+
+     LA FORMA, y en qué se diferencia de las dos anteriores. El paramento
+     (v934) medía UNA cuadra y había que marcarla; el perfil (v939) promedia
+     tramos y publica una media de sector. Acá el dato **no es del sector: es
+     de cada RUTA**, y las rutas ya existen como entidad en `movilidad.rutas`.
+     Así que no se promedia nada — cada observación se engancha a su ruta por
+     el letrero, y una ruta observada que OpenStreetMap no conoce **es una
+     ruta más**, que es justamente lo que la carencia dice que pasa: «no dice
+     que no pasen busetas, dice que nadie las mapeó».
+
+     EL INTERVALO SE CALCULA, NO SE ESCRIBE. El método de la plantilla lo dice
+     desde la v883 —«el intervalo sale de restar pasos consecutivos»—, así que
+     ofrecer además una casilla para escribirlo sería dejar dos rutas de
+     cálculo para la misma cantidad (v879). La plantilla impresa SÍ lleva su
+     columna «Intervalo» y eso está bien: en la parada se resta a mano para
+     tenerlo ahí. Acá se teclean los pasos y la resta la hace el programa.
+
+     Y DOS PASOS SON EL MÍNIMO. Con uno se sabe que la ruta pasa y no cada
+     cuánto: llamarle frecuencia a un solo paso sería la clase de la v875 —una
+     cifra que no mide lo que su rótulo dice—. Se guarda igual, porque «esta
+     ruta pasa por acá» es un hallazgo, y se dice que no tiene intervalo. */
+  var HUECO_RUTAS = 'rutas-observadas-y-su-frecuencia';
+
+  /* Una hora del reloj, en minutos desde medianoche. Se valida la FORMA y no
+     solo que sea un número: con texto libre adentro la resta no resta nada y
+     el fallo sería silencioso, que es la decisión de la v931 con las fechas. */
+  function minutosDeHora(t) {
+    var m = /^\s*([01]?\d|2[0-3])\s*[:.]\s*([0-5]\d)\s*$/.exec(String(t || ''));
+    return m ? Number(m[1]) * 60 + Number(m[2]) : null;
+  }
+  function horaTexto(min) {
+    if (min == null) return '';
+    var h = Math.floor(min / 60), m = min % 60;
+    return (h < 10 ? '0' : '') + h + ':' + (m < 10 ? '0' : '') + m;
+  }
+
+  /* El intervalo de una fila: la media de las diferencias entre pasos
+     consecutivos. Devuelve siempre un objeto con su razón, nunca null, porque
+     «un solo paso» y «las horas están al revés» piden cosas distintas (v876). */
+  function intervaloDePasos(pasos) {
+    var mins = (pasos || []).map(minutosDeHora).filter(function (x) { return x !== null; });
+    if (!mins.length) return { min: null, n: 0, razon: 'sin-pasos' };
+    if (mins.length === 1) {
+      return { min: null, n: 1, desde: mins[0], hasta: mins[0], razon: 'un-solo-paso' };
+    }
+    for (var i = 1; i < mins.length; i++) {
+      /* Al revés NO se acepta y se dice por qué. Un paso a las 23:50 y otro a
+         las 00:07 es real y daría −1.423 minutos: en vez de suponer el cruce
+         de medianoche —que convertiría un error de tecleo en una cifra
+         creíble— se rechaza nombrando ese caso, para que quien lo tenga lo
+         anote como dos observaciones. */
+      if (mins[i] <= mins[i - 1]) return { min: null, n: mins.length, razon: 'sin-orden' };
+    }
+    var total = mins[mins.length - 1] - mins[0];
+    return {
+      min: Math.round(10 * total / (mins.length - 1)) / 10,
+      n: mins.length, desde: mins[0], hasta: mins[mins.length - 1], razon: ''
+    };
+  }
+
+  function filaRutaUtil(f) {
+    if (!f || !String(f.ref || '').trim()) return false;
+    return (f.pasos || []).some(function (p) { return minutosDeHora(p) !== null; });
+  }
+
+  function rutasDeCampo(llave) {
+    var vacio = function (est, razon) {
+      return { estado: est, razon: razon, hay: false, filas: [] };
+    };
+    if (!llave) return vacio('sin-sector', 'sin sector al que enlazar lo observado');
+    var e;
+    try {
+      e = confirmadasDeCampo(llave).filter(function (x) { return x.hueco === HUECO_RUTAS; })[0];
+    } catch (err) { return vacio('sin-sector', 'no se pudo leer lo guardado'); }
+    if (!e) return vacio('sin-anotar', 'nadie ha anotado todavía las rutas observadas');
+    var filas = ((e.valor && e.valor.filas) || []).filter(filaRutaUtil);
+    if (!filas.length) return vacio('sin-filas', 'la plantilla está guardada y no tiene una sola fila con su letrero y una hora de paso');
+    var fl = fuenteLeida(e.fuente);
+    var hasta = (e.fuente && e.fuente.fechaHasta) || null;
+    var obs = filas.map(function (f) {
+      var iv = intervaloDePasos(f.pasos);
+      return {
+        ref: String(f.ref || '').trim(),
+        parada: String(f.parada || '').trim(),
+        pasos: (f.pasos || []).filter(function (p) { return minutosDeHora(p) !== null; }),
+        intervaloMin: iv.min, nPasos: iv.n, razon: iv.razon,
+        /* La FRANJA se dice con las horas del reloj y NO se clasifica en
+           «pico» o «valle»: qué es hora pico lo define cada municipio, así que
+           rotularlo sería un juicio y no una medición. «Observada entre las
+           06:40 y las 07:14» lo comprueba cualquiera. */
+        franja: iv.desde != null ? horaTexto(iv.desde) + ' y ' + horaTexto(iv.hasta) : ''
+      };
+    });
+    return {
+      estado: 'ok', hay: true, razon: '',
+      filas: filas, obs: obs,
+      conIntervalo: obs.filter(function (x) { return x.intervaloMin != null; }).length,
+      fuente: fl,
+      desde: fl.fechaDoc || null, hasta: hasta,
+      cuando: cuandoTexto(fl.fechaDoc || null, hasta)
+    };
+  }
+
+  /* ── EL PUNTO ÚNICO, QUE TAMPOCO EXISTÍA ─────────────────────────────
+     Siete sitios leen `movilidad.rutas` directo —el informe en hojas, la
+     tabla de la lámina, la carencia, la síntesis, el bloque de la ficha, lo
+     que falta del sector y el recorte de la ficha guardada—. Es la misma
+     situación del perfil en la v939, y el mismo arreglo: un consumidor nuevo
+     hereda lo observado sin que su autor se acuerde (v867). */
+  function rutasDelSector(st) {
+    var base = ((st && st.movilidad && st.movilidad.rutas) || []).map(function (r) {
+      return Object.assign({}, r, { origen: 'mapa' });
+    });
+    var campo = rutasDeCampo(llaveDeSector(S.resultado && S.resultado.meta));
+    if (!campo.hay) { base.campo = campo; return base; }
+    var porRef = {};
+    base.forEach(function (r) {
+      var k = String(r.ref || '').trim().toLowerCase();
+      if (k) porRef[k] = r;
+    });
+    var nuevas = [];
+    campo.obs.forEach(function (o) {
+      var k = o.ref.toLowerCase();
+      var r = porRef[k];
+      /* Una ruta observada que OpenStreetMap no lista NO se descarta: es una
+         ruta más, y es el hallazgo que la carencia anuncia con todas las
+         letras. Va marcada `solo-campo` para que la hoja no la presente como
+         registrada. */
+      if (!r) {
+        r = { ref: o.ref, nombre: '', tipo: '', origen: 'solo-campo' };
+        porRef[k] = r; nuevas.push(r);
+      } else { r.origen = 'mapa+campo'; }
+      r.intervaloMin = o.intervaloMin;
+      r.nPasos = o.nPasos;
+      r.razonSinIntervalo = o.razon;
+      r.observadaEn = o.parada;
+      r.franja = o.franja;
+    });
+    var todas = base.concat(nuevas);
+    todas.campo = campo;
+    todas.nuevasDeCampo = nuevas.length;
+    todas.quien = campo.fuente.quien;
+    todas.cuando = campo.cuando;
+    return todas;
+  }
+
   function leerFichas() {
     try { var f = JSON.parse(localStorage.getItem(FICHAS_KEY) || '[]'); return Array.isArray(f) ? f : []; }
     catch (e) { return []; }
@@ -4578,7 +4741,7 @@
   }
 
   function rutasImpresas(st) {
-    var rutas = (st.movilidad && st.movilidad.rutas) || [];
+    var rutas = rutasDelSector(st);
     if (!rutas.length) return '';
     return '<h2>Rutas de transporte público</h2><table>' +
       rutas.map(function (r) {
@@ -7536,16 +7699,48 @@ function donaHTML(datos, colorDe, nombreDe) {
            escribieron mirando lo que a una herramienta así suele faltarle en
            vez de leer lo que esta mide. */
         (function () {
-          var rt = (mv && mv.rutas) || [];
+          var rt = rutasDelSector(st);
           if (!rt.length) return '';
+          /* La columna del intervalo entra SOLO con la plantilla levantada:
+             una columna vacía en todas las filas es papel gastado en decir
+             que no se sabe, y eso ya lo dice la carencia de abajo. */
+          var obs = rt.campo && rt.campo.hay;
           return '<p class="lee-min">Las rutas que paran acá</p>' +
-            '<table class="rad"><tr><th>Ruta</th><th>Nombre</th><th>Tipo</th></tr>' +
+            '<table class="rad"><tr><th>Ruta</th><th>Nombre</th><th>Tipo</th>' +
+            (obs ? '<th>Cada</th>' : '') + '</tr>' +
             rt.slice(0, 8).map(function (x) {
-              return '<tr><td>' + esc(x.ref || '—') + '</td><td>' +
-                esc(x.nombre || 'sin nombre registrado') + '</td><td>' +
-                esc(x.tipo || 'bus') + '</td></tr>';
+              return '<tr><td>' + esc(x.ref || '—') +
+                /* Una ruta que solo vio quien se sentó en la parada NO está
+                   registrada: decirlo en la propia fila es lo que impide que
+                   se lea como una de OpenStreetMap (v867). */
+                (x.origen === 'solo-campo' ? ' <em>· solo observada</em>' : '') + '</td><td>' +
+                esc(x.nombre || (x.origen === 'solo-campo'
+                  ? 'sin nombre: no está en OpenStreetMap'
+                  : 'sin nombre registrado')) + '</td><td>' +
+                esc(x.tipo || (x.origen === 'solo-campo' ? '—' : 'bus')) + '</td>' +
+                (obs
+                  ? '<td>' + (x.intervaloMin != null
+                      ? conComa(x.intervaloMin) + ' min'
+                      : (x.razonSinIntervalo === 'un-solo-paso' ? 'un solo paso' : '—')) + '</td>'
+                  : '') +
+                '</tr>';
             }).join('') + '</table>' +
-            (rt.length > 8 ? '<p class="nota">Y ' + (rt.length - 8) + ' más.</p>' : '');
+            (rt.length > 8 ? '<p class="nota">Y ' + (rt.length - 8) + ' más.</p>' : '') +
+            /* LA PROCEDENCIA VIAJA CON LA CIFRA (v867): un intervalo observado
+               media hora en una parada y uno publicado por la secretaría se
+               leen igual en una tabla, y no son el mismo hecho. */
+            (obs
+              ? '<p class="nota"><b>Los intervalos están OBSERVADOS en campo</b>, no publicados: ' +
+                esc(rt.campo.quien || rt.quien) + esc(rt.cuando) + ', con reloj en la parada. ' +
+                'Cada uno sale de restar pasos consecutivos de esa ruta en la franja anotada, así ' +
+                'que vale para esa franja y no para el día entero' +
+                (rt.nuevasDeCampo
+                  ? '. ' + rt.nuevasDeCampo + (rt.nuevasDeCampo === 1
+                      ? ' ruta pasa por acá y no está en OpenStreetMap'
+                      : ' rutas pasan por acá y no están en OpenStreetMap') + ': eso es un ' +
+                    'hallazgo del recorrido, no un error del mapa'
+                  : '') + '.</p>'
+              : '');
         })() +
         '<p class="vacio-tag">Lo que este plano de movilidad todavía no tiene</p>' +
         /* Lo que de verdad falta de las rutas, ahora que los nombres sí
@@ -7553,7 +7748,7 @@ function donaHTML(datos, colorDe, nombreDe) {
            recorrido entero de cada una costaría la consulta— y la
            frecuencia, que OpenStreetMap casi nunca lleva. */
         (function () {
-          var rt = (mv && mv.rutas) || [];
+          var rt = rutasDelSector(st);
           return '<p class="vacio-falta"><b>El recorrido de las rutas y su frecuencia.</b> ' +
             (rt.length
               ? 'Los nombres de las <b>' + rt.length + '</b> rutas que paran acá sí están ' +
@@ -7561,8 +7756,24 @@ function donaHTML(datos, colorDe, nombreDe) {
                 'geometría</b>: dibujar el recorrido entero de cada una costaría la consulta. '
               : 'Ninguna ruta registrada en OpenStreetMap recoge en las paradas de este sector; ' +
                 'no dice que no pasen busetas, dice que nadie las mapeó. ') +
-            'Y cada cuánto pasan no está en ninguna parte: haría falta el cuadro de rutas de la ' +
-            'secretaría de tránsito del municipio, o un GTFS si el municipio lo publica.</p>';
+            /* ── LA CARENCIA SE ENCOGE, NO SE BORRA (v940) ──────────────
+               Con la plantilla levantada, «cada cuánto pasan no está en
+               ninguna parte» es FALSO —está observado— y dejarlo sería la
+               falta de la v861. Lo que NO cierra la plantilla es el
+               RECORRIDO, que es la otra mitad de este mismo renglón, y
+               tampoco el horario publicado: media hora en una parada da lo
+               que pasó esa media hora, no el cuadro del día. */
+            (rt.campo && rt.campo.hay
+              ? 'Y cada cuánto pasan <b>sí está observado</b> en ' + rt.campo.conIntervalo +
+                (rt.campo.conIntervalo === 1 ? ' ruta' : ' rutas') + ' —con reloj en la parada, ' +
+                'entre ' + esc((rt.campo.obs[0] || {}).franja || 'las horas anotadas') + '—, pero eso ' +
+                'es lo que pasó en esa franja y no el horario del día: para el cuadro completo, con ' +
+                'hora pico y hora valle, sigue haciendo falta el de la secretaría de tránsito o un ' +
+                'GTFS. El <b>recorrido</b> tampoco lo levanta una parada.</p>'
+              : 'Y cada cuánto pasan no está en ninguna parte: haría falta el cuadro de rutas de la ' +
+                'secretaría de tránsito del municipio, o un GTFS si el municipio lo publica. La ' +
+                'plantilla de campo «Rutas observadas y su frecuencia» lo mide con reloj en la ' +
+                'parada, y entra por la pestaña del sector.</p>');
         })() +
         '<p class="vacio-falta"><b>El aforo de hora pico.</b> El flujo que imprime esta lámina ' +
         'está MODELADO a partir de los usos y de la jerarquía de las vías, no contado: para ' +
@@ -12809,6 +13020,72 @@ function donaHTML(datos, colorDe, nombreDe) {
         if (rP.ok) soltarPostP();
         pintar(); return;
       }
+      if (acc === 'rut-guardar' || acc === 'rut-borrar') {
+        var llR = llaveDeSector(S.resultado && S.resultado.meta);
+        var soltarPostR = function () {
+          /* La corrida post vieja se suelta: se calculó sin este dato (v897). */
+          if (S.corridas) { S.corridas.post = null;
+            if (S.corrida === 'post') { S.corrida = 'sector'; S.resultado = S.corridas.sector; } }
+        };
+        if (acc === 'rut-borrar') {
+          var yaR = confirmadasDeCampo(llR).filter(function (x) {
+            return x.hueco === HUECO_RUTAS; })[0];
+          if (yaR) borrarEntradaCampo(llR, yaR.id);
+          S.avisoPestana = 'Se quitó lo observado. Las rutas vuelven a salir solo con su nombre, ' +
+            'sin cada cuánto pasan.';
+          soltarPostR(); pintar(); return;
+        }
+        var leeR = function (k, i) {
+          var sel = '[data-pcr-rut="' + k + '"]' + (i === undefined ? '' : '[data-i="' + i + '"]');
+          var el = document.querySelector(sel);
+          return el ? String(el.value || '').trim() : '';
+        };
+        var filasR = [], malHora = [], alReves = [];
+        document.querySelectorAll('[data-pcr-rut="ref"]').forEach(function (el) {
+          var i = Number(el.getAttribute('data-i'));
+          var ref = String(el.value || '').trim();
+          var ps = ['p1', 'p2', 'p3'].map(function (k) { return leeR(k, i); });
+          var parada = leeR('parada', i);
+          /* Una fila vacía no es un error: son los renglones de sobra que la
+             puerta ofrece para seguir anotando. Se descartan en silencio. */
+          if (!ref && !parada && !ps.some(function (x) { return x; })) return;
+          ps.forEach(function (t) {
+            if (t && minutosDeHora(t) === null) malHora.push(t);
+          });
+          var buenos = ps.filter(function (t) { return minutosDeHora(t) !== null; });
+          var iv = intervaloDePasos(buenos);
+          if (iv.razon === 'sin-orden') alReves.push(ref || 'una ruta');
+          filasR.push({ ref: ref.slice(0, 24), parada: parada.slice(0, 80), pasos: buenos });
+        });
+        var utilesR = filasR.filter(filaRutaUtil);
+        if (!utilesR.length || alReves.length) {
+          /* Cada rechazo dice SU causa: «falta una hora», «eso no es una hora»
+             y «las horas van al revés» son tres cosas distintas para quien
+             está escribiendo, y un solo mensaje manda a revisar lo que está
+             bien (v934). */
+          S.avisoPestana = alReves.length
+            ? 'Las horas de ' + alReves.slice(0, 3).join(', ') + ' no van de menor a mayor. Si la ' +
+              'observación cruzó la medianoche, se anota como dos: una antes y otra después.'
+            : !filasR.length
+              ? 'Falta anotar por lo menos una ruta con su letrero y una hora de paso.'
+              : malHora.length
+                ? 'Hay horas que no tienen forma de hora: ' + malHora.slice(0, 3).join(', ') +
+                  '. Se escriben como 06:40, en reloj de 24 horas.'
+                : 'Cada ruta necesita su letrero y al menos una hora de paso.';
+          pintar(); return;
+        }
+        var rR = guardarEntradaCampo(llR, {
+          hueco: HUECO_RUTAS, estado: 'confirmado',
+          valor: { filas: utilesR },
+          fuente: { como: 'campo', quien: leeR('quien'),
+                    fechaDoc: leeR('fechaDoc'), fechaHasta: leeR('fechaHasta') } });
+        S.avisoPestana = rR.ok
+          ? 'Quedó anotado. Las rutas salen con cada cuánto pasan, observado en la parada, y este ' +
+            'sector tiene análisis post-sector.'
+          : rR.error;
+        if (rR.ok) soltarPostR();
+        pintar(); return;
+      }
       if (acc === 'norma-confirmar') {
         var mn;
         try { mn = normaDesdeIndices(); } catch (e) { mn = null; }
@@ -14189,7 +14466,7 @@ function donaHTML(datos, colorDe, nombreDe) {
       })();
       L.push('');
     }
-    var rts = (st.movilidad && st.movilidad.rutas) || [];
+    var rts = rutasDelSector(st);
     if (rts.length) {
       L.push('RUTAS DE TRANSPORTE PÚBLICO');
       rts.forEach(function (r) {
@@ -15061,8 +15338,12 @@ function donaHTML(datos, colorDe, nombreDe) {
         : 'Todas cayeron sobre una vía con nombre.') + '</p>';
   }
 
-  function bloqueRutas(mv) {
-    var rutas = (mv && mv.rutas) || [];
+  /* Recibe `st` y no `mv`: el punto único necesita el resultado entero, y
+     leerlo de `S.resultado.stats` acá adentro sería una segunda ruta al
+     mismo objeto que el llamador ya tiene en la mano (clase B). */
+  function bloqueRutas(st) {
+    var mv = (st && st.movilidad) || null;
+    var rutas = rutasDelSector(st);
     if (!rutas.length) {
       if (!mv || !mv.paradasBus) return '';
       return '<p class="pcr-pista">Hay <b>' + mv.paradasBus + '</b> parada' +
@@ -15077,11 +15358,27 @@ function donaHTML(datos, colorDe, nombreDe) {
           var col = /^#[0-9a-f]{3,8}$/i.test(r.color) ? r.color : '';
           return '<div class="pcr-ruta"' + (col ? ' style="--ruta:' + esc(col) + '"' : '') + '>' +
             '<span class="pcr-ruta-n">' + esc(etq) + '</span>' +
-            '<span class="pcr-ruta-nom">' + esc(r.nombre || 'Sin nombre registrado') +
-              (r.operador ? '<em>' + esc(r.operador) + '</em>' : '') +
+            '<span class="pcr-ruta-nom">' + esc(r.nombre || (r.origen === 'solo-campo'
+                ? 'No está en OpenStreetMap: solo observada'
+                : 'Sin nombre registrado')) +
+              (r.intervaloMin != null
+                ? '<em>cada ' + conComa(r.intervaloMin) + ' min, observado</em>'
+                : (r.operador ? '<em>' + esc(r.operador) + '</em>' : '')) +
             '</span></div>';
         }).join('') +
       '</div>' +
+      /* LA PROCEDENCIA VIAJA CON LA CIFRA (v867), también en la ficha: un
+         intervalo observado y uno publicado se leen igual en una etiqueta. */
+      (rutas.campo && rutas.campo.hay
+        ? '<p class="pcr-conc pcr-fuente-ok">Los intervalos están <b>observados con reloj en la ' +
+          'parada</b> por ' + esc(rutas.quien) + esc(rutas.cuando) + ', y valen para la franja en ' +
+          'que se estuvo ahí, no para el día entero.' +
+          (rutas.nuevasDeCampo
+            ? ' ' + rutas.nuevasDeCampo + (rutas.nuevasDeCampo === 1
+                ? ' de estas rutas no está en OpenStreetMap'
+                : ' de estas rutas no están en OpenStreetMap') + ': mapearlas es el paso que sigue.'
+            : '') + '</p>'
+        : '') +
       '<p class="pcr-pista">Son las rutas que en OpenStreetMap recogen en alguna parada de esta ' +
       'área' + (rutas.length > 12 ? ' (se muestran 12 de ' + rutas.length + ')' : '') + '. ' +
       'El recorrido completo no se dibuja: lo que importa acá es cuántas y cuáles sirven al sector.</p>';
@@ -21148,7 +21445,14 @@ function donaHTML(datos, colorDe, nombreDe) {
     // ── Cómo se llega
     var mv = st.movilidad;
     if (mv) {
-      if ((mv.rutas || []).length) F('Pasa transporte público por el área', (mv.rutas || []).length + ' rutas registradas', 'ext');
+      /* Con rutas observadas en campo la frase cambia: «registradas» es de
+         OpenStreetMap, y una ruta que solo vio quien se sentó en la parada
+         no está registrada en ninguna parte (v867). */
+      var rtsS = rutasDelSector(st);
+      if (rtsS.length) F('Pasa transporte público por el área',
+        rtsS.length + (rtsS.nuevasDeCampo
+          ? ' rutas · ' + rtsS.nuevasDeCampo + ' solo observadas en campo'
+          : ' rutas registradas'), 'ext');
       /* §5 (v875): cero paradas MAPEADAS entraba como amenaza externa —«Sin
          paradas de transporte público»— sobre un barrio donde seguramente
          pasan tres rutas que nadie dibujó. Es tarea, no amenaza. */
@@ -26018,15 +26322,96 @@ function donaHTML(datos, colorDe, nombreDe) {
       '</div>';
   }
 
+  /* ── LA PUERTA DE LA TERCERA PLANTILLA (v940) ────────────────────────
+     «Rutas observadas y su frecuencia». Las casillas son las de la plantilla
+     impresa menos una: la columna «Intervalo» del papel no tiene campo acá
+     porque el intervalo SE CALCULA de los pasos. Ofrecerlo escribible sería
+     dejar dos rutas para la misma cantidad (v879), y la que se escribe a mano
+     no se puede comprobar contra nada.
+
+     Y no hay fila que marcar, a diferencia del paramento (v934): cada fila es
+     una RUTA distinta y todas cuentan. Lo que decide cuál es cuál es el
+     letrero, que es como se enganchan a las de OpenStreetMap. */
+  function htmlPuertaRutas(llave) {
+    var rv = rutasDeCampo(llave);
+    var cab = '<p class="pcr-lab">' + esc(nombreDeHueco(HUECO_RUTAS)) + '</p>' +
+      '<p class="pcr-vac-doc">Media hora sentado en la parada, con reloj: se anota el letrero de ' +
+      'cada ruta y la hora a la que pasa. <b>Dos pasos de la misma ruta son el mínimo</b>: con uno ' +
+      'se sabe que pasa, no cada cuánto — y eso también se guarda, porque que pase ya es un ' +
+      'hallazgo.</p>';
+    if (rv.estado === 'ok') {
+      return '<div class="pcr-vac-g pcr-act-g">' + cab +
+        '<p class="pcr-conc pcr-fuente-ok"><b>' + rv.obs.length +
+        (rv.obs.length === 1 ? ' ruta observada' : ' rutas observadas') +
+        (rv.conIntervalo
+          ? ', ' + rv.conIntervalo + ' con su intervalo'
+          : ', ninguna con dos pasos todavía') +
+        '</b> por ' + esc(rv.fuente.quien) + esc(rv.cuando) + '.</p>' +
+        '<div class="pcr-lote">' +
+          rv.obs.map(function (o) {
+            return '<div class="pcr-lote-fila"><span>' + esc(o.ref) +
+              (o.parada ? ' · ' + esc(o.parada) : '') + '</span><b>' +
+              (o.intervaloMin != null
+                ? 'cada ' + conComa(o.intervaloMin) + ' min · ' + o.nPasos + ' pasos entre ' +
+                  esc(o.franja)
+                : 'un solo paso' + (o.franja ? ', a las ' + esc(o.franja.split(' y ')[0]) : '') +
+                  ': no da intervalo') +
+              '</b></div>';
+          }).join('') +
+        '</div>' +
+        '<button type="button" class="pcr-mini" data-pcr="rut-borrar">' + ico('borrar', 16) +
+          'Quitar lo anotado</button>' +
+        '</div>';
+    }
+    var guardadas = rv.filas || [];
+    var slots = guardadas.slice(0, 8);
+    while (slots.length < guardadas.length + 2 && slots.length < 8) slots.push(null);
+    if (!slots.length) { slots = [null, null]; }
+    var hora = function (k, i, v, etq) {
+      return '<label class="pcr-campo-linea"><span>' + etq + '</span>' +
+        '<input type="text" maxlength="5" data-pcr-rut="' + k + '" data-i="' + i + '" ' +
+          'value="' + esc(v || '') + '" placeholder="06:40" /></label>';
+    };
+    var filas = slots.map(function (g, i) {
+      var v = g || {}, ps = v.pasos || [];
+      return '<div class="pcr-act-f">' +
+        '<label class="pcr-campo-linea"><span>Ruta (letrero)</span>' +
+          '<input type="text" maxlength="24" data-pcr-rut="ref" data-i="' + i + '" ' +
+            'value="' + esc(v.ref || '') + '" placeholder="A-12" /></label>' +
+        '<label class="pcr-campo-linea"><span>Parada</span>' +
+          '<input type="text" maxlength="80" data-pcr-rut="parada" data-i="' + i + '" ' +
+            'value="' + esc(v.parada || '') + '" placeholder="Calle 10 con carrera 5" /></label>' +
+        hora('p1', i, ps[0], 'Paso 1') +
+        hora('p2', i, ps[1], 'Paso 2') +
+        hora('p3', i, ps[2], 'Paso 3 (si alcanzó)') +
+        '</div>';
+    }).join('') ;
+    return '<div class="pcr-vac-g pcr-act-g">' + cab + filas +
+      '<label class="pcr-campo-linea"><span>Quién lo observó</span>' +
+        '<input type="text" maxlength="80" data-pcr-rut="quien" ' +
+          'value="' + esc((rv.fuente && rv.fuente.quien) || '') + '" ' +
+          'placeholder="El nombre de quien estuvo en la parada" /></label>' +
+      '<label class="pcr-campo-linea"><span>Día de la observación</span>' +
+        '<input type="text" maxlength="40" data-pcr-rut="fechaDoc" ' +
+          'value="' + esc(rv.desde || '') + '" placeholder="2026-09-17" /></label>' +
+      '<label class="pcr-campo-linea"><span>Y hasta (si fueron varios días)</span>' +
+        '<input type="text" maxlength="40" data-pcr-rut="fechaHasta" ' +
+          'value="' + esc(rv.hasta || '') + '" placeholder="se deja vacío si fue un solo día" /></label>' +
+      '<button type="button" class="pcr-mini" data-pcr="rut-guardar">' + ico('ok', 16) +
+        'Guardar lo observado en campo</button>' +
+      '</div>';
+  }
+
   function bloquePlantillas() {
     if (!S.resultado) return '';
     var llave = llaveDeSector(S.resultado.meta);
     return h4('via', 'Lo que se levanta en la calle') +
       '<p class="pcr-pista">La lámina imprime seis plantillas en blanco para llenar caminando. ' +
       'Acá se anota lo que ya se midió, y la cifra entra en la hoja con <b>quién la levantó y ' +
-      'cuándo</b>. Por ahora están conectadas dos; las otras cuatro siguen en el papel.</p>' +
+      'cuándo</b>. Por ahora están conectadas tres; las otras tres siguen en el papel.</p>' +
       htmlPuertaActividad(llave) +
-      htmlPuertaPerfil(llave);
+      htmlPuertaPerfil(llave) +
+      htmlPuertaRutas(llave);
   }
 
   /* ── LA PRIMERA DE LAS CUATRO PUERTAS DE VACÍO (v931) ────────────────
@@ -26460,7 +26845,7 @@ function donaHTML(datos, colorDe, nombreDe) {
         : '') +
       bloqueFlujo(mv) +
       leyendaVial() +
-      bloqueRutas(mv) +
+      bloqueRutas(st) +
       bloquePorDonde(S.resultado);
   }
 
@@ -30601,6 +30986,22 @@ function donaHTML(datos, colorDe, nombreDe) {
            sector con usos de sobra no puede ejercitar el aviso, y uno pobre
            no puede ejercitar su ausencia. Sin poder leerlo, las dos
            comprobaciones pasarían por no tener nada que rechazar. */
+        /* Las rutas COMPUESTAS —no `movilidad.rutas`— por lo mismo que el
+           perfil: la suite mide lo que el punto único devuelve. */
+        rutas: (function () {
+          var rt = null;
+          try { rt = rutasDelSector(S.resultado && S.resultado.stats); } catch (e) { return null; }
+          if (!rt) return null;
+          return { n: rt.length, nuevasDeCampo: rt.nuevasDeCampo || 0,
+                   estadoCampo: rt.campo ? rt.campo.estado : null,
+                   conIntervalo: rt.campo && rt.campo.hay ? rt.campo.conIntervalo : 0,
+                   lista: rt.slice(0, 12).map(function (x) {
+                     return { ref: x.ref, origen: x.origen,
+                              intervaloMin: x.intervaloMin != null ? x.intervaloMin : null,
+                              razonSinIntervalo: x.razonSinIntervalo || '',
+                              franja: x.franja || '' };
+                   }) };
+        })(),
         /* Lo que una prueba necesita leer se AGREGA acá (v871). El perfil
            compuesto —no `trz.perfil`— para que la suite mida lo que el punto
            único devuelve y no lo que el motor mandó. */
