@@ -75,6 +75,45 @@
  "entradas": [
   {
    "fecha": "2026-09-17",
+   "precision": "aproximada",
+   "categoria": "economia",
+   "titulo": "La ministra de Trabajo advierte ante el Congreso que faltan $5,1 billones para pagar las pensiones de noviembre y diciembre, y el vicepresidente responsabiliza al presupuesto que dejó el Gobierno Petro",
+   "detalle": "La ministra de Trabajo, Natalia López, advirtió ante el Congreso que al Gobierno le faltan cerca de $5,1 billones para garantizar el pago de las mesadas de noviembre y diciembre de 2026 a los afiliados de Colpensiones, entidad que según lo declarado requiere del orden de $58 billones para cubrir sus obligaciones pensionales del año. La explicación que dio es presupuestal y no de caja corriente: el Presupuesto General de 2026 se calculó con un alza del salario mínimo del orden del 7,5 % —inflación más productividad, según lo reportado por la prensa económica— y el incremento que finalmente se decretó fue del 23,7 %, con lo que subió el costo de todas las pensiones atadas al mínimo. Los ministerios de Trabajo y Hacienda deben definir de qué partidas salen los recursos faltantes. El 17 de septiembre la junta directiva de Colpensiones eligió como nuevo presidente de la entidad al abogado Carlos René Montoya Muñoz, que recibe ese faltante como primer encargo. Ese mismo día el vicepresidente José Manuel Restrepo atribuyó la situación al «presupuesto de mentiras» que, según él, dejó el Gobierno de Gustavo Petro. Asofondos, el gremio de los fondos privados, cifró en $40 billones el déficit pensional de Colpensiones tras el alza del mínimo.",
+   "tipoFuente": "declaracion",
+   "contrapunto": "Lo que hay hasta ahora es una ADVERTENCIA de faltante presupuestal, no una mesada dejada de pagar: ninguna de las fuentes consultadas reporta un pago incumplido, y el propio Gobierno anuncia que buscará los recursos con Hacienda. Los titulares que circulan en redes —«MinTrabajo confiesa que no hay plata para pagar las pensiones»— leen como hecho consumado lo que es una alerta sobre el cierre del año, y por eso esta entrada se clasifica como declaración y no como hecho verificado: lo que consta es lo que la ministra dijo ante el Congreso. Sobre la causa hay disputa abierta y no un hecho establecido: el alza del 23,7 % del salario mínimo la decretó el Gobierno anterior y el vicepresidente la usa para responsabilizarlo, pero el mismo Gobierno actual radicó el presupuesto de 2027 —el más alto de la historia— con partidas de pensiones que análisis de prensa señalan como desfinanciadas (ver la entrada del 7 de septiembre). Las cifras tampoco son una sola: la prensa reporta el faltante entre $5,1 y $5,4 billones según el medio, y acá se deja la del cubrimiento mayoritario.",
+   "fuentes": [
+    {
+     "n": "El Tiempo · Faltan $5,1 billones para pagar pensiones al cierre del 2026: estas son las salidas que se ponen sobre la mesa",
+     "u": "https://www.eltiempo.com/economia/sectores/faltan-5-1-billones-para-pagar-pensiones-al-cierre-del-2026-estas-son-las-salidas-que-se-ponen-sobre-la-mesa-3586751"
+    },
+    {
+     "n": "City Tv (El Tiempo) · Gobierno advierte faltante de $5,1 billones para pagar pensiones de noviembre y diciembre",
+     "u": "https://citytv.eltiempo.com/programas/citynoticias-del-mediodia/gobierno-advierte-faltante-de-51-billones-para-pagar-pensiones-de-noviembre-y-diciembre_95324"
+    },
+    {
+     "n": "Portafolio · Pagar a los colombianos la pensión de noviembre y diciembre: primer reto del nuevo presidente de Colpensiones",
+     "u": "https://www.portafolio.co/economia/gobierno/pagar-a-los-colombianos-la-pension-de-noviembre-y-diciembre-primer-reto-del-nuevo-presidente-de-colpensiones-502779"
+    },
+    {
+     "n": "Infobae · Él es Carlos René Montoya, designado como nuevo presidente de Colpensiones: deberá conseguir $5 billones para cubrir déficit pensional",
+     "u": "https://www.infobae.com/colombia/2026/09/18/el-es-carlos-rene-montoya-designado-como-nuevo-presidente-de-colpensiones-debera-conseguir-5-billones-para-cubrir-deficit-pensional/"
+    },
+    {
+     "n": "Infobae · El vicepresidente José Manuel Restrepo responsabilizó al Gobierno Petro por las posibles dificultades para pagar las pensiones a finales del 2026: «Presupuesto de mentiras»",
+     "u": "https://www.infobae.com/colombia/2026/09/17/el-vicepresidente-jose-manuel-restrepo-responsabilizo-al-gobierno-petro-por-las-posibles-dificultades-para-pagar-las-pensiones-a-finales-del-2026-presupuesto-de-mentiras/"
+    },
+    {
+     "n": "Infobae · Aumento del salario mínimo disparó a $40 billones el déficit pensional de Colpensiones, aseguró Asofondos",
+     "u": "https://www.infobae.com/colombia/2026/09/16/aumento-del-salario-minimo-disparo-a-40-billones-el-deficit-pensional-de-colpensiones-aseguro-asofondos-un-sistema-asi-no-es-sostenible/"
+    },
+    {
+     "n": "La República · Alerta por los pagos de la pensión decembrina de jubilados en Colpensiones",
+     "u": "https://www.larepublica.co/economia/alerta-por-los-pagos-de-la-pension-decembrina-de-jubilados-en-colpensiones-4484723"
+    }
+   ]
+  },
+  {
+   "fecha": "2026-09-17",
    "precision": "exacta",
    "categoria": "gobierno",
    "titulo": "De la Espriella lidera un Consejo de Seguridad en La Guajira, ordena reforzar el control migratorio y anuncia una batería de inversiones para el departamento",
