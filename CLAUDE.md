@@ -9785,6 +9785,184 @@ rompería la caché de todos los teléfonos para no cambiarles una sola línea d
 lo que ven, y `revisar.js` lo deja pasar con razón: su regla es que la versión
 suba cuando cambia **el código**.
 
+## La clase de una afirmación no es quién la cuenta (v957)
+
+Primera de las cuatro capas del **pliego maestro del módulo presidencial**, que
+hasta la v956 estaba hecho en una décima parte: de las diez cosas que marca
+obligatorias existía **una**, el nivel de gobierno de la v941. Medido antes de
+escribir —`categoriaProbatoria` 0, `tipoMedicion` 0, `contrargumentoOficial` 0,
+ejes B y C 0, normalización por 100 días 0—.
+
+El pliego tiene **una regla de oro** que manda sobre todo lo demás y decide el
+diseño de esta tanda entera:
+
+> ninguna capa puede escribir en la capa anterior. El editorial no mueve el
+> score. El score no cita el editorial como evidencia.
+
+Así que **ninguno de los tres campos nuevos mueve el veredicto**. La escalera de
+fiabilidad sigue saliendo de lo mismo que salía —casos, contradicciones y
+registro verificado— y los tres se publican al lado. Un campo agregado para
+describir que cambiara en silencio el juicio público sobre una persona real es
+exactamente lo que el pliego prohíbe, y hay dos guardas dedicadas a que no pase.
+
+### Los tres campos, y la trampa que comparten
+
+La trampa es la misma en los tres: **parecerse a un campo que ya existe**.
+
+| Campo | Con qué se confunde | Por qué no es lo mismo |
+|---|---|---|
+| `categoriaProbatoria` | `tipoFuente` | uno mide la calidad de la FUENTE —quién lo cuenta y si está corroborado—; el otro la naturaleza de la AFIRMACIÓN —si hay documento, si son dos hechos que coinciden, o si alguien está afirmando que uno causó el otro— |
+| `tipoMedicion` | nada, y ese es el problema | «cuatro operativos en un día» y «la criminalidad bajó» entraban como la misma clase de cosa |
+| `contrargumentoOficial` | `contrapunto`, que ya existe en 114 entradas | uno es la respuesta del GOBIERNO; el otro es la advertencia metodológica de URBIS sobre la propia entrada |
+
+El pliego nombra la primera con todas las letras —son dos ejes y meterlos en uno
+deja el módulo sin servir para ninguna de las dos preguntas— y la tercera es la
+homonimia que este proyecto persigue desde la v885, cazada antes de cometerla.
+
+### La categoría probatoria NO se deriva del estado del caso
+
+Es lo primero que se le ocurre a cualquiera, porque hoy coincidirían casi
+siempre: un caso `confirmado` parece un `hecho-probado` y un `senalamiento`
+parece una afirmación en circulación. La prueba de la clase B lo descarta:
+*¿existe un cambio razonable que deba mover una y no la otra?* Sí — un caso
+puede estar **`en-investigacion`, que es un estado PROCESAL**, y que lo que se
+le imputa sea una atribución causal que nadie ha probado. Derivarlas las ataría
+el día que se separen.
+
+### El tercer valor que el pliego no trae, y por qué hace falta
+
+`tipoMedicion` tiene dos valores en el pliego, y alimentan los indicadores I-09
+e I-10. Pero **43 de las 168 entradas del registro no son ninguna de las dos**:
+un juzgado que tumba un decreto, la JEP, Human Rights Watch, un expresidente que
+responde, un aliado extranjero que anuncia algo. Ahí el sujeto no es el Gobierno
+nacional y no hay una magnitud medida del país.
+
+Con solo dos valores esas entradas tendrían que entrar forzadas en una de las
+dos —y contaminar justo los dos indicadores que el principio 5 existe para no
+mezclar— o quedarse sin declarar, que las confunde con las que nadie ha
+revisado. Así que se nombra: **`no-aplica`**, con su razón escrita. Es una
+desviación del pliego y va dicha, no disimulada.
+
+### El contrargumento tiene TRES estados, y juntar dos sería un señalamiento
+
+El principio 12 del pliego dice que un campo vacío es un dato: significa que el
+Gobierno no respondió, no que no hubiera respuesta. Pero eso vale para el vacío
+que alguien **buscó**:
+
+| | Qué significa | Qué pide |
+|---|---|---|
+| un texto | el Gobierno respondió | nada |
+| `ausente` | se buscó y no respondió | es un DATO, y alimenta el indicador I-06 |
+| sin declarar | nadie lo ha revisado | es una deuda NUESTRA |
+
+Juntar los dos últimos convertiría nuestra propia deuda en un señalamiento
+contra el Gobierno. Es la distinción de la v899 entre «sin dato» y «panel
+fuera», con más en juego.
+
+Y por eso **el contrargumento arranca en 200 de 200 sin revisar**, con trinquete
+que solo puede bajar, mientras los otros dos se clasificaron enteros. La
+asimetría no es pereza: los otros dos se pueden clasificar LEYENDO el registro,
+y éste no. Escribir `ausente` sin haber buscado sería afirmar que el Gobierno no
+respondió — un señalamiento contra una persona real fabricado por comodidad
+nuestra. El pliego contempla exactamente este caso en su control de calidad: *si
+algún casillero falla, el módulo publica el resultado con la marca de la falla
+visible*. La ficha la publica.
+
+### La clasificación, y la vara para los dos registros
+
+Los 168 registros del gobierno actual y los 32 de Petro, clasificados por
+criterios escritos en el código y no de memoria:
+
+```
+actual   hecho-probado 147 · atribucion-causal 9 · en-circulacion 8 · correlacion 4
+         actividad 103 · no-aplica 43 · resultado 22
+Petro    hecho-probado  25 · atribucion-causal 3 · en-circulacion 3 · correlacion 1
+         no-aplica 16 · resultado 10 · actividad 6
+```
+
+**Los dos, por el principio 1 del pliego**: toda regla que se aplica a un
+gobierno se aplica a todos, y aflojarla en uno sería la manera silenciosa de
+inclinar la comparación. Es la misma razón por la que `revisar.js` ya medía los
+estados probatorios en los dos registros.
+
+Y la nota interna de cada archivo lo dice, porque la rutina diaria escribe ahí
+sin leer esta bitácora: sin ese renglón, la primera entrada nueva nace sin los
+campos y el pendiente empieza a subir en vez de bajar.
+
+#### El trinquete de estos dos es CERO, no un techo
+
+Los otros trinquetes del módulo arrancan del número de hoy porque hay deuda
+vieja. Éstos no: se clasificaron enteros, así que el techo es cero y **una
+entrada nueva sin ellos se pone roja en el acto**, con el mensaje diciendo qué
+valores admite cada campo. Entre fallar abierto y fallar cerrado se falla
+cerrado, que es el canje de la v880.
+
+### Dos guardas para la regla de oro, y la primera nació siendo un verde
+
+La que MIDE la propiedad está en `tficha`: compone **la misma ficha dos veces**,
+una con los tres campos vacíos y otra con los valores más dañinos que se pueden
+escribir, y exige el mismo veredicto y los mismos tres techos. Demostrada
+contaminando el cálculo a propósito: sale **«inquebrantable» contra «poco
+fiable»**, que es exactamente el daño que la regla impide.
+
+La barata está en `revisar.js` y corre sin navegador — y **la primera versión
+pasó en verde sobre esa misma contaminación**, por dos motivos que vale tener
+escritos porque son la forma de la v878:
+
+* **el tramo vigilado se cortaba en `var manda`**, y la contaminación estaba
+  tres líneas más abajo. Ahora llega hasta el recuento de la Capa 1, que se
+  calcula al final a propósito para que se vea en el código que no lo toca;
+* **la lista de contaminantes tenía solo los cuatro nombres de campo**, y una
+  contaminación real no escribe `categoriaProbatoria`: llama a
+  `capaUnoDe_conjunto`. La lista incluye ahora los ayudantes.
+
+Aun así la estática no puede cazarlo todo —un alias con otro nombre se le
+escapa— y eso va escrito al lado de la comprobación en vez de dejarla
+pareciendo completa.
+
+#### Y la guarda de material se cobró en su primera corrida
+
+Las dos tablas de valores no se copian en `revisar.js`: se leen de `js/70`, para
+que la comprobación no acabe comprobando que dos listas son iguales entre sí. El
+primer extractor las buscaba con un `new RegExp` armado sobre una cadena, se
+escapó dos veces y devolvió la lista vacía — con lo que **los 200 valores
+salieron denunciados como desconocidos**. Lo cazó la guarda de MATERIAL, que va
+primero y exige encontrar las cuatro categorías y los tres tipos. Sin ella, la
+comprobación habría pasado en verde sin vigilar un solo valor el día que las
+tablas se renombren.
+
+El troceo va ahora por índice y no por expresión regular armada a mano.
+
+### El material tuvo que construirse, y una aserción mía estaba mal
+
+Vigesimoquinta vez. Contra el registro publicado las ramas del valor desconocido
+y las dos del contrargumento no existen —allá está todo clasificado y nada tiene
+contrargumento—, así que las aserciones habrían pasado por no tener nada que
+rechazar. El fixture de `tficha` trae los cuarenta hechos repartidos en las
+cuatro categorías, dos con un valor que la tabla no conoce, cinco sin declarar,
+cuatro con respuesta del Gobierno y seis con `ausente`.
+
+Y la aserción del reparto por tipo de medición esperaba 17 actividades donde hay
+**23**: la suma estaba mal, no el código. Se arregló la aserción y de paso se
+apretó —ahora exige también las cinco sin declarar y las dos desconocidas—, que
+es lo que este proyecto hace cuando una prueba falla por un motivo legítimo.
+
+### Lo que el pliego pide y esta versión NO hace
+
+Las tres capas que faltan, con lo que cada una necesita:
+
+* **Capa 2 · los indicadores contables** (I-04 a I-10) normalizados por 100 días
+  de gobierno, con `poder_predictivo` según días transcurridos. Se puede
+  calcular de los dos registros: `fichaDe` ya cuenta los días desde la posesión.
+* **Capa 3 · los ejes A, B y C**, lado a lado y nunca combinados en un número.
+  El eje B no se puede publicar sin la media histórica de Petro, Duque y Santos
+  —lo dice el propio pliego— y eso es trabajo de archivo. El eje C pide datos
+  presupuestales deflactados que el módulo no tiene.
+* **Capa 4 · el marco declarado y el editorial firmado**, con autor y fecha,
+  rotulado como opinión y enlazado a los registros que lo sustentan. Necesita
+  las palabras de quien opera URBIS: los supuestos de valor los declara una
+  persona, no se deducen.
+
 ## La lista viva: lo que al pliego educativo todavía le falta (v866)
 
 Esta lista se quedó vieja **cinco veces**. Cuatro dentro de la hoja —la

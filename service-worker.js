@@ -1,4 +1,4 @@
-const URBIS_CACHE = 'urbis-v956-una-advertencia-no-es-un-pago-incumplido';
+const URBIS_CACHE = 'urbis-v957-la-clase-de-la-afirmacion-no-es-quien-la-cuenta';
 const URBIS_ASSETS = [
   './',
   './index.html',

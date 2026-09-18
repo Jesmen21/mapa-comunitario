@@ -723,6 +723,12 @@
     top.appendChild(quien);
     var ti = TIPOS[e.tipoFuente];
     if (ti) top.appendChild(tag(ti.cls, ti.t, ti.ayuda));
+    // Capa 1, compacta: solo lo declarado. En el muro no cabe la explicación
+    // y una etiqueta de ausencia por cada entrada sería ruido; lo que falta
+    // se cuenta en la ficha, que es donde se puede leer entero.
+    var cm = capaUnoDe(e);
+    if (cm.prueba.declarado)   top.appendChild(tag(cm.prueba.cls,   cm.prueba.t,   cm.prueba.d));
+    if (cm.medicion.declarado) top.appendChild(tag(cm.medicion.cls, cm.medicion.t, cm.medicion.d));
     art.appendChild(top);
 
     // Imagen opcional: el JSON puede traer `imagen` y `alt` el día que haya
@@ -998,6 +1004,37 @@
     } else {
       s.appendChild(el('p', 'sp-h-meta', 'Sin clasificar.'));
     }
+
+    /* La Capa 1 va DEBAJO del sello de fuente y separada de él, porque son
+       dos ejes distintos y pegarlos los volvería a confundir. Cada uno dice
+       qué significa: una etiqueta que el lector no sabe leer no informa. */
+    var c1 = capaUnoDe(e);
+    var cj = el('div', 'sp-c1');
+    cj.appendChild(el('h4', null, 'Qué clase de afirmación es'));
+
+    var fp = el('div', 'sp-c1-f');
+    if (c1.prueba.declarado) { fp.appendChild(tag(c1.prueba.cls, c1.prueba.t)); fp.appendChild(el('span', null, c1.prueba.d)); }
+    else if (c1.prueba.desconocido) { fp.appendChild(tag('cp-mal', c1.prueba.id)); fp.appendChild(el('span', null, 'Ese valor no está en la tabla de categorías probatorias, así que no se puede leer.')); }
+    else fp.appendChild(el('span', 'sp-c1-falta', 'Categoría probatoria sin declarar.'));
+    cj.appendChild(fp);
+
+    var fm = el('div', 'sp-c1-f');
+    if (c1.medicion.declarado) { fm.appendChild(tag(c1.medicion.cls, c1.medicion.t)); fm.appendChild(el('span', null, c1.medicion.d)); }
+    else if (c1.medicion.desconocido) { fm.appendChild(tag('cp-mal', c1.medicion.id)); fm.appendChild(el('span', null, 'Ese valor no es ni actividad ni resultado.')); }
+    else fm.appendChild(el('span', 'sp-c1-falta', 'Sin declarar si mide actividad o resultado.'));
+    cj.appendChild(fm);
+    s.appendChild(cj);
+
+    /* El contrargumento oficial va en su propio bloque y no dentro del
+       contrapunto: uno es lo que contestó el Gobierno y el otro es la
+       advertencia de URBIS. Y el estado «no respondió» se pinta, porque es
+       un dato; el «sin revisar» también, porque es nuestra deuda y
+       esconderla la volvería un señalamiento. */
+    var co = el('div', 'sp-c1-co sp-c1-co-' + c1.contra.estado);
+    co.appendChild(el('b', null, c1.contra.t));
+    if (c1.contra.texto) co.appendChild(el('p', null, c1.contra.texto));
+    co.appendChild(el('p', 'sp-h-meta', c1.contra.d));
+    cc.appendChild(co);
 
     $('sp-d-cat').textContent = cat(e.categoria).nombre;
     pintarFuentes($('sp-d-fuentes'), fuentesDe(e));
@@ -1333,6 +1370,173 @@
     return { entra: true, razon: '', nivel: n };
   }
 
+  /* ═══ CAPA 1 DEL PLIEGO PRESIDENCIAL ═══════════════════════════════════
+     Tres campos por registro que el pliego marca obligatorios, y que el
+     módulo no tenía. Van juntos porque contestan tres preguntas distintas
+     sobre la MISMA afirmación, y la trampa de todos ellos es la misma:
+     parecerse a un campo que ya existe.
+
+     LA REGLA DE ORO DEL PLIEGO: ninguna capa escribe en la capa anterior.
+     Así que NINGUNO DE LOS TRES mueve el veredicto. La escalera de
+     fiabilidad sigue saliendo de lo mismo que salía —casos, contradicciones
+     y registro verificado— y estos tres se publican al lado. Un campo nuevo
+     que cambiara en silencio el juicio público sobre una persona real es
+     exactamente lo que el pliego prohíbe, y hay una aserción dedicada a que
+     no pase.
+
+     · CATEGORÍA PROBATORIA — qué CLASE de afirmación es (principio 4).
+       NO es `tipoFuente`, y confundirlos es el error que el pliego nombra
+       con todas las letras: `tipoFuente` mide la calidad de la FUENTE —quién
+       lo cuenta y si está corroborado—; la categoría probatoria mide la
+       naturaleza de la AFIRMACIÓN —si hay documento, si son dos hechos que
+       coinciden, o si alguien está afirmando que uno causó el otro—. Son dos
+       ejes y meterlos en uno deja el módulo sin servir para ninguna de las
+       dos preguntas. Un medio impecable puede publicar una atribución
+       causal, y un medio militante puede publicar un documento auténtico.
+
+       Y TAMPOCO se deriva del `estado` de un caso de corrupción, que es lo
+       primero que se le ocurre a cualquiera porque hoy coincidirían casi
+       siempre. La pregunta que separa las dos cosas es la de siempre:
+       ¿existe un cambio razonable que deba mover una y no la otra? Sí — un
+       caso puede estar `en-investigacion`, que es un estado PROCESAL, y que
+       lo que se le imputa sea una atribución causal que nadie ha probado.
+       Derivarlas las ataría el día que se separen.
+
+     · TIPO DE MEDICIÓN — actividad o resultado (principio 5). «Cuatro
+       operativos en un día» y «la criminalidad bajó» hoy entran al registro
+       como la misma clase de cosa. No lo son, y no se suman nunca: uno mide
+       lo que el Gobierno HIZO y el otro lo que CAMBIÓ. Un resultado sin
+       línea base y sin fecha de corte es descriptivo, no evaluativo, y eso
+       se dice al lado de la etiqueta.
+
+     · CONTRARGUMENTO OFICIAL — qué contestó el Gobierno (principio 12).
+       El pliego lo declara obligatorio y dice por qué: un campo vacío es un
+       dato. Significa que el Gobierno no respondió, no que no hubiera
+       respuesta. Por eso son TRES estados y no dos, que es la distinción de
+       la v899 entre «sin dato» y «panel fuera»:
+         · un texto      → el Gobierno respondió, y esto fue lo que dijo;
+         · `ausente`     → se buscó y no respondió. Es un DATO, y alimenta el
+                           indicador I-06 del pliego;
+         · sin declarar  → nadie lo ha revisado todavía. NO es un dato: es
+                           trabajo pendiente, y se cuenta aparte.
+       Juntar los dos últimos convertiría nuestra propia deuda en un
+       señalamiento contra el Gobierno.
+
+       OJO CON EL HOMÓNIMO: `contrapunto` ya existe en 114 entradas y es OTRA
+       COSA — es la advertencia metodológica de URBIS sobre la propia
+       entrada, no la respuesta del Gobierno. Usar ese campo para esto sería
+       la colisión de nombres que este proyecto persigue desde la v885.
+
+     En los tres, SIN DECLARAR no cambia nada de lo que el módulo hacía
+     hasta hoy, y la ficha cuenta cuántos están así. Un valor por omisión
+     sería una afirmación que nadie escribió. Y un valor escrito con una
+     grafía que la tabla no conoce se ve —con el literal impreso— en vez de
+     pasar por bueno en silencio: es la decisión de la v941 con el nivel de
+     gobierno. */
+  var CATEGORIA_PROBATORIA = {
+    'hecho-probado': {
+      t: 'Hecho probado', cls: 'cp-hp',
+      d: 'Hay documento, acto administrativo o dato oficial que lo sostiene.' },
+    'correlacion': {
+      t: 'Correlación', cls: 'cp-co',
+      d: 'Dos hechos coinciden en tiempo o en espacio. Que coincidan no dice que uno causara el otro.' },
+    'atribucion-causal': {
+      t: 'Atribución causal', cls: 'cp-ac',
+      d: 'Alguien afirma que un hecho causó el otro. Lo que consta es la afirmación, no la causa.' },
+    'en-circulacion': {
+      t: 'Afirmación en circulación', cls: 'cp-ec',
+      d: 'Circula sin documento que la sostenga. Se registra porque circula, no porque esté probada.' }
+  };
+
+  var TIPO_MEDICION = {
+    'actividad': {
+      t: 'Actividad', cls: 'tm-act',
+      d: 'Lo que el Gobierno hizo: decretos firmados, operativos, anuncios, nombramientos.' },
+    'resultado': {
+      t: 'Resultado', cls: 'tm-res',
+      d: 'Lo que cambió en el país. Sin línea base y fecha de corte es descriptivo, no evaluativo. ' +
+         'Que una cifra se mida no dice quién la causó: eso lo separa la categoría probatoria.' },
+    /* EL TERCER VALOR, QUE EL PLIEGO NO TRAE, Y POR QUÉ HACE FALTA.
+       El pliego ofrece dos —actividad y resultado— y son los que alimentan
+       los indicadores I-09 e I-10. Pero una parte grande de este registro no
+       es ninguna de las dos: un juzgado que tumba un decreto, la JEP, Human
+       Rights Watch, un expresidente que responde, un aliado extranjero que
+       anuncia algo. Ahí el sujeto no es el Gobierno nacional y no hay una
+       magnitud medida del país.
+
+       Con solo dos valores, esas entradas tendrían que entrar forzadas en
+       una de las dos o quedarse sin declarar. Lo primero contamina
+       exactamente los dos indicadores que el principio 5 existe para no
+       mezclar; lo segundo las confunde con las que nadie ha revisado, que es
+       la misma conflación que el contrargumento evita con sus tres estados.
+       Así que se nombra: no aplica, y se dice por qué. */
+    'no-aplica': {
+      t: 'Ni actividad ni resultado', cls: 'tm-na',
+      d: 'El sujeto no es el Gobierno nacional —un juez, un órgano de control, un tercero— o no hay una ' +
+         'magnitud medida. No alimenta ni el conteo de actividad ni el de resultados.' }
+  };
+
+  /* Las tres puertas devuelven un OBJETO con su razón y nunca un booleano:
+     «sin declarar» y «escrito con un valor que no conozco» piden cosas
+     distintas a quien mantiene el registro. Es la regla de la v876. */
+  function claseDe(tabla, valor) {
+    var id = String(valor || '').trim();
+    if (!id) return { id: '', t: 'sin declarar', declarado: false, desconocido: false };
+    var x = tabla[id];
+    if (!x) return { id: id, t: id, declarado: false, desconocido: true };
+    return { id: id, t: x.t, cls: x.cls, d: x.d, declarado: true };
+  }
+
+  function categoriaProbatoriaDe(e) { return claseDe(CATEGORIA_PROBATORIA, e && e.categoriaProbatoria); }
+  function tipoMedicionDe(e)        { return claseDe(TIPO_MEDICION,        e && e.tipoMedicion); }
+
+  /* El contrargumento no es una tabla de valores: es un texto, o la palabra
+     `ausente`, o nada. Los tres estados van con nombre porque los tres piden
+     una acción distinta. */
+  function contrargumentoDe(e) {
+    var v = (e && e.contrargumentoOficial);
+    if (v === undefined || v === null || String(v).trim() === '') {
+      return { estado: 'sin-revisar', t: 'Sin revisar', texto: '', esDato: false,
+               d: 'Todavía nadie revisó si el Gobierno respondió. No es que no haya respondido: es que no lo hemos mirado.' };
+    }
+    var s = String(v).trim();
+    if (s.toLowerCase() === 'ausente') {
+      return { estado: 'ausente', t: 'El Gobierno no respondió', texto: '', esDato: true,
+               d: 'Se buscó una respuesta oficial y no la hay. Eso es un dato sobre el Gobierno, no un vacío del registro.' };
+    }
+    return { estado: 'respondio', t: 'Respuesta oficial', texto: s, esDato: true,
+             d: 'Lo que el Gobierno contestó sobre este hecho.' };
+  }
+
+  function capaUnoDe(e) {
+    return { prueba: categoriaProbatoriaDe(e), medicion: tipoMedicionDe(e), contra: contrargumentoDe(e) };
+  }
+
+  /* El recuento de la Capa 1 sobre un conjunto de entradas. No decide nada:
+     cuenta. Lo que hace con él la ficha es publicarlo al lado del veredicto
+     y nombrar lo que falta — que es lo que el pliego pide en su control de
+     calidad: si un casillero falla, se publica CON la marca de la falla
+     visible, no se publica sin ella. */
+  function capaUnoDe_conjunto(lista) {
+    var r = { n: (lista || []).length,
+              prueba: { declarados: 0, sinDeclarar: 0, desconocidos: 0, por: {} },
+              medicion: { actividad: 0, resultado: 0, 'no-aplica': 0, sinDeclarar: 0, desconocidos: 0 },
+              contra: { respondio: 0, ausente: 0, sinRevisar: 0 } };
+    (lista || []).forEach(function (e) {
+      var c = capaUnoDe(e);
+      if (c.prueba.declarado) { r.prueba.declarados++; r.prueba.por[c.prueba.id] = (r.prueba.por[c.prueba.id] || 0) + 1; }
+      else if (c.prueba.desconocido) r.prueba.desconocidos++;
+      else r.prueba.sinDeclarar++;
+      if (c.medicion.declarado) r.medicion[c.medicion.id]++;
+      else if (c.medicion.desconocido) r.medicion.desconocidos++;
+      else r.medicion.sinDeclarar++;
+      if (c.contra.estado === 'respondio') r.contra.respondio++;
+      else if (c.contra.estado === 'ausente') r.contra.ausente++;
+      else r.contra.sinRevisar++;
+    });
+    return r;
+  }
+
   function casosDeCx(dd) { return (((dd || D).contradicciones || {}).casos || []); }
   function casosDeCorrupcion(dd) { return (((dd || D).casos || {}).lista || []); }
 
@@ -1525,9 +1729,14 @@
       v = ESCALERA[peor];
     }
 
+    /* El recuento de la Capa 1 viaja con la ficha y NO entra en `techos` ni
+       en `peor`: es la regla de oro del pliego. Se calcula después del
+       veredicto a propósito, para que se vea en el código que no lo toca. */
+    var capa1 = capaUnoDe_conjunto(ent);
+
     return { corte: hasta, palabra: palabra, casos: casos, claridad: claridad, ritmo: ritmo,
              alcance: alcance, techos: techos, manda: manda, veredicto: v,
-             rasgos: rasgosDe(dd, ent) };
+             capa1: capa1, rasgos: rasgosDe(dd, ent) };
   }
 
   function fichaHasta(corte) { return fichaDe(D, corte); }
@@ -2060,6 +2269,63 @@
         f.manda.map(function (k) { return f.techos[k].t.toLowerCase(); }).join(' y ') + '.'
       : 'Ninguna de las tres cuentas baja el veredicto.'));
     izq.appendChild(ver);
+
+    // ── 1b · Capa 1: qué clase de afirmaciones trae el registro ────────────
+    /* Va DESPUÉS del veredicto y dice en su propio encabezado que no lo
+       mueve. Es la regla de oro del pliego, escrita donde la lee quien
+       consulta la ficha y no solo donde la lee quien programa. */
+    var c1 = f.capa1 || capaUnoDe_conjunto([]);
+    var s1 = seccionFicha('sp-fi-secc sp-fi-c1', 'Qué clase de afirmaciones trae este registro',
+      'Tres preguntas sobre cada hecho que son distintas de quién lo cuenta: qué clase de afirmación es, ' +
+      'si mide lo que el Gobierno hizo o lo que cambió en el país, y qué contestó el Gobierno. ' +
+      'Nada de esto mueve el veredicto de arriba, y es a propósito: quién cuenta un hecho y qué clase de ' +
+      'hecho es son dos ejes, y meterlos en uno deja al módulo sin servir para ninguna de las dos preguntas.');
+
+    function filaC1(titulo, partes, falta, textoFalta) {
+      var d = el('div', 'sp-c1-linea');
+      d.appendChild(el('b', null, titulo));
+      var ul = el('ul', 'sp-c1-lista');
+      partes.forEach(function (p) {
+        if (!p.n) return;
+        var li = el('li', null);
+        li.appendChild(el('span', 'sp-c1-n', String(p.n)));
+        li.appendChild(el('span', null, p.t));
+        ul.appendChild(li);
+      });
+      if (!ul.childNodes.length) ul.appendChild(el('li', 'sp-c1-falta', 'Ninguno declarado todavía.'));
+      d.appendChild(ul);
+      if (falta) d.appendChild(el('p', 'sp-c1-falta', falta + ' de ' + c1.n + ' ' + textoFalta));
+      return d;
+    }
+
+    s1.appendChild(filaC1('Categoría probatoria',
+      Object.keys(CATEGORIA_PROBATORIA).map(function (k) {
+        return { t: CATEGORIA_PROBATORIA[k].t, n: c1.prueba.por[k] || 0 }; }),
+      c1.prueba.sinDeclarar,
+      'sin declarar. Un hecho con documento y una afirmación que solo circula no son lo mismo, y hasta ' +
+      'que se declare no se pueden separar.'));
+
+    s1.appendChild(filaC1('Qué mide',
+      [{ t: TIPO_MEDICION.actividad.t, n: c1.medicion.actividad },
+       { t: TIPO_MEDICION.resultado.t, n: c1.medicion.resultado },
+       { t: TIPO_MEDICION['no-aplica'].t, n: c1.medicion['no-aplica'] }],
+      c1.medicion.sinDeclarar,
+      'sin declarar. Actividad y resultado no se suman nunca: firmar un decreto no es resolver el problema.'));
+
+    s1.appendChild(filaC1('Respuesta del Gobierno',
+      [{ t: 'Respondió', n: c1.contra.respondio },
+       { t: 'No respondió', n: c1.contra.ausente }],
+      c1.contra.sinRevisar,
+      'sin revisar. Que el Gobierno no haya respondido es un dato sobre el Gobierno; que nosotros no lo ' +
+      'hayamos mirado es una deuda nuestra, y contarlas juntas convertiría la segunda en la primera.'));
+
+    if (c1.prueba.desconocidos || c1.medicion.desconocidos) {
+      s1.appendChild(el('p', 'sp-c1-mal',
+        (c1.prueba.desconocidos + c1.medicion.desconocidos) +
+        ' con un valor que la tabla no conoce. Se ven en la tarjeta con el valor escrito, y no cuentan ' +
+        'como declarados: un valor mal escrito que pasara por bueno es peor que uno vacío.'));
+    }
+    izq.appendChild(s1);
 
     // ── 2 · Casos de corrupción ────────────────────────────────────────────
     var sc = seccionFicha('sp-fi-secc', 'Casos de corrupción',

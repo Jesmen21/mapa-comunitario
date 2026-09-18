@@ -938,6 +938,126 @@ console.log('\n  -- la ficha del gobernante --');
       sinQue === 0, sinQue ? sinQue + ' sin decir qué falta' : 'las ' + enLista + ' dicen qué falta');
   }
 
+  /* ═══ CAPA 1 DEL PLIEGO PRESIDENCIAL ═══════════════════════════════════
+     Tres campos por entrada, en los DOS registros. Los dos porque el
+     principio 1 del pliego es la simetría: toda regla que se aplica a un
+     gobierno se aplica a todos, y aflojarla en uno sería la manera
+     silenciosa de inclinar la comparación.
+
+     Las tablas de valores NO se copian acá: se leen de `js/70`. Una
+     comprobación que lleve su propia copia de la lista deja de comprobar el
+     código y pasa a comprobar que dos listas son iguales entre sí, y se
+     separan la tanda siguiente. */
+  {
+    const j70c1 = leer('js/70-seguimiento.js');
+    /* El troceo va por índice y no por una expresión regular armada a mano:
+       una regex construida con `new RegExp` sobre una cadena se escapa dos
+       veces y falla en silencio devolviendo la lista vacía, que es como esta
+       comprobación pasó de largo en su primera corrida. Lo cazó su propia
+       guarda de material. */
+    const tablaDe = (nombre) => {
+      const ini = j70c1.indexOf('var ' + nombre + ' = {');
+      if (ini < 0) return [];
+      const fin = j70c1.indexOf('\n  };', ini);
+      if (fin < 0) return [];
+      const cuerpo = j70c1.slice(ini, fin);
+      return (cuerpo.match(/^\s*'([a-z-]+)':/gm) || []).map((x) => x.replace(/[^a-z-]/g, ''));
+    };
+    const VAL_PRUEBA = tablaDe('CATEGORIA_PROBATORIA');
+    const VAL_MEDICION = tablaDe('TIPO_MEDICION');
+
+    /* La guarda de la guarda, y va PRIMERO: si las tablas dejaran de
+       encontrarse, todo lo de abajo pasaría en verde sin vigilar un solo
+       valor. Es el patrón de la v878 con su propia lista de voseo. */
+    comprobar('MATERIAL · las dos tablas de la Capa 1 se leen de js/70',
+      VAL_PRUEBA.length === 4 && VAL_MEDICION.length === 3,
+      VAL_PRUEBA.join('·') + ' / ' + VAL_MEDICION.join('·'));
+
+    const malos = [];
+    let sinCapa1 = 0, nEntradas = 0;
+    const sinContra = [];
+    REGISTROS.forEach((ruta) => {
+      const quien = ruta.split('-').pop().replace('.json', '');
+      ((JSON.parse(leer(ruta)).entradas) || []).forEach((e) => {
+        const donde = quien + '/' + (e.fecha || '?');
+        const cp = String(e.categoriaProbatoria || '').trim();
+        const tm = String(e.tipoMedicion || '').trim();
+        if (cp && VAL_PRUEBA.indexOf(cp) < 0) malos.push(donde + ' categoriaProbatoria=' + cp);
+        if (tm && VAL_MEDICION.indexOf(tm) < 0) malos.push(donde + ' tipoMedicion=' + tm);
+        nEntradas++;
+        if (!cp || !tm) sinCapa1++;
+        if (!String(e.contrargumentoOficial || '').trim()) sinContra.push(donde);
+      });
+    });
+
+    comprobar('ningún registro lleva un valor de Capa 1 que la ficha no sepa leer',
+      malos.length === 0,
+      malos.length ? malos.join(' · ') : 'los declarados son de las dos tablas');
+
+    /* Éste NO lleva trinquete sino cero, y es a propósito: los dos campos se
+       clasificaron enteros en esta versión, y la nota interna de cada
+       registro le dice a la rutina diaria que una entrada nueva los trae. Un
+       techo por encima de cero dejaría entrar la primera sin ellos y el
+       pendiente empezaría a subir otra vez. Entre fallar abierto y fallar
+       cerrado se falla cerrado — el canje de la v880. */
+    comprobar('toda entrada de los dos registros declara su categoría probatoria y qué mide',
+      sinCapa1 === 0,
+      sinCapa1 ? sinCapa1 + ' sin declarar · una entrada nueva las trae: ' +
+        'categoriaProbatoria (' + VAL_PRUEBA.join(' | ') + ') y tipoMedicion (' + VAL_MEDICION.join(' | ') + ')'
+        : 'las ' + nEntradas + ' entradas de los dos registros las declaran');
+
+    /* El contrargumento oficial SÍ lleva trinquete, y por la razón contraria:
+       no se puede clasificar leyendo el registro. Escribir `ausente` sin
+       haber buscado sería afirmar que el Gobierno no respondió, que es un
+       señalamiento contra una persona real fabricado por comodidad nuestra.
+       Así que el pendiente arranca completo, se ve en la ficha —el pliego
+       manda publicar con la marca de la falla visible— y solo puede bajar. */
+    const TECHO_SIN_CONTRA = 200;
+    comprobar('el pendiente de contrargumento oficial solo puede bajar',
+      sinContra.length <= TECHO_SIN_CONTRA,
+      sinContra.length + ' sin revisar, techo ' + TECHO_SIN_CONTRA +
+      (sinContra.length > TECHO_SIN_CONTRA ? ' · sobran: ' + sinContra.slice(TECHO_SIN_CONTRA).join(', ')
+                                           : ' · solo puede bajar'));
+
+    /* LA REGLA DE ORO DEL PLIEGO, comprobada sobre el código: ninguna capa
+       escribe en la capa anterior. El veredicto sale de `techos` y de `peor`,
+       y ninguno de los dos puede nombrar un campo de la Capa 1. Si un día
+       alguien mete la categoría probatoria en la escalera, el juicio público
+       sobre una persona cambiaría por un campo que se agregó para describir,
+       y esta comprobación lo dice antes. */
+    /* EL TRAMO VA HASTA `var capa1`, NO HASTA `var manda`, y esto costó una
+       demostración: con el corte en `manda`, una contaminación escrita tres
+       líneas más abajo —`techos.claridad.i = 3` a partir de la Capa 1— pasaba
+       en verde acá y solo la cazaba la suite del navegador. Una guarda que no
+       puede fallar es un verde (v878). Todo lo que puede tocar el veredicto
+       vive entre el armado de los techos y el recuento de la Capa 1, que se
+       calcula al final a propósito. */
+    const tramoVeredicto = (j70c1.match(/var techos = \{[\s\S]*?(?=\n\s*\/\* El recuento de la Capa 1)/) || [''])[0];
+    /* La lista incluye los AYUDANTES y no solo los campos: una contaminación
+       real no escribe `categoriaProbatoria` en el tramo, llama a
+       `capaUnoDe_conjunto`. Lo comprobé rompiéndolo a propósito y esta guarda
+       pasó en verde con los cuatro nombres de campo solos.
+
+       Y aun así, esta mitad no puede cazarlo todo —un alias con otro nombre se
+       le escapa—. La que MIDE la propiedad es `tficha`, que compone la misma
+       ficha con y sin los tres campos y exige el mismo veredicto y los mismos
+       tres techos. Ésta es la barata, que corre sin navegador. */
+    const contamina = ['categoriaProbatoria', 'tipoMedicion', 'contrargumentoOficial', 'capa1', 'capaUnoDe']
+      .filter((k) => tramoVeredicto.indexOf(k) >= 0);
+    comprobar('la Capa 1 no entra en el cálculo del veredicto (regla de oro del pliego)',
+      tramoVeredicto.length > 0 && contamina.length === 0,
+      !tramoVeredicto.length ? 'no se encontró el tramo del veredicto: la comprobación no vale'
+                             : (contamina.length ? 'lo contamina: ' + contamina.join(', ')
+                                                 : 'los tres techos salen de casos, palabra y claridad'));
+
+    /* Y que la ficha de verdad los lea. Sin esto, todo lo de arriba seguiría
+       en verde sobre tres campos que nadie usa. */
+    comprobar('y la ficha lee los tres campos y los publica',
+      /categoriaProbatoriaDe/.test(j70c1) && /tipoMedicionDe/.test(j70c1) &&
+      /contrargumentoDe/.test(j70c1) && /capaUnoDe_conjunto/.test(j70c1),
+      'js/70 resuelve los tres y cuenta el conjunto');
+  }
+
   /* La regla que el propio módulo se puso: una contradicción exige LAS DOS
      declaraciones documentadas. Con una sola no es un cambio de postura, es
      una postura — y como cada cambio contado baja un peldaño, dejar entrar

@@ -377,6 +377,49 @@ const server = http.createServer((req, res) => {
       municipal: api.cuentas ? api.cuentas(fN([casoN('confirmado', 'municipal')])) : '(sin api.cuentas)',
       nacional:  api.cuentas ? api.cuentas(fN([casoN('confirmado', 'nacional')]))  : '(sin api.cuentas)'
     };
+    /* ── CAPA 1 DEL PLIEGO · lo que describe, no lo que decide ─────────
+       Hace falta fixture y no sirve el registro publicado: allá los 200
+       hechos están clasificados y ninguno lleva contrargumento, así que la
+       rama del valor desconocido y las dos ramas del contrargumento no se
+       ejercitarían y las aserciones pasarían por no tener nada que rechazar.
+       Es lo que este proyecto lleva veinte tandas persiguiendo. */
+    const conC1 = (n, cp, tm, co) => Array.from({ length: n }, (_, i) => {
+      const e = { fecha: '2026-08-1' + (i % 9), categoria: 'gobierno', tipoFuente: 'verificado' };
+      if (cp) e.categoriaProbatoria = cp;
+      if (tm) e.tipoMedicion = tm;
+      if (co !== undefined) e.contrargumentoOficial = co;
+      return e;
+    });
+    const fC1 = (ent) => api.calcularCon({ posesion: '2026-08-07', categorias: { gobierno: {} },
+      entradas: ent, contradicciones: { casos: limpio }, casos: { lista: [] } }, '2026-08-20');
+
+    const mezclaC1 = []
+      .concat(conC1(10, 'hecho-probado', 'actividad'))
+      .concat(conC1(6, 'correlacion', 'resultado'))
+      .concat(conC1(4, 'atribucion-causal', 'no-aplica'))
+      .concat(conC1(3, 'en-circulacion', 'actividad'))
+      .concat(conC1(2, 'inventada', 'tampoco'))     // valores que la tabla no conoce
+      .concat(conC1(5))                              // sin declarar
+      .concat(conC1(4, 'hecho-probado', 'actividad', 'El Gobierno contestó esto.'))
+      .concat(conC1(6, 'hecho-probado', 'actividad', 'ausente'));
+    const c1 = (fC1(mezclaC1).capa1) || {};
+    o.capa1 = { n: c1.n,
+                prueba: c1.prueba, medicion: c1.medicion, contra: c1.contra };
+
+    /* LA REGLA DE ORO, medida y no leída: dos registros idénticos salvo por
+       los tres campos de la Capa 1 tienen que dar EL MISMO veredicto y los
+       mismos tres techos. Si un día alguien mete la categoría probatoria en
+       la escalera, el juicio público sobre una persona cambia por un campo
+       que se agregó para describir — y esto se pone rojo antes. */
+    const sinNada = conC1(40);
+    const conTodo = []
+      .concat(conC1(20, 'en-circulacion', 'no-aplica', 'ausente'))
+      .concat(conC1(20, 'atribucion-causal', 'no-aplica'));
+    const foto = (fx) => ({ v: fx.veredicto.id, manda: (fx.manda || []).join(','),
+                            casos: fx.techos.casos.i, palabra: fx.techos.palabra.i,
+                            claridad: fx.techos.claridad.i });
+    o.oro = { sin: foto(fC1(sinNada)), con: foto(fC1(conTodo)) };
+
     // ── Los rasgos, con registros de mentira ─────────────────────────
     const fr = (ent, cxs) => (api.calcularCon({ posesion: '2026-08-07', categorias: { gobierno: {} }, entradas: ent,
       contradicciones: { casos: cxs || [] }, casos: { lista: [] } }, '2026-08-20').rasgos || []).map(x => x.id);
@@ -492,6 +535,35 @@ const server = http.createServer((req, res) => {
       String(np.municipal).slice(0, 78) + '»)');
   chk(/^1 caso confirmado/.test(np.nacional || '') && !/fuera de la cuenta/.test(np.nacional || ''),
       'GUARDA · y con uno nacional dice uno, sin sobra ninguna («' + String(np.nacional).slice(0, 46) + '»)');
+
+  console.log('\n── La Capa 1: qué clase de afirmación, qué mide, qué contestó el Gobierno ────');
+  const c1 = r.capa1 || {}; const pr = c1.prueba || {}; const md = c1.medicion || {}; const co = c1.contra || {};
+  console.log('  ' + JSON.stringify({ prueba: pr.por, sinDeclarar: pr.sinDeclarar, desconocidos: pr.desconocidos,
+                                      medicion: md, contra: co }));
+  // MATERIAL · sin las cuatro clases y sin las tres ramas de contrargumento en
+  // el mismo registro, lo de abajo pasaría por no tener nada que contar.
+  chk(c1.n === 40 && Object.keys(pr.por || {}).length === 4,
+      'MATERIAL · el registro de prueba trae las cuatro categorías probatorias y 40 hechos (' +
+      c1.n + ' hechos · ' + Object.keys(pr.por || {}).length + ' clases)');
+  chk(pr.por && pr.por['hecho-probado'] === 20 && pr.por.correlacion === 6 &&
+      pr.por['atribucion-causal'] === 4 && pr.por['en-circulacion'] === 3,
+      'cuenta cada categoría probatoria por separado (' + JSON.stringify(pr.por) + ')');
+  chk(pr.sinDeclarar === 5 && pr.desconocidos === 2,
+      'y separa las que no declaran de las que traen un valor que no conoce (' +
+      pr.sinDeclarar + ' sin declarar · ' + pr.desconocidos + ' desconocidos)');
+  chk(md.actividad === 23 && md.resultado === 6 && md['no-aplica'] === 4 &&
+      md.sinDeclarar === 5 && md.desconocidos === 2,
+      'actividad, resultado y «ni una ni otra» se cuentan aparte y no se suman (' +
+      md.actividad + ' · ' + md.resultado + ' · ' + md['no-aplica'] + ')');
+  chk(co.respondio === 4 && co.ausente === 6 && co.sinRevisar === 30,
+      'el contrargumento tiene TRES estados: respondió, no respondió, y nadie lo ha revisado (' +
+      co.respondio + ' · ' + co.ausente + ' · ' + co.sinRevisar + ')');
+
+  // La que de verdad guarda, y la razón por la que la Capa 1 se puede publicar.
+  const oro = r.oro || {};
+  chk(oro.sin && oro.con && JSON.stringify(oro.sin) === JSON.stringify(oro.con),
+      'REGLA DE ORO · los tres campos NO mueven el veredicto ni ninguno de los tres techos (' +
+      JSON.stringify(oro.sin) + ' contra ' + JSON.stringify(oro.con) + ')');
 
   const nd = r.nivelDOM || {};
   chk(nd.aviso === false && nd.tarjetasFuera === 0 && nd.diceNivel === false,
