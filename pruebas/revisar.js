@@ -1853,6 +1853,42 @@ console.log('\n  -- un nombre, una cosa --');
   comprobar('y el almacén sigue leyendo la lista de huecos, no la de maquetación',
     /HUECOS_DE_VACIO/.test(cuerpoHuecos) && !/PANELES_DE_VACIO/.test(cuerpoHuecos),
     cuerpoHuecos ? 'huecosDeCampo lee HUECOS_DE_VACIO' : 'NO se encontró huecosDeCampo');
+
+  /* ── LO QUE SE GUARDA Y LO QUE RECALCULA (v946) ────────────────────────
+     Los tres paneles de percepción los ACEPTA el almacén y NO habilitan
+     post-sector. Las dos mitades hacen falta y se miden por separado: sin la
+     primera se pierde lo que alguien anotó caminando, y sin la segunda un
+     sector se declara recalculado por tres frases que no mueven una cifra,
+     que es la falta de la v867 en su forma más fácil de creer. */
+  const perc = lista('TITULOS_DE_PERCEPCION');
+  comprobar('MATERIAL · los tres paneles de percepción se leen del módulo',
+    perc.length === 3, perc.join(' · ') || 'no se leyeron');
+
+  comprobar('el almacén acepta los tres de percepción',
+    /PANELES_DE_PERCEPCION/.test(cuerpoHuecos),
+    /PANELES_DE_PERCEPCION/.test(cuerpoHuecos)
+      ? 'huecosDeCampo los concatena'
+      : 'huecosDeCampo NO los conoce: lo anotado no se podría guardar');
+
+  const cuerpoCuenta = (src.match(/function cuentaParaPostSector\([^]*?\n  \}/) || [''])[0];
+  const excluye = /PANELES_DE_PERCEPCION/.test(cuerpoCuenta) &&
+                  /indexOf\(String\(id \|\| ''\)\) === -1/.test(cuerpoCuenta);
+  comprobar('y NINGUNO de los tres habilita análisis post-sector', excluye,
+    /* El detalle enseña lo que de verdad encontró: la primera versión
+       imprimía «los excluye por la lista» también en rojo, que es un detalle
+       que miente justo cuando hace falta leerlo. */
+    excluye ? 'cuentaParaPostSector los excluye por la lista'
+            : (cuerpoCuenta ? 'cuentaParaPostSector NO mira la lista: «' +
+                 cuerpoCuenta.replace(/\s+/g, ' ').slice(0, 90) + '»'
+                            : 'NO se encontró cuentaParaPostSector'));
+
+  /* Y la guarda de la guarda: si `tieneCampo` dejara de llamar a la puerta,
+     las dos de arriba seguirían en verde sobre una regla que nadie aplica. */
+  const cuerpoTiene = (src.match(/function tieneCampo\([^]*?\n  \}/) || [''])[0];
+  comprobar('y tieneCampo sigue pasando cada entrada por esa puerta',
+    /cuentaParaPostSector\(/.test(cuerpoTiene),
+    /cuentaParaPostSector\(/.test(cuerpoTiene)
+      ? 'tieneCampo la llama' : 'tieneCampo NO la llama: la regla no mordería');
 }
 
   comprobar('ningún nombre de window es función en un archivo y lista en otro',

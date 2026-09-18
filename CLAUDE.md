@@ -9049,6 +9049,158 @@ que la v909 ya escribió: la forma de tú es idéntica a la de tercera persona, 
 a veces a un sustantivo. «Marca el punto» y «la app marca el punto» se escriben
 igual. Esa mitad se caza leyendo, como se cazó «redibujas» acá.
 
+## La percepción se guarda y no recalcula (v946)
+
+Los tres paneles de percepción —«Percepción del lugar», «Lo que no cambia»,
+«Voces de quien vive acá»—, que eran lo último que quedaba de la banda de
+campo. La instrucción era clara: **primero al almacén, después el
+formulario.** Y la medición partió la tanda en dos mitades que hay que
+separar, porque una sola de ellas es una mentira en cada dirección.
+
+### Lo que se GUARDA y lo que RECALCULA no son lo mismo
+
+Hasta la v945, `huecosDeCampo` decidía las dos cosas a la vez: lo que el
+almacén acepta y lo que habilita análisis post-sector. Para las seis
+plantillas y los cuatro vacíos eso era correcto — los diez levantan una cifra.
+Para estos tres no, y el propio mensaje de `tieneCampo` lo dice desde la v929:
+
+> El análisis post-sector se habilita con el primer dato de campo: **un
+> edificio mapeado con sus pisos, una plantilla llena o un vacío cerrado con
+> su trámite.**
+
+Una percepción no es ninguna de las tres. No suma un elemento, no cierra un
+hueco de cifra y no mueve un solo número: **la corrida post sería idéntica a
+la del sector en todas sus cifras.** Declararla post-sector sería declarar una
+procedencia que no está (v867) — y la más fácil de creer de todas, porque el
+rótulo suena a que algo se midió.
+
+Lo que sí cambia es la HOJA, que pasa de una caja en blanco a lo que alguien
+anotó con su nombre y su fecha. Son dos cosas distintas, así que hay dos
+puertas: `esHuecoConocido` dice **qué acepta el almacén**,
+`cuentaParaPostSector` dice **qué recalcula**.
+
+Y no guardarlas tampoco era opción: hasta acá, lo que un estudiante anotaba
+caminando vivía en el papel y se perdía al cerrar la ficha.
+
+#### El mensaje distingue las dos ausencias
+
+Con SOLO percepción anotada, decir lo mismo que cuando no hay nada juntaría
+dos situaciones que piden cosas distintas (v876, v899). La razón lo dice
+entero:
+
+> Lo anotado acá —Voces de quien vive acá— se guarda y sale en la hoja, y no
+> habilita post-sector: no cambia ninguna cifra, así que la corrida volvería a
+> dar exactamente lo mismo.
+
+### «9 paneles de percepción» sobre una banda que trae tres
+
+Salió al abrir la lista, y estaba impreso. La conclusión de la banda de campo
+contaba `PANELES_DE_CAMPO` —que son los tres de percepción **más las seis
+plantillas**— bajo la frase «N paneles de percepción».
+
+Es exactamente la clase de la v903 §8 —«trae tres paneles» y eran siete— y
+esta vez la causa es más fina: **una lista cuyo nombre sugiere una de las dos
+cosas que contiene.** El conteo se calculaba, que es lo que la v903 pidió; lo
+que no se había medido es qué cuenta.
+
+La comprobación vive en `tdoslaminas` y **no** en `tlaminaedu`: esa frase solo
+se imprime cuando el sector no tiene campo comparado, y el sector de
+`tlaminaedu` sí lo tiene — allá la aserción habría pasado por no tener nada
+que rechazar. Es el agujero que este proyecto lleva veintitrés tandas
+persiguiendo, y esta vez se vio antes de escribirla, no después. Con su guarda
+de material primero (v920).
+
+### Los tres slugs eran una segunda lista
+
+`PANELES_DE_CAMPO` los traía escritos a mano —`'percepcion-del-lugar'`…— y sus
+títulos vivían en sus `caja(...)`. Dos listas de lo mismo, y bastaba renombrar
+una caja para separarlas: es el fallo de la v878 y lo que la v933 corrigió
+para los cinco vacíos. Ahora van por su TÍTULO y el id se deriva.
+
+Eso destapó de paso la cola del mismo defecto: `nombreDeHueco` no conocía los
+tres, así que deshacía el slug a mano e imprimía **«Voces de quien vive aca»**,
+sin tilde — la misma falta que la v933 encontró con «Informacion legal del
+predio». El título es el que manda; el slug sale de él y no al revés.
+
+### La puerta: un bloque para los tres
+
+Por lo mismo que la v932 juntó las tres puertas de vacío: quien vuelve de una
+salida vuelve con las tres cosas anotadas el mismo día, y repartirlas en tres
+sitios es lo que hace que se guarde una y se olviden dos.
+
+Los campos son **los mismos renglones que la lámina imprime en blanco**, no
+una lista nueva: lo que se llena caminando es lo que se teclea después, y dos
+listas para eso se separarían a la tanda siguiente (v879).
+
+Y el panel lo dice con todas las letras, donde alguien lo va a leer antes de
+escribir: *«No habilita análisis post-sector, y no es un descuido: una
+percepción no cambia ninguna cifra, así que volver a correr el análisis daría
+exactamente lo mismo.»*
+
+#### `.pcr-vac-f` la cuentan dos bloques
+
+La primera versión reusó la clase de los vacíos y `tpostsector` saltó en el
+acto: **10 filas donde espera 7**. Es la lección de la v874 con `.hit` —dos
+cajas comparten una clase y `querySelectorAll` mezcla las dos listas—, cazada
+por una prueba que existía desde la v932. Los renglones de percepción llevan
+`pcr-perc-f`; el verde de «ya quedó anotado» sí es el mismo, porque significa
+lo mismo.
+
+### Las guardas, en las dos direcciones
+
+Sin la primera se pierde lo que alguien anotó caminando; sin la segunda, un
+sector se declara recalculado por tres frases. En `revisar.js`:
+
+* el almacén acepta los tres —`huecosDeCampo` los concatena—;
+* ninguno habilita post-sector —`cuentaParaPostSector` los excluye por la
+  lista—;
+* y la guarda de la guarda: `tieneCampo` sigue pasando cada entrada por esa
+  puerta. Sin ella, las dos de arriba seguirían en verde sobre una regla que
+  nadie aplica (v878).
+
+En `tpostsector`, las dos ramas en la misma corrida: que una percepción se
+acepte y quede legible, que ninguna de las tres cuente, y —la que de verdad
+guarda— que un sector con **solo** percepción no tenga post-sector y que la
+razón diga por qué. Más una contra el código muerto: que los tres se pinten en
+la ficha, porque un almacén que acepta algo sin manera de escribirlo es código
+que nadie llama (v885).
+
+De paso, un detalle de aserción que mentía: el de «ninguno habilita
+post-sector» imprimía «los excluye por la lista» **también en rojo**, que es
+justo cuando hace falta leerlo. Ahora enseña lo que encontró.
+
+### Demostrado contra la v945
+
+Revirtiendo **solo lo que decide** —el inventario, la puerta y lo que
+`estado()` expone se quedan, porque son lo que la suite necesita para LEER
+(v875)—: ocho en rojo con el estado viejo impreso.
+
+```
+✗ el almacén acepta una percepción   — El hueco «percepcion-del-lugar» no está en el inventario
+✗ queda anotada y legible            — 0 anotadas
+✗ y NINGUNA cuenta para post-sector  — [true,true,true]
+✗ un sector con SOLO percepción…     — hay=false · fuentes=0 · percepción=0
+✗ y la razón dice que no cambia…     — «…una plantilla llena o un vacío cerrado con su trámite.»
+✗ el conteo de paneles de percepción — 9 paneles de percepción
+✗ el almacén acepta los tres          — huecosDeCampo NO los conoce
+✗ y NINGUNO habilita post-sector      — cuentaParaPostSector NO mira la lista
+```
+
+Dos pasan a propósito y son material o guarda: que los tres estén en el
+inventario y que se pinten en la ficha.
+
+### Lo que esta versión NO hace
+
+**La lámina no imprime todavía lo anotado**: las tres cajas siguen saliendo en
+blanco. Es otra tanda y por una razón medida, no por olvido — la v944 dejó
+escrito que la hoja acostada tiene **0,1 mm de margen** en el piso de 45 mm de
+las cajas de campo, y llenar tres cajas de texto donde había renglones vacíos
+cambia su alto. Eso hay que medirlo contra las dos orientaciones antes de
+publicarlo, con la corrida completa, y no de paso.
+
+Con esto cierran las seis plantillas y los tres paneles de percepción; queda
+la vista de escritorio, que leerá el mismo `S.corrida` en vez de tener el suyo.
+
 ## La lista viva: lo que al pliego educativo todavía le falta (v866)
 
 Esta lista se quedó vieja **cinco veces**. Cuatro dentro de la hoja —la

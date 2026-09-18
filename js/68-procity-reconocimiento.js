@@ -850,12 +850,38 @@
      es: las listas que ya deciden qué imprime la lámina, y ninguna lista
      nueva escrita al lado. */
   function huecosDeCampo() {
-    var v = [], p = [];
+    var v = [], p = [], q = [];
     try { v = HUECOS_DE_VACIO || []; } catch (e) { v = []; }
     try { p = (PLANTILLAS_DE_CAMPO || []).map(function (x) { return x.id; }); } catch (e) { p = []; }
-    return v.concat(p);
+    try { q = PANELES_DE_PERCEPCION || []; } catch (e) { q = []; }
+    return v.concat(p).concat(q);
   }
   function esHuecoConocido(id) { return huecosDeCampo().indexOf(String(id || '')) !== -1; }
+
+  /* ── LO QUE SE GUARDA Y LO QUE RECALCULA NO SON LO MISMO (v946) ──────
+     Los tres paneles de percepción entran al almacén: lo que alguien anotó
+     caminando no puede vivir solo en un papel, y hoy se perdía al cerrar la
+     ficha. Pero NO habilitan análisis post-sector, y la razón está escrita
+     desde la v929 en el propio mensaje de `tieneCampo`: post-sector es «el
+     MISMO sector, RECALCULADO», y se habilita «con un edificio mapeado con
+     sus pisos, una plantilla llena o un vacío cerrado con su trámite».
+
+     Una percepción no suma un elemento, no cierra un hueco de cifra y no
+     mueve un solo número: la corrida post sería idéntica a la del sector en
+     todas sus cifras. Declararla post-sector sería declarar una procedencia
+     que no está, que es la falta de la v867 — y encima la más fácil de
+     creer, porque el rótulo suena a que algo se midió.
+
+     Lo que sí cambia es la HOJA, que pasa de una caja en blanco a lo que
+     alguien anotó con su nombre y su fecha. Son dos cosas distintas y por
+     eso se separan acá: `esHuecoConocido` dice qué acepta el almacén,
+     `cuentaParaPostSector` dice qué recalcula. */
+  function cuentaParaPostSector(id) {
+    var q = [];
+    try { q = PANELES_DE_PERCEPCION || []; } catch (e) { q = []; }
+    return q.indexOf(String(id || '')) === -1;
+  }
+  function esPercepcion(id) { return !cuentaParaPostSector(id); }
 
   /* ── UNA PUERTA, VARIAS DECLARACIONES (v932) ─────────────────────────
      La v931 dejó una entrada por HUECO. Medido para conectar las tres
@@ -1219,7 +1245,7 @@
     else { try { edif = edificiosDeCampo(); } catch (e) { edif = []; } }
     var conPisos = edif.filter(function (e) { return e && e.pisos != null; });
 
-    var fuentes = [];
+    var fuentes = [], percep = [];
     if (conPisos.length) {
       var fechas = conPisos.map(function (e) { return String(e.fecha || '').slice(0, 10); })
         .filter(Boolean).sort();
@@ -1252,6 +1278,12 @@
       });
     }
     conf.forEach(function (x) {
+      /* Se guarda y se imprime, y no habilita post-sector: la razón entera
+         está arriba, en `cuentaParaPostSector`. Va en el recorrido y no
+         filtrando `conf`, porque la lista de percepciones sí hace falta
+         aparte —el panel de la ficha las enseña— y filtrarla acá la dejaría
+         sin quien la lea. */
+      if (!cuentaParaPostSector(x.hueco)) { percep.push(x); return; }
       var fl = fuenteLeida(x.fuente);
       fuentes.push({
         clase: 'hueco', hueco: x.hueco, sub: x.sub || null, n: 1,
@@ -1271,12 +1303,20 @@
     });
 
     if (!fuentes.length) {
-      return { hay: false, fuentes: [], razon:
+      return { hay: false, fuentes: [], percepcion: percep, razon:
         'Todavía no hay nada levantado en este sector. El análisis post-sector se ' +
         'habilita con el primer dato de campo: un edificio mapeado con sus pisos, ' +
-        'una plantilla llena o un vacío cerrado con su trámite.' };
+        'una plantilla llena o un vacío cerrado con su trámite.' +
+        /* Y si lo único anotado es percepción, se dice POR QUÉ no basta, en
+           vez de dejar el mismo mensaje que cuando no hay nada: son dos
+           situaciones distintas y piden cosas distintas (v876, v899). */
+        (percep.length
+          ? ' Lo anotado acá —' + percep.map(function (x) { return nombreDeHueco(x.hueco); }).join(', ') +
+            '— se guarda y sale en la hoja, y no habilita post-sector: no cambia ninguna cifra, ' +
+            'así que la corrida volvería a dar exactamente lo mismo.'
+          : '') };
     }
-    return { hay: true, fuentes: fuentes, razon: '' };
+    return { hay: true, fuentes: fuentes, percepcion: percep, razon: '' };
   }
 
   /* El nombre legible de un hueco, para la declaración de procedencia. Sale
@@ -1291,6 +1331,14 @@
     try {
       var v = (TITULOS_DE_VACIO || []).filter(function (t) { return slugPliego(t) === s; })[0];
       if (v) return v;
+    } catch (e) {}
+    /* Y los tres de percepción, por la misma razón: deshacer el slug a mano
+       imprimía «Voces de quien vive aca», sin tilde — es el fallo que la
+       v933 encontró con «Informacion legal del predio». El título es el que
+       manda; el slug sale de él y no al revés. */
+    try {
+      var q = (TITULOS_DE_PERCEPCION || []).filter(function (t) { return slugPliego(t) === s; })[0];
+      if (q) return q;
     } catch (e) {}
     return s.replace(/-/g, ' ').replace(/^./, function (c) { return c.toUpperCase(); });
   }
@@ -9421,7 +9469,13 @@ function donaHTML(datos, colorDe, nombreDe) {
                uno. Un conteo escrito a mano en un texto fijo es una cifra
                que envejece sola, que es lo mismo que la lista viva (v866)
                dicho dentro de la hoja. */
-            var nPerc = PANELES_DE_CAMPO.length, nVac = PANELES_DE_VACIO.length;
+            /* `PANELES_DE_CAMPO` son los de percepción MÁS las seis
+               plantillas —nueve—, así que contarlos acá imprimía «9 paneles
+               de percepción» sobre una banda que trae tres. Es la clase de
+               la v903 §8 otra vez: un conteo que nombra una cosa y cuenta
+               otra, y esta vez por una lista cuyo nombre sugiere una de las
+               dos. Se cuenta la lista que la frase nombra. */
+            var nPerc = PANELES_DE_PERCEPCION.length, nVac = PANELES_DE_VACIO.length;
             var plural = function (n, uno, varios) { return n + ' ' + (n === 1 ? uno : varios); };
             return 'Nada levantado en campo todavía: la banda dice a dónde ir y qué anotar, y trae ' +
               plural(nPerc, 'panel de percepción', 'paneles de percepción') + ' para llenar a mano ' +
@@ -13465,6 +13519,41 @@ function donaHTML(datos, colorDe, nombreDe) {
             'análisis post-sector.'
           : rAn.error;
         if (rAn.ok) soltarPostAn();
+        pintar(); return;
+      }
+      if (acc === 'perc-guardar' || acc === 'perc-borrar') {
+        var hPe = el.getAttribute('data-h') || '';
+        var llPe = llaveDeSector(S.resultado && S.resultado.meta);
+        if (acc === 'perc-borrar') {
+          var yaPe = confirmadasDeCampo(llPe).filter(function (x) { return x.hueco === hPe; })[0];
+          if (yaPe) borrarEntradaCampo(llPe, yaPe.id);
+          S.avisoPestana = 'Se quitó lo anotado. La hoja vuelve a imprimir esa caja en blanco.';
+          pintar(); return;
+        }
+        var leePe = function (k, i) {
+          var sel = '[data-pcr-perc="' + k + '"][data-h="' + hPe + '"]' +
+                    (i === undefined ? '' : '[data-i="' + i + '"]');
+          var e2 = document.querySelector(sel);
+          return e2 ? String(e2.value || '').trim() : '';
+        };
+        var etqs = CAMPOS_DE_PERCEPCION[hPe] || [];
+        var lineas = etqs.map(function (etq, i) {
+          return { etq: etq, texto: leePe('linea', i).slice(0, 160) };
+        }).filter(function (l) { return l.texto !== ''; });
+        if (!lineas.length) {
+          /* Cada rechazo dice SU causa (v934): «no hay nada escrito» y «falta
+             quién lo anotó» mandan a revisar sitios distintos. */
+          S.avisoPestana = 'Todavía no hay nada escrito en esta caja: anote por lo menos un renglón.';
+          pintar(); return;
+        }
+        var rPe = guardarEntradaCampo(llPe, {
+          hueco: hPe, estado: 'confirmado',
+          valor: { lineas: lineas },
+          fuente: { como: 'campo', quien: leePe('quien'), fechaDoc: leePe('fechaDoc') } });
+        S.avisoPestana = rPe.ok
+          ? 'Quedó anotado, y sale en la hoja con quién lo anotó. El análisis no cambia: una ' +
+            'percepción no mueve ninguna cifra.'
+          : rPe.error;
         pintar(); return;
       }
       if (acc === 'cup-guardar' || acc === 'cup-borrar') {
@@ -19274,7 +19363,21 @@ function donaHTML(datos, colorDe, nombreDe) {
       return typeof PUERTAS_DE_PLANTILLA[x.id] === 'function';
     });
   }
-  var PANELES_DE_CAMPO = ['percepcion-del-lugar', 'lo-que-no-cambia', 'voces-de-quien-vive-aca']
+  /* ── LOS TRES PANELES DE PERCEPCIÓN (v946) ──────────────────────────
+     Van por su TÍTULO y el id se deriva, como las plantillas y como los
+     vacíos desde la v933: escritos a mano eran dos listas de lo mismo —los
+     slugs acá, los títulos en sus `caja(...)`— y bastaba renombrar una caja
+     para separarlos, que es el fallo de la v878.
+
+     Y son OTRA COSA que las seis plantillas, aunque compartan banda: una
+     plantilla levanta una cifra —metros, pasos, puestos— y estos levantan lo
+     que ninguna fuente trae, que la propia caja dice con esas palabras:
+     «Nada de esto está en los datos». Es la separación que la v883 hizo en
+     la lámina, dicha ahora también en el almacén. */
+  var TITULOS_DE_PERCEPCION = ['Percepción del lugar', 'Lo que no cambia',
+                               'Voces de quien vive acá'];
+  var PANELES_DE_PERCEPCION = TITULOS_DE_PERCEPCION.map(slugPliego);
+  var PANELES_DE_CAMPO = PANELES_DE_PERCEPCION
     .concat(PLANTILLAS_DE_CAMPO.map(function (x) { return x.id; }));
   /* Los cinco vacíos obligatorios (v849): baldosas que no ceden en ningún
      formato. Decir «sin dato oficial» es parte del análisis. */
@@ -27069,6 +27172,76 @@ function donaHTML(datos, colorDe, nombreDe) {
 
   PUERTAS_DE_PLANTILLA[HUECO_CUPO] = htmlPuertaCupo;
 
+  /* ── LA PUERTA DE LOS TRES PANELES DE PERCEPCIÓN (v946) ──────────────
+     UN bloque para los tres, por lo mismo que la v932 juntó las tres puertas
+     de vacío: quien vuelve de una salida vuelve con las tres cosas anotadas
+     el mismo día, y repartirlas en tres sitios es lo que hace que se guarde
+     una y se olviden dos.
+
+     Los campos son los MISMOS renglones que la lámina imprime en blanco —no
+     una lista nueva—: lo que se llena caminando es lo que se teclea después,
+     y dos listas para eso se separarían a la tanda siguiente (v879). */
+  var CAMPOS_DE_PERCEPCION = {
+    'percepcion-del-lugar': ['Día y hora', 'Ruido: de qué y cuánto', 'Olores',
+      'Luz y sombra', 'Quién está en la calle', 'Dónde se sintió a gusto, y dónde no'],
+    'lo-que-no-cambia': ['Permanencia 1', 'Permanencia 2', 'Permanencia 3',
+      'Permanencia 4', 'Permanencia 5'],
+    'voces-de-quien-vive-aca': ['Frase 1 — iniciales · edad · años acá',
+      'Frase 2 — iniciales · edad · años acá', 'Frase 3 — iniciales · edad · años acá']
+  };
+
+  function htmlPuertaPercepcion(llave) {
+    var puestas = {};
+    confirmadasDeCampo(llave).forEach(function (x) {
+      if (esPercepcion(x.hueco)) puestas[x.hueco] = x;
+    });
+    var filas = PANELES_DE_PERCEPCION.map(function (id) {
+      var ya = puestas[id], campos = CAMPOS_DE_PERCEPCION[id] || [];
+      if (ya) {
+        var fl = fuenteLeida(ya.fuente);
+        var dichos = ((ya.valor && ya.valor.lineas) || []).filter(function (l) {
+          return String((l && l.texto) || '').trim() !== ''; });
+        /* Clase propia y no `pcr-vac-f`: esa la usan los vacíos obligatorios,
+           y contarla a secas mezclaría las dos listas — es la lección de la
+           v874 con `.hit`. Lleva `pcr-vac-ok` porque el verde SÍ es el mismo
+           código visual: «esto está resuelto». */
+        return '<div class="pcr-perc-f pcr-vac-ok">' +
+          '<b>' + esc(nombreDeHueco(id)) + '</b>' +
+          '<p class="pcr-conc pcr-fuente-ok">' +
+            dichos.length + (dichos.length === 1 ? ' renglón anotado' : ' renglones anotados') +
+            ' por ' + esc(fl.quien) + (fl.fechaDoc ? ', el ' + esc(fl.fechaDoc) : '') + '.</p>' +
+          dichos.map(function (l) {
+            return '<p class="pcr-pista"><b>' + esc(l.etq) + ':</b> ' + esc(l.texto) + '</p>';
+          }).join('') +
+          '<button type="button" class="pcr-mini" data-pcr="perc-borrar" data-h="' + esc(id) + '">' +
+            ico('borrar', 16) + 'Quitar lo anotado</button>' +
+          '</div>';
+      }
+      return '<div class="pcr-perc-f">' +
+        '<b>' + esc(nombreDeHueco(id)) + '</b>' +
+        campos.map(function (etq, i) {
+          return '<label class="pcr-campo-linea"><span>' + esc(etq) + '</span>' +
+            '<input type="text" maxlength="160" data-pcr-perc="linea" ' +
+              'data-h="' + esc(id) + '" data-i="' + i + '" placeholder="se deja vacío si no aplica" /></label>';
+        }).join('') +
+        '<label class="pcr-campo-linea"><span>Quién lo anotó</span>' +
+          '<input type="text" maxlength="80" data-pcr-perc="quien" data-h="' + esc(id) + '" ' +
+            'placeholder="quien estuvo en el sitio" /></label>' +
+        '<label class="pcr-campo-linea"><span>Qué día</span>' +
+          '<input type="text" maxlength="40" data-pcr-perc="fechaDoc" data-h="' + esc(id) + '" ' +
+            'placeholder="2026-09-18" /></label>' +
+        '<button type="button" class="pcr-mini" data-pcr="perc-guardar" data-h="' + esc(id) + '">' +
+          ico('ok', 16) + 'Guardar lo anotado</button>' +
+        '</div>';
+    }).join('');
+    return h4('ojo', 'Lo que no está en los datos') +
+      '<p class="pcr-pista">Los tres paneles que la lámina imprime en blanco. Lo que se anota acá ' +
+      'sale en la hoja con <b>quién lo anotó y qué día</b>, en vez de quedarse en el papel. ' +
+      '<b>No habilita análisis post-sector</b>, y no es un descuido: una percepción no cambia ' +
+      'ninguna cifra, así que volver a correr el análisis daría exactamente lo mismo.</p>' +
+      '<div class="pcr-vac-g pcr-perc-g">' + filas + '</div>';
+  }
+
   function bloquePlantillas() {
     if (!S.resultado) return '';
     var llave = llaveDeSector(S.resultado.meta);
@@ -29320,6 +29493,10 @@ function donaHTML(datos, colorDe, nombreDe) {
            queda sin señal—, y un papel por radicar es exactamente eso. */
         bloqueVacios() +
         bloquePlantillas() +
+        /* v946 · y los tres de percepción, aparte de las seis plantillas:
+           una plantilla levanta una cifra y estos levantan lo que ninguna
+           fuente trae. Es la misma separación que la v883 hizo en la lámina. */
+        (S.resultado ? htmlPuertaPercepcion(llaveDeSector(S.resultado.meta)) : '') +
         // Las capas ordenan el mapa; esto ordena el papel.
         bloquePliego(res) +
         /* Entre los controles y la exportación: «esto es lo que hay», «esto
@@ -31761,6 +31938,21 @@ function donaHTML(datos, colorDe, nombreDe) {
                        puerta: typeof PUERTAS_DE_PLANTILLA[x.id] === 'function',
                        noCarga: x.noCarga || '' };
             });
+          } catch (e) { return null; }
+        })(),
+        /* Los tres de percepción (v946): la lista de lo anotado y, sobre
+           todo, si cuentan o no para post-sector — que es la mitad que una
+           tanda futura puede romper sin que se vea. */
+        percepcion: (function () {
+          try {
+            var ll = llaveDeSector(S.resultado && S.resultado.meta);
+            var tc = tieneCampo(ll);
+            return { huecos: PANELES_DE_PERCEPCION.slice(),
+                     anotadas: (tc.percepcion || []).map(function (x) {
+                       return { hueco: x.hueco, quien: (x.fuente || {}).quien || '',
+                                lineas: ((x.valor && x.valor.lineas) || []).length }; }),
+                     cuentan: PANELES_DE_PERCEPCION.map(cuentaParaPostSector),
+                     hayCampo: !!tc.hay, razon: tc.razon || '' };
           } catch (e) { return null; }
         })(),
         afluenciaFiable: (function () {

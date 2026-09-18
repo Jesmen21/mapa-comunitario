@@ -2942,6 +2942,31 @@ usos.push({ type: 'node', id: 3105, lat: C.lat + 0.0019, lon: C.lng + 0.0018,
   ];
   const textoB = (r.soloB || '') + (r.soloA || '');
   const plano = textoB.replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ');
+
+  /* ── EL CONTEO CUENTA LO QUE NOMBRA (v946) ─────────────────────────────
+     La conclusión de la banda de campo decía «N paneles de percepción»
+     contando `PANELES_DE_CAMPO`, que son los tres de percepción MÁS las seis
+     plantillas: imprimía NUEVE sobre una banda que trae tres. Es la clase de
+     la v903 §8 —un conteo que nombra una cosa y cuenta otra— y acá vuelve
+     porque el nombre de la lista sugiere una de las dos.
+
+     Se mide sobre el papel y contra las cajas que hay, no contra un número
+     escrito acá: un número en la aserción sería la misma constante del
+     módulo copiada un piso más arriba (v890, v905). */
+  {
+    const dice = plano.match(/(\d+) paneles? de percepción/);
+    const cajas = (r.soloB || '').split('caja-campo').length - 1;
+    /* MATERIAL primero (v920): esta frase solo sale cuando el sector no
+       tiene campo comparado. Si deja de salir, se pone roja ella y no la
+       afirmación de abajo, en vez de pasar por no tener nada que rechazar. */
+    T('MATERIAL · la conclusión de campo imprime su conteo de paneles',
+      !!dice, dice ? dice[0] : 'no lo imprime — la banda tiene campo comparado');
+    if (dice) {
+      T('el conteo de paneles de percepción no cuenta también las plantillas',
+        Number(dice[1]) === 3,
+        dice[0] + ' · y la banda trae 3 de percepción y 6 plantillas');
+    }
+  }
   PARES.forEach(p => {
     const lo = p.mide(plano);
     T('si la hoja mide ' + p.que + ', ningún texto suyo la da por ausente',

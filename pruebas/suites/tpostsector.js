@@ -478,7 +478,11 @@ function usosOSM() {
     const gV = hojaEl().querySelector('.pcr-vac-g');
     o.puerta = {
       hay: !!gV,
+      /* Solo las del bloque de vacíos: desde la v946 los tres paneles de
+         percepción se pintan al lado con su propia clase, y contar
+         `.pcr-vac-f` a secas mezclaría las dos listas (v874). */
       filas: hojaEl().querySelectorAll('.pcr-vac-f').length,
+      filasPercepcion: hojaEl().querySelectorAll('.pcr-perc-f').length,
       anotadas: hojaEl().querySelectorAll('.pcr-vac-ok').length,
       texto: txt(hojaEl().querySelector('.pcr-kpis') ? hojaEl() : null).slice(0, 0) ||
              [...hojaEl().querySelectorAll('.pcr-conc')].map(x => x.textContent).join(' ')
@@ -502,6 +506,42 @@ function usosOSM() {
       fuente: FU('Corporación Autónoma Regional de la Frontera Nororiental', '2021-01-15') });
     o.trasActualizar = guardadas().length;
     o.inundacionAhora = (guardadas().filter(x => x.sub === 'inundacion')[0] || {}).fechaDoc;
+
+    /* ── LOS TRES DE PERCEPCIÓN (v946) ──────────────────────────────
+       Se guardan y NO habilitan post-sector. Las dos mitades se miden
+       aparte: sin la primera se pierde lo que alguien anotó caminando; sin
+       la segunda, un sector se declara recalculado por tres frases que no
+       mueven una cifra. */
+    o.percHuecos = ((R.estado() || {}).percepcion || {}).huecos || [];
+    o.percAcepta = R.guardarEntradaCampo(o.llave, {
+      hueco: 'percepcion-del-lugar', estado: 'confirmado',
+      valor: { lineas: [{ etq: 'Ruido: de qué y cuánto', texto: 'motos, todo el día' },
+                        { etq: 'Olores', texto: 'pan de la panadería de la esquina' }] },
+      fuente: { como: 'campo', quien: 'Daniela Suárez', fechaDoc: '2026-09-18' } });
+    /* Y la que de verdad guarda: que ACEPTARLA no la convierta en fuente de
+       post-sector. Se lee del mismo `tieneCampo` que decide, no de una copia. */
+    o.percTrasGuardar = (function () {
+      const e = (R.estado() || {}).percepcion || {};
+      return { anotadas: (e.anotadas || []).length, cuentan: e.cuentan || [],
+               razon: e.razon || '' };
+    })();
+
+    /* La rama opuesta, con su guarda: en un sector donde SOLO hay percepción
+       no puede haber post-sector, y el mensaje tiene que decir por qué —si
+       no, se lee igual que «no hay nada anotado», que es otra situación
+       (v899). Se mide sobre una llave limpia para que las entradas de arriba
+       no la contaminen. */
+    o.soloPercepcion = (function () {
+      const ll = o.llave + '|solo-percepcion';
+      R.guardarEntradaCampo(ll, {
+        hueco: 'voces-de-quien-vive-aca', estado: 'confirmado',
+        valor: { lineas: [{ etq: 'Frase 1 — iniciales · edad · años acá',
+                            texto: '«acá antes se podía caminar de noche» — M.R. · 62 · 40' }] },
+        fuente: { como: 'campo', quien: 'Daniela Suárez', fechaDoc: '2026-09-18' } });
+      const t = R.tieneCampo(ll, { edificios: [] });
+      return { hay: t.hay, fuentes: (t.fuentes || []).length,
+               percepcion: (t.percepcion || []).length, razon: t.razon || '' };
+    })();
 
     return o;
   }, { C, POL, DOBLE });
@@ -760,6 +800,34 @@ function usosOSM() {
       r.subs.riesgo.indexOf('avenidas') === -1 &&
       r.subs.riesgo.indexOf('torrenciales') === -1,
     /avenidas torrenciales/i.test(r.puerta.texto || '') ? 'declarada y sin casilla' : 'no la declara');
+
+  console.log('\n  -- los tres de percepción: se guardan y no recalculan --');
+  {
+    const P = r.percTrasGuardar || {}, SP = r.soloPercepcion || {};
+    /* MATERIAL primero (v920): sin los tres huecos en el inventario, lo de
+       abajo pasaría por no tener nada que aceptar ni que excluir. */
+    T('MATERIAL · los tres están en el inventario de huecos',
+      (r.percHuecos || []).length === 3, (r.percHuecos || []).join(' · ') || 'ninguno');
+    /* Un almacén que acepta algo sin ninguna manera de escribirlo es código
+       que nadie llama (v885): la puerta tiene que estar en pantalla. */
+    T('y los tres se pintan en la ficha, aparte de los vacíos',
+      r.puerta.filasPercepcion === 3 && r.puerta.filas === 7,
+      r.puerta.filasPercepcion + ' de percepción · ' + r.puerta.filas + ' de vacío');
+    T('el almacén acepta una percepción', r.percAcepta && r.percAcepta.ok === true,
+      (r.percAcepta || {}).error || 'aceptada');
+    T('queda anotada y legible', P.anotadas >= 1, P.anotadas + ' anotadas');
+    T('y NINGUNA cuenta para post-sector',
+      (P.cuentan || []).length === 3 && (P.cuentan || []).every(x => x === false),
+      JSON.stringify(P.cuentan));
+    /* La rama que de verdad guarda: solo percepción NO es post-sector, y el
+       mensaje dice por qué en vez de repetir el de «no hay nada». */
+    T('un sector con SOLO percepción no tiene post-sector',
+      SP.hay === false && SP.fuentes === 0 && SP.percepcion === 1,
+      'hay=' + SP.hay + ' · fuentes=' + SP.fuentes + ' · percepción=' + SP.percepcion);
+    T('y la razón dice que no cambia ninguna cifra, no solo que no hay nada',
+      /no cambia ninguna cifra/.test(SP.razon) && /Voces de quien vive acá/.test(SP.razon),
+      (SP.razon || '').slice(-150) || '(vacía)');
+  }
 
   T('la página no soltó errores', err.length === 0, err.join(' | ') || 'ninguno');
 

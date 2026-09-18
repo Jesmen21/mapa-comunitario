@@ -762,6 +762,10 @@ usos.push({ type: 'node', id: 3002, lat: C.lat - 0.0025, lon: C.lng + 0.002,
     T(nom + ': y no la repite bajo cada plantilla',
       plantillas.filter(c => c.teclea).length === 0,
       plantillas.filter(c => c.teclea).length + ' cajas la repiten');
+    /* El conteo de paneles de percepción (v946) NO se mide acá: el sector de
+       esta suite tiene campo comparado, así que esa frase no se imprime y la
+       aserción pasaría por no tener nada que rechazar. Vive en
+       `tdoslaminas`, cuyo sector sí la produce. */
   });
 
   /* ── Tanda 3 (v849): los vacíos obligatorios y los cruces ──────────── */
