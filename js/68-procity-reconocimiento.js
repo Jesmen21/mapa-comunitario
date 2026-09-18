@@ -9069,7 +9069,14 @@ function donaHTML(datos, colorDe, nombreDe) {
 
          Sigue siendo una caja ámbar mientras la capa no conteste: lo que
          cambió es que ahora hay a quién preguntarle. */
-      caja('Servicios públicos',
+      (function () {
+      /* La clase se decide AFUERA del cuerpo, que es la costura que la v903
+         dejó puesta: `caja(titulo, cuerpo, clase)` recibe la clase como tercer
+         argumento y desde dentro del cuerpo no se puede pedir. */
+      var ca2sv = st.censoAmpliado || null;
+      var svHay = !!(ca2sv && ((ca2sv.bloques || []).filter(function (x) {
+        return x.id === 'servicios'; })[0] || {}).filas || []).length;
+      return caja('Servicios públicos',
         (function () {
           var ca2 = st.censoAmpliado || null;
           var sv = ca2 && (ca2.bloques || []).filter(function (x) { return x.id === 'servicios'; })[0];
@@ -9109,7 +9116,14 @@ function donaHTML(datos, colorDe, nombreDe) {
               mientras: 'el cuadro de servicios del CNPV 2018 por manzana, que da cobertura declarada pero no continuidad'
             });
         })(),
-        'g3 caja-vacio') +
+        /* Y la clase acompaña al contenido. Hasta la v952 iba `caja-vacio`
+           SIEMPRE, así que cuando la capa SÍ contestaba sus barras salían
+           dentro de una caja ámbar a trazos —que en esta hoja significa «esto
+           no lo tenemos»— y además perdían su pie de método, porque `caja()`
+           lo suprime en las `caja-vacio` desde la v880. Dos afirmaciones
+           falsas sobre un dato medido, que es la clase de la v861. */
+        svHay ? 'g3' : 'g3 caja-vacio');
+      })() +
       caja('Norma urbana',
         panelVacio('uso permitido, índices de ocupación y construcción, altura máxima, aislamientos y cesiones: la ficha normativa del POT o un concepto de la curaduría urbana.',
           (function () { var ix = loteA && (loteA.indices || (loteA.queCabe && loteA.queCabe.indices)); return ix && (ix.ocupacion || ix.construccion) ? 'índices declarados por quien analiza (ocupación ' + conComa(ix.ocupacion || '—') + ', construcción ' + conComa(ix.construccion || '—') + '): supuestos, no norma.' : 'ningún índice: lo que cabe en el lote está sin norma.'; })(),
@@ -20760,6 +20774,11 @@ function donaHTML(datos, colorDe, nombreDe) {
     'La inundación': { f: 'cruce del sitio con las manchas de inundación por periodo de retorno', fu: 'IDEAM, zonas susceptibles de inundación', c: 'media: escala 1:100.000', r: 'periodo de retorno de 100 años', e: 'no reemplaza el estudio de detalle del POT' },
     'Verde y agua': { f: 'cuerpos de agua, parques y verde natural registrados, con nombre', fu: 'OpenStreetMap, hoy', c: 'media', r: 'cobertura verde ≥ 30 % del sector', e: 'el verde privado no aparece' },
     'El ruido del tránsito': { f: 'nivel estimado por jerarquía de vía y distancia (−6 dB al duplicar la distancia)', fu: 'red vial de OpenStreetMap, hoy; modelo simplificado', c: 'baja: no es una medición', r: '65 dB(A) diurnos en zona residencial, Resolución 627 de 2006', e: '±5 dB(A); medir con sonómetro en campo' },
+    /* Nunca tuvo entrada, y no por descuido de quien la escribió: la caja iba
+       siempre con `caja-vacio`, que suprime el pie de método, así que la regla
+       de la v848 —ninguna caja sin su método declarado— no podía morderla. Una
+       guarda que no puede fallar es un verde (v878). */
+    'Servicios públicos': { f: 'viviendas que declaran cada servicio ÷ viviendas de las manzanas censales dentro del área', fu: 'DANE, CNPV 2018, manzanas (Esri Colombia Living Atlas)', c: 'alta para la cobertura DECLARADA; el censo no pregunta continuidad ni calidad', r: 'la presencia de infraestructura de OpenStreetMap, en esta misma lámina, que es presencia y no cobertura', e: 'una manzana con acueducto puede tener agua seis horas al día, y eso el censo no lo pregunta' },
     'Infraestructura de servicios': { f: 'objetos de infraestructura registrados y su distancia al lote', fu: 'OpenStreetMap, hoy', c: 'baja como cobertura: es presencia', r: 'la cobertura por manzana del censo DANE', e: 'no dice si hay agua, energía ni alcantarillado' },
     'Cobertura del suelo': { f: 'clasificación píxel a píxel de la foto satelital en verde, duro, agua y suelo', fu: 'Esri World Imagery; la fecha de la imagen no se publica', c: 'media', r: 'superficie dura ≥ 60 % = isla de calor', e: 'sombras y techos verdes confunden al clasificador: ±8 %' },
     'Continuidad del tejido': {

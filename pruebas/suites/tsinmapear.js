@@ -113,7 +113,15 @@ const cotaDe = ln => 300 + Math.round(30 * Math.sin(ln * 800));
     r.fulfill({ status: 200, contentType: 'application/json',
       body: JSON.stringify({ elements: /out(\+|%20|\s)geom/.test(q) ? geo : usos.concat(geo) }) });
   });
-  await E.rutaDane(ctx);
+  /* v953 · la capa del censo de ESTE sector no expone servicios, que es la
+     rama contraria a la de `tlaminaedu`. Sin ella, «con barras no es un
+     vacío» pasaría igual el día que alguien quitara el ternario y la caja
+     saliera siempre como una caja normal —con su pie de método afirmando una
+     fórmula sobre una cifra que no tiene—. Es la mentira contraria, y esta es
+     la mitad que la guarda. */
+  const SIN_SERVICIOS = E.CAMPOS_DANE.filter(function (c) {
+    return !/ACUEDUCTO|ALCANTARILLADO|ENERGIA|GAS/.test(c.name); });
+  await E.rutaDane(ctx, { camposDane: SIN_SERVICIOS });
   await ctx.route(/elevation/, r => { const u = new URL(r.request().url());
     const lngs = (u.searchParams.get('locations') || '').split('|');
     r.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ elevation: lngs.map(cotaDe) }) }); });
@@ -464,6 +472,45 @@ const cotaDe = ln => 300 + Math.round(30 * Math.sin(ln * 800));
      dejaría pasar un «SIN MEDIR» puesto en todas partes, que sería la
      mentira contraria y la que la v875 ya rechazó una vez. */
   console.log('\n  -- §1 · la casilla que no se pudo medir no lleva cifra --');
+  /* ── SERVICIOS PÚBLICOS SIN CAPA QUE CONTESTE (v953) ────────────────────
+     La rama contraria a la de `tlaminaedu`. Se corta la caja del papel: desde
+     la `<section>` que la abre hasta la siguiente, porque la CLASE va antes
+     del `<h2>` y anclando en el título se pierde justo lo que se quiere
+     medir. */
+  const cajaServicios = (h) => {
+    const t = String(h || '');
+    const i = t.indexOf('>Servicios públicos<');
+    if (i < 0) return null;
+    const ini = t.lastIndexOf('<section', i);
+    if (ini < 0) return null;
+    const fin = t.indexOf('<section', ini + 8);
+    return t.slice(ini, fin < 0 ? t.length : fin);
+  };
+  const CS = cajaServicios(doc);
+  /* MATERIAL primero (v920): esta corrida tiene que traer la caja y su capa
+     tiene que NO exponer servicios. Si alguna de las dos deja de ser cierta,
+     se pone roja ella y lo de abajo no significa nada. */
+  T('MATERIAL · la caja de servicios está en la hoja y su capa no los expone',
+    !!CS && /ninguno corresponde a acueducto|no se pudo preguntar/i.test(CS),
+    CS ? CS.replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').slice(0, 130) : 'no está la caja');
+  if (CS) {
+    /* El detalle enseña lo que de verdad encontró: uno que imprime el texto
+       del fallo aun cuando pasa miente justo cuando hace falta leerlo. */
+    T('sin capa que conteste, la caja SÍ se presenta como un vacío',
+      /class="[^"]*caja-vacio/.test(CS),
+      /class="[^"]*caja-vacio/.test(CS) ? 'ámbar a trazos, como corresponde'
+                                        : 'SIN la clase caja-vacio');
+    /* Y sin pie de método, que es lo correcto acá: `caja()` lo suprime en las
+       `caja-vacio` desde la v880 justamente para no declarar una fórmula
+       sobre una cifra que no se tiene. */
+    T('y entonces no declara un método sobre una cifra que no tiene',
+      !/class="metodo/.test(CS),
+      /class="metodo/.test(CS) ? 'TRAE pie de método sin dato' : 'sin pie de método');
+    T('y declara la ausencia con la lista de campos como prueba (v865)',
+      /declara \d+/.test(CS) || /no se pudo preguntar/i.test(CS),
+      CS.replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').slice(0, 160));
+  }
+
   const paramDe = (h) => {
     const m = /<i class="cv-k">Continuidad del paramento<\/i><b class="cv-v">([^<]*)<\/b><small class="cv-l">([^<]*)<\/small>/
       .exec(String(h || ''));

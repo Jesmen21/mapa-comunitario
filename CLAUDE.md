@@ -7785,6 +7785,11 @@ aspecto y el pie de un panel en las hojas compuestas, así que mueve aserciones 
 lo que se midió, en vez de hecho a ojo de paso: es la decisión de la v903 con las
 cuatro cifras de §10.
 
+**Hecho en la v953**, y la medición destapó que no era una línea sino dos: al
+volverla una caja normal apareció que el panel nunca había tenido entrada en
+`METODO_PANEL` — el `caja-vacio` suprime el pie de método, así que la regla que
+exige que ninguna caja quede sin método no podía morderla.
+
 ## El paramento se camina (v934)
 
 La primera de las seis plantillas de campo de la v883 conectada al almacén. No
@@ -9508,6 +9513,80 @@ línea. Dos suites citaban el texto viejo y se actualizaron —`trespaldo` y
 `tintangible`—; las dos de `tsinsenal` son nombres de aserción, que las lee
 quien corre la batería y no un ciudadano en su teléfono, así que quedan fuera
 del alcance declarado desde la v878.
+
+## Una caja con barras no es una caja vacía (v953)
+
+Lo que la v933 dejó escrito al medir y no tocó, con su razón: *«la caja de
+servicios públicos cierra con `'g3 caja-vacio'` **sin condición**, mientras su
+comentario dice que “sigue siendo una caja ámbar mientras la capa no
+conteste”… El arreglo es una línea pero cambia el aspecto y el pie de un panel
+en las hojas compuestas, así que mueve aserciones y pide su propia medición.»*
+
+Esa medición es esta tanda, y destapó que no era una línea sino dos.
+
+### Dos afirmaciones falsas sobre un dato medido
+
+Medido sobre el papel compuesto, con el doble del censo contestando sus cuatro
+campos de servicios:
+
+```
+v952   caja-vacio: true   ·  4 barras impresas  ·  pie de método: NO
+v953   caja-vacio: false  ·  4 barras impresas  ·  pie de método: sí
+```
+
+Las barras salían **dentro de una caja ámbar a trazos** —que en toda esta hoja
+significa «esto no lo tenemos» (v849)— y **sin su pie de método**, porque
+`caja()` lo suprime en las `caja-vacio` desde la v880. Dos afirmaciones falsas
+sobre un dato que sí está medido, que es la clase de la v861.
+
+La clase se decide AFUERA del cuerpo, que es la costura que la v903 dejó
+puesta: `caja(titulo, cuerpo, clase)` recibe la clase como tercer argumento y
+desde dentro del cuerpo no se puede pedir.
+
+### Y el panel nunca había tenido método, escondido por su propia clase
+
+Al volverlo una caja normal apareció que **`METODO_PANEL` no tiene entrada para
+«Servicios públicos»**, así que habría impreso «método no descrito todavía» en
+rojo.
+
+No es un descuido de quien lo escribió: la caja iba siempre con `caja-vacio`,
+que suprime el pie, así que la regla de la v848 —ninguna caja sin su método
+declarado, y `tlaminaedu` la persigue— **no podía morderla**. La aserción mira
+las cajas que TIENEN pie de método, y esta no tenía ninguno.
+
+Es el patrón que este proyecto lleva persiguiendo desde la v878: **una guarda
+que no puede fallar es un verde**, y acá el que la desarmaba era el propio
+panel vigilado.
+
+La entrada se escribió con lo que el panel ya declara y nada más. La
+referencia es la caja de al lado —«la presencia de infraestructura de
+OpenStreetMap, que es presencia y no cobertura»—, que es exactamente lo que
+«Infraestructura de servicios» declara de vuelta sobre esta. Inventar una cifra
+nacional de cobertura para llenar ese campo habría sido lo que la v863
+prohíbe.
+
+### Las dos ramas, en dos suites
+
+* **`tlaminaedu`** · el doble del censo expone los cuatro campos de servicios
+  desde la v880, así que la caja se llena: ahí se mide que **no** se presenta
+  como un vacío y que sí trae su método.
+* **`tsinmapear`** · su capa pasa a NO exponerlos —`camposDane` filtrado, que
+  es el caso que el panel existe para declarar—: ahí se mide que **sí** es un
+  vacío, que no declara un método sobre una cifra que no tiene, y que nombra la
+  lista de campos como prueba (v865).
+
+La segunda es la que de verdad guarda: sin ella, quitar el ternario y dejar la
+caja siempre normal pasaría en verde, y el panel declararía una fórmula sobre
+una cifra que no existe. Es la mentira contraria.
+
+Las dos con su guarda de MATERIAL primero (v920).
+
+### Demostrado contra la v952
+
+Devolviendo solo el `caja-vacio` incondicional: dos en rojo con el estado viejo
+impreso —«sigue en caja-vacio con 4 barras» y «método false»—. `tsinmapear`
+sigue en verde, que es lo que tenía que hacer: es la guarda contra pasarse de
+corregir, no una afirmación nueva.
 
 ## La lista viva: lo que al pliego educativo todavía le falta (v866)
 

@@ -326,6 +326,16 @@ usos.push({ type: 'node', id: 3002, lat: C.lat - 0.0025, lon: C.lng + 0.002,
             ? document.querySelector('.caja-campo').closest('.banda') : null;
           return b ? ((b.querySelector('.b-cierre') || {}).textContent || '') : '';
         })(),
+        /* v953 · la caja de servicios públicos, con su clase. Hasta la
+           v952 iba SIEMPRE `caja-vacio`, así que con la capa del censo
+           contestando sus barras salían dentro de una caja ámbar a
+           trazos y sin pie de método. */
+        serv: [...document.querySelectorAll('.caja')]
+          .filter(c => /Servicios p/.test((c.querySelector('h2') || {}).textContent || ''))
+          .map(c => ({ vacio: c.classList.contains('caja-vacio'),
+                       barras: c.querySelectorAll('.b').length,
+                       metodo: !!c.querySelector('.metodo'),
+                       generico: /no descrito/.test(c.textContent || '') })),
         campo: [...document.querySelectorAll('.caja-campo')].map(c => ({
           t: (c.querySelector('h2') || {}).textContent || '?', alto: mm(rect(c).height),
           casillas: c.querySelectorAll('.cf').length, renglones: !!c.querySelector('.renglones'),
@@ -670,6 +680,25 @@ usos.push({ type: 'node', id: 3002, lat: C.lat - 0.0025, lon: C.lng + 0.002,
   T('y es el primero de la fila el que lo trae',
     decal.length >= 2 && conMet(decal[0]),
     decal.map(m => m.t + (conMet(m) ? '✓' : '')).join(' · ').slice(0, 140));
+  /* ── SERVICIOS PÚBLICOS, CON LA CAPA CONTESTANDO (v953) ─────────────────
+     La guarda de MATERIAL va primero (v920): el doble del censo de esta
+     batería expone cuatro campos de servicios desde la v880, así que la caja
+     tiene con qué llenarse. Sin eso, las dos de abajo pasarían por no tener
+     nada que rechazar. */
+  const SV = (VC.serv || [])[0] || null;
+  T('MATERIAL · la capa del censo contesta los servicios y la caja los pinta',
+    !!SV && SV.barras >= 3, SV ? SV.barras + ' barras' : 'no hay caja de servicios');
+  if (SV) {
+    /* Dos afirmaciones falsas sobre un dato medido, que es la clase de la
+       v861: el ámbar a trazos significa «esto no lo tenemos» en toda la hoja,
+       y `caja()` suprime el pie de método en las `caja-vacio` desde la v880. */
+    T('y con las barras impresas NO se presenta como un vacío',
+      SV.vacio === false, SV.vacio ? 'sigue en caja-vacio con ' + SV.barras + ' barras' : 'caja normal');
+    T('y entonces sí trae su método declarado, que nunca había tenido',
+      SV.metodo === true && SV.generico === false,
+      'método ' + SV.metodo + ' · genérico ' + SV.generico);
+  }
+
   const genericos = (VC.metodos || []).filter(m => !m.cal && /método no descrito todavía/.test(m.texto));
   T('y ninguno con el aviso genérico: cada uno tiene su fórmula y su fuente escritas',
     genericos.length === 0, genericos.map(m => m.t).join(' · ') || 'todos descritos');
