@@ -13326,6 +13326,10 @@ function donaHTML(datos, colorDe, nombreDe) {
         pintar(); return;
       }
       if (acc === 'act-guardar' || acc === 'act-borrar') {
+        /* Lo tecleado se guarda ANTES de validar nada: si esto sale por un
+           rechazo, `pintar()` lo repone y la persona corrige el renglón que
+           falla en vez de escribir las ocho filas otra vez (v954). */
+        ponerBorrador('act', tomarBorrador('act'));
         var llA = llaveDeSector(S.resultado && S.resultado.meta);
         var soltarPost = function () {
           /* La corrida post vieja se suelta: se calculó sin este dato, y
@@ -13395,10 +13399,15 @@ function donaHTML(datos, colorDe, nombreDe) {
           ? 'Quedó anotado. El paramento de la cuadra ya sale medido en campo, y este sector ' +
             'tiene análisis post-sector.'
           : rA.error;
+        if (rA.ok) { ponerBorrador('act', null); }
         if (rA.ok) soltarPost();
         pintar(); return;
       }
       if (acc === 'pvl-guardar' || acc === 'pvl-borrar') {
+        /* Lo tecleado se guarda ANTES de validar nada: si esto sale por un
+           rechazo, `pintar()` lo repone y la persona corrige el renglón que
+           falla en vez de escribir las ocho filas otra vez (v954). */
+        ponerBorrador('pvl', tomarBorrador('pvl'));
         var llP = llaveDeSector(S.resultado && S.resultado.meta);
         var soltarPostP = function () {
           /* La corrida post vieja se suelta: se calculó sin este dato (v897). */
@@ -13466,10 +13475,15 @@ function donaHTML(datos, colorDe, nombreDe) {
           ? 'Quedó anotado. El perfil de la calle sale medido en campo, y este sector tiene ' +
             'análisis post-sector.'
           : rP.error;
+        if (rP.ok) { ponerBorrador('pvl', null); }
         if (rP.ok) soltarPostP();
         pintar(); return;
       }
       if (acc === 'rut-guardar' || acc === 'rut-borrar') {
+        /* Lo tecleado se guarda ANTES de validar nada: si esto sale por un
+           rechazo, `pintar()` lo repone y la persona corrige el renglón que
+           falla en vez de escribir las ocho filas otra vez (v954). */
+        ponerBorrador('rut', tomarBorrador('rut'));
         var llR = llaveDeSector(S.resultado && S.resultado.meta);
         var soltarPostR = function () {
           /* La corrida post vieja se suelta: se calculó sin este dato (v897). */
@@ -13533,10 +13547,15 @@ function donaHTML(datos, colorDe, nombreDe) {
           ? 'Quedó anotado. Las rutas salen con cada cuánto pasan, observado en la parada, y este ' +
             'sector tiene análisis post-sector.'
           : rR.error;
+        if (rR.ok) { ponerBorrador('rut', null); }
         if (rR.ok) soltarPostR();
         pintar(); return;
       }
       if (acc === 'and-guardar' || acc === 'and-borrar') {
+        /* Lo tecleado se guarda ANTES de validar nada: si esto sale por un
+           rechazo, `pintar()` lo repone y la persona corrige el renglón que
+           falla en vez de escribir las ocho filas otra vez (v954). */
+        ponerBorrador('and', tomarBorrador('and'));
         var llAn = llaveDeSector(S.resultado && S.resultado.meta);
         var soltarPostAn = function () {
           /* La corrida post vieja se suelta: se calculó sin este dato (v897). */
@@ -13600,6 +13619,7 @@ function donaHTML(datos, colorDe, nombreDe) {
           ? 'Quedó anotado. El andén sale con su ancho libre caminado, y este sector tiene ' +
             'análisis post-sector.'
           : rAn.error;
+        if (rAn.ok) { ponerBorrador('and', null); }
         if (rAn.ok) soltarPostAn();
         pintar(); return;
       }
@@ -13639,6 +13659,10 @@ function donaHTML(datos, colorDe, nombreDe) {
         pintar(); return;
       }
       if (acc === 'cup-guardar' || acc === 'cup-borrar') {
+        /* Lo tecleado se guarda ANTES de validar nada: si esto sale por un
+           rechazo, `pintar()` lo repone y la persona corrige el renglón que
+           falla en vez de escribir las ocho filas otra vez (v954). */
+        ponerBorrador('cup', tomarBorrador('cup'));
         var llCu = llaveDeSector(S.resultado && S.resultado.meta);
         var soltarPostCu = function () {
           if (S.corridas) { S.corridas.post = null;
@@ -13693,6 +13717,7 @@ function donaHTML(datos, colorDe, nombreDe) {
           ? 'Quedó anotado. La hoja dice ahora quién llega caminando Y cuántos puestos hay, que ' +
             'son dos preguntas; y este sector tiene análisis post-sector.'
           : rCu.error;
+        if (rCu.ok) { ponerBorrador('cup', null); }
         if (rCu.ok) soltarPostCu();
         pintar(); return;
       }
@@ -14197,6 +14222,9 @@ function donaHTML(datos, colorDe, nombreDe) {
     // canvas que no está.
     if (S.resultado && !S.comparacion && !encoger) pintarGrafica(S.resultado);
     else if (grafica) { try { grafica.destroy(); } catch (e) {} grafica = null; }
+    /* Y lo último: lo que quedó a medio teclear en una puerta de campo vuelve
+       a su sitio (v954). Va al final porque necesita el DOM ya puesto. */
+    reponerBorrador();
   }
 
   function htmlEncogidaCalor() {
@@ -26909,6 +26937,70 @@ function donaHTML(datos, colorDe, nombreDe) {
      que es el error que `ESCALA_PANEL` existe para impedir (v854). Con una
      sola fila no hay que marcar nada; con varias, sí, y si nadie marcó la
      casilla NO se calcula y lo dice. */
+  /* ── EL BORRADOR DE UNA PUERTA (v954) ────────────────────────────────
+     Las cinco puertas de plantilla perdían lo tecleado al rechazar: el
+     manejador pone el aviso y llama a `pintar()`, que rehace el formulario
+     desde lo GUARDADO — y en un rechazo no hay nada guardado. Quien tecleó
+     ocho filas y se equivocó en una hora las perdía todas. Está declarado
+     desde la v940 y medido otra vez en la v951.
+
+     El borrador se toma del DOM y se REPONE después del repintado, sin tocar
+     ni el render ni el camino de guardado: son los dos sitios donde un error
+     cuesta datos de campo, y acá no hacía falta entrar en ninguno.
+
+     Se guarda lo que la persona ESCRIBIÓ, tal cual, no lo que el manejador
+     consiguió parsear: el renglón que hay que devolverle es justamente el que
+     dice «ancho normal» donde va un número, y el parseo ya lo descartó.
+
+     Y vive en `S`, NO en el almacén. Lo tecleado que no pasó la validación no
+     es un dato de campo —no tiene procedencia y no pasó por
+     `guardarEntradaCampo`—, así que meterlo ahí lo haría contar para
+     post-sector: es la separación de la v946 entre lo que se guarda y lo que
+     recalcula, dicha para un formulario a medio llenar. Se pierde al recargar
+     la página, y eso es lo correcto: un borrador que sobreviviera a la
+     recarga sería un dato guardado sin decirlo. */
+  function tomarBorrador(pref) {
+    var m = {};
+    try {
+      document.querySelectorAll('[data-pcr-' + pref + ']').forEach(function (el) {
+        var k = el.getAttribute('data-pcr-' + pref);
+        var i = el.getAttribute('data-i');
+        var sel = '[data-pcr-' + pref + '="' + k + '"]' +
+                  (i === null ? '' : '[data-i="' + i + '"]');
+        m[sel] = (el.type === 'radio' || el.type === 'checkbox') ? !!el.checked
+                                                                : String(el.value || '');
+      });
+    } catch (e) { return null; }
+    return Object.keys(m).length ? m : null;
+  }
+  /* Lo repone `pintar()` al final, una sola vez y para las cinco puertas. Si
+     la puerta no está en pantalla ningún selector casa y no pasa nada, así
+     que no hace falta saber en qué pestaña estamos. */
+  function reponerBorrador() {
+    var todos = S.borradorCampo;
+    if (!todos) return;
+    try {
+      Object.keys(todos).forEach(function (pref) {
+        var m = todos[pref] || {};
+        Object.keys(m).forEach(function (sel) {
+          var el = document.querySelector(sel);
+          if (!el) return;
+          if (el.type === 'radio' || el.type === 'checkbox') el.checked = !!m[sel];
+          else el.value = String(m[sel]);
+        });
+      });
+    } catch (e) {}
+  }
+  /* Uno por PUERTA y no uno solo: quien rechaza en el perfil, se va a las
+     rutas y rechaza ahí también, perdería el primero con un borrador único —
+     y los dos son suyos. Los selectores llevan el prefijo de su puerta, así
+     que no pueden pisarse. */
+  function ponerBorrador(pref, m) {
+    if (!S.borradorCampo) S.borradorCampo = {};
+    if (m) S.borradorCampo[pref] = m;
+    else delete S.borradorCampo[pref];
+  }
+
   function htmlPuertaActividad(llave) {
     var act = actividadDeCampo(llave);
     var ya = act.estado === 'ok' || act.estado === 'sin-marcar' || act.estado === 'sin-filas';
@@ -30816,6 +30908,10 @@ function donaHTML(datos, colorDe, nombreDe) {
      cambiar el encuadre del mismo sitio: una sola función para los dos, que
      antes eran dos listas copiadas que se iban separando. */
   function soltarElAnalisis() {
+    /* El borrador es de ESTE sector: sin soltarlo, el formulario del sector
+       siguiente nacería con lo que alguien tecleó en otro barrio — el mismo
+       error que la v897 evitó con el acuse de guardado. */
+    S.borradorCampo = null;
     S.trzParcial = null;
     S.resultado = null; S.trazado = null; S.terreno = null; S.terRejilla = null; S.curvas = null;
     S.cobertura = null; S.cobEnMapa = false; S.calor = []; S.encogida = false;

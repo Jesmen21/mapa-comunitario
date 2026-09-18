@@ -443,6 +443,16 @@ const CAPAS_IDEAM = [
     await guardarRut();
     o.rechazoMalHora = ((R.estado() || {}).rutas || {}).estadoCampo;
     o.avisoMalHora = String((R.estado() || {}).aviso || '');
+    /* v954 · lo tecleado sigue ahí después del rechazo. Se lee del DOM y no de
+       una variable: lo que hay que comprobar es lo que la persona encuentra en
+       pantalla cuando va a corregir el renglón que falla. */
+    o.trasRechazo = (function () {
+      const v = (k, i) => {
+        const el = document.querySelector('[data-pcr-rut="' + k + '"][data-i="' + i + '"]');
+        return el ? String(el.value || '') : null;
+      };
+      return { ref: v('ref', 0), parada: v('parada', 0), p1: v('p1', 0) };
+    })();
 
     // 2 · Horas al revés: es OTRO error y nombra la medianoche.
     rut('p1', 0, '07:20'); rut('p2', 0, '06:40');
@@ -451,10 +461,9 @@ const CAPAS_IDEAM = [
     o.avisoAlReves = String((R.estado() || {}).aviso || '');
 
     /* 3 · Dos rutas observadas: una con tres pasos, otra con uno solo.
-       El letrero y la parada se vuelven a escribir, y NO es un descuido de la
-       prueba: un rechazo repinta la hoja y el formulario vuelve vacío, así que
-       es literalmente lo que le toca hacer a una persona. El defecto está
-       medido y declarado en la bitácora — es de las tres puertas, no de esta. */
+       El letrero y la parada se vuelven a escribir por si acaso, y desde la
+       v954 ya no hace falta: lo tecleado sobrevive al rechazo. La aserción que
+       lo mide está arriba, justo después del primer rechazo. */
     rut('ref', 0, 'A-12'); rut('parada', 0, 'Calle 10 con carrera 5');
     rut('p1', 0, '06:40'); rut('p2', 0, '06:57'); rut('p3', 0, '07:14');
     rut('ref', 1, 'B-3'); rut('parada', 1, 'Calle 10 con carrera 5');
@@ -812,6 +821,20 @@ const CAPAS_IDEAM = [
     RC.n === 2 && RC.nuevasDeCampo === 2 &&
     (RC.lista || []).every(x => x.origen === 'solo-campo'),
     RC.n + ' rutas · ' + RC.nuevasDeCampo + ' solo de campo');
+
+  /* ── EL BORRADOR DE UNA PUERTA (v954) ──────────────────────────────────
+     Hasta la v953 un rechazo repintaba la hoja y el formulario volvía vacío:
+     quien tecleó ocho filas y se equivocó en una hora las perdía todas. Es el
+     defecto que la v940 dejó declarado y la v951 volvió a medir. */
+  const TR = r.trasRechazo || {};
+  T('lo tecleado sigue en el formulario después de un rechazo',
+    TR.ref === 'A-12' && TR.parada === 'Calle 10 con carrera 5' && TR.p1 === 'temprano',
+    JSON.stringify(TR));
+  /* Y la hora MALA vuelve tal cual, que es la mitad que de verdad sirve: lo
+     que hay que devolverle a la persona es el renglón que tiene que corregir,
+     no uno en blanco donde estaba. */
+  T('y la hora que no es una hora vuelve tal cual, para poder corregirla',
+    TR.p1 === 'temprano', 'el paso 1 volvió como «' + TR.p1 + '»');
 
   const ER = (r.entradaRutas || [])[0] || {};
   T('la entrada guarda su procedencia: quién observó y qué día',

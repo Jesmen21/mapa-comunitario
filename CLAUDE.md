@@ -9588,6 +9588,94 @@ impreso —«sigue en caja-vacio con 4 barras» y «método false»—. `tsinmap
 sigue en verde, que es lo que tenía que hacer: es la guarda contra pasarse de
 corregir, no una afirmación nueva.
 
+## Un rechazo ya no se lleva lo tecleado (v954)
+
+El defecto que la v940 dejó declarado y la v951 volvió a medir: **las cinco
+puertas de plantilla perdían lo escrito al rechazar.** El manejador pone el
+aviso y llama a `pintar()`, que rehace el formulario desde lo GUARDADO — y en
+un rechazo no hay nada guardado. Quien tecleó ocho filas y se equivocó en una
+hora las perdía todas.
+
+La propia suite lo tenía escrito como método: *«El letrero y la parada se
+vuelven a escribir, y NO es un descuido de la prueba: es literalmente lo que le
+toca hacer a una persona.»*
+
+### Se toma del DOM y se repone después, sin entrar a los dos sitios caros
+
+El arreglo no toca **ni el render ni el camino de guardado**, que son los dos
+sitios donde un error cuesta datos de campo. `tomarBorrador(pref)` fotografía
+los valores por selector antes de validar; `pintar()` los repone al final, una
+vez y para las cinco puertas. Si la puerta no está en pantalla ningún selector
+casa y no pasa nada.
+
+Tres decisiones, cada una con su precedente:
+
+* **Se guarda lo que la persona ESCRIBIÓ, no lo que el manejador parseó.** El
+  renglón que hay que devolverle es justamente el que dice «ancho normal»
+  donde va un número, y el parseo ya lo había descartado. Medido: el paso 1
+  vuelve como «temprano», que es lo que se va a corregir.
+* **Vive en `S`, NO en el almacén.** Lo tecleado que no pasó la validación no
+  es un dato de campo —no tiene procedencia y no pasó por
+  `guardarEntradaCampo`—, así que meterlo ahí lo haría contar para
+  post-sector. Es la separación de la v946 entre lo que se guarda y lo que
+  recalcula, dicha para un formulario a medio llenar. Se pierde al recargar la
+  página, y eso es lo correcto: un borrador que sobreviviera a la recarga
+  sería un dato guardado sin decirlo.
+* **Uno por PUERTA y no uno solo.** Quien rechaza en el perfil, se va a las
+  rutas y rechaza ahí también, perdería el primero con un borrador único — y
+  los dos son suyos. Los selectores llevan el prefijo de su puerta, así que no
+  pueden pisarse.
+
+Y se suelta con el análisis: sin eso, el formulario del sector siguiente
+nacería con lo que alguien tecleó en otro barrio, que es el error que la v897
+evitó con el acuse de guardado.
+
+### En las cinco, y por la razón de siempre
+
+Arreglarlo en una sola habría dejado cinco puertas con dos comportamientos,
+que es exactamente lo que la v940 declinó hacer y por lo que lo dejó
+declarado.
+
+La guarda de `revisar.js` falla CERRADO: una puerta nueva que no tome el
+borrador pierde datos en silencio. Y lleva su guarda de la guarda —que
+`pintar()` siga reponiéndolo—, porque sin ella las cinco seguirían tomándolo
+y todo quedaría en verde sobre un borrador que nadie devuelve a la pantalla.
+
+### Y una prueba que se apoyaba en el defecto
+
+`tsinmapear` se puso roja en cuatro aserciones, y no era una regresión: su
+paso (d) escribía UNA cuadra encima de las dos que el paso anterior había
+dejado rechazadas, y contaba con que el repintado hubiera vaciado la segunda.
+Con el formulario acordándose, guardaba dos cuadras sin marcar ninguna y el
+paramento salía SIN MEDIR.
+
+**La prueba tenía razón en lo que medía y estaba apoyada en el fallo para
+llegar ahí.** Ahora borra la segunda fila a mano, que es lo que hace una
+persona que decide quedarse con una sola — la otra salida, igual de real, es
+marcar cuál es la del lote, y esa la ejercita el paso (e) desde la v951.
+
+Vale anotarlo porque es la forma en que un defecto viejo se defiende: cuando
+algo lleva versiones roto, hay pruebas escritas alrededor de lo roto, y al
+arreglarlo se ponen rojas sin que nada esté mal.
+
+### Lo que esto NO arregla, y sigue declarado
+
+**Una plantilla ya guardada sigue sin poderse ampliar.** Con la entrada en
+estado «ok» la puerta muestra el resumen y el botón de quitar, sin
+formulario, así que para anotar una cuadra más hay que quitar lo anotado y
+volver a escribir todo. El borrador no lo alcanza: no hay campos en pantalla
+que fotografiar.
+
+Es el otro síntoma del mismo hecho —el formulario no tiene memoria— y pide
+otra cosa: que la puerta sepa volver a abrir el formulario **con lo guardado
+dentro**, que toca los cinco renders. Queda medido, como lo dejó la v951.
+
+### Demostrado contra la v953
+
+Quitando solo el `reponerBorrador()` del final de `pintar()`: dos en rojo con
+el estado viejo impreso —`{"ref":"","parada":"","p1":""}`— sobre un formulario
+en el que se acababan de escribir las tres cosas.
+
 ## La lista viva: lo que al pliego educativo todavía le falta (v866)
 
 Esta lista se quedó vieja **cinco veces**. Cuatro dentro de la hoja —la

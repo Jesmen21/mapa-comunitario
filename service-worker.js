@@ -1,4 +1,4 @@
-const URBIS_CACHE = 'urbis-v953-una-caja-con-barras-no-es-una-caja-vacia';
+const URBIS_CACHE = 'urbis-v954-un-rechazo-no-se-lleva-lo-tecleado';
 const URBIS_ASSETS = [
   './',
   './index.html',

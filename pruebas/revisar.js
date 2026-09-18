@@ -1991,6 +1991,32 @@ console.log('\n  -- un nombre, una cosa --');
     miraFila ? 'lee f.quien y cae en el de la entrada'
              : (cuerpoQ ? 'quienesDeFilas NO lee f.quien: la regla no mordería'
                         : 'NO se encontró quienesDeFilas'));
+
+  /* ── EL BORRADOR DE UNA PUERTA (v954) ──────────────────────────────────
+     Las cinco puertas de plantilla toman lo tecleado antes de validar nada,
+     para que un rechazo no se lo lleve. Falla CERRADO: una puerta nueva que
+     no lo tome pierde datos de campo en silencio, que es el fallo que la v940
+     dejó declarado y la v951 volvió a medir. */
+  const PREFIJOS = ['act', 'pvl', 'rut', 'and', 'cup'];
+  const sinBorrador = PREFIJOS.filter(function (x) {
+    return src.indexOf("ponerBorrador('" + x + "', tomarBorrador('" + x + "'))") === -1;
+  });
+  comprobar('las cinco puertas guardan lo tecleado antes de validar',
+    sinBorrador.length === 0,
+    sinBorrador.length
+      ? sinBorrador.join(', ') + ' no toma el borrador: un rechazo se lleva lo escrito'
+      : PREFIJOS.length + ' puertas, todas por tomarBorrador');
+
+  /* Y la guarda de la guarda: si `pintar()` dejara de reponerlo, las cinco
+     seguirían tomándolo y la de arriba seguiría en verde sobre un borrador
+     que nadie devuelve a la pantalla (v878). */
+  const cuerpoPintar = (src.match(/\n  function pintar\(\)[^]*?\n  \}/) || [''])[0];
+  const repone = /reponerBorrador\(\)/.test(cuerpoPintar);
+  comprobar('y pintar() sigue reponiéndolo en la pantalla',
+    repone,
+    repone ? 'pintar lo repone al final'
+           : (cuerpoPintar ? 'pintar NO llama a reponerBorrador: la regla no mordería'
+                           : 'NO se encontró pintar()'));
 }
 
   comprobar('ningún nombre de window es función en un archivo y lista en otro',

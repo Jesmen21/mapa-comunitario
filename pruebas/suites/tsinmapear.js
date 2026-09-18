@@ -283,7 +283,16 @@ const cotaDe = ln => 300 + Math.round(30 * Math.sin(ln * 800));
 
     /* (d) Ahora bien: una cuadra, sus dos medidas, quién y un rango de dos
            días —que es lo que pasa cuando ocho cuadras no caben en una
-           tarde—. El precedente del rango es de los edificios de campo. */
+           tarde—. El precedente del rango es de los edificios de campo.
+
+           La segunda cuadra hay que BORRARLA a mano, y no es un rodeo de la
+           prueba: desde la v954 un rechazo ya no se lleva lo tecleado, así
+           que la fila que (c-bis) escribió sigue ahí. Es exactamente lo que
+           hace una persona que decide quedarse con una sola —la otra opción,
+           igual de real, es marcar cuál es la del lote, y esa la ejercita el
+           paso (e)—. Hasta la v953 este paso se apoyaba en que el formulario
+           volviera vacío, que era el defecto. */
+    ponAct('cuadra', 1, ''); ponAct('total', 1, ''); ponAct('activo', 1, '');
     ponAct('cuadra', 0, 'Calle de arriba, lado sur');
     ponAct('total', 0, '80'); ponAct('activo', 0, '34');
     ponAct('quien', null, 'Ana Ruiz');
