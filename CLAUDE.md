@@ -9275,6 +9275,29 @@ ruta de cálculo de la v879 — que ya se cobró en la v939, con un
 `llaveDeSector()` sin argumento que devolvía cadena vacía y no lo decía: el
 almacén simplemente no encontraba nada, y la puerta parecía guardar.
 
+## El nombre de una versión dice lo que hizo (v948)
+
+Corrección de la tanda anterior, y de las baratas que conviene no dejar pasar.
+
+La v947 se publicó con el token `947-la-caja-llena-imprime-lo-anotado` — el
+nombre con el que se empezó a trabajar— y esa versión hace exactamente lo
+contrario: **midió lo que costaba imprimirlo y decidió no publicarlo.** El
+nombre se quedó del plan y no del resultado.
+
+Es la clase que este repositorio persigue desde la v926: **un rótulo que
+afirma una propiedad que el código no tiene**, y que se lee como si la
+tuviera. Acá con dos lectores: la sesión siguiente, que lee los tokens para
+saber qué se hizo, y el caché de un teléfono, que los usa como llave.
+
+Y no se arregla renombrando dentro del mismo número: `revisar.js` lo rechaza
+con razón —«origin/main ya va en 947-…»— porque esa versión ya está en la
+calle. Se sube por encima, nunca bajando la propia, que es la regla del 7 de
+septiembre.
+
+**La lección para la próxima:** el token se escribe cuando la tanda cierra, no
+cuando empieza. Una tanda cuyo resultado es una medición y una decisión de no
+hacer necesita un nombre que diga eso.
+
 ## La lista viva: lo que al pliego educativo todavía le falta (v866)
 
 Esta lista se quedó vieja **cinco veces**. Cuatro dentro de la hoja —la
