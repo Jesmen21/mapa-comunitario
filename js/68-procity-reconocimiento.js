@@ -23980,7 +23980,7 @@ function donaHTML(datos, colorDe, nombreDe) {
        después, y el que se escribe último gana. Es el mismo enredo que
        tapaba el aviso de que no había espacio, y la misma solución: cada
        cosa dice lo suyo en su sitio. */
-    S.intAviso = 'Se recuperó el trazo que estabas dibujando: ' + d.pts.length +
+    S.intAviso = 'Se recuperó el trazo que estaba dibujando: ' + d.pts.length +
       (d.pts.length === 1 ? ' esquina' : ' esquinas') + '.';
     pintarIntangible(true); pintarBarraInt();
     return true;
@@ -26644,7 +26644,7 @@ function donaHTML(datos, colorDe, nombreDe) {
     if (!ms.length) {
       return cab +
         '<p class="pcr-pista">Todo lo que hay más arriba se bajó de algún lado. Esto no: <b>solo lo ' +
-        'tiene quien caminó</b>. Dónde no pasarías de noche, qué esquina queda a oscuras, dónde ' +
+        'tiene quien caminó</b>. Dónde no pasaría de noche, qué esquina queda a oscuras, dónde ' +
         'huele mal, dónde se quedaría un rato. Nada de eso está en ningún mapa, y es la mitad de ' +
         'lo que decide un proyecto.</p>' +
         (guardada ? '<p class="pcr-pista">Esta ficha se guardó sin marcas.</p>' : lapices) +
@@ -31069,8 +31069,8 @@ function donaHTML(datos, colorDe, nombreDe) {
         (reciente.total || 0) + ' usos' + (med.length ? ', con ' + esc(med.join(', ')) : '') +
         '</small></span>' + asaPlegar();
       el.setAttribute('aria-label', S.volverPlegado
-        ? 'Abrir el aviso del sector que estabas analizando'
-        : 'Seguir con el sector que estabas analizando');
+        ? 'Abrir el aviso del sector que estaba analizando'
+        : 'Seguir con el sector que estaba analizando');
       return;
     }
     var st = (S.resultado.stats) || {};

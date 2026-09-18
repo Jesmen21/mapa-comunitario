@@ -35,7 +35,7 @@
   var TIPOS = [
     { id: 'inseguro', nombre: 'No me sentiría seguro', geom: 'zona',
       color: '#E23D3D', ico: '⚠',
-      pregunta: '¿Por dónde no pasarías de noche, o no pasarías sola?',
+      pregunta: '¿Por dónde no pasaría de noche, o no pasaría sola?',
       porQue: 'La inseguridad que se mide es la denunciada. Esta es la otra: ' +
               'la que cambia por dónde camina la gente aunque nunca haya pasado nada.' },
     { id: 'oscuro', nombre: 'De noche no hay luz', geom: 'zona',

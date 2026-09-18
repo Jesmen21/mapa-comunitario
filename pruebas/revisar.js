@@ -1566,6 +1566,31 @@ console.log('\n  -- el FODA del curso --');
     'desajuste', 'reajuste', 'contraste', 'desgaste', 'gaste', 'guste', 'liste', 'conteste',
     'existe', 'consiste', 'asiste', 'insiste', 'persiste', 'resiste', 'subsiste', 'desiste',
     'preste', 'reste', 'baste', 'aste', 'peste', 'agreste', 'hueste', 'este.', 'waste'];
+  /* Lo que termina en -ías y NO es un condicional ni un imperfecto de tú. Es
+     la lista más larga de las cuatro y a propósito: esta aplicación habla de
+     VÍAS, de DÍAS, de CATEGORÍAS y de una docena de comercios en -ería. El
+     canje se dice entero: un tipo de comercio nuevo —una cerrajería, una
+     licorería— cuesta un renglón acá y se ve en rojo hasta que alguien lo
+     agregue. Es el mismo contrato de la v880, y se paga porque la otra mitad
+     —fallar abierto— es la que dejó pasar «pasarías» durante cincuenta
+     versiones.
+
+     Y NO hay regla de forma que las separe. El condicional es el infinitivo
+     más -ías, así que su raíz acaba en -ar, -er o -ir… y «panadería» acaba en
+     «er» igual que «comer». Es exactamente la regla que la v880 probó y
+     descartó para el futuro en -á, vista por el otro lado. */
+  const NO_ES_CONDICIONAL = ['vías', 'días', 'categorías', 'energías', 'alcaldías',
+    'curadurías', 'notarías', 'droguerías', 'panaderías', 'cafeterías', 'cirugías',
+    'acacías', 'policías', 'compañías', 'jerarquías', 'tecnologías', 'garantías',
+    'secretarías', 'veedurías', 'contralorías', 'anomalías', 'fotografías', 'geografías',
+    'topografías', 'cartografías', 'mensajerías', 'ferreterías', 'papelerías', 'librerías',
+    'peluquerías', 'lavanderías', 'joyerías', 'licorerías', 'cerrajerías',
+    /* `vacías` es de las dos: adjetivo —«cajas vacías»— y presente de tú de
+       vaciar. Acá es siempre el adjetivo, y va listada con esa razón. */
+    'vacías'];
+  /* Lo que termina en -abas y no es un imperfecto de tú. La lista es corta de
+     verdad: en castellano casi nada acaba así. */
+  const NO_ES_IMPERFECTO = ['sílabas', 'habas', 'trabas', 'bravas', 'octavas'];
 
   const arch = fs.readdirSync(R('js')).filter(f => /\.js$/.test(f)).map(f => 'js/' + f)
     .concat(fs.readdirSync(RAIZ).filter(f => /\.html$/.test(f)));
@@ -1615,6 +1640,25 @@ console.log('\n  -- el FODA del curso --');
       if (/[A-ZÁÉÍÓÚÜÑ]/.test(m[0].slice(1))) continue;
       apunta(m.index, m[0].length);
     }
+    /* Y las dos familias que la v952 midió, que son estructurales por la misma
+       razón que `-ste`: en castellano `-ías` y `-abas` no son desinencia de
+       ninguna otra persona. «pasarías» y «estabas» solo pueden ser tú —la
+       primera y la tercera son «pasaría» y «estaba», sin ese -s—. Lo que
+       colisiona no son otras personas sino SUSTANTIVOS, y esos se listan. */
+    [[/[A-Za-zÁÉÍÓÚÜÑáéíóúüñ]+ías(?![A-Za-zÁÉÍÓÚÜÑáéíóúüñ])/g, NO_ES_CONDICIONAL],
+     [/[A-Za-zÁÉÍÓÚÜÑáéíóúüñ]+abas(?![A-Za-zÁÉÍÓÚÜÑáéíóúüñ])/g, NO_ES_IMPERFECTO]]
+      .forEach(function (par) {
+        const re = par[0], permitidas = par[1];
+        let z;
+        while ((z = re.exec(txt))) {
+          if (!cad[z.index]) continue;
+          if (permitidas.some(w => w.toLowerCase() === z[0].toLowerCase())) continue;
+          /* Misma regla de forma que en -ste: una mayúscula DENTRO de la
+             palabra es un identificador y no le habla a nadie. */
+          if (/[A-ZÁÉÍÓÚÜÑ]/.test(z[0].slice(1))) continue;
+          apunta(z.index, z[0].length);
+        }
+      });
   });
 
   /* La guarda se comprueba contra casos de respuesta conocida, y los casos
@@ -1648,12 +1692,36 @@ console.log('\n  -- el FODA del curso --');
       ' · leíste ' + ok('leíste') + ' — no lo es: este ' + ok('este') +
       ' · existe ' + ok('existe') + ' · noreste ' + ok('noreste') +
       ' · urbisProCityGeoAjuste ' + ok('urbisProCityGeoAjuste'));
+
+    /* Y las dos de la v952, contra sus propios casos de respuesta conocida.
+       La de -ías es la que más puede quedarse sin morder, porque su lista de
+       permitidas es la más larga: si alguien metiera ahí un verbo, la regla
+       pasaría a callar justo lo que existe para cazar. */
+    const prueba = (rx, lista) => w => {
+      rx.lastIndex = 0; const x = rx.exec(w);
+      return !!x && !lista.some(z => z.toLowerCase() === x[0].toLowerCase()) &&
+             !/[A-ZÁÉÍÓÚÜÑ]/.test(x[0].slice(1));
+    };
+    const oI = prueba(/[A-Za-zÁÉÍÓÚÜÑáéíóúüñ]+ías(?![A-Za-zÁÉÍÓÚÜÑáéíóúüñ])/g, NO_ES_CONDICIONAL);
+    comprobar('la del condicional en -ías caza el tuteo y deja pasar los sustantivos',
+      oI('pasarías') && oI('tendrías') && oI('sabías') &&
+      !oI('vías') && !oI('días') && !oI('categorías') && !oI('droguerías'),
+      'tuteo: pasarías ' + oI('pasarías') + ' · tendrías ' + oI('tendrías') +
+      ' · sabías ' + oI('sabías') + ' — no lo es: vías ' + oI('vías') +
+      ' · días ' + oI('días') + ' · categorías ' + oI('categorías') +
+      ' · droguerías ' + oI('droguerías'));
+    const oA = prueba(/[A-Za-zÁÉÍÓÚÜÑáéíóúüñ]+abas(?![A-Za-zÁÉÍÓÚÜÑáéíóúüñ])/g, NO_ES_IMPERFECTO);
+    comprobar('la del imperfecto en -abas caza el tuteo y deja pasar los sustantivos',
+      oA('estabas') && oA('mirabas') && !oA('sílabas') && !oA('habas'),
+      'tuteo: estabas ' + oA('estabas') + ' · mirabas ' + oA('mirabas') +
+      ' — no lo es: sílabas ' + oA('sílabas') + ' · habas ' + oA('habas'));
   })();
 
   comprobar('ningún tuteo en el texto que ve el usuario (§9)', tuteos.length === 0,
     tuteos.length ? tuteos.slice(0, 40).join(' · ') + (tuteos.length > 40 ? ' …y ' + (tuteos.length - 40) + ' más' : '')
-                  : 'revisados ' + arch.length + ' archivos; los pronombres, el futuro en -ás y el pretérito ' +
-                    'en -ste son estructurales; el presente y los imperativos NO se pueden separar de la ' +
+                  : 'revisados ' + arch.length + ' archivos; los pronombres, el futuro en -ás, el pretérito ' +
+                    'en -ste, el condicional en -ías y el imperfecto en -abas son estructurales; el ' +
+                    'presente y los imperativos NO se pueden separar de la ' +
                     'tercera persona y esa mitad no la cubre nadie');
 })();
 

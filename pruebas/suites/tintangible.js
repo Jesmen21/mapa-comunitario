@@ -357,7 +357,7 @@ const RECORRIDO=[
     r.tipos.indexOf('oscuro')>=0 && r.tipos.indexOf('inhabitable')>=0,
     (r.tipos||[]).join(' '));
   T('vacío, el bloque no dice «sin datos» sino qué preguntar',
-    /solo lo tiene quien caminó/.test(r.vacio) && /no pasarías de noche/i.test(r.vacio));
+    /solo lo tiene quien caminó/.test(r.vacio) && /no pasaría de noche/i.test(r.vacio));
   T('y ofrece un lápiz por tipo', (r.lapices||[]).length===8, (r.lapices||[]).join(' '));
   T('ninguna marca se quedó sin lápiz', !r.faltaLapiz, (r.faltaLapiz||[]).join(' ')||'ninguna');
   T('la barra de dibujo se retira al terminar', r.barraSeFue===true);

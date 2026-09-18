@@ -9444,6 +9444,71 @@ Y la del paramento se puso roja también por el otro lado —con la lista entera
 «43 % firmado por Marta Peña y Luis Ortega»—, que es la mitad que la asimetría
 de arriba existe para impedir.
 
+## Dos desinencias más que solo pueden ser de tú (v952)
+
+Auditoría por la misma vía que encontró el pretérito en -ste: buscar si queda
+otra familia **estructural** —una desinencia que en castellano no sea de
+ninguna otra persona— sin guarda.
+
+Quedaban dos, y las dos tenían casos vivos en texto impreso:
+
+| Familia | Por qué es estructural | Lo que había |
+|---|---|---|
+| **-ías** · condicional e imperfecto | la primera y la tercera son «pasaría» y «sabía», sin la -s | `pasarías` ×3 |
+| **-abas** · imperfecto | la primera y la tercera son «estaba» | `estabas` ×3 |
+
+Seis casos, todos en texto que ve el usuario, y ninguna guarda los veía: la
+v909 cubre los pronombres y el futuro en -ás, la v945 el pretérito en -ste.
+Corregidos uno por uno —«el trazo que estabas dibujando» → «que estaba
+dibujando», «¿Por dónde no pasarías de noche?» → «no pasaría»—, que es la
+regla de la v878: cambiar la persona no conjuga los verbos de alrededor.
+
+### La lista de -ías es la más larga de las cuatro, y se dice por qué
+
+Esta aplicación habla de **vías** (78 veces), de **días** (52), de
+**categorías** y de una docena de comercios en -ería. El canje va escrito
+entero: un tipo de comercio nuevo —una cerrajería, una licorería— cuesta un
+renglón en la lista y se ve en rojo hasta que alguien lo agregue. Es el
+contrato de la v880, y se paga porque la otra mitad —fallar abierto— es
+justamente la que dejó pasar «pasarías».
+
+**Y no hay regla de forma que las separe.** El condicional es el infinitivo
+más -ías, así que su raíz acaba en -ar, -er o -ir… y «panadería» acaba en
+«er» igual que «comer». Es exactamente la regla que la v880 probó y descartó
+para el futuro en -á, vista por el otro lado — y por eso queda escrita acá en
+vez de volver a parecer buena.
+
+`vacías` va en la lista con su razón: es adjetivo —«cajas vacías»— y también
+presente de tú de vaciar. Acá es siempre el adjetivo.
+
+La de -abas es corta de verdad: en castellano casi nada acaba así.
+
+### Las dos se defienden solas
+
+Como la de -ste (v945), cada una tiene su comprobación de respuesta conocida:
+`pasarías` · `tendrías` · `sabías` se denuncian, `vías` · `días` ·
+`categorías` · `droguerías` no. Sin eso, una lista de permitidas que se comiera
+la regla dejaría todo en verde sin vigilar una palabra — y la de -ías es la
+que más puede quedarse sin morder, porque su lista es la más larga.
+
+### Y el mensaje de éxito decía menos de lo que cubre
+
+Nombraba tres familias estructurales. Ahora nombra cinco. **Una guarda que
+declara cubrir menos de lo que cubre es tan engañosa como una que declara
+cubrir más**, y es la misma corrección que la v945 tuvo que hacerle a la v909.
+
+Lo que sigue sin cubrirse es lo de siempre y por la razón de siempre: el
+presente y los imperativos de tú son idénticos a los de tercera persona, y a
+veces a un sustantivo. Esa mitad se caza leyendo.
+
+### Demostrado
+
+Devolviendo un solo «estabas» a `js/68`: la guarda lo señala con archivo y
+línea. Dos suites citaban el texto viejo y se actualizaron —`trespaldo` y
+`tintangible`—; las dos de `tsinsenal` son nombres de aserción, que las lee
+quien corre la batería y no un ciudadano en su teléfono, así que quedan fuera
+del alcance declarado desde la v878.
+
 ## La lista viva: lo que al pliego educativo todavía le falta (v866)
 
 Esta lista se quedó vieja **cinco veces**. Cuatro dentro de la hoja —la
