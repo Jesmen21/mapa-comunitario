@@ -9201,6 +9201,80 @@ publicarlo, con la corrida completa, y no de paso.
 Con esto cierran las seis plantillas y los tres paneles de percepción; queda
 la vista de escritorio, que leerá el mismo `S.corrida` en vez de tener el suyo.
 
+## Lo que cuesta imprimir en la hoja lo anotado (v947)
+
+La v946 dejó la mitad que faltaba escrita como tarea: las tres cajas de
+percepción se guardan en la ficha y **la lámina las sigue imprimiendo en
+blanco**. Esta tanda la midió entera, y el resultado es un precio que no me
+toca pagar a mí: queda escrito con su número, y la decisión es de quien tiene
+el pliego en la mano.
+
+**No se publicó el cambio.** Lo único que queda de la tanda es el accesor que
+la medición necesitó.
+
+### El precio, medido en las dos orientaciones
+
+Con una sola de las tres cajas llena, y el piso de 45 mm de las cajas de campo
+como vara:
+
+| | Parada | Acostada |
+|---|---|---|
+| v946, las tres en blanco | 50 · **47,9** | 50 · **45,1** |
+| con UNA caja llena | 45,9 · **42,1** | 43,9 · **38,9** |
+
+Las tres plantillas de la segunda fila —«Rutas observadas», «Cupo real»,
+«Actividad en primer piso»— caen **por debajo del piso**, en las dos
+orientaciones. Una plantilla bajo ese piso no se puede llenar a mano, que es
+para lo único que existe.
+
+### Y no hay una versión barata: se probaron cuatro
+
+Cada una se midió por separado, que es la regla de la v919 —una decisión de
+espacio se juzga midiendo las dos composiciones—:
+
+| Qué se probó | Resultado |
+|---|---|
+| Tres renglones anotados | 42,1 · 38,9 |
+| **Un solo** renglón anotado | 42,1 · 38,9 — **idéntico** |
+| Sin la línea de procedencia | 42,1 · 38,9 — idéntico |
+| Conservando la forma de la caja (el texto sobre el renglón que le toca, en vez de un bloque aparte) | 42,1 · 38,9 — idéntico |
+| La entrada guardada y la caja impresa en blanco | 47,9 · 45,1 — **el baseline exacto** |
+
+La última fila es la que cierra el caso: **guardar no cuesta nada; imprimir
+sí.** Y las tres de arriba dicen por qué no hay atajo: no es el texto, no es
+la procedencia y no es la forma de la caja. **Es que un renglón escrito es más
+alto que un renglón en blanco**, y basta con que una fila crezca lo suficiente
+para que la banda se recomponga. Pasado ese umbral, escribir más no cuesta
+más — el precio es un escalón, no una pendiente.
+
+### Por qué no lo tomé yo
+
+Las dos salidas son reales y las dos pierden algo:
+
+* **imprimirlo** y aceptar tres plantillas ilegibles — y la hoja se imprime
+  justamente para llenarlas;
+* **no imprimirlo** y que el papel que sale del edificio no diga lo que
+  alguien fue a anotar, mientras la ficha sí lo tiene.
+
+Aflojar el piso para que quepa no es una tercera salida: es la aserción que se
+afloja para que pase, y este repositorio tiene escrito desde el principio que
+eso es perder la prueba entera. Tampoco lo es recortar la frase anotada: el
+precio es el mismo con un renglón.
+
+Hay una tercera posibilidad que no se midió porque inventarla sola sería
+justamente lo que la v882 y la v886 deshicieron —un arreglo estructural sin
+causa—: que la hoja se pueda componer **como registro** en vez de como
+formulario, y que en ese modo las plantillas en blanco cedan su sitio. Eso es
+una opción de producto, no un ajuste, y la decide quien usa el pliego.
+
+### Lo que sí quedó
+
+`estado()` expone `llaveSector`. Lo necesitó la medición para escribirle al
+almacén desde una suite, y reconstruir la llave afuera habría sido la segunda
+ruta de cálculo de la v879 — que ya se cobró en la v939, con un
+`llaveDeSector()` sin argumento que devolvía cadena vacía y no lo decía: el
+almacén simplemente no encontraba nada, y la puerta parecía guardar.
+
 ## La lista viva: lo que al pliego educativo todavía le falta (v866)
 
 Esta lista se quedó vieja **cinco veces**. Cuatro dentro de la hoja —la

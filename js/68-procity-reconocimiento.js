@@ -31855,6 +31855,14 @@ function donaHTML(datos, colorDe, nombreDe) {
         vertices: S.poligono ? S.poligono.length : 0,
         areaM2: Math.round(areaDelPoligono()),
         hay: !!S.resultado,
+        /* La llave del sector: lo que una prueba necesita para escribirle al
+           almacén de campo se agrega acá (v871), en vez de reconstruirla
+           afuera con su propia fórmula — que sería la segunda ruta de cálculo
+           de la v879, y ya se cobró en la v939 con un `llaveDeSector()` sin
+           argumento que devolvía cadena vacía y no lo decía. */
+        llaveSector: (function () {
+          try { return llaveDeSector(S.resultado && S.resultado.meta); } catch (e) { return ''; }
+        })(),
         // Si está consultando. Sin esto, una prueba que ve «no pasó nada» no
         // puede distinguir un análisis que falló de otro que ni empezó.
         consultando: !!S.cargando,
