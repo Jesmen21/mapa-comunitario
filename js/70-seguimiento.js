@@ -1681,6 +1681,30 @@
      «sin dato» y «panel fuera», y la razón es la misma: un conteo que baja
      sin decir por qué se lee como que el hecho no existió. */
 
+  /* LISTA CERRADA, y se consulta en vez de decidirse de memoria. La v961
+     descubrió por qué hace falta: yo había metido al DANE entre los órganos
+     autónomos en la descripción de I-05, y no lo es.
+
+     El DANE es un departamento administrativo del Ejecutivo, con director de
+     libre nombramiento del presidente; su independencia es TÉCNICA (Ley 2335),
+     no constitucional. Un acto del Ejecutivo sobre él no es un choque entre
+     poderes — es otra cosa, y esa otra cosa es I-13. */
+  var ORGANOS_AUTONOMOS = [
+    'Banco de la República',
+    'Comisión Nacional del Servicio Civil (CNSC)',
+    'Corte Constitucional',
+    'Consejo de Estado',
+    'Corte Suprema de Justicia',
+    'Consejo Superior de la Judicatura',
+    'Jurisdicción Especial para la Paz (JEP)',
+    'Procuraduría General de la Nación',
+    'Defensoría del Pueblo',
+    'Contraloría General de la República',
+    'Registraduría Nacional del Estado Civil',
+    'Consejo Nacional Electoral (CNE)',
+    'Entes universitarios autónomos (art. 69)'
+  ];
+
   var EVIDENCIA_DURA = { 'documento-primario': 1, 'dato-oficial': 1 };
 
   var CRITERIOS = {
@@ -1726,13 +1750,50 @@
         'desacuerdo expresado sin acto institucional',
         'anuncio del Ejecutivo que el órgano aún no ha respondido',
         'tensión reportada solo por prensa, sin documento de ninguna de las partes',
-        'diferencia con una entidad del propio Ejecutivo (un ministerio, un departamento administrativo)'
+        /* Escrito por un caso real: la CNSC expidió las Resoluciones 10537 y
+           10543 de 2026 «en ejercicio de la autonomía del art. 130 Y DE
+           CONFORMIDAD CON el Decreto 1384». De conformidad con, no en contra:
+           es discrecionalidad que el propio decreto le otorgó. Un órgano que
+           usa una facultad que el acto del Ejecutivo le reconoce no está
+           chocando con él, y contarlo sería fabricar un choque. */
+        'el órgano ejerce una facultad que el propio acto del Ejecutivo le reconoce',
+        /* Y el otro: las entidades del Ejecutivo con independencia solo
+           técnica —el DANE, las agencias reguladoras— no son órganos del
+           art. 113. Esos casos tienen su propio indicador, I-13, para que no
+           se pierdan por no caber acá. */
+        'entidades del Ejecutivo con independencia solo técnica (van a I-13)'
       ],
       requiere: function (c) {
         return (c.procesal.id === 'en-disputa-institucional' || c.procesal.id === 'en-revision-judicial' ||
                 c.procesal.id === 'en-firme') && c.evidencia.id !== 'captura-de-pantalla';
       },
       falta: 'Pide un acto institucional de una de las dos partes, y no una captura de pantalla.'
+    },
+    /* I-13 NO está en el pliego original: nace de que el caso del DANE no
+       cabía en I-05 y perderlo sería perder un hecho real. Es la decisión de
+       la v875 —no se arregla una exageración con un silencio— aplicada a un
+       indicador: antes que forzar el caso en un indicador que no es el suyo o
+       tirarlo, se nombra lo que es.
+
+       CUENTA UNA COINCIDENCIA, NO UNA CAUSA, y eso va en la definición porque
+       es lo que separa este indicador de un señalamiento: que una remoción
+       coincida con una controversia sobre difusión es comprobable; que la
+       haya CAUSADO es una atribución que el registro no sostiene. */
+    'I-13': {
+      definicion: 'Acto del Ejecutivo sobre una entidad que NO es autónoma constitucionalmente pero ' +
+                  'tiene independencia técnica reconocida por ley —el DANE, las agencias técnicas o ' +
+                  'reguladoras—. Cuenta la coincidencia documentada, no una causa probada.',
+      incluye: [
+        'instrucción sobre contenido, oportunidad o forma de difusión de información técnica',
+        'remoción o bloqueo de nombramientos coincidente con una controversia sobre difusión'
+      ],
+      excluye: [
+        'nombramiento o remoción ordinarios sin controversia documentada',
+        'instrucción administrativa sin relación con el producto técnico',
+        'entidades que SÍ son autónomas constitucionalmente (van a I-05)'
+      ],
+      requiere: function (c) { return !!EVIDENCIA_DURA[c.evidencia.id]; },
+      falta: 'Pide el acto: un documento primario o un dato oficial, no el relato de un medio.'
     },
     'I-07': {
       definicion: 'Información pública solicitada por el cauce ordinario, no entregada en el término ' +
@@ -1783,6 +1844,9 @@
     'I-05': { t: 'Choques con órganos autónomos', dec: true,
               d: 'Corte Constitucional, Consejo de Estado, Corte Suprema, JEP, CNSC, Banco de la República, ' +
                  'Procuraduría, Contraloría, Defensoría, Registraduría y CNE.' },
+    'I-13': { t: 'Interferencia en la independencia técnica', dec: true,
+              d: 'Actos sobre entidades del Ejecutivo con independencia técnica de ley —el DANE, las ' +
+                 'agencias reguladoras—, que no son órganos autónomos y por eso no caben en I-05.' },
     'I-07': { t: 'Información pública obtenida por tutela', dec: true,
               d: 'Solicitudes que solo se respondieron después de una acción judicial.' },
     'I-06': { t: 'Registros sin respuesta oficial', dec: false,
@@ -1794,7 +1858,7 @@
   };
   /* El orden de la tabla no es el alfabético: los tres declarados primero
      —son los del eje B— y después los que salen solos. */
-  var ORDEN_IND = ['I-04', 'I-05', 'I-07', 'I-06', 'I-09', 'I-10'];
+  var ORDEN_IND = ['I-04', 'I-05', 'I-13', 'I-07', 'I-06', 'I-09', 'I-10'];
 
   /* «Con menos de 180 días de gobierno, los indicadores describen un arranque,
      no una tendencia.» El pliego obliga a publicarlo siempre, así que va
@@ -1809,7 +1873,10 @@
   }
 
   function indicadoresDe(dd, corte) {
-    if (!dd) dd = {};
+    /* Sin argumento, el registro del gobierno actual —igual que
+       `comparabilidad`. Antes caía en `{}` y medía un registro vacío, que es
+       lo peor de los dos: devuelve ceros con la forma de una medición. */
+    dd = dd || D;
     var ent = hechosDelMandato(dd, corte);
     var hasta = corte || (dd.entrega) || (new Date()).toISOString().slice(0, 10);
     var dias = Math.max(1, Math.round(
@@ -1818,12 +1885,12 @@
 
     var c1 = capaUnoDe_conjunto(ent);
     var crudo = { 'I-06': c1.contra.ausente, 'I-09': c1.medicion.actividad, 'I-10': c1.medicion.resultado,
-                  'I-04': 0, 'I-05': 0, 'I-07': 0 };
+                  'I-04': 0, 'I-05': 0, 'I-13': 0, 'I-07': 0 };
     var sinDeclarar = 0;
     /* Lo declarado que NO pasa el criterio no desaparece: se cuenta aparte y
        con su motivo. Un indicador que baja sin decir por qué se lee como que
        el hecho no ocurrió. */
-    var fuera = { 'I-04': [], 'I-05': [], 'I-07': [] };
+    var fuera = { 'I-04': [], 'I-05': [], 'I-13': [], 'I-07': [] };
     ent.forEach(function (e) {
       var lista = (e && e.indicadores) || [];
       if (!lista.length) sinDeclarar++;
@@ -2014,6 +2081,15 @@
     1: { id: 'B1', t: 'Estable' }, 2: { id: 'B2', t: 'Tensión' }, 3: { id: 'B3', t: 'Elevado' },
     4: { id: 'B4', t: 'Grave' }, 5: { id: 'B5', t: 'Crítico' }
   };
+  /* I-13 NO está acá, y es deliberado. El eje B mide DESVIACIÓN respecto de
+     una media histórica, y de I-13 no hay media: nació en la v962 y nadie ha
+     recalculado los gobiernos anteriores con este criterio. Meterlo sin su
+     media haría que el eje comparara cuatro indicadores contra una referencia
+     y el quinto contra nada.
+
+     Así que el indicador se publica y el eje no lo usa. El día que exista la
+     media de los tres gobiernos, entra acá con los otros cuatro — y hay una
+     guarda para que no entre antes. */
   var IND_EJE_B = ['I-04', 'I-05', 'I-06', 'I-07'];
 
   function ejeB(dd, corte) {

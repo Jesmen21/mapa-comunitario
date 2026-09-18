@@ -475,6 +475,28 @@ const server = http.createServer((req, res) => {
       definicion: String((f04.criterio || {}).definicion || '').slice(0, 80)
     };
 
+    /* ── I-13 SOBRE EL REGISTRO DE VERDAD (v962) ──────────────────────
+       Este indicador nació de que un caso real —la remoción del director del
+       DANE— no cabía en I-05, porque el DANE no es un órgano autónomo. Así
+       que la comprobación tiene que ser sobre el registro publicado y no
+       sobre un fixture: lo que hay que saber es que el caso NO se pierde.
+
+       Y las dos mitades: que I-13 lo recoja, y que I-05 siga en cero — si el
+       caso volviera a contarse como choque entre poderes, el módulo estaría
+       fabricando el señalamiento que esta separación evita. */
+    const iReal = api.indicadores();
+    const filaDe = (k) => (iReal.filas.filter(x => x.id === k)[0] || {});
+    o.i13 = {
+      n: filaDe('I-13').n, declaradas: filaDe('I-13').declaradas,
+      i05n: filaDe('I-05').n, i05decl: filaDe('I-05').declaradas,
+      i04n: filaDe('I-04').n,
+      enOrden: iReal.filas.map(x => x.id).indexOf('I-13'),
+      tieneCriterio: !!filaDe('I-13').criterio,
+      cuentaCoincidencia: /coincidencia/i.test(String((filaDe('I-13').criterio || {}).definicion || '')),
+      /* El eje B no puede haberlo absorbido: no tiene media histórica suya. */
+      ejeBIds: (api.ejeB() || {}).filas ? (api.ejeB().filas || []).map(x => x.id) : []
+    };
+
     /* LA CONSTANCIA DE BÚSQUEDA. `ausente` afirma que el Gobierno no
        respondió: con constancia es un dato y pesa en I-06; sin ella es un
        señalamiento sin respaldo, se ve y no pesa. Las dos ramas, porque una
@@ -772,6 +794,22 @@ const server = http.createServer((req, res) => {
   chk(gt.tieneCriterio && gt.incluye >= 3 && gt.excluye >= 3 && gt.definicion.length > 30,
       'el indicador publica su criterio con la definición y las dos listas (' +
       gt.incluye + ' incluye · ' + gt.excluye + ' excluye)');
+
+  console.log('\n── I-13: el caso que no cabía en I-05 ─────────────────');
+  const t13 = r.i13 || {};
+  console.log('  ' + JSON.stringify(t13));
+  chk(t13.declaradas === 1 && t13.n === 1,
+      'MATERIAL · el registro real declara el caso en I-13 y cumple su criterio (' +
+      t13.n + ' de ' + t13.declaradas + ')');
+  chk(t13.i05n === 0 && t13.i05decl === 0,
+      'y NO se cuenta como choque con un órgano autónomo: el DANE no lo es (I-05 ' + t13.i05n + ')');
+  chk(t13.tieneCriterio && t13.cuentaCoincidencia === true,
+      'su criterio dice que cuenta una COINCIDENCIA documentada, no una causa probada');
+  chk(t13.enOrden >= 0,
+      'la ficha lo publica como una fila más del cuadro de indicadores');
+  chk((t13.ejeBIds || []).length > 0 && (t13.ejeBIds || []).indexOf('I-13') < 0,
+      'y el eje B no lo absorbe: sin media histórica suya, compararía cuatro contra una ' +
+      'referencia y el quinto contra nada (' + (t13.ejeBIds || []).join(',') + ')');
 
   const cs = r.constancia || {};
   console.log('  constancia: ' + JSON.stringify(cs));

@@ -10347,7 +10347,15 @@ Tres declaraciones mías caen, y dos de ellas son de la misma entrada:
 * **«El Gobierno aplaza los concursos por decreto» · I-05.** El aplazamiento
   sí es I-04. El choque no: el `excluye` nombra exactamente este caso —«anuncio
   del Ejecutivo que el órgano aún no ha respondido»— y no consta acto de la
-  CNSC.
+  CNSC en esa entrada.
+
+  **Y la razón de verdad era otra, más fuerte: la v962 la corrige.** La CNSC
+  SÍ actuó —las Resoluciones 10537 y 10543 de 2026— pero lo hizo «en ejercicio
+  de la autonomía del art. 130 **y de conformidad con** el Decreto 1384». De
+  conformidad con, no en contra: es discrecionalidad que el propio decreto le
+  otorgó. Así que el retiro de I-05 estaba bien y por un motivo que yo no
+  tenía; queda escrito como renglón del `excluye` para que la próxima no
+  dependa de que alguien lo recuerde.
 
 **La dirección del error importa y hay que decirla:** el criterio escrito
 produce MENOS señalamientos, no más. Un conteo de mecanismos excepcionales
@@ -10490,6 +10498,126 @@ Queda medido para que la tanda siguiente no empiece por averiguarlo:
   con su `implicaOrdenDirecta` siempre en falso salvo prueba.
 * **El eje C entero**, que sigue sin fuente, y la media histórica del eje B,
   que sigue siendo trabajo de archivo.
+
+## El caso que no cabía en ningún indicador tiene el suyo (v962)
+
+El motor de referencia volvió con una respuesta directa a lo que la v961
+encontró. Aquella tanda quitó las dos declaraciones de la entrada del DANE
+porque los criterios escritos las rechazaban, y dejó el caso **sin ningún
+indicador**. El motor dice que eso está mal por el otro lado:
+
+> Existe porque estos casos no caben en I-05 y perderlos sería perder un hecho
+> real.
+
+Es la decisión de la v875 —no se arregla una exageración con un silencio— y la
+de la v881 con los anillos agrupados, aplicadas a un indicador. Entre forzar un
+caso en un indicador que no es el suyo y tirarlo, se hace la tercera cosa: se
+nombra lo que es.
+
+    v961   el DANE queda sin indicador · I-05 = 0 · el hecho se pierde de la cuenta
+    v962   I-13 = 1 · I-05 sigue en 0 · el hecho cuenta como lo que es
+
+### I-13 · interferencia en la independencia técnica
+
+No está en el pliego original. Cuenta actos del Ejecutivo sobre entidades que
+**no** son autónomas constitucionalmente pero tienen independencia técnica de
+ley: el DANE (Ley 2335), las agencias reguladoras.
+
+Y lo que lo hace publicable sin convertirse en un señalamiento va en su propia
+definición: **cuenta una coincidencia documentada, no una causa probada.** Que
+una remoción coincida con una controversia sobre difusión es comprobable; que
+la haya causado es una atribución que el registro no sostiene — y el
+`tipoFuente` de esa entrada es `disputado` justamente porque el motivo está en
+disputa. La aserción persigue esa palabra en la definición.
+
+Medido antes de declararlo, el caso encaja por **las dos vías del `incluye`**:
+
+* la **directriz presidencial** que exige autorización del Gobierno para que
+  las entidades hablen con la prensa, por la que se canceló treinta minutos
+  antes la rueda de prensa de la inflación de agosto (documentado por Semana);
+* la **remoción coincidente** con esa controversia.
+
+Si no hubiera existido la primera, el caso habría caído en el `excluye`
+—«nombramiento o remoción ordinarios sin controversia documentada»— y lo
+honesto habría sido dejarlo sin indicador. Se comprobó leyendo la entrada
+entera, no el título.
+
+### I-13 no entra al eje B, y esa es la parte que hay que vigilar
+
+El eje B mide **desviación respecto de una media histórica**, y de I-13 no hay
+ninguna: nació hoy y nadie ha recalculado los gobiernos anteriores con este
+criterio. Meterlo compararía cuatro indicadores contra una referencia y el
+quinto contra nada.
+
+Así que el indicador se publica y el eje no lo usa, con su guarda y su guarda
+de la guarda —que `ejeB` siga leyendo `IND_EJE_B`—. Sin la segunda, la primera
+seguiría en verde sobre una constante que no decide nada.
+
+### La lista cerrada, y la guarda que caza el error de la v958
+
+`ORGANOS_AUTONOMOS`, trece entradas, **y el DANE no está**. Es lo que faltaba
+en la v958, cuando escribí su descripción de memoria y lo listé entre los
+autónomos.
+
+La guarda va en las dos direcciones y la segunda persigue la CLASE:
+
+* los de autonomía constitucional **tienen** que estar —si alguien vacía la
+  lista, todo lo demás pasaría en verde—;
+* y **ninguna entidad del propio Ejecutivo** puede colarse: se vigilan ocho
+  formas (DANE, Ministerio, Función Pública, Superintendencia, DNP…), no solo
+  la que falló.
+
+Meter una entidad del Ejecutivo en esa lista convierte un acto interno en un
+choque entre poderes, que es el señalamiento más caro que este módulo puede
+fabricar.
+
+Y el criterio de I-05 **las excluye por escrito**, no solo por omisión de la
+lista de al lado: quien declara un indicador lee el criterio.
+
+### Dos exclusiones que un caso real obligó a escribir
+
+La segunda es la que corrige mi propia razón de la v961. La CNSC **sí** expidió
+actos sobre el aplazamiento de los concursos —Resoluciones 10537 y 10543 de
+2026— y lo hizo «de conformidad con el Decreto 1384». Un órgano que ejerce una
+facultad que el propio acto del Ejecutivo le reconoce **no está chocando con
+él**, y contarlo sería fabricar un choque. Yo había escrito que «no consta acto
+de la CNSC»: la conclusión era correcta y el motivo era más débil que el real.
+Corregido en su renglón de la v961, que es lo que esta sesión dejó como
+práctica —una tanda que cierra algo declarado en otra vuelve a ese renglón.
+
+### La demostración salió vacía, y una salida vacía no es un verde
+
+Al quitar I-13 del catálogo y del orden para demostrar en rojo, dejé su clave
+en `crudo`, así que `INDICADORES['I-13'].dec` lanzó un TypeError y **la suite no
+imprimió nada**. Leerlo como pase o como fallo habría sido igual de falso: es
+la trampa que este archivo tiene arriba desde la v880, y volvió a aparecer.
+
+Retirado entero, la demostración sale limpia: tres en rojo —«undefined de
+undefined», el criterio sin su palabra y la fila sin publicar—. Las otras dos
+pasan a propósito: que I-05 siga en cero era cierto en la v961, y que el eje B
+no lo absorba se cumple solo cuando el indicador no existe. Son guardas contra
+pasarse de corregir.
+
+### Y una costumbre que no era uniforme
+
+`api.indicadores()` sin argumento caía en `{}` y medía un registro **vacío** —
+ceros con la forma de una medición—, mientras `comparabilidad()` sí toma el
+registro actual por omisión. Lo destapó la aserción nueva, que salió roja con
+«0 de 0» sobre un registro que tiene el caso. Ahora las dos hacen lo mismo.
+
+### Lo que sigue faltando del motor de referencia
+
+* **`entidadResponsable` por entrada**, que es lo que permitiría exigir que un
+  I-05 nombre un órgano de la lista cerrada. Hoy hay cero declaraciones de
+  I-05, así que la guarda no tendría nada que comprobar y no se escribió a
+  medias.
+* **`calidadDelEncuadre` y `signoPolitico`**, los dos casilleros QC que siguen
+  en «no se pueden correr».
+* **`solidezPorTriangulacion`** con `fuentes[].pais` y `confirma`, y
+  **`decisionNacionalHabilitante`** con su `implicaOrdenDirecta`.
+* **Aplicar los criterios al resto del registro**: 153 de 159 hechos del
+  mandato siguen sin declarar indicador.
+* **El eje C entero** y la media histórica del eje B.
 
 ## La lista viva: lo que al pliego educativo todavía le falta (v866)
 

@@ -1076,8 +1076,17 @@ console.log('\n  -- la ficha del gobernante --');
     const DECLARABLES = (cuerpoI.match(/'(I-\d\d)': \{ t: '[^']*', dec: true/g) || [])
       .map((x) => x.slice(1, 5));
 
+    /* Mide la FORMA y no el número: que las dos listas se lean, que las
+       declarables sean un subconjunto propio de todas, y que los seis del
+       pliego original sigan estando. Con el conteo escrito a mano, un
+       indicador nuevo —I-13 en la v962— la ponía roja sin que nada estuviera
+       mal, que es la constante metida en la aserción de la v890. */
+    const DEL_PLIEGO = ['I-04', 'I-05', 'I-06', 'I-07', 'I-09', 'I-10'];
+    const perdidos = DEL_PLIEGO.filter((k) => TODOS.indexOf(k) < 0);
     comprobar('MATERIAL · el catálogo de indicadores se lee de js/70',
-      TODOS.length === 6 && DECLARABLES.length === 3,
+      !perdidos.length && DECLARABLES.length > 0 && DECLARABLES.length < TODOS.length &&
+      DECLARABLES.every((k) => TODOS.indexOf(k) >= 0),
+      (perdidos.length ? 'faltan del pliego: ' + perdidos.join(', ') + ' · ' : '') +
       TODOS.join('·') + ' · declarables: ' + DECLARABLES.join('·'));
 
     const malos = [];
@@ -1227,6 +1236,98 @@ console.log('\n  -- la ficha del gobernante --');
       /ausente-sin-constancia/.test(j70cr) && /sinConstancia/.test(j70cr) &&
       /v\.busco/.test(j70cr),
       'se exige { ausente: true, busco: [...], fecha } para que cuente en el indicador I-06');
+  }
+
+  /* ═══ LA LISTA CERRADA DE ÓRGANOS AUTÓNOMOS, Y EL INDICADOR QUE NACIÓ
+         DE NO CABER EN NINGUNO (v962) ══════════════════════════════════════
+     La v961 encontró que mi descripción de I-05 listaba al DANE entre los
+     órganos autónomos, y no lo es: es un departamento administrativo del
+     Ejecutivo con independencia solo TÉCNICA. Meter una entidad del Ejecutivo
+     en esa lista convierte un acto interno en un choque entre poderes, que es
+     el señalamiento más caro que este módulo puede fabricar.
+
+     Así que la lista va cerrada y vigilada en las DOS direcciones. */
+  {
+    const j70i13 = leer('js/70-seguimiento.js');
+
+    const bloqueOrg = (j70i13.match(/var ORGANOS_AUTONOMOS = \[[\s\S]*?\n  \];/) || [''])[0];
+    const organos = (bloqueOrg.match(/^    '([^']+)'/gm) || []).map((x) => x.replace(/^\s*'|'$/g, ''));
+
+    comprobar('MATERIAL · la lista cerrada de órganos autónomos se lee de js/70',
+      organos.length >= 12, organos.length + ' órganos');
+
+    /* Los que TIENEN que estar: si alguien vacía la lista, lo de abajo pasaría
+       en verde sin vigilar nada. */
+    const imprescindibles = ['Corte Constitucional', 'Consejo Nacional Electoral (CNE)',
+                             'Procuraduría General de la Nación', 'Banco de la República'];
+    const ausentes = imprescindibles.filter((x) => organos.indexOf(x) < 0);
+    comprobar('la lista trae los órganos de autonomía constitucional',
+      ausentes.length === 0,
+      ausentes.length ? 'faltan: ' + ausentes.join(', ') : imprescindibles.length + ' comprobados de ' + organos.length);
+
+    /* Y los que NO pueden estar: entidades del propio Ejecutivo. Ésta es la
+       que caza el error de la v958, y persigue la CLASE —cualquier entidad del
+       Ejecutivo— y no solo el DANE. */
+    const delEjecutivo = ['DANE', 'Departamento Administrativo Nacional de Estadística',
+                          'Ministerio', 'Función Pública', 'Prosperidad Social', 'DNP',
+                          'Presidencia', 'Superintendencia'];
+    const colados = delEjecutivo.filter((x) => organos.some((o) => o.indexOf(x) >= 0));
+    comprobar('y ninguna entidad del propio Ejecutivo se cuela en ella',
+      colados.length === 0,
+      colados.length ? 'coladas: ' + colados.join(', ') +
+        ' · su independencia es técnica, no constitucional: van a I-13'
+        : 'ninguna de las ' + delEjecutivo.length + ' formas vigiladas aparece en la lista');
+
+    /* I-05 tiene que EXCLUIRLAS por escrito, no solo por omisión de la lista:
+       quien declare un indicador lee el criterio, no la lista de al lado. */
+    const exI05 = (j70i13.match(/'I-05': \{[\s\S]*?excluye: \[([\s\S]*?)\],/) || ['', ''])[1];
+    comprobar('el criterio de I-05 excluye por escrito a las de independencia solo técnica',
+      /independencia solo t[eé]cnica/.test(exI05) && /I-13/.test(exI05),
+      'y manda esos casos a I-13 en vez de perderlos');
+
+    /* Y la otra exclusión que un caso real obligó a escribir: un órgano que
+       usa una facultad que el propio decreto le reconoce no está chocando. */
+    comprobar('y excluye al órgano que ejerce una facultad que el propio acto le reconoce',
+      /facultad que el propio acto del Ejecutivo le reconoce/.test(exI05),
+      'de conformidad con no es en contra de: contarlo sería fabricar un choque');
+
+    /* I-13 existe, tiene criterio, y NO entra al eje B. Lo último es lo que
+       hay que vigilar: el eje mide desviación contra una media histórica y de
+       I-13 no hay ninguna, así que meterlo compararía cuatro indicadores
+       contra una referencia y el quinto contra nada. */
+    const ejeBLista = (j70i13.match(/var IND_EJE_B = \[([^\]]*)\]/) || ['', ''])[1];
+    comprobar('I-13 se publica como indicador propio',
+      /'I-13': \{/.test(j70i13) && /'I-13': \{ t: 'Interferencia/.test(j70i13) &&
+      /ORDEN_IND = \[[^\]]*'I-13'/.test(j70i13),
+      'con su criterio, su fila y su puesto en el orden');
+
+    comprobar('y NO entra al eje B, que no tiene media histórica suya',
+      ejeBLista.length > 0 && ejeBLista.indexOf('I-13') < 0,
+      ejeBLista ? 'el eje B mide I-04, I-05, I-06 e I-07 contra su media; I-13 no tiene media'
+                : 'no se encontró IND_EJE_B');
+
+    /* La guarda de la guarda: si el eje dejara de leer esa lista, la de arriba
+       seguiría en verde sobre una constante que no decide nada. */
+    comprobar('y el eje B sigue leyendo esa lista para armar sus filas',
+      /IND_EJE_B\.indexOf\(f\.id\) >= 0/.test(j70i13),
+      'ejeB filtra sus indicadores por IND_EJE_B');
+
+    /* Y una guarda de clase sobre el registro: I-05 e I-13 son mutuamente
+       excluyentes por construcción —una entidad es autónoma o no lo es—, así
+       que un hecho que declare los dos está mal clasificado. */
+    const dobles = [];
+    REGISTROS.forEach((ruta) => {
+      const quien = ruta.split('-').pop().replace('.json', '');
+      ((JSON.parse(leer(ruta)).entradas) || []).forEach((e) => {
+        const ii = e.indicadores || [];
+        if (ii.indexOf('I-05') >= 0 && ii.indexOf('I-13') >= 0) {
+          dobles.push(quien + '/' + (e.fecha || '?'));
+        }
+      });
+    });
+    comprobar('ningún hecho declara I-05 e I-13 a la vez: una entidad es autónoma o no lo es',
+      dobles.length === 0,
+      dobles.length ? dobles.join(' · ') : 'los dos indicadores no se solapan en el registro');
   }
 
   /* ═══ CAPA 3 DEL PLIEGO · LOS EJES, NUNCA EN UN SOLO NÚMERO ════════════

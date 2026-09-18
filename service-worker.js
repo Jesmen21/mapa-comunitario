@@ -1,4 +1,4 @@
-const URBIS_CACHE = 'urbis-v961-los-criterios-van-como-datos';
+const URBIS_CACHE = 'urbis-v962-el-caso-que-no-cabia-tiene-su-propio-indicador';
 const URBIS_ASSETS = [
   './',
   './index.html',
