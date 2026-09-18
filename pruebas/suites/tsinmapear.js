@@ -293,6 +293,63 @@ const cotaDe = ln => 300 + Math.round(30 * Math.sin(ln * 800));
     const bl3 = H().querySelector('[data-pcr="lamina-doble"]') || H().querySelector('[data-pcr="lamina-ver"]');
     if (bl3) { bl3.click(); await esperar(1400); }
     o.docCaminada = capturado; capturado = '';
+
+    /* (e) LA PLANTILLA REPARTIDA (v949). Va DESPUÉS de componer la hoja a
+           propósito: el almacén deduplica por hueco, así que guardar otra vez
+           reemplaza lo de (d) y cambiaría el papel que las aserciones de
+           arriba ya midieron.
+
+           Y acá la atribución NO es la lista, a diferencia de las otras tres
+           plantillas caminadas: esta casilla publica la cifra de UNA fila —la
+           cuadra del lote, porque está rotulada a escala de predio (v854)—,
+           así que ponerle los dos nombres le atribuiría a Luis una medición
+           que hizo Ana. Es la falta de la v867 con la ropa de una mejora, y
+           es lo que esta aserción guarda. */
+    /* Se vuelve a buscar el botón de la pestaña: `pintar()` rehace el panel,
+       así que el nodo de arriba quedó desprendido y hacerle clic no hace
+       nada — lo cazó la guarda de MATERIAL, que es para lo que está. Y la
+       puerta está en estado «ok» desde (d), sin formulario: para anotar dos
+       cuadras hay que quitar lo anotado primero, que es lo que la aplicación
+       permite hoy (el formulario que no deja agregar una fila es el defecto
+       ya declarado en la v940, y es de las cinco puertas). */
+    const pg2 = H().querySelector('[data-pcr="pestana"][data-p="general"]');
+    if (pg2) { pg2.click(); await esperar(400); }
+    const bq = H().querySelector('[data-pcr="act-borrar"]');
+    if (bq) { bq.click(); await esperar(500); }
+    o.hayFormulario = !!document.querySelector('[data-pcr-act="cuadra"][data-i="1"]');
+    /* TRES cuadras y TRES nombres distintos, y ninguno es casual:
+
+         · la marcada la midió Marta, que NO es quien responde por la
+           plantilla. Sin esa diferencia la aserción pasaría por el motivo
+           equivocado —el `quien` de la entrada coincidiría con el de la fila—
+           y no distinguiría esta versión de la anterior. Se vio demostrando,
+           no leyendo;
+         · la segunda la midió Luis, que es lo que hace que la lista tenga más
+           de un nombre;
+       La rama del respaldo —una fila en blanco, que cae en quien responde por
+       la plantilla— NO se mide acá y no por olvido: la puerta ofrece dos
+       renglones de sobra y un rechazo no guarda nada, así que desde una
+       plantilla recién vaciada no se llega a tres filas. Esa rama vive en
+       `tmasanalisis`, donde el primer tramo del perfil va en blanco. */
+    ponAct('cuadra', 0, 'Calle de arriba, lado sur');
+    ponAct('total', 0, '80'); ponAct('activo', 0, '34');
+    ponAct('quienFila', 0, 'Marta Peña');
+    ponAct('cuadra', 1, 'Calle de arriba, lado norte');
+    ponAct('total', 1, '90'); ponAct('activo', 1, '81');
+    ponAct('quienFila', 1, 'Luis Ortega');
+    const rad0 = document.querySelector('[data-pcr-act="lote"][data-i="0"]');
+    if (rad0) { rad0.checked = true; rad0.dispatchEvent(new Event('change', { bubbles: true })); }
+    ponAct('quien', null, 'Ana Ruiz');
+    ponAct('fechaDoc', null, '2026-09-12'); ponAct('fechaHasta', null, '2026-09-14');
+    o.guardoRepartida = await guardarAct();
+    o.paramRepartido = ((R.estado() || {}).paramento) || null;
+    o.actRepartida = ((R.estado() || {}).actividad || {});
+    /* Se lee el textContent de la hoja —no `innerText`, que se queda vacío
+       sobre lo que el navegador no considera renderizado— y se ancla por
+       CONTENIDO, no por distancia desde el título (v935). */
+    o.puertaRepartida = ((H().textContent || '').replace(/\s+/g, ' ')
+      .match(/Actividad en primer piso.*?% del frente con puerta.{0,420}/) || [''])[0];
+
     return o;
   }, { C, POL, LOTE, LOTE_SIN_HUELLAS });
   await pg.close(); await ctx.close(); await b.close();
@@ -508,6 +565,35 @@ const cotaDe = ln => 300 + Math.round(30 * Math.sin(ln * 800));
       r.campoGuardado[0].filas === 1 && r.campoGuardado[0].quien === 'Ana Ruiz' &&
       r.campoGuardado[0].desde === '2026-09-12' && r.campoGuardado[0].hasta === '2026-09-14',
     JSON.stringify(r.campoGuardado || []));
+
+  /* ── LA PLANTILLA REPARTIDA (v949) ──────────────────────────────────────
+     Dos cuadras, dos personas, y la marcada es la de Ana. La guarda de
+     MATERIAL va primero (v920): sin la segunda persona anotada y sin las dos
+     cuadras, las de abajo pasarían por no tener nada que rechazar. */
+  const AR = r.actRepartida || {}, PR = r.paramRepartido || {};
+  T('MATERIAL · dos cuadras con dos nombres, y la marcada no es la de quien responde',
+    r.guardoRepartida === true && r.hayFormulario === true && (AR.filas || []).length === 2 &&
+      ((AR.quienes || {}).nombres || []).length === 2 && AR.estado === 'ok' &&
+      ((AR.quienes || {}).nombres || []).indexOf('Ana Ruiz') < 0,
+    AR.estado + ' · ' + (AR.filas || []).length + ' filas · ' +
+    JSON.stringify((AR.quienes || {}).nombres || []));
+
+  /* Y acá está lo que de verdad guarda: la cifra sale de UNA fila, así que su
+     procedencia es la de ESA fila. Con la lista entera, los 43 % que midió Ana
+     llevarían también el nombre de Luis, que midió otra cuadra — declarar mal
+     la procedencia es la falta de la v867, y acá con la ropa de una mejora. */
+  T('la cifra de la cuadra del lote la firma quien midió ESA cuadra, no la lista ni quien responde',
+    PR.quien === 'Marta Peña' && PR.pctLleno === 43,
+    PR.pctLleno + ' % firmado por «' + PR.quien + '»');
+  T('y la lista completa se conserva, para poder decir que se repartió',
+    (PR.quienes || []).length === 2 && PR.repartida === true &&
+      (PR.quienes || []).indexOf('Luis Ortega') >= 0,
+    JSON.stringify(PR.quienes || []) + ' · repartida ' + PR.repartida);
+  T('la puerta dice quiénes levantaron las dos y cuál firma la cifra',
+    /repartieron|levantaron/i.test(r.puertaRepartida || '') &&
+      /Luis Ortega/.test(r.puertaRepartida || '') &&
+      /Marta Peña/.test(r.puertaRepartida || ''),
+    (r.puertaRepartida || '(sin texto)').replace(/\s+/g, ' ').slice(0, 200));
 
   /* 34 de 80 m son 43 %, y NO el 0 % de las huellas. La cifra que cambia es
      la del papel, así que el origen también tiene que cambiar: sin él, una

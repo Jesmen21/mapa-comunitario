@@ -1492,6 +1492,46 @@
     return ' entre el ' + desde + ' y el ' + hasta;
   }
 
+  /* ── QUIÉN MIDIÓ CADA FILA (v949) ──────────────────────────────────
+     Las cuatro plantillas que se CAMINAN —el paramento, el perfil, los
+     andenes y las rutas— se reparten entre dos personas de la manera más
+     natural del mundo: una toma los tramos pares y otra los impares, o una
+     se sienta en una parada mientras la otra se sienta en la de al lado.
+     Con «30 minutos por parada y por franja», ocho filas de rutas son
+     cuatro horas: repartirlas no es el caso raro, es el normal.
+
+     Hasta la v948 la entrada guardaba UN solo `quien`, así que con la
+     plantilla repartida la mitad de la procedencia era falsa — y falsa sin
+     que se viera, que es la forma más cara de equivocarse.
+
+     NO es lo mismo que el `informo` del cupo, aunque la columna se parezca.
+     Allá el nombre es la FUENTE de la cifra —la portería que la dijo— y una
+     fila sin él es un hueco: la cifra queda sin a quién volver a
+     preguntarle, y por eso el cupo las cuenta y lo dice. Acá es quien la
+     MIDIÓ, y una fila en blanco no es un hueco: significa que la midió
+     quien responde por la plantilla, que es lo que el propio formulario
+     declara al lado de la casilla. Por eso son dos cuentas distintas y este
+     ayudante devuelve NOMBRES y no una frase.
+
+     Y por eso una entrada guardada antes de esta versión no pierde nada ni
+     se asciende a lo que nadie escribió (v931): sus filas no traen nombre,
+     así que todas caen en el `quien` de la entrada — que es exactamente lo
+     que esa entrada afirmaba. */
+  function quienesDeFilas(filas, quienEntrada) {
+    var base = String(quienEntrada || '').trim();
+    var nombres = [], propias = 0;
+    (filas || []).forEach(function (f) {
+      var q = String((f && f.quien) || '').trim();
+      if (q) propias++;
+      var n = q || base;
+      if (n && nombres.indexOf(n) < 0) nombres.push(n);
+    });
+    return { nombres: nombres, propias: propias,
+             sinPropia: (filas || []).length - propias,
+             repartida: nombres.length > 1,
+             texto: unirConY(nombres) };
+  }
+
   /* Una fila sirve si tiene frente total y el activo cabe dentro de él. Lo
      de «cabe dentro» no es quisquilloso: con activo > total el porcentaje
      pasaría de 100 y saldría impreso, que es exactamente lo que la v859
@@ -1525,8 +1565,25 @@
     var marcada = filas.filter(function (f) { return !!f.esLaDelLote; })[0] || null;
     var delLote = filas.length === 1 ? filas[0] : marcada;
     var fl = fuenteLeida(e.fuente);
+    var qsA = quienesDeFilas(filas, fl.quien);
+    /* Y acá la atribución NO es la lista, a diferencia de las otras tres
+       plantillas caminadas — que es la asimetría que se vio al escribir la
+       prueba y no leyendo. El perfil y los andenes publican una MEDIA de
+       todas las filas, así que su cifra la midieron todos; las rutas
+       publican una cifra POR fila. Esta publica la de UNA sola, la cuadra
+       del lote, porque su casilla está rotulada a escala de predio (v854).
+       Atribuirle la lista entera le pondría a los 42 % de Ana el nombre de
+       Luis, que midió otra cuadra: es la falta de la v867 —declarar mal la
+       procedencia— con la ropa de una mejora. La lista se conserva al lado
+       para que la puerta pueda decir que la plantilla se repartió. */
+    var qsLote = quienesDeFilas(delLote ? [delLote] : [], fl.quien);
     var base = {
       filas: filas, fuente: fl,
+      /* `quienTexto` y no `fuente.quien` pelado: con la plantilla repartida
+         entre dos personas, el nombre de la entrada es cierto de la mitad de
+         las filas. Viene SIN escapar, como `cuando`, para que el llamador
+         siga poniendo su `esc()` y no haya dos convenciones. */
+      quienes: qsA, quienTexto: qsLote.texto || fl.quien,
       desde: fl.fechaDoc || null, hasta: (e.fuente && e.fuente.fechaHasta) || null,
       cuando: cuandoTexto(fl.fechaDoc || null, (e.fuente && e.fuente.fechaHasta) || null)
     };
@@ -1601,6 +1658,7 @@
                          .map(function (x) { return x[0]; });
     var total = piezas.reduce(function (a, x) { return a + (x[1] || 0); }, 0);
     var fl = fuenteLeida(e.fuente);
+    var qsP = quienesDeFilas(filas, fl.quien);
     var hasta = (e.fuente && e.fuente.fechaHasta) || null;
     /* El andén de la sección: la media de los dos lados, que es lo que el
        dibujo pinta a lado y lado. Con uno solo medido se usa ese y se dice. */
@@ -1615,7 +1673,7 @@
       antejardinM: ante, andenM: andenM,
       totalM: Math.round(10 * total) / 10,
       sinMedir: sinMedir,
-      fuente: fl,
+      fuente: fl, quienes: qsP, quienTexto: qsP.texto || fl.quien,
       desde: fl.fechaDoc || null, hasta: hasta,
       cuando: cuandoTexto(fl.fechaDoc || null, hasta)
     };
@@ -1833,6 +1891,7 @@
     var conEstado = filas.filter(function (f) { return String(f.estado || '').trim() !== ''; }).length;
 
     var fl = fuenteLeida(e.fuente);
+    var qsAn = quienesDeFilas(filas, fl.quien);
     var hasta = (e.fuente && e.fuente.fechaHasta) || null;
     return {
       estado: 'ok', hay: true, razon: '',
@@ -1840,7 +1899,7 @@
       anchoLibreM: media, anchoLibreMinM: minimo,
       conRampa: conRampa, sinRampa: sinRampa, rampaSinAnotar: rampaSinAnotar,
       obstruye: obstruye, materiales: materiales, conEstado: conEstado,
-      fuente: fl,
+      fuente: fl, quienes: qsAn, quienTexto: qsAn.texto || fl.quien,
       desde: fl.fechaDoc || null, hasta: hasta,
       cuando: cuandoTexto(fl.fechaDoc || null, hasta)
     };
@@ -2013,11 +2072,12 @@
         franja: iv.desde != null ? horaTexto(iv.desde) + ' y ' + horaTexto(iv.hasta) : ''
       };
     });
+    var qsR = quienesDeFilas(filas, fl.quien);
     return {
       estado: 'ok', hay: true, razon: '',
       filas: filas, obs: obs,
       conIntervalo: obs.filter(function (x) { return x.intervaloMin != null; }).length,
-      fuente: fl,
+      fuente: fl, quienes: qsR, quienTexto: qsR.texto || fl.quien,
       desde: fl.fechaDoc || null, hasta: hasta,
       cuando: cuandoTexto(fl.fechaDoc || null, hasta)
     };
@@ -2061,7 +2121,8 @@
     var todas = base.concat(nuevas);
     todas.campo = campo;
     todas.nuevasDeCampo = nuevas.length;
-    todas.quien = campo.fuente.quien;
+    todas.quien = campo.quienTexto;
+    todas.quienes = campo.quienes;
     todas.cuando = campo.cuando;
     return todas;
   }
@@ -5001,7 +5062,7 @@
         ? '<p class="pie">La calzada y el andén de esta tabla están <b>medidos en campo con ' +
           'cinta</b>: ' + p.acotado.tramos +
           (p.acotado.tramos === 1 ? ' tramo levantado' : ' tramos levantados') + ' por ' +
-          esc(p.acotado.fuente.quien) + esc(p.acotado.cuando) + ', en media simple. La del mapa, ' +
+          esc(p.acotado.quienTexto) + esc(p.acotado.cuando) + ', en media simple. La del mapa, ' +
           'pesada por metros de vía, da ' + conComa(p.anchoMedioMapaM) + ' m.</p>'
         : '') +
       '<p class="pie">' + esc(p.lectura || '') + ' El ancho es el de la calzada, no de fachada a fachada. ' +
@@ -8662,7 +8723,7 @@ function donaHTML(datos, colorDe, nombreDe) {
           conComa(cm.anchoLibreM) + ' m de media · el más estrecho, ' +
           conComa(cm.anchoLibreMinM) + ' m') +
           '<p class="lee"><b>' + cm.tramos + (cm.tramos === 1 ? ' tramo caminado' : ' tramos caminados') +
-          '</b> por ' + esc(cm.fuente.quien) + esc(cm.cuando) + '. El ancho LIBRE no es el ancho ' +
+          '</b> por ' + esc(cm.quienTexto) + esc(cm.cuando) + '. El ancho LIBRE no es el ancho ' +
           'del andén: descuenta postes, materas y vitrinas, así que siempre es el menor de los ' +
           'dos. Y son ' + cm.tramos + ' tramos, no la red: los porcentajes de arriba siguen ' +
           'siendo los de OpenStreetMap, porque llevar lo caminado al total sería extrapolar.' +
@@ -8686,7 +8747,7 @@ function donaHTML(datos, colorDe, nombreDe) {
       (pf.origen === 'campo'
         ? '<p class="nota">La calzada y el andén de acá están <b>medidos en campo con cinta</b>: ' +
           pf.acotado.tramos + (pf.acotado.tramos === 1 ? ' tramo levantado' : ' tramos levantados') +
-          ' por ' + esc(pf.acotado.fuente.quien) + esc(pf.acotado.cuando) + '. Es una media ' +
+          ' por ' + esc(pf.acotado.quienTexto) + esc(pf.acotado.cuando) + '. Es una media ' +
           '<b>simple</b> de esos tramos, no de la red entera, y por eso va al lado la del mapa: ' +
           conComa(pf.anchoMedioMapaM) + ' m de calzada pesados por metros de vía, con dato en ' +
           pf.coberturaAncho + '% de la vía. La sección de fachada a fachada mide ' +
@@ -13283,6 +13344,10 @@ function donaHTML(datos, colorDe, nombreDe) {
           filasA.push({ cuadra: String(el.value || '').trim().slice(0, 80),
                         total: Number(String(tot).replace(',', '.')),
                         activo: Number(String(act).replace(',', '.')),
+                        /* En blanco NO es un hueco: significa que la midió
+                           quien responde por la plantilla, que es lo que la
+                           propia casilla declara (v949). */
+                        quien: leeA('quienFila', i).slice(0, 60),
                         esLaDelLote: i === iMarcada });
         });
         var utiles = filasA.filter(filaActividadUtil);
@@ -13361,6 +13426,7 @@ function donaHTML(datos, colorDe, nombreDe) {
             if (!isFinite(n) || n < 0) { malos.push(calle || 'un tramo'); return; }
             f[x[0]] = n;
           });
+          f.quien = leeP('quienFila', i).slice(0, 60);
           filasP.push(f);
         });
         var utilesP = filasP.filter(filaPerfilUtil);
@@ -13424,7 +13490,8 @@ function donaHTML(datos, colorDe, nombreDe) {
           var buenos = ps.filter(function (t) { return minutosDeHora(t) !== null; });
           var iv = intervaloDePasos(buenos);
           if (iv.razon === 'sin-orden') alReves.push(ref || 'una ruta');
-          filasR.push({ ref: ref.slice(0, 24), parada: parada.slice(0, 80), pasos: buenos });
+          filasR.push({ ref: ref.slice(0, 24), parada: parada.slice(0, 80), pasos: buenos,
+                        quien: leeR('quienFila', i).slice(0, 60) });
         });
         var utilesR = filasR.filter(filaRutaUtil);
         if (!utilesR.length || alReves.length) {
@@ -13489,7 +13556,8 @@ function donaHTML(datos, colorDe, nombreDe) {
           if (anchoT && !(isFinite(n) && n > 0)) anchoMalo.push(tramo || ('fila ' + (i + 1)));
           filasAn.push({ tramo: tramo.slice(0, 80), ancho: n,
                          material: material.slice(0, 60), estado: est.slice(0, 60),
-                         obstruye: obst.slice(0, 60), rampa: rampa.slice(0, 20) });
+                         obstruye: obst.slice(0, 60), rampa: rampa.slice(0, 20),
+                         quien: leeAn('quienFila', i).slice(0, 60) });
         });
         var utilesAn = filasAn.filter(filaAndenUtil);
         if (!utilesAn.length) {
@@ -17758,7 +17826,15 @@ function donaHTML(datos, colorDe, nombreDe) {
     return conComa((Number(x) * 100).toFixed(2));
   }
   function conComaY(lista) {
-    var xs = (lista || []).map(function (x) { return esc(String(x)); });
+    return unirConY((lista || []).map(function (x) { return esc(String(x)); }));
+  }
+  /* El mismo enlace, SIN escapar, para las frases que el llamador escapa
+     después. Son dos usos de una sola manera de unir una lista: escrita dos
+     veces divergiría a la tanda siguiente (v879), y una de las dos copias
+     escaparía dos veces —que es el «Colegio o jard&amp;iacute;n» de la
+     v902—. */
+  function unirConY(xs) {
+    xs = xs || [];
     if (xs.length <= 1) return xs[0] || '';
     return xs.slice(0, -1).join(', ') + ' y ' + xs[xs.length - 1];
   }
@@ -19271,12 +19347,21 @@ function donaHTML(datos, colorDe, nombreDe) {
         'quedar ahí: se resuelve al contar.',
       cols: ['Manzana', 'Lado o dirección', 'Pisos', 'Uso en planta baja', 'Observación'],
       filas: 10 },
+    /* Las cuatro que se CAMINAN llevan «Quién midió» —«Quién observó» en las
+       rutas— desde la v949. No es simetría con el cupo: allá la columna dice
+       quién INFORMÓ la cifra y acá quién la MIDIÓ, y son dos cosas (ver
+       `quienesDeFilas`). La columna se midió antes de ponerla y cuesta CERO
+       milímetros de papel en las dos orientaciones —50 · 50 · 50 · 47,9 ·
+       47,9 · 47,9 parada y 50 · 50 · 50 · 45,1 · 45,1 · 45,1 acostada, las
+       mismas cifras con seis columnas y con siete—, así que la premisa con la
+       que la v934 y la v939 lo aplazaron —«cambiar las columnas cambia la
+       plantilla impresa y sus aserciones»— no se sostenía. */
     { t: 'Perfil vial acotado',
       que: 'el ancho de cada pieza de la sección de la calle, de paramento a paramento',
       con: 'cinta de 30 m o distanciómetro; dos personas, una sostiene',
       demora: 'unos 10 minutos por tramo',
       pega: '«Cómo se mueve el sector», que hoy solo tiene la calzada',
-      cols: ['Calle y tramo', 'Calzada (m)', 'Separador (m)', 'Andén izq. (m)', 'Andén der. (m)', 'Antejardín (m)'],
+      cols: ['Calle y tramo', 'Calzada (m)', 'Separador (m)', 'Andén izq. (m)', 'Andén der. (m)', 'Antejardín (m)', 'Quién midió'],
       filas: 8 },
     { t: 'Estado de andenes por tramo',
       que: 'si el andén se puede usar: ancho libre de verdad, material, estado y qué lo obstruye',
@@ -19288,14 +19373,14 @@ function donaHTML(datos, colorDe, nombreDe) {
          aterriza es el perfil de la calle, que hoy publica si OpenStreetMap
          registra un andén y nunca cuánto mide ni si se puede caminar. */
       pega: '«El perfil de la calle», que hoy dice si hay andén y nunca cuánto se puede caminar',
-      cols: ['Tramo', 'Ancho libre (m)', 'Material', 'Estado', 'Qué lo obstruye', 'Rampa en esquina'],
+      cols: ['Tramo', 'Ancho libre (m)', 'Material', 'Estado', 'Qué lo obstruye', 'Rampa en esquina', 'Quién midió'],
       filas: 8 },
     { t: 'Rutas observadas y su frecuencia',
       que: 'qué rutas paran de verdad en cada parada y cada cuánto pasan',
       con: 'reloj, media hora sentado en la parada, en hora pico y en hora valle',
       demora: '30 minutos por parada y por franja',
       pega: '«Cómo se mueve el sector»: OpenStreetMap da el nombre de la ruta y nunca la frecuencia',
-      cols: ['Parada', 'Ruta (letrero)', 'Paso 1', 'Paso 2', 'Paso 3', 'Intervalo'],
+      cols: ['Parada', 'Ruta (letrero)', 'Paso 1', 'Paso 2', 'Paso 3', 'Intervalo', 'Quién observó'],
       filas: 8 },
     { t: 'Cupo real de equipamientos',
       que: 'a cuánta gente atiende de verdad cada equipamiento, preguntado en la portería',
@@ -19309,7 +19394,7 @@ function donaHTML(datos, colorDe, nombreDe) {
       con: 'cinta, o pasos contados y calibrados antes de salir',
       demora: 'unos 15 minutos por cuadra',
       pega: '«Continuidad del paramento», en el cierre de esta lámina',
-      cols: ['Cuadra y lado', 'Frente total (m)', 'Con puerta o vitrina (m)', 'Muro ciego (m)', 'Cerrado ese día (m)'],
+      cols: ['Cuadra y lado', 'Frente total (m)', 'Con puerta o vitrina (m)', 'Muro ciego (m)', 'Cerrado ese día (m)', 'Quién midió'],
       filas: 8 }
   ];
   /* El id de cada plantilla SE DERIVA del título y no se escribe a mano.
@@ -22500,7 +22585,7 @@ function donaHTML(datos, colorDe, nombreDe) {
       ? '<p class="pcr-conc pcr-fuente-ok">La calzada y el andén de acá están <b>medidos en ' +
         'campo con cinta</b>: ' + p.acotado.tramos +
         (p.acotado.tramos === 1 ? ' tramo levantado' : ' tramos levantados') + ' por ' +
-        esc(p.acotado.fuente.quien) + esc(p.acotado.cuando) + '. Es una media <b>simple</b> de ' +
+        esc(p.acotado.quienTexto) + esc(p.acotado.cuando) + '. Es una media <b>simple</b> de ' +
         'esos tramos, no de la red: la del mapa —' + conComa(p.anchoMedioMapaM) + ' m, ' +
         '<b>pesada por metros de vía</b> y con dato en ' + p.coberturaAncho + '% de la red— ' +
         'queda al lado para contrastar. Los pisos siguen siendo del mapa.</p>'
@@ -22548,7 +22633,7 @@ function donaHTML(datos, colorDe, nombreDe) {
           ' m de ancho libre</b> en ' + cm.tramos +
           (cm.tramos === 1 ? ' tramo caminado' : ' tramos caminados') +
           '; el más estrecho, ' + conComa(cm.anchoLibreMinM) + ' m. Caminados por ' +
-          esc(cm.fuente.quien) + esc(cm.cuando) + '. <b>No es el ancho del andén</b>: ' +
+          esc(cm.quienTexto) + esc(cm.cuando) + '. <b>No es el ancho del andén</b>: ' +
           'descuenta postes, materas y vitrinas, así que siempre es el menor de los dos. ' +
           'Y son ' + cm.tramos + ' tramos, no la red: los porcentajes de arriba no cambian.' +
           (cm.sinRampa ? ' ' + cm.sinRampa + (cm.sinRampa === 1 ? ' esquina sin rampa.' : ' esquinas sin rampa.') : '') +
@@ -26811,14 +26896,22 @@ function donaHTML(datos, colorDe, nombreDe) {
     var cab = '<p class="pcr-lab">' + esc(nombreDeHueco(HUECO_ACTIVIDAD)) + '</p>' +
       '<p class="pcr-vac-doc">Se camina la cuadra midiendo cuántos metros del frente tienen ' +
       'puerta o vitrina abierta a la calle. Con cinta, o con pasos contados y calibrados antes ' +
-      'de salir.</p>';
+      'de salir. <b>Si se repartió entre dos personas</b>, cada fila dice quién la midió; en blanco significa que la midió quien responde por la plantilla.</p>';
     if (act.estado === 'ok') {
       var f = act.delLote;
       return '<div class="pcr-vac-g pcr-act-g">' + cab +
         '<p class="pcr-conc pcr-fuente-ok"><b>' + act.pctLleno + ' % del frente con puerta o ' +
         'vitrina</b> en ' + esc(f.cuadra || 'la cuadra del lote') + ' — ' +
         Math.round(Number(f.activo)) + ' m de ' + Math.round(Number(f.total)) + ' m, ' +
-        'levantado por ' + esc(act.fuente.quien) + esc(act.cuando) + '.' +
+        'levantado por ' + esc(act.quienTexto) + esc(act.cuando) + '.' +
+        /* Con la plantilla repartida, el nombre de arriba es el de quien
+           midió ESTA cuadra y no el de todos: decir quiénes más la
+           levantaron es lo que evita que se lea como que sobran nombres. */
+        ((act.quienes || {}).repartida
+          ? ' Las ' + act.filas.length + ' cuadras las levantaron ' +
+            conComaY(act.quienes.nombres) + '; la cifra de arriba es la que midió ' +
+            esc(act.quienTexto) + '.'
+          : '') +
         (act.filas.length > 1
           ? ' Se anotaron ' + act.filas.length + ' cuadras; la casilla usa la del lote.'
           : '') +
@@ -26843,6 +26936,10 @@ function donaHTML(datos, colorDe, nombreDe) {
         '<label class="pcr-campo-linea"><span>Con puerta o vitrina (m)</span>' +
           '<input type="text" inputmode="decimal" maxlength="8" data-pcr-act="activo" data-i="' + i + '" ' +
             'value="' + esc(v.activo != null ? String(v.activo) : '') + '" placeholder="51" /></label>' +
+        '<label class="pcr-campo-linea"><span>Quién midió</span>' +
+          '<input type="text" maxlength="60" data-pcr-act="quienFila" data-i="' + i + '" ' +
+            'value="' + esc(v.quien || '') + '" '+
+            'placeholder="en blanco: quien responde por la plantilla" /></label>' +
         '<label class="pcr-act-r"><input type="radio" name="pcr-act-lote" data-pcr-act="lote" ' +
             'data-i="' + i + '"' + (v.esLaDelLote ? ' checked' : '') + ' />' +
           '<span>Esta es la cuadra del lote</span></label>' +
@@ -26854,7 +26951,7 @@ function donaHTML(datos, colorDe, nombreDe) {
         'sería publicar una cifra del sector en una casilla que dice «predio».</p>'
       : '';
     return '<div class="pcr-vac-g pcr-act-g">' + cab + aviso + filas +
-      '<label class="pcr-campo-linea"><span>Quién lo levantó</span>' +
+      '<label class="pcr-campo-linea"><span>Quién responde por la plantilla</span>' +
         '<input type="text" maxlength="80" data-pcr-act="quien" ' +
           'value="' + esc((act.fuente && act.fuente.quien) || '') + '" ' +
           'placeholder="El nombre de quien caminó la cuadra" /></label>' +
@@ -26889,13 +26986,13 @@ function donaHTML(datos, colorDe, nombreDe) {
     var cab = '<p class="pcr-lab">' + esc(nombreDeHueco(HUECO_PERFIL)) + '</p>' +
       '<p class="pcr-vac-doc">Se mide la sección de la calle de paramento a paramento, pieza por ' +
       'pieza. Con cinta de 30 m o distanciómetro, dos personas. La calzada es lo único ' +
-      'obligatorio: sin ella el tramo no mide una sección.</p>';
+      'obligatorio: sin ella el tramo no mide una sección. <b>Si se repartió entre dos personas</b>, cada fila dice quién la midió; en blanco significa que la midió quien responde por la plantilla.</p>';
     if (pv.estado === 'ok') {
       return '<div class="pcr-vac-g pcr-act-g">' + cab +
         '<p class="pcr-conc pcr-fuente-ok"><b>' + conComa(pv.calzadaM) + ' m de calzada' +
         (pv.andenM != null ? ' y ' + conComa(pv.andenM) + ' m de andén' : '') + '</b>, media de ' +
         pv.tramos + (pv.tramos === 1 ? ' tramo medido' : ' tramos medidos') +
-        ', levantados por ' + esc(pv.fuente.quien) + esc(pv.cuando) + '.' +
+        ', levantados por ' + esc(pv.quienTexto) + esc(pv.cuando) + '.' +
         (pv.sinMedir.length
           ? ' Sin anotar en ningún tramo: ' + esc(pv.sinMedir.join(', ')) + ' — puede ser que no ' +
             'existan o que nadie las midiera, y las dos cosas se ven igual en el formulario, así ' +
@@ -26928,10 +27025,14 @@ function donaHTML(datos, colorDe, nombreDe) {
         cel('andenIzq', i, v.andenIzq, 'Andén izq. (m)', '1,8') +
         cel('andenDer', i, v.andenDer, 'Andén der. (m)', '1,6') +
         cel('antejardin', i, v.antejardin, 'Antejardín (m)', 'se deja vacío si no hay') +
+        '<label class="pcr-campo-linea"><span>Quién midió</span>' +
+          '<input type="text" maxlength="60" data-pcr-pvl="quienFila" data-i="' + i + '" ' +
+            'value="' + esc(v.quien || '') + '" '+
+            'placeholder="en blanco: quien responde por la plantilla" /></label>' +
         '</div>';
     }).join('');
     return '<div class="pcr-vac-g pcr-act-g">' + cab + filas +
-      '<label class="pcr-campo-linea"><span>Quién lo levantó</span>' +
+      '<label class="pcr-campo-linea"><span>Quién responde por la plantilla</span>' +
         '<input type="text" maxlength="80" data-pcr-pvl="quien" ' +
           'value="' + esc((pv.fuente && pv.fuente.quien) || '') + '" ' +
           'placeholder="El nombre de quien midió con la cinta" /></label>' +
@@ -26964,7 +27065,7 @@ function donaHTML(datos, colorDe, nombreDe) {
       '<p class="pcr-vac-doc">Media hora sentado en la parada, con reloj: se anota el letrero de ' +
       'cada ruta y la hora a la que pasa. <b>Dos pasos de la misma ruta son el mínimo</b>: con uno ' +
       'se sabe que pasa, no cada cuánto — y eso también se guarda, porque que pase ya es un ' +
-      'hallazgo.</p>';
+      'hallazgo. <b>Si se repartió entre dos personas</b>, cada fila dice quién la observó; en blanco significa que la observó quien responde por la plantilla.</p>';
     if (rv.estado === 'ok') {
       return '<div class="pcr-vac-g pcr-act-g">' + cab +
         '<p class="pcr-conc pcr-fuente-ok"><b>' + rv.obs.length +
@@ -26972,7 +27073,7 @@ function donaHTML(datos, colorDe, nombreDe) {
         (rv.conIntervalo
           ? ', ' + rv.conIntervalo + ' con su intervalo'
           : ', ninguna con dos pasos todavía') +
-        '</b> por ' + esc(rv.fuente.quien) + esc(rv.cuando) + '.</p>' +
+        '</b> por ' + esc(rv.quienTexto) + esc(rv.cuando) + '.</p>' +
         '<div class="pcr-lote">' +
           rv.obs.map(function (o) {
             return '<div class="pcr-lote-fila"><span>' + esc(o.ref) +
@@ -27010,10 +27111,14 @@ function donaHTML(datos, colorDe, nombreDe) {
         hora('p1', i, ps[0], 'Paso 1') +
         hora('p2', i, ps[1], 'Paso 2') +
         hora('p3', i, ps[2], 'Paso 3 (si alcanzó)') +
+        '<label class="pcr-campo-linea"><span>Quién observó</span>' +
+          '<input type="text" maxlength="60" data-pcr-rut="quienFila" data-i="' + i + '" ' +
+            'value="' + esc(v.quien || '') + '" '+
+            'placeholder="en blanco: quien responde por la plantilla" /></label>' +
         '</div>';
     }).join('') ;
     return '<div class="pcr-vac-g pcr-act-g">' + cab + filas +
-      '<label class="pcr-campo-linea"><span>Quién lo observó</span>' +
+      '<label class="pcr-campo-linea"><span>Quién responde por la plantilla</span>' +
         '<input type="text" maxlength="80" data-pcr-rut="quien" ' +
           'value="' + esc((rv.fuente && rv.fuente.quien) || '') + '" ' +
           'placeholder="El nombre de quien estuvo en la parada" /></label>' +
@@ -27045,13 +27150,13 @@ function donaHTML(datos, colorDe, nombreDe) {
     var cab = '<p class="pcr-lab">' + esc(nombreDeHueco(HUECO_ANDENES)) + '</p>' +
       '<p class="pcr-vac-doc">Se camina el tramo y se mide el ancho <b>LIBRE</b>: lo que queda ' +
       'para caminar después de los postes, las materas y las vitrinas. No es el ancho del andén ' +
-      '—ese lo levanta «Perfil vial acotado»— y siempre es el menor de los dos.</p>';
+      '—ese lo levanta «Perfil vial acotado»— y siempre es el menor de los dos. <b>Si se repartió entre dos personas</b>, cada fila dice quién la midió; en blanco significa que la midió quien responde por la plantilla.</p>';
     if (av.estado === 'ok') {
       return '<div class="pcr-vac-g pcr-act-g">' + cab +
         '<p class="pcr-conc pcr-fuente-ok"><b>' + conComa(av.anchoLibreM) + ' m de ancho libre</b>, ' +
         'media de ' + av.tramos + (av.tramos === 1 ? ' tramo caminado' : ' tramos caminados') +
         '; el más estrecho, ' + conComa(av.anchoLibreMinM) + ' m. Caminados por ' +
-        esc(av.fuente.quien) + esc(av.cuando) + '.' +
+        esc(av.quienTexto) + esc(av.cuando) + '.' +
         (av.sinRampa ? ' <b>' + av.sinRampa + (av.sinRampa === 1 ? ' esquina sin rampa' : ' esquinas sin rampa') + '</b>' +
           (av.rampaSinAnotar ? ' y ' + av.rampaSinAnotar + ' sin anotar' : '') + '.' : '') +
         (av.obstruye.length ? ' Lo que obstruye: ' + esc(av.obstruye.join(', ')) + '.' : '') +
@@ -27080,10 +27185,11 @@ function donaHTML(datos, colorDe, nombreDe) {
         cel('estado', i, v.estado, 'Estado', 'bueno, regular, malo') +
         cel('obstruye', i, v.obstruye, 'Qué lo obstruye', 'postes, materas, vitrinas') +
         cel('rampa', i, v.rampa, 'Rampa en esquina', 'sí / no') +
+        cel('quienFila', i, v.quien, 'Quién midió', 'en blanco: quien responde por la plantilla') +
         '</div>';
     }).join('');
     return '<div class="pcr-vac-g pcr-act-g">' + cab + filas +
-      '<label class="pcr-campo-linea"><span>Quién lo caminó</span>' +
+      '<label class="pcr-campo-linea"><span>Quién responde por la plantilla</span>' +
         '<input type="text" maxlength="80" data-pcr-and="quien" ' +
           'value="' + esc((av.fuente && av.fuente.quien) || '') + '" ' +
           'placeholder="El nombre de quien caminó con la cinta" /></label>' +
@@ -31879,6 +31985,9 @@ function donaHTML(datos, colorDe, nombreDe) {
           if (!rt) return null;
           return { n: rt.length, nuevasDeCampo: rt.nuevasDeCampo || 0,
                    estadoCampo: rt.campo ? rt.campo.estado : null,
+                   quien: rt.quien || '',
+                   quienes: (rt.quienes || {}).nombres || [],
+                   repartida: !!(rt.quienes || {}).repartida,
                    conIntervalo: rt.campo && rt.campo.hay ? rt.campo.conIntervalo : 0,
                    lista: rt.slice(0, 12).map(function (x) {
                      return { ref: x.ref, origen: x.origen,
@@ -31901,7 +32010,13 @@ function donaHTML(datos, colorDe, nombreDe) {
                    tramos: pf.acotado ? pf.acotado.tramos : 0,
                    totalM: pf.acotado ? pf.acotado.totalM : null,
                    sinMedir: pf.acotado ? pf.acotado.sinMedir : [],
-                   estadoCampo: pf.campo ? pf.campo.estado : null };
+                   estadoCampo: pf.campo ? pf.campo.estado : null,
+                   /* v949 · quién midió CADA tramo. Va la lista y no el texto
+                      ya armado: una guarda tiene que poder decir CUÁNTOS son
+                      y no solo que la frase cambió (v944). */
+                   quien: pf.acotado ? pf.acotado.quienTexto : '',
+                   quienes: ((pf.acotado || {}).quienes || {}).nombres || [],
+                   repartida: !!((pf.acotado || {}).quienes || {}).repartida };
         })(),
         cupo: (function () {
           var cp;
@@ -31933,7 +32048,9 @@ function donaHTML(datos, colorDe, nombreDe) {
             anchoLibreM: cm.anchoLibreM, anchoLibreMinM: cm.anchoLibreMinM,
             conRampa: cm.conRampa, sinRampa: cm.sinRampa,
             rampaSinAnotar: cm.rampaSinAnotar,
-            obstruye: cm.obstruye, materiales: cm.materiales, quien: cm.fuente.quien });
+            obstruye: cm.obstruye, materiales: cm.materiales, quien: cm.quienTexto,
+            quienes: (cm.quienes || {}).nombres || [],
+            repartida: !!(cm.quienes || {}).repartida });
         })(),
         /* Las seis plantillas con su RUTA declarada (v944). Va la lista y no
            un conteo: una guarda tiene que poder decir CUÁL entra por dónde,
@@ -32018,7 +32135,9 @@ function donaHTML(datos, colorDe, nombreDe) {
           return { pctLleno: c.pctLleno, pctLlenoMapa: c.pctLlenoMapa,
                    origen: c.origen, edificios: c.edificios,
                    cuando: (c.campo && c.campo.cuando) || '',
-                   quien: (c.campo && c.campo.fuente && c.campo.fuente.quien) || '' };
+                   quien: (c.campo && c.campo.quienTexto) || '',
+                   quienes: ((c.campo && c.campo.quienes) || {}).nombres || [],
+                   repartida: !!((c.campo && c.campo.quienes) || {}).repartida };
         })(),
         actividad: (function () {
           try { return actividadDeCampo(llaveDeSector(S.resultado && S.resultado.meta)); }

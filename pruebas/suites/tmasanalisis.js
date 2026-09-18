@@ -367,6 +367,12 @@ const CAPAS_IDEAM = [
     pvl('antejardin', 0, '2,5');
     pvl('calle', 1, 'Carrera 3 entre calles 1 y 2');
     pvl('calzada', 1, '7,0'); pvl('andenIzq', 1, '1,2'); pvl('andenDer', 1, '1,4');
+    /* v949 · el SEGUNDO tramo lo midió otra persona, que es como se reparte
+       una plantilla de verdad: una toma los pares y otra los impares. El
+       primero se deja en blanco a propósito —así se ejercitan las dos ramas
+       en la misma corrida: la fila con nombre propio y la que cae en el de
+       quien responde por la plantilla—. */
+    pvl('quienFila', 1, 'Luis Ortega');
     pvl('quien', undefined, 'Cleri Rodríguez');
     pvl('fechaDoc', undefined, '2026-09-15');
     pvl('fechaHasta', undefined, '2026-09-16');
@@ -389,7 +395,11 @@ const CAPAS_IDEAM = [
 
     // 4 · Lo que la ficha y el papel imprimen ya con la cinta adentro.
     await pesGen();
-    o.puertaDice = (txt(H()).match(/Perfil vial acotado[^]{0,420}/) || [''])[0];
+    /* El resumen se ancla por CONTENIDO y no por distancia desde el título:
+       una ventana de N caracteres envejece en cuanto la instrucción de arriba
+       crece un renglón, y entonces la aserción se pone roja por el lector y no
+       por la puerta (v935). Se salta hasta la primera cifra del resumen. */
+    o.puertaDice = (txt(H()).match(/Perfil vial acotado[^]*?m de calzada[^]{0,420}/) || [''])[0];
     const bMov = H().querySelector('[data-pcr="pestana"][data-t="movilidad"]');
     if (bMov) { bMov.click(); await esperar(400); }
     await abrir();
@@ -449,6 +459,9 @@ const CAPAS_IDEAM = [
     rut('p1', 0, '06:40'); rut('p2', 0, '06:57'); rut('p3', 0, '07:14');
     rut('ref', 1, 'B-3'); rut('parada', 1, 'Calle 10 con carrera 5');
     rut('p1', 1, '06:52');
+    /* v949 · media hora por parada y por franja: ocho filas son cuatro horas,
+       así que repartirlas no es el caso raro sino el normal. */
+    rut('quienFila', 1, 'Luis Ortega');
     rut('quien', undefined, 'Cleri Rodríguez');
     rut('fechaDoc', undefined, '2026-09-17');
     await guardarRut();
@@ -470,7 +483,7 @@ const CAPAS_IDEAM = [
 
     // 4 · Lo que la ficha imprime ya con el reloj adentro.
     await pesGen();
-    o.puertaRutasDice = (txt(H()).match(/Rutas observadas y su frecuencia[^]{0,520}/) || [''])[0];
+    o.puertaRutasDice = (txt(H()).match(/Rutas observadas y su frecuencia[^]*?rutas? observadas?[^]{0,520}/i) || [''])[0];
     const bMov2 = H().querySelector('[data-pcr="pestana"][data-t="movilidad"]');
     if (bMov2) { bMov2.click(); await esperar(400); }
     await abrir();
@@ -530,6 +543,7 @@ const CAPAS_IDEAM = [
     and('tramo', 1, 'Carrera 3 entre calles 11 y 12');
     and('ancho', 1, '0,6'); and('material', 1, 'adoquín');
     and('estado', 1, 'malo'); and('obstruye', 1, 'materas'); and('rampa', 1, 'sí');
+    and('quienFila', 1, 'Luis Ortega');
     and('quien', undefined, 'Cleri Rodríguez');
     and('fechaDoc', undefined, '2026-09-17');
     await guardarAnd();
@@ -545,7 +559,7 @@ const CAPAS_IDEAM = [
 
     // 5 · Lo que la ficha y el papel imprimen ya con la cinta adentro.
     await pesGen();
-    o.puertaAndDice = (txt(H()).match(/Estado de andenes por tramo[^]{0,480}/) || [''])[0];
+    o.puertaAndDice = (txt(H()).match(/Estado de andenes por tramo[^]*?m de ancho libre[^]{0,480}/) || [''])[0];
     const bMov3 = H().querySelector('[data-pcr="pestana"][data-t="movilidad"]');
     if (bMov3) { bMov3.click(); await esperar(400); }
     await abrir();
@@ -625,7 +639,7 @@ const CAPAS_IDEAM = [
       } catch (e) { return [{ error: String(e) }]; }
     })();
     await pesGen();
-    o.puertaCupoDice = (txt(H()).match(/Cupo real de equipamientos[^]{0,520}/) || [''])[0];
+    o.puertaCupoDice = (txt(H()).match(/Cupo real de equipamientos[^]*?puestos[^]{0,520}/) || [''])[0];
     o.laminaCupo = window.URBIS_PC_RECON.laminaA({ hoja: 'B' });
 
     // Y que todo esto viaje con la ficha archivada.
@@ -1379,9 +1393,50 @@ const CAPAS_IDEAM = [
     T('y un ancho medido sin nombre de tramo, también distinto',
       /nombre/i.test(r.andAvisoSinNombre) && r.andAvisoSinNombre !== r.andAvisoNoNumero,
       r.andAvisoSinNombre.slice(0, 100));
+    /* La procedencia son los DOS nombres desde la v949: el segundo tramo lo
+       caminó otra persona, y con un solo `quien` la mitad de la frase era
+       falsa. Se aprieta, no se afloja: antes pedía un nombre y ahora pide
+       que estén los dos y en el orden en que aparecen. */
     T('dos tramos caminados quedan con su ancho libre y su procedencia',
-      ac.hay === true && ac.tramos === 2 && ac.anchoLibreM === 0.9 && ac.quien === 'Cleri Rodríguez',
+      ac.hay === true && ac.tramos === 2 && ac.anchoLibreM === 0.9 &&
+      ac.quien === 'Cleri Rodríguez y Luis Ortega',
       ac.tramos + ' tramos · ' + ac.anchoLibreM + ' m de media · ' + ac.quien);
+    /* ── QUIÉN MIDIÓ CADA FILA (v949) ─────────────────────────────────
+       Las tres plantillas de esta suite se repartieron entre dos personas:
+       Cleri responde por la plantilla y midió el primer tramo, Luis midió el
+       segundo. Es el caso normal y no el raro — con «30 minutos por parada y
+       por franja», ocho filas de rutas son cuatro horas.
+
+       La guarda de MATERIAL va primero (v920): sin la segunda persona
+       anotada, las tres de abajo pasarían por no tener nada que rechazar. */
+    const pc = r.perfilCampo || {}, rc2 = r.rutasCampo || {};
+    T('MATERIAL · las tres plantillas se repartieron entre dos personas',
+      (pc.quienes || []).length === 2 && (rc2.quienes || []).length === 2 &&
+      (ac.quienes || []).length === 2,
+      'perfil ' + JSON.stringify(pc.quienes || []) + ' · rutas ' +
+      JSON.stringify(rc2.quienes || []) + ' · andenes ' + JSON.stringify(ac.quienes || []));
+
+    T('las tres declaran que la plantilla se repartió',
+      pc.repartida === true && rc2.repartida === true && ac.repartida === true,
+      'perfil ' + pc.repartida + ' · rutas ' + rc2.repartida + ' · andenes ' + ac.repartida);
+
+    /* La fila SIN nombre propio cae en quien responde por la plantilla, que es
+       lo que la casilla declara. Si cayera en vacío, el primer tramo saldría
+       sin procedencia y la lista tendría un solo nombre. */
+    T('la fila en blanco cae en quien responde por la plantilla, no en nadie',
+      (pc.quienes || [])[0] === 'Cleri Rodríguez' &&
+      (pc.quienes || [])[1] === 'Luis Ortega',
+      JSON.stringify(pc.quienes || []));
+
+    /* Y la procedencia impresa lleva los dos nombres: es lo que el lector ve,
+       y medirlo sobre el papel y no sobre la variable es la regla de la v879. */
+    T('y la ficha imprime los DOS nombres, no solo el de quien responde',
+      /Luis Ortega/.test(r.fichaPerfil || '') && /Luis Ortega/.test(r.fichaRutas || '') &&
+      /Luis Ortega/.test(r.fichaAnden || ''),
+      'perfil ' + (/Luis Ortega/.test(r.fichaPerfil || '') ? 'sí' : 'NO') +
+      ' · rutas ' + (/Luis Ortega/.test(r.fichaRutas || '') ? 'sí' : 'NO') +
+      ' · andenes ' + (/Luis Ortega/.test(r.fichaAnden || '') ? 'sí' : 'NO'));
+
     /* EL MÍNIMO se publica porque un andén se camina al ancho de su punto
        más estrecho: 0,9 de media con un tramo de 0,6 no es un andén de 0,9. */
     T('y el MÁS ESTRECHO va al lado de la media, que es al ancho que se camina',

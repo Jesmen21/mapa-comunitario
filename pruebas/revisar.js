@@ -1889,6 +1889,40 @@ console.log('\n  -- un nombre, una cosa --');
     /cuentaParaPostSector\(/.test(cuerpoTiene),
     /cuentaParaPostSector\(/.test(cuerpoTiene)
       ? 'tieneCampo la llama' : 'tieneCampo NO la llama: la regla no mordería');
+
+  /* ── QUIÉN MIDIÓ CADA FILA (v949) ──────────────────────────────────────
+     Las cuatro plantillas que se CAMINAN llevan la atribución por fila, y
+     las cuatro la resuelven por `quienesDeFilas`. La guarda es de clase y no
+     del caso: lo que no puede volver es que un sitio imprima el `quien` de
+     la ENTRADA sobre una plantilla repartida entre dos personas, que es
+     media procedencia falsa sin que se vea (v867).
+
+     Falla CERRADO: una plantilla caminada nueva que no llame al ayudante
+     sale en rojo en su primera composición, en vez de tres tandas después
+     (es el canje de la v880 con la guarda del voseo). */
+  const CAMINADAS = ['actividadDeCampo', 'perfilDeCampo', 'andenesDeCampo', 'rutasDeCampo'];
+  const sinResolver = CAMINADAS.filter(function (f) {
+    const cuerpo = (src.match(new RegExp('function ' + f + '\\([^]*?\\n  \\}')) || [''])[0];
+    return !/quienesDeFilas\(/.test(cuerpo);
+  });
+  comprobar('las cuatro plantillas caminadas resuelven quién midió CADA fila',
+    sinResolver.length === 0,
+    sinResolver.length
+      ? sinResolver.join(', ') + ' no llama a quienesDeFilas: con la plantilla ' +
+        'repartida imprimiría un solo nombre'
+      : CAMINADAS.length + ' funciones, todas por quienesDeFilas');
+
+  /* Y la guarda de la guarda: si el ayudante dejara de mirar el nombre de la
+     fila, las cuatro seguirían llamándolo y la de arriba seguiría en verde
+     sobre un ayudante que devuelve siempre el de la entrada. Es el patrón de
+     la v878 con su propia lista. */
+  const cuerpoQ = (src.match(/function quienesDeFilas\([^]*?\n  \}/) || [''])[0];
+  const miraFila = /f && f\.quien/.test(cuerpoQ) && /quienEntrada/.test(cuerpoQ);
+  comprobar('y quienesDeFilas sigue leyendo el nombre de la fila, no solo el de la entrada',
+    miraFila,
+    miraFila ? 'lee f.quien y cae en el de la entrada'
+             : (cuerpoQ ? 'quienesDeFilas NO lee f.quien: la regla no mordería'
+                        : 'NO se encontró quienesDeFilas'));
 }
 
   comprobar('ningún nombre de window es función en un archivo y lista en otro',

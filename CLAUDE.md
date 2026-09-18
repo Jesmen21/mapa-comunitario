@@ -9298,6 +9298,152 @@ septiembre.
 cuando empieza. Una tanda cuyo resultado es una medición y una decisión de no
 hacer necesita un nombre que diga eso.
 
+## Quién midió CADA fila (v951)
+
+La columna que la v934 y la v939 dejaron anotada como «su propia tanda», con
+su razón escrita: *«si dos personas miden tramos distintos, la entrada guarda
+un solo `quien`… cambiar las columnas cambia la plantilla impresa y sus
+aserciones en `tlaminaedu`»*.
+
+**Medida antes de tocar nada, esa razón no se sostenía.** La séptima columna
+cuesta **cero milímetros de papel**, y las aserciones de `tlaminaedu` ni se
+mueven —piden `columnas >= 5` y `celdas >= 35`, y pasan de 6/48 a 7/56—:
+
+| | Parada | Acostada |
+|---|---|---|
+| v948, seis columnas | 50 · 50 · 50 · 47,9 · 47,9 · 47,9 | 50 · 50 · 50 · 45,1 · 45,1 · 45,1 |
+| con la columna en UNA plantilla | **idéntico** | **idéntico** |
+| con la columna en las CUATRO | **idéntico** | **idéntico** |
+
+Lo que sí cuesta es hacerlo en las cuatro. Y se hace en las cuatro.
+
+### Son cuatro puertas, no una, y el precedente ya estaba
+
+El usuario nombró el perfil vial. Medido, **las cuatro plantillas que se
+CAMINAN tienen la misma forma**: el perfil, los andenes, las rutas y el
+paramento. La quinta —el cupo— la tiene desde la v883, y la sexta no tiene
+puerta (v944).
+
+Arreglar una sola habría dejado **cinco puertas con dos comportamientos**, que
+es exactamente lo que la v940 declinó hacer por esa misma razón. Y las rutas
+son el caso más claro de todos: con «30 minutos por parada y por franja», ocho
+filas son cuatro horas — repartirlas no es el caso raro, es el normal.
+
+### No es el `informo` del cupo, aunque la columna se parezca
+
+La distinción decide el texto y las cuentas, así que va escrita en el
+ayudante:
+
+* en el **cupo**, el nombre es la **FUENTE** de la cifra —la portería que la
+  dijo— y una fila sin él es un hueco: la cifra queda sin a quién volver a
+  preguntarle, y por eso el cupo las cuenta y lo dice;
+* en las cuatro caminadas es quien la **MIDIÓ**, y una fila en blanco **no es
+  un hueco**: significa que la midió quien responde por la plantilla, que es
+  lo que el propio formulario declara al lado de la casilla.
+
+Por eso `quienesDeFilas` devuelve **nombres y no una frase**, y por eso el
+campo del pie pasó a llamarse «Quién responde por la plantilla»: sigue siendo
+obligatorio y sigue siendo el respaldo, pero ya no afirma haber medido las
+ocho filas.
+
+**Una entrada guardada antes de esta versión no pierde nada ni se asciende a
+lo que nadie escribió** (v931): sus filas no traen nombre, así que todas caen
+en el `quien` de la entrada — que es exactamente lo que esa entrada afirmaba.
+
+### La asimetría que apareció al escribir la prueba
+
+Tres de las cuatro publican una cifra que sale de TODAS las filas —el perfil y
+los andenes promedian, las rutas dan una cifra por fila—, así que su
+procedencia es la lista entera.
+
+**El paramento no.** Su casilla está rotulada a escala de **predio** y publica
+la cifra de UNA fila, la cuadra del lote (v854). Atribuirle la lista le
+pondría a los 43 % que midió Marta el nombre de Luis, que midió otra cuadra:
+es la falta de la v867 —declarar mal la procedencia— con la ropa de una
+mejora. Su `quienTexto` sale de la fila marcada, y la lista se conserva al
+lado para que la puerta pueda decir que la plantilla se repartió.
+
+No se vio leyendo: se vio al escribir la aserción.
+
+### La guarda, en las dos mitades
+
+En `revisar.js`, y falla CERRADO: una plantilla caminada nueva que no llame al
+ayudante sale en rojo en su primera composición, en vez de tres tandas después
+(es el canje de la v880 con la guarda del voseo).
+
+* las cuatro `*DeCampo` resuelven la atribución por `quienesDeFilas`;
+* y la guarda de la guarda: `quienesDeFilas` sigue leyendo `f.quien`. Sin
+  ella, las cuatro seguirían llamándolo y la de arriba seguiría en verde sobre
+  un ayudante que devuelve siempre el de la entrada (v878).
+
+Demostradas en las dos direcciones, con archivo y renglón.
+
+### De paso, un enlace que se iba a escribir dos veces
+
+`conComaY` escapa lo que une, y la frase de la procedencia la escapa el
+llamador. Escribir el enlace otra vez habría sido la clase B en la misma tanda
+en que se cita, y una de las dos copias escaparía dos veces — que es el
+«Colegio o jard&amp;iacute;n» de la v902. Se partió en `unirConY` (une) y
+`conComaY` (escapa y une).
+
+### El material tuvo que rehacerse dos veces, y las dos por medir
+
+Vigesimocuarta vez, y las dos veces lo cazó la guarda de MATERIAL:
+
+* **el botón de la pestaña estaba desprendido.** `pintar()` rehace el panel,
+  así que el nodo guardado veinte líneas antes ya no estaba en el documento y
+  hacerle clic no hacía nada. Salió como «1 filas» donde la aserción esperaba
+  dos.
+* **y la aserción del paramento pasaba por el motivo equivocado.** Con el
+  `quien` de la entrada igual al de la fila marcada, «firmado por Ana Ruiz»
+  salía bien con el código viejo y con el nuevo. Se arregló el MATERIAL y no
+  la aserción: la cuadra marcada la mide **Marta**, que no es quien responde
+  por la plantilla, y así los dos errores posibles se distinguen —la lista
+  entera da «Marta Peña y Luis Ortega», el de la entrada da «Ana Ruiz»—.
+
+### Y un defecto que salió al medir, declarado y no arreglado
+
+**Una plantilla ya guardada no se puede ampliar.** Con la entrada en estado
+«ok» la puerta muestra el resumen y el botón de quitar, sin formulario; y un
+rechazo no guarda nada, así que desde una plantilla recién vaciada no se pasa
+de los dos renglones que ofrece. Para anotar una cuadra más hay que quitar lo
+anotado y volver a escribir todo.
+
+Es la misma familia del defecto que la v940 dejó declarado —el formulario que
+se vacía al rechazar— y tiene el mismo camino con precedente: el estado
+`borrador` que la v931 diseñó justamente para poder volver a un formulario a
+medio llenar. **No se arregla acá y por la misma razón que entonces**:
+arreglarlo en una puerta dejaría cinco puertas con dos comportamientos. Queda
+medido.
+
+Por eso la rama del respaldo —una fila en blanco que cae en quien responde—
+se mide en `tmasanalisis`, donde el primer tramo del perfil va en blanco, y no
+en `tsinmapear`, donde no se llega a tres filas.
+
+### Dos capturas que envejecieron, y se apretaron
+
+Las cuatro capturas de puerta de `tmasanalisis` leían «los N caracteres
+siguientes al título». Al crecer un renglón la instrucción de arriba, el
+resumen se salió de la ventana y la aserción se puso roja **por el lector y no
+por la puerta**. Es la lección de la v935: **un ancla por distancia envejece;
+una por contenido no.** Ahora se saltan hasta la primera cifra del resumen.
+
+### Demostrado contra la v948
+
+Revirtiendo **solo lo que imprime y decide** —el almacén y lo que `estado()`
+expone se quedan, porque son lo que la suite necesita para LEER (v875)—: tres
+en rojo con el estado viejo impreso.
+
+```
+✗ dos tramos caminados quedan con su ancho libre y su procedencia — 2 tramos · 0.9 m de media · Cleri Rodríguez
+✗ y la ficha imprime los DOS nombres, no solo el de quien responde — perfil NO · rutas NO · andenes NO
+✗ la cifra de la cuadra del lote la firma quien midió ESA cuadra   — 43 % firmado por «Ana Ruiz»
+```
+
+Y la del paramento se puso roja también por el otro lado —con la lista entera,
+«43 % firmado por Marta Peña y Luis Ortega»—, que es la mitad que la asimetría
+de arriba existe para impedir.
+
 ## La lista viva: lo que al pliego educativo todavía le falta (v866)
 
 Esta lista se quedó vieja **cinco veces**. Cuatro dentro de la hoja —la
