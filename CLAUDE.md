@@ -10300,6 +10300,197 @@ histórica de I-04 a I-07 para Petro, Duque y Santos; la ejecución presupuestal
 deflactada por sector; el inventario de promesas con su estado; y las series de
 Medicina Legal, Procuraduría y Defensoría del bloque D.
 
+## Los criterios van como datos, y rechazaron tres declaraciones mías (v961)
+
+Llegó un **motor de referencia en TypeScript** —las cuatro capas del pliego
+presidencial escritas como código— sin una palabra de acompañamiento. No es
+código para el repositorio: este proyecto no tiene TypeScript ni paso de
+compilación, y un archivo que nadie carga es lo que la v885 enseñó a no
+dejar. Es una **especificación escrita como código**, que es la forma más
+difícil de malinterpretar.
+
+Medido contra `js/70-seguimiento.js` antes de tocar nada —la regla de la
+v863 y la que el usuario fijó en la v916—, de lo que el motor trae:
+
+| Lo que trae | Estado |
+|---|---|
+| contrargumento con TRES estados | **ya estaba** (v957), convergente sin habernos hablado |
+| `atribuible` = fechado ∧ nacional | **ya estaba**, partido entre `hechosDelMandato` y `entraAlVeredicto` |
+| `constanciaBusqueda` en el «ausente» | no estaba |
+| los **criterios como datos**, con `requiere` | no estaba: 7 de 168 declaradas a mano |
+| `estadoProcesal` y `tipoEvidencia` | no estaban (0 de 200) |
+| `tipoMedicion` con `contexto_estructural` | yo tenía `no-aplica`, 59 entradas |
+| triangulación, encuadre, signo político, eje C | no estaban |
+
+Esta tanda hace las cinco primeras. Las de la última fila piden lecturas
+sobre el encuadre de cada pieza y una fuente presupuestal entera, y van
+aparte.
+
+### El hallazgo: el criterio escrito es más estricto que mi lectura
+
+Es lo que el motor de referencia dice con todas las letras —*«los criterios
+van como DATOS, no como decisión caso por caso»*— y se cobró en el acto.
+Aplicados a las siete entradas que ya declaraban indicador:
+
+    v960   I-04 = 6 declaradas a mano · I-05 = 2
+    v961   I-04 = 3 que cumplen el criterio · I-05 = 0
+
+Tres declaraciones mías caen, y dos de ellas son de la misma entrada:
+
+* **«Declara insubsistente al director del DANE» · I-04 y I-05.** Retirar a
+  alguien de un cargo de libre nombramiento **es el régimen ordinario**, no
+  una facultad extraordinaria. Y el DANE **no es un órgano de autonomía
+  constitucional**: es un departamento administrativo del propio Ejecutivo,
+  así que un choque con él no es un choque entre poderes. Lo segundo destapó
+  además que mi propia descripción de I-05, escrita en la v958, listaba al
+  DANE entre los órganos autónomos. Corregida.
+* **«El Gobierno aplaza los concursos por decreto» · I-05.** El aplazamiento
+  sí es I-04. El choque no: el `excluye` nombra exactamente este caso —«anuncio
+  del Ejecutivo que el órgano aún no ha respondido»— y no consta acto de la
+  CNSC.
+
+**La dirección del error importa y hay que decirla:** el criterio escrito
+produce MENOS señalamientos, no más. Un conteo de mecanismos excepcionales
+que baja de seis a tres sobre un gobierno en ejercicio es prudencia, y es la
+razón por la que aplicarlo no necesita la firma de nadie: no es mi opinión
+sustituyendo a otra, es un criterio público sustituyendo a una lectura que
+no estaba escrita en ninguna parte.
+
+### `excluye` y `requiere` no son lo mismo, y por eso son dos campos
+
+Es la distinción que decide qué se toca en el registro:
+
+* **`excluye`** dice QUÉ NO ES de esta clase. Si un hecho cae ahí, la
+  declaración está mal y **se quita**.
+* **`requiere`** dice QUÉ PRUEBA HACE FALTA. El hecho sí es de esta clase y
+  le falta el papel: la declaración **se queda** y el indicador no la cuenta,
+  diciendo qué falta.
+
+Juntarlos borraría la diferencia entre «esto no va acá» y «esto va acá y
+todavía no se puede sostener», que para quien mantiene el registro son dos
+tareas opuestas. Por eso quedan dos entradas declaradas que no cuentan —las
+emisoras de paz, sin acto identificado; la emergencia «anunciada», cuyo
+decreto está en otra entrada— y ninguna de las dos se borró.
+
+### La desviación del motor de referencia, declarada
+
+El motor filtra en silencio: `declara(r, id) && requiere(r)`. Acá no.
+
+**Un conteo que baja sin decir por qué se lee como que el hecho no ocurrió.**
+La ficha imprime, debajo de cada indicador, su definición, sus dos listas y
+—cuando las hay— las declaraciones que el criterio no deja contar, cada una
+con su motivo propio: le faltan los insumos, es de otro nivel de gobierno, o
+los tiene y no cumple. Es la distinción de la v899 entre «sin dato» y «panel
+fuera», aplicada a una cuenta en vez de a un panel.
+
+Los cuatro motivos son cuatro salidas de `pasaElCriterio`, que devuelve un
+objeto y nunca un booleano (v876): un `false` mandaría a revisar lo que está
+bien.
+
+### Los dos campos nuevos son de otra clase que los tres de la v957
+
+Y eso es lo que permite declararlos sin la firma de nadie. Los tres de la
+Capa 1 son lecturas sobre la AFIRMACIÓN —qué clase de cosa es, qué mide, qué
+contestó el Gobierno—. `estadoProcesal` y `tipoEvidencia` se leen de la
+propia entrada: un decreto es un documento primario, un «anuncia» sin acto es
+un anuncio sin acto.
+
+**No se exigen en las 200 entradas**, y es deliberado: solo las que declaran
+un indicador pasan por el gate, así que solo esas los necesitan. Pedírselos a
+todas sería un trinquete que nadie puede bajar y que no protege nada.
+
+Y una regla que hubo que escribir porque sin ella el campo se vuelve una
+opinión: **es documento primario cuando el acto está identificado por su
+número o su radicado** —«Decreto 1384 de 2026»—, aunque la copia haya llegado
+por prensa; es reporte periodístico cuando el hecho solo consta en el relato
+del medio. Que el enlace al documento falte es otra cosa, y la vigila el
+control de calidad por su cuenta.
+
+### `no-aplica` decía lo que no es
+
+El motor lo llama `contexto_estructural` y tiene razón por la misma regla con
+la que la v879 renombró «Continuidad del tejido»: un rótulo que solo niega
+deja que el lector suponga qué hay debajo. Son 59 entradas —un juez que tumba
+un decreto, un órgano de control, un tercero, un aliado extranjero— y el
+hecho existe, está fechado y es del país; lo que no es, es una cuenta del
+Gobierno.
+
+El renombre es limpio y **sin sinónimo**: el valor viejo pasa a ser
+desconocido, y `revisar.js` lo denuncia con el literal impreso. Es fallar
+cerrado, que es el canje de la v880.
+
+### «Ausente» sin constancia es un señalamiento sin respaldo
+
+El motor exige, para un contrargumento ausente, **dónde se buscó y cuándo**.
+La razón es la misma por la que ese campo tiene tres estados y no dos:
+`ausente` **afirma** que el Gobierno no respondió, y esa afirmación sobre una
+persona real necesita algo detrás. Sin constancia, «ausente» y «no lo miré»
+se escriben igual de fácil y se leen igual de mal — y el primero pesa en el
+indicador I-06.
+
+Así que son **cuatro estados y el cuarto es la guarda**: un `ausente` a secas
+se ve, con su literal impreso, y no pesa. No se tira ni se asciende a lo que
+nadie escribió, que es la decisión de la v931 con la fecha sin distinguir.
+
+Hoy no hay ninguno en los dos registros, así que el trinquete arranca limpio.
+
+### Las guardas, y la de la guarda
+
+En `revisar.js`, y las dos mitades hacen falta:
+
+* que **el criterio exista** —todo indicador declarable tiene el suyo, y no
+  sobra ninguno—;
+* y que **la cuenta lo APLIQUE**. Sin esta segunda, la tabla sería
+  documentación y el conteo seguiría siendo lo que alguien declaró a mano: la
+  guarda de la guarda, el patrón de la v878.
+
+Más el trinquete en cero de los tres insumos, en los dos registros por el
+principio 1 del pliego, y la comprobación de que un `ausente` sin constancia
+no pese.
+
+### El material tuvo que enseñar las cuatro salidas
+
+Vigesimosexta vez. Contra el registro de verdad la rama «otro nivel» no
+existe —las siete entradas con indicador son nacionales— así que la aserción
+habría pasado por no tener nada que rechazar. El fixture de `tficha` trae las
+cuatro declaraciones: una que cuenta, una sin insumos, una municipal y una
+anunciada sin acto. Con su guarda de MATERIAL primero (v920).
+
+Y una aserción vieja se puso roja por un motivo legítimo: su fixture escribía
+`'ausente'` a secas para medir los tres estados, y eso ahora es el cuarto.
+**Se apretó el fixture, no la aserción** — las seis entradas llevan su
+constancia, los tres estados siguen medidos, y el cuarto tiene la suya.
+
+### Demostrado contra la v960
+
+Neutralizando **solo la puerta** —los criterios y lo que `estado()` expone se
+quedan, porque son lo que la suite necesita para LEER (v875)—: cuatro en rojo
+con el estado viejo impreso.
+
+```
+✗ una declaración sin los insumos del criterio no cuenta   — I-04 2 de 2
+✗ MATERIAL · las cuatro ejercitan las cuatro salidas       — 4 declaradas · 0 fuera
+✗ solo la que cumple el criterio escrito cuenta            — 4 de 4
+✗ y las otras tres salen con SU motivo                     — (vacío)
+```
+
+### Lo que este motor pide y esta versión NO hace
+
+Queda medido para que la tanda siguiente no empiece por averiguarlo:
+
+* **Aplicar los criterios al resto del registro.** Hoy 154 de 159 hechos del
+  mandato no declaran indicador. Escribir los criterios no los clasifica: los
+  hace clasificables. Ese pase es la tanda que sigue, y ahora se puede hacer
+  contra una lista y no de memoria.
+* **`calidadDelEncuadre` y `signoPolitico`**, que son los que vuelven
+  computables los dos casilleros QC que hoy salen «no se pueden correr». Son
+  lecturas sobre el encuadre de cada pieza, no sobre el registro.
+* **`solidezPorTriangulacion`** con `fuentes[].pais` y `confirma` —confirmar
+  el HECHO no es compartir el ENCUADRE—, y **`decisionNacionalHabilitante`**
+  con su `implicaOrdenDirecta` siempre en falso salvo prueba.
+* **El eje C entero**, que sigue sin fuente, y la media histórica del eje B,
+  que sigue siendo trabajo de archivo.
+
 ## La lista viva: lo que al pliego educativo todavía le falta (v866)
 
 Esta lista se quedó vieja **cinco veces**. Cuatro dentro de la hoja —la

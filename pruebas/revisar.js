@@ -1115,6 +1115,120 @@ console.log('\n  -- la ficha del gobernante --');
       'la tasa se calcula sobre los días de gobierno');
   }
 
+  /* ═══ LOS CRITERIOS, COMO DATOS (v961) ═════════════════════════════════
+     «Los criterios van como DATOS, no como decisión caso por caso.»
+
+     Un indicador declarable cuyo criterio no esté escrito es una cifra sobre
+     un gobierno real que nadie puede rehacer ni discutir. Las dos mitades
+     hacen falta: que el criterio exista, y que la cuenta lo APLIQUE — sin la
+     segunda, la tabla sería documentación y el conteo seguiría siendo lo que
+     alguien declaró a mano. */
+  {
+    const j70cr = leer('js/70-seguimiento.js');
+
+    const bloqueCriterios = (j70cr.match(/var CRITERIOS = \{[\s\S]*?\n  \};/) || [''])[0];
+    const idsCriterio = (bloqueCriterios.match(/^    '(I-\d\d)': \{/gm) || [])
+      .map((x) => x.replace(/[^I\d-]/g, ''));
+
+    /* La guarda de MATERIAL va primero: si el bloque dejara de encontrarse,
+       todo lo de abajo pasaría en verde sin vigilar un solo criterio. */
+    comprobar('MATERIAL · los criterios se leen de js/70, con sus dos listas',
+      idsCriterio.length >= 3 &&
+      (bloqueCriterios.match(/definicion:/g) || []).length === idsCriterio.length &&
+      (bloqueCriterios.match(/incluye: \[/g) || []).length === idsCriterio.length &&
+      (bloqueCriterios.match(/excluye: \[/g) || []).length === idsCriterio.length &&
+      (bloqueCriterios.match(/requiere: function/g) || []).length === idsCriterio.length,
+      idsCriterio.join(' · ') + ' — cada uno con definición, incluye, excluye y requiere');
+
+    /* Las dos direcciones. Sin la primera, un indicador declarable nuevo
+       nacería sin criterio y su cifra volvería a ser un juicio; sin la
+       segunda, quedaría un criterio escrito que no cuenta para nada y que
+       alguien leería como vigente. */
+    const bloqueInd = (j70cr.match(/var INDICADORES = \{[\s\S]*?\n  \};/) || [''])[0];
+    const declarables = (bloqueInd.match(/'(I-\d\d)': \{ t: '[^']*', dec: true/g) || [])
+      .map((x) => x.slice(1, 5));
+    const sinCriterio = declarables.filter((k) => idsCriterio.indexOf(k) < 0);
+    const criterioHuerfano = idsCriterio.filter((k) => declarables.indexOf(k) < 0);
+    comprobar('todo indicador que se declara a mano tiene su criterio escrito, y ninguno sobra',
+      declarables.length > 0 && !sinCriterio.length && !criterioHuerfano.length,
+      (sinCriterio.length ? 'sin criterio: ' + sinCriterio.join(', ') + ' ' : '') +
+      (criterioHuerfano.length ? 'criterio sin indicador: ' + criterioHuerfano.join(', ') : '') ||
+      'los ' + declarables.length + ' declarables (' + declarables.join(', ') + ') lo tienen');
+
+    /* LA GUARDA DE LA GUARDA. Si el conteo dejara de pasar por la puerta,
+       las dos de arriba seguirían en verde sobre una tabla que no decide
+       nada — el patrón de la v878 con su propia lista. */
+    const tramoConteo = (j70cr.match(/var fuera = \{[\s\S]*?\n    \}\);/) || [''])[0];
+    comprobar('y la cuenta de indicadores APLICA el criterio, no solo lo publica',
+      /pasaElCriterio\(e, k\)/.test(tramoConteo) && /if \(g\.cuenta\) crudo\[k\]\+\+;/.test(tramoConteo),
+      tramoConteo ? 'cada declaración pasa por pasaElCriterio antes de contar'
+                  : 'no se encontró el tramo del conteo');
+
+    /* Y lo que el criterio deja fuera no desaparece: se cuenta aparte con su
+       motivo. Es la desviación declarada respecto del motor de referencia,
+       que filtra en silencio — y la razón es la de la v899: un conteo que
+       baja sin decir por qué se lee como que el hecho no ocurrió. */
+    comprobar('lo declarado que no pasa el criterio se cuenta aparte y con su motivo',
+      /fuera\[k\]\.push\(\{[\s\S]{0,180}motivo: g\.motivo/.test(j70cr) &&
+      /sp-c2-fuera/.test(j70cr),
+      'la ficha imprime cuántas se declararon, cuántas cuentan y qué le falta a cada una');
+
+    /* Los insumos del gate, en el registro. Trinquete en CERO y en los dos
+       registros: solo se les exigen a las entradas que declaran indicador,
+       así que no hay deuda vieja que perdonar y una entrada nueva que declare
+       sin ellos se ve en el acto. */
+    const VAL_PROC = (j70cr.match(/var ESTADO_PROCESAL = \{[\s\S]*?\n  \};/) || [''])[0]
+      .match(/^    '([a-z-]+)':/gm) || [];
+    const VAL_EVID = (j70cr.match(/var TIPO_EVIDENCIA = \{[\s\S]*?\n  \};/) || [''])[0]
+      .match(/^    '([a-z-]+)':/gm) || [];
+    const proc = VAL_PROC.map((x) => x.replace(/[^a-z-]/g, ''));
+    const evid = VAL_EVID.map((x) => x.replace(/[^a-z-]/g, ''));
+    comprobar('MATERIAL · las tablas de estado procesal y tipo de evidencia se leen de js/70',
+      proc.length === 5 && evid.length === 5, proc.join('·') + ' / ' + evid.join('·'));
+
+    const faltan = [], malos2 = [];
+    let conIndicador = 0;
+    REGISTROS.forEach((ruta) => {
+      const quien = ruta.split('-').pop().replace('.json', '');
+      ((JSON.parse(leer(ruta)).entradas) || []).forEach((e) => {
+        if (!((e.indicadores || []).length)) return;
+        conIndicador++;
+        const donde = quien + '/' + (e.fecha || '?');
+        const nv = String(e.nivelGobierno || '').trim();
+        const ep = String(e.estadoProcesal || '').trim();
+        const te = String(e.tipoEvidencia || '').trim();
+        if (!nv || !ep || !te) {
+          faltan.push(donde + ' (' + [!nv && 'nivelGobierno', !ep && 'estadoProcesal',
+            !te && 'tipoEvidencia'].filter(Boolean).join(', ') + ')');
+        }
+        if (ep && proc.indexOf(ep) < 0) malos2.push(donde + ' estadoProcesal=' + ep);
+        if (te && evid.indexOf(te) < 0) malos2.push(donde + ' tipoEvidencia=' + te);
+        (e.indicadores || []).forEach((k) => {
+          if (idsCriterio.indexOf(k) < 0) malos2.push(donde + ' declara ' + k + ', que no tiene criterio');
+        });
+      });
+    });
+
+    comprobar('toda entrada que declara un indicador trae los tres insumos del criterio',
+      conIndicador > 0 && faltan.length === 0,
+      faltan.length ? faltan.join(' · ')
+        : 'las ' + conIndicador + ' que declaran indicador traen nivel, estado procesal y tipo de evidencia');
+
+    comprobar('y ninguna los escribe con un valor que la ficha no sepa leer',
+      malos2.length === 0,
+      malos2.length ? malos2.join(' · ')
+        : 'estadoProcesal (' + proc.join(' | ') + ') y tipoEvidencia (' + evid.join(' | ') + ')');
+
+    /* La constancia de búsqueda. `ausente` AFIRMA que el Gobierno no
+       respondió, y una afirmación sobre una persona real necesita algo
+       detrás: dónde se buscó y cuándo. Un `ausente` a secas se ve y no pesa,
+       y esta guarda existe para que la forma con constancia no se pierda. */
+    comprobar('un contrargumento «ausente» sin constancia de búsqueda no pesa, y lo dice',
+      /ausente-sin-constancia/.test(j70cr) && /sinConstancia/.test(j70cr) &&
+      /v\.busco/.test(j70cr),
+      'se exige { ausente: true, busco: [...], fecha } para que cuente en el indicador I-06');
+  }
+
   /* ═══ CAPA 3 DEL PLIEGO · LOS EJES, NUNCA EN UN SOLO NÚMERO ════════════
      La regla que sostiene la capa entera: «se muestran lado a lado, nunca
      combinados en un número único». Es la invariante más fácil de romper sin

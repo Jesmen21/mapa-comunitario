@@ -396,12 +396,17 @@ const server = http.createServer((req, res) => {
     const mezclaC1 = []
       .concat(conC1(10, 'hecho-probado', 'actividad'))
       .concat(conC1(6, 'correlacion', 'resultado'))
-      .concat(conC1(4, 'atribucion-causal', 'no-aplica'))
+      .concat(conC1(4, 'atribucion-causal', 'contexto-estructural'))
       .concat(conC1(3, 'en-circulacion', 'actividad'))
       .concat(conC1(2, 'inventada', 'tampoco'))     // valores que la tabla no conoce
       .concat(conC1(5))                              // sin declarar
       .concat(conC1(4, 'hecho-probado', 'actividad', 'El Gobierno contestó esto.'))
-      .concat(conC1(6, 'hecho-probado', 'actividad', 'ausente'));
+      /* Con su CONSTANCIA de búsqueda desde la v961: un «ausente» a secas es
+         el cuarto estado —afirma un silencio sin decir dónde se buscó— y
+         tiene su propia aserción más abajo. Acá hacen falta seis que de
+         verdad pesen, para que los tres estados se midan. */
+      .concat(conC1(6, 'hecho-probado', 'actividad',
+        { ausente: true, busco: ['Presidencia'], fecha: '2026-09-15' }));
     const c1 = (fC1(mezclaC1).capa1) || {};
     o.capa1 = { n: c1.n,
                 prueba: c1.prueba, medicion: c1.medicion, contra: c1.contra };
@@ -413,8 +418,8 @@ const server = http.createServer((req, res) => {
        que se agregó para describir — y esto se pone rojo antes. */
     const sinNada = conC1(40);
     const conTodo = []
-      .concat(conC1(20, 'en-circulacion', 'no-aplica', 'ausente'))
-      .concat(conC1(20, 'atribucion-causal', 'no-aplica'));
+      .concat(conC1(20, 'en-circulacion', 'contexto-estructural', 'ausente'))
+      .concat(conC1(20, 'atribucion-causal', 'contexto-estructural'));
     const foto = (fx) => ({ v: fx.veredicto.id, manda: (fx.manda || []).join(','),
                             casos: fx.techos.casos.i, palabra: fx.techos.palabra.i,
                             claridad: fx.techos.claridad.i });
@@ -432,6 +437,63 @@ const server = http.createServer((req, res) => {
         (indic && i < indic.length) ? { indicadores: indic[i] } : {})),
       contradicciones: { casos: [] }, casos: { lista: [] }
     });
+    /* ── EL GATE DEL CRITERIO (v961) ────────────────────────────────
+       Cuatro declaraciones de I-04 que ejercitan las cuatro salidas de la
+       puerta: una que cuenta, una a la que le faltan los insumos, una de
+       otro nivel de gobierno y una que los tiene y no cumple el criterio
+       —un anuncio sin acto—. Sin las cuatro en la misma corrida, un gate
+       que dejara pasar todo y uno que no dejara pasar nada se verían igual.
+
+       Y va con su guarda de MATERIAL, porque el fixture es lo que hace que
+       esto signifique algo: si las cuatro quedaran iguales, la comprobación
+       pasaría sin tener nada que rechazar. */
+    const INSUMOS = [
+      { indicadores: ['I-04'], nivelGobierno: 'nacional',
+        estadoProcesal: 'en-firme', tipoEvidencia: 'documento-primario' },          // cuenta
+      { indicadores: ['I-04'] },                                                     // sin insumos
+      { indicadores: ['I-04'], nivelGobierno: 'municipal',
+        estadoProcesal: 'en-firme', tipoEvidencia: 'documento-primario' },          // otro nivel
+      { indicadores: ['I-04'], nivelGobierno: 'nacional',
+        estadoProcesal: 'anunciado-sin-acto', tipoEvidencia: 'reporte-periodistico' } // no cumple
+    ];
+    const regGate = {
+      posesion: '2026-08-07', categorias: { gobierno: {} },
+      entradas: INSUMOS.map((x, i) => Object.assign(
+        { fecha: '2026-08-1' + i, categoria: 'gobierno', titulo: 'Hecho ' + i,
+          tipoFuente: 'verificado', categoriaProbatoria: 'hecho-probado', tipoMedicion: 'actividad' }, x)),
+      contradicciones: { casos: [] }, casos: { lista: [] }
+    };
+    const iG = api.indicadores(regGate, '2026-08-27');
+    const f04 = iG.filas.filter(x => x.id === 'I-04')[0] || {};
+    o.gate = {
+      n: f04.n, declaradas: f04.declaradas,
+      motivos: (f04.fuera || []).map(x => x.motivo).sort(),
+      dichos: (f04.fuera || []).map(x => String(x.d || '').slice(0, 70)),
+      tieneCriterio: !!f04.criterio,
+      incluye: ((f04.criterio || {}).incluye || []).length,
+      excluye: ((f04.criterio || {}).excluye || []).length,
+      definicion: String((f04.criterio || {}).definicion || '').slice(0, 80)
+    };
+
+    /* LA CONSTANCIA DE BÚSQUEDA. `ausente` afirma que el Gobierno no
+       respondió: con constancia es un dato y pesa en I-06; sin ella es un
+       señalamiento sin respaldo, se ve y no pesa. Las dos ramas, porque una
+       sola no distingue «no pesa nunca» de «pesa siempre». */
+    const regContra = (co) => ({
+      posesion: '2026-08-07', categorias: { gobierno: {} },
+      entradas: [{ fecha: '2026-08-10', categoria: 'gobierno', titulo: 'Un hecho',
+                   tipoFuente: 'verificado', categoriaProbatoria: 'hecho-probado',
+                   tipoMedicion: 'actividad', contrargumentoOficial: co }],
+      contradicciones: { casos: [] }, casos: { lista: [] }
+    });
+    const cCon = api.capaUno((regContra({ ausente: true, busco: ['Presidencia', 'MinInterior'],
+                                          fecha: '2026-09-15' }).entradas));
+    const cSin = api.capaUno(regContra('ausente').entradas);
+    o.constancia = {
+      con: { ausente: cCon.contra.ausente, sinConstancia: cCon.contra.sinConstancia },
+      sin: { ausente: cSin.contra.ausente, sinConstancia: cSin.contra.sinConstancia }
+    };
+
     const iA = api.indicadores(regInd(20, '2026-08-07', null, [['I-04'], ['I-04', 'I-05']]), '2026-08-27');
     const iB = api.indicadores(regInd(20, '2026-08-07'), '2027-08-07');
     o.ind = {
@@ -500,7 +562,7 @@ const server = http.createServer((req, res) => {
           tipoFuente: 'verificado', categoriaProbatoria: 'hecho-probado', tipoMedicion: 'actividad',
           fuentes: [{ n: 'x', u: 'https://x' }] },
         { fecha: '2026-08-11', categoria: 'gobierno', titulo: 'Alguien atribuye una causa',
-          tipoFuente: 'declaracion', categoriaProbatoria: 'atribucion-causal', tipoMedicion: 'no-aplica',
+          tipoFuente: 'declaracion', categoriaProbatoria: 'atribucion-causal', tipoMedicion: 'contexto-estructural',
           fuentes: [{ n: 'y', u: 'https://y' }] }
       ],
       contradicciones: { casos: [] }, casos: { lista: [] }
@@ -659,10 +721,10 @@ const server = http.createServer((req, res) => {
   chk(pr.sinDeclarar === 5 && pr.desconocidos === 2,
       'y separa las que no declaran de las que traen un valor que no conoce (' +
       pr.sinDeclarar + ' sin declarar · ' + pr.desconocidos + ' desconocidos)');
-  chk(md.actividad === 23 && md.resultado === 6 && md['no-aplica'] === 4 &&
+  chk(md.actividad === 23 && md.resultado === 6 && md['contexto-estructural'] === 4 &&
       md.sinDeclarar === 5 && md.desconocidos === 2,
       'actividad, resultado y «ni una ni otra» se cuentan aparte y no se suman (' +
-      md.actividad + ' · ' + md.resultado + ' · ' + md['no-aplica'] + ')');
+      md.actividad + ' · ' + md.resultado + ' · ' + md['contexto-estructural'] + ')');
   chk(co.respondio === 4 && co.ausente === 6 && co.sinRevisar === 30,
       'el contrargumento tiene TRES estados: respondió, no respondió, y nadie lo ha revisado (' +
       co.respondio + ' · ' + co.ausente + ' · ' + co.sinRevisar + ')');
@@ -687,9 +749,36 @@ const server = http.createServer((req, res) => {
   chk(ind.cortoPoder === 'bajo' && ind.largoPoder === 'medio',
       'y el poder predictivo sale de los días transcurridos, no de una opinión (' +
       ind.cortoPoder + ' · ' + ind.largoPoder + ')');
-  chk(ind.i04 && ind.i04.n === 2 && ind.i05 && ind.i05.n === 1,
-      'los indicadores declarados se cuentan por entrada (I-04 ' + (ind.i04 || {}).n +
-      ' · I-05 ' + (ind.i05 || {}).n + ')');
+  /* Estas dos declaran indicador SIN los insumos del criterio, que es
+     exactamente lo que el gate tiene que rechazar. Contra la v960 contaban
+     2 y 1; ahora cuentan 0 y lo dicen. */
+  chk(ind.i04 && ind.i04.n === 0 && ind.i04.declaradas === 2 &&
+      ind.i05 && ind.i05.n === 0 && ind.i05.declaradas === 1,
+      'una declaración sin los insumos del criterio no cuenta, y se dice cuántas se declararon (I-04 ' +
+      (ind.i04 || {}).n + ' de ' + (ind.i04 || {}).declaradas + ')');
+
+  console.log('\n── El criterio, como dato, y su puerta ──────────────');
+  const gt = r.gate || {};
+  console.log('  ' + JSON.stringify(gt));
+  chk(gt.declaradas === 4 && gt.motivos.length === 3,
+      'MATERIAL · las cuatro declaraciones ejercitan las cuatro salidas de la puerta (' +
+      gt.declaradas + ' declaradas · ' + gt.motivos.length + ' fuera)');
+  chk(gt.n === 1,
+      'solo la que cumple el criterio escrito cuenta (' + gt.n + ' de ' + gt.declaradas + ')');
+  chk(String(gt.motivos) === 'no-cumple,otro-nivel,sin-insumos',
+      'y las otras tres salen con SU motivo, no con un rechazo genérico (' + gt.motivos.join(' · ') + ')');
+  chk((gt.dichos || []).every(x => x.length > 12),
+      'cada rechazo dice qué le falta a ESA entrada, no solo que no pasó');
+  chk(gt.tieneCriterio && gt.incluye >= 3 && gt.excluye >= 3 && gt.definicion.length > 30,
+      'el indicador publica su criterio con la definición y las dos listas (' +
+      gt.incluye + ' incluye · ' + gt.excluye + ' excluye)');
+
+  const cs = r.constancia || {};
+  console.log('  constancia: ' + JSON.stringify(cs));
+  chk(cs.con && cs.con.ausente === 1 && cs.con.sinConstancia === 0,
+      'un «ausente» con dónde se buscó y cuándo es un dato y pesa');
+  chk(cs.sin && cs.sin.ausente === 0 && cs.sin.sinConstancia === 1,
+      'y uno sin constancia se ve como tal y NO pesa: afirmar un silencio sin respaldo es un señalamiento');
   chk(ind.i09 && ind.i09.n === 10 && ind.i10 && ind.i10.n === 10 && ind.i09.n === ind.i10.n,
       'PRINCIPIO 5 · actividad y resultado se cuentan en renglones distintos y no se suman (' +
       (ind.i09 || {}).n + ' actividad · ' + (ind.i10 || {}).n + ' resultados)');

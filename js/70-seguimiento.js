@@ -1470,10 +1470,17 @@
        mezclar; lo segundo las confunde con las que nadie ha revisado, que es
        la misma conflación que el contrargumento evita con sus tres estados.
        Así que se nombra: no aplica, y se dice por qué. */
-    'no-aplica': {
-      t: 'Ni actividad ni resultado', cls: 'tm-na',
+    /* EL NOMBRE, CORREGIDO EN LA v961. Se llamaba `no-aplica`, que dice lo
+       que NO es. El motor de referencia lo nombra por lo que ES —contexto
+       estructural— y tiene razón por la misma regla con la que este proyecto
+       renombró «Continuidad del tejido» en la v879: un rótulo que solo niega
+       deja que el lector suponga qué hay debajo. El hecho existe, está
+       fechado y es del país; lo que no es, es una cuenta del Gobierno. */
+    'contexto-estructural': {
+      t: 'Contexto estructural', cls: 'tm-na',
       d: 'El sujeto no es el Gobierno nacional —un juez, un órgano de control, un tercero— o no hay una ' +
-         'magnitud medida. No alimenta ni el conteo de actividad ni el de resultados.' }
+         'magnitud medida del país. Es el terreno sobre el que se gobierna, y por eso no alimenta ni el ' +
+         'conteo de actividad ni el de resultados: sumarlo a cualquiera de los dos los falsearía.' }
   };
 
   /* Las tres puertas devuelven un OBJETO con su razón y nunca un booleano:
@@ -1490,6 +1497,58 @@
   function categoriaProbatoriaDe(e) { return claseDe(CATEGORIA_PROBATORIA, e && e.categoriaProbatoria); }
   function tipoMedicionDe(e)        { return claseDe(TIPO_MEDICION,        e && e.tipoMedicion); }
 
+  /* ── LOS DOS CAMPOS QUE LOS CRITERIOS NECESITAN (v961) ──────────────────
+     El motor de referencia los pide, y la razón se ve al escribir los
+     criterios de la Capa 2: sin ellos, «este hecho cuenta como mecanismo
+     excepcional» vuelve a ser una opinión. Con ellos, la condición se puede
+     escribir y cualquiera la rehace.
+
+     Y son de otra clase que los tres de la v957. Aquellos son lecturas sobre
+     la AFIRMACIÓN; estos dos se leen de la propia entrada sin juzgar al
+     Gobierno: un decreto es un documento primario, un «anuncia» sin acto es
+     un anuncio sin acto. Por eso se pueden declarar leyendo el registro, que
+     es justamente lo que la categoría probatoria y el indicador no permiten.
+
+     NO SE EXIGEN EN TODAS LAS ENTRADAS, y eso es deliberado: solo las que
+     declaran un indicador pasan por el gate, así que solo esas los
+     necesitan. Pedírselos a las 200 sería un trinquete que nadie puede
+     bajar y que no protege nada. */
+  var ESTADO_PROCESAL = {
+    'en-firme': { t: 'En firme', cls: 'ep-fi',
+      d: 'El acto está expedido y produce efectos.' },
+    'en-tramite-legislativo': { t: 'En trámite legislativo', cls: 'ep-tl',
+      d: 'Radicado en el Congreso. Todavía no es norma.' },
+    'en-revision-judicial': { t: 'En revisión judicial', cls: 'ep-rj',
+      d: 'Un juez o una corte lo está examinando. Puede caerse.' },
+    'en-disputa-institucional': { t: 'En disputa institucional', cls: 'ep-di',
+      d: 'Otro órgano del Estado se pronunció en contra con un acto suyo.' },
+    'anunciado-sin-acto': { t: 'Anunciado, sin acto', cls: 'ep-an',
+      d: 'Se anunció y no consta el acto administrativo. Un anuncio no es una medida.' }
+  };
+
+  var TIPO_EVIDENCIA = {
+    /* LA REGLA, ESCRITA, porque sin ella este campo se vuelve una opinión:
+       es documento primario cuando el acto está IDENTIFICADO por su número o
+       su radicado —«Decreto 1384 de 2026»—, aunque la copia haya llegado por
+       prensa; y es reporte periodístico cuando el hecho solo consta en el
+       relato del medio. Que el enlace al documento falte es otra cosa y la
+       vigila el control de calidad por su cuenta. */
+    'documento-primario': { t: 'Documento primario', cls: 'te-dp',
+      d: 'El decreto, la resolución, el fallo o el acta, identificados por su número o radicado. ' +
+         'No necesita respaldo de medios.' },
+    'dato-oficial': { t: 'Dato oficial', cls: 'te-do',
+      d: 'Una cifra publicada por la entidad que la produce.' },
+    'reporte-periodistico': { t: 'Reporte periodístico', cls: 'te-rp',
+      d: 'Lo cuenta un medio. Sirve para saber qué pasó; no es el documento.' },
+    'testimonio': { t: 'Testimonio', cls: 'te-ts',
+      d: 'Lo dice alguien. Lo que consta es que lo dijo.' },
+    'captura-de-pantalla': { t: 'Captura de pantalla', cls: 'te-cp',
+      d: 'La forma más débil: se puede fabricar, y no prueba el hecho sino la existencia de la imagen.' }
+  };
+
+  function estadoProcesalDe(e) { return claseDe(ESTADO_PROCESAL, e && e.estadoProcesal); }
+  function tipoEvidenciaDe(e)  { return claseDe(TIPO_EVIDENCIA,  e && e.tipoEvidencia); }
+
   /* El contrargumento no es una tabla de valores: es un texto, o la palabra
      `ausente`, o nada. Los tres estados van con nombre porque los tres piden
      una acción distinta. */
@@ -1499,17 +1558,43 @@
       return { estado: 'sin-revisar', t: 'Sin revisar', texto: '', esDato: false,
                d: 'Todavía nadie revisó si el Gobierno respondió. No es que no haya respondido: es que no lo hemos mirado.' };
     }
+    /* LA CONSTANCIA DE BÚSQUEDA (v961). El motor de referencia la exige y la
+       razón es la misma por la que este campo tiene tres estados y no dos:
+       `ausente` AFIRMA que el Gobierno no respondió, y una afirmación sobre
+       una persona real necesita algo detrás. Sin decir dónde se buscó y
+       cuándo, «ausente» y «no lo miré» se escriben igual de fácil y se leen
+       igual de mal — y el primero pesa en el indicador I-06.
+
+       Así que son CUATRO estados y el cuarto es la guarda: un `ausente` a
+       secas se ve, con su literal impreso, y NO pesa. No se tira ni se
+       asciende, que es la decisión de la v931 con la fecha sin distinguir. */
+    if (v && typeof v === 'object' && v.ausente) {
+      var fu = (v.busco || []).filter(function (x) { return String(x || '').trim(); });
+      if (fu.length && String(v.fecha || '').trim()) {
+        return { estado: 'ausente', t: 'El Gobierno no respondió', texto: '', esDato: true,
+                 busco: fu, fecha: String(v.fecha).trim(),
+                 d: 'Se buscó una respuesta oficial en ' + fu.join(', ') + ' el ' + String(v.fecha).trim() +
+                    ', y no la hay. Eso es un dato sobre el Gobierno, no un vacío del registro.' };
+      }
+      return { estado: 'ausente-sin-constancia', t: 'Ausente, sin constancia de búsqueda', texto: '',
+               esDato: false, busco: fu,
+               d: 'Dice que el Gobierno no respondió y no dice dónde se buscó ni cuándo. Afirmar un silencio ' +
+                  'sin constancia es un señalamiento sin respaldo, así que se ve y no pesa en el indicador.' };
+    }
     var s = String(v).trim();
     if (s.toLowerCase() === 'ausente') {
-      return { estado: 'ausente', t: 'El Gobierno no respondió', texto: '', esDato: true,
-               d: 'Se buscó una respuesta oficial y no la hay. Eso es un dato sobre el Gobierno, no un vacío del registro.' };
+      return { estado: 'ausente-sin-constancia', t: 'Ausente, sin constancia de búsqueda', texto: '',
+               esDato: false, busco: [],
+               d: 'Escrito como la palabra suelta «ausente», sin dónde se buscó ni cuándo. Se escribe ' +
+                  '{ ausente: true, busco: [...], fecha: "AAAA-MM-DD" } para que cuente.' };
     }
     return { estado: 'respondio', t: 'Respuesta oficial', texto: s, esDato: true,
              d: 'Lo que el Gobierno contestó sobre este hecho.' };
   }
 
   function capaUnoDe(e) {
-    return { prueba: categoriaProbatoriaDe(e), medicion: tipoMedicionDe(e), contra: contrargumentoDe(e) };
+    return { prueba: categoriaProbatoriaDe(e), medicion: tipoMedicionDe(e), contra: contrargumentoDe(e),
+             procesal: estadoProcesalDe(e), evidencia: tipoEvidenciaDe(e) };
   }
 
   /* El recuento de la Capa 1 sobre un conjunto de entradas. No decide nada:
@@ -1520,8 +1605,8 @@
   function capaUnoDe_conjunto(lista) {
     var r = { n: (lista || []).length,
               prueba: { declarados: 0, sinDeclarar: 0, desconocidos: 0, por: {} },
-              medicion: { actividad: 0, resultado: 0, 'no-aplica': 0, sinDeclarar: 0, desconocidos: 0 },
-              contra: { respondio: 0, ausente: 0, sinRevisar: 0 } };
+              medicion: { actividad: 0, resultado: 0, 'contexto-estructural': 0, sinDeclarar: 0, desconocidos: 0 },
+              contra: { respondio: 0, ausente: 0, sinConstancia: 0, sinRevisar: 0 } };
     (lista || []).forEach(function (e) {
       var c = capaUnoDe(e);
       if (c.prueba.declarado) { r.prueba.declarados++; r.prueba.por[c.prueba.id] = (r.prueba.por[c.prueba.id] || 0) + 1; }
@@ -1532,6 +1617,7 @@
       else r.medicion.sinDeclarar++;
       if (c.contra.estado === 'respondio') r.contra.respondio++;
       else if (c.contra.estado === 'ausente') r.contra.ausente++;
+      else if (c.contra.estado === 'ausente-sin-constancia') r.contra.sinConstancia++;
       else r.contra.sinRevisar++;
     });
     return r;
@@ -1561,11 +1647,142 @@
      reportada y los resultados verificados son `tipoMedicion`, y el
      principio 5 manda que no se sumen nunca. Acá van en renglones distintos
      y no hay ninguna línea que los junte. */
+  /* ═══ LOS CRITERIOS, COMO DATOS (v961) ═════════════════════════════════
+     «Los criterios van como DATOS, no como decisión caso por caso. Si un
+     registro no encaja en ninguno, no se fuerza: queda sin declarar y se
+     revisa el criterio.»
+
+     Esto es lo que separa un conteo de un juicio. Hasta la v960 los tres
+     indicadores declarables se declaraban a mano, entrada por entrada, y eso
+     dejaba el módulo en la peor posición posible: una cifra sobre un
+     gobierno real cuyo criterio no estaba escrito en ninguna parte. Con la
+     definición, el `incluye` y el `excluye` a la vista, cualquiera rehace la
+     clasificación y discute el criterio en vez de discutir el caso.
+
+     Y se cobró en el acto. Aplicados a las siete entradas que ya declaraban
+     indicador, los criterios RECHAZAN tres declaraciones que yo había hecho
+     caso por caso —dos de ellas de la misma entrada—. El detalle está en la
+     bitácora; lo que importa acá es la forma: el criterio escrito salió más
+     estricto que mi lectura, y esa es exactamente la razón de escribirlo.
+
+     ── DOS COSAS SE SEPARAN, Y NO SON LA MISMA ──
+     `excluye` dice QUÉ NO ES de esta clase: si un hecho cae ahí, la
+     declaración está mal y se quita del registro.
+     `requiere` dice QUÉ PRUEBA HACE FALTA para contarlo: el hecho sí es de
+     esta clase y le falta el papel. Ahí la declaración se queda y el
+     indicador NO lo cuenta, diciendo qué falta.
+     Juntarlos borraría la diferencia entre «esto no va acá» y «esto va acá y
+     todavía no se puede sostener».
+
+     ── LA DESVIACIÓN DEL MOTOR DE REFERENCIA, DECLARADA ──
+     El motor filtra en silencio: `declara(r, id) && requiere(r)`. Acá no. Un
+     hecho que declara un indicador y no pasa el gate se CUENTA APARTE y la
+     ficha dice cuántos son y por qué — es la distinción de la v899 entre
+     «sin dato» y «panel fuera», y la razón es la misma: un conteo que baja
+     sin decir por qué se lee como que el hecho no existió. */
+
+  var EVIDENCIA_DURA = { 'documento-primario': 1, 'dato-oficial': 1 };
+
+  var CRITERIOS = {
+    'I-04': {
+      definicion: 'Acto del Ejecutivo que se aparta del régimen ordinario invocando una facultad ' +
+                  'extraordinaria, de emergencia o de excepción.',
+      incluye: [
+        'declaratoria de emergencia (económica, social, ecológica o conmoción interior)',
+        /* Añadido al criterio del motor de referencia, con su razón: la
+           declaratoria de desastre nacional de la Ley 1523 también aparta al
+           Ejecutivo del régimen ordinario de contratación y de gasto, y el
+           registro trae una. Un criterio es un dato, así que ampliarlo se ve
+           en el diff en vez de resolverse a mano en una entrada. */
+        'declaratoria de desastre nacional (Ley 1523)',
+        'decreto expedido al amparo de una declaratoria de emergencia',
+        'aplazamiento por acto administrativo de un plazo fijado en ley o reglamento',
+        'directiva que altera el régimen ordinario de difusión de información pública',
+        'autorización de plantas temporales por fuera del régimen de carrera',
+        'plazo extraordinario por única vez sobre recursos de destinación específica'
+      ],
+      excluye: [
+        'proyecto de ley ordinaria (es el cauce normal, no una excepción)',
+        'nombramiento o retiro de un cargo de libre nombramiento y remoción (es el régimen ordinario)',
+        'anuncio sin acto administrativo expedido',
+        'acto de un gobierno anterior',
+        'decisión de nivel municipal, distrital o departamental'
+      ],
+      requiere: function (c) {
+        return c.procesal.id !== 'anunciado-sin-acto' && !!EVIDENCIA_DURA[c.evidencia.id];
+      },
+      falta: 'Pide un acto expedido y un documento primario o un dato oficial: un anuncio no es una medida.'
+    },
+    'I-05': {
+      definicion: 'Diferencia entre el Ejecutivo y un órgano de autonomía constitucional que se ' +
+                  'materializó en un acto institucional de cualquiera de los dos, no en declaraciones.',
+      incluye: [
+        'el órgano declara formalmente que un acto del Ejecutivo afecta su autonomía o competencia',
+        'el órgano mantiene una decisión contraria a lo solicitado por el Ejecutivo',
+        'una decisión judicial resuelve en contra del Ejecutivo en la controversia'
+      ],
+      excluye: [
+        'crítica política de funcionarios o congresistas',
+        'desacuerdo expresado sin acto institucional',
+        'anuncio del Ejecutivo que el órgano aún no ha respondido',
+        'tensión reportada solo por prensa, sin documento de ninguna de las partes',
+        'diferencia con una entidad del propio Ejecutivo (un ministerio, un departamento administrativo)'
+      ],
+      requiere: function (c) {
+        return (c.procesal.id === 'en-disputa-institucional' || c.procesal.id === 'en-revision-judicial' ||
+                c.procesal.id === 'en-firme') && c.evidencia.id !== 'captura-de-pantalla';
+      },
+      falta: 'Pide un acto institucional de una de las dos partes, y no una captura de pantalla.'
+    },
+    'I-07': {
+      definicion: 'Información pública solicitada por el cauce ordinario, no entregada en el término ' +
+                  'legal, y entregada únicamente tras fallo o presentación de tutela.',
+      incluye: ['derecho de petición vencido sin respuesta y documento entregado tras tutela'],
+      excluye: [
+        'información entregada dentro del término, aunque tarde',
+        'información obtenida por filtración o por vía periodística',
+        'solicitud aún dentro del término legal'
+      ],
+      requiere: function (c) { return c.evidencia.id === 'documento-primario'; },
+      falta: 'Pide el documento que se entregó: sin él no consta que la tutela lo destrabara.'
+    }
+  };
+
+  /* La puerta. Devuelve un objeto con su razón —nunca un booleano— porque
+     «cuenta», «le faltan los campos para comprobarlo» y «los tiene y no
+     cumple» son tres cosas que piden tres acciones distintas a quien
+     mantiene el registro. Es la regla de la v876. */
+  function pasaElCriterio(e, id) {
+    var cr = CRITERIOS[id];
+    if (!cr) return { cuenta: false, motivo: 'sin-criterio', d: 'No hay criterio escrito para ' + id + '.' };
+    var c = capaUnoDe(e);
+    /* El nivel: el pliego prohíbe que un hecho subnacional alimente el score
+       presidencial, y sin declararlo no se puede saber. Solo se les exige a
+       las entradas que declaran indicador — pedírselo a las 200 sería un
+       trinquete que no protege nada. */
+    var nv = String((e && e.nivelGobierno) || '').trim();
+    if (!nv) return { cuenta: false, motivo: 'sin-insumos', campo: 'nivelGobierno',
+                      d: 'Declara ' + id + ' y no dice de qué nivel de gobierno es la decisión.' };
+    if (nv !== 'nacional') return { cuenta: false, motivo: 'otro-nivel',
+                                    d: 'Es una decisión ' + nv + ': no alimenta el score presidencial.' };
+    if (!c.procesal.declarado) return { cuenta: false, motivo: 'sin-insumos', campo: 'estadoProcesal',
+                                        d: 'Declara ' + id + ' y no dice en qué estado procesal está el acto.' };
+    if (!c.evidencia.declarado) return { cuenta: false, motivo: 'sin-insumos', campo: 'tipoEvidencia',
+                                         d: 'Declara ' + id + ' y no dice qué clase de evidencia lo sostiene.' };
+    if (!cr.requiere(c)) return { cuenta: false, motivo: 'no-cumple', d: cr.falta };
+    return { cuenta: true, motivo: '', d: '' };
+  }
+
   var INDICADORES = {
     'I-04': { t: 'Mecanismos excepcionales usados', dec: true,
               d: 'Emergencias, decretos de conmoción, aplazamientos de plazos legales y directivas que alteran la difusión de información pública.' },
+    /* El DANE estaba en esta lista y NO es un órgano de autonomía
+       constitucional: es un departamento administrativo del propio
+       Ejecutivo, así que un choque con él no es un choque entre poderes.
+       Lo destapó escribir el criterio. */
     'I-05': { t: 'Choques con órganos autónomos', dec: true,
-              d: 'CNSC, DANE, Corte Constitucional, Consejo de Estado, JEP, Banco de la República, Procuraduría, Contraloría, Registraduría y CNE.' },
+              d: 'Corte Constitucional, Consejo de Estado, Corte Suprema, JEP, CNSC, Banco de la República, ' +
+                 'Procuraduría, Contraloría, Defensoría, Registraduría y CNE.' },
     'I-07': { t: 'Información pública obtenida por tutela', dec: true,
               d: 'Solicitudes que solo se respondieron después de una acción judicial.' },
     'I-06': { t: 'Registros sin respuesta oficial', dec: false,
@@ -1603,15 +1820,30 @@
     var crudo = { 'I-06': c1.contra.ausente, 'I-09': c1.medicion.actividad, 'I-10': c1.medicion.resultado,
                   'I-04': 0, 'I-05': 0, 'I-07': 0 };
     var sinDeclarar = 0;
+    /* Lo declarado que NO pasa el criterio no desaparece: se cuenta aparte y
+       con su motivo. Un indicador que baja sin decir por qué se lee como que
+       el hecho no ocurrió. */
+    var fuera = { 'I-04': [], 'I-05': [], 'I-07': [] };
     ent.forEach(function (e) {
       var lista = (e && e.indicadores) || [];
       if (!lista.length) sinDeclarar++;
-      lista.forEach(function (k) { if (crudo[k] !== undefined && INDICADORES[k].dec) crudo[k]++; });
+      lista.forEach(function (k) {
+        if (crudo[k] === undefined || !INDICADORES[k].dec) return;
+        var g = pasaElCriterio(e, k);
+        if (g.cuenta) crudo[k]++;
+        else fuera[k].push({ titulo: (e && e.titulo) || '', fecha: (e && e.fecha) || '',
+                             motivo: g.motivo, d: g.d });
+      });
     });
 
     var filas = ORDEN_IND.map(function (k) {
       var ind = INDICADORES[k];
       var f = { id: k, t: ind.t, d: ind.d, declarado: ind.dec, n: crudo[k], por100: por100(crudo[k]) };
+      if (CRITERIOS[k]) {
+        f.criterio = CRITERIOS[k];
+        f.fuera = fuera[k];
+        f.declaradas = crudo[k] + fuera[k].length;
+      }
       /* I-06 es el único que no se puede publicar como cero: un cero ahí
          diría que el Gobierno respondió a todo, cuando lo que pasa es que
          nadie lo ha revisado. Es la distinción de los tres estados de la
@@ -2774,7 +3006,7 @@
     s1.appendChild(filaC1('Qué mide',
       [{ t: TIPO_MEDICION.actividad.t, n: c1.medicion.actividad },
        { t: TIPO_MEDICION.resultado.t, n: c1.medicion.resultado },
-       { t: TIPO_MEDICION['no-aplica'].t, n: c1.medicion['no-aplica'] }],
+       { t: TIPO_MEDICION['contexto-estructural'].t, n: c1.medicion['contexto-estructural'] }],
       c1.medicion.sinDeclarar,
       'sin declarar. Actividad y resultado no se suman nunca: firmar un decreto no es resolver el problema.'));
 
@@ -2823,6 +3055,45 @@
       }
       li.appendChild(cif);
       tb.appendChild(li);
+
+      /* EL CRITERIO, DEBAJO DE SU CIFRA. Va acá y no en una nota de pie
+         porque es lo que convierte el número en algo discutible: con la
+         definición y las dos listas a la vista, quien no esté de acuerdo
+         discute el criterio en vez de discutir el caso. */
+      if (fi.criterio) {
+        var lc = el('li', 'sp-c2-crit');
+        lc.appendChild(el('b', null, 'Qué cuenta como ' + fi.t.toLowerCase()));
+        lc.appendChild(el('p', null, fi.criterio.definicion));
+        [['Incluye', fi.criterio.incluye, 'si'], ['No incluye', fi.criterio.excluye, 'no']].forEach(function (par) {
+          var dv = el('div', 'sp-c2-lista sp-c2-' + par[2]);
+          dv.appendChild(el('span', null, par[0]));
+          var ul = el('ul', null);
+          par[1].forEach(function (x) { ul.appendChild(el('li', null, x)); });
+          dv.appendChild(ul);
+          lc.appendChild(dv);
+        });
+        /* Y lo declarado que el criterio NO deja contar. El motor de
+           referencia lo filtra en silencio; acá se dice, porque un conteo que
+           baja sin decir por qué se lee como que el hecho no ocurrió. */
+        if (fi.fuera.length) {
+          var fb = el('div', 'sp-c2-fuera');
+          fb.appendChild(el('b', null, 'Declaradas ' + fi.declaradas + ' · cuentan ' + fi.n + ' · ' +
+            fi.fuera.length + (fi.fuera.length === 1 ? ' no cumple el criterio' : ' no cumplen el criterio')));
+          var uf = el('ul', null);
+          fi.fuera.forEach(function (x) {
+            var lf = el('li', null);
+            lf.appendChild(el('span', null, x.titulo));
+            lf.appendChild(el('b', null, x.d));
+            uf.appendChild(lf);
+          });
+          fb.appendChild(uf);
+          fb.appendChild(el('p', null, 'El hecho está en el registro y se lee en la línea de tiempo. Lo que ' +
+            'no hace es contar en este indicador, y por eso se dice cuál es y qué le falta: un conteo que ' +
+            'baja sin decir por qué se lee como que el hecho no ocurrió.'));
+          lc.appendChild(fb);
+        }
+        tb.appendChild(lc);
+      }
     });
     s2.appendChild(tb);
 
