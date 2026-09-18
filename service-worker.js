@@ -1,4 +1,4 @@
-const URBIS_CACHE = 'urbis-v948-el-nombre-de-la-version-dice-lo-que-hizo';
+const URBIS_CACHE = 'urbis-v949-barrido-de-alertas-incendio-cali-y-sismo-sipi';
 const URBIS_ASSETS = [
   './',
   './index.html',
