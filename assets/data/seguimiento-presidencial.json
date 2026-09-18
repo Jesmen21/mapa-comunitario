@@ -3,8 +3,8 @@
  "presidente": "Abelardo de la Espriella",
  "periodo": "2026 – 2030",
  "posesion": "2026-08-07",
- "actualizado": "2026-09-17",
- "proximaActualizacion": "2026-09-18",
+ "actualizado": "2026-09-18",
+ "proximaActualizacion": "2026-09-19",
  "categorias": {
   "gobierno": {
    "nombre": "Gobierno y decretos",
@@ -73,6 +73,32 @@
   }
  },
  "entradas": [
+  {
+   "fecha": "2026-09-17",
+   "precision": "exacta",
+   "categoria": "gobierno",
+   "titulo": "De la Espriella lidera un Consejo de Seguridad en La Guajira, ordena reforzar el control migratorio y anuncia una batería de inversiones para el departamento",
+   "detalle": "El presidente Abelardo de la Espriella cumplió el 17 de septiembre una agenda territorial en La Guajira que combinó seguridad, migración e inversión. Lideró un Consejo de Seguridad extraordinario en Riohacha —días después de la muerte de alias 'Bendito Menor', cabecilla de las Autodefensas Conquistadoras de la Sierra Nevada (ACSN)— en el que instruyó a la Fuerza Pública reforzar su presencia, recuperar el control territorial y combatir las estructuras criminales del departamento. Ordenó además al director de Migración Colombia, José Luis Castañeda, trasladarse a la región para trabajar de la mano con las autoridades locales, y cuestionó que los «desafíos de nuestra frontera» se puedan «administrar desde un escritorio en Bogotá». En el marco de la estrategia «El Milagro de las Regiones» anunció $65.000 millones para la primera unidad funcional de la vía entre San Juan del Cesar y Caracolí, colocó la primera piedra de la Marina Multipropósito —un proyecto de $36.000 millones para recibir cruceros—, y comprometió $22.000 millones para obras de drenaje pluvial y cerca de $7.500 millones para proyectos de agua potable en Riohacha, Uribia, Alta Guajira y Maicao.",
+   "tipoFuente": "verificado",
+   "fuentes": [
+    {
+     "n": "El Heraldo · De la Espriella lidera Consejo de Seguridad en La Guajira para evaluar medidas que permitan frenar la criminalidad en el departamento",
+     "u": "https://www.elheraldo.co/colombia/2026/09/17/de-la-espriella-lidera-consejo-de-seguridad-en-la-guajira-para-evaluar-medidas-que-permitan-frenar-la-criminalidad-en-el-departamento/"
+    },
+    {
+     "n": "El Universal · De la Espriella anuncia inversiones y medidas para La Guajira",
+     "u": "https://www.eluniversal.com.co/colombia/2026/09/17/de-la-espriella-anuncia-inversiones-y-medidas-para-la-guajira/"
+    },
+    {
+     "n": "Infobae · Abelardo de la Espriella llegó a La Guajira para un consejo de seguridad tras la muerte de 'Bendito Menor', pero también anunció megaproyecto de más de $30 mil millones: en qué consiste",
+     "u": "https://www.infobae.com/colombia/2026/09/17/abelardo-de-la-espriella-llego-a-la-guajira-para-un-consejo-de-seguridad-tras-la-muerte-de-bendito-menor-pero-tambien-anuncio-megaproyecto-de-mas-de-30-mil-millones-en-que-consiste/"
+    },
+    {
+     "n": "Valora Analitik · De la Espriella confirma $65.000 millones para vía clave de La Guajira",
+     "u": "https://www.valoraanalitik.com/de-la-espriella-confirma-65-000-millones-para-via-clave-de-la-guajira/"
+    }
+   ]
+  },
   {
    "fecha": "2026-09-17",
    "precision": "exacta",

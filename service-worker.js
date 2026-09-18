@@ -1,4 +1,4 @@
-const URBIS_CACHE = 'urbis-v949-barrido-de-alertas-incendio-cali-y-sismo-sipi';
+const URBIS_CACHE = 'urbis-v950-seguimiento-presidencial-consejo-seguridad-guajira';
 const URBIS_ASSETS = [
   './',
   './index.html',
