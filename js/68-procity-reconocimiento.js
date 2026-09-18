@@ -13325,6 +13325,12 @@ function donaHTML(datos, colorDe, nombreDe) {
           if (S.corrida === 'post') { S.corrida = 'sector'; S.resultado = S.corridas.sector; } }
         pintar(); return;
       }
+      /* Uno para las cinco puertas (v955): el hueco viaja en el botón, así
+         que una puerta nueva lo hereda sin manejador propio. */
+      if (acc === 'campo-ampliar') {
+        ponerAmpliando(b.getAttribute('data-h') || '', true);
+        pintar(); return;
+      }
       if (acc === 'act-guardar' || acc === 'act-borrar') {
         /* Lo tecleado se guarda ANTES de validar nada: si esto sale por un
            rechazo, `pintar()` lo repone y la persona corrige el renglón que
@@ -13399,7 +13405,7 @@ function donaHTML(datos, colorDe, nombreDe) {
           ? 'Quedó anotado. El paramento de la cuadra ya sale medido en campo, y este sector ' +
             'tiene análisis post-sector.'
           : rA.error;
-        if (rA.ok) { ponerBorrador('act', null); }
+        if (rA.ok) { ponerBorrador('act', null); ponerAmpliando(HUECO_ACTIVIDAD, false); }
         if (rA.ok) soltarPost();
         pintar(); return;
       }
@@ -13475,7 +13481,7 @@ function donaHTML(datos, colorDe, nombreDe) {
           ? 'Quedó anotado. El perfil de la calle sale medido en campo, y este sector tiene ' +
             'análisis post-sector.'
           : rP.error;
-        if (rP.ok) { ponerBorrador('pvl', null); }
+        if (rP.ok) { ponerBorrador('pvl', null); ponerAmpliando(HUECO_PERFIL, false); }
         if (rP.ok) soltarPostP();
         pintar(); return;
       }
@@ -13547,7 +13553,7 @@ function donaHTML(datos, colorDe, nombreDe) {
           ? 'Quedó anotado. Las rutas salen con cada cuánto pasan, observado en la parada, y este ' +
             'sector tiene análisis post-sector.'
           : rR.error;
-        if (rR.ok) { ponerBorrador('rut', null); }
+        if (rR.ok) { ponerBorrador('rut', null); ponerAmpliando(HUECO_RUTAS, false); }
         if (rR.ok) soltarPostR();
         pintar(); return;
       }
@@ -13619,7 +13625,7 @@ function donaHTML(datos, colorDe, nombreDe) {
           ? 'Quedó anotado. El andén sale con su ancho libre caminado, y este sector tiene ' +
             'análisis post-sector.'
           : rAn.error;
-        if (rAn.ok) { ponerBorrador('and', null); }
+        if (rAn.ok) { ponerBorrador('and', null); ponerAmpliando(HUECO_ANDENES, false); }
         if (rAn.ok) soltarPostAn();
         pintar(); return;
       }
@@ -13717,7 +13723,7 @@ function donaHTML(datos, colorDe, nombreDe) {
           ? 'Quedó anotado. La hoja dice ahora quién llega caminando Y cuántos puestos hay, que ' +
             'son dos preguntas; y este sector tiene análisis post-sector.'
           : rCu.error;
-        if (rCu.ok) { ponerBorrador('cup', null); }
+        if (rCu.ok) { ponerBorrador('cup', null); ponerAmpliando(HUECO_CUPO, false); }
         if (rCu.ok) soltarPostCu();
         pintar(); return;
       }
@@ -26959,6 +26965,34 @@ function donaHTML(datos, colorDe, nombreDe) {
      recalcula, dicha para un formulario a medio llenar. Se pierde al recargar
      la página, y eso es lo correcto: un borrador que sobreviviera a la
      recarga sería un dato guardado sin decirlo. */
+  /* ── SEGUIR ANOTANDO SOBRE LO GUARDADO (v955) ────────────────────────
+     El otro síntoma del mismo hecho —el formulario no tenía memoria— y el que
+     la v951 midió y la v954 dejó fuera de su alcance: con la entrada en estado
+     «ok» la puerta muestra el resumen y el botón de quitar, sin formulario,
+     así que para anotar un tramo más había que QUITAR lo anotado y volver a
+     escribirlo todo.
+
+     El botón reabre el formulario con lo guardado dentro. No hace falta cargar
+     nada: el render ya arma los renglones desde `X.filas`, que son justamente
+     las guardadas — lo único que sobraba era la condición que no lo dejaba
+     llegar ahí. */
+  function ampliandoPuerta(hueco) {
+    return !!(S.ampliandoCampo && S.ampliandoCampo[String(hueco || '')]);
+  }
+  function ponerAmpliando(hueco, v) {
+    if (!S.ampliandoCampo) S.ampliandoCampo = {};
+    if (v) S.ampliandoCampo[String(hueco || '')] = true;
+    else delete S.ampliandoCampo[String(hueco || '')];
+  }
+  /* El renglón que lo ofrece, uno solo para las cinco: dos redacciones de la
+     misma frase se separan a la tanda siguiente (v879). */
+  function botonAmpliar(hueco, qué) {
+    return '<button type="button" class="pcr-mini" data-pcr="campo-ampliar" ' +
+      'data-h="' + esc(hueco) + '">' + ico('mas', 16) + 'Seguir anotando</button>' +
+      '<p class="pcr-conc">Vuelve el formulario con ' + esc(qué) +
+      ' ya escritas, para agregar más sin volver a teclearlas.</p>';
+  }
+
   function tomarBorrador(pref) {
     var m = {};
     try {
@@ -27008,7 +27042,7 @@ function donaHTML(datos, colorDe, nombreDe) {
       '<p class="pcr-vac-doc">Se camina la cuadra midiendo cuántos metros del frente tienen ' +
       'puerta o vitrina abierta a la calle. Con cinta, o con pasos contados y calibrados antes ' +
       'de salir. <b>Si se repartió entre dos personas</b>, cada fila dice quién la midió; en blanco significa que la midió quien responde por la plantilla.</p>';
-    if (act.estado === 'ok') {
+    if (act.estado === 'ok' && !ampliandoPuerta(HUECO_ACTIVIDAD)) {
       var f = act.delLote;
       return '<div class="pcr-vac-g pcr-act-g">' + cab +
         '<p class="pcr-conc pcr-fuente-ok"><b>' + act.pctLleno + ' % del frente con puerta o ' +
@@ -27027,6 +27061,7 @@ function donaHTML(datos, colorDe, nombreDe) {
           ? ' Se anotaron ' + act.filas.length + ' cuadras; la casilla usa la del lote.'
           : '') +
         ' La casilla «Continuidad del paramento» ya no dice SIN MEDIR.</p>' +
+        botonAmpliar(HUECO_ACTIVIDAD, 'las cuadras') +
         '<button type="button" class="pcr-mini" data-pcr="act-borrar">' + ico('borrar', 16) +
           'Quitar lo anotado</button>' +
         '</div>';
@@ -27098,7 +27133,7 @@ function donaHTML(datos, colorDe, nombreDe) {
       '<p class="pcr-vac-doc">Se mide la sección de la calle de paramento a paramento, pieza por ' +
       'pieza. Con cinta de 30 m o distanciómetro, dos personas. La calzada es lo único ' +
       'obligatorio: sin ella el tramo no mide una sección. <b>Si se repartió entre dos personas</b>, cada fila dice quién la midió; en blanco significa que la midió quien responde por la plantilla.</p>';
-    if (pv.estado === 'ok') {
+    if (pv.estado === 'ok' && !ampliandoPuerta(HUECO_PERFIL)) {
       return '<div class="pcr-vac-g pcr-act-g">' + cab +
         '<p class="pcr-conc pcr-fuente-ok"><b>' + conComa(pv.calzadaM) + ' m de calzada' +
         (pv.andenM != null ? ' y ' + conComa(pv.andenM) + ' m de andén' : '') + '</b>, media de ' +
@@ -27111,6 +27146,7 @@ function donaHTML(datos, colorDe, nombreDe) {
             'paramento: por eso quedan cortos.'
           : ' Son ' + conComa(pv.totalM) + ' m de paramento a paramento.') +
         ' La sección dibujada usa estos anchos, y el andén deja de ir supuesto.</p>' +
+        botonAmpliar(HUECO_PERFIL, 'los tramos') +
         '<button type="button" class="pcr-mini" data-pcr="pvl-borrar">' + ico('borrar', 16) +
           'Quitar lo anotado</button>' +
         '</div>';
@@ -27177,7 +27213,7 @@ function donaHTML(datos, colorDe, nombreDe) {
       'cada ruta y la hora a la que pasa. <b>Dos pasos de la misma ruta son el mínimo</b>: con uno ' +
       'se sabe que pasa, no cada cuánto — y eso también se guarda, porque que pase ya es un ' +
       'hallazgo. <b>Si se repartió entre dos personas</b>, cada fila dice quién la observó; en blanco significa que la observó quien responde por la plantilla.</p>';
-    if (rv.estado === 'ok') {
+    if (rv.estado === 'ok' && !ampliandoPuerta(HUECO_RUTAS)) {
       return '<div class="pcr-vac-g pcr-act-g">' + cab +
         '<p class="pcr-conc pcr-fuente-ok"><b>' + rv.obs.length +
         (rv.obs.length === 1 ? ' ruta observada' : ' rutas observadas') +
@@ -27197,6 +27233,7 @@ function donaHTML(datos, colorDe, nombreDe) {
               '</b></div>';
           }).join('') +
         '</div>' +
+        botonAmpliar(HUECO_RUTAS, 'las rutas') +
         '<button type="button" class="pcr-mini" data-pcr="rut-borrar">' + ico('borrar', 16) +
           'Quitar lo anotado</button>' +
         '</div>';
@@ -27262,7 +27299,7 @@ function donaHTML(datos, colorDe, nombreDe) {
       '<p class="pcr-vac-doc">Se camina el tramo y se mide el ancho <b>LIBRE</b>: lo que queda ' +
       'para caminar después de los postes, las materas y las vitrinas. No es el ancho del andén ' +
       '—ese lo levanta «Perfil vial acotado»— y siempre es el menor de los dos. <b>Si se repartió entre dos personas</b>, cada fila dice quién la midió; en blanco significa que la midió quien responde por la plantilla.</p>';
-    if (av.estado === 'ok') {
+    if (av.estado === 'ok' && !ampliandoPuerta(HUECO_ANDENES)) {
       return '<div class="pcr-vac-g pcr-act-g">' + cab +
         '<p class="pcr-conc pcr-fuente-ok"><b>' + conComa(av.anchoLibreM) + ' m de ancho libre</b>, ' +
         'media de ' + av.tramos + (av.tramos === 1 ? ' tramo caminado' : ' tramos caminados') +
@@ -27273,6 +27310,7 @@ function donaHTML(datos, colorDe, nombreDe) {
         (av.obstruye.length ? ' Lo que obstruye: ' + esc(av.obstruye.join(', ')) + '.' : '') +
         ' Los porcentajes de andén de la hoja NO cambian: son de la red entera y estos son ' +
         av.tramos + ' tramos.</p>' +
+        botonAmpliar(HUECO_ANDENES, 'los tramos') +
         '<button type="button" class="pcr-mini" data-pcr="and-borrar">' + ico('borrar', 16) +
           'Quitar lo anotado</button>' +
         '</div>';
@@ -27334,7 +27372,7 @@ function donaHTML(datos, colorDe, nombreDe) {
       '<p class="pcr-vac-doc">Se pregunta en la portería a cuánta gente atiende de verdad cada ' +
       'equipamiento. <b>Quién informó va por fila</b>: cada cupo lo dice una portería distinta, y ' +
       'sin ese nombre la cifra no se puede volver a preguntar.</p>';
-    if (cv.estado === 'ok') {
+    if (cv.estado === 'ok' && !ampliandoPuerta(HUECO_CUPO)) {
       return '<div class="pcr-vac-g pcr-act-g">' + cab +
         '<p class="pcr-conc pcr-fuente-ok"><b>' + cv.cupoTotal.toLocaleString('es-CO') +
         ' puestos</b> en ' + cv.equipamientos +
@@ -27346,6 +27384,7 @@ function donaHTML(datos, colorDe, nombreDe) {
           : ' Las ' + cv.equipamientos + ' dicen quién informó.') +
         (cv.cobran ? ' ' + cv.cobran + (cv.cobran === 1 ? ' cobra.' : ' cobran.') : '') +
         ' La cobertura de la hoja NO cambia: llegar caminando y tener puesto son dos preguntas.</p>' +
+        botonAmpliar(HUECO_CUPO, 'los equipamientos') +
         '<button type="button" class="pcr-mini" data-pcr="cup-borrar">' + ico('borrar', 16) +
           'Quitar lo anotado</button>' +
         '</div>';
@@ -30912,6 +30951,7 @@ function donaHTML(datos, colorDe, nombreDe) {
        siguiente nacería con lo que alguien tecleó en otro barrio — el mismo
        error que la v897 evitó con el acuse de guardado. */
     S.borradorCampo = null;
+    S.ampliandoCampo = null;
     S.trzParcial = null;
     S.resultado = null; S.trazado = null; S.terreno = null; S.terRejilla = null; S.curvas = null;
     S.cobertura = null; S.cobEnMapa = false; S.calor = []; S.encogida = false;

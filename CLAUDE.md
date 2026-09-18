@@ -9668,13 +9668,69 @@ que fotografiar.
 
 Es el otro síntoma del mismo hecho —el formulario no tiene memoria— y pide
 otra cosa: que la puerta sepa volver a abrir el formulario **con lo guardado
-dentro**, que toca los cinco renders. Queda medido, como lo dejó la v951.
+dentro**. **Hecho en la v955**, y salió más barato de lo previsto: el render ya
+arma los renglones desde las filas guardadas, así que lo único que sobraba era
+la condición que no dejaba llegar ahí.
 
 ### Demostrado contra la v953
 
 Quitando solo el `reponerBorrador()` del final de `pintar()`: dos en rojo con
 el estado viejo impreso —`{"ref":"","parada":"","p1":""}`— sobre un formulario
 en el que se acababan de escribir las tres cosas.
+
+## Seguir anotando sobre lo guardado (v955)
+
+El otro síntoma del mismo hecho que la v954 —el formulario no tenía memoria— y
+el que la v951 midió chocando con él: **con la entrada guardada, la puerta
+mostraba el resumen y el botón de quitar, sin formulario.** Para anotar un
+tramo más había que QUITAR lo anotado y volver a escribirlo todo.
+
+La v951 lo encontró intentando llegar a tres filas y no pudiendo: la puerta
+ofrece dos renglones de sobra, y un rechazo no guarda nada, así que desde una
+plantilla recién vaciada no se pasa de dos.
+
+### No hizo falta cargar nada
+
+El render ya arma los renglones desde `X.filas`, que **son las guardadas**. Lo
+único que sobraba era la condición que no dejaba llegar ahí. Así que el botón
+enciende una bandera por hueco y la condición del estado «ok» la lee:
+
+```js
+if (act.estado === 'ok' && !ampliandoPuerta(HUECO_ACTIVIDAD)) { … resumen … }
+```
+
+Medido: el formulario vuelve con las dos cuadras y sus dos nombres dentro, con
+cuatro renglones —dos guardados y dos de sobra— y la tercera cuadra se guarda.
+Es exactamente lo que la v951 no pudo hacer.
+
+**Los renglones de sobra son la mitad que hace falta decir**: sin ellos el
+botón devolvería lo guardado y seguiría sin dejar agregar nada, que es el
+defecto con otra ropa. Tiene su aserción propia.
+
+### Un manejador para las cinco, y el hueco en el botón
+
+`campo-ampliar` con `data-h`, no cinco acciones. Una puerta nueva lo hereda sin
+manejador propio, que es la regla del aviso de origen (v867). Y el renglón que
+lo ofrece se escribe una vez (`botonAmpliar`): dos redacciones de la misma
+frase se separan a la tanda siguiente (v879).
+
+La bandera se apaga al guardar bien, y se suelta con el análisis — como el
+borrador de la v954 y por la misma razón.
+
+### La guarda, cerrada y con su guarda
+
+En `revisar.js`: las cinco puertas tienen su botón **y** su condición. Y la
+guarda de la guarda: que `campo-ampliar` siga encendiendo la bandera que la
+condición lee — sin ella, las cinco seguirían con su botón y el botón no haría
+nada (v878).
+
+### Demostrado contra la v954
+
+Quitando solo el `!ampliandoPuerta(…)` de la condición de una puerta: tres en
+rojo con el estado viejo impreso —el formulario devuelto en `null`, cero
+renglones y la plantilla quedándose en dos filas—.
+
+Con esto cierran los dos síntomas que la v940 y la v951 dejaron declarados.
 
 ## La lista viva: lo que al pliego educativo todavía le falta (v866)
 

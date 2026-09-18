@@ -367,6 +367,31 @@ const cotaDe = ln => 300 + Math.round(30 * Math.sin(ln * 800));
     o.puertaRepartida = ((H().textContent || '').replace(/\s+/g, ' ')
       .match(/Actividad en primer piso.*?% del frente con puerta.{0,420}/) || [''])[0];
 
+    /* (f) SEGUIR ANOTANDO (v955). Con la entrada guardada la puerta muestra el
+           resumen y el botón de quitar: hasta la v954, para agregar una cuadra
+           más había que QUITAR lo anotado y volver a escribirlo todo. La v951
+           lo midió chocando con eso —desde una plantilla recién vaciada no se
+           pasa de los dos renglones que ofrece—. */
+    o.hayAmpliar = !!H().querySelector('[data-pcr="campo-ampliar"]');
+    const bam = H().querySelector('[data-pcr="campo-ampliar"]');
+    if (bam) { bam.click(); await esperar(500); }
+    o.trasAmpliar = (function () {
+      const v = (k, i) => {
+        const el = document.querySelector('[data-pcr-act="' + k + '"][data-i="' + i + '"]');
+        return el ? String(el.value || '') : null;
+      };
+      return { filas: document.querySelectorAll('[data-pcr-act="cuadra"]').length,
+               c0: v('cuadra', 0), q0: v('quienFila', 0),
+               c1: v('cuadra', 1), q1: v('quienFila', 1),
+               hayTercera: v('cuadra', 2) !== null };
+    })();
+    /* Y la tercera cuadra, que es lo que la v951 no pudo anotar. */
+    ponAct('cuadra', 2, 'Calle del medio, lado oriental');
+    ponAct('total', 2, '60'); ponAct('activo', 2, '12');
+    ponAct('quienFila', 2, '');
+    o.guardoTercera = await guardarAct();
+    o.trasTercera = ((R.estado() || {}).actividad || {});
+
     return o;
   }, { C, POL, LOTE, LOTE_SIN_HUELLAS });
   await pg.close(); await ctx.close(); await b.close();
@@ -519,6 +544,26 @@ const cotaDe = ln => 300 + Math.round(30 * Math.sin(ln * 800));
       /declara \d+/.test(CS) || /no se pudo preguntar/i.test(CS),
       CS.replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').slice(0, 160));
   }
+
+  /* ── SEGUIR ANOTANDO SOBRE LO GUARDADO (v955) ──────────────────────────
+     Lo que la v951 midió y no pudo hacer: desde una plantilla guardada no se
+     llegaba a una tercera fila sin quitarlo todo y volver a escribirlo. */
+  const AM = r.trasAmpliar || {};
+  T('MATERIAL · con la plantilla guardada, la puerta ofrece seguir anotando',
+    r.hayAmpliar === true, r.hayAmpliar ? 'hay botón' : 'NO hay botón');
+  T('el formulario vuelve con lo guardado dentro, no en blanco',
+    AM.c0 === 'Calle de arriba, lado sur' && AM.c1 === 'Calle de arriba, lado norte' &&
+      AM.q0 === 'Marta Peña' && AM.q1 === 'Luis Ortega',
+    JSON.stringify({ c0: AM.c0, q0: AM.q0, c1: AM.c1, q1: AM.q1 }));
+  /* Y con renglones de sobra para lo nuevo: sin ellos el botón devolvería lo
+     guardado y seguiría sin dejar agregar nada, que es el defecto con otra
+     ropa. */
+  T('y con renglones de sobra para anotar más',
+    AM.hayTercera === true && AM.filas >= 3, AM.filas + ' renglones');
+  T('la tercera cuadra queda guardada, que es lo que la v951 no pudo hacer',
+    r.guardoTercera === true && ((r.trasTercera || {}).filas || []).length === 3 &&
+      (r.trasTercera || {}).estado === 'ok',
+    (r.trasTercera || {}).estado + ' · ' + (((r.trasTercera || {}).filas || []).length) + ' filas');
 
   const paramDe = (h) => {
     const m = /<i class="cv-k">Continuidad del paramento<\/i><b class="cv-v">([^<]*)<\/b><small class="cv-l">([^<]*)<\/small>/

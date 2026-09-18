@@ -2017,6 +2017,32 @@ console.log('\n  -- un nombre, una cosa --');
     repone ? 'pintar lo repone al final'
            : (cuerpoPintar ? 'pintar NO llama a reponerBorrador: la regla no mordería'
                            : 'NO se encontró pintar()'));
+
+  /* ── SEGUIR ANOTANDO SOBRE LO GUARDADO (v955) ──────────────────────────
+     Las cinco puertas dejan reabrir su formulario con lo guardado dentro. Sin
+     esto, para anotar un tramo más hay que QUITAR lo anotado y volver a
+     escribirlo todo, que es lo que la v951 midió al chocar con ello. Falla
+     cerrado, como la del borrador. */
+  const HUECOS_PUERTA = ['HUECO_ACTIVIDAD', 'HUECO_PERFIL', 'HUECO_RUTAS',
+                         'HUECO_ANDENES', 'HUECO_CUPO'];
+  const sinAmpliar = HUECOS_PUERTA.filter(function (h) {
+    return src.indexOf('!ampliandoPuerta(' + h + ')') === -1 ||
+           src.indexOf('botonAmpliar(' + h + ',') === -1;
+  });
+  comprobar('las cinco puertas dejan reabrir el formulario con lo guardado',
+    sinAmpliar.length === 0,
+    sinAmpliar.length
+      ? sinAmpliar.join(', ') + ': para anotar uno más habría que quitarlo todo'
+      : HUECOS_PUERTA.length + ' puertas, todas con su botón y su condición');
+
+  /* Y la guarda de la guarda: si el manejador dejara de encender la bandera,
+     las cinco seguirían con su botón y su condición, y el botón no haría nada
+     (v878). */
+  const enciende = /acc === 'campo-ampliar'[^]{0,200}ponerAmpliando\(/.test(src);
+  comprobar('y el botón sigue encendiendo la bandera que la condición lee',
+    enciende,
+    enciende ? 'campo-ampliar llama a ponerAmpliando'
+             : 'campo-ampliar NO enciende nada: el botón no haría nada');
 }
 
   comprobar('ningún nombre de window es función en un archivo y lista en otro',
