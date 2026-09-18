@@ -454,6 +454,40 @@ const server = http.createServer((req, res) => {
               bHechos: cmpReal.b.hechos, bDias: cmpReal.b.dias,
               texto: (cmpReal.texto || '').slice(0, 900) };
 
+    /* ── CAPA 3 · los tres ejes ────────────────────────────────────────
+       El eje A necesita las dos ramas de `mismoObjetoVerificado` en la misma
+       corrida: con todas sin declarar no se ve que el nivel se calcula, y con
+       todas declaradas no se ve que sin declarar NO se publica. */
+    const cxId = (id) => ({ estado: 'documentada', tema: 't' + id,
+                            mismoObjetoVerificado: id === 'x' ? undefined : id });
+    const regEjes = (cxs) => ({ posesion: '2026-08-07', categorias: { gobierno: {} },
+      entradas: conC1(20, 'hecho-probado', 'actividad'),
+      contradicciones: { casos: cxs }, casos: { lista: [] } });
+    const ejesCon = api.ejes(regEjes([cxId(true), cxId(false), cxId(true)]), '2026-08-27');
+    const ejesSin = api.ejes(regEjes([cxId(true), cxId('x')]), '2026-08-27');
+    o.ejes = {
+      n: ejesCon.length,
+      letras: ejesCon.map(x => x.eje).join(''),
+      aCon: { publicable: ejesCon[0].publicable, nivel: (ejesCon[0].nivel || {}).id,
+              conId: ejesCon[0].conIdentidad, sinId: ejesCon[0].sinIdentidad,
+              retoricas: ejesCon[0].tensionRetorica.length },
+      aSin: { publicable: ejesSin[0].publicable, nivel: (ejesSin[0].nivel || {}).id,
+              falta: (ejesSin[0].falta || '').slice(0, 130) },
+      b: { publicable: ejesCon[1].publicable, nivel: (ejesCon[1].nivel || {}).id,
+           filas: (ejesCon[1].filas || []).map(x => x.id).join(','),
+           falta: (ejesCon[1].falta || '').slice(0, 130), lectura: (ejesCon[1].lectura || '').slice(0, 400) },
+      c: { publicable: ejesCon[2].publicable, falta: (ejesCon[2].falta || '').slice(0, 130) },
+      // Ningún eje trae un total, ni la lista lo trae colgado.
+      totales: ejesCon.filter(x => x.total !== undefined || x.indice !== undefined).length
+    };
+    // Los ejes NO mueven el veredicto: la misma ficha con y sin contradicciones
+    // que declaran identidad de objeto.
+    const vSinId = api.calcularCon(armar(40, 'verificado', limpio.concat([cx('documentada')])), '2026-08-20');
+    const cxIdent = limpio.concat([Object.assign(cx('documentada'), { mismoObjetoVerificado: false })]);
+    const vConId = api.calcularCon(armar(40, 'verificado', cxIdent), '2026-08-20');
+    o.ejesOro = { sin: vSinId.veredicto.id, con: vConId.veredicto.id,
+                  techoSin: vSinId.techos.palabra.i, techoCon: vConId.techos.palabra.i };
+
     // ── Los rasgos, con registros de mentira ─────────────────────────
     const fr = (ent, cxs) => (api.calcularCon({ posesion: '2026-08-07', categorias: { gobierno: {} }, entradas: ent,
       contradicciones: { casos: cxs || [] }, casos: { lista: [] } }, '2026-08-20').rasgos || []).map(x => x.id);
@@ -635,6 +669,36 @@ const server = http.createServer((req, res) => {
   chk(/no son la misma clase de objeto/.test(cpb.texto || '') &&
       /es de los registros, no de los gobiernos/.test(cpb.texto || ''),
       'y el texto nombra la causa real: los dos registros no son la misma clase de objeto');
+
+  console.log('\n── La Capa 3: los tres ejes, lado a lado ────');
+  const ej = r.ejes || {};
+  console.log('  ' + JSON.stringify(ej));
+  chk(ej.n === 3 && ej.letras === 'ABC',
+      'MATERIAL · son TRES ejes y salen en orden A, B, C (' + ej.n + ' · ' + ej.letras + ')');
+  chk(ej.totales === 0,
+      'ninguno trae un total ni un índice general: nunca se combinan en un número (' + ej.totales + ')');
+  chk(ej.aCon && ej.aCon.publicable === true && ej.aCon.conId === 2 && ej.aCon.sinId === 1 &&
+      ej.aCon.retoricas === 1,
+      'EJE A · con la identidad de objeto declarada sale nivel, y la tensión retórica se cuenta aparte (' +
+      (ej.aCon || {}).nivel + ' · ' + (ej.aCon || {}).conId + ' con identidad · ' +
+      (ej.aCon || {}).sinId + ' retóricas)');
+  chk(ej.aSin && ej.aSin.publicable === false && !ej.aSin.nivel &&
+      /MISMO objeto verificado/.test(ej.aSin.falta || ''),
+      'y con una sin declarar NO publica nivel, y dice qué falta (' +
+      String((ej.aSin || {}).falta).slice(0, 70) + ')');
+  chk(ej.b && ej.b.publicable === false && ej.b.filas === 'I-04,I-05,I-07,I-06' &&
+      /Petro, Duque y Santos/.test(ej.b.falta || ''),
+      'EJE B · trae sus cuatro indicadores y NO publica nivel sin la media histórica (' +
+      (ej.b || {}).filas + ')');
+  chk(ej.b && /no elige la lectura/.test(ej.b.lectura || ''),
+      'y dice que el número se lee en las dos direcciones y que el módulo no elige');
+  chk(ej.c && ej.c.publicable === false && /deflactada/.test(ej.c.falta || ''),
+      'EJE C · declarado con la fuente entera que le falta, no sacado de los titulares');
+
+  const eo = r.ejesOro || {};
+  chk(eo.sin === eo.con && eo.techoSin === eo.techoCon,
+      'REGLA DE ORO · declarar la identidad de objeto no mueve el veredicto ni el techo de la palabra (' +
+      eo.sin + '/' + eo.techoSin + ' contra ' + eo.con + '/' + eo.techoCon + ')');
 
   const nd = r.nivelDOM || {};
   chk(nd.aviso === false && nd.tarjetasFuera === 0 && nd.diceNivel === false,

@@ -10075,6 +10075,119 @@ has already been declared`. Se llama `cpb`.
   anteriores esos indicadores no significan nada.
 * **Los ejes** (Capa 3) y **el marco declarado con el editorial** (Capa 4).
 
+## Tres ejes lado a lado, y ninguno con nivel (v959)
+
+Capa 3 del pliego presidencial. Y el resultado honesto de la tanda es que
+**los tres ejes se calculan y ninguno publica un nivel**, cada uno diciendo qué
+le falta. No es una tanda a medias: es lo que el pliego manda para el eje B con
+todas las letras —*«sin ella el eje B no tiene contra qué comparar y no se puede
+publicar»*— y lo que los otros dos piden por la misma razón cuando se miden.
+
+Publicar un nivel sobre una persona real con el cálculo a medias es exactamente
+lo que este módulo existe para no hacer.
+
+### La regla que sostiene la capa: nunca un número único
+
+> Se muestran LADO A LADO, nunca combinados en un número único.
+
+Y no es una preferencia de diagramación. Confiabilidad mide si lo que dice
+coincide con lo que hace; deterioro institucional mide qué le pasa a las reglas
+del juego. **Un gobernante puede ser muy sincero sobre su intención de
+concentrar poder** —confiabilidad alta, deterioro alto— y puede mentir mucho sin
+tocar una sola institución. Metidos en la misma escala, el módulo deja de servir
+para cualquiera de las dos preguntas.
+
+`ejesDe` devuelve una **lista**, a propósito: quien quiera un número único tiene
+que escribirlo a mano, y esa línea se ve en el diff. Hay dos guardas —una
+estática sobre el tramo de la capa y otra en el navegador sobre los objetos que
+devuelve—, y las dos se demostraron en rojo metiendo un «índice general»:
+`4 · ABCG` y `ninguno trae un total: 1`.
+
+### Eje A · la identidad de objeto, que no es el estado probatorio
+
+El pliego lo pide así: el eje se calcula **solo** con registros donde
+`mismo_objeto_verificado: true`, y una contradicción retórica sin identidad de
+objeto **no baja el eje** — se registra aparte y es publicable, pero no es lo
+mismo que incumplir.
+
+El propio pliego trae el ejemplo y es el que explica por qué importa: el Fonpet
+NO alimenta el eje A, porque lo prometido y lo hecho no son el mismo objeto, y
+publicarlo como prueba de incumplimiento **«hunde los cuatro registros que sí
+aguantan»**. Una acusación floja al lado de cuatro sólidas no suma: resta.
+
+`mismoObjetoVerificado` se declara por contradicción, y **no se deriva de
+`estado: 'tension'`**, que es lo primero que uno piensa. La prueba de la clase B
+lo descarta: aquél es un estado PROBATORIO —todavía no está documentada— y éste
+es de IDENTIDAD —está documentada y aun así las dos frases no hablan de lo
+mismo—. El Fonpet es justamente una contradicción bien documentada sin identidad
+de objeto.
+
+Hoy: **4 documentadas en el registro actual, 0 con identidad declarada**, así que
+el eje A no publica nivel. Y no se declararon acá a propósito: leer si «de negar
+la adopción a prometer respaldo» habla del mismo objeto es una lectura sobre la
+honestidad de una persona real, y esa la toma quien firma el módulo.
+
+### Eje B · la mitad que sí está hecha, y la que es trabajo de archivo
+
+Los cuatro indicadores —I-04, I-05, I-06 e I-07— están normalizados por 100 días
+desde la v958. Lo que no existe es la **media histórica de Petro, Duque y
+Santos**, y sin ella no hay contra qué comparar. El pliego lo pone como condición
+de validez y no como sugerencia: *«el nivel se CALCULA, no se asigna»*, *«se
+recalcula hacia atrás para todos los gobiernos con los mismos criterios»*, y —la
+que más cuesta— *«si el cálculo arroja B5 para un gobierno anterior, se publica
+igual»*.
+
+Lo que sí se publica son los cuatro números, con la frase que el eje obliga a
+decir: **se lee en las dos direcciones** —un uso intensivo de figuras
+excepcionales puede ser una respuesta eficaz a una emergencia real, o una
+concentración de poder— y el módulo muestra el número sin elegir la lectura.
+
+### Eje C · acá no falta una media, falta la fuente entera
+
+Las siete reglas de cálculo del pliego piden ejecución presupuestal por sector
+deflactada por IPC, con aprobado, radicado y ejecutado separados, la agregación
+de «gasto militar» declarada en sus dos formas, porcentaje del PIB y del
+presupuesto, y la misma serie para los gobiernos anteriores.
+
+El módulo no tiene una sola de esas cifras. Y la tentación concreta era sacar el
+eje de las menciones presupuestales que sí hay en la línea de tiempo: **eso
+serían titulares, no ejecución**, y el eje saldría con la forma de un dato y el
+contenido de una rueda de prensa.
+
+### La tensión que queda declarada y NO resuelta
+
+La escalera de fiabilidad tiene un techo, `palabra`, que cuenta las
+contradicciones documentadas. El eje A cuenta las que además tienen identidad de
+objeto. **Son dos lecturas de la misma familia con reglas distintas**, y la
+prueba de la clase B dice que eso se separa la tanda siguiente.
+
+No se unificó, y la razón es la de la v947: **unificarlas cambia un veredicto
+publicado sobre una persona real**. Con las cuatro contradicciones documentadas
+del registro actual, pasar el techo `palabra` a contar solo las que tienen
+identidad de objeto lo movería —hoy, a cero declaradas, lo movería hasta arriba—.
+Esa decisión es de quien firma el módulo, no mía. Queda medida y escrita, con la
+ficha diciendo en su propio pie que el veredicto **no** es el promedio de los
+tres ejes.
+
+### Un fallo de la prueba que era un fallo del papel
+
+`tficha` vigila desde la v791 que ningún texto corrido baje de 13 px en teléfono,
+y el panel nuevo salió con **12,48**: la línea que explica cómo se lee el eje B
+iba en la escala más chica, que es de etiquetas y no de prosa. Subida. La
+aserción tenía razón y no se aflojó.
+
+### Lo que el pliego pide y esta versión NO hace
+
+* **I-01, I-02 e I-03** —el conteo de promesas verificables y cumplidas— siguen
+  sin fuente: el registro tiene contradicciones, no un inventario de promesas
+  con su estado.
+* **El bloque D de alerta temprana**, que pide series de Medicina Legal,
+  Procuraduría y Defensoría, y que el propio pliego declara sin sentido sin la
+  serie histórica.
+* **Los cinco gráficos** (G-1 a G-5) con sus reglas de honestidad gráfica: los
+  cinco son del eje C y ninguno tiene datos que dibujar.
+* **La Capa 4**: el marco declarado y el editorial firmado.
+
 ## La lista viva: lo que al pliego educativo todavía le falta (v866)
 
 Esta lista se quedó vieja **cinco veces**. Cuatro dentro de la hoja —la

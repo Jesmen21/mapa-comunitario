@@ -1686,6 +1686,159 @@
     return d.toISOString().slice(0, 10);
   }
 
+  /* ═══ CAPA 3 DEL PLIEGO PRESIDENCIAL · LOS EJES ═══════════════════════
+     «Se muestran LADO A LADO, nunca combinados en un número único.»
+
+     Y esa no es una preferencia de diseño: es lo que hace que el módulo sirva
+     para dos preguntas distintas. Confiabilidad mide si lo que dice coincide
+     con lo que hace; deterioro institucional mide qué le pasa a las reglas
+     del juego. Un presidente puede ser muy sincero sobre su intención de
+     concentrar poder —confiabilidad alta, deterioro alto— y puede mentir
+     mucho sin tocar una sola institución. Meterlos en la misma escala deja el
+     módulo sin servir para ninguna de las dos.
+
+     Hay una función que devuelve los tres y NO hay ninguna que los promedie.
+     `revisar.js` lo vigila, porque el día que alguien escriba «índice general
+     de gobierno» habrá perdido las dos preguntas de una vez.
+
+     ═══ LO QUE ESTA VERSIÓN PUBLICA, QUE ES NINGÚN NIVEL ═══
+     Los tres ejes se calculan y los tres salen SIN NIVEL, cada uno diciendo
+     qué le falta. No es un arreglo a medias: es lo que el pliego manda para
+     el eje B con todas las letras —«sin ella el eje B no tiene contra qué
+     comparar y no se puede publicar»— y lo que los otros dos piden por la
+     misma razón. Publicar un nivel sobre una persona real con el cálculo a
+     medias es exactamente lo que este módulo existe para no hacer. */
+
+  /* ── EJE A · CONFIABILIDAD ─────────────────────────────────────────────
+     «Se calcula sobre I-01, I-02 e I-03, y SOLO con registros donde
+     `mismo_objeto_verificado: true`. Una contradicción retórica sin identidad
+     de objeto NO baja el eje: se registra aparte como `tension_retorica`, que
+     es real y publicable, pero no es lo mismo que incumplir.»
+
+     El pliego trae su propio ejemplo y es el que explica por qué importa: el
+     Fonpet NO alimenta el eje A, porque lo que se prometió y lo que se hizo
+     no son el mismo objeto — y publicarlo como prueba de incumplimiento
+     «hunde los cuatro registros que sí aguantan». Una acusación floja al lado
+     de cuatro sólidas no suma: resta.
+
+     `mismoObjetoVerificado` SE DECLARA por contradicción y no se deduce del
+     estado. Y no se deriva de `estado: 'tension'`, que es otra cosa: aquél es
+     un estado PROBATORIO —todavía no está documentada— y éste es de
+     IDENTIDAD —está documentada y aun así las dos frases no hablan de lo
+     mismo—. Una contradicción puede estar perfectamente documentada y no
+     tener identidad de objeto, que es justo el caso del Fonpet. */
+  var EJE_A = {
+    5: { id: 'A5', t: 'Alta' }, 4: { id: 'A4', t: 'Media-alta' }, 3: { id: 'A3', t: 'Media' },
+    2: { id: 'A2', t: 'Baja' }, 1: { id: 'A1', t: 'No confiable' }
+  };
+
+  function ejeA(dd) {
+    var cx = casosDeCx(dd);
+    var doc = cx.filter(function (c) { return c.estado === 'documentada' && c.cuenta !== false; });
+    var conId = 0, sinId = 0, sinDeclarar = 0, retoricas = [];
+    doc.forEach(function (c) {
+      var v = c.mismoObjetoVerificado;
+      if (v === true) conId++;
+      else if (v === false) { sinId++; retoricas.push(c.tema || ''); }
+      else sinDeclarar++;
+    });
+    var r = { eje: 'A', t: 'Confiabilidad',
+              pregunta: '¿lo que dice coincide con lo que hace?',
+              documentadas: doc.length, conIdentidad: conId, sinIdentidad: sinId,
+              sinDeclarar: sinDeclarar, tensionRetorica: retoricas,
+              nivel: null, publicable: false, falta: '' };
+    if (sinDeclarar) {
+      r.falta = sinDeclarar + ' de ' + doc.length + ' contradicciones documentadas no declaran si las dos ' +
+        'frases hablan del MISMO objeto verificado. Sin eso no se puede separar un incumplimiento de una ' +
+        'tensión retórica, y el pliego prohíbe contarlas juntas: una acusación floja al lado de varias ' +
+        'sólidas no suma, resta.';
+    } else if (!doc.length) {
+      r.falta = 'No hay contradicciones documentadas que contar.';
+    } else {
+      r.publicable = true;
+      r.nivel = EJE_A[conId === 0 ? 5 : conId === 1 ? 4 : conId === 2 ? 3 : conId === 3 ? 2 : 1];
+    }
+    return r;
+  }
+
+  /* ── EJE B · DETERIORO INSTITUCIONAL ───────────────────────────────────
+     «Se calcula sobre I-04, I-05, I-06 e I-07, normalizados por 100 días y
+     comparados contra la media de los tres gobiernos anteriores.»
+
+     La primera mitad está hecha desde la v958. La segunda no existe y no se
+     puede inventar: hace falta la serie de Petro, Duque y Santos, que es
+     trabajo de archivo. El pliego lo dice como condición de validez y no como
+     sugerencia: «el nivel se CALCULA, no se asigna», «se recalcula hacia atrás
+     para todos los gobiernos con los mismos criterios», y «si el cálculo
+     arroja B5 para un gobierno anterior, se publica igual».
+
+     Sin la media, los cuatro indicadores no tienen contra qué compararse y el
+     nivel no sale. Lo que sí se publica son los cuatro números en crudo y por
+     100 días, con la frase que el eje obliga a decir: se puede leer en las dos
+     direcciones —uso intensivo de figuras excepcionales puede ser respuesta
+     eficaz a una emergencia real, o concentración de poder— y el módulo
+     muestra el número sin elegir la lectura. */
+  var EJE_B = {
+    1: { id: 'B1', t: 'Estable' }, 2: { id: 'B2', t: 'Tensión' }, 3: { id: 'B3', t: 'Elevado' },
+    4: { id: 'B4', t: 'Grave' }, 5: { id: 'B5', t: 'Crítico' }
+  };
+  var IND_EJE_B = ['I-04', 'I-05', 'I-06', 'I-07'];
+
+  function ejeB(dd, corte) {
+    var ind = indicadoresDe(dd, corte);
+    var filas = ind.filas.filter(function (f) { return IND_EJE_B.indexOf(f.id) >= 0; });
+    return {
+      eje: 'B', t: 'Deterioro institucional',
+      pregunta: '¿qué le está pasando a las reglas del juego?',
+      dias: ind.dias, poder: ind.poder, filas: filas,
+      nivel: null, publicable: false,
+      falta: 'La media histórica de I-04 a I-07 para Petro, Duque y Santos, calculada con los mismos ' +
+             'criterios y por 100 días. Sin ella los cuatro indicadores no tienen contra qué compararse ' +
+             'y el nivel no se puede calcular. Es trabajo de archivo, no de opinión.',
+      lectura: 'Este eje describe la FRECUENCIA con la que se usan mecanismos institucionales, y se lee en ' +
+               'las dos direcciones: un uso intensivo de figuras excepcionales puede indicar una respuesta ' +
+               'eficaz a una emergencia real, o una concentración de poder. El módulo muestra el número; no ' +
+               'elige la lectura.'
+    };
+  }
+
+  /* ── EJE C · ORIENTACIÓN DEL GASTO ─────────────────────────────────────
+     «¿Hacia dónde se mueve el dinero público, en términos reales?» El pliego
+     le pone siete reglas de cálculo y sin ellas el eje no sirve: deflactar
+     siempre, declarar si «gasto militar» es Defensa sola o Defensa+Policía,
+     separar aprobado de ejecutado, usar % del PIB y del presupuesto, separar
+     lo inflexible de lo discrecional y el servicio de deuda, y calcular la
+     misma serie para los gobiernos anteriores.
+
+     Este módulo no tiene una sola de las cifras que eso pide. Y la diferencia
+     con los otros dos ejes es que acá no falta una media: falta la fuente
+     entera. Se declara con lo que haría falta, en vez de sacar un eje de las
+     menciones presupuestales que hay en la línea de tiempo — que serían
+     titulares, no ejecución. */
+  function ejeC() {
+    return {
+      eje: 'C', t: 'Orientación del gasto',
+      pregunta: '¿hacia dónde se mueve el dinero público, en términos reales?',
+      nivel: null, publicable: false,
+      falta: 'La ejecución presupuestal por sector, deflactada por el IPC del DANE, con el aprobado, el ' +
+             'radicado y el ejecutado separados y con su fecha de corte; la agregación de «gasto militar» ' +
+             'declarada en sus dos formas —Defensa sola y Defensa más Policía—; el porcentaje del PIB y del ' +
+             'presupuesto; y la misma serie para los gobiernos anteriores. El módulo no tiene ninguna de ' +
+             'esas cifras: las menciones presupuestales de la línea de tiempo son titulares, no ejecución.',
+      lectura: 'Este eje NO mide confiabilidad ni deterioro. Un gobierno puede reorientar el gasto ' +
+               'exactamente como lo prometió: eso es confiabilidad ALTA con una política que se puede ' +
+               'criticar, y son preguntas distintas.'
+    };
+  }
+
+  /* Los tres juntos, y NINGUNA función que los promedie. Devolver una lista
+     y no un objeto con un total es parte de la regla: si el día de mañana
+     alguien quiere un número único, tiene que escribirlo a mano y esa línea
+     se ve en el diff. */
+  function ejesDe(dd, corte) {
+    return [ejeA(dd), ejeB(dd, corte), ejeC()];
+  }
+
   function casosDeCx(dd) { return (((dd || D).contradicciones || {}).casos || []); }
   function casosDeCorrupcion(dd) { return (((dd || D).casos || {}).lista || []); }
 
@@ -1936,7 +2089,8 @@
                              // Capa 2 del pliego: lo que una prueba necesita leer se
                              // agrega acá en vez de alcanzarlo por un lado (v871).
                              indicadores: indicadoresDe, comparabilidad: comparabilidad,
-                             catalogoIndicadores: INDICADORES, capaUno: capaUnoDe_conjunto };
+                             catalogoIndicadores: INDICADORES, capaUno: capaUnoDe_conjunto,
+                             ejes: ejesDe, ejeA: ejeA, ejeB: ejeB, ejeC: ejeC };
 
   // ── Piezas de dibujo ──────────────────────────────────────────────────────
   // Barra apilada: cada tramo es una CUENTA, no un porcentaje inventado. Si un
@@ -2539,6 +2693,66 @@
       }
     }
     izq.appendChild(s2);
+
+    // ── 1d · Capa 3: los tres ejes, lado a lado ────────────────────────────
+    var s3 = seccionFicha('sp-fi-secc sp-fi-c3', 'Los tres ejes, lado a lado',
+      'Confiabilidad, deterioro institucional y orientación del gasto. Van separados y NUNCA combinados ' +
+      'en un número único, y eso no es una preferencia de diseño: un gobernante puede ser muy sincero ' +
+      'sobre su intención de concentrar poder —confiabilidad alta, deterioro alto— y puede mentir mucho ' +
+      'sin tocar una sola institución. Metidos en la misma escala, el módulo deja de servir para ' +
+      'cualquiera de las dos preguntas.');
+
+    var ejes = ejesDe(D, f.corte);
+    var ul3 = el('ul', 'sp-c3-lista');
+    ejes.forEach(function (ej) {
+      var li = el('li', 'sp-c3-eje' + (ej.publicable ? '' : ' sin'));
+      var cab = el('div', 'sp-c3-cab');
+      cab.appendChild(el('span', 'sp-c3-letra', 'Eje ' + ej.eje));
+      var tit = el('div', null);
+      tit.appendChild(el('b', null, ej.t));
+      tit.appendChild(el('span', 'sp-c3-preg', ej.pregunta));
+      cab.appendChild(tit);
+      /* El nivel, o el hueco donde iría. Un eje sin nivel se pinta con el
+         hueco marcado y no se calla: callarlo dejaría la sección con dos
+         ejes donde el pliego anuncia tres. */
+      cab.appendChild(el('b', 'sp-c3-nivel', ej.publicable ? (ej.nivel.id + ' · ' + ej.nivel.t) : 'sin nivel'));
+      li.appendChild(cab);
+
+      if (ej.eje === 'A' && ej.documentadas !== undefined) {
+        li.appendChild(el('p', 'sp-c3-dato',
+          ej.documentadas + ' contradicciones documentadas · ' + ej.conIdentidad + ' con identidad de objeto · ' +
+          ej.sinIdentidad + ' como tensión retórica · ' + ej.sinDeclarar + ' sin declarar'));
+      }
+      if (ej.eje === 'B' && ej.filas) {
+        var ub = el('ul', 'sp-c3-ind');
+        ej.filas.forEach(function (fi) {
+          var lb = el('li', null);
+          lb.appendChild(el('span', null, fi.id + ' · ' + fi.t));
+          lb.appendChild(el('b', null, fi.sinCalcular ? '—' : (String(fi.por100).replace('.', ',') + ' / 100 d')));
+          ub.appendChild(lb);
+        });
+        li.appendChild(ub);
+      }
+      if (!ej.publicable) {
+        var fa = el('p', 'sp-c3-falta');
+        fa.appendChild(el('b', null, 'Falta para poder publicarlo: '));
+        fa.appendChild(document.createTextNode(ej.falta));
+        li.appendChild(fa);
+      }
+      if (ej.lectura) li.appendChild(el('p', 'sp-c3-lect', ej.lectura));
+      ul3.appendChild(li);
+    });
+    s3.appendChild(ul3);
+
+    /* Y la frase que separa esta sección del veredicto de arriba. Sin ella,
+       tres ejes sin nivel debajo de una escalera con nivel se leen como si la
+       escalera fuera el resumen de los tres, que es justo lo que la regla de
+       oro prohíbe. */
+    s3.appendChild(el('p', 'sp-c3-pie',
+      'Ninguno de los tres ejes alimenta el veredicto de arriba, y el veredicto no es su promedio. La ' +
+      'escalera de fiabilidad sale de los casos, las contradicciones y el registro verificado; estos ejes ' +
+      'son la lectura que el pliego del módulo define, y hoy ninguno tiene con qué publicar un nivel.'));
+    izq.appendChild(s3);
 
     // ── 2 · Casos de corrupción ────────────────────────────────────────────
     var sc = seccionFicha('sp-fi-secc', 'Casos de corrupción',

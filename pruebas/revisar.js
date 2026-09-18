@@ -1115,6 +1115,61 @@ console.log('\n  -- la ficha del gobernante --');
       'la tasa se calcula sobre los días de gobierno');
   }
 
+  /* ═══ CAPA 3 DEL PLIEGO · LOS EJES, NUNCA EN UN SOLO NÚMERO ════════════
+     La regla que sostiene la capa entera: «se muestran lado a lado, nunca
+     combinados en un número único». Es la invariante más fácil de romper sin
+     darse cuenta —un promedio se escribe en una línea— y la más cara: un
+     gobernante puede ser sincero sobre su intención de concentrar poder
+     (confiabilidad alta, deterioro alto), y el promedio de los dos no
+     contesta ninguna de las dos preguntas.
+
+     `ejesDe` devuelve una LISTA, a propósito: quien quiera un número único
+     tiene que escribirlo a mano, y esa línea se ve en el diff y acá. */
+  {
+    const j70c3 = leer('js/70-seguimiento.js');
+
+    comprobar('MATERIAL · los tres ejes del pliego existen en js/70',
+      /function ejeA\(/.test(j70c3) && /function ejeB\(/.test(j70c3) && /function ejeC\(/.test(j70c3) &&
+      /function ejesDe\(/.test(j70c3),
+      'ejeA · ejeB · ejeC · ejesDe');
+
+    /* Se busca dentro del TRAMO de la Capa 3 y no en todo el archivo: el
+       módulo promedia cosas legítimas en otros sitios, y una búsqueda suelta
+       denunciaría media ficha. Es la lección de la v854. */
+    const iniE = j70c3.indexOf('/* ── EJE A · CONFIABILIDAD');
+    const finE = j70c3.indexOf('function casosDeCx');
+    const tramoEjes = (iniE >= 0 && finE > iniE) ? j70c3.slice(iniE, finE) : '';
+    const promedia = /\(\s*ejeA[^)]*\+|\bpromedio\b|indiceGeneral|\bejeA\([^)]*\)\s*\+|\/\s*3\b/.test(tramoEjes);
+    comprobar('los ejes no se combinan en un número único',
+      tramoEjes.length > 0 && !promedia && /return \[ejeA\(dd\), ejeB\(dd, corte\), ejeC\(\)\];/.test(tramoEjes),
+      !tramoEjes.length ? 'no se encontró el tramo de los ejes: la comprobación no vale'
+                        : (promedia ? 'hay algo que los suma o los promedia' : 'ejesDe devuelve los tres en una lista'));
+
+    /* Y la otra mitad de la regla de oro: los ejes son Capa 3 y el veredicto
+       es de otra cosa. Ninguno puede entrar en el cálculo de los techos. */
+    const tramoVer = (j70c3.match(/var techos = \{[\s\S]*?(?=\n\s*\/\* El recuento de la Capa 1)/) || [''])[0];
+    const sucio = ['ejeA', 'ejeB', 'ejeC', 'ejesDe'].filter((k) => tramoVer.indexOf(k) >= 0);
+    comprobar('y ningún eje entra en el cálculo del veredicto',
+      tramoVer.length > 0 && sucio.length === 0,
+      !tramoVer.length ? 'no se encontró el tramo del veredicto' :
+        (sucio.length ? 'lo contamina: ' + sucio.join(', ') : 'el veredicto sigue saliendo de sus tres techos'));
+
+    /* El eje B no se puede publicar sin la media histórica, y el pliego lo
+       pone como condición de validez. Lo que se vigila es que el código no
+       publique un nivel: `publicable` tiene que ser false mientras la media
+       no exista, y la razón tiene que nombrar a los tres gobiernos. */
+    comprobar('el eje B no publica nivel sin la media histórica, y nombra lo que falta',
+      /nivel: null, publicable: false/.test(tramoEjes) &&
+      /Petro, Duque y Santos/.test(tramoEjes),
+      'el nivel queda en null y la razón nombra la serie que hace falta');
+
+    /* La guarda de la guarda: si la ficha dejara de pintar los ejes, todo lo
+       de arriba seguiría en verde sobre tres funciones que nadie llama. */
+    comprobar('y la ficha pinta los tres ejes',
+      /ejesDe\(D, f\.corte\)/.test(j70c3),
+      'la ficha los compone');
+  }
+
   /* La regla que el propio módulo se puso: una contradicción exige LAS DOS
      declaraciones documentadas. Con una sola no es un cambio de postura, es
      una postura — y como cada cambio contado baja un peldaño, dejar entrar

@@ -13,7 +13,7 @@
 
    La versión va acá y en vision-territorial.html, idéntica, como en los
    otros siete archivos de versión del sitio: revisar.js lo comprueba. */
-const VT_CACHE = 'urbis-vt-v958-la-tasa-existe-y-la-comparacion-no';
+const VT_CACHE = 'urbis-vt-v959-tres-ejes-lado-a-lado-y-ninguno-con-nivel';
 const VT_ASSETS = [
   './vision-territorial.html',
   './css/90-vt.css',
