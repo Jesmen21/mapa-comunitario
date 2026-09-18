@@ -1287,6 +1287,12 @@ html body.u52-real-map #urbis-mobile-app .u52-jac-mapcentric .u52-mapcentric-rou
 .pcr-hoja .pcr-sec-persona, .pcr-pestana .pcr-sec-persona{ fill:#E5484D; }
 .pcr-hoja .pcr-sec-persona-t, .pcr-pestana .pcr-sec-persona-t{ stroke:#E5484D; stroke-width:1.6; fill:none; stroke-linecap:round; }
 .pcr-hoja .pcr-sec-anden, .pcr-pestana .pcr-sec-anden{ fill:var(--edu-ink-3); }
+/* El andén que nadie midió: se dibuja para que la calle se entienda, y va
+   hueco y a trazos para que no se lea con el mismo peso que la calzada
+   medida de al lado (v859). Lo llena la plantilla de perfil acotado. */
+.pcr-hoja .pcr-sec-anden-sup, .pcr-pestana .pcr-sec-anden-sup{
+  fill:none; stroke:var(--edu-ink-3); stroke-width:.8; stroke-dasharray:3 2;
+}
 .pcr-hoja .pcr-sec-regla, .pcr-pestana .pcr-sec-regla{ stroke:var(--edu-ink-3); stroke-width:1; fill:none; }
 .pcr-hoja .pcr-sec-aguja, .pcr-pestana .pcr-sec-aguja{ fill:#E5484D; }
 .pcr-hoja .pcr-fr-vacio, .pcr-pestana .pcr-fr-vacio{ fill:var(--edu-line); }

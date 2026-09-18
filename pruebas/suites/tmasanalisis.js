@@ -314,6 +314,91 @@ const CAPAS_IDEAM = [
     H().querySelector('[data-pcr="imprimir"]').click(); await esperar(900);
     o.pdf = capturado; capturado = '';
 
+    /* ── LA SEGUNDA PLANTILLA DE CAMPO: «Perfil vial acotado» (v939) ────
+       Va acá y no en `tsinmapear` porque hace falta un perfil que EXISTA:
+       las vías de este sector traen `lanes: '2'`, así que el motor publica
+       un ancho de calzada y la sección se dibuja. En el sector sin mapear
+       ninguna vía trae ancho ni carriles, y la comprobación de que lo de
+       campo MANDA sobre lo del mapa no tendría nada contra qué mandar.
+
+       Las dos ramas se miden en la misma corrida: primero el perfil del
+       mapa —que es el de las versiones anteriores— y después el levantado
+       con cinta. Medir solo la segunda dejaría pasar un «medido en campo»
+       puesto en todas partes, que es la mentira contraria. */
+    const pesGen = async () => {
+      const bg = H().querySelector('[data-pcr="pestana"][data-t="general"]');
+      if (bg) { bg.click(); await esperar(350); }
+      await abrir();
+    };
+    await pesGen();
+
+    /* GUARDA DE MATERIAL, primero (v920): si el perfil del mapa dejara de
+       existir, las tres de abajo pasarían por no tener nada que rechazar. */
+    o.perfilMapa = (R.estado() || {}).perfil;
+    o.puertaPerfil = !!H().querySelector('[data-pcr="pvl-guardar"]');
+
+    const pvl = (k, i, v) => {
+      const sel = '[data-pcr-pvl="' + k + '"]' + (i === undefined ? '' : '[data-i="' + i + '"]');
+      const el = document.querySelector(sel);
+      if (el) { el.value = v; el.dispatchEvent(new Event('input', { bubbles: true })); }
+      return !!el;
+    };
+    const guardarPvl = async () => {
+      const b2 = H().querySelector('[data-pcr="pvl-guardar"]');
+      if (b2) { b2.click(); await esperar(500); }
+      await abrir();
+    };
+
+    // 1 · Un tramo sin calzada: no mide una sección, y se dice por qué.
+    pvl('calle', 0, 'Calle 1 entre carreras 2 y 3');
+    pvl('andenIzq', 0, '1,8');
+    await guardarPvl();
+    o.rechazoSinCalzada = ((R.estado() || {}).perfil || {}).estadoCampo;
+    o.avisoSinCalzada = String((R.estado() || {}).aviso || '');
+
+    // 2 · Un ancho que no es un número: es OTRO error y lo dice distinto.
+    pvl('calzada', 0, 'ancho normal');
+    await guardarPvl();
+    o.rechazoNoNumero = ((R.estado() || {}).perfil || {}).estadoCampo;
+    o.avisoNoNumero = String((R.estado() || {}).aviso || '');
+
+    // 3 · Dos tramos medidos de verdad, con su procedencia.
+    pvl('calzada', 0, '9,2'); pvl('andenIzq', 0, '1,8'); pvl('andenDer', 0, '1,6');
+    pvl('antejardin', 0, '2,5');
+    pvl('calle', 1, 'Carrera 3 entre calles 1 y 2');
+    pvl('calzada', 1, '7,0'); pvl('andenIzq', 1, '1,2'); pvl('andenDer', 1, '1,4');
+    pvl('quien', undefined, 'Cleri Rodríguez');
+    pvl('fechaDoc', undefined, '2026-09-15');
+    pvl('fechaHasta', undefined, '2026-09-16');
+    await guardarPvl();
+    o.perfilCampo = (R.estado() || {}).perfil;
+    o.entradaPerfil = (function () {
+      try {
+        return (R.leerCampo(((R.estado() || {}).llaveCampo) || '') || [])
+          .filter(x => x.hueco === 'perfil-vial-acotado')
+          .map(x => ({ estado: x.estado, quien: (x.fuente || {}).quien,
+                       desde: (x.fuente || {}).fechaDoc, hasta: (x.fuente || {}).fechaHasta,
+                       filas: ((x.valor || {}).filas || []).length }));
+      } catch (e) { return [{ error: String(e) }]; }
+    })();
+    o.postPerfil = (function () {
+      try { const t = R.tieneCampo(((R.estado() || {}).llaveCampo) || '');
+             return { hay: !!t.hay, fuentes: (t.fuentes || []).slice() }; }
+      catch (e) { return { error: String(e) }; }
+    })();
+
+    // 4 · Lo que la ficha y el papel imprimen ya con la cinta adentro.
+    await pesGen();
+    o.puertaDice = (txt(H()).match(/Perfil vial acotado[^]{0,420}/) || [''])[0];
+    const bMov = H().querySelector('[data-pcr="pestana"][data-t="movilidad"]');
+    if (bMov) { bMov.click(); await esperar(400); }
+    await abrir();
+    const tabMov = () => H().querySelector('[data-tab="movilidad"]') || H();
+    o.fichaPerfil = (txt(tabMov()).match(/El perfil de la calle[^]{0,700}/) || [''])[0];
+    o.seccionCampo = (tabMov().innerHTML.match(/m de calzada[^"<]{0,90}/g) || []).slice(0, 4);
+    await pesGen();
+    o.laminaCampo = window.URBIS_PC_RECON.laminaA({});
+
     // Y que todo esto viaje con la ficha archivada.
     o.guardado = (function () {
       try {
@@ -440,6 +525,105 @@ const CAPAS_IDEAM = [
 
   T('y llega al pliego', /Flujo a pie contra en carro/.test(CL),
     (CL.match(/Flujo a pie contra en carro<\/span><b>[^<]*/) || ['no llega'])[0].replace(/<[^>]*>/g, ' '));
+
+  /* ── La segunda plantilla de campo: «Perfil vial acotado» (v939) ──────
+     Hasta la v938 no había ni un solo sitio por donde lo medido con cinta
+     entrara al perfil: ocho consumidores leían `trz.perfil` directo, así que
+     conectar uno habría dejado los otros siete con la cifra del mapa bajo el
+     mismo nombre —la divergencia de la v879 comprada por adelantado—. Lo
+     primero de esta tanda fue crear el punto único, `perfilDeLaCalle`. */
+  console.log('\n  -- 8 · el perfil vial acotado, levantado con cinta --');
+
+  /* GUARDA DE MATERIAL, primero (v920). Si este sector dejara de traer
+     `lanes` en sus vías, el motor no publicaría ancho de calzada y todo lo
+     de abajo mediría el sector SIN perfil, que es otra cosa. */
+  const PM = r.perfilMapa || {}, PC = r.perfilCampo || {};
+  T('MATERIAL: el sector trae un perfil del MAPA, con su calzada medida por carriles',
+    PM.origen === 'mapa' && PM.anchoMedioM > 0,
+    'origen=' + PM.origen + ' · calzada=' + PM.anchoMedioM);
+  T('MATERIAL: y la puerta de la plantilla se pinta en la ficha',
+    r.puertaPerfil === true, r.puertaPerfil ? 'está' : 'no hay puerta');
+
+  /* Cada rechazo dice SU causa: «falta una medida» y «la medida no es un
+     número» son dos cosas distintas para quien está escribiendo, y un solo
+     mensaje manda a revisar lo que está bien (v934). */
+  T('un tramo sin calzada no se guarda: sin ella no mide una sección',
+    r.rechazoSinCalzada === 'sin-anotar' && /al menos la calzada/i.test(r.avisoSinCalzada || ''),
+    r.rechazoSinCalzada + ' · ' + (r.avisoSinCalzada || 'sin aviso'));
+  T('y un ancho que no es un número lo dice DISTINTO, no con el mismo mensaje',
+    r.rechazoNoNumero === 'sin-anotar' &&
+    /no son? un número en metros/i.test(r.avisoNoNumero || '') &&
+    r.avisoNoNumero !== r.avisoSinCalzada,
+    r.avisoNoNumero || 'sin aviso');
+
+  /* Y acá la afirmación: lo de campo MANDA sobre lo del mapa, y el del mapa
+     se CONSERVA al lado para que haya con qué contrastar (v934). */
+  T('con dos tramos medidos, el perfil pasa a ser el de la cinta',
+    PC.origen === 'campo' && PC.anchoMedioM === 8.1,
+    'origen=' + PC.origen + ' · calzada=' + PC.anchoMedioM + ' (media simple de 9,2 y 7,0)');
+  T('y el del mapa se conserva al lado, que es con lo que se contrasta',
+    PC.anchoMedioMapaM === PM.anchoMedioM && PC.anchoMedioMapaM > 0,
+    'mapa=' + PC.anchoMedioMapaM + ' · campo=' + PC.anchoMedioM);
+  T('el andén sale de los dos lados medidos, que es lo que el motor nunca publica',
+    PC.andenM === 1.5 && PM.andenM === null,
+    'campo=' + PC.andenM + ' · mapa=' + PM.andenM);
+  T('la relación altura ÷ ancho se recalcula con la calzada medida',
+    PC.relacion != null && PC.relacion !== PM.relacion,
+    'mapa=' + PM.relacion + ' · campo=' + PC.relacion);
+  /* Una casilla en blanco no es un cero: puede ser que la pieza no exista
+     —muchas calles no tienen separador— o que nadie la midiera. Las dos se
+     ven igual en el formulario, así que NO entra al total de paramento a
+     paramento y se nombra aparte, en vez de sumar cero (v875). En estos dos
+     tramos el separador no se anotó en ninguno; el antejardín sí, en uno. */
+  T('las piezas sin anotar se NOMBRAN, no se cuentan como cero',
+    (PC.sinMedir || []).length === 1 && /separador/i.test((PC.sinMedir || [])[0] || ''),
+    'sin anotar: ' + ((PC.sinMedir || []).join(', ') || 'ninguna'));
+
+  /* La procedencia entera, que es lo que separa un dato de campo de uno
+     inventado (v931): quién responde y entre qué fechas. */
+  const EP = (r.entradaPerfil || [])[0] || {};
+  T('la entrada guarda su procedencia: quién, desde cuándo y hasta cuándo',
+    EP.estado === 'confirmado' && EP.quien === 'Cleri Rodríguez' &&
+    EP.desde === '2026-09-15' && EP.hasta === '2026-09-16' && EP.filas === 2,
+    JSON.stringify(EP));
+  T('y el sector pasa a tener análisis post-sector por la plantilla',
+    !!(r.postPerfil || {}).hay &&
+    (r.postPerfil.fuentes || []).some(x => /perfil-vial/i.test(String((x || {}).hueco || ''))),
+    JSON.stringify(r.postPerfil));
+
+  /* LA PROCEDENCIA VIAJA CON LA CIFRA (v867): un ancho medido con cinta y uno
+     contado por carriles se leen IGUAL impresos, así que la ficha y el papel
+     tienen que decir cuál es cuál. */
+  T('la ficha declara que la calzada está medida en campo, y por quién',
+    /medidos? en campo con cinta/i.test(r.fichaPerfil || '') &&
+    /Cleri Rodríguez/.test(r.fichaPerfil || ''),
+    (r.fichaPerfil || '').slice(0, 200) || 'no lo dice');
+  T('y dice que su media es SIMPLE, contra la del mapa pesada por metros de vía',
+    /media <b>simple<\/b>|media simple/i.test(r.fichaPerfil || '') &&
+    /pesad[oa]s? por metros de vía/i.test(r.fichaPerfil || ''),
+    'no distingue los dos promedios');
+
+  /* EL ANDÉN DEL DIBUJO. Hasta la v938 la sección caía siempre al 1,5 m de
+     respaldo y lo imprimía como cota, en el mismo renglón que la calzada
+     medida y sin distinguirse de ella. Con la cinta adentro, la cota dice el
+     andén MEDIDO; la rama del supuesto la mide `tdoslaminas`, cuyo sector
+     trae `sidewalk` sin ancho. */
+  T('la cota de la sección acota el andén MEDIDO y no un supuesto',
+    (r.seccionCampo || []).some(x => /\+ andenes de 1,5 m/.test(x)) &&
+    !(r.seccionCampo || []).some(x => /supuesto/.test(x)),
+    (r.seccionCampo || []).join(' | ') || 'sin cota');
+
+  /* LA CARENCIA SE ENCOGE, NO SE BORRA. Dejarla entera sería declarar
+     ausente lo que está medido (v861); borrarla sería la mentira contraria,
+     porque la plantilla NO tiene columna de arborización y mide dos tramos,
+     no la red (v883). */
+  const LCP = String(r.laminaCampo || '');
+  T('la carencia del perfil se encoge y sigue pidiendo la ARBORIZACIÓN',
+    /falta la arborización/i.test(LCP) && /no tiene columna/i.test(LCP),
+    (LCP.match(/El perfil acotado[^<]{0,160}/) || ['no está'])[0]);
+  T('y dice que son dos tramos de toda la red, no la red entera',
+    /2 tramos? de toda la red|de toda la red/i.test(LCP),
+    (LCP.match(/de toda la red[^<]{0,80}/) || ['no lo acota'])[0]);
 
   console.log('\n  -- 4 · verde y agua --');
   const VA = cajaDe('Verde y agua');

@@ -1613,6 +1613,38 @@ usos.push({ type: 'node', id: 3105, lat: C.lat + 0.0019, lon: C.lng + 0.0018,
      La aserción que más vale no es que estén: es que **cada una diga en qué
      panel se pega su resultado**. Sin eso es un anexo —una hoja que se
      llena, se archiva y no cambia nada— y el pliego pidió lo contrario. */
+  /* ── EL ANDÉN DIBUJADO, MEDIDO O SUPUESTO (v939) ─────────────────────
+     El motor NO publica ancho de andén —`anden` trae los tres porcentajes y
+     nada más—, así que hasta la v938 `seccionDibujada` caía siempre al 1,5 m
+     de respaldo y lo ACOTABA: «7,4 m de calzada + andenes de 1,5 m», en el
+     mismo renglón que la calzada medida y sin distinguirse de ella. El 7,4
+     sale de `width`; el 1,5 es una constante.
+
+     Va acá y no en `tmasanalisis` porque hace falta el material que lo
+     produce: las vías de este sector traen `sidewalk`, así que hay andenes
+     registrados y ninguno con ancho. En aquel sector `conAndenPct` es 0 y no
+     se dibuja andén ninguno, así que la comprobación habría pasado por no
+     tener nada que rechazar (v920) — y allá vive la rama contraria, la del
+     andén MEDIDO con la plantilla llena. */
+  console.log('\n  -- el andén de la sección: dibujado, no acotado --');
+  const CPERF = ((r.soloB || '').split('<section class="caja')
+    .filter(x => /<h2>El perfil de la calle<\/h2>/.test(x))[0] || '');
+  T('MATERIAL: este sector tiene andenes registrados y ninguno con ancho',
+    /% con andén|conAndenPct/.test(CPERF) || /andén/.test(CPERF),
+    CPERF ? 'la caja del perfil está compuesta' : 'sin caja del perfil');
+  T('el andén sin medir se DIBUJA, para que la calle se entienda',
+    /pcr-sec-anden/.test(CPERF),
+    /pcr-sec-anden-sup/.test(CPERF) ? 'a trazos, como supuesto' : 'sin andén dibujado');
+  T('pero NO se acota con un número: una cota es una medida, y ese 1,5 es una constante',
+    !/\+ andenes de 1,5 m/.test(CPERF),
+    (CPERF.match(/m de calzada[^"<]{0,70}/) || ['sin cota'])[0]);
+  T('y la hoja dice que va supuesto, en la cota y en el rótulo',
+    /de supuesto, sin medir/.test(CPERF) && /andén \(sin medir\)/.test(CPERF),
+    (CPERF.match(/andén[^"<]{0,40}/g) || []).slice(0, 3).join(' | ') || 'no lo dice');
+  T('y va a trazos, no relleno: dos cosas al mismo peso, una medida y la otra no, mienten',
+    /pcr-sec-anden-sup/.test(CPERF),
+    /pcr-sec-anden-sup/.test(CPERF) ? 'a trazos' : 'relleno como la calzada');
+
   console.log('\n  -- §18 · las seis plantillas de medición --');
   const cajaB = t => ((r.soloB || '').split('<section class="caja')
     .filter(x => new RegExp('<h2>' + t + '</h2>').test(x))[0] || '');

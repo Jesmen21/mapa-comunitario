@@ -1,4 +1,4 @@
-const URBIS_CACHE = 'urbis-v938-seguimiento-presidencial-17sep';
+const URBIS_CACHE = 'urbis-v939-el-perfil-vial-acotado';
 const URBIS_ASSETS = [
   './',
   './index.html',

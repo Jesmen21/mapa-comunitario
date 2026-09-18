@@ -8138,6 +8138,145 @@ para quien quiera tomarlo por su propio motivo, no aplicado por el mío.
 Sigue donde la v935 la puso: la capa sobre el mapa vivo y el panel de la ficha,
 con sus tres declaraciones. Lo que no llega es el papel.
 
+## El perfil se acota con cinta, y el andén dibujado dice que es supuesto (v939)
+
+La segunda de las seis plantillas de campo de la v883. Se eligió por lo mismo
+que la primera —cuál cierra más de lo que la hoja declara faltando— y lo que
+destapó al medirla vale más que la puerta.
+
+### No había punto único, y por eso lo primero fue crearlo
+
+Para el paramento (v934) `laCuadraDelLote()` ya existía y bastó pegarle lo de
+campo ahí. Acá no: **ocho consumidores leen `trz.perfil` directo** —la sombra
+de lo construido, el informe en hojas, la carencia, la caja de la lámina, las
+tareas de campo, el inventario, la FODA y el bloque de la ficha—. Conectar uno
+solo habría dejado los otros siete imprimiendo la cifra del mapa bajo el mismo
+nombre: la divergencia de la v879 comprada por adelantado.
+
+`perfilDeLaCalle(trz)` es ese punto, y los ocho pasan por él. Es la regla del
+aviso de origen (v867): un consumidor nuevo lo hereda sin que su autor se
+acuerde, que es lo único que impide que esto se pierda otra vez.
+
+#### `llaveDeSector()` sin argumento devuelve cadena vacía
+
+Y eso no se ve: el almacén simplemente **nunca encuentra nada**, así que la
+puerta guarda, la entrada queda escrita y el perfil sigue saliendo del mapa.
+Lo cazó la suite con `sin-sector` sobre un sector analizado. Los otros catorce
+sitios del módulo escriben `llaveDeSector(S.resultado && S.resultado.meta)`, y
+los dos míos no; es catorce veces la misma expresión, que es su propia clase B
+y no se tocó en esta tanda.
+
+### Acá la media sí es legítima, y por qué
+
+En el paramento (v934) había que marcar la fila del lote, porque su casilla
+está rotulada a escala de **predio** y promediar cuadras habría publicado una
+cifra de sector donde va una de predio (v854). Acá la casilla —«El perfil de la
+calle»— está rotulada a **sector**, y el ancho medio del motor es exactamente
+eso. Promediar tramos publica una cifra de sector en una casilla de sector.
+
+Lo que sí hay que decir, y va impreso en la ficha y en la lámina: **la media de
+campo es SIMPLE y la del mapa pesa por metros de vía**. Comprobado leyendo
+`motor-reglas.js`, que acumula `ancho * metros`. Son dos promedios distintos de
+la misma cantidad, y callarlo presentaría dos tramos como si fueran la red.
+
+La del mapa **se conserva al lado** (`anchoMedioMapaM`): las dos existen y son
+distintas —6 m contra 8,1 en el sector de prueba—, y tirar una sería perder con
+qué contrastar (v934). La ALTURA sigue siendo del mapa, así que `relacion` pasa
+a ser una cifra de dos orígenes y eso también va dicho.
+
+### Una casilla en blanco no es un cero, y tampoco es «sin medir»
+
+Primero escribí `sinMedir`. Es falso a medias: el formulario dice «se deja vacío
+si no hay», así que una casilla en blanco puede ser **que la pieza no exista**
+—muchas calles no tienen separador— o que nadie la midiera, y las dos se ven
+igual. Se llama `sinMedir` en el código y se imprime **«sin anotar en ningún
+tramo — no existe, o no se midió»**, y no entra como cero al total de paramento
+a paramento, que por eso queda corto y lo dice.
+
+### El defecto que estaba impreso: una constante acotada como medida
+
+Salió mirando el papel, que es el método que encontró los de la v874, la v882,
+la v885 y la v887. En la hoja B suelta del sector de prueba:
+
+```
+7,4 m de calzada + andenes de 1,5 m
+```
+
+El 7,4 sale de `width`; **el 1,5 es una constante**. El motor no publica ancho
+de andén —`anden` trae los tres porcentajes y nada más— así que `seccionDibujada`
+caía siempre al respaldo y lo acotaba, en el mismo renglón que la calzada medida
+y sin distinguirse de ella.
+
+Son dos cosas distintas y por eso se separan:
+
+* **dibujar** pide un número —una calle con andenes y sin andén dibujado sería
+  peor—, así que el supuesto se conserva para el trazo, y va **a trazos y hueco**:
+  dos cosas al mismo peso, una medida y la otra no, mienten sin escribir una
+  palabra falsa (v859);
+* **acotar** es afirmar una medida, y eso solo se hace con el ancho que alguien
+  midió con cinta. Sin él la cota dice «el andén va dibujado a 1,5 m de
+  supuesto, sin medir» y el rótulo, «andén (sin medir)».
+
+### El método del panel decía dos cosas falsas del propio panel
+
+Leídas contra `motor-reglas.js` (v863): decía «carriles × **3,3 m** más
+andenes», y el motor hace `car * 3` y `anchoMedioM` es **calzada sola** —los
+andenes no entran, como la carencia de al lado ya decía—. Las dos corregidas, y
+la fuente nombra la cinta cuando la plantilla está levantada.
+
+### La carencia se encoge, y conserva la arborización
+
+Dejarla entera sería declarar ausente lo que está medido (v861). Borrarla sería
+la mentira contraria por dos razones que van impresas: la plantilla **no tiene
+columna de arborización** —un formulario en blanco no es una medición (v883)— y
+mide unos pocos tramos, no la red.
+
+Lo mismo en la cascada de suelo, cuyo renglón decía «no hay con qué estimar
+cuánto suelo ocupa la calzada». Con la plantilla llena eso es falso, así que lo
+dice de otra manera — **y el descuento no se hace igual**: llevar el ancho de
+dos tramos a todos los metros de vía del sector es extrapolar, no medir. Se
+declara con su razón en vez de moverse de paso.
+
+### Dónde vive cada rama, y por qué no en la misma suite
+
+* **`tmasanalisis`** · sus vías traen `lanes: '2'`, así que el motor publica un
+  ancho de calzada y la sección se dibuja: ahí se mide que lo de campo MANDA. En
+  `tsinmapear` ninguna vía trae ancho ni carriles, así que no habría contra qué
+  mandar. Y su `conAndenPct` es 0, de modo que con la cinta adentro el andén
+  dibujado es el MEDIDO: esa es la rama que se ejercita allá.
+* **`tdoslaminas`** · sus vías traen `sidewalk` sin ancho, que es la única
+  combinación que produce el defecto del papel: andenes registrados y ninguno
+  con medida. La guarda de material va primero (v920).
+
+Las dos hacen falta. Con solo la primera, un «medido en campo» puesto en todas
+partes pasaría; con solo la segunda, un «supuesto» puesto siempre.
+
+### Demostrado contra la v938
+
+Ocho aserciones en rojo, en dos tandas y **revirtiendo solo lo que imprime** —el
+núcleo, la puerta y lo que `estado()` expone se quedan, porque son lo que la
+suite necesita para LEER (v875)—:
+
+* con los ocho consumidores devueltos a `trz.perfil`: la ficha imprimiendo
+  **«6 m de calzada»** mientras la cinta dice 8,1, sin una palabra de quién la
+  midió, y la carencia todavía en «El perfil acotado, medido en campo» como si
+  nada se hubiera medido;
+* con la cota vieja devuelta: **«m de calzada + andenes de 1,5 m»**, el rótulo
+  sin «(sin medir)» y el andén relleno como la calzada.
+
+### Lo que esta plantilla NO cierra, medido
+
+Si dos personas miden tramos distintos, la entrada guarda **un solo `quien`**.
+El remedio con precedente está identificado y no se hace acá: una columna «Quién
+informó», como la que «Cupo real de equipamientos» lleva desde la v883
+justamente porque cada cupo lo dice una portería distinta. Cambiar las columnas
+cambia la plantilla impresa y sus aserciones en `tlaminaedu`, así que es su
+propia tanda.
+
+Quedan **cuatro** plantillas por conectar, y las tres de percepción — que además
+necesitan entrar en `huecosDeCampo` antes de tener formulario, porque hoy el
+almacén no las acepta.
+
 ## La lista viva: lo que al pliego educativo todavía le falta (v866)
 
 Esta lista se quedó vieja **cinco veces**. Cuatro dentro de la hoja —la
@@ -8181,10 +8320,12 @@ que se ve a simple vista: la cláusula está o no está.
   `ya: el nombre, la referencia y el tipo de cada ruta que recoge en las paradas del sector, y la plantilla de campo para anotar las horas de paso con su intervalo`
 * **El aforo de hora pico** — un conteo en campo o el de la secretaría, con su
   fecha. `ya: el flujo modelado a partir de los usos y la jerarquía, rotulado como modelado y no como contado`
-* **El perfil acotado de la calle**: andenes, antejardines, arborización — se
-  levanta en campo, y la lámina ya trae con qué: el renglón se queda porque
-  la plantilla es el camino y no el dato.
-  `ya: el ancho de vía leído de width con su cobertura, qué parte de la red no tiene dato de andén, y las plantillas de campo del perfil acotado y del estado de andenes, con sus columnas y su instrumento`
+* **La ARBORIZACIÓN de la calle, y el perfil acotado del RESTO de la red** —
+  la plantilla del perfil no tiene columna de arborización, y los tramos que
+  se levanten son unos pocos: llevar su ancho a todos los metros de vía del
+  sector sería extrapolar. El renglón se queda por eso y no porque falte el
+  camino.
+  `ya: el ancho de vía leído de width con su cobertura, qué parte de la red no tiene dato de andén, y el perfil acotado que se levanta con cinta tramo a tramo entra al análisis por su puerta en la ficha —calzada, separador, andenes y antejardín— y manda sobre el del mapa, que se conserva al lado para contrastar, con quién lo midió y entre qué fechas`
 * **El contorno del MUNICIPIO y el de la COMUNA** — los límites
   administrativos de OpenStreetMap, que este módulo todavía no descarga. Y la
   población por departamento y por comuna, que pide anclas del DANE como las

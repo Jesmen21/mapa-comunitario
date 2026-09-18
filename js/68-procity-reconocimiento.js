@@ -1493,6 +1493,127 @@
     }, base);
   }
 
+  /* ── EL PERFIL ACOTADO, LEVANTADO CON CINTA (v939) ──────────────────
+     La segunda de las seis plantillas de la v883. Sus columnas son calzada,
+     separador, andén izquierdo, andén derecho y antejardín: la sección de
+     PARAMENTO A PARAMENTO, que es justo lo que el mapa no trae.
+
+     Y a diferencia del paramento (v934), acá la media de varios tramos es lo
+     CORRECTO y no un error de escala: «El perfil de la calle» está declarado
+     a escala de SECTOR y su propia nota dice que es «una sección tipo, armada
+     con los promedios del sector: no es la de una calle concreta». Por eso no
+     hay fila que marcar — no hay una cuadra privilegiada.
+
+     Lo que sí hay que declarar es que la media es SIMPLE: el motor pondera
+     por metros de vía y la plantilla no trae longitud de tramo, así que son
+     dos maneras distintas de promediar y la hoja lo dice. */
+  var HUECO_PERFIL = 'perfil-vial-acotado';
+
+  function numPos(v) { var n = Number(v); return isFinite(n) && n >= 0 ? n : null; }
+
+  /* Una fila sirve si trae CALZADA: es la única pieza sin la cual no hay
+     sección. Las demás pueden faltar —hay calles sin separador y sin
+     antejardín, y eso es un cero legítimo, no un hueco—. */
+  function filaPerfilUtil(f) {
+    return !!f && numPos(f.calzada) !== null && Number(f.calzada) > 0;
+  }
+
+  /* SIEMPRE un objeto con su `estado`, nunca null (v876). */
+  function perfilDeCampo(llave) {
+    var vacio = function (est, razon) {
+      return { estado: est, razon: razon, hay: false, filas: [] };
+    };
+    if (!llave) return vacio('sin-sector', 'sin sector al que enlazar lo levantado');
+    var e;
+    try {
+      e = confirmadasDeCampo(llave).filter(function (x) { return x.hueco === HUECO_PERFIL; })[0];
+    } catch (err) { return vacio('sin-sector', 'no se pudo leer lo guardado'); }
+    if (!e) return vacio('sin-anotar', 'nadie ha anotado todavía la plantilla del perfil');
+    var filas = ((e.valor && e.valor.filas) || []).filter(filaPerfilUtil);
+    if (!filas.length) return vacio('sin-filas', 'la plantilla está guardada y no tiene una sola fila con la calzada medida');
+    var med = function (k) {
+      var vs = filas.map(function (f) { return numPos(f[k]); })
+                    .filter(function (v) { return v !== null; });
+      if (!vs.length) return null;
+      var suma = vs.reduce(function (a, b) { return a + b; }, 0);
+      return Math.round(10 * suma / vs.length) / 10;
+    };
+    var calzada = med('calzada'), sep = med('separador');
+    var aIzq = med('andenIzq'), aDer = med('andenDer'), ante = med('antejardin');
+    /* El total de paramento a paramento: lo que de verdad aporta la cinta.
+       Se suma lo que haya, y las piezas que no se anotaron en NINGÚN tramo se
+       nombran aparte en vez de contarse como cero. Y se nombran como «sin
+       anotar» y no «sin medir», porque una casilla en blanco es las dos cosas
+       a la vez: puede ser que la pieza no exista —muchas calles no tienen
+       separador— o que nadie la midiera, y el formulario no las distingue.
+       Contarla como cero daría por medida una de las dos (v875). */
+    var piezas = [['calzada', calzada], ['separador', sep], ['andén izquierdo', aIzq],
+                  ['andén derecho', aDer], ['antejardín', ante]];
+    var sinMedir = piezas.filter(function (x) { return x[1] === null; })
+                         .map(function (x) { return x[0]; });
+    var total = piezas.reduce(function (a, x) { return a + (x[1] || 0); }, 0);
+    var fl = fuenteLeida(e.fuente);
+    var hasta = (e.fuente && e.fuente.fechaHasta) || null;
+    /* El andén de la sección: la media de los dos lados, que es lo que el
+       dibujo pinta a lado y lado. Con uno solo medido se usa ese y se dice. */
+    var lados = [aIzq, aDer].filter(function (v) { return v !== null; });
+    var andenM = lados.length
+      ? Math.round(10 * lados.reduce(function (a, b) { return a + b; }, 0) / lados.length) / 10
+      : null;
+    return {
+      estado: 'ok', hay: true, razon: '',
+      filas: filas, tramos: filas.length,
+      calzadaM: calzada, separadorM: sep, andenIzqM: aIzq, andenDerM: aDer,
+      antejardinM: ante, andenM: andenM,
+      totalM: Math.round(10 * total) / 10,
+      sinMedir: sinMedir,
+      fuente: fl,
+      desde: fl.fechaDoc || null, hasta: hasta,
+      cuando: cuandoTexto(fl.fechaDoc || null, hasta)
+    };
+  }
+
+  /* ── EL PUNTO ÚNICO, QUE NO EXISTÍA ─────────────────────────────────
+     Ocho sitios leen `trz.perfil` directo —la sección dibujada, el KPI de la
+     ficha, la caja de la lámina, el informe en hojas, la FODA, la cascada de
+     suelo, las tareas de campo y el inventario—. Para el paramento (v934) ya
+     existía `laCuadraDelLote()` y bastó pegarle lo de campo ahí; acá no había
+     ninguno, así que lo primero es crearlo.
+
+     Es la regla del aviso de origen (v867): un consumidor nuevo lo hereda sin
+     que su autor se acuerde, que es lo único que impide que esto se pierda
+     otra vez. */
+  function perfilDeLaCalle(trz) {
+    var pf = trz && trz.perfil;
+    if (!pf) return null;
+    /* La llave sale de la META del resultado, como en los otros catorce
+       sitios: `llaveDeSector()` sin argumento devuelve cadena vacía —lo
+       comprobó la suite con `sin-sector` sobre un sector analizado— y eso
+       no es un fallo visible, es un almacén que nunca encuentra nada. */
+    var campo = perfilDeCampo(llaveDeSector(S.resultado && S.resultado.meta));
+    if (!campo.hay) {
+      return Object.assign({}, pf, { origen: 'mapa', campo: campo });
+    }
+    var an = pf.anden || {};
+    /* La ALTURA sigue siendo del mapa: la plantilla mide la sección, no los
+       pisos. Así que `relacion` se recalcula con la calzada medida y la
+       altura de OpenStreetMap, y eso se dice — es una cifra de dos orígenes. */
+    var calz = campo.calzadaM;
+    var rel = (pf.alturaMediaM != null && calz > 0)
+      ? Math.round(100 * pf.alturaMediaM / calz) / 100 : pf.relacion;
+    return Object.assign({}, pf, {
+      anchoMedioM: calz,
+      /* La del mapa se CONSERVA al lado: las dos existen y son distintas, y
+         tirar una sería perder con qué contrastar (v934). */
+      anchoMedioMapaM: pf.anchoMedioM,
+      relacion: rel,
+      anden: Object.assign({}, an, { anchoMedioM: campo.andenM }),
+      acotado: campo,
+      origen: 'campo',
+      campo: campo
+    });
+  }
+
   function leerFichas() {
     try { var f = JSON.parse(localStorage.getItem(FICHAS_KEY) || '[]'); return Array.isArray(f) ? f : []; }
     catch (e) { return []; }
@@ -3002,7 +3123,7 @@
       });
     }
     if (!horas.length) return null;
-    var pf = (trz && trz.perfil) || null;
+    var pf = perfilDeLaCalle(trz);
     return {
       pisos: pisos, abierto: !!rep.moda.abierto, etq: rep.moda.etq,
       alturaM: h, porPiso: ALTO_POR_PISO_M, horas: horas,
@@ -3093,6 +3214,9 @@
 
   var FRANJA_RONDA_M = 30;
   var UMBRAL_PENDIENTE_PCT = 30;
+  /* El andén con el que se DIBUJA la sección cuando nadie lo midió. No es
+     una medición y nunca se imprime como cota: ver `seccionDibujada`. */
+  var ANDEN_SUPUESTO_M = 1.5;
   function fmtN(n) { return Math.round(Number(n) || 0).toLocaleString('es-CO'); }
   function cascadaDeSuelo(vacioM2, aguaM2, areaM2, ter, trz) {
     var pasos = [{ t: 'Suelo sin construir', m2: vacioM2 }];
@@ -3143,9 +3267,23 @@
                    de: fmtN(su.metrosVia) + ' m de calzada a ' + conComa(su.anchoMedioM) + ' m de ancho medio' });
       queda = Math.max(0, queda - m2Vias);
     } else {
-      faltan.push('<b>La superficie de vía.</b> Ninguna vía del sector trae ancho ni carriles en ' +
-        'OpenStreetMap, así que no hay con qué estimar cuánto suelo ocupa la calzada. La plantilla de ' +
-        '«Perfil vial acotado» lo levanta en campo.');
+      /* Con la plantilla llena la primera mitad de esta frase deja de ser
+         cierta —hay anchos medidos— y declararla igual sería la falta de la
+         v861. Lo que NO cambia es el descuento, y la razón va impresa: la
+         plantilla mide unos pocos tramos, y multiplicar su ancho por los
+         metros de vía del sector entero es extrapolar, no medir. El día que
+         se decida hacerlo, se decide con su precio medido y no de paso. */
+      var pvCas = perfilDeCampo(llaveDeSector(S.resultado && S.resultado.meta));
+      faltan.push(pvCas.hay
+        ? '<b>La superficie de vía.</b> Ninguna vía del sector trae ancho ni carriles en ' +
+          'OpenStreetMap. En campo se midieron ' + pvCas.tramos +
+          (pvCas.tramos === 1 ? ' tramo' : ' tramos') + ' —' + conComa(pvCas.calzadaM) +
+          ' m de calzada—, y con eso NO se hace este descuento: llevar el ancho de ' +
+          pvCas.tramos + ' tramos a todos los metros de vía del sector sería extrapolar. Hace ' +
+          'falta medir el resto, o el ancho de OpenStreetMap donde lo haya.'
+        : '<b>La superficie de vía.</b> Ninguna vía del sector trae ancho ni carriles en ' +
+          'OpenStreetMap, así que no hay con qué estimar cuánto suelo ocupa la calzada. La ' +
+          'plantilla de «Perfil vial acotado» lo levanta en campo.');
     }
     pasos.push({ t: 'Aprovechable estimado', m2: queda, fin: true });
     /* La amenaza sigue sin poder descontarse, y es la única de las cuatro. */
@@ -4387,7 +4525,7 @@
   }
 
   function perfilImpreso(t) {
-    var p = t && t.perfil;
+    var p = perfilDeLaCalle(t);
     if (!p) return '';
     var an = p.anden || {};
     return '<h2>El perfil de la calle</h2><table>' +
@@ -4403,6 +4541,17 @@
       '<tr><td>Vía sin andén</td><td class="n">' + String(an.sinAndenPct).replace('.', ',') + '%</td></tr>' +
       '<tr><td>Vía sin dato de andén</td><td class="n">' + String(an.sinDatoPct).replace('.', ',') + '%</td></tr>' +
       '</table>' +
+      /* El informe en hojas es la TERCERA superficie que imprime esta cifra
+         —con la ficha y la lámina—, así que también declara su origen: un
+         ancho medido con cinta y uno contado por carriles se leen igual en
+         una tabla (v867). */
+      (p.origen === 'campo'
+        ? '<p class="pie">La calzada y el andén de esta tabla están <b>medidos en campo con ' +
+          'cinta</b>: ' + p.acotado.tramos +
+          (p.acotado.tramos === 1 ? ' tramo levantado' : ' tramos levantados') + ' por ' +
+          esc(p.acotado.fuente.quien) + esc(p.acotado.cuando) + ', en media simple. La del mapa, ' +
+          'pesada por metros de vía, da ' + conComa(p.anchoMedioMapaM) + ' m.</p>'
+        : '') +
       '<p class="pie">' + esc(p.lectura || '') + ' El ancho es el de la calzada, no de fachada a fachada. ' +
       'Hay dato de ancho en ' + p.coberturaAncho + '% de la vía y de pisos en ' + p.coberturaAltura +
       '% de los edificios.</p>';
@@ -7426,11 +7575,37 @@ function donaHTML(datos, colorDe, nombreDe) {
            del dato: un ancho medio sacado de tres calles de cien parece el
            del sector y no lo es. */
         (function () {
-          var pf = trz && trz.perfil;
+          var pf = perfilDeLaCalle(trz);
           if (!pf || pf.anchoMedioM == null) {
             return '<p class="vacio-falta"><b>El ancho de las vías.</b> Ninguna vía del sector ' +
               'trae ancho ni número de carriles en OpenStreetMap, así que no hay perfil que ' +
               'acotar. Se mide en campo, con cinta, de fachada a fachada.</p>';
+          }
+          /* ── LA CARENCIA SE ENCOGE, NO SE BORRA (v939) ─────────────
+             Con la plantilla llena, el perfil ya NO es solo la calzada de
+             OpenStreetMap: hay andenes, separador y antejardín medidos con
+             cinta. Dejar el renglón entero sería declarar ausente lo que
+             está medido, que es la falta de la v861 y la más cara de este
+             módulo.
+
+             Pero borrarlo sería la mentira contraria, y por dos razones que
+             van impresas: la plantilla NO tiene columna de **arborización**
+             —un formulario en blanco no es una medición (v883)— y mide unos
+             pocos tramos, no la red, así que el resto del sector sigue con
+             el ancho de OpenStreetMap y su cobertura. */
+          if (pf.origen === 'campo') {
+            var ac = pf.acotado;
+            return '<p class="vacio-falta"><b>El perfil acotado: falta la arborización, y falta ' +
+              'el resto de la red.</b> Se midieron en campo <b>' + ac.tramos +
+              (ac.tramos === 1 ? ' tramo' : ' tramos') + '</b> con cinta —' +
+              conComa(ac.calzadaM) + ' m de calzada' +
+              (ac.andenM != null ? ', ' + conComa(ac.andenM) + ' m de andén' : '') +
+              (ac.sinMedir.length ? '; sin anotar en ningún tramo: ' + esc(ac.sinMedir.join(', ')) : '') +
+              '—, y eso es lo que la sección dibuja. Lo que la plantilla no levanta es la ' +
+              '<b>arborización</b>, que no tiene columna: se anota aparte, con el porte y la ' +
+              'especie. Y son ' + ac.tramos + ' de toda la red: el resto sigue con el ancho de ' +
+              'OpenStreetMap, que cubre el <b>' + (pf.coberturaAncho || 0) + ' %</b> de los ' +
+              'metros de vía.</p>';
           }
           return '<p class="vacio-falta"><b>El perfil acotado, medido en campo.</b> El ancho de ' +
             'acá sale de <b>' + (pf.anchoDe === 'width' ? 'la etiqueta de ancho de OpenStreetMap'
@@ -7440,7 +7615,8 @@ function donaHTML(datos, colorDe, nombreDe) {
             (pf.anden && pf.anden.sinDatoPct != null
               ? ' —del andén no se sabe en el ' + conComa(pf.anden.sinDatoPct) + ' % de la red—'
               : '') + '. Para acotar un perfil con sus andenes, antejardines y arborización hay ' +
-            'que medirlo en la calle.</p>';
+            'que medirlo en la calle: la plantilla «Perfil vial acotado» lo levanta tramo a ' +
+            'tramo y entra por la pestaña del sector.</p>';
         })() +
         /* La isócrona NO va en esta lista, y esto es una corrección: la
            v858 la declaró faltante y no lo estaba. Se calcula recorriendo el
@@ -7925,7 +8101,7 @@ function donaHTML(datos, colorDe, nombreDe) {
       
       caja('El perfil de la calle',
       (function () {
-      var pf = trz && trz.perfil;
+      var pf = perfilDeLaCalle(trz);
       if (!pf) return '';
       var an = pf.anden || {};
       if (pf.relacion == null) {
@@ -7947,10 +8123,34 @@ function donaHTML(datos, colorDe, nombreDe) {
       '<p class="lee">' + esc(pf.lectura || '') + '</p>' +
       '</div>' +
       '</div>' +
-      '<p class="nota">Sección tipo, armada con los promedios del sector: no es la de una ' +
-      'calle concreta. El ancho es el de la calzada, no de fachada a fachada. Hay dato de ' +
-      'ancho en ' + pf.coberturaAncho + '% de la vía y de pisos en ' + pf.coberturaAltura +
-      '% de los edificios.</p>';
+      /* LA PROCEDENCIA VIAJA CON LA CIFRA (v867). Con la plantilla levantada
+         estas cifras no son de OpenStreetMap, y un ancho medido con cinta y
+         uno contado por carriles se leen IGUAL impresos. Va dicho acá, al
+         pie de la cifra, y no solo en la puerta de la ficha: una lámina
+         archivada se vuelve a componer con este código.
+
+         Y va dicho que la media de campo es SIMPLE mientras la del mapa pesa
+         por metros de vía: son dos promedios distintos de la misma cantidad
+         —comprobado en `motor-reglas.js`, que acumula `ancho * metros`— y
+         callarlo presentaría unos pocos tramos como si fueran la red. */
+      (pf.origen === 'campo'
+        ? '<p class="nota">La calzada y el andén de acá están <b>medidos en campo con cinta</b>: ' +
+          pf.acotado.tramos + (pf.acotado.tramos === 1 ? ' tramo levantado' : ' tramos levantados') +
+          ' por ' + esc(pf.acotado.fuente.quien) + esc(pf.acotado.cuando) + '. Es una media ' +
+          '<b>simple</b> de esos tramos, no de la red entera, y por eso va al lado la del mapa: ' +
+          conComa(pf.anchoMedioMapaM) + ' m de calzada pesados por metros de vía, con dato en ' +
+          pf.coberturaAncho + '% de la vía. La sección de fachada a fachada mide ' +
+          conComa(pf.acotado.totalM) + ' m' +
+          (pf.acotado.sinMedir.length
+            ? ' sin ' + esc(pf.acotado.sinMedir.join(', ')) + ', que no se anotó en ningún tramo ' +
+              '—no existe, o no se midió— y por eso no suma cero'
+            : '') +
+          '. Los pisos siguen siendo del mapa, con dato en ' + pf.coberturaAltura +
+          '% de los edificios.</p>'
+        : '<p class="nota">Sección tipo, armada con los promedios del sector: no es la de una ' +
+          'calle concreta. El ancho es el de la calzada, no de fachada a fachada. Hay dato de ' +
+          'ancho en ' + pf.coberturaAncho + '% de la vía y de pisos en ' + pf.coberturaAltura +
+          '% de los edificios.</p>');
       })(), 'g3') +
       
       caja('A distancia de caminar',
@@ -12539,6 +12739,76 @@ function donaHTML(datos, colorDe, nombreDe) {
         if (rA.ok) soltarPost();
         pintar(); return;
       }
+      if (acc === 'pvl-guardar' || acc === 'pvl-borrar') {
+        var llP = llaveDeSector(S.resultado && S.resultado.meta);
+        var soltarPostP = function () {
+          /* La corrida post vieja se suelta: se calculó sin este dato (v897). */
+          if (S.corridas) { S.corridas.post = null;
+            if (S.corrida === 'post') { S.corrida = 'sector'; S.resultado = S.corridas.sector; } }
+        };
+        if (acc === 'pvl-borrar') {
+          var yaP = confirmadasDeCampo(llP).filter(function (x) {
+            return x.hueco === HUECO_PERFIL; })[0];
+          if (yaP) borrarEntradaCampo(llP, yaP.id);
+          S.avisoPestana = 'Se quitó lo levantado. El perfil vuelve al ancho de OpenStreetMap y ' +
+            'el andén, a dibujarse supuesto.';
+          soltarPostP(); pintar(); return;
+        }
+        var leeP = function (k, i) {
+          var sel = '[data-pcr-pvl="' + k + '"]' + (i === undefined ? '' : '[data-i="' + i + '"]');
+          var el = document.querySelector(sel);
+          return el ? String(el.value || '').trim() : '';
+        };
+        var numP = function (t) {
+          var t2 = String(t || '').trim().replace(',', '.');
+          if (!t2) return null;
+          var n = Number(t2);
+          return isFinite(n) ? n : NaN;
+        };
+        var filasP = [], malos = [];
+        document.querySelectorAll('[data-pcr-pvl="calle"]').forEach(function (el) {
+          var i = Number(el.getAttribute('data-i'));
+          var calle = String(el.value || '').trim();
+          var crudo = ['calzada', 'separador', 'andenIzq', 'andenDer', 'antejardin']
+            .map(function (k) { return [k, leeP(k, i)]; });
+          /* Una fila vacía no es un error: son los renglones de sobra que la
+             puerta ofrece para seguir anotando. Se descartan en silencio. */
+          if (!calle && !crudo.some(function (x) { return x[1]; })) return;
+          var f = { calle: calle.slice(0, 80) };
+          crudo.forEach(function (x) {
+            var n = numP(x[1]);
+            if (n === null) return;
+            if (!isFinite(n) || n < 0) { malos.push(calle || 'un tramo'); return; }
+            f[x[0]] = n;
+          });
+          filasP.push(f);
+        });
+        var utilesP = filasP.filter(filaPerfilUtil);
+        if (!utilesP.length) {
+          /* «Falta una medida» y «la medida no es un número» son dos cosas
+             distintas para quien está escribiendo, y un solo mensaje para las
+             dos manda a revisar lo que está bien (v934). */
+          S.avisoPestana = !filasP.length
+            ? 'Falta anotar por lo menos un tramo con su calzada medida.'
+            : malos.length
+              ? 'Hay anchos que no son un número en metros: ' +
+                malos.slice(0, 3).join(', ') + '. Se escriben como 7,4 — sin unidades.'
+              : 'Cada tramo necesita al menos la calzada: sin ella no mide una sección. ' +
+                'Las demás piezas se dejan vacías si no existen o no se midieron.';
+          pintar(); return;
+        }
+        var rP = guardarEntradaCampo(llP, {
+          hueco: HUECO_PERFIL, estado: 'confirmado',
+          valor: { filas: utilesP },
+          fuente: { como: 'campo', quien: leeP('quien'),
+                    fechaDoc: leeP('fechaDoc'), fechaHasta: leeP('fechaHasta') } });
+        S.avisoPestana = rP.ok
+          ? 'Quedó anotado. El perfil de la calle sale medido en campo, y este sector tiene ' +
+            'análisis post-sector.'
+          : rP.error;
+        if (rP.ok) soltarPostP();
+        pintar(); return;
+      }
       if (acc === 'norma-confirmar') {
         var mn;
         try { mn = normaDesdeIndices(); } catch (e) { mn = null; }
@@ -15800,7 +16070,7 @@ function donaHTML(datos, colorDe, nombreDe) {
     var trz = S.trazado;
     var lista = [];
     var alt = (function () { var c = conteoDeEdificios(st, trz); return (c && c.a) || {}; })();
-    var perf = trz && trz.perfil;
+    var perf = perfilDeLaCalle(trz);
     var vi = (trz && trz.vias) || {};
     var ll = (trz && trz.llenos) || {};
     var esp = trz && trz.espacio;
@@ -16357,7 +16627,7 @@ function donaHTML(datos, colorDe, nombreDe) {
         falta: 'mida el trazado para tener la red de vías',
         dato: 'la red, con las vías nombradas' },
       { id: 'el-perfil-de-la-calle', t: 'El perfil de la calle', g: 'El suelo',
-        listo: !!(trz && trz.perfil), falta: 'mida el trazado', dato: 'la sección tipo' },
+        listo: !!perfilDeLaCalle(trz), falta: 'mida el trazado', dato: 'la sección tipo' },
       /* `piezas` y no `espacio`: la caja se llena solo si hay al menos una
          pieza de espacio público con forma registrada. Un sector sin un solo
          parque mapeado tiene el objeto y no tiene la caja. */
@@ -19482,7 +19752,7 @@ function donaHTML(datos, colorDe, nombreDe) {
     'A distancia de caminar': { f: '% del área a menos de X minutos a pie de cada tipo; radio recto = minutos × 80 m', fu: 'OpenStreetMap, hoy; 4,8 km/h (Gehl, 2010)', c: 'media', r: 'cobertura ≥ 80 % del área', e: 'la traza real alarga: ver «Hasta dónde se camina»' },
     'Hasta dónde se camina desde el lote': { f: 'recorrido por la red de calles (camino más corto) a 80 m por minuto desde el lote', fu: 'red vial de OpenStreetMap, hoy', c: 'media-alta', r: 'isócronas de 5, 10 y 15 minutos', e: 'sin andenes ni semáforos en la cuenta: ±2 min' },
     'Cómo se llega': { f: 'vías por jerarquía, paradas y rutas registradas; vía principal más cercana', fu: 'OpenStreetMap, hoy', c: 'media-baja en transporte: las rutas están poco mapeadas', r: 'una parada por cada 1.500 habitantes', e: 'las rutas informales no aparecen' },
-    'El perfil de la calle': { f: 'ancho de vía (carriles × 3,3 m más andenes) contra la altura media construida; relación alto/ancho', fu: 'OpenStreetMap, hoy; alturas del trazado o contadas en campo', c: 'media', r: 'relación 1:1 a 1:2, calle contenida (Gehl, 2010)', e: 'anchos estimados por carriles: ±2 m' },
+    'El perfil de la calle': { f: 'ancho de CALZADA contra la altura media construida; relación alto/ancho. El ancho sale de la etiqueta `width` donde está, y de carriles × 3 m donde no; con la plantilla de campo levantada, de la cinta', fu: 'OpenStreetMap, hoy —o la cinta, cuando la plantilla «Perfil vial acotado» está levantada, y entonces la caja lo dice con quién la midió—; alturas del trazado o contadas en campo', c: 'media; alta en los tramos medidos con cinta', r: 'relación 1:1 a 1:2, calle contenida (Gehl, 2010)', e: 'anchos estimados por carriles: ±2 m. El andén que OpenStreetMap no trae va DIBUJADO a 1,5 m de supuesto y nunca acotado con un número' },
     'Llenos y vacíos': { f: 'área de las huellas de edificios ÷ área del sector', fu: 'OpenStreetMap, hoy', c: 'media: depende de las huellas dibujadas', r: 'ocupación de suelo de 40 a 60 % en barrio consolidado', e: 'cada huella que falta baja el lleno' },
     'Alturas de lo construido': { f: 'pisos por edificio (building:levels) o contados en campo; media y reparto', fu: 'OpenStreetMap, hoy; conteo del curso', c: 'baja en OpenStreetMap, alta si se contó en campo', r: 'altura máxima del POT: sin dato oficial', e: 'la mayoría de los edificios no trae altura registrada' },
     'El terreno': { f: 'cotas en malla sobre el área; pendiente = desnivel ÷ distancia; cortes topográficos', fu: 'Copernicus DEM GLO-90 vía Open-Meteo Elevation', c: 'media: celda de 90 m', r: 'pendiente < 5 % plana · > 12 % fuerte', e: '±5 m en cota; suaviza los cambios bruscos' },
@@ -20946,7 +21216,7 @@ function donaHTML(datos, colorDe, nombreDe) {
       if (ll.sinGeometria > ll.conGeometria)
         T('Dibujar la forma de los edificios mapeados solo como punto', ll.sinGeometria + ' sin forma');
 
-      var pf = trz.perfil;
+      var pf = perfilDeLaCalle(trz);
       if (pf && pf.relacion != null) {
         if (pf.relacion >= 1)
           F('Calle contenida: la altura acompaña al ancho', 'relación ' + num(pf.relacion));
@@ -21208,7 +21478,26 @@ function donaHTML(datos, colorDe, nombreDe) {
     if (!p || p.alturaMediaM == null || p.anchoMedioM == null) return '';
     var W = 360, H = 254, base = 118;
     var an = p.anden || {};
-    var andenM = an.anchoMedioM != null ? an.anchoMedioM : (an.conAndenPct > 0 ? 1.5 : 0);
+    /* ── EL ANDÉN DIBUJADO: MEDIDO O SUPUESTO, Y SE DICE CUÁL ───────────
+       El motor NO publica ancho de andén —`anden` trae los tres porcentajes
+       y nada más—, así que hasta la v938 esto caía siempre al 1,5 de
+       respaldo y lo imprimía como cota, en el mismo renglón que la calzada
+       medida y sin distinguirse de ella: «7,4 m de calzada + andenes de
+       1,5 m». La primera cifra sale de `width`; la segunda es una constante.
+
+       Dos cosas distintas, y por eso se separan:
+       · DIBUJAR pide un número —una calle con andenes y sin andén dibujado
+         sería peor—, así que el supuesto se conserva para el trazo;
+       · IMPRIMIR una cota es afirmar una medida, y eso solo se hace con el
+         ancho que alguien midió con cinta (la plantilla «Perfil vial
+         acotado» llena justo estas dos columnas).
+
+       Y el andén supuesto va a trazos, no relleno: dos cosas dibujadas a la
+       misma escala con el mismo peso, una medida y la otra no, mienten sin
+       escribir una palabra falsa (v859). */
+    var andenMedidoM = an.anchoMedioM != null ? Number(an.anchoMedioM) : null;
+    var andenM = andenMedidoM != null ? andenMedidoM : (an.conAndenPct > 0 ? ANDEN_SUPUESTO_M : 0);
+    var andenSupuesto = andenMedidoM == null && andenM > 0;
     var anchoEdif = Math.max(9, Math.min(14, p.anchoMedioM * 0.6));
     var totalM = p.anchoMedioM + 2 * andenM + 2 * anchoEdif;
     var k = (W - 40) / totalM;
@@ -21246,9 +21535,10 @@ function donaHTML(datos, colorDe, nombreDe) {
       'm0 0l-' + (hp * 0.16).toFixed(1) + ' ' + (hp * 0.3).toFixed(1) + 'm' + (hp * 0.16).toFixed(1) + ' -' + (hp * 0.3).toFixed(1) +
       'l' + (hp * 0.16).toFixed(1) + ' ' + (hp * 0.3).toFixed(1) + 'M' + (px - hp * 0.2).toFixed(1) + ' ' + (pyTop + hp * 0.45).toFixed(1) +
       'h' + (hp * 0.4).toFixed(1) + '" class="pcr-sec-persona-t"/>';
+    var clAnden = 'pcr-sec-anden' + (andenSupuesto ? ' pcr-sec-anden-sup' : '');
     var andenes = andenM > 0
-      ? '<rect x="' + xe1.toFixed(1) + '" y="' + (base - 2.5) + '" width="' + (andenM * k).toFixed(1) + '" height="2.5" class="pcr-sec-anden"/>' +
-        '<rect x="' + xa2.toFixed(1) + '" y="' + (base - 2.5) + '" width="' + (andenM * k).toFixed(1) + '" height="2.5" class="pcr-sec-anden"/>'
+      ? '<rect x="' + xe1.toFixed(1) + '" y="' + (base - 2.5) + '" width="' + (andenM * k).toFixed(1) + '" height="2.5" class="' + clAnden + '"/>' +
+        '<rect x="' + xa2.toFixed(1) + '" y="' + (base - 2.5) + '" width="' + (andenM * k).toFixed(1) + '" height="2.5" class="' + clAnden + '"/>'
       : '';
     // La regla de la relación altura ÷ ancho, con la aguja.
     var rel = Number(p.relacion) || 0;
@@ -21272,22 +21562,41 @@ function donaHTML(datos, colorDe, nombreDe) {
       // Los nombres, encima de cada cosa.
       '<text x="' + x0 + '" y="' + (base - hPx - 5).toFixed(1) + '" class="pcr-sec-t">edificio típico · ' + f1(p.alturaMediaM) + ' m de alto</text>' +
       '<text x="' + ((xa1 + xa2) / 2).toFixed(1) + '" y="' + (base + 10) + '" class="pcr-sec-t" text-anchor="middle">calzada</text>' +
-      (andenM > 0 ? '<text x="' + ((xa2 + xe2) / 2).toFixed(1) + '" y="' + (base - hPx - 5).toFixed(1) + '" class="pcr-sec-t" text-anchor="middle">andén</text>' : '') +
+      (andenM > 0 ? '<text x="' + ((xa2 + xe2) / 2).toFixed(1) + '" y="' + (base - hPx - 5).toFixed(1) + '" class="pcr-sec-t" text-anchor="middle">andén' + (andenSupuesto ? ' (sin medir)' : '') + '</text>' : '') +
       '<text x="' + (px + hp * 0.3).toFixed(1) + '" y="' + (pyTop + 4).toFixed(1) + '" class="pcr-sec-t">1,7 m</text>' +
       '<text x="' + (x3).toFixed(1) + '" y="' + (base - hPx - 5).toFixed(1) + '" class="pcr-sec-t" text-anchor="end">' + Math.max(1, Math.round(p.alturaMediaM / 3)) + ' pisos</text>' +
       // Las cotas: la altura al lado del edificio, el ancho bajo la calzada.
       '<path d="M' + (xe1 - 4).toFixed(1) + ' ' + (base - hPx).toFixed(1) + 'v' + hPx.toFixed(1) + '" class="pcr-sec-alt"/>' +
-      cota(xa1, xa2, base + 20, f1(p.anchoMedioM) + ' m de calzada' + (andenM > 0 ? ' + andenes de ' + f1(andenM) + ' m' : '')) +
+      cota(xa1, xa2, base + 20, f1(p.anchoMedioM) + ' m de calzada' +
+        (andenM > 0
+          ? (andenMedidoM != null
+              ? ' + andenes de ' + f1(andenMedidoM) + ' m'
+              : ' · el andén va dibujado a ' + f1(ANDEN_SUPUESTO_M) + ' m de supuesto, sin medir')
+          : '')) +
       '<text x="' + x0 + '" y="' + (ry - 32) + '" class="pcr-sec-t">Altura ÷ ancho: qué tan encajonada se siente la calle</text>' +
       regla +
       '</svg></div>';
   }
 
   function bloquePerfil() {
-    var t = S.trazado, p = t && t.perfil;
+    var t = S.trazado, p = perfilDeLaCalle(t);
     if (!p) return '';
     var an = p.anden || {};
-    return h4('via', 'El perfil de la calle') +
+    /* LA PROCEDENCIA VIAJA CON LA CIFRA (v867), también en la ficha. Un ancho
+       medido con cinta y uno contado por carriles se leen IGUAL impresos, y
+       acá arriba está el KPI grande que es lo que alguien copia. Va antes de
+       las cifras y no al pie: una advertencia que llega después del número
+       llega tarde (v880). */
+    var proc = p.origen === 'campo'
+      ? '<p class="pcr-conc pcr-fuente-ok">La calzada y el andén de acá están <b>medidos en ' +
+        'campo con cinta</b>: ' + p.acotado.tramos +
+        (p.acotado.tramos === 1 ? ' tramo levantado' : ' tramos levantados') + ' por ' +
+        esc(p.acotado.fuente.quien) + esc(p.acotado.cuando) + '. Es una media <b>simple</b> de ' +
+        'esos tramos, no de la red: la del mapa —' + conComa(p.anchoMedioMapaM) + ' m, ' +
+        '<b>pesada por metros de vía</b> y con dato en ' + p.coberturaAncho + '% de la red— ' +
+        'queda al lado para contrastar. Los pisos siguen siendo del mapa.</p>'
+      : '';
+    return h4('via', 'El perfil de la calle') + proc +
       (p.relacion != null
         ? '<div class="pcr-kpis">' +
             '<div class="pcr-kpi"><b>' + String(p.relacion).replace('.', ',') + '</b><small>altura ÷ ancho de calzada</small></div>' +
@@ -25634,14 +25943,90 @@ function donaHTML(datos, colorDe, nombreDe) {
       '</div>';
   }
 
+  /* ── LA PUERTA DE LA SEGUNDA PLANTILLA (v939) ────────────────────────
+     «Perfil vial acotado». A diferencia del paramento, acá la MEDIA de los
+     tramos sí es legítima y no hay fila que marcar: la casilla que esto
+     llena —«El perfil de la calle»— está rotulada a escala de SECTOR en
+     `ESCALA_PANEL`, y el ancho medio del motor es exactamente eso, un
+     promedio de la red. Promediar tramos publica una cifra de sector en una
+     casilla de sector, que es lo correcto; en el paramento habría publicado
+     una de sector en una de predio (v854).
+
+     Lo que sí hay que decir, y va impreso: la media de acá es SIMPLE —cada
+     tramo cuenta igual— mientras que la del motor pesa por metros de vía.
+     Son dos promedios distintos de la misma cantidad, y callarlo sería
+     presentar cuatro tramos medidos como si fueran la red entera. */
+  function htmlPuertaPerfil(llave) {
+    var pv = perfilDeCampo(llave);
+    var cab = '<p class="pcr-lab">' + esc(nombreDeHueco(HUECO_PERFIL)) + '</p>' +
+      '<p class="pcr-vac-doc">Se mide la sección de la calle de paramento a paramento, pieza por ' +
+      'pieza. Con cinta de 30 m o distanciómetro, dos personas. La calzada es lo único ' +
+      'obligatorio: sin ella el tramo no mide una sección.</p>';
+    if (pv.estado === 'ok') {
+      return '<div class="pcr-vac-g pcr-act-g">' + cab +
+        '<p class="pcr-conc pcr-fuente-ok"><b>' + conComa(pv.calzadaM) + ' m de calzada' +
+        (pv.andenM != null ? ' y ' + conComa(pv.andenM) + ' m de andén' : '') + '</b>, media de ' +
+        pv.tramos + (pv.tramos === 1 ? ' tramo medido' : ' tramos medidos') +
+        ', levantados por ' + esc(pv.fuente.quien) + esc(pv.cuando) + '.' +
+        (pv.sinMedir.length
+          ? ' Sin anotar en ningún tramo: ' + esc(pv.sinMedir.join(', ')) + ' — puede ser que no ' +
+            'existan o que nadie las midiera, y las dos cosas se ven igual en el formulario, así ' +
+            'que NO entran como cero en los ' + conComa(pv.totalM) + ' m de paramento a ' +
+            'paramento: por eso quedan cortos.'
+          : ' Son ' + conComa(pv.totalM) + ' m de paramento a paramento.') +
+        ' La sección dibujada usa estos anchos, y el andén deja de ir supuesto.</p>' +
+        '<button type="button" class="pcr-mini" data-pcr="pvl-borrar">' + ico('borrar', 16) +
+          'Quitar lo anotado</button>' +
+        '</div>';
+    }
+    var guardadas = pv.filas || [];
+    var slots = guardadas.slice(0, 8);
+    while (slots.length < guardadas.length + 2 && slots.length < 8) slots.push(null);
+    if (!slots.length) { slots = [null, null]; }
+    var cel = function (k, i, v, etq, ph) {
+      return '<label class="pcr-campo-linea"><span>' + etq + '</span>' +
+        '<input type="text" inputmode="decimal" maxlength="8" data-pcr-pvl="' + k + '" ' +
+          'data-i="' + i + '" value="' + esc(v != null ? String(v) : '') + '" ' +
+          'placeholder="' + ph + '" /></label>';
+    };
+    var filas = slots.map(function (g, i) {
+      var v = g || {};
+      return '<div class="pcr-act-f">' +
+        '<label class="pcr-campo-linea"><span>Calle y tramo</span>' +
+          '<input type="text" maxlength="80" data-pcr-pvl="calle" data-i="' + i + '" ' +
+            'value="' + esc(v.calle || '') + '" placeholder="Av. 5 entre calles 10 y 11" /></label>' +
+        cel('calzada', i, v.calzada, 'Calzada (m)', '7,4') +
+        cel('separador', i, v.separador, 'Separador (m)', 'se deja vacío si no hay') +
+        cel('andenIzq', i, v.andenIzq, 'Andén izq. (m)', '1,8') +
+        cel('andenDer', i, v.andenDer, 'Andén der. (m)', '1,6') +
+        cel('antejardin', i, v.antejardin, 'Antejardín (m)', 'se deja vacío si no hay') +
+        '</div>';
+    }).join('');
+    return '<div class="pcr-vac-g pcr-act-g">' + cab + filas +
+      '<label class="pcr-campo-linea"><span>Quién lo levantó</span>' +
+        '<input type="text" maxlength="80" data-pcr-pvl="quien" ' +
+          'value="' + esc((pv.fuente && pv.fuente.quien) || '') + '" ' +
+          'placeholder="El nombre de quien midió con la cinta" /></label>' +
+      '<label class="pcr-campo-linea"><span>Día del levantamiento</span>' +
+        '<input type="text" maxlength="40" data-pcr-pvl="fechaDoc" ' +
+          'value="' + esc(pv.desde || '') + '" placeholder="2026-09-16" /></label>' +
+      '<label class="pcr-campo-linea"><span>Y hasta (si tomó varios días)</span>' +
+        '<input type="text" maxlength="40" data-pcr-pvl="fechaHasta" ' +
+          'value="' + esc(pv.hasta || '') + '" placeholder="se deja vacío si fue un solo día" /></label>' +
+      '<button type="button" class="pcr-mini" data-pcr="pvl-guardar">' + ico('ok', 16) +
+        'Guardar lo levantado en campo</button>' +
+      '</div>';
+  }
+
   function bloquePlantillas() {
     if (!S.resultado) return '';
     var llave = llaveDeSector(S.resultado.meta);
     return h4('via', 'Lo que se levanta en la calle') +
       '<p class="pcr-pista">La lámina imprime seis plantillas en blanco para llenar caminando. ' +
       'Acá se anota lo que ya se midió, y la cifra entra en la hoja con <b>quién la levantó y ' +
-      'cuándo</b>. Por ahora está conectada la primera; las otras cinco siguen en el papel.</p>' +
-      htmlPuertaActividad(llave);
+      'cuándo</b>. Por ahora están conectadas dos; las otras cuatro siguen en el papel.</p>' +
+      htmlPuertaActividad(llave) +
+      htmlPuertaPerfil(llave);
   }
 
   /* ── LA PRIMERA DE LAS CUATRO PUERTAS DE VACÍO (v931) ────────────────
@@ -30216,6 +30601,22 @@ function donaHTML(datos, colorDe, nombreDe) {
            sector con usos de sobra no puede ejercitar el aviso, y uno pobre
            no puede ejercitar su ausencia. Sin poder leerlo, las dos
            comprobaciones pasarían por no tener nada que rechazar. */
+        /* Lo que una prueba necesita leer se AGREGA acá (v871). El perfil
+           compuesto —no `trz.perfil`— para que la suite mida lo que el punto
+           único devuelve y no lo que el motor mandó. */
+        perfil: (function () {
+          var pf = null;
+          try { pf = perfilDeLaCalle(S.trazado); } catch (e) { return null; }
+          if (!pf) return null;
+          return { origen: pf.origen, anchoMedioM: pf.anchoMedioM,
+                   anchoMedioMapaM: pf.anchoMedioMapaM != null ? pf.anchoMedioMapaM : null,
+                   andenM: (pf.anden || {}).anchoMedioM != null ? pf.anden.anchoMedioM : null,
+                   relacion: pf.relacion,
+                   tramos: pf.acotado ? pf.acotado.tramos : 0,
+                   totalM: pf.acotado ? pf.acotado.totalM : null,
+                   sinMedir: pf.acotado ? pf.acotado.sinMedir : [],
+                   estadoCampo: pf.campo ? pf.campo.estado : null };
+        })(),
         afluenciaFiable: (function () {
           var mc = mallaDeAfluencia();
           return mc ? !!mc.fiable : null;
