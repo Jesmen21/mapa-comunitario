@@ -4503,12 +4503,13 @@
   ]
  },
  "casos": {
-  "_nota": "Casos de corrupción atribuidos al gobernante o a su gobierno, con ESTADO PROBATORIO. Pesan en la ficha del gobernante 'confirmado' (uno baja a «poco fiable», dos a «nada fiable») y 'en-investigacion' (menos: uno baja a «dudosa», dos a «poco fiable»); 'senalamiento' se muestra con su etiqueta y no mueve el veredicto. · confirmado: hay fallo, sanción, documento oficial o reconocimiento del propio implicado (se cita cuál en queSeConfirmo y quienLoConfirmo). · en-investigacion: hay proceso abierto por una autoridad (Fiscalía, Procuraduría, Contraloría, Congreso, Corte), con la autoridad en quienLoConfirmo y el número o la fecha de apertura en queSeConfirmo. Una denuncia radicada que la autoridad no ha abierto todavía es un señalamiento, no una investigación. · senalamiento: lo dice un medio o un actor político y ninguna autoridad se ha pronunciado. · archivado: una autoridad lo revisó y lo cerró sin hallazgo; se muestra con su etiqueta y no pesa. Un caso archivado NO se cuenta como señalamiento: leer igual lo que nadie ha mirado y lo que una autoridad ya miró y cerró es injusto con el señalado, y el registro publica lo que lo favorece con la misma letra que lo que no. · por-documentar: el dueño del registro lo nombró, pero todavía no hay título, hecho ni fuente; no se pinta y no pesa hasta que se llene. Subir un caso de estado exige la fuente que lo sostiene, no una convicción. Las denuncias que el propio Gobierno hace contra la administración anterior NO van aquí: son hechos de la categoría 'corrupcion' de la línea de tiempo, no casos suyos.",
+  "_nota": "Casos de corrupción atribuidos al gobernante o a su gobierno, con ESTADO PROBATORIO. Pesan en la ficha del gobernante 'confirmado' (uno baja a «poco fiable», dos a «nada fiable») y 'en-investigacion' (menos: uno baja a «dudosa», dos a «poco fiable»); 'senalamiento' se muestra con su etiqueta y no mueve el veredicto. · confirmado: hay fallo, sanción, documento oficial o reconocimiento del propio implicado (se cita cuál en queSeConfirmo y quienLoConfirmo). · en-investigacion: hay proceso abierto por una autoridad (Fiscalía, Procuraduría, Contraloría, Congreso, Corte), con la autoridad en quienLoConfirmo y el número o la fecha de apertura en queSeConfirmo. Una denuncia radicada que la autoridad no ha abierto todavía es un señalamiento, no una investigación. · senalamiento: lo dice un medio o un actor político y ninguna autoridad se ha pronunciado. · archivado: una autoridad lo revisó y lo cerró sin hallazgo; se muestra con su etiqueta y no pesa. Un caso archivado NO se cuenta como señalamiento: leer igual lo que nadie ha mirado y lo que una autoridad ya miró y cerró es injusto con el señalado, y el registro publica lo que lo favorece con la misma letra que lo que no. · por-documentar: el dueño del registro lo nombró, pero todavía no hay título, hecho ni fuente; no se pinta y no pesa hasta que se llene. Subir un caso de estado exige la fuente que lo sostiene, no una convicción. Las denuncias que el propio Gobierno hace contra la administración anterior NO van aquí: son hechos de la categoría 'corrupcion' de la línea de tiempo, no casos suyos. · nivelGobierno: de qué nivel es la decisión —nacional, departamental, distrital o municipal—. Solo pesa en el veredicto la nacional: este es el veredicto de un gobierno nacional, y un desalojo que ordena una alcaldía o un impuesto que aprueba un concejo se muestran enteros y no lo mueven. Se DECLARA, no se deduce del texto: en este mismo registro hay decenas de hechos que nombran una ciudad y son actos del Gobierno nacional ocurridos allá. Sin declarar, el caso sigue pesando como hasta ahora y la ficha dice cuántos están así —ponerle «nacional» por omisión sería afirmar de quién es una decisión sin que nadie lo haya escrito—, y revisar.js se lo exige a todo caso confirmado o en investigación. · fecha: es cuándo una AUTORIDAD se pronunció, que es lo que ordena y recorta la serie; cuándo ocurrió el hecho es otra cosa y va en fechaHecho cuando se conoce y difiere de la anterior.",
   "lista": [
    {
     "id": "fundacion-primera-dama",
     "titulo": "La fundación de la primera dama, creada un mes antes de la posesión, encabeza los canales de donación del terremoto",
     "estado": "senalamiento",
+    "nivelGobierno": "nacional",
     "queSeConfirmo": "Nada todavía. Una investigación periodística documentó que la Fundación Colombia Luz y Sonrisas, con la primera dama como representante legal y constituida el 7 de julio de 2026, aparece primera entre las tres organizaciones habilitadas para recibir donaciones en dinero; no hay hallazgo de desvío ni pronunciamiento de ningún organismo de control.",
     "quienLoConfirmo": "Ninguna autoridad. Lo publicó Cuestión Pública; URBIS no encontró denuncia formal ante Contraloría, Procuraduría o Fiscalía.",
     "fecha": "2026-08-20",
@@ -4547,6 +4548,7 @@
     "id": "declaracion-conflicto-intereses",
     "titulo": "La declaración de conflicto de intereses del presidente no registra cónyuge ni las empresas de su actividad privada anterior",
     "estado": "senalamiento",
+    "nivelGobierno": "nacional",
     "queSeConfirmo": "Nada todavía. Varios medios señalaron que la declaración de bienes y conflicto de intereses presentada el 24 de agosto omite el cónyuge y sociedades como De la Espriella Abogados, Ron Defensor o el restaurante Místico; la Presidencia no ha explicado las omisiones y ningún organismo de control ha abierto actuación conocida.",
     "quienLoConfirmo": "Ninguna autoridad. Lo señalaron Cambio, BluRadio y El Espectador sobre el documento público.",
     "fecha": "2026-08-24",
@@ -4581,6 +4583,7 @@
     "id": "nova-soportes",
     "titulo": "La campaña le pagó 1.299 millones a Nova Soporte Integral, una empresa liquidada durante tres años y reactivada semanas antes de la primera vuelta",
     "estado": "senalamiento",
+    "nivelGobierno": "nacional",
     "queSeConfirmo": "Nada todavía. Una investigación de la revista Cambio documentó que la campaña reportó pagos por 1.299 millones de pesos a Nova Soporte Integral por transporte y logística —344 de ellos ya en segunda vuelta, por tiquetes, alojamiento y transporte terrestre—, y que la empresa llevaba tres años liquidada, reapareció y cambió de nombre en la Cámara de Comercio de Bogotá en febrero de 2026, sin historial de facturación, sin presencia pública verificable y con un representante legal que figura como estudiante universitario y clasificado como vulnerable en el Sisbén. La campaña lo negó —«ultrajante e infamante»— y pidió rectificación, pero no aportó contratos, facturas detalladas ni pruebas de los servicios prestados.",
     "quienLoConfirmo": "Ninguna autoridad. El Consejo Nacional Electoral no ha abierto actuación por este contrato pese a las peticiones que se le hicieron; la Asociación Colombiana de Medios respaldó el trabajo periodístico.",
     "fecha": "2026-06-16",
@@ -4608,6 +4611,7 @@
     "id": "lavado-tuso-sierra",
     "titulo": "Lavado de activos y enriquecimiento ilícito por el dinero de «El Tuso» Sierra: la Fiscalía lo archivó sin encontrar mérito",
     "estado": "archivado",
+    "nivelGobierno": "nacional",
     "queSeConfirmo": "Que no hubo hallazgo. La Corte Suprema pidió investigarlo por lavado de activos y enriquecimiento ilícito a partir del testimonio del narcotraficante Juan Carlos «El Tuso» Sierra, que dijo haberle pagado una suma alta para entrar al proceso de Justicia y Paz. La Fiscalía Sexta Especializada precluyó a su favor a finales de 2014 y el proceso quedó archivado en 2021. La Fiscalía 13 Especializada dejó escrito que «no existe evidencia o elemento material probatorio del cual se pueda inferir la comisión de los delitos de lavado de activos o enriquecimiento ilícito».",
     "quienLoConfirmo": "Fiscalía General de la Nación · preclusión de 2014 y orden de archivo de 2021, bajo el fiscal general Francisco Barbosa.",
     "fecha": "2021-01-01",
@@ -4637,6 +4641,7 @@
     "id": "soborno-testigo",
     "titulo": "Oferta de soborno a un testigo: la Corte Suprema ordenó investigarlo y la Fiscalía archivó por no encontrar prueba que lo vinculara",
     "estado": "archivado",
+    "nivelGobierno": "nacional",
     "queSeConfirmo": "Que no hubo hallazgo. Una columna de Daniel Coronell reveló en febrero de 2026 una resolución de la Sala Penal de la Corte Suprema que ordenaba investigarlo por una presunta oferta de soborno a un testigo. Su defensa publicó entonces la orden de archivo de la Fiscalía, que dice: «En el presente caso, como se evidencia en el memorial de orden de archivo, no existe prueba que vincule a ABELARDO DE LA ESPRIELLA OTERO con la presunta comisión del delito de soborno».",
     "quienLoConfirmo": "Fiscalía General de la Nación · orden de archivo, publicada por la defensa tras la columna del 22 de febrero de 2026.",
     "fecha": "2026-02-24",
@@ -4659,6 +4664,7 @@
    {
     "id": "fenoge-puerta-giratoria",
     "estado": "senalamiento",
+    "nivelGobierno": "nacional",
     "titulo": "La ministra de Minas la nombró para auditar el FENOGE y al día siguiente quedó elegida directora, con honorarios 32 % más altos que su antecesor",
     "queSeConfirmo": "Nada por parte de un organismo de control. Dos investigaciones periodísticas documentaron la cronología y las cifras: Melba Rocío Pérez Tuta fue designada por la ministra de Minas y Energía, María Nohemí Arboleda, para hacer una revisión del FENOGE, y al día siguiente la propia ministra presentó su candidatura al Comité Directivo, que la eligió directora ejecutiva para el período del 14 de agosto al 31 de diciembre de 2026. Sus honorarios quedaron en 61,88 millones de pesos mensuales, un 32,2 % por encima de los de su antecesor, con contrato por 282.585.333 pesos incluido IVA, en medio de una campaña oficial de austeridad. Nueve contratistas salieron de la entidad. URBIS no encontró denuncia formal ni proceso abierto por Contraloría, Procuraduría o Fiscalía. Lo que circuló además —que sea «amiga del presidente»— NO está probado y no se registra: la lectura de conflicto de interés se sostiene sola con la cronología y las cifras.",
     "quienLoConfirmo": "Ninguna autoridad. Lo publicaron la revista Cambio y la Unidad Investigativa de Caracol Radio.",
@@ -4682,6 +4688,7 @@
    {
     "id": "firmas-anuladas-candidatura",
     "estado": "archivado",
+    "nivelGobierno": "nacional",
     "titulo": "El 62 % de las firmas de su candidatura fue anulado: el CNE lo revisó y negó la revocatoria por no hallar falsedad ni suplantación",
     "queSeConfirmo": "Que una autoridad lo miró y lo cerró sin hallazgo. Tras la queja radicada el 10 de febrero de 2026 por el ciudadano Marceliano Julio Fonseca, que alegaba documentos falsos, el Consejo Nacional Electoral resolvió en la Resolución de Sala Plena 2633 del 21 de mayo de 2026 negar la revocatoria de la inscripción por no existir elemento probatorio de falsedad documental ni de suplantación; la candidatura quedó en firme. La Registraduría explicó que las inconsistencias eran datos ilegibles, duplicados, no coincidentes con el Archivo Nacional de Identificación o de personas fuera del censo, y que eso no constituye fraude ni delito. El 62 % tampoco es una cifra fuera de lo común: la Registraduría anuló entre el 40 % y el 68 % de las firmas de TODOS los aspirantes por firmas, y las únicas firmas que denunció ante la Fiscalía por posible fraude fueron las de otros dos candidatos, ninguno de ellos De la Espriella. Se deja escrito porque el dato del 62 % circula solo, sin su denominador, y así leído dice lo contrario de lo que pasó.",
     "quienLoConfirmo": "Consejo Nacional Electoral, Resolución de Sala Plena 2633 del 21 de mayo de 2026, y Registraduría Nacional del Estado Civil.",

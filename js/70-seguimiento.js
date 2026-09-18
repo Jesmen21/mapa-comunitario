@@ -1285,6 +1285,54 @@
   };
   var ORDEN_CASO = { 'confirmado': 0, 'en-investigacion': 1, 'senalamiento': 2, 'archivado': 3, 'por-documentar': 4 };
 
+  /* EL NIVEL DE GOBIERNO DE UN CASO.
+     Regla del pliego presidencial, y de las que no se pueden deducir: una
+     decisión municipal o departamental no entra al veredicto de un gobierno
+     NACIONAL, por más que la pieza que la publica la presente como nacional.
+     Un desalojo que ordena una alcaldía y un decreto que firma la Presidencia
+     se ven igual en un titular y no son lo mismo.
+
+     Se DECLARA en el registro, no se adivina del texto. Deducirlo de si el
+     título nombra una ciudad sería exactamente el error contrario: en este
+     mismo registro hay veinticinco hechos que nombran Medellín, Barranquilla
+     o Cúcuta y son todos actos del Gobierno nacional ocurridos allá.
+
+     Sin declarar, el caso SIGUE PESANDO como hasta hoy y la ficha cuenta
+     cuántos están así. No se le pone «nacional» por omisión: un valor por
+     omisión es una afirmación que nadie escribió, y acá afirmaría de quién es
+     una decisión. Lo que impide que esa rama la alcance un caso que pesa es
+     `revisar.js`, que exige el nivel a todo caso confirmado o en investigación
+     —la misma guarda que ya les exige quién, fecha y fuentes—.
+
+     Un nivel escrito con un valor que no está en la tabla NO pesa, y la ficha
+     dice el valor literal: un «Municipal» con mayúscula que pesara en silencio
+     es peor que uno que se ve en rojo en la tarjeta. */
+  var NIVELES = {
+    'nacional':      { t: 'Nacional',      pesa: true },
+    'departamental': { t: 'Departamental', pesa: false },
+    'distrital':     { t: 'Distrital',     pesa: false },
+    'municipal':     { t: 'Municipal',     pesa: false }
+  };
+
+  function nivelDeCaso(c) {
+    var id = String((c && c.nivelGobierno) || '').trim();
+    if (!id) return { id: '', t: 'sin declarar', pesa: true, declarado: false };
+    var n = NIVELES[id];
+    if (!n) return { id: id, t: id, pesa: false, declarado: false, desconocido: true };
+    return { id: id, t: n.t, pesa: n.pesa, declarado: true };
+  }
+
+  /* La puerta, una sola, y devuelve un OBJETO con su razón — nunca un
+     booleano—: «no pesa porque es municipal» y «no pesa porque su nivel está
+     mal escrito» piden cosas distintas a quien lee la ficha, y un false las
+     juntaría en una. Es la regla que la v876 escribió para `censoCiudad`. */
+  function entraAlVeredicto(c) {
+    var n = nivelDeCaso(c);
+    if (n.desconocido) return { entra: false, razon: 'nivel-desconocido', nivel: n };
+    if (!n.pesa)       return { entra: false, razon: 'otro-nivel',        nivel: n };
+    return { entra: true, razon: '', nivel: n };
+  }
+
   function casosDeCx(dd) { return (((dd || D).contradicciones || {}).casos || []); }
   function casosDeCorrupcion(dd) { return (((dd || D).casos || {}).lista || []); }
 
@@ -1400,17 +1448,29 @@
 
     // Casos de corrupción con estado probatorio. Los sin fecha o posteriores
     // al corte no entran a la serie; los `por-documentar` nunca se pintan.
-    var casos = { confirmados: 0, enInvestigacion: 0, senalamientos: 0, archivados: 0, porDocumentar: 0, lista: [] };
+    /* Dos pares de cuentas que NO son el mismo, y por eso llevan nombres
+       distintos: `confirmados`/`enInvestigacion` es cuántos se MUESTRAN en
+       cada grupo, y `pesanConf`/`pesanInv` es cuántos entran al techo. Con un
+       solo par, un caso municipal desaparecería del panel o pesaría igual, y
+       las dos cosas son falsas. Coinciden mientras todos sean nacionales. */
+    var casos = { confirmados: 0, enInvestigacion: 0, senalamientos: 0, archivados: 0, porDocumentar: 0,
+                  pesanConf: 0, pesanInv: 0, fueraPorNivel: 0, sinNivel: 0, lista: [] };
     casosDeCorrupcion(dd).forEach(function (c, i) {
       var est = ESTADOS_CASO[c.estado];
       if (!est) return;
       if (c.estado === 'por-documentar') { casos.porDocumentar++; return; }
       if (corte && (!c.fecha || c.fecha > corte)) return;
+      var puerta = entraAlVeredicto(c);
       if (c.estado === 'confirmado') casos.confirmados++;
       else if (c.estado === 'en-investigacion') casos.enInvestigacion++;
       else if (c.estado === 'archivado') casos.archivados++;
       else casos.senalamientos++;
-      casos.lista.push({ c: c, i: i, pesa: est.pesa });
+      if (est.pesa) {
+        if (!puerta.entra) casos.fueraPorNivel++;
+        else if (!puerta.nivel.declarado) casos.sinNivel++;
+        if (puerta.entra) { if (c.estado === 'confirmado') casos.pesanConf++; else casos.pesanInv++; }
+      }
+      casos.lista.push({ c: c, i: i, pesa: est.pesa && puerta.entra, puerta: puerta });
     });
     casos.lista.sort(function (a, b) {
       var d = (ORDEN_CASO[a.c.estado] || 0) - (ORDEN_CASO[b.c.estado] || 0);
@@ -1445,9 +1505,11 @@
 
     // Los tres techos y el peor de ellos.
     var techos = {
-      casos:    { i: TECHOS.casos.f(casos.confirmados, casos.enInvestigacion),
-                  n: casos.confirmados + casos.enInvestigacion, t: TECHOS.casos.t,
-                  detalle: casos.confirmados + ' conf. · ' + casos.enInvestigacion + ' en inv.' },
+      casos:    { i: TECHOS.casos.f(casos.pesanConf, casos.pesanInv),
+                  n: casos.pesanConf + casos.pesanInv, t: TECHOS.casos.t,
+                  detalle: casos.pesanConf + ' conf. · ' + casos.pesanInv + ' en inv.' +
+                    (casos.fueraPorNivel
+                      ? ' · ' + casos.fueraPorNivel + ' fuera por nivel de gobierno' : '') },
       palabra:  { i: TECHOS.palabra.f(palabra.contadas), n: palabra.contadas,  t: TECHOS.palabra.t },
       claridad: { i: TECHOS.claridad.f(claridad.pct),    n: claridad.pct,      t: TECHOS.claridad.t }
     };
@@ -1508,7 +1570,7 @@
      lo que deja comprobar la escalera del veredicto, los techos, los rasgos y
      la polémica contra registros armados a mano, sin tener que inventar
      hechos en el JSON público. */
-  window.URBIS_SEG_FICHA = { calcular: fichaHasta, calcularCon: fichaDe,
+  window.URBIS_SEG_FICHA = { calcular: fichaHasta, calcularCon: fichaDe, cuentas: cuentasDe,
                              serie: serieFicha, escalera: ESCALERA, techos: TECHOS,
                              estadosCaso: ESTADOS_CASO, rasgos: RASGOS,
                              polemica: polemicaDe, ordenar: porDiaYPolemica,
@@ -1581,13 +1643,24 @@
   }
   function plural(n, uno, varios) { return n + ' ' + (n === 1 ? uno : varios); }
 
-  // La línea de las tres cuentas que producen el veredicto. Va debajo del
-  // veredicto en la placa: se entiende de un vistazo por qué dice lo que dice.
+  /* La línea de las tres cuentas que producen el veredicto. Va debajo del
+     veredicto en la placa: se entiende de un vistazo por qué dice lo que dice.
+     Por eso cuenta los que PESAN y no los que se muestran: «1 caso confirmado»
+     al lado de «Confiabilidad inquebrantable» se lee como un error de la
+     ficha, y sería el caso municipal que la v941 sacó de la cuenta sin que
+     esta línea se enterara. Cuando las dos cifras difieren, se dice cuántos
+     quedaron fuera y por qué —callarlo sería la mitad mansa del mismo
+     defecto—. */
   function cuentasDe(f) {
-    return plural(f.casos.confirmados, 'caso confirmado', 'casos confirmados') + ' · ' +
-           f.casos.enInvestigacion + ' en investigación · ' +
+    return plural(f.casos.pesanConf, 'caso confirmado', 'casos confirmados') + ' · ' +
+           f.casos.pesanInv + ' en investigación · ' +
            plural(f.palabra.contadas, 'cambio de postura', 'cambios de postura') + ' · ' +
-           (f.claridad.pct == null ? 'sin verificación declarada' : f.claridad.pct + ' % verificado');
+           (f.claridad.pct == null ? 'sin verificación declarada' : f.claridad.pct + ' % verificado') +
+           (f.casos.fueraPorNivel
+             ? ' · ' + (f.casos.fueraPorNivel === 1
+                 ? 'uno más, fuera de la cuenta por su nivel de gobierno'
+                 : f.casos.fueraPorNivel + ' más, fuera de la cuenta por su nivel de gobierno')
+             : '');
   }
 
   /* La placa. La misma en la portada (dentro de un botón que lleva a la
@@ -1698,12 +1771,35 @@
     if (Array.isArray(c.implicados) && c.implicados.length) {
       art.appendChild(el('p', 'sp-fi-cc-imp', 'Implicados: ' + c.implicados.join(', ')));
     }
+    /* Las DOS fechas de un caso no son la misma, y el registro las tenía
+       juntas. La de arriba es cuándo una autoridad se pronunció —es la que
+       ordena y recorta la serie, o sea la que contesta «¿qué se sabía en esta
+       fecha?»—; el hecho puede ser de años antes. En este registro ya divergen:
+       el CNE ratificó en 2026 el exceso de topes de una campaña de 2022. Se
+       imprime solo cuando el registro declara la segunda y es distinta: ponerla
+       siempre repetiría la misma fecha dos veces por caso. */
+    if (c.fechaHecho && c.fechaHecho !== c.fecha) {
+      art.appendChild(el('p', 'sp-fi-cc-cuando',
+        'El hecho es del ' + fechaCorta(c.fechaHecho) +
+        '; la fecha de arriba es cuándo una autoridad se pronunció.'));
+    }
+    var niv = o.puerta && o.puerta.nivel;
+    if (niv && niv.declarado && niv.id !== 'nacional') {
+      art.appendChild(el('p', 'sp-fi-cc-nivel', 'Nivel de gobierno: ' + niv.t + '.'));
+    }
     // El motivo, en minúscula y sin el «se muestra; no pesa» que ya dice la frase.
     var motivo = est.d.replace(/\.?\s*Se muestra; no pesa.*$/, '.');
-    art.appendChild(el('p', 'sp-fi-cc-pesa', !est.pesa
-      ? 'No pesa en el veredicto: ' + motivo.charAt(0).toLowerCase() + motivo.slice(1)
-      : (c.estado === 'confirmado' ? 'Pesa en el veredicto.'
-         : 'Pesa en el veredicto, menos que un confirmado: no se espera a que la investigación se resuelva.')));
+    var fuera = est.pesa && o.puerta && !o.puerta.entra ? o.puerta : null;
+    art.appendChild(el('p', 'sp-fi-cc-pesa' + (fuera ? ' sp-fi-cc-pesa-niv' : ''), fuera
+      ? (fuera.razon === 'otro-nivel'
+          ? 'No pesa en el veredicto: es una decisión de nivel ' + fuera.nivel.t.toLowerCase() +
+            ', y este veredicto es de un gobierno nacional. Se muestra entera, con su estado probatorio.'
+          : 'No pesa en el veredicto: declara el nivel de gobierno «' + fuera.nivel.id +
+            '», que no es uno de los cuatro conocidos. Se muestra entera; corregir el valor la devuelve a la cuenta.')
+      : (!est.pesa
+          ? 'No pesa en el veredicto: ' + motivo.charAt(0).toLowerCase() + motivo.slice(1)
+          : (c.estado === 'confirmado' ? 'Pesa en el veredicto.'
+             : 'Pesa en el veredicto, menos que un confirmado: no se espera a que la investigación se resuelva.'))));
     var fl = el('div', 'sp-fuentes');
     pintarFuentes(fl, c.fuentes || []);
     art.appendChild(fl);
@@ -1970,7 +2066,9 @@
       'Atribuidos al gobernante o a su gobierno, con su estado probatorio. Pesan los confirmados y, ' +
       'menos, los que una autoridad tiene en investigación; un señalamiento y un caso que una autoridad ' +
       'ya archivó se muestran con su etiqueta y no mueven el veredicto. Las denuncias del Gobierno ' +
-      'contra la administración anterior no son casos suyos: están en la línea de tiempo.');
+      'contra la administración anterior no son casos suyos: están en la línea de tiempo. Y una decisión ' +
+      'de nivel municipal, distrital o departamental se muestra entera y tampoco pesa: este veredicto es ' +
+      'de un gobierno nacional.');
     var grupos = [
       { k: 'confirmado', t: 'Confirmados', n: f.casos.confirmados },
       { k: 'en-investigacion', t: 'En investigación', n: f.casos.enInvestigacion },
@@ -1993,6 +2091,28 @@
     } else if (f.casos.porDocumentar) {
       sc.appendChild(el('p', 'sp-fi-nada', plural(f.casos.porDocumentar, 'caso más nombrado por documentar', 'casos más nombrados por documentar') +
         ': no se muestra ni pesa hasta tener hecho y fuente.'));
+    }
+    /* Lo que la cuenta del veredicto dejó fuera, y lo que todavía no declara
+       de dónde es. Las dos cifras van acá y no en una nota escrita a mano: un
+       conteo tecleado dentro de una frase fija es una cifra que envejece sola
+       —es lo que la v903 corrigió en el pliego— y acá diría cuántos casos
+       pesan sobre una persona real. */
+    if (f.casos.fueraPorNivel || f.casos.sinNivel) {
+      var av = el('p', 'sp-fi-nivelaviso');
+      if (f.casos.fueraPorNivel) {
+        av.appendChild(el('b', null, f.casos.fueraPorNivel === 1
+          ? 'Un caso con consecuencia queda fuera de la cuenta por su nivel de gobierno. '
+          : f.casos.fueraPorNivel + ' casos con consecuencia quedan fuera de la cuenta por su nivel de gobierno. '));
+        av.appendChild(document.createTextNode(
+          'Se muestran enteros, arriba, con su estado probatorio y con la razón escrita en cada tarjeta. '));
+      }
+      if (f.casos.sinNivel) {
+        av.appendChild(document.createTextNode((f.casos.sinNivel === 1
+          ? 'Un caso que pesa todavía no declara su nivel de gobierno'
+          : f.casos.sinNivel + ' casos que pesan todavía no declaran su nivel de gobierno') +
+          ': se cuenta como hasta ahora, y se dice acá en vez de suponerle uno.'));
+      }
+      sc.appendChild(av);
     }
     der.appendChild(sc);
 

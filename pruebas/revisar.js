@@ -826,8 +826,9 @@ console.log('\n  -- la ficha del gobernante --');
      fuente: no pesa, pero exonera, y una exoneración sin papel es igual de
      falsa que una acusación sin papel. */
   const ESTADOS = ['confirmado', 'en-investigacion', 'senalamiento', 'archivado', 'por-documentar'];
+  const NIVELES = ['nacional', 'departamental', 'distrital', 'municipal'];
   const REGISTROS = ['assets/data/seguimiento-presidencial.json', 'assets/data/seguimiento-petro.json'];
-  const malos = [], cojos = [];
+  const malos = [], cojos = [], sinNivel = [], nivelRaro = [];
   let nCasos = 0;
   REGISTROS.forEach((ruta) => {
     const quien = ruta.split('-').pop().replace('.json', '');
@@ -837,12 +838,51 @@ console.log('\n  -- la ficha del gobernante --');
       if (!ESTADOS.includes(c.estado)) malos.push(quien + '/' + c.id + ':' + c.estado);
       const conPeso = c.estado === 'confirmado' || c.estado === 'en-investigacion' || c.estado === 'archivado';
       if (conPeso && (!c.quienLoConfirmo || !(c.fuentes || []).length || !c.fecha)) cojos.push(quien + '/' + c.id);
+      /* El nivel se le exige a los DOS estados que pesan, que son los que
+         mueven el veredicto. Un `archivado` no lo necesita para no pesar —ya
+         no pesa por su estado— y pedírselo sería una exigencia sin
+         consecuencia. Un valor escrito con otra grafía se denuncia aparte: en
+         la ficha ese caso NO pesa, así que un «Municipal» con mayúscula saca
+         un caso de la cuenta sin que nadie lo haya decidido. */
+      const pesa = c.estado === 'confirmado' || c.estado === 'en-investigacion';
+      const niv = String(c.nivelGobierno || '').trim();
+      if (pesa && !niv) sinNivel.push(quien + '/' + c.id);
+      if (niv && !NIVELES.includes(niv)) nivelRaro.push(quien + '/' + c.id + ':' + niv);
     });
   });
   comprobar('los casos de corrupción de los dos registros llevan un estado probatorio conocido',
     malos.length === 0, malos.length ? malos.join(', ') : nCasos + ' casos en ' + REGISTROS.length + ' registros');
   comprobar('y ningún caso con consecuencia (confirmado, en investigación o archivado) va sin quién, fecha y fuentes',
     cojos.length === 0, cojos.length ? cojos.join(', ') : 'ningún caso con consecuencia va cojo');
+
+  /* EL NIVEL DE GOBIERNO DE UN CASO QUE PESA.
+     Es la puerta que impide que una decisión municipal mueva el veredicto de
+     un gobierno nacional, y la única manera de que la puerta no falle abierta.
+     `js/70` deja pesar el caso que no declara nivel —no le pone «nacional» por
+     omisión, que sería afirmar de quién es una decisión sin que nadie lo haya
+     escrito— así que lo que impide que un caso llegue a pesar sin declararlo
+     es esta línea, no un valor por defecto.
+
+     No hizo falta trinquete como el de `tipoFuente`: los trece casos de los
+     dos registros se pudieron declarar leyendo su propio título y su propio
+     «quién» —UNGRD, CNE, Fiscalía General, Corte Suprema, la campaña
+     presidencial, una consejera presidencial, una ministra—, así que la
+     exigencia arranca en cero y no en una deuda. */
+  comprobar('todo caso que PESA declara su nivel de gobierno (sin él, una decisión municipal movería un veredicto nacional)',
+    sinNivel.length === 0, sinNivel.length ? sinNivel.join(', ') : 'los que pesan lo declaran');
+  comprobar('y ningún nivel de gobierno está escrito con un valor que la ficha no conoce',
+    nivelRaro.length === 0, nivelRaro.length ? nivelRaro.join(', ') : 'los declarados son de los cuatro conocidos');
+
+  /* La guarda de la guarda. Si `js/70` dejara de leer `nivelGobierno`, las dos
+     comprobaciones de arriba seguirían en verde sobre un dato que ya no decide
+     nada: estarían vigilando un campo muerto. Es el patrón de la v878 con su
+     propia lista de voseo. */
+  {
+    const j70 = leer('js/70-seguimiento.js');
+    comprobar('y la ficha sigue leyendo ese campo para decidir quién pesa',
+      /nivelGobierno/.test(j70) && /entraAlVeredicto/.test(j70) && /puerta\.entra/.test(j70),
+      'js/70 lee nivelGobierno y pasa los casos por entraAlVeredicto');
+  }
 
   /* CORRECCIÓN de lo que decía acá ayer, que era falso y conviene dejar
      escrito para que nadie lo vuelva a suponer: una entrada sin tipo NO

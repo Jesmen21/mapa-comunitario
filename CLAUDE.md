@@ -8401,6 +8401,197 @@ OpenStreetMap.
 Quedan **tres** plantillas por conectar y las tres de percepción, que además
 necesitan entrar en `huecosDeCampo` antes de tener formulario.
 
+## Una decisión municipal no mueve un veredicto nacional (v941)
+
+Primera tanda del módulo presidencial a partir del **pliego maestro** y del
+**dossier de análisis** que llegaron el 18 de septiembre de 2026. Los dos
+describen un motor de cuatro capas —extracción, indicadores, dos ejes,
+editorial— que el módulo de hoy no tiene. Antes de escribir nada se midió qué
+había, que es la regla de la v863 y la que el usuario fijó en la v916, y de
+las diez cosas que el pliego marca obligatorias **ninguna existía en el
+registro**: ni `nivel_de_gobierno`, ni la categoría probatoria, ni
+`tipo_medicion`, ni `contrargumento_oficial`, ni la normalización por 100 días.
+
+De las diez, esta tanda hace **una**: el Principio 8, que es el único que
+cambia hoy quién pesa en un veredicto sobre una persona real.
+
+### Lo que la medición encontró, incluido lo que NO era un defecto
+
+Tres premisas se midieron y **dos resultaron falsas**, que es exactamente por
+lo que la regla de medir antes de actuar está escrita:
+
+| Premisa | Medido |
+|---|---|
+| «hay registros municipales colándose al score» | **no hoy**: los 25 hechos que nombran Medellín, Barranquilla o Cúcuta son actos del Gobierno nacional ocurridos allá, y los 13 casos de los dos registros son nacionales |
+| «la comparación entre gobiernos compara períodos desiguales» | **ya está resuelto**: `comparacion.filas` lleva `comparable` desde antes y dice «un mes no da una cifra anual» |
+| «el veredicto no debería contar hechos anteriores a la posesión» | **contradice el alcance declarado del propio módulo** — ver abajo |
+
+O sea que la puerta de esta tanda es **prospectiva**, y hay que decirlo así:
+no arregla un registro torcido, impide que el que viene lo tuerza. El dossier
+trae cuatro registros —un desalojo en Manrique, el predial de Bogotá, una
+emergencia hospitalaria anterior a este gobierno, unas desapariciones— que
+**sí** entrarían mal, y son los que el usuario va a pegar.
+
+### La puerta, y por qué el nivel se declara y no se deduce
+
+`entraAlVeredicto(c)` es el único sitio que decide, y devuelve un **objeto con
+su razón, nunca un booleano**: «no pesa porque es municipal» y «no pesa porque
+su nivel está mal escrito» piden cosas distintas a quien lee la ficha, y un
+`false` las juntaría en una. Es la regla que la v876 escribió para
+`censoCiudad`.
+
+**No se deduce del texto.** Deducir el nivel de si el título nombra una ciudad
+habría sacado de la cuenta esos 25 hechos nacionales que ocurrieron en una
+ciudad. Se declara en el registro, caso por caso, y los trece se pudieron
+declarar leyendo su propio título y su propio «quién» —UNGRD, CNE, Fiscalía
+General, Corte Suprema, la campaña presidencial de 2022, una consejera
+presidencial, una ministra—, así que no hizo falta trinquete como el de
+`tipoFuente` y la exigencia arranca en cero.
+
+#### Sin declarar, el caso SIGUE pesando, y eso es deliberado
+
+Un valor por omisión sería una afirmación que nadie escribió, y acá afirmaría
+**de quién es una decisión**. Y poner «no pesa» por omisión habría cambiado en
+silencio el veredicto publicado sobre dos personas el día del despliegue.
+
+Así que la rama del campo ausente **no cambia nada** respecto de la v940 —hay
+una aserción dedicada a eso, y las veinte aserciones anteriores de `tficha`
+corren por esa rama porque su `caso()` no declara nivel— y la ficha **cuenta
+cuántos están así** en vez de suponerles uno.
+
+Lo que impide que esa rama fallida abierta la alcance un caso que pesa no es
+un valor por defecto: es `revisar.js`, que le exige el nivel a todo caso
+`confirmado` o `en-investigacion` —la misma guarda que ya les exige quién,
+fecha y fuentes—. **Se falla cerrado estructuralmente, no por omisión**, que es
+la decisión de la v926 con el `aviso` del PDF.
+
+Y un nivel escrito con otra grafía —un «Municipal» con mayúscula— **no pesa** y
+la tarjeta imprime el valor literal. Las dos direcciones son malas y hay que
+elegir la visible: un caso que sale de la cuenta en silencio es peor que uno
+que sale con el motivo escrito encima.
+
+#### Dos pares de cuentas, porque no son la misma
+
+`confirmados`/`enInvestigacion` es cuántos se MUESTRAN en cada grupo;
+`pesanConf`/`pesanInv` es cuántos entran al techo. Con un solo par, un caso
+municipal desaparecería del panel o pesaría igual, y las dos cosas son falsas:
+se muestra entero, con su estado probatorio, y no cuenta. Es la decisión de la
+v798 con `archivado` —«se ve, con etiqueta, y no pesa: borrar es esconder»—
+aplicada a otro motivo.
+
+#### Y la línea de la placa tenía que seguirlas
+
+Salió al revisar quién más lee esas cuentas: `cuentasDe` —la línea que va
+DEBAJO del veredicto en la placa, la que se lee de un vistazo— imprimía las
+mostradas. Con un caso municipal confirmado habría dicho **«1 caso confirmado»
+al lado de «Confiabilidad inquebrantable»**, que un lector lee como un error de
+la ficha y no como una regla. Cuenta ahora las que pesan y, cuando difieren,
+dice cuántas quedaron fuera y por qué: callarlo sería la mitad mansa del mismo
+defecto. Es la clase de la v879 cazada antes de que divergiera.
+
+### Lo que se midió y NO se hizo, con su precio
+
+El pliego pide también que un hecho anterior al mandato no alimente el score.
+**No se hizo, y el motivo es que el módulo declara lo contrario de sí mismo**:
+el `_nota` de `casos` dice, desde que la sección existe, «casos atribuidos al
+gobernante **o a su gobierno**», y el de Petro añade «o a su campaña».
+Aplicarle la puerta del mandato sería cambiar el alcance del módulo, no
+arreglar un defecto.
+
+Y tiene precio medido: de los seis casos que pesan en el registro de Petro,
+`cne-topes-campana` es sobre la campaña de 2022 —anterior a su posesión del 7
+de agosto de 2022—, así que la puerta lo sacaría y su veredicto pasaría de
+**«nada fiable» a «poco fiable»**. Eso cambia en público el juicio sobre una
+persona real, y no es una decisión que se tome de paso a las cuatro de la
+mañana. Queda medida, con su número, para quien la tome.
+
+#### Y de ahí salió la otra mitad: `fecha` son dos fechas
+
+Auditando eso apareció que `fecha` carga dos significados que coinciden en
+casi todos los casos y **divergen justo donde importa**: es «cuándo una
+autoridad se pronunció» —es lo que ordena y recorta la serie, o sea lo que
+contesta «¿qué se sabía en esta fecha?»— y se venía leyendo también como
+«cuándo pasó». El CNE ratificó en **2026** el exceso de topes de una campaña
+de **2022**.
+
+Hoy eso no rompe nada, porque nada compara esa fecha con la posesión. Rompería
+el día que alguien escriba la puerta del mandato leyendo el campo equivocado.
+Así que se separa antes: `fechaHecho` es opcional, se imprime solo cuando está
+declarada y difiere, y el `_nota` de los dos registros dice cuál es cuál.
+
+**No se rellenó en el registro**, y por la razón de siempre: la fuente fecha el
+hecho de `cne-topes-campana` en «la campaña de 2022», sin día, y escribir uno
+sería inventarlo. El precedente para cuando alguien lo llene ya está en el
+propio registro: `lavado-tuso-sierra` usa `fecha` + `fechaTexto` + `_fechaAprox`
+justamente para no afirmar un día que nadie publicó.
+
+### La guarda de la guarda
+
+Si `js/70` dejara de leer `nivelGobierno`, las dos comprobaciones nuevas
+seguirían en verde sobre un campo muerto: estarían vigilando un dato que ya no
+decide nada. Hay una tercera que exige que la ficha siga pasando los casos por
+`entraAlVeredicto`. Es el patrón de la v878 con su propia lista de voseo.
+
+### El material no existía, y el que sí existe es la guarda
+
+Vigesimotercera vez. Los trece casos publicados son nacionales, así que contra
+el registro de verdad la puerta **no tiene nada que rechazar** y las
+aserciones pasarían sin medir nada. El fixture de `tficha` trae las cinco
+ramas, y la primera aserción es de MATERIAL: que el caso municipal de prueba
+sea un `confirmado` y **se muestre entero**, para que «no pesa» no pase por no
+existir o por tener un estado que no pesaba de todas formas.
+
+Y la del DOM es la guarda contra pasarse de avisar —como las de la v879, la
+v882 y la v890—: con los trece declarados nacionales, la ficha real no imprime
+el aviso ni marca ninguna tarjeta. Contra la v940 se cumple sola.
+
+#### La aserción del DOM cazó mi propio lector
+
+Salió roja con `aviso false · 0 tarjetas fuera`, o sea con las dos mitades que
+nombra en verde. Lo que fallaba era la tercera: buscaba «decisión de nivel» en
+**toda la ficha**, y la introducción del panel explica la regla con esas
+mismas palabras. Estaba midiendo el párrafo que explica, no un caso rechazado.
+Es la lección de la v854 —se busca DENTRO de la caja— y la volví a cometer.
+Se corrigió mirando solo los pies de las tarjetas: más precisa, no más laxa.
+
+### Demostrado contra la v940
+
+Devolviendo **solo la decisión** —la puerta se queda declarada, porque es lo
+que la suite necesita para LEER, que es la lección de la v875 sobre el `git
+stash` completo—: cuatro en rojo con el estado viejo impreso.
+
+```
+✗ el mismo caso, declarado MUNICIPAL, no mueve el veredicto  — poco-fiable · fuera 0
+✗ la razón que devuelve es la del nivel, no un false          — (vacía)
+✗ un nivel con un valor que la ficha no conoce no pesa        — (vacía)
+✗ uno nacional y uno municipal: se muestran dos y pesa uno    — 2 mostrados · 2 pesan · nada-fiable
+```
+
+La última es la que enseña lo que estaba en juego: contra la v940, **un caso
+municipal empujaba el veredicto de «poco fiable» a «nada fiable»**.
+
+Tres pasan a propósito y son guardas: el material, que un caso nacional siga
+pesando, y que uno sin declarar siga pesando igual que antes.
+
+### Lo que el pliego pide y esta versión NO hace
+
+Queda escrito para que la tanda siguiente no vuelva a medirlo:
+
+* **La categoría probatoria** —`hecho_probado` · `correlacion` ·
+  `atribucion_causal` · `afirmacion_en_circulacion`—. No existe, y `tipoFuente`
+  **no es eso**: mide la calidad de la FUENTE, no la clase de la afirmación.
+  Son dos ejes y meterlos en uno es lo que el pliego prohíbe.
+* **`tipo_medicion`** —actividad contra resultado—. «Cuatro operativos en un
+  día» y «la criminalidad bajó» hoy son la misma clase de entrada.
+* **`contrargumento_oficial`**, con `ausente` explícito. Ojo: `contrapunto` ya
+  existe en 112 entradas y **es otra cosa** —es la advertencia metodológica de
+  URBIS, no la respuesta del Gobierno—. Usarlo sería la homonimia que este
+  proyecto persigue.
+* **Los ejes B (deterioro institucional) y C (orientación del gasto)**, la
+  normalización por 100 días y la capa editorial firmada. El propio pliego dice
+  que el eje B no se puede publicar sin la media histórica de Petro, Duque y
+  Santos: es trabajo de archivo, no de código.
+
 ## La lista viva: lo que al pliego educativo todavía le falta (v866)
 
 Esta lista se quedó vieja **cinco veces**. Cuatro dentro de la hoja —la

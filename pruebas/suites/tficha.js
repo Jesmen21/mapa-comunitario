@@ -195,6 +195,22 @@ const server = http.createServer((req, res) => {
     })();
     const caja = document.getElementById('sp-ficha');
     o.txt = caja ? caja.innerText : '';
+    /* El registro publicado declara los trece casos como nacionales, así que
+       la ficha de verdad NO puede imprimir el aviso de nivel ni marcar ninguna
+       tarjeta como fuera de la cuenta. Es la guarda contra pasarse de avisar:
+       un aviso que sale siempre deja de significar algo. */
+    o.nivelDOM = {
+      aviso: !!(caja && caja.querySelector('.sp-fi-nivelaviso')),
+      tarjetasFuera: caja ? caja.querySelectorAll('.sp-fi-cc-pesa-niv').length : -1,
+      /* DENTRO de las tarjetas, no en la ficha entera: la introducción del
+         panel explica la regla —«una decisión de nivel municipal… tampoco
+         pesa»— y buscarla en todo el texto encuentra esa frase y no un caso
+         rechazado. Es la lección de la v854 y la cazó esta misma aserción. */
+      diceNivel: caja
+        ? Array.from(caja.querySelectorAll('.sp-fi-cc-pesa'))
+            .some(x => /decisi\u00f3n de nivel|no es uno de los cuatro/i.test(x.textContent))
+        : true
+    };
     if (caja) {
       o.rasgos = Array.from(caja.querySelectorAll('.sp-fi-rasgo')).map(x => x.innerText);
       /* La firma de la placa. Se lee el logo CARGADO —naturalWidth— y no que
@@ -330,6 +346,37 @@ const server = http.createServer((req, res) => {
       // Un por-documentar no se cuenta como visible ni pesa.
       porDocumentarOculto: api.calcularCon(armar(40, 'verificado', limpio, [caso('por-documentar')]), '2026-08-20').casos
     };
+    /* ── EL NIVEL DE GOBIERNO · la puerta al veredicto (v941) ──────────
+       Hace falta fixture porque los TRECE casos de los dos registros de
+       verdad son nacionales: contra el registro publicado la puerta no
+       tiene nada que rechazar y las aserciones pasarían sin medir nada.
+       El material de arriba también sirve de guarda: `caso()` NO declara
+       nivel, así que todo lo que se comprobó hasta esta línea corre por la
+       rama «sin declarar» y demuestra que la v941 no cambió el veredicto de
+       ningún registro que no declare el campo. */
+    const casoN = (estado, niv) => Object.assign(caso(estado), niv ? { nivelGobierno: niv } : {});
+    const fN = (corr) => api.calcularCon(armar(40, 'verificado', limpio, corr), '2026-08-20');
+    const resumen = (fx) => ({ v: fx.veredicto.id, confirmados: fx.casos.confirmados,
+                               pesan: fx.casos.pesanConf + fx.casos.pesanInv,
+                               fuera: fx.casos.fueraPorNivel, sin: fx.casos.sinNivel,
+                               enLista: fx.casos.lista.length,
+                               razon: (fx.casos.lista[0] || {}).puerta ? fx.casos.lista[0].puerta.razon : '?' });
+    o.nivel = {
+      nacional:    resumen(fN([casoN('confirmado', 'nacional')])),
+      municipal:   resumen(fN([casoN('confirmado', 'municipal')])),
+      distrital:   resumen(fN([casoN('confirmado', 'distrital')])),
+      sinDeclarar: resumen(fN([casoN('confirmado')])),
+      raro:        resumen(fN([casoN('confirmado', 'Municipal')])),
+      // Uno nacional y uno municipal: el techo tiene que leer UNO, no dos.
+      mezcla:      resumen(fN([casoN('confirmado', 'nacional'), casoN('confirmado', 'municipal')]))
+    };
+    /* La línea de la placa, que es lo que se lee de un vistazo debajo del
+       veredicto. Tiene que contar lo que PESA: «1 caso confirmado» al lado de
+       «inquebrantable» se lee como un error de la ficha. */
+    o.nivelPlaca = {
+      municipal: api.cuentas ? api.cuentas(fN([casoN('confirmado', 'municipal')])) : '(sin api.cuentas)',
+      nacional:  api.cuentas ? api.cuentas(fN([casoN('confirmado', 'nacional')]))  : '(sin api.cuentas)'
+    };
     // ── Los rasgos, con registros de mentira ─────────────────────────
     const fr = (ent, cxs) => (api.calcularCon({ posesion: '2026-08-07', categorias: { gobierno: {} }, entradas: ent,
       contradicciones: { casos: cxs || [] }, casos: { lista: [] } }, '2026-08-20').rasgos || []).map(x => x.id);
@@ -412,6 +459,44 @@ const server = http.createServer((req, res) => {
       'y un caso marcado «no cuenta» no suma al veredicto (' + p.conCuentaFalse + ')');
   chk(p.porDocumentarOculto && p.porDocumentarOculto.porDocumentar === 1 && p.porDocumentarOculto.lista.length === 0,
       'un caso por documentar se cuenta como pendiente y no entra a la lista visible');
+
+  console.log('\n── El nivel de gobierno: qué entra al veredicto ────');
+  const nv = r.nivel || {};
+  // MATERIAL · el caso de prueba es un CONFIRMADO de verdad y se muestra. Sin
+  // esto, «el municipal no pesa» podría estar pasando porque el caso no existe
+  // o porque su estado no pesaba de todas formas.
+  chk(nv.municipal && nv.municipal.confirmados === 1 && nv.municipal.enLista === 1,
+      'MATERIAL · el caso municipal de prueba es un confirmado y SE MUESTRA entero (' +
+      (nv.municipal || {}).confirmados + ' confirmado · ' + (nv.municipal || {}).enLista + ' en la lista)');
+  chk(nv.nacional && nv.nacional.v === 'poco-fiable' && nv.nacional.pesa !== 0,
+      'un caso confirmado NACIONAL pesa y baja el veredicto (' + (nv.nacional || {}).v + ')');
+  chk(nv.municipal && nv.municipal.v === 'inquebrantable' && nv.municipal.pesan === 0 && nv.municipal.fuera === 1,
+      'el mismo caso, declarado MUNICIPAL, no mueve el veredicto y se cuenta aparte (' +
+      (nv.municipal || {}).v + ' · fuera ' + (nv.municipal || {}).fuera + ')');
+  chk(nv.distrital && nv.distrital.v === 'inquebrantable' && nv.municipal.razon === 'otro-nivel',
+      'lo mismo un distrital, y la razón que devuelve es la del nivel, no un false (' +
+      (nv.municipal || {}).razon + ')');
+  // La que de verdad guarda: sin el campo, NADA cambia respecto de la v940.
+  chk(nv.sinDeclarar && nv.sinDeclarar.v === 'poco-fiable' && nv.sinDeclarar.fuera === 0 && nv.sinDeclarar.sin === 1,
+      'un caso SIN declarar nivel sigue pesando como hasta ahora, y la ficha lo cuenta (' +
+      (nv.sinDeclarar || {}).v + ' · sin declarar ' + (nv.sinDeclarar || {}).sin + ')');
+  chk(nv.raro && nv.raro.v === 'inquebrantable' && nv.raro.razon === 'nivel-desconocido',
+      'un nivel escrito con un valor que la ficha no conoce no pesa, y lo dice por su nombre (' +
+      (nv.raro || {}).razon + ')');
+  chk(nv.mezcla && nv.mezcla.confirmados === 2 && nv.mezcla.pesan === 1 && nv.mezcla.v === 'poco-fiable',
+      'con uno nacional y uno municipal se muestran dos y pesa uno: «poco fiable», no «nada fiable» (' +
+      (nv.mezcla || {}).confirmados + ' mostrados · ' + (nv.mezcla || {}).pesan + ' pesan · ' + (nv.mezcla || {}).v + ')');
+  const np = r.nivelPlaca || {};
+  chk(/^0 casos confirmados/.test(np.municipal || '') && /fuera de la cuenta por su nivel/.test(np.municipal || ''),
+      'la línea de la placa cuenta los que PESAN y dice cuántos quedaron fuera («' +
+      String(np.municipal).slice(0, 78) + '»)');
+  chk(/^1 caso confirmado/.test(np.nacional || '') && !/fuera de la cuenta/.test(np.nacional || ''),
+      'GUARDA · y con uno nacional dice uno, sin sobra ninguna («' + String(np.nacional).slice(0, 46) + '»)');
+
+  const nd = r.nivelDOM || {};
+  chk(nd.aviso === false && nd.tarjetasFuera === 0 && nd.diceNivel === false,
+      'GUARDA · con los trece casos publicados declarados nacionales, la ficha real no avisa de nada ' +
+      '(aviso ' + nd.aviso + ' · ' + nd.tarjetasFuera + ' tarjetas fuera)');
 
   console.log('\n── Los rasgos, por su cuenta y su umbral ───────────');
   const rp = r.rasgosPrueba || {};

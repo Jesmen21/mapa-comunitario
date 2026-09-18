@@ -1536,7 +1536,19 @@ a.sp-fuente:hover svg{ color:var(--verde-hi); }
 .sp-fi-cc p b{ color:var(--ink); font-weight:600; }
 .sp-fi-cc-pesa{ font-weight:600; }
 .sp-fi-cc-conf .sp-fi-cc-pesa{ color:var(--rojo); }
+/* Un caso que NO pesa por su nivel de gobierno se lee en azul y no en rojo:
+   el rojo de esta tarjeta significa «esto pesa en contra», y un caso que queda
+   fuera de la cuenta no es eso. Es la misma separación de colores que el
+   pliego educativo hace entre «sin dato» y «panel fuera». */
+.sp-fi-cc-conf .sp-fi-cc-pesa-niv{ color:var(--azul); }
+.sp-fi-cc-nivel{ font-weight:600; }
+.sp-fi-cc-cuando{ font-style:italic; }
 .sp-fi-cc .sp-fuentes{ margin-top:4px; }
+.sp-fi-nivelaviso{
+  margin:10px 0 0; padding:10px 12px; font-size:var(--t-8); line-height:1.55;
+  color:var(--ink-2); background:#F2F8FC; border-left:3px solid var(--azul);
+}
+.sp-fi-nivelaviso b{ color:var(--ink); }
 
 /* Contradicciones dentro de la ficha: sin esto el veredicto sería un número sin cara. */
 .sp-fi-casos{ display:grid; gap:8px; }

@@ -1,4 +1,4 @@
-const URBIS_CACHE = 'urbis-v940-rutas-observadas-con-reloj';
+const URBIS_CACHE = 'urbis-v941-nivel-de-gobierno-en-el-veredicto';
 const URBIS_ASSETS = [
   './',
   './index.html',
