@@ -5924,6 +5924,12 @@ mirado de dónde salía cada número. Unificarlas es del motor y es otra tanda:
 queda con la premisa corregida, que es lo que le faltaba para poder hacerse
 bien.
 
+**Y con la premisa corregida se midió, en la v915: no había nada que
+unificar.** Las dos son la MISMA variable del motor —43 y 43 sobre un fixture
+con 43 edificios, 40 con forma y 3 solo punto—, así que lo que entró fue la
+guarda de que no se separen, en `ttrazado`, con su propia guarda de material.
+Este renglón se quedó declarando pendiente algo ya hecho.
+
 ## La secuencia crece, y la última caja de una banda se protege (v913)
 
 Tres cosas del PDF de la v912, y la primera es un bug que introdujo la v912
@@ -5994,6 +6000,11 @@ aviso viaja pegado a la lista— así que si hubiera sido truncamiento, la hoja
 lo diría. Queda como la comprobación que falta: que dos corridas del mismo
 sector con el mismo radio impriman el mismo total, o que la hoja diga por qué
 no. Eso pide guardar el total de la corrida anterior, que es otra tanda.
+
+**Esa tanda fue la v915**, que guarda el total por sector en `pcr_conteos_v1`
+y compara con la corrida anterior, con el umbral sacado de lo que la hoja
+imprime —0,05 usos por hectárea, el redondeo de la densidad— en vez de puesto
+a ojo. Este renglón se quedó declarando pendiente algo ya hecho.
 
 ## El PDF de prueba lo dice en el papel (v914)
 
@@ -9731,6 +9742,48 @@ rojo con el estado viejo impreso —el formulario devuelto en `null`, cero
 renglones y la plantilla quedándose en dos filas—.
 
 Con esto cierran los dos síntomas que la v940 y la v951 dejaron declarados.
+
+## Una declaración de «otra tanda» también se queda vieja
+
+Auditadas las doce declaraciones de trabajo pendiente que la bitácora lleva
+escritas —«es otra tanda», «es su propia tanda», «no se hace acá»—, **dos
+declaraban pendiente algo que ya estaba hecho**:
+
+| Dónde | Lo que declaraba | Dónde se hizo |
+|---|---|---|
+| v913 | «guardar el total de la corrida anterior, que es otra tanda» | **v915**, en `pcr_conteos_v1` |
+| v912 | «unificar `llenos.edificios` y `alturas.edificios` es del motor y es otra tanda» | **v915**, que midió que son la MISMA variable y puso la guarda |
+
+Es la clase de la v864 —una afirmación que nació bien y la dejó obsoleta una
+tanda posterior— **dentro de la documentación**, que es donde ya se cobró en
+la v866 y la razón de que las listas vivas tengan su guarda.
+
+### Por qué acá no hay guarda, y qué hay en su lugar
+
+La lista viva se puede vigilar porque tiene FORMA: cada renglón lleva su
+cláusula `ya:` y `revisar.js` la exige. Una declaración de «otra tanda» es
+prosa suelta: no hay nada que comparar contra el código sin adivinar a qué se
+refiere, y una guarda que adivine sería ruido.
+
+Lo que sí es barato es el barrido, y queda escrito porque es como se
+encontraron estas dos:
+
+```bash
+grep -n "es su propia tanda\|es otra tanda\|no se hace acá\|queda medido" CLAUDE.md
+```
+
+**Una tanda que cierre algo declarado así vuelve al renglón que lo declaró y
+lo dice ahí**, como se hizo con la nota de la v933 en la v953 y con la de la
+v951 en la v955. Cuando no se hace, la sesión siguiente lee la bitácora y
+vuelve a medir lo que ya estaba medido — que es exactamente el tiempo que esta
+corrección se ahorra.
+
+### No sube la versión, y eso también es una decisión
+
+Solo cambia `CLAUDE.md`, que no se sirve al navegador. Subir el token
+rompería la caché de todos los teléfonos para no cambiarles una sola línea de
+lo que ven, y `revisar.js` lo deja pasar con razón: su regla es que la versión
+suba cuando cambia **el código**.
 
 ## La lista viva: lo que al pliego educativo todavía le falta (v866)
 
