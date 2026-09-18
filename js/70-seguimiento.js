@@ -1839,6 +1839,163 @@
     return [ejeA(dd), ejeB(dd, corte), ejeC()];
   }
 
+  /* ═══ CAPA 4 DEL PLIEGO PRESIDENCIAL ══════════════════════════════════
+     El marco declarado y el análisis editorial. Es la capa donde va la
+     postura de quien opera URBIS, y la regla que la hace legítima es la misma
+     regla de oro de arriba, dicha en la otra dirección: **no alimenta ningún
+     cálculo y ningún cálculo la cita como evidencia**.
+
+     El pliego lo argumenta mejor de lo que yo podría: «una opinión firmada y
+     enlazada a evidencia se defiende. Un juicio metido dentro de un algoritmo
+     solo se desacredita. Si la postura es fuerte, el formato firmado la hace
+     más fuerte, no menos.»
+
+     ── LO QUE ESTE CÓDIGO NO ESCRIBE, Y NO ES UN OLVIDO ──
+     El texto del editorial, su autor, su fecha y los supuestos de valor del
+     marco NO los pone el código y no los pone quien programa. Firmar una
+     opinión sobre un presidente en ejercicio con el nombre de otra persona
+     sería lo más grave que este módulo podría hacer, y lo sería aunque la
+     opinión fuera buena. Se leen del registro; si no están, la sección lo
+     dice y ahí para. */
+
+  /* Las dos listas fijas son del pliego, palabra por palabra. Van en el
+     código y no en el registro porque no son una opinión: son la definición
+     del módulo, y si cambian cambia el módulo. Los SUPUESTOS DE VALOR, en
+     cambio, son de la persona y viven en el registro. */
+  var MARCO_MIDE = [
+    'coincidencia entre lo dicho y lo hecho (eje A)',
+    'frecuencia de uso de mecanismos institucionales excepcionales (eje B)',
+    'orientación real del gasto público por sector (eje C)'
+  ];
+  var MARCO_NO_MIDE = [
+    'si una política es buena o mala',
+    'intenciones',
+    'estados mentales o rasgos de personalidad'
+  ];
+
+  function marcoDeclarado(dd) {
+    var m = ((dd || D) || {}).marcoDeclarado || {};
+    var sup = (m.supuestos || []).filter(function (x) { return String(x || '').trim(); });
+    return {
+      mide: MARCO_MIDE, noMide: MARCO_NO_MIDE,
+      autor: String(m.autor || '').trim(), fecha: String(m.fecha || '').trim(),
+      supuestos: sup, completo: !!(sup.length && m.autor && m.fecha),
+      /* Un marco sin supuestos declarados es la neutralidad falsa que el
+         pliego nombra: «elegir qué indicadores rastrear ya es una decisión de
+         valores. Eso es inevitable y no es un defecto. Lo que sí sería un
+         defecto es esconderlo.» Así que la ausencia se pinta, no se calla. */
+      falta: sup.length ? '' :
+        'Quien opera el módulo no ha declarado sus supuestos de valor. Elegir qué se rastrea ya es una ' +
+        'decisión de valores, y no declararla no la quita: la esconde. Un marco declarado es más ' +
+        'defendible que una neutralidad falsa — el lector puede discrepar del marco y seguir usando los datos.'
+    };
+  }
+
+  /* El editorial. Devuelve SIEMPRE un objeto con su estado, nunca null: «no
+     hay editorial» y «hay editorial sin firmar» piden cosas distintas. */
+  function editorialDe(dd) {
+    dd = dd || D;
+    var e = (dd || {}).analisisEditorial;
+    if (!e || !String(e.texto || '').trim()) {
+      return { hay: false, t: 'Sin análisis editorial firmado',
+               d: 'Esta sección existe para la postura de quien opera URBIS, con su nombre y su fecha. ' +
+                  'Hoy no hay ninguna escrita, y eso es un estado legítimo: lo que no sería legítimo es ' +
+                  'una opinión sin firma, o una opinión metida dentro del cálculo.' };
+    }
+    var ent = (dd.entradas) || [];
+    var apoyos = (e.registros || []).map(function (ref) {
+      var reg = null;
+      for (var i = 0; i < ent.length; i++) {
+        if (ent[i].id === ref || ent[i].titulo === ref) { reg = ent[i]; break; }
+      }
+      var cp = reg ? categoriaProbatoriaDe(reg) : null;
+      /* La marca que el pliego pide en la interfaz: si el editorial se apoya
+         en una atribución causal o en una afirmación en circulación, se ve.
+         No lo descalifica —una opinión puede apoyarse en lo que quiera— pero
+         el lector tiene que poder ver sobre qué se está apoyando. */
+      var flojo = !!(cp && (cp.id === 'atribucion-causal' || cp.id === 'en-circulacion'));
+      return { ref: ref, hallado: !!reg, titulo: reg ? reg.titulo : '', clase: cp, flojo: flojo };
+    });
+    return {
+      hay: true, texto: String(e.texto), autor: String(e.autor || '').trim(),
+      fecha: String(e.fecha || '').trim(), apoyos: apoyos,
+      flojos: apoyos.filter(function (a) { return a.flojo; }).length,
+      huerfanos: apoyos.filter(function (a) { return !a.hallado; }).length,
+      firmado: !!(String(e.autor || '').trim() && String(e.fecha || '').trim())
+    };
+  }
+
+  /* ── EL CONTROL DE CALIDAD DEL PLIEGO ──────────────────────────────────
+     «Si algún casillero falla, el módulo publica el resultado CON la marca de
+     la falla visible. No publica sin la marca.»
+
+     Eso es lo que convierte la lista en algo distinto de un buen propósito:
+     no es una lista para que alguien la repase antes de publicar, es una
+     cuenta que se hace sola y que sale impresa al lado del registro. Los que
+     este módulo no puede computar se dicen como tales — dar por bueno un
+     casillero que no se pudo correr es el error típico que la lámina
+     educativa declara desde la v879, y acá vale igual. */
+  function controlDeCalidad(dd, corte) {
+    dd = dd || D;
+    var ent = hechosDelMandato(dd, corte);
+    var c1 = capaUnoDe_conjunto(ent);
+    var ed = editorialDe(dd);
+    var f = [];
+    var casos = casosDeCorrupcion(dd);
+
+    function caja(t, estado, det) { f.push({ t: t, estado: estado, det: det }); }
+
+    caja('Todo indicador comparativo va normalizado por 100 días', 'pasa',
+         'Los seis indicadores salen por 100 días de gobierno desde la v958.');
+
+    var sinFecha = ent.filter(function (e) { return !e.fecha; }).length;
+    caja('Toda afirmación sobre un hecho pasado tiene fecha', sinFecha ? 'falla' : 'pasa',
+         sinFecha ? sinFecha + ' sin fecha' : 'las ' + ent.length + ' la tienen');
+
+    var sinUrl = ent.filter(function (e) { return !fuentesDe(e).length; }).length;
+    caja('Ninguna afirmación se publica sin URL', sinUrl ? 'falla' : 'pasa',
+         sinUrl ? sinUrl + ' de ' + ent.length + ' sin una sola fuente enlazada'
+                : 'las ' + ent.length + ' traen fuente');
+
+    var pesanSinNivel = casos.filter(function (c) {
+      var est = ESTADOS_CASO[c.estado];
+      return est && est.pesa && !entraAlVeredicto(c).nivel.declarado;
+    }).length;
+    caja('Ningún registro de otro nivel de gobierno alimenta el score', pesanSinNivel ? 'falla' : 'pasa',
+         pesanSinNivel ? pesanSinNivel + ' casos que pesan sin declarar su nivel'
+                       : 'todo caso que pesa declara que es nacional');
+
+    var acusaSinDoc = casos.filter(function (c) {
+      return c.estado === 'confirmado' && !((c.fuentes || []).length);
+    }).length;
+    caja('Ninguna acusación sin documento cuenta como hecho probado', acusaSinDoc ? 'falla' : 'pasa',
+         acusaSinDoc ? acusaSinDoc + ' confirmados sin fuente' : 'los confirmados traen su fuente');
+
+    caja('Cada registro tiene contrargumento oficial, lleno o marcado ausente',
+         c1.contra.sinRevisar ? 'falla' : 'pasa',
+         c1.contra.sinRevisar ? c1.contra.sinRevisar + ' de ' + c1.n + ' sin revisar' : 'los ' + c1.n + ' declarados');
+
+    caja('El editorial está separado y rotulado', ed.hay ? (ed.firmado ? 'pasa' : 'falla') : 'pasa',
+         ed.hay ? (ed.firmado ? 'firmado por ' + ed.autor : 'hay editorial SIN autor o SIN fecha')
+                : 'no hay editorial, y la sección lo dice');
+
+    /* Los que este módulo no puede correr. Se nombran con lo que haría falta,
+       en vez de darlos por buenos. */
+    caja('El set trae piezas distorsionadas de ambos signos y casos de encuadre limpio', 'sin-correr',
+         'El registro no clasifica la calidad del encuadre de cada pieza, así que no se puede medir el ' +
+         'balance de la muestra. Haría falta el campo `calidad_del_encuadre` de la Capa 1 del pliego.');
+    caja('Ningún registro trae menores identificados', 'sin-correr',
+         'Se revisa a mano al escribir cada entrada; el módulo no tiene cómo comprobarlo por su cuenta. ' +
+         'Los dos hechos del registro que involucran menores están como agregado y sin nombres.');
+    caja('El eje B se recalculó para los gobiernos anteriores', 'falla',
+         'No existe la media histórica de Petro, Duque y Santos, así que el eje B no publica nivel.');
+
+    var falla = f.filter(function (x) { return x.estado === 'falla'; }).length;
+    var sinCorrer = f.filter(function (x) { return x.estado === 'sin-correr'; }).length;
+    return { filas: f, pasan: f.length - falla - sinCorrer, falla: falla, sinCorrer: sinCorrer,
+             limpio: falla === 0 };
+  }
+
   function casosDeCx(dd) { return (((dd || D).contradicciones || {}).casos || []); }
   function casosDeCorrupcion(dd) { return (((dd || D).casos || {}).lista || []); }
 
@@ -2090,7 +2247,9 @@
                              // agrega acá en vez de alcanzarlo por un lado (v871).
                              indicadores: indicadoresDe, comparabilidad: comparabilidad,
                              catalogoIndicadores: INDICADORES, capaUno: capaUnoDe_conjunto,
-                             ejes: ejesDe, ejeA: ejeA, ejeB: ejeB, ejeC: ejeC };
+                             ejes: ejesDe, ejeA: ejeA, ejeB: ejeB, ejeC: ejeC,
+                             marco: marcoDeclarado, editorial: editorialDe,
+                             control: controlDeCalidad };
 
   // ── Piezas de dibujo ──────────────────────────────────────────────────────
   // Barra apilada: cada tramo es una CUENTA, no un porcentaje inventado. Si un
@@ -2753,6 +2912,90 @@
       'escalera de fiabilidad sale de los casos, las contradicciones y el registro verificado; estos ejes ' +
       'son la lectura que el pliego del módulo define, y hoy ninguno tiene con qué publicar un nivel.'));
     izq.appendChild(s3);
+
+    // ── 1e · Capa 4: el marco declarado, el editorial y el control ─────────
+    var mar = marcoDeclarado(D);
+    var s4 = seccionFicha('sp-fi-secc sp-fi-c4', 'El marco de este módulo, declarado',
+      'Elegir qué se rastrea ya es una decisión de valores. Eso es inevitable y no es un defecto; lo que ' +
+      'sí sería un defecto es esconderlo. Un marco declarado es más defendible que una neutralidad falsa: ' +
+      'el lector puede discrepar del marco y seguir usando los datos.');
+
+    var dosCol = el('div', 'sp-c4-marco');
+    [['Qué mide este módulo', mar.mide, 'si'], ['Qué NO mide', mar.noMide, 'no']].forEach(function (par) {
+      var col = el('div', 'sp-c4-col sp-c4-' + par[2]);
+      col.appendChild(el('b', null, par[0]));
+      var u = el('ul', null);
+      par[1].forEach(function (x) { u.appendChild(el('li', null, x)); });
+      col.appendChild(u);
+      dosCol.appendChild(col);
+    });
+    s4.appendChild(dosCol);
+
+    if (mar.supuestos.length) {
+      var sb = el('div', 'sp-c4-sup');
+      sb.appendChild(el('b', null, 'Supuestos de valor declarados' +
+        (mar.autor ? ' · ' + mar.autor : '') + (mar.fecha ? ' · ' + fechaLarga(mar.fecha) : '')));
+      var us = el('ul', null);
+      mar.supuestos.forEach(function (x) { us.appendChild(el('li', null, x)); });
+      sb.appendChild(us);
+      s4.appendChild(sb);
+    } else {
+      s4.appendChild(el('p', 'sp-c4-falta', mar.falta));
+    }
+
+    /* El editorial, en su propia caja y rotulado como opinión ANTES del
+       texto. El pliego lo pide así y la razón es de lectura: un párrafo de
+       opinión debajo de treinta cifras se lee como una cifra más si el
+       rótulo llega después. */
+    var ed = editorialDe(D);
+    var eb = el('div', 'sp-c4-edi' + (ed.hay ? '' : ' sin'));
+    eb.appendChild(el('span', 'sp-c4-rot', 'Opinión, no cálculo'));
+    if (!ed.hay) {
+      eb.appendChild(el('b', null, ed.t));
+      eb.appendChild(el('p', null, ed.d));
+    } else {
+      eb.appendChild(el('b', null, (ed.autor || 'Sin autor declarado') +
+        (ed.fecha ? ' · ' + fechaLarga(ed.fecha) : ' · sin fecha')));
+      eb.appendChild(el('p', null, ed.texto));
+      if (!ed.firmado) eb.appendChild(el('p', 'sp-c4-falta', 'Esta opinión está sin firmar. El pliego exige ' +
+        'autor y fecha visibles: una opinión sin firma no se puede defender ni discutir.'));
+      if (ed.apoyos.length) {
+        var ua = el('ul', 'sp-c4-apoyos');
+        ed.apoyos.forEach(function (a) {
+          var la = el('li', a.flojo ? 'flojo' : null);
+          la.appendChild(el('span', null, a.hallado ? a.titulo : ('(no se encontró: ' + a.ref + ')')));
+          if (a.flojo) la.appendChild(el('b', null, 'se apoya en ' + a.clase.t.toLowerCase()));
+          ua.appendChild(la);
+        });
+        eb.appendChild(ua);
+      }
+    }
+    eb.appendChild(el('p', 'sp-c4-pie',
+      'Esta sección no alimenta ningún cálculo de las anteriores, y ningún registro la cita como fuente.'));
+    s4.appendChild(eb);
+
+    /* El control de calidad del pliego: «si algún casillero falla, el módulo
+       publica el resultado CON la marca de la falla visible». */
+    var cc = controlDeCalidad(D, f.corte);
+    var cb2 = el('div', 'sp-c4-cc');
+    cb2.appendChild(el('b', null, 'Control de calidad del pliego · ' + cc.pasan + ' pasan · ' +
+      cc.falla + ' fallan · ' + cc.sinCorrer + ' no se pueden correr'));
+    var uc = el('ul', 'sp-c4-cclista');
+    cc.filas.forEach(function (fi) {
+      var li = el('li', 'cc-' + fi.estado);
+      li.appendChild(el('span', 'sp-c4-ccm', fi.estado === 'pasa' ? '✓' : fi.estado === 'falla' ? '✕' : '?'));
+      var d2 = el('div', null);
+      d2.appendChild(el('span', null, fi.t));
+      d2.appendChild(el('span', 'sp-c4-ccd', fi.det));
+      li.appendChild(d2);
+      uc.appendChild(li);
+    });
+    cb2.appendChild(uc);
+    cb2.appendChild(el('p', 'sp-c4-pie',
+      'El módulo no espera a estar limpio para publicar: publica con la marca de lo que falla. Un casillero ' +
+      'que no se pudo correr se dice como tal — darlo por bueno sería el error que este módulo persigue.'));
+    s4.appendChild(cb2);
+    izq.appendChild(s4);
 
     // ── 2 · Casos de corrupción ────────────────────────────────────────────
     var sc = seccionFicha('sp-fi-secc', 'Casos de corrupción',

@@ -13,7 +13,7 @@
 
    La versión va acá y en vision-territorial.html, idéntica, como en los
    otros siete archivos de versión del sitio: revisar.js lo comprueba. */
-const VT_CACHE = 'urbis-vt-v959-tres-ejes-lado-a-lado-y-ninguno-con-nivel';
+const VT_CACHE = 'urbis-vt-v960-la-opinion-va-firmada-y-fuera-del-calculo';
 const VT_ASSETS = [
   './vision-territorial.html',
   './css/90-vt.css',

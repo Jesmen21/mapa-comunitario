@@ -1170,6 +1170,82 @@ console.log('\n  -- la ficha del gobernante --');
       'la ficha los compone');
   }
 
+  /* ═══ CAPA 4 DEL PLIEGO · LA OPINIÓN, FUERA DEL CÁLCULO ════════════════
+     «No alimenta ningún cálculo y ningún cálculo la cita como evidencia.»
+
+     Las dos mitades hacen falta y se rompen distinto. La primera —que el
+     editorial no entre al cálculo— se vigila como las anteriores. La segunda
+     —que ningún registro lo cite— se vigila en el REGISTRO: una entrada
+     cuya fuente apunte al propio editorial sería el módulo citándose a sí
+     mismo como evidencia sobre una persona, que es la definición de un
+     argumento circular. */
+  {
+    const j70c4 = leer('js/70-seguimiento.js');
+
+    comprobar('MATERIAL · el marco declarado y el editorial existen en js/70',
+      /function marcoDeclarado\(/.test(j70c4) && /function editorialDe\(/.test(j70c4) &&
+      /function controlDeCalidad\(/.test(j70c4),
+      'marcoDeclarado · editorialDe · controlDeCalidad');
+
+    /* Las dos listas del marco son del pliego palabra por palabra. Si alguien
+       las edita, cambia la definición del módulo, y eso tiene que verse. */
+    comprobar('el marco declara qué mide y qué NO mide, con los tres de cada uno',
+      (j70c4.match(/var MARCO_MIDE = \[([\s\S]*?)\];/) || ['', ''])[1].split("',").length === 3 &&
+      /var MARCO_NO_MIDE = \[[\s\S]*?intenciones[\s\S]*?rasgos de personalidad/.test(j70c4),
+      'tres cosas que mide y tres que no, incluidas las intenciones y los rasgos de personalidad');
+
+    const tramoVer4 = (j70c4.match(/var techos = \{[\s\S]*?(?=\n\s*\/\* El recuento de la Capa 1)/) || [''])[0];
+    const sucio4 = ['editorialDe', 'analisisEditorial', 'marcoDeclarado']
+      .filter((k) => tramoVer4.indexOf(k) >= 0);
+    comprobar('el editorial no entra en el cálculo del veredicto',
+      tramoVer4.length > 0 && sucio4.length === 0,
+      !tramoVer4.length ? 'no se encontró el tramo del veredicto'
+                        : (sucio4.length ? 'lo contamina: ' + sucio4.join(', ')
+                                         : 'el veredicto no sabe que el editorial existe'));
+
+    /* Y la otra mitad: ningún registro puede citar el editorial como fuente. */
+    const circulares = [];
+    REGISTROS.forEach((ruta) => {
+      const quien = ruta.split('-').pop().replace('.json', '');
+      const reg = JSON.parse(leer(ruta));
+      ((reg.entradas) || []).concat(((reg.casos || {}).lista) || []).forEach((e) => {
+        ((e.fuentes) || []).forEach((fu) => {
+          /* Se mira el DOMINIO y no la palabra «editorial». La primera
+             versión buscaba esa palabra y denunció tres fuentes legítimas
+             —un editorial de Vanguardia, una columna de El Espectador—:
+             citar el editorial de un periódico es normal y bueno. Lo que no
+             puede pasar es que el registro se cite A SÍ MISMO, y eso se ve
+             en la dirección. Medido antes de cambiarlo: cero fuentes apuntan
+             hoy a urbispro.city, así que la guarda arranca limpia y falla
+             cerrado. Una guarda con falsos positivos termina siendo una lista
+             de excepciones que envejece (v895). */
+          if (/urbispro\.city|seguimiento-presidencial\.json|analisisEditorial/i.test(String(fu.u || '')) ||
+              /an[aá]lisis editorial de urbis|opini[oó]n de urbis/i.test(String(fu.n || ''))) {
+            circulares.push(quien + '/' + (e.fecha || '?') + ': ' + String(fu.n || '').slice(0, 40));
+          }
+        });
+      });
+    });
+    comprobar('y ningún registro cita el editorial como fuente (sería un argumento circular)',
+      circulares.length === 0,
+      circulares.length ? circulares.join(' · ') : 'ninguna fuente apunta a la opinión del propio módulo');
+
+    /* El control de calidad tiene que poder FALLAR. Una lista de casilleros
+       en la que todos pasan siempre es un adorno: la del pliego trae hoy tres
+       fallas reales y dos que no se pueden correr, y publicarlas es el punto
+       —«no publica sin la marca»—. Si un día el código dejara de contar las
+       fallas, esto se pone rojo. */
+    comprobar('el control de calidad cuenta las fallas y las publica, no las esconde',
+      /estado === 'falla'/.test(j70c4) && /estado === 'sin-correr'/.test(j70c4) &&
+      /cc\.falla \+ ' fallan · '/.test(j70c4),
+      'la ficha imprime cuántos pasan, cuántos fallan y cuántos no se pudieron correr');
+
+    comprobar('y la ficha pinta el marco, el editorial y el control',
+      /marcoDeclarado\(D\)/.test(j70c4) && /editorialDe\(D\)/.test(j70c4) &&
+      /controlDeCalidad\(D, f\.corte\)/.test(j70c4),
+      'los tres se componen en la ficha');
+  }
+
   /* La regla que el propio módulo se puso: una contradicción exige LAS DOS
      declaraciones documentadas. Con una sola no es un cambio de postura, es
      una postura — y como cada cambio contado baja un peldaño, dejar entrar

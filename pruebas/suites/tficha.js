@@ -488,6 +488,46 @@ const server = http.createServer((req, res) => {
     o.ejesOro = { sin: vSinId.veredicto.id, con: vConId.veredicto.id,
                   techoSin: vSinId.techos.palabra.i, techoCon: vConId.techos.palabra.i };
 
+    /* ── CAPA 4 · el marco, el editorial y el control ──────────────────
+       Tres registros: sin editorial, con uno firmado que se apoya en una
+       atribución causal, y con uno SIN firmar. Las tres ramas en la misma
+       corrida, porque «no hay opinión» y «hay una opinión sin firma» son
+       estados distintos y el segundo es el que hay que poder ver. */
+    const regEd = (ed, marco) => Object.assign({
+      posesion: '2026-08-07', categorias: { gobierno: {} },
+      entradas: [
+        { fecha: '2026-08-10', categoria: 'gobierno', titulo: 'Un hecho con documento',
+          tipoFuente: 'verificado', categoriaProbatoria: 'hecho-probado', tipoMedicion: 'actividad',
+          fuentes: [{ n: 'x', u: 'https://x' }] },
+        { fecha: '2026-08-11', categoria: 'gobierno', titulo: 'Alguien atribuye una causa',
+          tipoFuente: 'declaracion', categoriaProbatoria: 'atribucion-causal', tipoMedicion: 'no-aplica',
+          fuentes: [{ n: 'y', u: 'https://y' }] }
+      ],
+      contradicciones: { casos: [] }, casos: { lista: [] }
+    }, ed ? { analisisEditorial: ed } : {}, marco ? { marcoDeclarado: marco } : {});
+
+    const edNo = api.editorial(regEd(null));
+    const edSi = api.editorial(regEd({ autor: 'Fulano, editor', fecha: '2026-09-18',
+      texto: 'Una postura.', registros: ['Alguien atribuye una causa', 'Un hecho con documento'] }));
+    const edSinFirma = api.editorial(regEd({ texto: 'Una postura sin firma.', registros: [] }));
+    const marSin = api.marco(regEd(null));
+    const marCon = api.marco(regEd(null, { autor: 'Fulano', fecha: '2026-09-18',
+      supuestos: ['considero que la inversión social es prioritaria'] }));
+    o.capa4 = {
+      edNo: { hay: edNo.hay, d: (edNo.d || '').slice(0, 400) },
+      edSi: { hay: edSi.hay, firmado: edSi.firmado, apoyos: edSi.apoyos.length,
+              flojos: edSi.flojos, huerfanos: edSi.huerfanos,
+              clases: edSi.apoyos.map(a => (a.clase || {}).id).join(',') },
+      edSinFirma: { hay: edSinFirma.hay, firmado: edSinFirma.firmado },
+      marSin: { completo: marSin.completo, mide: marSin.mide.length, noMide: marSin.noMide.length,
+                falta: (marSin.falta || '').slice(0, 400) },
+      marCon: { completo: marCon.completo, supuestos: marCon.supuestos.length }
+    };
+    const cc = api.control(regEd(null), '2026-08-27');
+    o.control = { n: cc.filas.length, pasan: cc.pasan, falla: cc.falla, sinCorrer: cc.sinCorrer,
+                  limpio: cc.limpio,
+                  fallan: cc.filas.filter(x => x.estado === 'falla').map(x => x.t.slice(0, 34)) };
+
     // ── Los rasgos, con registros de mentira ─────────────────────────
     const fr = (ent, cxs) => (api.calcularCon({ posesion: '2026-08-07', categorias: { gobierno: {} }, entradas: ent,
       contradicciones: { casos: cxs || [] }, casos: { lista: [] } }, '2026-08-20').rasgos || []).map(x => x.id);
@@ -699,6 +739,42 @@ const server = http.createServer((req, res) => {
   chk(eo.sin === eo.con && eo.techoSin === eo.techoCon,
       'REGLA DE ORO · declarar la identidad de objeto no mueve el veredicto ni el techo de la palabra (' +
       eo.sin + '/' + eo.techoSin + ' contra ' + eo.con + '/' + eo.techoCon + ')');
+
+  console.log('\n── La Capa 4: el marco, el editorial y el control ────');
+  const c4 = r.capa4 || {};
+  console.log('  ' + JSON.stringify(c4));
+  chk(c4.marSin && c4.marSin.mide === 3 && c4.marSin.noMide === 3,
+      'MATERIAL · el marco declara tres cosas que mide y tres que no (' +
+      (c4.marSin || {}).mide + ' · ' + (c4.marSin || {}).noMide + ')');
+  chk(c4.marSin && c4.marSin.completo === false && /neutralidad falsa/.test(c4.marSin.falta || ''),
+      'sin supuestos de valor declarados el marco NO se da por completo, y dice por qué');
+  chk(c4.marCon && c4.marCon.completo === true && c4.marCon.supuestos === 1,
+      'GUARDA · con los supuestos declarados sí queda completo (' + (c4.marCon || {}).supuestos + ')');
+  chk(c4.edNo && c4.edNo.hay === false && /sin firma/.test(c4.edNo.d || ''),
+      'sin editorial la sección lo dice y nombra lo que NO sería legítimo (' +
+      String((c4.edNo || {}).d).slice(0, 62) + ')');
+  chk(c4.edSi && c4.edSi.hay === true && c4.edSi.firmado === true && c4.edSi.apoyos === 2 &&
+      c4.edSi.huerfanos === 0,
+      'un editorial firmado enlaza sus registros de apoyo (' + (c4.edSi || {}).apoyos + ' apoyos)');
+  // La marca que el pliego pide en la interfaz.
+  chk(c4.edSi && c4.edSi.flojos === 1 && /atribucion-causal/.test(c4.edSi.clases || ''),
+      'y se MARCA cuando se apoya en una atribución causal o en algo que solo circula (' +
+      (c4.edSi || {}).flojos + ' marcado de ' + (c4.edSi || {}).apoyos + ')');
+  chk(c4.edSinFirma && c4.edSinFirma.hay === true && c4.edSinFirma.firmado === false,
+      'y una opinión sin autor ni fecha se ve como tal, en vez de pasar por firmada');
+
+  const cq = r.control || {};
+  console.log('  control: ' + JSON.stringify(cq));
+  chk(cq.n >= 10 && cq.falla > 0 && cq.limpio === false,
+      'el control de calidad del pliego FALLA donde tiene que fallar y no se da por limpio (' +
+      cq.falla + ' fallan de ' + cq.n + ')');
+  chk(cq.sinCorrer > 0,
+      'y los casilleros que no se pueden correr se dicen como tales, no se dan por buenos (' +
+      cq.sinCorrer + ')');
+  chk((cq.fallan || []).some(x => /eje B/.test(x)) &&
+      (cq.fallan || []).some(x => /contrargumento/.test(x)),
+      'entre las fallas están el eje B sin media histórica y el contrargumento sin revisar (' +
+      (cq.fallan || []).join(' · ') + ')');
 
   const nd = r.nivelDOM || {};
   chk(nd.aviso === false && nd.tarjetasFuera === 0 && nd.diceNivel === false,

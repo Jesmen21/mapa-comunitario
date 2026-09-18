@@ -10188,6 +10188,118 @@ aserción tenía razón y no se aflojó.
   cinco son del eje C y ninguno tiene datos que dibujar.
 * **La Capa 4**: el marco declarado y el editorial firmado.
 
+## La opinión va firmada y fuera del cálculo (v960)
+
+Capa 4 del pliego presidencial, y con ella el pliego maestro queda con sus
+cuatro capas montadas. Es la capa donde va la postura de quien opera URBIS, y
+la regla que la hace legítima es la regla de oro dicha en la otra dirección:
+**no alimenta ningún cálculo y ningún cálculo la cita como evidencia**.
+
+El pliego lo argumenta mejor de lo que yo podría:
+
+> Una opinión firmada y enlazada a evidencia se defiende. Un juicio metido
+> dentro de un algoritmo solo se desacredita. Si la postura es fuerte, el
+> formato firmado la hace más fuerte, no menos.
+
+### Lo que este código NO escribe, y no es un olvido
+
+El texto del editorial, su autor, su fecha y los supuestos de valor del marco
+**no los pone el código y no los pone quien programa**. Firmar una opinión sobre
+un presidente en ejercicio con el nombre de otra persona sería lo más grave que
+este módulo podría hacer, y lo sería aunque la opinión fuera buena. Se leen del
+registro; si no están, la sección lo dice y ahí para.
+
+Por eso `editorialDe` devuelve **siempre un objeto con su estado**: «no hay
+editorial» y «hay editorial sin firmar» piden cosas distintas, y el segundo es
+el que hay que poder ver. Hoy no hay ninguno, y la ficha lo dice nombrando lo
+que **no** sería legítimo: una opinión sin firma, o una opinión metida dentro
+del cálculo.
+
+### El marco: las dos listas son del pliego, los supuestos son de la persona
+
+«Qué mide este módulo» y «qué NO mide» van en el código, palabra por palabra del
+pliego, porque no son una opinión: son la definición del módulo, y si cambian
+cambia el módulo. Los **supuestos de valor** viven en el registro, porque son de
+quien lo opera.
+
+Y su ausencia se pinta, no se calla. El pliego lo dice con todas las letras:
+
+> Elegir qué indicadores rastrear ya es una decisión de valores. Eso es
+> inevitable y no es un defecto. Lo que sí sería un defecto es esconderlo.
+
+Un marco sin supuestos declarados es la **neutralidad falsa**, que es peor que
+un marco con el que se puede discrepar.
+
+### La marca que el pliego pide en la interfaz
+
+Si el editorial se apoya en un registro cuya categoría probatoria es
+`atribucion-causal` o `en-circulacion`, **se marca**. No lo descalifica —una
+opinión puede apoyarse en lo que quiera— pero el lector tiene que poder ver
+sobre qué se apoya. Eso lo hace posible la Capa 1 de la v957: sin la categoría
+probatoria no habría con qué marcar.
+
+### El control de calidad se calcula y se publica CON sus fallas
+
+> Si algún casillero falla, el módulo publica el resultado con la marca de la
+> falla visible. No publica sin la marca.
+
+Eso es lo que convierte la lista en algo distinto de un buen propósito: no es
+una lista para repasar antes de publicar, es una cuenta que se hace sola y sale
+impresa al lado del registro. Hoy da **seis que pasan, tres que fallan y dos que
+no se pueden correr**:
+
+| | |
+|---|---|
+| **Falla** | el contrargumento oficial sin revisar (200 de 200) |
+| **Falla** | el eje B sin la media histórica de Petro, Duque y Santos |
+| **Falla** | lo que en cada corrida no cuadre de los otros casilleros |
+| **No se puede correr** | el balance de la muestra: el registro no clasifica la calidad del encuadre de cada pieza |
+| **No se puede correr** | menores identificados: se revisa a mano al escribir cada entrada, el módulo no tiene cómo comprobarlo |
+
+Los dos últimos se dicen como tales y no se dan por buenos. **Dar por bueno un
+casillero que no se pudo correr** es el error típico que la lámina educativa
+declara desde la v879, y acá vale igual: sobre una persona real, más.
+
+### La guarda circular denunció tres editoriales de prensa
+
+El invariante es que ningún registro cite el editorial del propio módulo como
+fuente — sería el módulo citándose a sí mismo como evidencia sobre una persona,
+que es la definición de un argumento circular.
+
+La primera versión lo buscaba por la palabra «editorial» y denunció **tres
+fuentes legítimas**: un editorial de Vanguardia, una columna de Cecilia Orozco
+en El Espectador. Citar el editorial de un periódico es normal y bueno.
+
+Se mide el **dominio**, que es donde de verdad se ve: cero fuentes apuntan hoy a
+`urbispro.city`, así que la guarda arranca limpia y falla cerrado. Es la lección
+de la v895: una guarda con falsos positivos termina siendo una lista de
+excepciones que envejece hasta no significar nada.
+
+### Demostrado en rojo
+
+* metiendo el editorial en el cálculo del veredicto → la guarda estática:
+  **«lo contamina: editorialDe»**;
+* dando el control de calidad por limpio → la suite del navegador:
+  **«0 fallan de 10»** y **«0 casilleros sin correr»**.
+
+La segunda no la caza la guarda estática, y eso va escrito al lado: la estática
+comprueba que el código sepa contar fallas, y la del navegador que las cuente de
+verdad. Es la misma división de trabajo que la regla de oro de la v957.
+
+### El pliego, capa por capa, al cerrar
+
+| Capa | Estado |
+|---|---|
+| 1 · Extracción | los tres campos declarados en los dos registros, 200 entradas clasificadas |
+| 2 · Indicadores | seis por 100 días, con el poder predictivo y la no-comparabilidad dicha |
+| 3 · Ejes | los tres calculados, **ninguno con nivel**, cada uno diciendo qué le falta |
+| 4 · Editorial | la estructura, la marca de apoyo flojo y el control de calidad; el texto lo firma una persona |
+
+Y lo que sigue faltando, que es de archivo y de fuente y no de código: la media
+histórica de I-04 a I-07 para Petro, Duque y Santos; la ejecución presupuestal
+deflactada por sector; el inventario de promesas con su estado; y las series de
+Medicina Legal, Procuraduría y Defensoría del bloque D.
+
 ## La lista viva: lo que al pliego educativo todavía le falta (v866)
 
 Esta lista se quedó vieja **cinco veces**. Cuatro dentro de la hoja —la
