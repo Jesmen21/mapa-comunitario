@@ -244,6 +244,41 @@ Tres cosas que las cuatro tienen en común y conviene copiar:
   Sin eso los estados son documentación y la exención vuelve a ser
   silenciosa, que es el patrón de la v878 con su propia lista.
 
+## Una guarda que se pone roja cuando los datos MEJORAN
+
+La gemela de la de arriba, y va aparte porque su síntoma es el contrario:
+aquella se lee como un aprobado, esta grita.
+
+> **Una comprobación que se pone roja cuando el registro MEJORA está midiendo
+> el número y no la propiedad.**
+
+**La señal para detectarla es que ARREGLAR LOS DATOS rompa la suite.** Nadie
+tocó el código, nadie quitó una comprobación: alguien migró una entrada,
+consiguió una fuente, retiró una declaración que no se sostenía — y la guarda
+se quedó sin nada que rechazar. Eso no es una regresión, es la guarda
+diciendo que medía el material y no lo que el material debía demostrar.
+
+Y lo que la hace cara es la presión que ejerce, que es la misma que el rojo
+de la v965 ejercía sobre `sin-acto`: **la salida barata de una guarda mal
+puesta es dejar el registro torcido para que siga teniendo algo que
+rechazar.** Un rojo que empuja a no arreglar los datos es peor que no tener
+la guarda.
+
+**Se rehace sobre lo que sobrevive al cero.** La pregunta no es «¿hay
+material?» sino «¿qué tiene que seguir siendo cierto cuando no lo haya?». En
+la v970 eran dos cosas: que el recuento se calcule sobre TODAS las que
+declaran y sobre ninguna más, y que la pantalla tenga **escritas las dos
+redacciones** —la de cero y la de N—, porque la segunda es justo la que hace
+falta el día que el material vuelva. Las dos se comprueban con el registro
+limpio.
+
+Y la rama con material se mide **contra un caso fabricado**, no contra el
+registro: medirla contra el registro es volver a medir el número.
+
+El censo va en uno: **v970**, la guarda de rol de la v966. Si aparece otra, se
+agrega acá — y la señal es siempre la misma, que la corrida se ponga roja
+detrás de una tanda que solo tocó datos.
+
 ## Tres clases de error que se repiten, y no son la misma
 
 Cada una lleva ya tres o más casos. Van nombradas y con su censo para que la
@@ -11648,9 +11683,24 @@ vía, su base, su nivel y sus roles.
 179 entradas, **6 declarantes y los seis con su fuente del acto**; cero con
 esquema antiguo. I-04 en 4 contadas de 4 declaradas —las tres mías más la de
 la otra sesión—, I-13 en 1, I-05 en 0, e **I-07 en 0 contadas de 1
-declarada**: la entrada de los vuelos presidenciales no pasa su criterio, que
-es un estado anterior a esta tanda y queda medido, no tocado. `tficha`
-188/188, la batería 121/121, y `revisar.js` en verde con un `?`.
+declarada**. `tficha` 188/188, la batería 121/121, y `revisar.js` en verde con
+un `?`.
+
+#### El I-07 en cero está BIEN, y no se toca
+
+Lo dejé escrito como «un estado anterior a esta tanda, medido y no tocado»,
+que es tibio. El usuario lo dijo por su nombre y vale tenerlo:
+
+> El documento de la FAC existe, pero nosotros no lo tenemos — lo conocemos
+> por lo que la prensa publicó sobre él. El criterio está distinguiendo
+> «existe un documento» de «tenemos el documento», que es justo lo que debe
+> hacer.
+
+Por eso su `tipoEvidencia` es `reporte-periodistico` y el `requiere` lo deja
+fuera de la cuenta. **Es un pendiente de FUENTE y no de código**: conseguir el
+reporte de la FAC —el pendiente 9 del dossier— y con él la declaración cuenta
+sola, sin tocar una línea. Aflojar el criterio para que la cifra suba sería
+exactamente la salida barata que la sección de arriba nombra.
 
 ## La lista viva: lo que al pliego educativo todavía le falta (v866)
 
