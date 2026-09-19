@@ -11313,6 +11313,130 @@ esta pantalla, o si es una maqueta para enseñar las reglas y la paleta se
 queda como está. Adoptarla entera cambiaría la marca de un módulo que
 comparte hoja de estilo con el resto, así que lo decide quien la escribió.
 
+## Las veinte migradas, y el caso que no se pudo cerrar (v967)
+
+Las dos tareas del traspaso, en su orden, y con una regla que las gobierna:
+**el registro es el cuello de botella, no el código.** Ninguna de las dos
+escribe una línea de `js/`.
+
+    v966   1 de 5 declarantes con la guarda de rol corriendo · 20 entradas con esquema antiguo
+    v967   5 de 6 · 0 con esquema antiguo · 4 casos del dossier entrados
+
+### 1 · La migración, y lo que había debajo
+
+Las veinte entradas con la forma antigua `fuente` + `url` pasan a `fuentes[]`
+con su `rol`. Al hacerlo salieron tres cosas que no estaban a la vista:
+
+* **Cuatro entradas llevaban las DOS formas a la vez.** Tres eran la misma
+  dirección repetida y se quitaron. La cuarta no: «Nombra su gabinete: 18
+  ministros por el Decreto 1136» tenía en el campo viejo **la única fuente que
+  documenta el acto**, y `fuentesDe` prefiere `fuentes[]` cuando existe, así
+  que esa dirección **no se enseñaba en ninguna pantalla**. Estaba en el
+  archivo y no en la ficha, que es la forma de la v966 en los datos en vez de
+  en una comprobación. Se recuperó, con su rol.
+* **El parche abortó la primera vez y no escribió nada**, que es lo correcto:
+  la aserción de que no quedara ninguna entrada con el campo viejo se cayó
+  sobre esas cuatro. Medio archivo migrado habría sido mucho peor, y la
+  confirmación impresa es lo que separó «no entró» de «la prueba sigue roja».
+* **Cinco se migraron sin rol.** No se les inventó: una fuente cuyo papel no
+  se puede establecer se queda `sin-declarar`, que es un estado que la ficha
+  cuenta y nombra desde la v966.
+
+#### `rol` no es el eje anuncio/acto, y conviene no confundirlos
+
+Se parecen y piden cosas distintas. El `excluye` de la v963 —«anuncio sin acto
+administrativo expedido»— decide si un hecho CUENTA en un indicador. El `rol`
+dice si una fuente documenta **el acto de esta entrada o lo que vino después**.
+Una cobertura del mismo día, con el verbo que use, es `acto`; la reacción de
+un tercero es `efecto`. Juntarlos empujaría a `efecto` toda la cobertura
+contemporánea y dejaría la guarda de la v965 sin significar nada.
+
+### 2 · Cuatro casos del dossier, con sus fuentes buscadas una por una
+
+El dossier trae los NOMBRES de los medios y **no sus direcciones**, y las 206
+fuentes de los dos registros llevan una: entrar un caso con una fuente sin
+dirección habría sido una fuente que nadie puede comprobar. Así que cada una
+se buscó y se confirmó antes de escribirla. Lo que entró:
+
+| Caso | Qué añade |
+|---|---|
+| **PGN 2027** (14 sep) | el reparto por sector, la variación **real** deflactada y la agregación Defensa+Policía. La entrada del 7 de septiembre ya traía el monto |
+| **Vuelos presidenciales** (9 sep) | 103 trayectos y $1.117 millones en 18 días, del reporte de la FAC entregado tras una tutela. Declara **I-07** |
+| **Tarifas de energía** (8 sep) | «la tarifa tiene que subir» en la Comisión Quinta, clasificada como contexto estructural y no como medida |
+| **Recorte al deporte 2027** (14 sep) | ~40 % menos, con el **primer contrargumento oficial revisado** del registro |
+
+**La aritmética del dossier se comprobó antes de publicarla**, porque una
+cifra deflactada mal es indistinguible de una bien: los seis sectores dan
+exactamente lo que el dossier dice, y el 6,24 % con el que se deflacta **es
+una entrada del propio registro** (7 de septiembre, DANE). No hay ningún
+número que venga de fuera y no se pueda abrir.
+
+Tres se apartaron con su razón medida, y una **no se duplicó**: el FENOGE ya
+está en `casos` como señalamiento con todas sus cifras. Lo que sí le faltaba
+era la dirección del artículo —sus dos fuentes eran **la portada del medio**,
+que no prueba nada— y que dijera que el 32,2 % tiene dos lecturas en la
+prensa: unos lo cuentan contra los honorarios del antecesor y otros contra lo
+previsto para el cargo. Van las dos, sin elegir.
+
+### El trinquete del contrargumento sube por primera vez
+
+De 0 a 1 revisado, y el piso sube con él. Es la primera vez que ese pendiente
+baja desde que se abrió en la v957, y el trinquete existe para que no se pueda
+des-declarar.
+
+### Lo que NO se cerró, y es el hallazgo de la tanda
+
+**«El Gobierno suspende la programación de las 20 emisoras de paz»** (18 ago)
+declara I-04 y su única fuente es la alerta de la FLIP: **documenta la
+reacción, no el acto.** Es exactamente el caso que el traspaso anticipó, y
+debería quedar en `sin-acto`. No puede:
+
+> `revisar.js` exige `soloEfecto.length === 0`, así que una entrada cuyos
+> roles sean todos `efecto` pone la comprobación en **rojo**. Y `rolDeFuentes`
+> en `js/70` trata `sin-acto` como uno de sus cuatro estados, lo cuenta y lo
+> nombra en la ficha.
+
+**Los dos no dicen lo mismo**: el módulo dice «cuéntalo y nómbralo», la guarda
+dice «esto es un fallo». Con la guarda como está, el único camino para
+registrar honestamente ese caso es dejarlo `sin-declarar` —que es donde
+está—, y ahí se ve igual que las 151 entradas que nadie ha mirado. La
+exención dejó de ser silenciosa en la v966; lo que falta es que el estado que
+la v967 necesita sea **registrable**. Esa decisión no se tomó acá.
+
+Y la razón de no forzarlo con una fuente: la candidata a documentar el acto
+—una nota que por su título sí lo hace— **no se pudo abrir desde esta
+máquina**, el proxy bloquea ese dominio. Apoyar un cambio de estado de la
+guarda en un titular que no se leyó es lo que este proyecto llama inventar.
+De paso queda dicho que, según la prensa, la instrucción se impartió **por
+WhatsApp desde Inravisión**, lo que pone en duda la vía que la entrada
+declara —«directiva que altera el régimen ordinario de difusión»—. Es la
+segunda decisión que queda abierta.
+
+**El Decreto 1171 sí se cerró**, y por la diferencia que importa: su acto es
+un decreto **identificado por su número**, descrito de forma concordante por
+varias fuentes independientes, mientras su única fuente era un medio español
+escribiendo sobre empresas españolas en la reconstrucción — que es lo que
+vino después. Ahora tiene tres fuentes de acto y la que tenía queda declarada
+como lo que es.
+
+### Una aserción que citaba un caso por su nombre
+
+`tficha` exigía que el recuento nombrara **«Decreto 1171»**. Al resolverlo se
+puso roja por un cambio legítimo: es la constante del material metida dentro
+de la comprobación, que es la lección de la v890. Ahora mide la **forma** —que
+el recuento nombre uno por uno los casos que no se pudieron comprobar, sean
+los que sean, y que los nombre **en la pantalla**—, así que sirve para el caso
+de hoy y para el de mañana. Más precisa, no más laxa.
+
+### Y una de método que se cobró dos veces en la misma noche
+
+`curl` a cualquiera de esos medios devuelve `000`: el proxy de esta máquina
+los bloquea, igual que a Overpass y a `ags.esri.co`. Así que **la dirección de
+una fuente no se puede verificar abriéndola desde acá**, y el único canal es
+la búsqueda. Queda escrito porque la tentación de dar por buena una dirección
+que uno mismo compuso es exactamente lo que produce una fuente falsa con
+aspecto correcto.
+
 ## La lista viva: lo que al pliego educativo todavía le falta (v866)
 
 Esta lista se quedó vieja **cinco veces**. Cuatro dentro de la hoja —la

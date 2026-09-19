@@ -472,6 +472,101 @@
    "tipoEvidencia": "documento-primario"
   },
   {
+   "fecha": "2026-09-14",
+   "precision": "exacta",
+   "categoria": "economia",
+   "titulo": "Las comisiones económicas aprueban el monto del presupuesto de 2027 en $634,9 billones: Educación es la mayor partida en pesos y, descontada la inflación, Educación y Salud caen mientras Defensa sube 14,6 %",
+   "id": "pgn-2027-monto-aprobado-comisiones",
+   "nivelGobierno": "nacional",
+   "categoriaProbatoria": "hecho-probado",
+   "tipoMedicion": "actividad",
+   "estadoProcesal": "en-tramite-legislativo",
+   "tipoEvidencia": "dato-oficial",
+   "detalle": "Las comisiones económicas de Senado y Cámara aprobaron el 14 de septiembre el monto del Presupuesto General de la Nación para 2027 en $634,9 billones, el que el Ejecutivo denominó «Presupuesto de la Verdad» y radicó el 27 de agosto. En la Cámara la proposición del Gobierno obtuvo 22 votos a favor y seis en contra; en el Senado, 11 a favor y cuatro en contra. Una proposición del Pacto Histórico para bajar el monto a $596,6 billones no prosperó. La composición declarada es 62 % funcionamiento, 24 % servicio de la deuda y 14 % inversión. El reparto por sector deja a Educación como la mayor partida con $78,77 billones, seguida de Salud con $77,05 billones, Trabajo con $58,82 billones, Hacienda y Crédito Público con $40,7 billones, Defensa con $33,8 billones y la Policía Nacional con $20,9 billones. Frente al presupuesto aprobado de 2026 y descontada la inflación anual de agosto —6,24 %, publicada por el DANE el 7 de septiembre y registrada en este mismo seguimiento—, las variaciones reales son: Hacienda +34,4 %, Defensa +14,6 %, Trabajo +10,0 %, Educación −3,1 %, Salud −4,4 % y Deporte −43,5 %. El monto aprobado no es todavía la ley: el proyecto sigue su trámite en las plenarias de las dos cámaras.",
+   "tipoFuente": "verificado",
+   "contrapunto": "Las dos afirmaciones que circulan son ciertas a la vez, y esa es la razón de imprimir las dos columnas. En pesos corrientes el Gobierno puede decir con razón que Educación es la mayor partida del presupuesto y que subió, y que Salud también subió. Descontada la inflación, la crítica puede decir con razón que Educación y Salud caen mientras Defensa crece 14,6 % real. Lo que no es cierto es ninguna de las dos dichas a secas: toda afirmación sobre variación presupuestal tiene que declarar si es nominal o real, y la diferencia entre las dos ES el dato. Segundo: la posición del gasto en seguridad cambia dos puestos según cómo se agregue. En Colombia la Policía Nacional está adscrita al Ministerio de Defensa, así que «Defensa $33,8 billones» y «Defensa y Policía $54,7 billones» son las dos correctas y describen cosas distintas —con la primera queda sexta, por debajo también de Hacienda; con la segunda queda cuarta, por debajo de Educación, Salud y Trabajo—. Sin declarar cuál se usa, la comparación «militar contra educación» es manipulable por cualquiera de los dos lados. Tercero: la comparación que el Gobierno declara —$59,3 billones más que el proyecto de $575,6 billones de la administración Petro— pone lado a lado un proyecto radicado y un proyecto devuelto por las comisiones económicas, no un presupuesto aprobado; y una fuente da esos $575,6 billones como proyecto Petro mientras otra da $575 billones «de la administración anterior» como aprobado de 2026: son términos distintos y no son intercambiables. Cuarto, una posición registrada con su autor y no como hallazgo: el exministro de Educación Daniel Rojas Medellín sostuvo que el presupuesto aumenta en $110 billones la deuda pública para «subsidiarle la ganancia» a importadores de combustibles, generadoras termoeléctricas, AFP y EPS. La cifra de deuda es comprobable; la afirmación sobre el propósito y sobre quiénes se benefician es una interpretación, no un hecho documentado. Y lo que falta para que esto sea una tendencia y no una foto: la serie de porcentaje del PIB por sector para Santos, Duque y Petro, con la misma deflactación y la misma agregación, y la ejecución de 2026 por sector y no solo su aprobación.",
+   "fuentes": [
+    {
+     "n": "El Tiempo · Comisiones económicas de Senado y Cámara aprobaron el monto del Presupuesto para 2027 en $634,9 billones",
+     "u": "https://www.eltiempo.com/economia/sectores/comisiones-economicas-de-senado-y-camara-aprobaron-el-monto-del-presupuesto-para-2027-en-634-9-billones-3586042",
+     "rol": "acto"
+    },
+    {
+     "n": "Semana · Comisiones económicas del Congreso aprueban monto del Presupuesto 2027, por $635 billones, con una condición",
+     "u": "https://www.semana.com/economia/macroeconomia/articulo/comisiones-economicas-del-congreso-aprueban-monto-del-presupuesto-2027-por-635-billones-con-una-condicion/202641/",
+     "rol": "acto"
+    },
+    {
+     "n": "El Colombiano · Monto del presupuesto 2027 pasó sin resistencia en el Congreso, serán $634,9 billones",
+     "u": "https://www.elcolombiano.com/negocios/presupuesto-general-nacion-2027-634-9-billones-aprobado-comisiones-economicas-KD41067379",
+     "rol": "acto"
+    },
+    {
+     "n": "Infobae · Así serán distribuidos los $634,9 billones del presupuesto de la Nación en 2027: estos son los sectores que más recursos recibirán",
+     "u": "https://www.infobae.com/colombia/2026/08/28/asi-seran-distribuidos-los-6349-billones-del-presupuesto-de-la-nacion-en-2027-estos-son-los-sectores-que-mas-recursos-recibiran/",
+     "rol": "acto"
+    },
+    {
+     "n": "Presidencia de la República · Gobierno radica Presupuesto de la Verdad para 2027 por $635 billones",
+     "u": "https://www.presidencia.gov.co/prensa/Paginas/Gobierno-radica-Presupuesto-de-la-Verdad-para-2027-por-635-billones-260827.aspx",
+     "rol": "acto"
+    },
+    {
+     "n": "Forbes Colombia · Gobierno radica Presupuesto de $634,9 billones para 2027, $59 billones más que el proyecto de Petro",
+     "u": "https://forbes.co/economia-y-finanzas/gobierno-radica-presupuesto-de-6349-billones-para-2027-59-billones-mas-que-el-proyecto-de-petro",
+     "rol": "acto"
+    }
+   ]
+  },
+  {
+   "fecha": "2026-09-14",
+   "precision": "exacta",
+   "categoria": "economia",
+   "titulo": "El proyecto de presupuesto recorta cerca del 40 % al Ministerio del Deporte para 2027, en año de clasificatorios olímpicos, y la ministra lo justifica «para cuidar las finanzas del país»",
+   "id": "recorte-presupuesto-deporte-2027",
+   "nivelGobierno": "nacional",
+   "categoriaProbatoria": "hecho-probado",
+   "tipoMedicion": "actividad",
+   "estadoProcesal": "en-tramite-legislativo",
+   "tipoEvidencia": "dato-oficial",
+   "detalle": "El proyecto de Presupuesto General de la Nación para 2027 radicado por el Gobierno de De la Espriella asigna $297.700 millones al Ministerio del Deporte, frente a $496.100 millones en 2026: una reducción cercana a $198.400 millones, alrededor del 40 % en pesos corrientes y del 43,5 % descontada la inflación anual de agosto. Dentro del proyecto, el rubro de recreación y actividad física caería 62,5 %. El recorte llega mientras el presupuesto total crece 10,3 % y en un año marcado por los clasificatorios para los Juegos Olímpicos de Los Ángeles 2028. La ministra del Deporte, Juliana Gutiérrez, justificó el recorte el 14 de septiembre. Deportistas, medallistas olímpicos y congresistas han planteado alternativas, entre ellas un esquema más público-privado.",
+   "tipoFuente": "verificado",
+   "contrargumentoOficial": "La ministra del Deporte, Juliana Gutiérrez, justificó públicamente el recorte el 14 de septiembre de 2026 diciendo que se hace «para cuidar las finanzas del país». No es una respuesta sobre el efecto en los clasificatorios olímpicos ni sobre el rubro de recreación y actividad física, que es el que más cae.",
+   "contrapunto": "Las dos cosas son ciertas al mismo tiempo y hay que decirlas juntas. El recorte de cerca del 40 % frente a 2026 es real, es de este proyecto y es criticable en un año olímpico clave. Y la caída del presupuesto del deporte no empieza aquí: lleva tres años. La serie que el gráfico viral borra es 2022 con $813.000 millones —la pieza que circula dice $898.230 millones, y las dos cifras circulan sin que ninguna fuente concilie la diferencia—, 2023 con $877.000 millones, 2024 con $1,34 billones aprobados y unos $468.000 millones ejecutados, 2025 con $436.000 millones y 2026 con $496.100 millones. El dato que la pieza viral oculta es que en mayo de 2026, bajo el gobierno anterior, el representante Mauricio Parodi denunció que el proyecto en discusión asignaba al deporte solo $208.000 millones para 2027 —la asignación más baja de la década—, de modo que los $297.700 millones de este proyecto son superiores a esa proyección previa; Parodi cifró el recorte acumulado del gobierno anterior en cerca de $3 billones. El −66,9 % que circula se construye saltando de 2022 a 2027 y borrando el tramo intermedio: es la misma técnica de períodos desiguales que este seguimiento desmonta cuando la usa el otro lado, y la regla vale igual en las dos direcciones. Y esto es un proyecto radicado, no una apropiación aprobada: el Congreso todavía lo debate.",
+   "fuentes": [
+    {
+     "n": "Colombia.com · El deporte colombiano perderá el 40 % de su presupuesto para 2027: las alarmas en la era De la Espriella",
+     "u": "https://www.colombia.com/actualidad/nacionales/deporte-en-colombia-tendra-40-menos-de-presupuesto-en-2027-600016",
+     "rol": "acto"
+    },
+    {
+     "n": "El Norte · Deporte colombiano tendrá recorte de casi $200.000 millones",
+     "u": "https://elnorte.com.co/recorte-presupuesto-deporte-colombia-2027-40-por-ciento/",
+     "rol": "acto"
+    },
+    {
+     "n": "Infobae · Ministra Juliana Gutiérrez justificó el recorte presupuestal del gobierno de Abelardo de la Espriella al deporte: «Para cuidar las finanzas del país»",
+     "u": "https://www.infobae.com/colombia/2026/09/14/ministra-juliana-gutiperrez-justifico-el-recorte-presupuestal-del-gobierno-de-abelardo-de-la-espiella-al-deporte-para-cuidar-las-finanzas-del-pais/",
+     "rol": "acto"
+    },
+    {
+     "n": "Infobae · Medallista olímpico y políticos proponen soluciones al recorte presupuestal del Gobierno de Abelardo de la Espriella al deporte",
+     "u": "https://www.infobae.com/colombia/2026/09/13/medallista-olimpico-y-politicos-proponen-soluciones-al-recorte-presupuestal-del-gobierno-de-abelardo-de-la-espriella-al-deporte-deberia-ser-mas-publico-privado/",
+     "rol": "efecto"
+    },
+    {
+     "n": "Infobae (6 may 2026) · Gobierno Petro seguiría recortándole presupuesto al deporte: esta sería la cifra para 2027",
+     "u": "https://www.infobae.com/colombia/deportes/2026/05/06/gobierno-petro-seguiria-recortandole-presupuesto-al-deporte-esta-seria-la-cifra-para-2027/",
+     "rol": "efecto"
+    },
+    {
+     "n": "El Tiempo (may 2026) · Denuncian nuevo recorte al presupuesto para el deporte colombiano en el Gobierno de Gustavo Petro para 2027",
+     "u": "https://www.eltiempo.com/deportes/otros-deportes/denuncian-nuevo-recorte-al-presupuesto-para-el-deporte-colombiano-en-el-gobierno-de-gustavo-petro-para-3553641",
+     "rol": "efecto"
+    }
+   ]
+  },
+  {
    "fecha": "2026-09-13",
    "precision": "exacta",
    "categoria": "gobierno",
@@ -875,15 +970,18 @@
    "fuentes": [
     {
      "n": "Infobae · Gobierno de Abelardo de la Espriella anunció que se aplazan los concursos de mérito para vacantes de la Cnsc: esta es la razón",
-     "u": "https://www.infobae.com/colombia/2026/09/11/gobierno-de-abelardo-de-la-espriella-anuncio-que-se-aplazan-los-concursos-de-merito-para-vacantes-de-la-cnsc-esta-es-la-razon/"
+     "u": "https://www.infobae.com/colombia/2026/09/11/gobierno-de-abelardo-de-la-espriella-anuncio-que-se-aplazan-los-concursos-de-merito-para-vacantes-de-la-cnsc-esta-es-la-razon/",
+     "rol": "acto"
     },
     {
      "n": "LaFM · Gobierno de La Espriella anuncia cambios en los concursos de mérito en Colombia: así se frenarán los procesos",
-     "u": "https://www.lafm.com.co/actualidad/concursos-de-merito-colombia-aplazados-cambios-gobierno-abelardo-de-la-espriella-410618"
+     "u": "https://www.lafm.com.co/actualidad/concursos-de-merito-colombia-aplazados-cambios-gobierno-abelardo-de-la-espriella-410618",
+     "rol": "acto"
     },
     {
      "n": "Cambio · Concursos de mérito en Colombia: Gobierno de Abelardo de la Espriella aplaza procesos hasta 2027",
-     "u": "https://cambiocolombia.com/pais/articulo/2026/9/gobierno-de-de-la-espriella-anuncia-cambios-en-concursos-de-merito-asi-se-modificaron-los-procesos"
+     "u": "https://cambiocolombia.com/pais/articulo/2026/9/gobierno-de-de-la-espriella-anuncia-cambios-en-concursos-de-merito-asi-se-modificaron-los-procesos",
+     "rol": "acto"
     }
    ],
    "nivelGobierno": "nacional",
@@ -1139,19 +1237,23 @@
    "fuentes": [
     {
      "n": "El Espectador · De la Espriella firmó 11 decretos para reconstrucción: los anuncios del consejo de ministros",
-     "u": "https://www.elespectador.com/politica/de-la-espriella-firmo-11-decretos-para-reconstruccion-por-terremoto-estos-fueron-los-anuncios-tras-consejo-de-ministros/"
+     "u": "https://www.elespectador.com/politica/de-la-espriella-firmo-11-decretos-para-reconstruccion-por-terremoto-estos-fueron-los-anuncios-tras-consejo-de-ministros/",
+     "rol": "acto"
     },
     {
      "n": "Infobae · Gobierno firma 11 decretos para atender emergencia por terremoto en 16 departamentos",
-     "u": "https://www.infobae.com/colombia/2026/09/10/gobierno-firma-11-decretos-para-atender-emergencia-por-terremoto-en-16-departamentos/"
+     "u": "https://www.infobae.com/colombia/2026/09/10/gobierno-firma-11-decretos-para-atender-emergencia-por-terremoto-en-16-departamentos/",
+     "rol": "acto"
     },
     {
      "n": "El Universal (Cartagena) · De la Espriella firmó 11 nuevos decretos para recuperación y reconstrucción tras terremoto",
-     "u": "https://www.eluniversal.com.co/colombia/2026/09/10/de-la-espriella-firmo-11-nuevos-decretos-para-recuperacion-y-reconstruccion-tras-terremoto/"
+     "u": "https://www.eluniversal.com.co/colombia/2026/09/10/de-la-espriella-firmo-11-nuevos-decretos-para-recuperacion-y-reconstruccion-tras-terremoto/",
+     "rol": "acto"
     },
     {
      "n": "Semana · Presidente anunció 11 nuevos decretos para la reconstrucción tras el terremoto en Colombia",
-     "u": "https://www.semana.com/politica/articulo/presidente-anuncio-11-nuevos-decretos-para-la-reconstruccion-tras-el-terremoto-en-colombia/202648/"
+     "u": "https://www.semana.com/politica/articulo/presidente-anuncio-11-nuevos-decretos-para-la-reconstruccion-tras-el-terremoto-en-colombia/202648/",
+     "rol": "acto"
     }
    ],
    "nivelGobierno": "nacional",
@@ -1163,6 +1265,57 @@
      "base": "decretos-reconstruccion-terremoto"
     }
    }
+  },
+  {
+   "fecha": "2026-09-09",
+   "precision": "exacta",
+   "categoria": "gobierno",
+   "titulo": "Un reporte de la Fuerza Aeroespacial, entregado tras una tutela, registra 103 trayectos presidenciales y $1.117 millones en 18 días, con 64 vuelos de menos de diez minutos",
+   "id": "vuelos-presidenciales-reporte-fac",
+   "nivelGobierno": "nacional",
+   "categoriaProbatoria": "hecho-probado",
+   "tipoMedicion": "actividad",
+   "estadoProcesal": "en-revision-judicial",
+   "tipoEvidencia": "dato-oficial",
+   "indicadores": [
+    "I-07"
+   ],
+   "indicadoresPor": {
+    "I-07": {
+     "via": "derecho de petición vencido sin respuesta y documento entregado tras tutela",
+     "base": "vuelos-presidenciales-reporte-fac"
+    }
+   },
+   "detalle": "El representante a la Cámara José Luis Bohórquez (Pacto Histórico, Boyacá) radicó un derecho de petición ante el Ministerio de Defensa por los desplazamientos aéreos del presidente. El Ministerio guardó silencio durante semanas y solo respondió después de que Bohórquez interpusiera una tutela y un juzgado la admitiera. La respuesta, fechada el 8 de septiembre de 2026, incluye un reporte elaborado por la Fuerza Aeroespacial Colombiana con fechas, aeronaves, rutas, horas de vuelo, número de integrantes de la comitiva y costos. Entre el 7 y el 24 de agosto de 2026 —18 días— el documento registra 103 trayectos aéreos por $1.117.705.478,79; de ellos, 64 duraron menos de diez minutos y 36 corresponden al tramo entre el aeropuerto de Barranquilla y la sede Adelita de Char. Un tramo entre esos dos puntos en un UH-60L con cuatro integrantes de comitiva costó $1.812.489,64, y otro entre los mismos puntos, entre las 7:05 y las 7:15 de la mañana, $3.624.979,29. Las aeronaves reportadas incluyen helicópteros UH-60L Black Hawk y el Boeing 737-700 BBJ presidencial. El 17 de septiembre un juez le dio al Ministerio de Defensa un plazo de 48 horas para entregar la información completa, de modo que la entrega no se dio por satisfecha.",
+   "tipoFuente": "verificado",
+   "contrapunto": "Lo que está documentado es el núcleo de cifras, y viene de un documento de la propia entidad entregado por obligación judicial: eso no lo degrada que quien lo pidiera sea de oposición —se clasifica el encuadre, no la evidencia—. Pero hay que separar tres cosas de ese núcleo. Primero, la proyección: la cifra de que, al mismo ritmo, el helicóptero presidencial costaría $22.665 millones en un año, casi el doble de lo que gastó el gobierno Petro en cuatro, es una proyección de la revista Cambio y no un hecho registrado; supone que el ritmo de 18 días se sostiene doce meses. Segundo, la lectura: «derroche», «caprichos» o «no hay austeridad» es el encuadre de un congresista de oposición, legítimo y comprobable como opinión, no como dato. Tercero, la cifra de los 36 trayectos circula en tres formulaciones distintas como si fueran la misma —unos medios dicen que duraron menos de cinco minutos, otros que menos de seis, y otros los describen como el tramo Barranquilla–Adelita de Char—; acá se deja la tercera, que es la que el reporte permite verificar, y se dejan dichas las otras dos. NO se incorpora la afirmación de que «34 vuelos registran cero pasajeros», que circuló en redes: no aparece en ninguna de las fuentes revisadas y sería verificable en el documento primario si trae columna de comitiva. Y la simetría, sin la cual esto sería propaganda y no control político: los cuestionamientos por uso de aviones y helicópteros oficiales no empiezan con este gobierno, fueron tema recurrente de la oposición durante los cuatro años de Petro, y durante la campaña el hoy vicepresidente José Manuel Restrepo enumeró entre lo que eliminarían «el helicóptero», en referencia al uso que le daba la entonces vicepresidenta Francia Márquez. Falta el contrargumento oficial: a la fecha no se registró respuesta sustantiva de Presidencia ni de la Casa Militar sobre protocolos de seguridad.",
+   "fuentes": [
+    {
+     "n": "Cambio · Vuelos presidenciales de Abelardo de la Espriella: la tutela que reveló $1.117 millones en gastos en 18 días",
+     "u": "https://cambiocolombia.com/pais/articulo/2026/9/103-vuelos-presidenciales-en-18-dias-el-millonario-gasto-del-helicoptero-de-de-la-espriella",
+     "rol": "acto"
+    },
+    {
+     "n": "Publimetro · Abelardo De La Espriella y sus vuelos: más de COP 1.000 millones en 18 días y trayectos en helicóptero de 5 minutos",
+     "u": "https://www.publimetro.co/noticias/2026/09/09/abelardo-de-la-espriella-y-sus-vuelos-mas-de-cop-1000-millones-en-18-dias-y-trayectos-en-helicoptero-de-5-minutos/",
+     "rol": "acto"
+    },
+    {
+     "n": "Colombia.com · Vuelos presidenciales de Abelardo de la Espriella superaron los $1.117 millones en 18 días",
+     "u": "https://www.colombia.com/actualidad/nacionales/vuelos-de-abelardo-de-la-espriella-han-costado-mas-de-1117-millones-599762",
+     "rol": "acto"
+    },
+    {
+     "n": "El Cronista · De la Espriella gastó $1.117 millones en vuelos oficiales en solo 18 días",
+     "u": "https://elcronista.co/destacadas/de-la-espriella-gasto-1-117-millones-en-vuelos-oficiales-en-solo-18-dias",
+     "rol": "acto"
+    },
+    {
+     "n": "Infobae · Ministerio de Defensa deberá entregar información completa sobre los vuelos de Abelardo de la Espriella: juez le dio plazo de 48 horas",
+     "u": "https://www.infobae.com/colombia/2026/09/17/ministerio-de-defensa-debera-entregar-informacion-completa-sobre-los-vuelos-de-abelardo-de-la-espriella-juez-le-dio-plazo-de-48-horas/",
+     "rol": "efecto"
+    }
+   ]
   },
   {
    "fecha": "2026-09-08",
@@ -1244,6 +1397,46 @@
     {
      "n": "Infobae · Marco Rubio dejó abierta la posibilidad de instalar una base militar de Estados Unidos en Colombia",
      "u": "https://www.infobae.com/colombia/2026/09/09/marco-rubio-dejo-abierta-la-posibilidad-de-instalar-una-base-militar-de-estados-unidos-en-colombia-tras-reunion-con-abelardo-de-la-espriella/"
+    }
+   ]
+  },
+  {
+   "fecha": "2026-09-08",
+   "precision": "exacta",
+   "categoria": "servicios",
+   "titulo": "La ministra de Minas advierte en la Comisión Quinta que «la tarifa tiene que subir» por El Niño y el gas caro, sin fijar porcentaje ni fecha",
+   "id": "minminas-advierte-alza-tarifas",
+   "nivelGobierno": "nacional",
+   "categoriaProbatoria": "hecho-probado",
+   "tipoMedicion": "contexto-estructural",
+   "detalle": "En un debate de control político en la Comisión Quinta de la Cámara de Representantes, el 8 de septiembre de 2026, la ministra de Minas y Energía, María Nohemí Arboleda, dijo: «No nos digamos mentiras, la tarifa tiene que subir. ¿Por qué la tarifa tiene que subir? Porque ya los recursos no son los que van a atender toda la demanda». La razón que declaró es una combinación de factores del sistema eléctrico: el avance del fenómeno de El Niño, la menor disponibilidad de generación hidráulica, el mayor uso de plantas térmicas y el encarecimiento del gas, incluido el importado. En el mismo debate señaló que medidas recientes sobre el mercado eléctrico bajaron el precio de bolsa de cerca de $1.000 a $640 en el primer día de aplicación de una de las resoluciones, y dijo a los congresistas: «yo no les voy a prometer lo que no les puedo prometer».",
+   "tipoFuente": "declaracion",
+   "contrapunto": "El titular que circuló —«la ministra anunció el aumento»— dice algo distinto de lo que pasó, y la diferencia importa: no hubo anuncio de gobierno. La ministra no fijó porcentaje ni fecha y no consta ningún acto administrativo que suba una tarifa; lo que hay es una advertencia condicionada a un fenómeno climático, dicha en un debate de control político. Por eso esta entrada se clasifica como una lectura del contexto estructural del sector y no como una medida del Gobierno: una advertencia no es una decisión, y leerla como tal invierte quién hizo qué. El contrapeso también es de ella y va registrado: en la misma sesión reportó una caída del precio de bolsa tras una resolución reciente, cifra que no se ha contrastado de manera independiente en este registro.",
+   "fuentes": [
+    {
+     "n": "Semana · Ministra de Minas, María Nohemí Arboleda, dejó preocupados a congresistas de la Comisión V: «Tarifas de energía tienen que subir»",
+     "u": "https://www.semana.com/economia/macroeconomia/articulo/ministra-de-minas-maria-nohemi-arboleda-dejo-preocupados-a-congresistas-de-la-comision-v-tarifas-de-energia-tienen-que-subir/202624/",
+     "rol": "acto"
+    },
+    {
+     "n": "Radio Hoy · MinMinas advierte que las tarifas de energía podrían subir: «yo no les voy a prometer lo que no les puedo prometer»",
+     "u": "https://www.radiohoy.com/2026/09/08/minminas-advierte-que-las-tarifas-de-energia-podrian-subir-yo-no-les-voy-a-prometer-lo-que-no-les-puedo-prometer/815747/",
+     "rol": "acto"
+    },
+    {
+     "n": "Infobae · Servicio de energía y de gas subirían de precio en Colombia: el Gobierno advirtió sobre el mayor uso del servicio público",
+     "u": "https://www.infobae.com/colombia/2026/09/09/servicio-de-energia-y-de-gas-subirian-de-precio-en-colombia-el-gobierno-advirtio-sobre-el-mayor-uso-del-servicio-publico/",
+     "rol": "acto"
+    },
+    {
+     "n": "El Norte · Gobierno anuncia que se incrementarían las tarifas de energía",
+     "u": "https://elnorte.com.co/tarifas-energia-subirian-colombia-el-nino-gas-caro-termicas/",
+     "rol": "acto"
+    },
+    {
+     "n": "La Razón · Ministra de Minas advierte que el alto costo del gas y El Niño encarecerán el servicio de energía en Colombia",
+     "u": "https://larazon.co/ministra-de-minas-advierte-que-el-alto-costo-del-gas-y-el-nino-encareceran-el-servicio-de-energia-en-colombia/",
+     "rol": "acto"
     }
    ]
   },
@@ -3897,8 +4090,13 @@
    "categoriaProbatoria": "hecho-probado",
    "tipoMedicion": "resultado",
    "detalle": "El Gobierno confirma que el costo de la emergencia supera lo previsto y que tendrá que gastar más de lo calculado, con más endeudamiento.",
-   "fuente": "Infobae",
-   "url": "https://www.infobae.com/colombia/2026/08/17/abelardo-de-la-espriella-enfrenta-un-nuevo-descuadre-de-dinero-por-el-terremoto-y-confirman-que-tendria-que-gastar-mas-nos-vamos-a-endeudar/"
+   "fuentes": [
+    {
+     "n": "Infobae",
+     "u": "https://www.infobae.com/colombia/2026/08/17/abelardo-de-la-espriella-enfrenta-un-nuevo-descuadre-de-dinero-por-el-terremoto-y-confirman-que-tendria-que-gastar-mas-nos-vamos-a-endeudar/",
+     "rol": "acto"
+    }
+   ]
   },
   {
    "fecha": "2026-08-17",
@@ -3909,8 +4107,13 @@
    "tipoMedicion": "contexto-estructural",
    "detalle": "Tras la primera semana, los rescatistas israelíes informaron que no hallaron sobrevivientes. El general (r) Yossi Pinto destacó la complejidad de la emergencia y la colaboración con autoridades locales.",
    "tipoFuente": "verificado",
-   "fuente": "Infobae",
-   "url": "https://www.infobae.com/colombia/2026/08/17/rescatistas-israelies-entregaron-desesperanzador-balance-tras-primera-semana-del-terremoto-de-magnitud-74-en-colombia-ningun-sobreviviente/"
+   "fuentes": [
+    {
+     "n": "Infobae",
+     "u": "https://www.infobae.com/colombia/2026/08/17/rescatistas-israelies-entregaron-desesperanzador-balance-tras-primera-semana-del-terremoto-de-magnitud-74-en-colombia-ningun-sobreviviente/",
+     "rol": "acto"
+    }
+   ]
   },
   {
    "fecha": "2026-08-16",
@@ -3975,8 +4178,6 @@
    "tipoMedicion": "actividad",
    "detalle": "En la llamada, el presidente colombiano agradeció la ayuda humanitaria israelí y la presencia de rescatistas en territorio colombiano tras el terremoto del 10 de agosto.",
    "tipoFuente": "verificado",
-   "fuente": "teleSUR",
-   "url": "https://www.telesurtv.net/israel-celebra-un-nuevo-capitulo-en-las-relaciones-con-colombia-tras-conversar-con-de-la-espriella/",
    "fuentes": [
     {
      "n": "teleSUR",
@@ -4001,8 +4202,13 @@
    "tipoMedicion": "actividad",
    "detalle": "Revierte la posición histórica del país. El reconocimiento acompaña el giro general hacia Israel, Marruecos y Estados Unidos.",
    "contrapunto": "Varios medios y analistas lo cuestionan: los Altos del Golán son territorio sirio ocupado según resoluciones de Naciones Unidas, y su anexión no está reconocida por la ONU.",
-   "fuente": "Pulzo",
-   "url": "https://www.pulzo.com/mundo/colombia-restablece-relaciones-con-israel-respaldo-a-netanyahu-y-reconocimiento-sobre-golan-PP5275952A"
+   "fuentes": [
+    {
+     "n": "Pulzo",
+     "u": "https://www.pulzo.com/mundo/colombia-restablece-relaciones-con-israel-respaldo-a-netanyahu-y-reconocimiento-sobre-golan-PP5275952A",
+     "rol": "acto"
+    }
+   ]
   },
   {
    "fecha": "2026-08-15",
@@ -4014,8 +4220,6 @@
    "detalle": "El expresidente Gustavo Petro afirmó que el equipo llegó cuatro días después del sismo, no participó en rescates y se retiró sin sacar a nadie de los escombros, pese a que —según él— aún se escuchaban voces y las autoridades locales pidieron que se quedara. Roni Kaplan, portavoz de las Fuerzas de Defensa de Israel, defendió la misión y destacó el profesionalismo de los bomberos colombianos.",
    "contrapunto": "Las dos versiones están en disputa y ninguna ha sido dirimida por un tercero independiente. URBIS registra ambas: la crítica de Petro y la respuesta oficial israelí.",
    "tipoFuente": "disputado",
-   "fuente": "Infobae",
-   "url": "https://www.infobae.com/colombia/2026/08/15/delegacion-humanitaria-israeli-que-viajo-a-colombia-para-apoyar-rescates-tras-el-sismo-desmintio-senalamiento-de-gustavo-petro-con-todo-respeto/",
    "fuentes": [
     {
      "n": "Infobae · la delegación desmiente a Petro",
@@ -4039,8 +4243,13 @@
    "categoriaProbatoria": "hecho-probado",
    "tipoMedicion": "contexto-estructural",
    "detalle": "Incluye mayor cooperación militar, lucha antidrogas, erradicación de cultivos de coca y operaciones coordinadas entre las fuerzas de ambos países.",
-   "fuente": "Cambio",
-   "url": "https://cambiocolombia.com/poder/articulo/2026/8/estados-unidos-anuncia-un-paquete-de-seguridad-de-1000-millones-de-dolares-para-colombia"
+   "fuentes": [
+    {
+     "n": "Cambio",
+     "u": "https://cambiocolombia.com/poder/articulo/2026/8/estados-unidos-anuncia-un-paquete-de-seguridad-de-1000-millones-de-dolares-para-colombia",
+     "rol": "acto"
+    }
+   ]
   },
   {
    "fecha": "2026-08-14",
@@ -4051,8 +4260,6 @@
    "tipoMedicion": "contexto-estructural",
    "detalle": "Delegación de 82 personas —rescatistas, ingenieros y tecnólogos— de las Fuerzas de Defensa de Israel, bajo el Comando de Defensa Civil y su Unidad Nacional de Búsqueda y Rescate, encabezada por el general de brigada (r) Yossi Pinto. Aterrizaron en Cali el viernes 14 de agosto, cuatro días después del sismo, y comenzaron en el Hospital Universitario del Valle. ES LA ÚNICA PRESENCIA MILITAR EXTRANJERA CON UBICACIÓN CONFIRMADA EN ESTE PERIODO.",
    "tipoFuente": "verificado",
-   "fuente": "Semana",
-   "url": "https://www.semana.com/nacion/cali/articulo/delegacion-de-expertos-del-comando-de-defensa-civil-de-israel-aterrizo-en-colombia-para-brindar-ayuda-inmediata-tras-el-terremoto/202620/",
    "fuentes": [
     {
      "n": "Semana · llegada de la delegación",
@@ -4101,8 +4308,13 @@
    "categoriaProbatoria": "hecho-probado",
    "tipoMedicion": "contexto-estructural",
    "detalle": "Primer giro de una línea contingente de hasta USD 450 millones. Incluye además asistencia técnica para la respuesta al terremoto.",
-   "fuente": "El Tiempo",
-   "url": "https://www.eltiempo.com/economia/sectores/el-banco-mundial-ya-desembolso-los-us-200-millones-del-credito-al-que-colombia-accedio-para-atender-el-terremoto-3578269"
+   "fuentes": [
+    {
+     "n": "El Tiempo",
+     "u": "https://www.eltiempo.com/economia/sectores/el-banco-mundial-ya-desembolso-los-us-200-millones-del-credito-al-que-colombia-accedio-para-atender-el-terremoto-3578269",
+     "rol": "acto"
+    }
+   ]
   },
   {
    "fecha": "2026-08-13",
@@ -4112,8 +4324,12 @@
    "categoriaProbatoria": "hecho-probado",
    "tipoMedicion": "contexto-estructural",
    "detalle": "Junto con la línea del Banco Mundial, la reconstrucción queda apoyada principalmente en fondos multilaterales.",
-   "fuente": "Moncloa",
-   "url": "https://www.moncloa.com/2026/08/13/reconstruccion-colombia-empresas-espanolas-3414876/"
+   "fuentes": [
+    {
+     "n": "Moncloa",
+     "u": "https://www.moncloa.com/2026/08/13/reconstruccion-colombia-empresas-espanolas-3414876/"
+    }
+   ]
   },
   {
    "fecha": "2026-08-13",
@@ -4124,8 +4340,13 @@
    "tipoMedicion": "actividad",
    "indicadores": [],
    "detalle": "Herramienta para acelerar el giro de recursos a la reconstrucción. El Gobierno afirmó que “cada peso girado quedará expuesto” a control público.",
-   "fuente": "Infobae",
-   "url": "https://www.infobae.com/colombia/2026/08/13/terremoto-en-colombia-que-es-la-emergencia-economica-que-declarara-abelardo-de-la-espriella-y-por-que-cada-peso-girado-quedara-expuesto/",
+   "fuentes": [
+    {
+     "n": "Infobae",
+     "u": "https://www.infobae.com/colombia/2026/08/13/terremoto-en-colombia-que-es-la-emergencia-economica-que-declarara-abelardo-de-la-espriella-y-por-que-cada-peso-girado-quedara-expuesto/",
+     "rol": "acto"
+    }
+   ],
    "nivelGobierno": "nacional",
    "estadoProcesal": "anunciado-sin-acto",
    "tipoEvidencia": "reporte-periodistico"
@@ -4172,8 +4393,13 @@
    "tipoMedicion": "contexto-estructural",
    "detalle": "El secretario de Defensa de EE. UU. afirmó que el Gobierno de De la Espriella solicitó acciones militares conjuntas contra el narcoterrorismo. El anuncio se hizo en Ciudad de Panamá, en la cumbre donde Colombia se sumó a la coalición antidrogas impulsada por Trump.",
    "contrapunto": "Una cooperación a gran escala que implique tropas estadounidenses en suelo colombiano debe pasar por el Congreso, según jurisprudencia constitucional previa. Además, no se han hecho públicas las zonas, bases ni el número de efectivos.",
-   "fuente": "Semana",
-   "url": "https://www.semana.com/mundo/articulo/colombia-permitira-acciones-militares-conjuntas-con-estados-unidos-anuncia-pete-hegseth-secretario-de-defensa/202635/"
+   "fuentes": [
+    {
+     "n": "Semana",
+     "u": "https://www.semana.com/mundo/articulo/colombia-permitira-acciones-militares-conjuntas-con-estados-unidos-anuncia-pete-hegseth-secretario-de-defensa/202635/",
+     "rol": "acto"
+    }
+   ]
   },
   {
    "fecha": "2026-08-12",
@@ -4183,8 +4409,12 @@
    "categoriaProbatoria": "hecho-probado",
    "tipoMedicion": "actividad",
    "detalle": "En la cumbre “Escudo de las Américas” en Ciudad de Panamá, Colombia se suma a la coalición de 18 países impulsada por Trump. Medellín queda designada como sede regional del programa — la única ubicación concreta anunciada hasta ahora.",
-   "fuente": "Cambio",
-   "url": "https://cambiocolombia.com/poder/articulo/2026/8/secretario-de-guerra-de-estados-unidos-dijo-que-abelardo-de-la-espriella-solicito-operaciones-militares-conjuntas-en-colombia"
+   "fuentes": [
+    {
+     "n": "Cambio",
+     "u": "https://cambiocolombia.com/poder/articulo/2026/8/secretario-de-guerra-de-estados-unidos-dijo-que-abelardo-de-la-espriella-solicito-operaciones-militares-conjuntas-en-colombia"
+    }
+   ]
   },
   {
    "fecha": "2026-08-11",
@@ -4198,8 +4428,28 @@
     "I-04"
    ],
    "detalle": "Firmado la noche del 11 de agosto tras el terremoto. La medida dura doce meses, prorrogables por un periodo igual.",
-   "fuente": "Moncloa",
-   "url": "https://www.moncloa.com/2026/08/13/reconstruccion-colombia-empresas-espanolas-3414876/",
+   "fuentes": [
+    {
+     "n": "Crowe Colombia · Decreto 1171 de 2026: Colombia activa el régimen de desastre nacional",
+     "u": "https://www.crowe.com/co/news/decreto-1171-de-2026-colombia-activa-el-regimen-de-desastre-nacional",
+     "rol": "acto"
+    },
+    {
+     "n": "Valora Analítik · El decreto del desastre activa recursos para la emergencia y crea la subcuenta «Sismo 2026»",
+     "u": "https://www.valoraanalitik.com/decreto-del-desastre-activa-recursos-para-la-emergencia-y-crea-la-subcuenta-sismo-2026/",
+     "rol": "acto"
+    },
+    {
+     "n": "Rio Consultores · Boletín 095: el Gobierno declara la situación de desastre de carácter nacional mediante el Decreto 1171 de 2026 y activa medidas tributarias transitorias",
+     "u": "https://rioconsultores.com/2026/08/25/gobierno-nacional-declara-situacion-desastre-caracter-nacional-mediante-decreto-1171-2026-activa/",
+     "rol": "acto"
+    },
+    {
+     "n": "Moncloa",
+     "u": "https://www.moncloa.com/2026/08/13/reconstruccion-colombia-empresas-espanolas-3414876/",
+     "rol": "efecto"
+    }
+   ],
    "nivelGobierno": "nacional",
    "estadoProcesal": "en-firme",
    "tipoEvidencia": "documento-primario",
@@ -4243,8 +4493,13 @@
    "categoriaProbatoria": "hecho-probado",
    "tipoMedicion": "resultado",
    "detalle": "La mayor emergencia del arranque de gobierno. El detalle completo (víctimas, daños y réplicas) está en la alerta del mapa de URBIS.",
-   "fuente": "Infobae",
-   "url": "https://www.infobae.com/colombia/2026/08/10/por-que-el-temblor-en-colombia-de-este-lunes-10-de-agosto-duro-una-eternidad-el-servicio-geologico-explico-que-paso/"
+   "fuentes": [
+    {
+     "n": "Infobae",
+     "u": "https://www.infobae.com/colombia/2026/08/10/por-que-el-temblor-en-colombia-de-este-lunes-10-de-agosto-duro-una-eternidad-el-servicio-geologico-explico-que-paso/",
+     "rol": "acto"
+    }
+   ]
   },
   {
    "fecha": "2026-08-07",
@@ -4254,8 +4509,12 @@
    "categoriaProbatoria": "hecho-probado",
    "tipoMedicion": "actividad",
    "detalle": "Se normalizan las relaciones institucionales, diplomáticas y económicas rotas por Gustavo Petro en mayo de 2024. Se acuerda eliminar el requisito de visa y avanzar en la apertura de una embajada en Jerusalén.",
-   "fuente": "El País (Cali)",
-   "url": "https://www.elpais.com.co/politica/al-asumir-la-presidencia-de-la-espriella-retirara-la-demanda-de-colombia-contra-israel-por-genocidio-en-gaza-1644.html"
+   "fuentes": [
+    {
+     "n": "El País (Cali)",
+     "u": "https://www.elpais.com.co/politica/al-asumir-la-presidencia-de-la-espriella-retirara-la-demanda-de-colombia-contra-israel-por-genocidio-en-gaza-1644.html"
+    }
+   ]
   },
   {
    "fecha": "2026-08-07",
@@ -4265,8 +4524,13 @@
    "categoriaProbatoria": "en-circulacion",
    "tipoMedicion": "contexto-estructural",
    "detalle": "Según The New York Times, el acuerdo con De la Espriella convierte al país en pieza central de la estrategia estadounidense para la región.",
-   "fuente": "Infobae",
-   "url": "https://www.infobae.com/colombia/2026/08/07/colombia-se-convierte-en-eje-de-ofensiva-militar-de-trump-contra-narcotrafico-en-la-region-tras-acuerdo-con-de-la-espriella-segun-de-new-york-times/"
+   "fuentes": [
+    {
+     "n": "Infobae",
+     "u": "https://www.infobae.com/colombia/2026/08/07/colombia-se-convierte-en-eje-de-ofensiva-militar-de-trump-contra-narcotrafico-en-la-region-tras-acuerdo-con-de-la-espriella-segun-de-new-york-times/",
+     "rol": "acto"
+    }
+   ]
   },
   {
    "fecha": "2026-08-07",
@@ -4276,8 +4540,13 @@
    "categoriaProbatoria": "hecho-probado",
    "tipoMedicion": "actividad",
    "detalle": "El equipo anticorrupción pidió suspender contratos de último momento y congelar desembolsos por más de $39.000 millones durante el proceso de liquidación del ministerio.",
-   "fuente": "Cambio",
-   "url": "https://cambiocolombia.com/pais/articulo/2026/8/empalme-de-abelardo-de-la-espriella-pide-frenar-contratacion-de-ultima-hora-en-el-ministerio-de-la-igualdad"
+   "fuentes": [
+    {
+     "n": "Cambio",
+     "u": "https://cambiocolombia.com/pais/articulo/2026/8/empalme-de-abelardo-de-la-espriella-pide-frenar-contratacion-de-ultima-hora-en-el-ministerio-de-la-igualdad",
+     "rol": "acto"
+    }
+   ]
   },
   {
    "fecha": "2026-08-07",
@@ -4287,8 +4556,6 @@
    "categoriaProbatoria": "hecho-probado",
    "tipoMedicion": "actividad",
    "detalle": "Primer equipo de gobierno completo, oficializado el mismo día de la posesión mediante el Decreto 1136: 18 ministros (nueve mujeres y nueve hombres). Cambio Radical obtuvo la mayor cuota burocrática del gabinete, con el Ministerio del Interior (Rodrigo Lara), el de Transporte (Elsa Noguera) y el ICA (Lina María Garrido).",
-   "fuente": "La República",
-   "url": "https://www.larepublica.co/economia/estos-son-los-18-ministros-con-los-que-abelardo-de-la-espriella-comienza-su-mandato-4453827",
    "contrapunto": "Durante la campaña, De la Espriella había repetido que su sello sería gobernar sin \"políticos de siempre\" ni \"politiquería de cuotas burocráticas\", bajo la consigna de \"los nunca\" —quienes \"nunca han vivido del Estado\", \"nunca se han robado un peso\"— frente a \"los de siempre\". Medios como La Silla Vacía y Cambio señalaron que el gabinete contradijo ese discurso: la ministra de Transporte, Elsa Noguera, es una figura asociada al clan Char —uno de los más señalados en la Costa Caribe por prácticas clientelistas—, tras haber sido su cuota en la Alcaldía y la Gobernación del Atlántico y en el Ministerio de Vivienda del gobierno de Juan Manuel Santos; el ministro del Interior, Rodrigo Lara, tampoco fue leído por esos medios como una ruptura con la política tradicional. La revista Cambio tituló que \"la vieja clase política vuelve al gobierno con De la Espriella\", en contraste con la promesa de campaña.",
    "tipoFuente": "verificado",
    "fuentes": [
@@ -4307,6 +4574,11 @@
     {
      "n": "Sur · La vieja clase política vuelve al gobierno con De la Espriella",
      "u": "https://www.sur.org.co/la-vieja-clase-politica-vuelve-al-gobierno-con-de-la-espriella/"
+    },
+    {
+     "n": "La República",
+     "u": "https://www.larepublica.co/economia/estos-son-los-18-ministros-con-los-que-abelardo-de-la-espriella-comienza-su-mandato-4453827",
+     "rol": "acto"
     }
    ]
   },
@@ -4319,8 +4591,13 @@
    "tipoMedicion": "actividad",
    "detalle": "Entre ellos el Decreto 1134, que nombra al abogado Andrés Barreto como secretario jurídico de la Presidencia.",
    "contrapunto": "Había anunciado cerca de 90 decretos para el primer día; la cifra real quedó muy por debajo de esa promesa.",
-   "fuente": "Portafolio",
-   "url": "https://www.portafolio.co/economia/gobierno/estos-fueron-los-decretos-que-expidio-abelardo-de-la-espriella-en-su-primer-dia-como-presidente-499958"
+   "fuentes": [
+    {
+     "n": "Portafolio",
+     "u": "https://www.portafolio.co/economia/gobierno/estos-fueron-los-decretos-que-expidio-abelardo-de-la-espriella-en-su-primer-dia-como-presidente-499958",
+     "rol": "acto"
+    }
+   ]
   },
   {
    "fecha": "2026-08-07",
@@ -4330,8 +4607,13 @@
    "categoriaProbatoria": "hecho-probado",
    "tipoMedicion": "actividad",
    "detalle": "Primera investidura presidencial de Colombia celebrada fuera de Bogotá. En su primer discurso abordó seguridad, salud, educación, economía y justicia.",
-   "fuente": "Semana",
-   "url": "https://www.semana.com/politica/articulo/asi-fue-la-posesion-de-abelardo-de-la-espriella-como-presidente-de-colombia-2026-al-2030-reviva-el-minuto-a-minuto/202630/"
+   "fuentes": [
+    {
+     "n": "Semana",
+     "u": "https://www.semana.com/politica/articulo/asi-fue-la-posesion-de-abelardo-de-la-espriella-como-presidente-de-colombia-2026-al-2030-reviva-el-minuto-a-minuto/202630/",
+     "rol": "acto"
+    }
+   ]
   },
   {
    "fecha": "2026-08-06",
@@ -4342,8 +4624,13 @@
    "tipoMedicion": "actividad",
    "indicadores": [],
    "detalle": "Expedido por el gobierno saliente un día antes de la posesión, para agilizar la conformación del nuevo gabinete.",
-   "fuente": "El Heraldo",
-   "url": "https://www.elheraldo.co/colombia/2026/08/06/este-es-el-decreto-que-facilitara-a-abelardo-de-la-espriella-el-nombramiento-de-su-gabinete-desde-el-7-de-agosto/",
+   "fuentes": [
+    {
+     "n": "El Heraldo",
+     "u": "https://www.elheraldo.co/colombia/2026/08/06/este-es-el-decreto-que-facilitara-a-abelardo-de-la-espriella-el-nombramiento-de-su-gabinete-desde-el-7-de-agosto/",
+     "rol": "acto"
+    }
+   ],
    "nivelGobierno": "nacional",
    "estadoProcesal": "en-firme",
    "tipoEvidencia": "documento-primario"
@@ -4357,8 +4644,13 @@
    "tipoMedicion": "actividad",
    "detalle": "El equipo de empalme presentó denuncias por presuntas irregularidades administrativas y posible corrupción en contratos del Ministerio de Defensa, la Unidad Nacional de Protección (UNP) y Cenit, filial de Ecopetrol.",
    "contrapunto": "Son denuncias del gobierno entrante contra la administración saliente de Gustavo Petro. A esta fecha son señalamientos en investigación, no fallos: ningún organismo de control ha emitido decisión de fondo.",
-   "fuente": "Semana",
-   "url": "https://www.semana.com/politica/articulo/equipo-de-abelardo-de-la-espriella-revela-nuevos-hallazgos-de-corrupcion-en-el-gobierno-petro-por-mas-de-370000-millones/202633/"
+   "fuentes": [
+    {
+     "n": "Semana",
+     "u": "https://www.semana.com/politica/articulo/equipo-de-abelardo-de-la-espriella-revela-nuevos-hallazgos-de-corrupcion-en-el-gobierno-petro-por-mas-de-370000-millones/202633/",
+     "rol": "acto"
+    }
+   ]
   },
   {
    "fecha": "2026-08-05",
@@ -4368,8 +4660,12 @@
    "categoriaProbatoria": "atribucion-causal",
    "tipoMedicion": "contexto-estructural",
    "detalle": "El contrato habría sido adjudicado pese a una orden judicial que suspendía el proceso de selección.",
-   "fuente": "Cambio",
-   "url": "https://cambiocolombia.com/poder/articulo/2026/8/defensores-de-la-patria-denuncia-de-nuevo-presuntas-irregularidades-en-contratacion-por-mas-de-370-mil-millones-de-pesos"
+   "fuentes": [
+    {
+     "n": "Cambio",
+     "u": "https://cambiocolombia.com/poder/articulo/2026/8/defensores-de-la-patria-denuncia-de-nuevo-presuntas-irregularidades-en-contratacion-por-mas-de-370-mil-millones-de-pesos"
+    }
+   ]
   },
   {
    "fecha": "2026-08-04",
@@ -4416,8 +4712,13 @@
    "categoriaProbatoria": "correlacion",
    "tipoMedicion": "contexto-estructural",
    "detalle": "Enfrentamiento público entre ministras del gobierno saliente y del entrante por la adjudicación de contratos de infraestructura en La Guajira durante el empalme.",
-   "fuente": "Infobae",
-   "url": "https://www.infobae.com/colombia/2026/08/04/pelea-entre-ministras-de-petro-y-de-la-espriella-por-millonarios-contratos-del-invias-para-la-guajira/"
+   "fuentes": [
+    {
+     "n": "Infobae",
+     "u": "https://www.infobae.com/colombia/2026/08/04/pelea-entre-ministras-de-petro-y-de-la-espriella-por-millonarios-contratos-del-invias-para-la-guajira/",
+     "rol": "acto"
+    }
+   ]
   },
   {
    "fecha": "2026-07-19",
@@ -5207,7 +5508,7 @@
     "estado": "senalamiento",
     "nivelGobierno": "nacional",
     "titulo": "La ministra de Minas la nombró para auditar el FENOGE y al día siguiente quedó elegida directora, con honorarios 32 % más altos que su antecesor",
-    "queSeConfirmo": "Nada por parte de un organismo de control. Dos investigaciones periodísticas documentaron la cronología y las cifras: Melba Rocío Pérez Tuta fue designada por la ministra de Minas y Energía, María Nohemí Arboleda, para hacer una revisión del FENOGE, y al día siguiente la propia ministra presentó su candidatura al Comité Directivo, que la eligió directora ejecutiva para el período del 14 de agosto al 31 de diciembre de 2026. Sus honorarios quedaron en 61,88 millones de pesos mensuales, un 32,2 % por encima de los de su antecesor, con contrato por 282.585.333 pesos incluido IVA, en medio de una campaña oficial de austeridad. Nueve contratistas salieron de la entidad. URBIS no encontró denuncia formal ni proceso abierto por Contraloría, Procuraduría o Fiscalía. Lo que circuló además —que sea «amiga del presidente»— NO está probado y no se registra: la lectura de conflicto de interés se sostiene sola con la cronología y las cifras.",
+    "queSeConfirmo": "Nada por parte de un organismo de control. Dos investigaciones periodísticas documentaron la cronología y las cifras: Melba Rocío Pérez Tuta fue designada por la ministra de Minas y Energía, María Nohemí Arboleda, para hacer una revisión del FENOGE, y al día siguiente la propia ministra presentó su candidatura al Comité Directivo, que la eligió directora ejecutiva para el período del 14 de agosto al 31 de diciembre de 2026. Sus honorarios quedaron en 61,88 millones de pesos mensuales, un 32,2 % por encima de la cifra de referencia, con contrato por 282.585.333 pesos incluido IVA, fijados por el Comité Directivo en sesión extraordinaria del 14 de agosto de 2026 que consta en el Acta 82 y que presidió la propia ministra, nombrada una semana antes. Sobre contra qué se mide ese 32,2 % la prensa da dos lecturas y acá van las dos sin elegir: unos medios lo cuentan frente a los honorarios de su antecesor y otros frente a los 46,8 millones mensuales previstos para el cargo en 2026, en medio de una campaña oficial de austeridad. Nueve contratistas salieron de la entidad. URBIS no encontró denuncia formal ni proceso abierto por Contraloría, Procuraduría o Fiscalía. Lo que circuló además —que sea «amiga del presidente»— NO está probado y no se registra: la lectura de conflicto de interés se sostiene sola con la cronología y las cifras.",
     "quienLoConfirmo": "Ninguna autoridad. Lo publicaron la revista Cambio y la Unidad Investigativa de Caracol Radio.",
     "fecha": "2026-08-14",
     "monto": 282585333,
@@ -5217,8 +5518,8 @@
     ],
     "fuentes": [
      {
-      "n": "Revista Cambio · los honorarios y el contrato de la nueva directora del FENOGE",
-      "u": "https://cambiocolombia.com/"
+      "n": "Cambio · Fenoge aumentó 32 por ciento los honorarios de su nueva directora, a pesar de los anuncios de austeridad del nuevo gobierno",
+      "u": "https://cambiocolombia.com/poder/articulo/2026/9/fenoge-aumento-32-por-ciento-los-honorarios-de-su-nueva-directora-a-pesar-de-los-anuncios-de-austeridad-del-nuevo-gobierno"
      },
      {
       "n": "Unidad Investigativa de Caracol Radio · la designación y la elección",

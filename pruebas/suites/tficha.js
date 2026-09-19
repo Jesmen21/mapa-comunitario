@@ -534,10 +534,15 @@ const server = http.createServer((req, res) => {
       estados: (cr.casos || []).map(c => c.estado).sort(),
       dom: cbEl ? cbEl.textContent.slice(0, 2000) : '',
       domFalta: cbEl ? cbEl.className.indexOf('falta') >= 0 : false,
-      /* El Decreto 1171 es el caso a la vista: declara I-04, cuenta en la
-         cifra, y su rol de fuente no se puede verificar. */
-      d1171: (cr.casos || []).filter(c => /Decreto 1171/.test(c.titulo))
-                             .map(c => c.estado).join('')
+      /* Los casos que el recuento nombra, por su título. NO se pide uno por
+         su nombre: el Decreto 1171 estaba escrito acá desde la v966 y al
+         resolverlo esta aserción se puso roja por un cambio legítimo, que es
+         la constante del material metida en la comprobación de la v890. Lo
+         que hay que medir es la FORMA —que el recuento nombre los que no se
+         pudieron comprobar, sean los que sean—, porque eso es lo que permite
+         ir a mirar cuál es. */
+      titulos: (cr.casos || []).filter(c => c.estado !== 'ok')
+                               .map(c => String(c.titulo || '').slice(0, 90))
     };
 
     /* `fichaDe` sin registro: caía en `{}` y devolvía un VEREDICTO sobre la
@@ -913,23 +918,41 @@ const server = http.createServer((req, res) => {
      en la ficha: desde la pantalla se leía como que había pasado. */
   const cb = r.cober || {};
   console.log('  cobertura de rol: ' + JSON.stringify({ n: cb.n, corrio: cb.corrio,
-    sinCorrer: cb.sinCorrer, por: cb.por, d1171: cb.d1171 }));
+    sinCorrer: cb.sinCorrer, por: cb.por, titulos: cb.titulos }));
   chk(cb.n >= 4 && cb.sinCorrer > 0,
       'MATERIAL · hay entradas declarantes sobre las que la comprobacion NO corre (' +
       cb.corrio + ' de ' + cb.n + ' · ' + cb.sinCorrer + ' sin correr)');
-  chk(cb.d1171 === 'no-comprobable-esquema-antiguo',
-      'el Decreto 1171 sale como no comprobable por esquema antiguo, no como comprobado (' +
-      (cb.d1171 || 'no aparece') + ')');
-  chk((cb.por || {})['sin-declarar'] > 0 &&
-      (cb.por || {})['no-comprobable-esquema-antiguo'] > 0,
-      'y las dos causas se cuentan aparte: una pide un renglon y la otra una migracion (' +
+  /* Las tres de abajo se dieron vuelta al migrar las veinte entradas de la
+     forma antigua. La v966 medía que el Decreto 1171 estuviera EXENTO por su
+     esquema; ahora lo que hay que medir es que ya no lo esté, y que ninguna
+     otra lo esté tampoco — es la misma propiedad por el otro lado, como la
+     v876 con la estructura de edades y la v887 con los marcos a trazos.
+     La que manda es la primera: sin ella, devolver una entrada a `fuente` +
+     `url` volvería a apagar la guarda de rol sin que nadie se enterara. */
+  chk((cb.por || {})['no-comprobable-esquema-antiguo'] === 0,
+      'ninguna entrada declarante queda exenta por esquema antiguo: la migracion no se deshace (' +
+      JSON.stringify(cb.por) + ')');
+  chk((cb.titulos || []).length === cb.sinCorrer,
+      'el recuento nombra uno por uno los casos que no se pudieron comprobar (' +
+      (cb.titulos || []).length + ' nombrados de ' + cb.sinCorrer + ' sin correr)');
+  /* Las CAUSAS se siguen contando aparte aunque una esté hoy en cero: que el
+     recuento las nombre a las cuatro es lo que impide que mañana se fundan.
+     Que la del esquema esté vacía es el resultado de la migración, no una
+     guarda sin material — su mecanismo lo vigila `revisar.js`, que exige que
+     `rolDeFuentes` conserve su rama de la forma antigua. */
+  chk(['ok', 'sin-acto', 'sin-declarar', 'no-comprobable-esquema-antiguo']
+        .every(k => typeof (cb.por || {})[k] === 'number') &&
+      (cb.por || {})['sin-declarar'] > 0,
+      'las cuatro causas se siguen contando aparte, con la viva en su casilla (' +
       JSON.stringify(cb.por) + ')');
   chk(/comprobada en \d+ de \d+/.test(cb.dom || '') && /NO pudo correr/.test(cb.dom || '') &&
       cb.domFalta === true,
       'y la ficha lo dice con su recuento, no lo deja ausente (' +
       String(cb.dom || '').slice(0, 70) + ')');
-  chk(/Decreto 1171/.test(cb.dom || '') && /esquema antiguo/.test(cb.dom || ''),
-      'nombrando el caso, para que se pueda ir a mirar cual es');
+  chk((cb.titulos || []).length > 0 &&
+      (cb.titulos || []).every(t => String(cb.dom || '').indexOf(t.slice(0, 40)) >= 0),
+      'y los nombra EN LA PANTALLA, para que se pueda ir a mirar cual es (' +
+      (cb.titulos || []).map(t => t.slice(0, 44)).join(' | ') + ')');
   chk(vl.n13 === 1 && (vl.vias13 || []).length === 1,
       'I-13 cuenta 1 y entra por una sola via, ahora que su acto esta registrado (' +
       vl.n13 + ' · ' + (vl.vias13 || []).join(' · ').slice(0, 60) + ')');

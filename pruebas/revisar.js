@@ -1048,7 +1048,11 @@ console.log('\n  -- la ficha del gobernante --');
        un registro que crece no se castiga, y des-declarar un contrargumento
        —que es lo que había que impedir— sigue saliendo en rojo. */
     const revisados = nEntradas - sinContra.length;
-    const PISO_REVISADOS = 0;
+    /* Sube a 1 con la v967: la entrada del recorte al deporte trae la
+       justificación de la ministra, que es el primer contrargumento oficial
+       revisado del registro. El trinquete existe para que no se pueda
+       des-declarar. */
+    const PISO_REVISADOS = 1;
     comprobar('lo revisado del contrargumento oficial solo puede subir',
       revisados >= PISO_REVISADOS,
       revisados + ' revisados de ' + nEntradas + ' (piso ' + PISO_REVISADOS + ') · ' +
