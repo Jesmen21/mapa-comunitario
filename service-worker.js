@@ -1,4 +1,4 @@
-const URBIS_CACHE = 'urbis-v967-las-veinte-migradas-y-el-caso-que-no-se-pudo-cerrar';
+const URBIS_CACHE = 'urbis-v968-incendio-las-hermosas-en-buga-y-alto-menga-controlado';
 const URBIS_ASSETS = [
   './',
   './index.html',

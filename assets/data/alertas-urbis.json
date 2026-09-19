@@ -1,6 +1,6 @@
 {
   "_comentario": "Alertas EDITORIALES del equipo URBIS (desastres verificados). Se publican editando este archivo — no requieren la hoja de cálculo ni credenciales. El mapa las dibuja junto a las que ya están en la base; si coinciden las coordenadas, se muestra una sola. Reglas: solo desastres naturales de fuente oficial, nunca violencia ni homicidios; coordenadas geocodificadas, jamás estimadas a ojo; sin fuente no se publica.",
-  "actualizado": "2026-09-18",
+  "actualizado": "2026-09-19",
   "alertas": [
     {
       "tipo": "Sismo",
@@ -26,10 +26,11 @@
       "lat": 4.4389,
       "lng": -75.2322,
       "desde": "2026-08-13",
-      "expira": "2026-09-23",
+      "expira": "2026-09-26",
       "lineas": [
         "📅 El Consejo Departamental de Gestión del Riesgo del Tolima declaró calamidad pública el 13 de agosto de 2026 por los incendios forestales que afectan al departamento; el presidente Abelardo De la Espriella oficializó la declaratoria de calamidad pública y desastre nacional el 27 de agosto. Al 12 de septiembre de 2026 la emergencia seguía activa: la UNGRD reportó, a las 8:30 a. m., 17 incendios forestales activos en el país (5 controlados), 7 de ellos en el Tolima —en las veredas Páramo y California (Cunday), el sector Piedra vía Payandé (Ibagué), La Salitre (San Luis), Guayabal (Chaparral), El Real (Rovira), El Dinde (Valle de San Juan), Llano de Olaya (Ortega) y la finca Hacienda (Alvarado)—, que sigue siendo el departamento más afectado.",
         "📊 Según un sobrevuelo de la Fuerza Aeroespacial Colombiana citado por la UNGRD (balance del 8 de septiembre, 6:30 a. m.), más de 50.000 hectáreas afectadas en unos 25 municipios del Tolima desde agosto; 2.650 productores agropecuarios afectados, pérdidas estimadas en $134.000 millones de pesos y 163.000 animales en riesgo. Solo en San Luis, uno de los municipios más golpeados, el fuego ya consumió más de 10.000 hectáreas, llegó a la mina La Esmeralda y afectó viviendas y el cementerio del corregimiento de Payandé. Un puesto de mando unificado opera en el CENOP, con apoyo aéreo de la Fuerza Aeroespacial, el Ejército y AVIPO, y cuatro carrotanques de la UNGRD refuerzan el territorio.",
+        "📊 Balance más reciente de la UNGRD, al corte de las 6:00 p. m. del viernes 18 de septiembre de 2026: 15 incendios forestales activos en el país (9 controlados), 9 de ellos en el Tolima —en Alvarado, Armero, Ataco, Ortega, Prado, San Luis, Villahermosa y Villarrica—; se dieron por controlados los de Carmen de Apicalá, Chaparral, Coyaima y Suárez. El Tolima sigue siendo el departamento que concentra más incendios activos del país.",
         "ℹ️ Alerta informativa del equipo URBIS con base en la UNGRD y la Gobernación del Tolima. No es un reporte ciudadano. Coordenadas de referencia: centro del municipio de Ibagué, capital del departamento; el hecho afecta a numerosos municipios del Tolima, no solo a Ibagué."
       ],
       "fuente": "UNGRD / Gobernación del Tolima / Fuerza Aeroespacial Colombiana / Ejército Nacional",
@@ -105,14 +106,29 @@
       "lat": 3.49191,
       "lng": -76.52584,
       "desde": "2026-09-17",
-      "expira": "2026-09-24",
+      "expira": "2026-09-21",
       "lineas": [
-        "📅 Se originó en la tarde del jueves 17 de septiembre de 2026, hacia la 1:11 p. m. (hora de Colombia), en el sector de Alto Menga (Altos de Menga), zona montañosa al norte de Cali; seguía activo la mañana del viernes 18 de septiembre, con los bomberos trabajando para extinguirlo por completo.",
-        "📊 Más de 70 hectáreas de vegetación arrasadas, según el Cuerpo de Bomberos Voluntarios de Cali. Cinco viviendas resultaron afectadas, una persona adulta mayor resultó afectada y dos bomberos sufrieron lesiones; más de 140 bomberos de Cali y Yumbo, con apoyo de la Defensa Civil y la Cruz Roja, atienden la emergencia, dificultada por los fuertes vientos.",
-        "ℹ️ Alerta informativa del equipo URBIS con base en el Cuerpo de Bomberos Voluntarios de Cali y prensa regional y nacional (El Tiempo, El País, El Heraldo, Pulzo). No es un reporte ciudadano."
+        "📅 Se originó en la tarde del jueves 17 de septiembre de 2026, hacia la 1:11 p. m. (hora de Colombia), en el sector de Alto Menga (Altos de Menga), zona montañosa al norte de Cali. Los organismos de socorro lo dieron por controlado hacia las 10:20 p. m. del mismo jueves, tras varias horas de trabajo nocturno; al viernes 18 de septiembre continuaban enfriando puntos calientes para evitar que el viento lo reactivara.",
+        "📊 Cerca de 100 hectáreas de vegetación arrasadas —cifra revisada al alza frente al reporte inicial de más de 70 hectáreas—, según el Cuerpo de Bomberos Voluntarios de Cali. Cinco viviendas resultaron afectadas, una persona adulta mayor inhaló humo y dos bomberos sufrieron lesiones; más de 140 unidades entre bomberos de Cali y Yumbo, Defensa Civil y otros organismos atendieron la emergencia, dificultada por los fuertes vientos. El alcalde de Cali, Alejandro Eder, señaló que el incendio pudo ser provocado.",
+        "ℹ️ Alerta informativa del equipo URBIS con base en el Cuerpo de Bomberos Voluntarios de Cali y prensa regional y nacional (El Tiempo, El País, El Heraldo, El Espectador, Pulzo, 90 Minutos). No es un reporte ciudadano."
       ],
-      "fuente": "Cuerpo de Bomberos Voluntarios de Cali / El Tiempo / El País / El Heraldo / Pulzo",
+      "fuente": "Cuerpo de Bomberos Voluntarios de Cali / El Tiempo / El País / El Heraldo / El Espectador / Pulzo",
       "url": "https://www.eltiempo.com/colombia/cali/emergencia-por-incendio-en-montanas-de-cali-cinco-casas-arrasadas-una-adulta-mayor-afectada-y-dos-bomberos-con-lesiones-3587008"
+    },
+    {
+      "tipo": "Incendio forestal",
+      "titulo": "Incendio forestal en el Parque Nacional Natural Las Hermosas — más de 1.000 hectáreas, cerca de 45 días activo, Guadalajara de Buga, Valle del Cauca",
+      "lat": 3.9019,
+      "lng": -76.3039,
+      "desde": "2026-08-03",
+      "expira": "2026-09-29",
+      "lineas": [
+        "📅 El incendio se originó a comienzos de agosto de 2026 (fecha aproximada) en el sector La Mesa – Río Loro, en la zona rural alta de Guadalajara de Buga, Valle del Cauca, dentro del Parque Nacional Natural Las Hermosas Gloria Valencia de Castaño. Al 17 de septiembre de 2026 completaba cerca de 45 días activo, con reactivaciones intermitentes pese a controles parciales; seguía en la lista de incendios forestales activos que reportó la UNGRD al corte de las 6:00 p. m. del viernes 18 de septiembre de 2026, entre los dos que permanecían activos en el Valle del Cauca (el otro, el de Alto Menga en Cali, ya controlado ese mismo corte).",
+        "📊 Más de 1.000 hectáreas afectadas dentro del parque, según el Cuerpo de Bomberos de Guadalajara de Buga. El difícil acceso —hasta siete horas de desplazamiento desde el casco urbano de Buga, entre vía terrestre y trayecto a pie, según el comandante de Bomberos Harold Humberto Alzate Tejada— ha dificultado las labores de control en la zona de alta montaña, donde el viento y la topografía han favorecido la aparición de nuevos focos incluso después de controlar los anteriores.",
+        "ℹ️ Alerta informativa del equipo URBIS con base en la UNGRD, el Cuerpo de Bomberos de Guadalajara de Buga y prensa regional y nacional (El Espectador, El Tiempo, Occidente.co, 90 Minutos, Infobae). No es un reporte ciudadano. Coordenadas de referencia: centro del municipio de Guadalajara de Buga; el incendio se ubica en la zona rural alta del municipio, dentro del parque, no en el casco urbano."
+      ],
+      "fuente": "UNGRD / Cuerpo de Bomberos de Guadalajara de Buga / El Espectador / El Tiempo / Occidente.co",
+      "url": "https://www.elespectador.com/colombia/mas-regiones/incendio-en-las-hermosas-buga-completa-45-dias-y-afecta-mas-de-mil-hectareas/"
     },
     {
       "tipo": "Sismo",
