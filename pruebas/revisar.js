@@ -90,7 +90,7 @@ function comprobar(nombre, ok, detalle) {
   if (!ok) fallos++;
 }
 
-/* UNA COMPROBACION SIN MATERIAL NO SE CALLA Y NO SE PONE ROJA (v968).
+/* UNA COMPROBACION SIN MATERIAL NO SE CALLA Y NO SE PONE ROJA (v970).
    Es la quinta vez que este proyecto toma la misma decision y la primera
    dentro de este arnes: el arnes de suites la tomo en la v963 con su `?` NO
    CONCLUYENTE, y la ficha en la v964, la v965 y la v966.
@@ -101,7 +101,7 @@ function comprobar(nombre, ok, detalle) {
    guarda de MATERIAL se queda sin material cuando el registro MEJORA, y si
    eso pusiera la corrida en rojo, la salida barata seria dejar el registro
    torcido para que la guarda siga teniendo algo que rechazar. Es
-   exactamente la presion que la v968 vino a quitar de la guarda de rol.
+   exactamente la presion que la v970 vino a quitar de la guarda de rol.
 
    Lo que si hace falta es que se VEA: sale con su `?`, con su nombre, con
    la razon, y el recuento del final la cuenta aparte de las que fallaron
@@ -1689,7 +1689,7 @@ console.log('\n  -- la ficha del gobernante --');
     comprobar('ningún rol de fuente sale de la lista conocida',
       malRol.length === 0, malRol.length ? malRol.join(' · ') : 'acto | efecto');
 
-    /* `sin-acto` SE CUENTA Y SE NOMBRA, NO PONE ESTO EN ROJO (v968).
+    /* `sin-acto` SE CUENTA Y SE NOMBRA, NO PONE ESTO EN ROJO (v970).
        La v965 lo escribió como fallo y eso empujaba a la salida peor: una
        entrada cuya única fuente documenta la reacción y no el acto se
        quedaba en `sin-declarar` para no poner la corrida en rojo — y eso
@@ -1761,9 +1761,9 @@ console.log('\n  -- la ficha del gobernante --');
       /return vieja \? 'no-comprobable-esquema-antiguo' : 'sin-declarar';/.test(j70r),
       'declarar mal por qué no se pudo comprobar es peor que no decirlo');
 
-    /* LA PROPIEDAD QUE SOBREVIVE AL CERO (v968). Hasta la v967 ací se exigía
+    /* LA PROPIEDAD QUE SOBREVIVE AL CERO (v970). Hasta la v967 acá se exigía
        que HUBIERA entradas en los estados que no son «ok», «porque así el
-       recuento mide algo». La v968 migró las veinte y quitó la declaración
+       recuento mide algo». La v970 migró las veinte y quitó la declaración
        de las emisoras, y con eso el registro se quedó en cero: la guarda se
        puso roja sobre un registro que había MEJORADO.
 

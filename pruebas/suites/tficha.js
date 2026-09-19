@@ -545,8 +545,8 @@ const server = http.createServer((req, res) => {
                                .map(c => String(c.titulo || '').slice(0, 90))
     };
 
-    /* LA RAMA CON MATERIAL, SOBRE UN REGISTRO DE MENTIRA (v968). El registro
-       de verdad quedó en cero: la v968 migró las veinte entradas de la forma
+    /* LA RAMA CON MATERIAL, SOBRE UN REGISTRO DE MENTIRA (v970). El registro
+       de verdad quedó en cero: la v970 migró las veinte entradas de la forma
        antigua y quitó la declaración de las emisoras, así que las cinco que
        declaran indicador tienen su fuente del acto. Eso es lo que había que
        conseguir, y deja la rama de «no pudo correr» sin material.
@@ -966,9 +966,9 @@ const server = http.createServer((req, res) => {
   const cf = r.coberFix || {};
   console.log('  cobertura de rol (fixture): ' + JSON.stringify(cf));
 
-  /* ── LA RAMA CON MATERIAL, SOBRE EL FIXTURE (v968) ──────────────────────
+  /* ── LA RAMA CON MATERIAL, SOBRE EL FIXTURE (v970) ──────────────────────
      Hasta la v967 esto medía el registro REAL y pedía que hubiera entradas
-     sin comprobar. La v968 las quitó —migó las veinte y retiró la
+     sin comprobar. La v970 las quitó —migró las veinte y retiró la
      declaración de las emisoras— y la aserción se puso roja sobre un
      registro que había mejorado: señal de que medía el número y no el
      mecanismo. El mecanismo se mide contra cuatro entradas fabricadas, una
@@ -978,7 +978,7 @@ const server = http.createServer((req, res) => {
       (cf.por || {})['no-comprobable-esquema-antiguo'] === 1,
       'MATERIAL · el fixture ejercita los cuatro estados, uno cada uno (' +
       JSON.stringify(cf.por) + ')');
-  /* LA PIEZA QUE DECIDE (v968). `sin-acto` cuenta DENTRO de lo que corrió:
+  /* LA PIEZA QUE DECIDE (v970). `sin-acto` cuenta DENTRO de lo que corrió:
      la comprobación SÍ se hizo y su resultado fue que ninguna fuente
      documenta el acto. Si cayera en `sinCorrer`, volvería la presión de la
      v967 —declararlo `sin-declarar` para no poner la corrida en rojo—, que
@@ -994,7 +994,7 @@ const server = http.createServer((req, res) => {
       'el denominador son las que declaran indicador, no el registro entero (4 de 5 entradas)');
 
   /* ── Y EL REGISTRO REAL, QUE HOY ESTÁ EN CERO ──────────────────────────
-     Es la afirmación que la v968 compró: antes de migrar, la ficha decía
+     Es la afirmación que la v970 compró: antes de migrar, la ficha decía
      que en una de cinco la comprobación no había podido correr. Ahora dice
      que corrió sobre todas, y eso es cierto. La guarda es contra pasarse de
      avisar por el otro lado: con cero material, la ficha no puede marcarse
@@ -1019,7 +1019,7 @@ const server = http.createServer((req, res) => {
      «ok» estén en cero: fundirlas en un «falta algo» sería perder la
      distinción entre «ninguna fuente documenta el acto», «nadie escribió el
      rol» y «hay que migrar el esquema», que piden tres tareas distintas.
-     Que estén en cero es el resultado de la v968 y no una guarda sin
+     Que estén en cero es el resultado de la v970 y no una guarda sin
      material: el mecanismo lo ejercita el fixture de arriba, una por
      casilla, y la rama de la forma antigua la vigila además `revisar.js`. */
   chk(['ok', 'sin-acto', 'sin-declarar', 'no-comprobable-esquema-antiguo']

@@ -11468,7 +11468,7 @@ la búsqueda. Queda escrito porque la tentación de dar por buena una dirección
 que uno mismo compuso es exactamente lo que produce una fuente falsa con
 aspecto correcto.
 
-## Un estado que se cuenta, y la guarda que se quedó sin material (v968)
+## Un estado que se cuenta, y la guarda que se quedó sin material (v970)
 
 Las cinco respuestas al informe de la v967. Tres cambian el registro o las
 guardas; una no se hace por decisión del usuario y otra confirma tres
@@ -11552,7 +11552,7 @@ con otro sería una puerta trasera de pruebas (v869). Eso lo cubre
 `revisar.js`, exigiendo que las dos redacciones estén escritas — y queda
 dicho como reparto de trabajo y no como cobertura completa.
 
-Sobre el registro real se mide la otra mitad, que es la que la v968 compró:
+Sobre el registro real se mide la otra mitad, que es la que la v970 compró:
 que la ficha diga «corrió sobre todas», que **no** se marque en falta y que
 **no nombre a nadie**. Esa última es la guarda contra pasarse de avisar: un
 nombre ahí sería una entrada señalada por una exención que ya no tiene.
@@ -11575,9 +11575,17 @@ dos, la segunda de las cuales yo no había identificado:
 
 La entrada **se queda** como hecho registrado sin indicador, con los dos
 motivos escritos en su `contrapunto` y con la puerta abierta: si aparece el
-acto —con su número o su radicado— la declaración vuelve. **I-04 baja de 3 a
-2.** Borrar la entrada habría sido esconder un hecho; dejarle la declaración,
-sostener una cifra sobre un acto que nadie ha visto.
+acto —con su número o su radicado— la declaración vuelve. Borrar la entrada
+habría sido esconder un hecho; dejarle la declaración, sostener una cifra
+sobre un acto que nadie ha visto.
+
+**Y medido, la cifra publicada no se mueve**: I-04 iba en 3 contadas de 4
+declaradas y queda en 3 de 3. La declaración de las emisoras **ya estaba
+fuera de la cuenta**, rechazada por el `requiere` del criterio —su
+`tipoEvidencia` es `reporte-periodistico`—, o sea que el gate de la v961
+estaba haciendo su trabajo y lo que se retira es la declaración, no la
+cuenta. Eso confirma por medición el segundo motivo del usuario, y hay que
+decirlo porque yo había anunciado que I-04 bajaría uno: **no baja**.
 
 ### 3 · Los $22 y los $44 billones no se contradicen: son dos componentes
 
@@ -11619,11 +11627,30 @@ nombrada arriba, con su censo, en «Tres clases de error que se repiten»:
 **dato presente e inalcanzable se ve igual que dato ausente.** No lleva
 guarda, y por qué no está escrito ahí.
 
+### La otra sesión publicó una v969 mientras tanto
+
+Esto se escribió como v968 y al ir a subir `origin/main` ya iba en
+**969-seguimiento-presidencial-ecopetrol-onu-decretos-terremoto**. Los nueve
+archivos de versión salieron en conflicto por una sola cosa —el token,
+comprobado con `git diff` antes de resolver— y se resuelve subiendo **por
+encima de las dos**: es la **v970**, la regla del 7 de septiembre.
+
+El registro sí se fusionó solo, y hubo que mirarlo entrada por entrada en vez
+de creerle al «Auto-merging». La comparación por título daba una entrada suya
+«perdida», y era la de la Ley de Rescate —la misma que yo había reescrito, con
+otro título—: un falso positivo de mi propio barrido. Comprobado, la otra
+sesión **no tocó** esa entrada, mi párrafo de `valores_en_disputa` sobrevive,
+y su declarante nuevo —`decretos-emergencia-terremoto-18sep`— llega con su
+vía, su base, su nivel y sus roles.
+
 ### El registro al cerrar
 
-174 entradas, **5 declarantes y las cinco con su fuente del acto**; cero con
-esquema antiguo; I-04 en 2, I-07 en 1, I-13 en 1. `tficha` 188/188, la
-batería 121/121, y `revisar.js` en verde con un `?`.
+179 entradas, **6 declarantes y los seis con su fuente del acto**; cero con
+esquema antiguo. I-04 en 4 contadas de 4 declaradas —las tres mías más la de
+la otra sesión—, I-13 en 1, I-05 en 0, e **I-07 en 0 contadas de 1
+declarada**: la entrada de los vuelos presidenciales no pasa su criterio, que
+es un estado anterior a esta tanda y queda medido, no tocado. `tficha`
+188/188, la batería 121/121, y `revisar.js` en verde con un `?`.
 
 ## La lista viva: lo que al pliego educativo todavía le falta (v866)
 
