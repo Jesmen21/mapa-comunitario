@@ -10951,6 +10951,116 @@ Tres demostraciones, cada una revirtiendo **solo lo que decide**:
 
 `tficha` cierra en 176/176.
 
+## La marca va en los cuatro criterios, con su gravedad (v965)
+
+La v964 marcó como no validado solo a I-13, razonando que ponerle la marca a
+los siete la dejaría sin significar nada — la regla de la v886 sobre las
+alarmas que mueren por repetidas. **El razonamiento estaba mal por el otro
+lado**, y la corrección es del usuario:
+
+> Que solo I-13 lleve la marca sugiere que los otros están validados, y no lo
+> están.
+
+Los criterios de I-04, I-05 e I-07 —sus listas de `incluye` y `excluye`— los
+escribió la v961 **leyendo este mismo registro**. El pliego fija el
+indicador; los bordes los dibujamos nosotros. Así que tampoco están
+contrastados, y no marcarlos es una afirmación tácita de que sí.
+
+**Lo que salva la marca de morir por repetida no es ponérsela a uno: es que
+las cuatro no digan lo mismo.**
+
+### La gravedad va en su propio campo
+
+`origenCategoria`, con dos valores y su texto:
+
+| | Qué significa |
+|---|---|
+| `juridica-preexistente` (I-04, I-05, I-07) | la categoría existe sin este proyecto —un decreto de emergencia, el artículo 113, una tutela—. Lo que se dibujó mirando el registro son sus **bordes** |
+| `construida-para-el-caso` (I-13) | acá se inventó **la categoría misma**. Es la que más urge contrastar |
+
+Los cuatro llevan `validado: no` hasta que su criterio corra contra un
+gobierno anterior con material suficiente.
+
+Tres decisiones de forma, cada una con su razón:
+
+* **La marca es de los indicadores que tienen CRITERIO escrito**, no de los
+  siete. Los otros tres —I-06, I-09, I-10— salen directos de la clasificación
+  de la Capa 1: no hay bordes dibujados por nadie que contrastar. Hay una
+  aserción para eso, porque sin ella la marca sí se extendería a todo.
+* **Sin declarar se toma por la GRAVE.** Un criterio nuevo nace marcado como
+  construido para su caso: es el canje de la v880 otra vez.
+* **`origen` se retiró.** Ya no decidía nada —la marca la decide tener
+  criterio, y la gravedad la decide `origenCategoria`— y un campo que no
+  decide es lo que la v885 enseña a no dejar.
+
+Y hay una guarda contra que la distinción se vuelva decorativa: **las dos
+categorías tienen que estar en uso**. Si un día todas cayeran en la misma, la
+marca volvería a decir lo mismo en los cuatro sitios y la guarda lo dice.
+
+### Una fuente de EFECTO no prueba el acto
+
+El usuario dio por buena la nota de la FLIP del 9 de septiembre —posterior al
+hecho— con una condición: *«entra como fuente de efecto de la directiva, no
+de su expedición»*. Verificada: es del 9 de septiembre, seis días después de
+la directiva, y la nombra entre lo que objeta. **Ya estaba citada desde la
+v964**; lo que faltaba era que el dato lo dijera.
+
+La entrada de la directiva tiene cuatro fuentes y **solo una publica su
+texto**. Las otras tres documentan lo que produjo: la cancelación de las
+ruedas de prensa del Dane, el pronunciamiento de la FLIP y la objeción de los
+exdirectores. Sin decirlo, una cobertura de reacciones se lee como prueba de
+que el acto se expidió — que es el mismo defecto de la v964 una capa más
+abajo.
+
+Cada fuente lleva ahora su `rol`, y la guarda es la que importa: **donde los
+roles se declaran, al menos una fuente tiene que documentar el ACTO**.
+
+**El alcance va dicho y no disimulado:** el rol está declarado donde importa
+y la guarda muerde donde está declarado. Al medirlo apareció que **veinte
+entradas usan todavía la forma antigua `fuente` + `url`**, que no puede
+llevarlo — dos maneras de codificar las fuentes, o sea la clase B, que queda
+medida para su propia tanda.
+
+#### Y medir evitó un hallazgo falso
+
+La entrada del Decreto 1171 declara I-04, cuenta, y su `fuentes` está vacío:
+parecía una cifra publicada sin una sola fuente. No lo es — usa la forma
+antigua. Una guarda escrita leyendo solo `fuentes` habría denunciado veinte
+entradas sanas.
+
+### El barrido de trinquetes: hay dos, y el segundo NO tiene el defecto
+
+Lo pedido: *«cualquier trinquete sobre una cantidad que crece con el registro
+tiene el mismo defecto. Los que midan pendientes deben pasar a medir lo
+hecho.»*
+
+Barridos `revisar.js` y las 122 suites, en este proyecto hay **dos**
+trinquetes. El del contrargumento es el que la v964 arregló. El otro es el de
+`tipoFuente`, y medido no tiene el defecto:
+
+* los **19 en blanco son todos del 4 al 17 de agosto**, la apertura del
+  registro;
+* de las **25 entradas más recientes, cero** están sin tipo.
+
+O sea que ese pendiente **no crece con el registro**: crece solo si alguien
+añade una entrada sin decidir de qué fuente es, que es exactamente lo
+prohibido. Convertirlo a un piso sobre lo hecho lo **debilitaría** — una
+entrada nueva sin tipo dejaría de saltar.
+
+**El discriminador no es «¿mide un pendiente?» sino «¿puede ese pendiente
+crecer sin que nadie haga nada mal?».** Si puede, el techo absoluto está mal
+y hay que medir lo hecho; si no puede, el techo es lo correcto. Queda escrito
+al lado del trinquete, con la medición, para que la próxima tanda no la
+repita.
+
+### Demostrado contra la v964
+
+Devolviendo **solo la regla de a quién se marca**: «un criterio del pliego
+también sale sin validar» en rojo con `null`, **una marca en el papel donde
+van cuatro**, y la distinción de gravedad en «1 · 0».
+
+`tficha` cierra en 178/178.
+
 ## La lista viva: lo que al pliego educativo todavía le falta (v866)
 
 Esta lista se quedó vieja **cinco veces**. Cuatro dentro de la hoja —la

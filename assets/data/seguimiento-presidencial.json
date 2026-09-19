@@ -1872,24 +1872,28 @@
     "I-13"
    ],
    "detalle": "La Presidencia expidió la Directiva Presidencial 01 del 3 de septiembre de 2026, que fija los lineamientos de comunicación del Gobierno. Cobija a ministros, directores de departamento administrativo, gerentes y representantes legales de las entidades del orden nacional: pueden dar entrevistas, declaraciones y participar en medios, pero deben consultar y coordinar previamente esas participaciones con la Presidencia, y sus cuentas personales dejan de ser canal primario o fuente oficial para anunciar decisiones, cifras o resultados del Gobierno. Su aplicación al Dane quedó documentada el 7 de septiembre: la rueda de prensa en la que la entidad iba a presentar la inflación de agosto se canceló treinta minutos antes de empezar, invocando la directiva. La cifra se publicó a la hora prevista, pero el director de la entidad no pudo explicarla ante los medios.",
-   "contrapunto": "La directiva es general y no está dirigida al Dane: cobija a todo el Ejecutivo del orden nacional. Lo que la hace contable como interferencia en la independencia técnica es su aplicación documentada a una entidad que la tiene por ley —el Dane, Ley 2335—, no su texto. El Gobierno la presenta como una coordinación de la comunicación institucional, no como una restricción; la FLIP se pronunció el 9 de septiembre diciendo que limita el acceso a la información y genera autocensura, y varios exdirectores del Dane objetaron en particular la cancelación de las ruedas de prensa de los indicadores económicos. Este registro cuenta el acto y no la intención: que la difusión de una cifra técnica quede sujeta a autorización del Gobierno es comprobable en el propio texto de la directiva; que el propósito fuera controlar esa cifra es una atribución que estas fuentes no sostienen.",
+   "contrapunto": "La directiva es general y no está dirigida al Dane: cobija a todo el Ejecutivo del orden nacional. Lo que la hace contable como interferencia en la independencia técnica es su aplicación documentada a una entidad que la tiene por ley —el Dane, Ley 2335—, no su texto. El Gobierno la presenta como una coordinación de la comunicación institucional, no como una restricción; la FLIP se pronunció el 9 de septiembre —seis días DESPUÉS, y por tanto documentando su efecto y no su expedición— diciendo que limita el acceso a la información y genera autocensura, y varios exdirectores del Dane objetaron en particular la cancelación de las ruedas de prensa de los indicadores económicos. Este registro cuenta el acto y no la intención: que la difusión de una cifra técnica quede sujeta a autorización del Gobierno es comprobable en el propio texto de la directiva; que el propósito fuera controlar esa cifra es una atribución que estas fuentes no sostienen.",
    "tipoFuente": "verificado",
    "fuentes": [
     {
      "n": "El Tiempo · Esta es la directiva presidencial que define lineamientos de comunicación del Gobierno y atención a medios de comunicación",
-     "u": "https://www.eltiempo.com/politica/gobierno/esta-es-la-directiva-presidencial-que-define-lineamientos-de-comunicacion-del-gobierno-y-atencion-a-medios-de-comunicacion-3583293"
+     "u": "https://www.eltiempo.com/politica/gobierno/esta-es-la-directiva-presidencial-que-define-lineamientos-de-comunicacion-del-gobierno-y-atencion-a-medios-de-comunicacion-3583293",
+     "rol": "acto"
     },
     {
      "n": "La Silla Vacía · El Dane cancela sus ruedas de prensa por directiva presidencial",
-     "u": "https://www.lasillavacia.com/en-vivo/el-dane-cancela-sus-ruedas-de-prensa-por-directiva-presidencial/"
+     "u": "https://www.lasillavacia.com/en-vivo/el-dane-cancela-sus-ruedas-de-prensa-por-directiva-presidencial/",
+     "rol": "efecto"
     },
     {
      "n": "Infobae · La Flip y organizaciones sociales piden garantías para la libertad de prensa al Gobierno de De la Espriella (pronunciamiento del 9 de septiembre)",
-     "u": "https://www.infobae.com/colombia/2026/09/10/la-flip-y-organizaciones-sociales-piden-garantias-para-la-libertad-de-prensa-al-gobierno-de-de-la-espriella-han-profundizado-la-autocensura/"
+     "u": "https://www.infobae.com/colombia/2026/09/10/la-flip-y-organizaciones-sociales-piden-garantias-para-la-libertad-de-prensa-al-gobierno-de-de-la-espriella-han-profundizado-la-autocensura/",
+     "rol": "efecto"
     },
     {
      "n": "Cambio · Exdirectores del Dane critican la decisión del Gobierno de cancelar las ruedas de prensa de indicadores económicos",
-     "u": "https://cambiocolombia.com/economia/articulo/2026/9/exdirectores-del-dane-alertaron-por-la-orden-del-gobierno-de-frenar-las-ruedas-de-prensa-de-la-inflacion-y-del-desempleo"
+     "u": "https://cambiocolombia.com/economia/articulo/2026/9/exdirectores-del-dane-alertaron-por-la-orden-del-gobierno-de-frenar-las-ruedas-de-prensa-de-la-inflacion-y-del-desempleo",
+     "rol": "efecto"
     }
    ],
    "nivelGobierno": "nacional",

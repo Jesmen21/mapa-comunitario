@@ -507,9 +507,12 @@ const server = http.createServer((req, res) => {
     const vOf = (k) => (iR.filas.filter(x => x.id === k)[0] || {}).validacion || null;
     const v13 = vOf('I-13'), v04 = vOf('I-04');
     o.val = {
-      i13: v13 ? { origen: v13.origen, validado: v13.validado,
+      i13: v13 ? { cat: v13.origenCategoria, urge: v13.urge, validado: v13.validado,
                    probados: v13.gobiernosAnterioresProbados, razon: String(v13.razon || '').slice(0, 80) } : null,
-      i04: v04 ? 'marcado' : 'sin marca',
+      i04: v04 ? { cat: v04.origenCategoria, urge: v04.urge, validado: v04.validado } : null,
+      /* Los tres sin criterio no llevan marca: su cifra sale directa de la
+         Capa 1 y no hay bordes dibujados por nadie que contrastar. */
+      sinCriterio: ['I-06', 'I-09', 'I-10'].map(k => (vOf(k) ? k + ':marcado' : k + ':sin')).join(' '),
       n13: (iR.filas.filter(x => x.id === 'I-13')[0] || {}).n,
       vias13: ((iR.filas.filter(x => x.id === 'I-13')[0] || {}).vias) || [],
       fuera13: (((iR.filas.filter(x => x.id === 'I-13')[0] || {}).fuera) || []).map(x => x.motivo),
@@ -517,7 +520,7 @@ const server = http.createServer((req, res) => {
          que se pidió. Medirla solo en el objeto dejaría pasar una marca
          calculada y no pintada. Las dos cuentas de al lado son la guarda de
          material: sin panel en el DOM, la de arriba no mide nada. */
-      dom: Array.from(document.querySelectorAll('.sp-c2-noval')).map(x => x.textContent.slice(0, 90)),
+      dom: Array.from(document.querySelectorAll('.sp-c2-noval')).map(x => x.textContent.slice(0, 400)),
       domFilas: document.querySelectorAll('.sp-c2-fila').length,
       domCrit: document.querySelectorAll('.sp-c2-crit').length
     };
@@ -858,23 +861,36 @@ const server = http.createServer((req, res) => {
      un gobierno anterior, la cifra sale con esa advertencia AL LADO. */
   const vl = r.val || {};
   console.log('  validacion: ' + JSON.stringify(vl).slice(0, 320));
-  chk(vl.i13 && vl.i13.origen === 'propio',
-      'MATERIAL · I-13 se declara como indicador propio de este proyecto (' +
-      ((vl.i13 || {}).origen || 'sin declarar') + ')');
+  chk(vl.i13 && vl.i13.cat === 'construida-para-el-caso' && vl.i13.urge === true,
+      'MATERIAL · I-13 declara que su categoría se construyó para el caso, y es la que urge (' +
+      ((vl.i13 || {}).cat || 'sin declarar') + ')');
   chk(vl.i13 && vl.i13.validado === false && vl.i13.probados === 0,
       'y sale marcado como NO validado, con los gobiernos anteriores probados en cero (' +
       JSON.stringify(vl.i13 && { v: vl.i13.validado, p: vl.i13.probados }) + ')');
   chk(vl.i13 && /no hay material|no pasaron por esta clasificaci|ning[uú]n registro/i.test(vl.i13.razon),
       'y la razon distingue «no dispara» de «no hay material» (' + ((vl.i13 || {}).razon || '') + ')');
-  chk(vl.i04 === 'sin marca',
-      'un indicador del pliego NO lleva la marca: en los siete dejaria de significar algo (' + vl.i04 + ')');
+  /* Se dio vuelta en la v965. La v964 dejaba a I-04 sin marca razonando que
+     ponerla en todos la mataría; el criterio de I-04 tampoco está contrastado
+     —se escribió leyendo este registro— así que no marcarlo sugiere que sí.
+     Lo que salva la marca es que las dos no digan lo mismo. */
+  chk(vl.i04 && vl.i04.validado === false && vl.i04.cat === 'juridica-preexistente' &&
+      vl.i04.urge === false,
+      'un criterio del pliego también sale sin validar, pero con la gravedad menor (' +
+      JSON.stringify(vl.i04) + ')');
+  chk(vl.sinCriterio === 'I-06:sin I-09:sin I-10:sin',
+      'y los tres SIN criterio no llevan marca: no hay bordes que contrastar (' + vl.sinCriterio + ')');
   chk(vl.domFilas >= 5 && vl.domCrit >= 3,
       'MATERIAL · el panel de la Capa 2 está compuesto en el DOM (' +
       vl.domFilas + ' filas · ' + vl.domCrit + ' criterios)');
-  chk((vl.dom || []).length === 1 && /validado: no/.test(vl.dom[0] || '') &&
-      /gobiernos anteriores probados: 0/.test(vl.dom[0] || ''),
-      'y la marca esta en el papel, junto a la cifra, no en una nota (' +
-      (vl.dom || []).length + ': ' + String((vl.dom || [])[0] || '').slice(0, 60) + ')');
+  chk((vl.dom || []).length === 4 && (vl.dom || []).every(x => /validado: no/.test(x)) &&
+      (vl.dom || []).every(x => /gobiernos anteriores probados: 0/.test(x)),
+      'y las cuatro marcas estan en el papel, junto a su cifra, no en una nota (' +
+      (vl.dom || []).length + ')');
+  chk((vl.dom || []).filter(x => /construida para el caso/.test(x)).length === 1 &&
+      (vl.dom || []).filter(x => /preexistente/.test(x)).length === 3,
+      'y no dicen lo mismo: una nombra la categoria construida y tres la preexistente (' +
+      (vl.dom || []).filter(x => /construida para el caso/.test(x)).length + ' · ' +
+      (vl.dom || []).filter(x => /preexistente/.test(x)).length + ')');
   chk(vl.n13 === 1 && (vl.vias13 || []).length === 1,
       'I-13 cuenta 1 y entra por una sola via, ahora que su acto esta registrado (' +
       vl.n13 + ' · ' + (vl.vias13 || []).join(' · ').slice(0, 60) + ')');

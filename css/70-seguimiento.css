@@ -1832,3 +1832,9 @@ a.sp-fuente:hover svg{ color:var(--verde-hi); }
   font-size:var(--t-9);
   letter-spacing: .01em;
 }
+
+/* v965 · la gravedad distingue una marca de otra: sin esto, las cuatro se
+   leen igual y la advertencia muere por repetida. La construida para el caso
+   es la que urge, y se ve. */
+.sp-c2-novalg { font-weight: 600; }
+.sp-c2-novalg.urge { color: var(--sp-amb, #b26a00); }

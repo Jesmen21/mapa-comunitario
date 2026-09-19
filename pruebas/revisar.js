@@ -908,7 +908,26 @@ console.log('\n  -- la ficha del gobernante --');
      Toda entrada nueva nace con su tipo, y las viejas se van clasificando
      cuando alguien las mire de verdad. Si este número sube, alguien añadió
      una entrada sin decidir de qué fuente es, y esta comprobación lo dice
-     antes de que llegue al teléfono de nadie. */
+     antes de que llegue al teléfono de nadie.
+
+     BARRIDO DE TRINQUETES (v965), para que no haya que volver a medirlo.
+     El del contrargumento tenía un techo ABSOLUTO sobre una cantidad que
+     crece con el registro, así que la primera entrada nueva lo rompía sin
+     que nadie hubiera dejado de revisar nada; pasó a medir lo revisado.
+     Barridos los demás, en este proyecto hay DOS y este es el otro — y este
+     NO tiene el defecto, medido y no supuesto:
+
+       · los 19 en blanco son todos del 4 al 17 de agosto, la apertura del
+         registro;
+       · de las 25 entradas más recientes, CERO están sin tipo.
+
+     O sea que lo pendiente acá no crece con el registro: crece solo si
+     alguien añade una entrada sin decidir de qué fuente es, que es
+     exactamente lo prohibido. El discriminador no es «¿mide un pendiente?»
+     sino **¿puede ese pendiente crecer sin que nadie haga nada mal?**. Si
+     puede, el techo absoluto está mal y hay que medir lo hecho; si no puede,
+     el techo es lo correcto y cambiarlo a un piso lo DEBILITARÍA —una
+     entrada nueva sin tipo dejaría de saltar—. */
   const TECHO_SIN_TIPO = 19;
   const sinTipo = [];
   REGISTROS.forEach((ruta) => {
@@ -1551,16 +1570,43 @@ console.log('\n  -- la ficha del gobernante --');
   {
     const j70v = leer('js/70-seguimiento.js');
 
+    /* LA MARCA VA EN LOS CUATRO CRITERIOS, NO SOLO EN I-13 (v965). La v964
+       razonó que ponerla en los siete la dejaría sin significar nada, y el
+       razonamiento estaba mal por el otro lado: los criterios de I-04, I-05
+       e I-07 también se escribieron leyendo este registro, así que tampoco
+       están contrastados, y marcar solo a I-13 sugiere que los otros sí.
+
+       Lo que salva la marca de morir por repetida no es ponérsela a uno: es
+       que las dos no digan lo mismo. La gravedad va en `origenCategoria`. */
     const bloqueInd = (j70v.match(/var INDICADORES = \{[\s\S]*?\n  \};/) || [''])[0];
-    const decl = (bloqueInd.match(/'(I-\d\d)': \{[^\n]*origen: '(\w+)'/g) || []).length;
+    const conCrit = (bloqueInd.match(/'(I-\d\d)': \{[^\n]*origenCategoria: '([\w-]+)'/g) || []);
     const todos = (bloqueInd.match(/'(I-\d\d)': \{/g) || []).length;
+    const cats = (j70v.match(/var ORIGEN_CATEGORIA = \{[\s\S]*?\n  \};/) || [''])[0];
+    const valores = (cats.match(/'([a-z-]+)': \{\n/g) || []).map((x) => x.replace(/[':{\n ]/g, ''));
+    const usados = conCrit.map((x) => (x.match(/origenCategoria: '([\w-]+)'/) || [])[1]);
 
-    comprobar('MATERIAL · los indicadores declaran de dónde vienen',
-      todos >= 5 && decl === todos, decl + ' de ' + todos + ' con `origen`');
+    comprobar('MATERIAL · hay dos categorías de origen y los indicadores con criterio las declaran',
+      valores.length === 2 && conCrit.length >= 4 && todos >= 5,
+      conCrit.length + ' de ' + todos + ' declaran · valores: ' + valores.join(' | '));
 
-    comprobar('un indicador sin `origen` declarado se toma por PROPIO, no por del pliego',
-      /var origen = ind\.origen \|\| 'propio';/.test(j70v),
-      'el que se olvide nace marcado: se falla cerrado, no abierto');
+    comprobar('ninguna declara una categoría de origen que la tabla no tenga',
+      usados.every((u) => valores.indexOf(u) >= 0),
+      usados.filter((u) => valores.indexOf(u) < 0).join(', ') || usados.join(' · '));
+
+    /* Y las dos se usan de verdad. Si todas cayeran en la misma, la
+       distinción de gravedad sería decorativa y la marca volvería a decir lo
+       mismo en los cuatro sitios. */
+    comprobar('y las dos categorías se usan: la marca no dice lo mismo en los cuatro',
+      valores.every((v) => usados.indexOf(v) >= 0),
+      valores.map((v) => v + ': ' + usados.filter((u) => u === v).length).join(' · '));
+
+    comprobar('un criterio sin `origenCategoria` declarada se toma por la GRAVE',
+      /var cat = ind\.origenCategoria \|\| 'construida-para-el-caso';/.test(j70v),
+      'el que se olvide nace marcado como construido para su caso: se falla cerrado');
+
+    comprobar('la marca es de los indicadores que tienen CRITERIO, no de los siete',
+      /if \(!CRITERIOS\[id\]\) return null;/.test(j70v),
+      'los tres sin criterio salen directos de la Capa 1: no hay bordes que contrastar');
 
     comprobar('el conteo de gobiernos anteriores probados se CALCULA, no se teclea',
       /function corridaHaciaAtras\(/.test(j70v) &&
@@ -1579,6 +1625,48 @@ console.log('\n  -- la ficha del gobernante --');
       /sp-c2-noval/.test(j70v) && /validado: no · gobiernos anteriores probados: /.test(j70v) &&
       /sp-c2-noval/.test(leer('css/70-seguimiento.css')),
       'sale en la tabla de indicadores y tiene regla que la pinta');
+  }
+
+  /* ═══ UNA FUENTE DE EFECTO NO PRUEBA EL ACTO (v965) ═════════════════════
+     La entrada de la Directiva Presidencial 01 tiene cuatro fuentes y solo
+     UNA publica su texto; las otras tres son posteriores y documentan lo que
+     produjo —la cancelación de las ruedas de prensa del Dane, el
+     pronunciamiento de la FLIP del 9 de septiembre, la objeción de los
+     exdirectores—. Sin decirlo, una cobertura de reacciones se lee como
+     prueba de que el acto se expidió.
+
+     ALCANCE, dicho y no disimulado: el rol está declarado donde importa y la
+     guarda muerde donde está declarado. Veinte entradas del registro usan
+     todavía la forma antigua `fuente` + `url`, que no puede llevarlo; esa es
+     una segunda manera de codificar las fuentes y queda medida para su
+     propia tanda. */
+  {
+    const ROLES_FUENTE = ['acto', 'efecto'];
+    const malRol = [], soloEfecto = [];
+    let conRol = 0;
+    REGISTROS.forEach((ruta) => {
+      const quien = ruta.split('-').pop().replace('.json', '');
+      ((JSON.parse(leer(ruta)).entradas) || []).forEach((e) => {
+        const fs = e.fuentes || [];
+        const roles = fs.map((f) => String(f.rol || '').trim()).filter(Boolean);
+        if (!roles.length) return;
+        conRol++;
+        const donde = quien + '/' + (e.fecha || '?');
+        roles.forEach((r) => { if (ROLES_FUENTE.indexOf(r) < 0) malRol.push(donde + ' rol «' + r + '»'); });
+        if (roles.indexOf('acto') < 0) soloEfecto.push(donde);
+      });
+    });
+
+    comprobar('MATERIAL · hay entradas que declaran el rol de sus fuentes',
+      conRol > 0, conRol + ' entradas con rol declarado en sus fuentes');
+
+    comprobar('ningún rol de fuente sale de la lista conocida',
+      malRol.length === 0, malRol.length ? malRol.join(' · ') : 'acto | efecto');
+
+    comprobar('y donde los roles se declaran, al menos una fuente documenta el ACTO',
+      soloEfecto.length === 0,
+      soloEfecto.length ? soloEfecto.join(' · ') + ' · solo trae fuentes de efecto'
+        : 'una cobertura de reacciones no puede quedarse sola probando que el acto ocurrió');
   }
 
   /* ═══ CAPA 3 DEL PLIEGO · LOS EJES, NUNCA EN UN SOLO NÚMERO ════════════

@@ -1906,33 +1906,58 @@
     return { cuenta: true, motivo: '', d: '', via: via };
   }
 
+  /* ── DE DÓNDE SALE LA CATEGORÍA QUE CUENTA UN INDICADOR (v965) ───────────
+     La v964 marcó como no validado solo a I-13, razonando que ponerle la
+     marca a los siete la dejaría sin significar nada. El razonamiento era
+     malo por el otro lado y el usuario lo corrigió: los criterios de I-04,
+     I-05 e I-07 también se escribieron LEYENDO ESTE REGISTRO, así que
+     tampoco están validados, y marcar solo a I-13 sugiere que los otros sí.
+
+     Lo que salva la marca de morir por repetida no es ponérsela a uno: es
+     que las dos no digan lo mismo. La gravedad es distinta y va en su propio
+     campo:
+
+     · `juridica-preexistente` — la categoría existe sin este proyecto: un
+       decreto de emergencia, el artículo 113, una tutela. Lo que se dibujó
+       mirando el registro son sus BORDES, qué entra y qué no.
+     · `construida-para-el-caso` — acá se inventó la categoría misma. Es la
+       que más urge contrastar.
+
+     Sin declarar se toma por la GRAVE, que es la lectura desconfiada: un
+     criterio nuevo nace marcado como construido para su caso. */
+  var ORIGEN_CATEGORIA = {
+    'juridica-preexistente': {
+      t: 'categoría jurídica preexistente',
+      d: 'La categoría existe sin este proyecto —un decreto de emergencia, el artículo 113, una tutela—. ' +
+         'Lo que se dibujó mirando este registro son sus BORDES: qué entra en la cuenta y qué no.' },
+    'construida-para-el-caso': {
+      t: 'categoría construida para el caso',
+      d: 'Acá se inventó la categoría misma, después de ver el caso que necesitaba capturar. Es la que más ' +
+         'urge contrastar: puede estar tallada a la medida de ese caso.' }
+  };
+
   var INDICADORES = {
-    /* `origen` separa los indicadores que vienen del pliego de los que
-       inventó este proyecto. Importa para una sola cosa y es la validación:
-       un indicador escrito DESPUÉS de ver el caso que necesitaba capturar
-       puede estar tallado a su medida, y eso no se sabe hasta correrlo
-       contra otro gobierno. Sin declarar se toma por propio, que es la
-       lectura desconfiada: un indicador nuevo nace marcado. */
-    'I-04': { t: 'Mecanismos excepcionales usados', dec: true, origen: 'pliego',
+    /* `origenCategoria` dice de dónde sale la categoría que el indicador
+       cuenta, y con ella la GRAVEDAD de que su criterio no esté contrastado.
+       Los tres del pliego son categorías que existen en derecho; I-13 no.
+       Sin declarar se toma por la grave (ver ORIGEN_CATEGORIA). */
+    'I-04': { t: 'Mecanismos excepcionales usados', dec: true, origenCategoria: 'juridica-preexistente',
               d: 'Emergencias, decretos de conmoción, aplazamientos de plazos legales y directivas que alteran la difusión de información pública.' },
     /* El DANE estaba en esta lista y NO es un órgano de autonomía
        constitucional: es un departamento administrativo del propio
        Ejecutivo, así que un choque con él no es un choque entre poderes.
        Lo destapó escribir el criterio. */
-    'I-05': { t: 'Choques con órganos autónomos', dec: true, origen: 'pliego',
+    'I-05': { t: 'Choques con órganos autónomos', dec: true, origenCategoria: 'juridica-preexistente',
               d: 'Corte Constitucional, Consejo de Estado, Corte Suprema, JEP, CNSC, Banco de la República, ' +
                  'Procuraduría, Contraloría, Defensoría, Registraduría y CNE.' },
-    'I-13': { t: 'Interferencia en la independencia técnica', dec: true, origen: 'propio',
+    'I-13': { t: 'Interferencia en la independencia técnica', dec: true, origenCategoria: 'construida-para-el-caso',
               d: 'Actos sobre entidades del Ejecutivo con independencia técnica de ley —el DANE, las ' +
                  'agencias reguladoras—, que no son órganos autónomos y por eso no caben en I-05.' },
-    'I-07': { t: 'Información pública obtenida por tutela', dec: true, origen: 'pliego',
+    'I-07': { t: 'Información pública obtenida por tutela', dec: true, origenCategoria: 'juridica-preexistente',
               d: 'Solicitudes que solo se respondieron después de una acción judicial.' },
-    'I-06': { t: 'Registros sin respuesta oficial', dec: false, origen: 'pliego',
-              d: 'Hechos en los que se buscó la respuesta del Gobierno y no la hay. Sale de la Capa 1.' },
-    'I-09': { t: 'Actividad reportada', dec: false, origen: 'pliego',
-              d: 'Lo que el Gobierno hizo. No es lo mismo que lo que cambió, y no se suma con ello.' },
-    'I-10': { t: 'Resultados medidos', dec: false, origen: 'pliego',
-              d: 'Lo que cambió en el país. Que se mida no dice quién lo causó.' }
+    'I-06': { t: 'Registros sin respuesta oficial', dec: false,               d: 'Hechos en los que se buscó la respuesta del Gobierno y no la hay. Sale de la Capa 1.' },
+    'I-09': { t: 'Actividad reportada', dec: false,               d: 'Lo que el Gobierno hizo. No es lo mismo que lo que cambió, y no se suma con ello.' },
+    'I-10': { t: 'Resultados medidos', dec: false,               d: 'Lo que cambió en el país. Que se mida no dice quién lo causó.' }
   };
   /* El orden de la tabla no es el alfabético: los tres declarados primero
      —son los del eje B— y después los que salen solos. */
@@ -1981,8 +2006,13 @@
 
   function validacionDe(id, anterior) {
     var ind = INDICADORES[id] || {};
-    var origen = ind.origen || 'propio';
-    if (origen !== 'propio') return null;
+    /* La marca es de los indicadores que tienen CRITERIO escrito: son los que
+       tienen bordes, y los bordes se dibujaron mirando este registro. Los
+       otros tres salen directos de la clasificación de la Capa 1, sin
+       criterio propio que contrastar. */
+    if (!CRITERIOS[id]) return null;
+    var cat = ind.origenCategoria || 'construida-para-el-caso';
+    var oc = ORIGEN_CATEGORIA[cat] || ORIGEN_CATEGORIA['construida-para-el-caso'];
     var regs = anterior ? [anterior] : [];
     var probados = 0, clasificadas = 0, corridas = [];
     regs.forEach(function (dd) {
@@ -2006,7 +2036,9 @@
     } else {
       razon = 'Corrido contra los registros anteriores, disparó: hay que mirar si el criterio distingue.';
     }
-    return { origen: origen, validado: probados > 0, gobiernosAnterioresProbados: probados,
+    return { origenCategoria: cat, gravedad: oc.t, porQue: oc.d,
+             urge: cat === 'construida-para-el-caso',
+             validado: probados > 0, gobiernosAnterioresProbados: probados,
              registrosEnMano: regs.length, corridas: corridas, razon: razon };
   }
 
@@ -3299,11 +3331,12 @@
         lv.appendChild(el('b', null, fi.id + ' · indicador no validado'));
         lv.appendChild(el('span', 'sp-c2-novalc',
           'validado: no · gobiernos anteriores probados: ' + fi.validacion.gobiernosAnterioresProbados));
+        lv.appendChild(el('p', 'sp-c2-novalg' + (fi.validacion.urge ? ' urge' : ''),
+          fi.validacion.gravedad + ' · ' + fi.validacion.porQue));
         lv.appendChild(el('p', null, fi.validacion.razon));
         lv.appendChild(el('p', null,
-          'Lo inventó este proyecto después de ver el caso que necesitaba capturar, así que puede estar ' +
-          'tallado a la medida de ese caso. La marca se quita sola el día que su criterio se pueda correr ' +
-          'contra el registro clasificado de un gobierno anterior y no dispare: ahí sí distingue.'));
+          'La marca se quita sola el día que este criterio se pueda correr contra el registro clasificado ' +
+          'de un gobierno anterior y no dispare: ahí sí distingue.'));
         tb.appendChild(lv);
       }
       tb.appendChild(li);
