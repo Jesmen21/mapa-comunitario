@@ -435,6 +435,8 @@
     });
 
     pintarPlacaPortada();
+    bloqueDeGraficos(vaciar($('sp-portada-graf')));
+    pintarIrFicha();
     pintarAccesoMuro();
 
     var cuenta = { timeline: nHechos, extranjera: hechosExtranjeros().length,
@@ -2791,24 +2793,72 @@
         .sort(function (a, b) { return b.n - a.n; }).slice(0, 3)
     };
 
-    // Los tres techos y el peor de ellos.
+    /* EL TECHO `palabra` SE UNIFICA CON EL EJE A.
+       Es la tensión que la v959 dejó declarada y sin resolver, y que el
+       usuario resuelve en esta versión: el techo contaba TODAS las
+       contradicciones documentadas, y el eje A solo las que además tienen
+       identidad de objeto verificada. Dos lecturas de la misma familia con
+       reglas distintas —la clase B—, y la que decide el veredicto público
+       sobre una persona era la más laxa de las dos.
+
+       Lo que baja el peldaño es una contradicción documentada CON identidad
+       de objeto. Mientras esa identidad no esté declarada, el techo NO es un
+       número: es un intervalo entre lo que ya se sabe que cuenta y lo que
+       contaría si todas las pendientes resultaran serlo.
+
+       Se lee de `ejeA(dd)` y no de una cuenta propia, que es justamente la
+       unificación: con dos cuentas volverían a separarse a la tanda
+       siguiente (v879). */
+    var ea = ejeA(dd);
+    var palMin = TECHOS.palabra.f(ea.conIdentidad);
+    var palMax = TECHOS.palabra.f(ea.conIdentidad + ea.sinDeclarar);
+
     var techos = {
       casos:    { i: TECHOS.casos.f(casos.pesanConf, casos.pesanInv),
                   n: casos.pesanConf + casos.pesanInv, t: TECHOS.casos.t,
                   detalle: casos.pesanConf + ' conf. · ' + casos.pesanInv + ' en inv.' +
                     (casos.fueraPorNivel
                       ? ' · ' + casos.fueraPorNivel + ' fuera por nivel de gobierno' : '') },
-      palabra:  { i: TECHOS.palabra.f(palabra.contadas), n: palabra.contadas,  t: TECHOS.palabra.t },
+      palabra:  { i: palMin, iMax: palMax, indeterminado: palMax !== palMin,
+                  n: palabra.contadas, conIdentidad: ea.conIdentidad,
+                  sinDeclarar: ea.sinDeclarar, t: TECHOS.palabra.t,
+                  detalle: palabra.contadas + ' documentadas · ' + ea.conIdentidad +
+                    ' con identidad de objeto' +
+                    (ea.sinDeclarar ? ' · ' + ea.sinDeclarar + ' sin declarar' : '') },
       claridad: { i: TECHOS.claridad.f(claridad.pct),    n: claridad.pct,      t: TECHOS.claridad.t }
     };
-    var peor = Math.max(techos.casos.i, techos.palabra.i, techos.claridad.i);
-    var manda = Object.keys(techos).filter(function (k) { return techos[k].i === peor && peor > 0; });
+
+    /* El veredicto es el PEOR de los tres techos, así que con uno de ellos
+       indeterminado el veredicto también lo es — salvo cuando los otros dos
+       ya lo fijan por encima del intervalo entero, que es cuando el dato que
+       falta no puede cambiar la respuesta. Se CALCULA comparando las dos
+       cotas: no hay bandera que nadie tenga que acordarse de bajar el día
+       que la identidad se declare (v903). */
+    var peorMin = Math.max(techos.casos.i, palMin, techos.claridad.i);
+    var peorMax = Math.max(techos.casos.i, palMax, techos.claridad.i);
+    var determinado = peorMin === peorMax;
+    var peor = peorMin;
+    var manda = determinado
+      ? Object.keys(techos).filter(function (k) { return techos[k].i === peor && peor > 0; })
+      : [];
 
     var v;
     if (palabra.revisados < FICHA_MIN_CASOS || ritmo.hechos < FICHA_MIN_HECHOS) {
       v = { id: 'sin-datos', t: 'Sin datos suficientes',
             d: 'Hacen falta al menos ' + FICHA_MIN_CASOS + ' casos de postura revisados y ' +
                FICHA_MIN_HECHOS + ' hechos registrados. Todavía no los hay.' };
+    } else if (!determinado) {
+      /* No se publica peldaño. Publicar «Poco fiable» sobre un presidente en
+         ejercicio con un insumo sin declarar es exactamente lo que no se
+         puede sostener si alguien pregunta — y la mentira no estaría en la
+         cuenta, que está bien hecha, sino en presentar como medido un
+         peldaño que depende de una lectura que nadie ha hecho. */
+      v = { id: 'sin-nivel', t: 'Sin nivel',
+            d: 'No se publica peldaño de fiabilidad. Un cambio de postura baja el peldaño solo cuando ' +
+               'las dos frases hablan del MISMO objeto verificado, y eso está sin declarar en ' +
+               ea.sinDeclarar + ' de ' + ea.documentadas + ' contradicciones documentadas. Según cómo se ' +
+               'resuelvan, el veredicto queda entre «' + ESCALERA[peorMin].t + '» y «' +
+               ESCALERA[peorMax].t + '»: publicar uno de los dos ahora sería publicar un nivel sin sus insumos.' };
     } else {
       v = ESCALERA[peor];
     }
@@ -2820,6 +2870,7 @@
 
     return { corte: hasta, palabra: palabra, casos: casos, claridad: claridad, ritmo: ritmo,
              alcance: alcance, techos: techos, manda: manda, veredicto: v,
+             ejeA: ea, determinado: determinado, peorMin: peorMin, peorMax: peorMax,
              capa1: capa1, rasgos: rasgosDe(dd, ent) };
   }
 
@@ -2959,9 +3010,16 @@
      quedaron fuera y por qué —callarlo sería la mitad mansa del mismo
      defecto—. */
   function cuentasDe(f) {
+    /* Y el mismo motivo obliga a la segunda mitad: con la identidad de objeto
+       sin declarar, «N cambios de postura» al lado de «Sin nivel» se lee como
+       un error de la ficha. La cifra se dice entera —cuántos hay y cuántos
+       no se pueden usar todavía— en vez de callar la mitad. */
+    var pal = plural(f.palabra.contadas, 'cambio de postura', 'cambios de postura');
+    if (f.techos && f.techos.palabra && f.techos.palabra.sinDeclarar) {
+      pal += ', ' + f.techos.palabra.sinDeclarar + ' sin identidad de objeto declarada';
+    }
     return plural(f.casos.pesanConf, 'caso confirmado', 'casos confirmados') + ' · ' +
-           f.casos.pesanInv + ' en investigación · ' +
-           plural(f.palabra.contadas, 'cambio de postura', 'cambios de postura') + ' · ' +
+           f.casos.pesanInv + ' en investigación · ' + pal + ' · ' +
            (f.claridad.pct == null ? 'sin verificación declarada' : f.claridad.pct + ' % verificado') +
            (f.casos.fueraPorNivel
              ? ' · ' + (f.casos.fueraPorNivel === 1
@@ -3029,6 +3087,15 @@
     placa.appendChild(cab);
     placa.appendChild(el('p', 'sp-fi-vlabel', 'Fiabilidad'));
     placa.appendChild(el('p', 'sp-fi-vval', f.veredicto.t));
+    /* Un veredicto que NO se publica dice, en la placa misma, qué falta para
+       calcularlo. Esta placa se fotografía y la captura circula sola: un
+       «Sin nivel» pelado se lee como que el módulo no supo, cuando lo que
+       pasa es que hay una lectura pendiente y se sabe exactamente cuál. */
+    if (f.veredicto.id === 'sin-nivel' && f.ejeA) {
+      placa.appendChild(el('p', 'sp-fi-vfalta',
+        'Falta declarar, en ' + f.ejeA.sinDeclarar + ' de ' + f.ejeA.documentadas +
+        ' contradicciones documentadas, si las dos frases hablan del mismo objeto verificado.'));
+    }
     placa.appendChild(el('p', 'sp-fi-cuentas', cuentasDe(f)));
     return placa;
   }
@@ -3045,6 +3112,27 @@
     pie.appendChild(el('span', null, 'Abrir la ficha del gobernante: casos, contradicciones y rasgos'));
     pie.appendChild(flechaIr());
     b.appendChild(pie);
+    b.addEventListener('click', function () { ir({ v: 'ficha' }); });
+    host.appendChild(b);
+  }
+
+  /* El enlace a la ficha completa va DESPUÉS del bloque de gráficos, que es
+     donde el lector ya tiene motivos para abrirla. La placa de arriba sigue
+     siendo un botón —quien quiera entrar de una puede— pero un botón que se
+     lee como un resumen no se toca: el enlace explicito es el que se toca. */
+  function pintarIrFicha() {
+    var host = $('sp-ir-ficha'); if (!host) return;
+    vaciar(host);
+    var f = fichaHasta(null);
+    var b = el('button', 'sp-irficha'); b.type = 'button';
+    b.setAttribute('aria-label', 'Abrir la ficha completa del gobernante: casos, contradicciones, ejes y método.');
+    var t = el('span', 'sp-irficha-t');
+    t.appendChild(el('b', null, 'Abrir la ficha completa del gobernante'));
+    t.appendChild(el('span', 'sp-irficha-d',
+      'Casos de corrupción con su estado probatorio, contradicciones, los tres ejes y el método. ' +
+      'Hoy, fiabilidad: ' + f.veredicto.t + '.'));
+    b.appendChild(t);
+    b.appendChild(flechaIr());
     b.addEventListener('click', function () { ir({ v: 'ficha' }); });
     host.appendChild(b);
   }
@@ -3340,7 +3428,13 @@
       var li = el('li', 'sp-fi-techo' + (f.manda.indexOf(k) !== -1 ? ' manda' : ''));
       li.appendChild(el('span', 'sp-fi-techo-t', t.t));
       li.appendChild(el('b', null, k === 'claridad' ? (t.n == null ? '—' : t.n + ' %') : (t.detalle || String(t.n))));
-      li.appendChild(el('span', 'sp-fi-techo-p', '→ como mucho «' + ESCALERA[t.i].t + '»'));
+      /* Un techo indeterminado NO se dibuja como un número. Escribir
+         «como mucho X» sobre la cota de abajo afirmaría justo lo que no se
+         sabe, y sobre la de arriba lo contrario. */
+      li.appendChild(el('span', 'sp-fi-techo-p', t.indeterminado
+        ? '→ entre «' + ESCALERA[t.i].t + '» y «' + ESCALERA[t.iMax].t +
+          '», según cómo se declare la identidad de objeto'
+        : '→ como mucho «' + ESCALERA[t.i].t + '»'));
       /* El denominador de la claridad, escrito al lado del porcentaje.
 
          Este módulo le reprocha a otras cifras andar sin denominador —el
@@ -3362,10 +3456,27 @@
       tl.appendChild(li);
     });
     ver.appendChild(tl);
-    ver.appendChild(el('p', 'sp-fi-vnota', f.manda.length
-      ? 'El veredicto es el peor de los tres techos. Aquí manda: ' +
-        f.manda.map(function (k) { return f.techos[k].t.toLowerCase(); }).join(' y ') + '.'
-      : 'Ninguna de las tres cuentas baja el veredicto.'));
+    /* Con un techo indeterminado no hay «cuál manda»: el peor de los tres no
+       está decidido. Decir «ninguna baja el veredicto» sería la mitad mansa
+       del mismo error que esta versión vino a quitar. */
+    ver.appendChild(el('p', 'sp-fi-vnota', f.determinado === false
+      ? 'El veredicto es el peor de los tres techos, y uno de ellos todavía no es un número: ' +
+        'mientras la identidad de objeto no esté declarada, los cambios de postura marcan un intervalo ' +
+        'y no un peldaño. Por eso no se publica nivel.'
+      : (f.manda.length
+          ? 'El veredicto es el peor de los tres techos. Aquí manda: ' +
+            f.manda.map(function (k) { return f.techos[k].t.toLowerCase(); }).join(' y ') + '.'
+          : 'Ninguna de las tres cuentas baja el veredicto.')));
+    /* Y qué hay que hacer para que vuelva. Un «no se puede calcular» que no
+       dice cómo se consigue es la mitad del trabajo (v880). */
+    if (f.determinado === false && f.ejeA && f.ejeA.falta) {
+      var fal = el('p', 'sp-fi-falta');
+      fal.appendChild(el('b', null, 'Qué falta para calcularlo: '));
+      fal.appendChild(document.createTextNode(f.ejeA.falta +
+        ' Se declara con `mismoObjetoVerificado` en cada contradicción documentada del registro; ' +
+        'en cuanto estén las ' + f.ejeA.sinDeclarar + ', el peldaño se calcula solo.'));
+      ver.appendChild(fal);
+    }
     izq.appendChild(ver);
 
     // ── 1b · Capa 1: qué clase de afirmaciones trae el registro ────────────
@@ -4258,7 +4369,24 @@
     if (cuerpo) c.appendChild(cuerpo);
     if (nota) c.appendChild(el('p', 'sp-graf-nota', nota));
     if (fuentes && fuentes.length) {
-      var w = el('div', 'sp-graf-src');
+      /* LAS TARJETAS DE FUENTE VAN PLEGADAS, y esto resuelve dos instrucciones
+         del mismo lector que chocan: «sin texto entre gráfico y gráfico más
+         allá del título y el pie» contra «todo lo publicado lleva visible su
+         fuente con enlace».
+
+         Medido en el bloque de la portada: los enlaces ocupan 2.265 px de
+         10.899 —el 21 %— y los gráficos mismos 1.719. Con diecisiete tarjetas,
+         la misma lista de tres o cuatro medios se repite hasta seis veces.
+
+         Plegarlas no esconde nada: los NOMBRES de las fuentes y la fecha de
+         corte siguen impresos DENTRO del SVG desde la v971 —que es lo que
+         viaja en una captura— y el enlace queda a un toque. Lo que SÍ se
+         queda visible es la nota, porque ahí va el estado procesal —«NO es
+         todavía ley»— y eso no puede depender de que alguien despliegue. */
+      var w = el('details', 'sp-graf-src');
+      var sm = el('summary', 'sp-graf-src-t',
+        fuentes.length === 1 ? 'La fuente, con su enlace' : 'Las ' + fuentes.length + ' fuentes, con sus enlaces');
+      w.appendChild(sm);
       var f = el('div', 'sp-fuentes');
       pintarFuentes(f, fuentes);
       w.appendChild(f);
@@ -4607,6 +4735,12 @@
      rótulo dentro de la barra, que sigue siendo legible; estimar de menos lo
      deja pisando el de al lado, que es lo que se vio en el papel—. Es la
      misma decisión que la v898 tomó con las cotas del lote. */
+  /* DOS decimales siempre, para las cifras en billones que el héroe imprime a
+     su lado: el héroe dice «$94,42» y la barra decía «$94,4» dos dedos más
+     abajo. Es el mismo número escrito con dos precisiones a un palmo, que es
+     la clase de la v874 —y `bn` tampoco sirve acá, porque deja «$238,6» al
+     lado de «$150,88» en una columna que se lee en vertical (v971)—. */
+  function dos(v) { return Number(v).toFixed(2).replace('.', ','); }
   function anchoRotulo(t) { return String(t).length * 7.4; }
 
   /* Un gráfico que no se puede dibujar NO se calla y NO se rellena: ocupa su
@@ -4802,6 +4936,118 @@
       svg, p.agregacion.nota, p.agregacion.fuentes);
   }
 
+  /* ── Barras horizontales, genéricas ─────────────────────────────────
+     Las tres comparaciones de dos o tres barras —intereses contra inversión,
+     crédito interno contra externo, Gobierno contra CARF— son el mismo dibujo
+     con otros rótulos. Van por una sola función y no por tres copias: tres
+     copias del mismo trazado divergen a la tanda siguiente (v879), y la que
+     divergiera lo haría en el eje o en el formato, que es donde no se ve.
+
+     `cfg` trae lo que cambia: las barras, cómo se escribe un valor, si va en
+     trama —lo que está en trámite legislativo— y su pie. */
+  function grafBarras(cfg) {
+    var filas = cfg.barras || [];
+    if (!filas.length) return null;
+    var fmt = cfg.fmt || function (v) { return '$' + un(v); };
+    var w = 720, fila = 34, arriba = 10;
+    var hh = arriba + filas.length * fila + 14 + PIE_ALTO;
+    var svg = svgEl('svg', { viewBox: '0 0 ' + w + ' ' + hh, class: 'sp-g', role: 'img',
+      'aria-label': filas.map(function (x) { return x.t + ' ' + fmt(x.v); }).join(', ') });
+    defsTrama(svg);
+    var etq = cfg.etq || 240, zona = w - etq - 110;
+    /* Eje desde CERO, que es la regla de los siete: el máximo es el mayor
+       valor y no un recorte que exagere la diferencia. */
+    var max = Math.max.apply(null, filas.map(function (x) { return x.v; })) || 1;
+    filas.forEach(function (x, i) {
+      var y = arriba + i * fila, alto = 20;
+      var largo = Math.max(2, (x.v / max) * zona);
+      /* `sp-g-rojo` y no una clase nueva: una clase que ninguna regla pinta es
+         HTML válido y no lo dice nadie (v895), y el rojo ya significa en este
+         tablero la cifra que pesa en contra —es el del héroe y el de las
+         variaciones negativas—. */
+      var cls = x.alerta ? 'sp-g-rojo' : (x.k2 ? 'sp-g-agr' : 'sp-g-c1');
+      svg.appendChild(svgEl('rect', { x: etq, y: y, width: largo, height: alto,
+                                      class: cls + ' sp-g-barra' }));
+      if (cfg.trama) svg.appendChild(svgEl('rect', { x: etq, y: y, width: largo, height: alto,
+                                                     class: cls + ' sp-g-trama' }));
+      var t = svgEl('text', { x: etq - 10, y: y + 14, class: 'sp-g-et', 'text-anchor': 'end' });
+      t.textContent = x.t;
+      svg.appendChild(t);
+      /* El valor va afuera mientras quepa y adentro cuando no: una cota que
+         no cabe se monta encima de su propio rótulo (v898). */
+      var txt = fmt(x.v), aw = anchoRotulo(txt);
+      var dentro = (etq + largo + 8 + aw > w - 4) && largo >= aw + 14;
+      var v = svgEl('text', { x: dentro ? etq + largo - 8 : etq + largo + 8, y: y + 14,
+                              class: dentro ? 'sp-g-et-in' : 'sp-g-val',
+                              'text-anchor': dentro ? 'end' : 'start' });
+      v.textContent = txt;
+      svg.appendChild(v);
+    });
+    pieDentro(svg, w, arriba + filas.length * fila + 8, fuenteCorta(cfg.fuentes), cfg.corte);
+    return tarjetaGrafica(cfg.titulo, cfg.unidad, svg, cfg.nota, cfg.fuentes);
+  }
+
+  /* El mismo par del héroe, dibujado. El héroe lo dice en palabras y en una
+     cifra grande; acá se ve la proporción, que es otra lectura del mismo
+     dato —no otra cuenta: las dos salen de `presupuesto.heroe`—. */
+  function grafDeudaInversion(p) {
+    var h = p && p.heroe;
+    if (!h || !h.interesesBn || !h.inversionBn) return null;
+    return grafBarras({
+      titulo: 'Intereses de la deuda contra inversión pública · ' + p.anio,
+      unidad: 'Billones de pesos. Eje desde cero.',
+      barras: [{ t: 'Intereses de la deuda', v: h.interesesBn, alerta: true },
+               { t: 'Inversión pública total', v: h.inversionBn }],
+      fmt: function (v) { return '$' + dos(v); },
+      trama: enTramite(p), corte: corteTexto(p), fuentes: h.fuentes,
+      nota: h.nota
+    });
+  }
+
+  /* ── El bloque fiscal: lo que no es un acto del gobierno ────────────────
+     Vive en `D.fiscal` y no en `entradas` a propósito: es el contexto contra
+     el que se leen las decisiones, no una decisión. Metido como hecho del
+     mandato contaría en los indicadores por 100 días. */
+  function fiscalDe(dd) { return ((dd || D) || {}).fiscal || null; }
+
+  function corteDe(x) {
+    return 'Fecha de corte: ' + fechaCorta(x.corte) + ' · ' +
+      (x.estadoProcesal === 'en-tramite-legislativo'
+        ? 'en trámite legislativo (trama rayada)'
+        : (x.estadoProcesal || 'en firme'));
+  }
+
+  function grafDeficit(f) {
+    var d = f && f.deficitPrimario;
+    if (!d || !(d.barras || []).length) return null;
+    return grafBarras({
+      titulo: d.titulo, unidad: d.unidad, barras: d.barras,
+      fmt: function (v) { return un(v) + ' %'; },
+      trama: false, corte: corteDe(d), fuentes: d.fuentes, etq: 260,
+      nota: d.estadoTexto + ' ' + d.nota
+    });
+  }
+
+  function grafCredito(f) {
+    var c = f && f.credito;
+    if (!c || (c.barras || []).length < 2) return null;
+    /* La suma y la participación SE CALCULAN de las barras y del total: un
+       total escrito aparte se separa de sus sumandos a la tanda siguiente
+       (v879), y acá el punto del gráfico es justamente cuánto pesan juntos. */
+    var suma = Math.round(c.barras.reduce(function (a, x) { return a + x.v; }, 0) * 100) / 100;
+    var pct = c.totalPgnBn ? Math.round(1000 * suma / c.totalPgnBn) / 10 : null;
+    return grafBarras({
+      titulo: c.titulo, unidad: c.unidad,
+      barras: c.barras.concat([{ t: 'Los dos juntos', v: suma, k2: true }]),
+      fmt: function (v) { return '$' + dos(v); },
+      trama: c.estadoProcesal === 'en-tramite-legislativo',
+      corte: corteDe(c), fuentes: c.fuentes, etq: 220,
+      nota: c.estadoTexto + ' ' + c.nota +
+        (pct == null ? '' : ' Hoy esa suma es el ' + un(pct) + ' % de los $' + bn(c.totalPgnBn) +
+          ' billones del presupuesto.')
+    });
+  }
+
   /* ── Organigrama: qué entra al score y qué no ──────────────────────────────
      Este gráfico NO tiene cifras del presupuesto: cuenta el propio registro.
      Y hay que decir lo que enseña hoy, porque es una medición y no un
@@ -4869,38 +5115,94 @@
   }
 
   // ── La página ─────────────────────────────────────────────────────────────
-  function pintarTablero() {
-    var cont = vaciar($('sp-tablero'));
-    var p = presupuestoDe(D);
+  /* ══ EL BLOQUE DE GRÁFICOS ═════════════════════════════════════
+     TODO lo que el registro tenga con fuente y fecha, graficado y seguido.
+     Sin prosa entre gráfico y gráfico más allá del título y del pie obligatorio
+     de fuente y fecha de corte —el pie va DENTRO del SVG desde la v971, para
+     que una captura de un gráfico suelto siga diciendo de dónde sale—.
 
-    if (!p) {
-      cont.appendChild(grafSinDato('El presupuesto', 'Composición, sectores y agregaciones',
-        'Falta el bloque `presupuesto` en el registro.'));
+     UNA función para las DOS superficies en las que sale —la portada y el
+     tablero—, como `placaDe` desde la v791. Dos listas de gráficos se
+     separarían a la tanda siguiente, y la que se quedara vieja sería la de la
+     portada, que es la que casi nadie revisa porque es la que todos ven.
+
+     Y lo que NO se puede dibujar con el registro se declara en su sitio, con
+     la fuente que le falta: un hueco callado se lee igual que un gráfico que
+     nunca se pensó (v849). */
+  function bloqueDeGraficos(cont) {
+    var p = presupuestoDe(D);
+    var f = fiscalDe(D);
+    var ind = D.indicadores || {};
+
+    if (p) pintarHeroe(cont, p);
+
+    var g = el('div', 'sp-graficas');
+    var poner = function (n) { if (n) g.appendChild(n); };
+
+    // 1 · La plata: presupuesto, deuda y déficit.
+    if (p) {
+      poner(grafDeudaInversion(p));
+      poner(grafTorta(p));
+      poner(grafDivergentes(p));
+      poner(grafAgrupadas(p));
     } else {
-      pintarHeroe(cont, p);
-      cont.appendChild(bloqueEditorial());
-      var g = el('div', 'sp-graficas');
-      g.appendChild(grafTorta(p));
-      g.appendChild(grafDivergentes(p));
-      g.appendChild(grafAgrupadas(p));
-      g.appendChild(grafOrganigrama(D));
-      g.appendChild(grafSinDato('Presupuestado contra efectivamente pagado · Huila, 2022-2024',
-        'Dos líneas: lo que se presupuestó y lo que de verdad se giró.',
-        'Falta la serie año por año de lo presupuestado y lo pagado, con la fuente oficial que la publique ' +
-        '—la ejecución del Sistema General de Regalías o el presupuesto departamental—. Se buscó el 19 de ' +
-        'septiembre de 2026 y no se encontró una fuente que publique las dos columnas de los tres años.'));
-      g.appendChild(grafSinDato('De la decisión nacional al uso municipal',
-        'Cadena: decisión nacional → herramienta disponible → uso municipal.',
-        'Faltan los tres eslabones como entradas del registro, cada uno con su acto identificado. Hoy no hay ' +
-        'ninguno registrado, y sin el acto que habilita no se puede sostener la cadena: dibujarla sería ' +
-        'afirmar una orden directa que el registro no documenta.'));
-      g.appendChild(grafSinDato('Frecuencia de las técnicas de distorsión',
-        'Cuántas veces aparece cada técnica en las piezas analizadas.',
-        'Falta el campo `calidadDelEncuadre` por entrada: hoy lo declaran 0 de ' + (D.entradas || []).length +
-        '. Es el mismo campo que deja en «no se puede correr» dos casilleros del control de calidad.'));
-      cont.appendChild(g);
+      poner(grafSinDato('El presupuesto', 'Composición, sectores y agregaciones',
+        'Falta el bloque `presupuesto` en el registro.'));
+    }
+    poner(grafCredito(f));
+    poner(grafDeficit(f));
+
+    // 2 · Las series del registro, cada una con su fuente.
+    seriesGraficas(D).forEach(function (k) {
+      var d = ind[k];
+      if (!d) return;
+      if (d.vista === 'porFuente') {
+        if (!(d.grupos || []).length) return;
+      } else if (!(d.puntos || []).length) return;
+      poner(tarjetaGrafica(d.titulo, d.unidad, grafSerie(d, false), d.leyenda, d.fuentes, null));
+    });
+    if (ind.deuda) {
+      poner(tarjetaGrafica(ind.deuda.titulo, ind.deuda.unidad,
+        grafDeuda(ind.deuda), ind.deuda.leyenda, ind.deuda.fuentes));
     }
 
+    // 3 · Lo que sale de contar el propio registro.
+    var gc = grafContradicciones();
+    if (gc) {
+      poner(tarjetaGrafica('Cómo se reparten las contradicciones',
+        ((D.contradicciones || {}).casos || []).length + ' casos registrados', gc,
+        'Una contradicción documentada no es lo mismo que una acusación: las desmentidas se publican ' +
+        'precisamente para señalar que circulan y son falsas.', null));
+    }
+    poner(grafOrganigrama(D));
+
+    // 4 · Los tres que el registro todavía no puede dibujar.
+    poner(grafSinDato('Presupuestado contra efectivamente pagado · Huila, 2022-2024',
+      'Dos líneas: lo que se presupuestó y lo que de verdad se giró.',
+      'Faltan las dos columnas año por año con una fuente que se pueda abrir. Se volvió a buscar el 19 de ' +
+      'septiembre de 2026: aparecen las seis cifras en la prensa regional, pero el artículo que las publica ' +
+      'no se pudo abrir desde acá y el medio que aparece no es el que el dossier nombra. Citar una dirección ' +
+      'que no se pudo leer sería fabricar una fuente con buena apariencia, así que la serie no se dibuja.'));
+    poner(grafSinDato('De la decisión nacional al uso municipal',
+      'Cadena: decisión nacional → herramienta disponible → uso municipal.',
+      'Faltan los tres eslabones como entradas del registro, cada uno con su acto identificado. Hoy no hay ' +
+      'ninguno registrado, y sin el acto que habilita no se puede sostener la cadena: dibujarla sería ' +
+      'afirmar una orden directa que el registro no documenta.'));
+    poner(grafSinDato('Frecuencia de las técnicas de distorsión',
+      'Cuántas veces aparece cada técnica en las piezas analizadas.',
+      'Falta el campo `calidadDelEncuadre` por entrada: hoy lo declaran 0 de ' + (D.entradas || []).length +
+      '. Es el mismo campo que deja en «no se puede correr» dos casilleros del control de calidad.'));
+
+    cont.appendChild(g);
+    return cont;
+  }
+
+  function pintarTablero() {
+    var cont = vaciar($('sp-tablero'));
+    bloqueDeGraficos(cont);
+    /* El editorial va DESPUÉS de los gráficos y no entre ellos: el bloque es
+       de gráficos y una opinión en medio se lee como el pie de la de arriba. */
+    cont.appendChild(bloqueEditorial());
     cont.appendChild(bloqueRectificacion());
     cont.appendChild(bloquePendientes(D));
   }
@@ -5044,8 +5346,8 @@
     var ind = D.indicadores || {};
     var cont = vaciar($('sp-graficas'));
 
-    // 1 · Las cuatro series temporales, en el mismo orden que la portada
-    HERO_SERIES.forEach(function (k) {
+    // 1 · Las series del registro, en el mismo orden que el bloque de gráficos
+    seriesGraficas(D).forEach(function (k) {
       var d = ind[k];
       if (!d) return;
       // Comparación por fuente: no lleva cifra-resumen ni delta, porque el
@@ -5098,75 +5400,36 @@
     }
   }
 
-  // Mini gráfica del dólar en la portada, para que la primera pantalla no
-  // arranque plana y se vea de una que hay datos vivos.
-  // Lo primero de la portada: cuatro series con el mismo lenguaje visual.
-  // El orden es deliberado — dólar y deuda son la plata, aprobación es el
-  // respaldo político y bombardeos es la política de seguridad.
-  var HERO_SERIES = ['dolar', 'deudaSerie', 'aprobacion', 'bombardeos'];
+  /* ── Las series que se grafican ───────────────────────────────────
+     El orden es deliberado —la plata primero, después la seguridad y al final
+     el respaldo político— y lo que el registro traiga y NO esté en la lista
+     entra igual, detrás: una serie que ninguna pantalla dibuja se ve desde
+     afuera exactamente igual que una que no existe.
 
-  function pintarHeroGrafica() {
-    var cont = vaciar($('sp-hero-graf'));
-    var ind = D.indicadores || {};
-    var hay = HERO_SERIES.filter(function (k) {
+     Y eso no es hipotético. La lista escrita a mano que había acá
+     —`HERO_SERIES`, cuatro claves— dejaba fuera `cocaina`, que está en el
+     registro con su título, su unidad, sus puntos y su fuente desde hace
+     tandas y no la dibujaba NADIE. Se encontró midiendo qué trae el registro
+     contra qué lee cada pantalla, que es como se busca esta clase.
+
+     `consulta` y `deuda` no entran: la primera es la encuesta propia, que va
+     con su propio marco y su advertencia, y la segunda no es una serie —la
+     dibuja `grafDeuda`—. */
+  var SERIES_ORDEN = ['dolar', 'deudaSerie', 'cocaina', 'bombardeos', 'aprobacion'];
+  var SERIES_NO_SON = ['consulta', 'deuda'];
+
+  function seriesGraficas(dd) {
+    var ind = ((dd || D) || {}).indicadores || {};
+    var tiene = function (k) {
       var d = ind[k];
-      if (!d) return false;
-      if (d.vista === 'porFuente') return (d.grupos || []).length > 0;
-      return (d.puntos || []).length > 0;
+      if (!d || k.charAt(0) === '_' || SERIES_NO_SON.indexOf(k) >= 0) return false;
+      return d.vista === 'porFuente' ? (d.grupos || []).length > 0 : (d.puntos || []).length > 0;
+    };
+    var out = SERIES_ORDEN.filter(tiene);
+    Object.keys(ind).forEach(function (k) {
+      if (out.indexOf(k) < 0 && tiene(k)) out.push(k);
     });
-    if (!hay.length) return;
-
-    cont.appendChild(el('h2', 'sp-hero-h', 'Cómo va el gobierno, en números'));
-    var rejilla = el('div', 'sp-hero-grid');
-
-    hay.forEach(function (k) {
-      var d = ind[k];
-      // En una comparación por fuente no hay "último punto": la cifra que
-      // representa al indicador es la primera medida del primer grupo, que es
-      // la que mide lo que dice el título (la gestión, no la elección).
-      var pts, ultimo;
-      if (d.vista === 'porFuente') {
-        var m0 = ((d.grupos[0] || {}).medidas || [])[0] || {};
-        pts = [];
-        ultimo = { v: m0.v, f: m0.f, e: m0.n };
-      } else {
-        pts = d.puntos;
-        ultimo = pts[pts.length - 1];
-      }
-
-      var b = el('button', 'sp-hero-graf'); b.type = 'button';
-      b.style.setProperty('--c', d.color || '#0E86BC');
-
-      var top = el('div', 'sp-hero-graf-top');
-      top.appendChild(el('span', 'sp-hero-graf-t', d.titulo));
-
-      // El delta solo aparece si hay de dónde calcularlo, y su color depende
-      // de lo que signifique subir en ESA serie: más deuda no es lo mismo que
-      // más aprobación. Donde subir no es ni bueno ni malo, va neutro.
-      if (pts.length >= 2) {
-        var a = pts[0].v, z = ultimo.v, dif = z - a;
-        var sube = dif > 0;
-        var clase = 'sp-delta-neutra';
-        if (d.sentido === 'sube-bueno') clase = sube ? 'sp-delta-buena' : 'sp-delta-mala';
-        else if (d.sentido === 'sube-malo') clase = sube ? 'sp-delta-mala' : 'sp-delta-buena';
-        var txt = (sube ? '▲ ' : (dif < 0 ? '▼ ' : '')) +
-          valorSerie(Math.abs(dif), d) + (a ? ' (' + Math.abs((dif / a) * 100).toFixed(1) + '%)' : '');
-        top.appendChild(el('span', 'sp-delta ' + clase, dif === 0 ? 'sin cambio' : txt));
-      }
-      b.appendChild(top);
-
-      var g = grafSerie(d, true);
-      if (g) b.appendChild(g);
-
-      b.appendChild(el('p', 'sp-hero-pie',
-        valorSerie(ultimo.v, d) + ' · ' + fechaCorta(ultimo.f)));
-      b.addEventListener('click', function () { ir({ v: 'indicadores' }); });
-      rejilla.appendChild(b);
-    });
-
-    cont.appendChild(rejilla);
-    cont.appendChild(el('p', 'sp-hero-nota',
-      'Toque cualquiera para ver la gráfica completa, su fuente y qué la explica.'));
+    return out;
   }
 
   // ── Panel de filtros ──────────────────────────────────────────────────────
@@ -5296,7 +5559,6 @@
       D = j;
       $('sp-loading').hidden = true;
       pintarHome();
-      pintarHeroGrafica();
       aplicar(hashARuta(location.hash));
       // El anterior, después: nada de lo que se ve al abrir depende de él.
       fetch('assets/data/seguimiento-petro.json?v=' + Date.now())

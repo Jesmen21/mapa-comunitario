@@ -784,19 +784,6 @@ a.sp-fuente:hover svg{ color:var(--verde-hi); }
 .sp-med-aparte b{ display:block; font-size:var(--t-8); color:var(--ink); margin-bottom:3px; }
 .sp-med-aparte span{ font-size:var(--t-9); color:var(--ink-2); }
 
-/* Tarjeta de gráfica en la portada, para que no arranque tan plana */
-.sp-hero-graf{
-  margin-top:16px; display:block; width:100%; text-align:left;
-  background:var(--sup); border:1px solid var(--linea); border-radius:var(--r);
-  padding:16px 18px; font:inherit; color:inherit; cursor:pointer;
-  transition:border-color var(--t), box-shadow var(--t);
-}
-.sp-hero-graf:hover{ border-color:#A8DFF6; box-shadow:var(--sombra); }
-.sp-hero-graf-top{
-  display:flex; align-items:baseline; justify-content:space-between; gap:12px;
-  margin-bottom:10px; flex-wrap:wrap;
-}
-.sp-hero-graf-t{ font-size:var(--t-8); font-weight:600; color:var(--ink); }
 
 /* Iconos en los indicadores de portada */
 .sp-stat{ display:flex; align-items:flex-start; gap:11px; }
@@ -1077,26 +1064,30 @@ a.sp-fuente:hover svg{ color:var(--verde-hi); }
    Cada una lleva su color en --c, y el signo del cambio va SIEMPRE con
    flecha y texto, nunca solo con color.
    ═══════════════════════════════════════════════════════════════════════ */
-.sp-hero-h{
-  margin:30px 0 12px; font-size:var(--t-5); font-weight:650; color:var(--petroleo);
+/* EL ENLACE A LA FICHA COMPLETA, después del bloque de gráficos.
+   Las miniaturas de series que vivían acá se retiraron en la v972: los
+   gráficos van enteros arriba, así que una tarjetita que repetía la misma
+   serie en pequeño y mandaba a otra sección ya no tenía para qué. */
+.sp-graf-src-t{
+  cursor:pointer; font-size:var(--t-8); font-weight:600; color:var(--petroleo);
+  padding:6px 0; list-style:none;
 }
-.sp-hero-grid{
-  display:grid; grid-template-columns:minmax(0,1fr); gap:11px;
+.sp-graf-src-t::-webkit-details-marker{ display:none; }
+.sp-graf-src-t::before{ content:'▸ '; }
+.sp-graf-src[open] .sp-graf-src-t::before{ content:'▾ '; }
+
+.sp-irficha{
+  display:flex; align-items:center; justify-content:space-between; gap:14px;
+  width:100%; margin:22px 0 6px; padding:16px 18px; text-align:left;
+  background:var(--sup); border:1px solid var(--linea); border-radius:var(--r);
+  font:inherit; color:inherit; cursor:pointer;
+  transition:border-color var(--t), box-shadow var(--t);
 }
-@media (min-width:640px){
-  .sp-hero-grid{ grid-template-columns:repeat(2, minmax(0,1fr)); }
-}
-/* Dentro de la rejilla la tarjeta ya no necesita su margen suelto */
-.sp-hero-grid .sp-hero-graf{ margin-top:0; min-width:0; }
-/* Franja del color del indicador: identifica sin depender de leer el título */
-.sp-hero-grid .sp-hero-graf{ border-left:3px solid var(--c, var(--celeste)); }
-.sp-hero-grid .sp-hero-graf:hover{ border-color:var(--linea); border-left-color:var(--c); }
-.sp-hero-pie{
-  margin-top:8px; font-size:var(--t-9); font-weight:600; color:var(--ink-2);
-  font-variant-numeric:tabular-nums;
-}
-.sp-hero-nota{
-  margin-top:10px; font-size:var(--t-9); color:var(--ink-2);
+.sp-irficha:hover{ border-color:#A8DFF6; box-shadow:var(--sombra); }
+.sp-irficha-t{ display:block; min-width:0; }
+.sp-irficha-t b{ display:block; font-size:var(--t-6); font-weight:650; color:var(--petroleo); }
+.sp-irficha-d{
+  display:block; margin-top:4px; font-size:var(--t-8); line-height:1.5; color:var(--ink-2);
 }
 
 /* Semáforo del cambio. Depende de lo que signifique subir en CADA serie:
@@ -1303,6 +1294,10 @@ a.sp-fuente:hover svg{ color:var(--verde-hi); }
 .sp-fi-v-poco-fiable{    --vc-claro:#A8471D; --vc-oscuro:#F7A876; }
 .sp-fi-v-nada-fiable{    --vc-claro:#B0302B; --vc-oscuro:#F79A95; }
 .sp-fi-v-sin-datos{      --vc-claro:var(--ink-2); --vc-oscuro:#C9D2DA; }
+/* «Sin nivel» va en GRIS y no en rojo: un peldaño que no se puede
+   calcular es una lectura pendiente NUESTRA, no un hallazgo sobre el
+   gobierno. Es la regla de los dos rojos, aplicada al veredicto. */
+.sp-fi-v-sin-nivel{      --vc-claro:var(--ink-2); --vc-oscuro:#C9D2DA; }
 
 /* La placa de un mandato CERRADO: el mismo diseño, un punto más apagado y con
    el filete gris en vez de dorado. Se nota de un vistazo que no es el de
@@ -1384,6 +1379,7 @@ a.sp-fuente:hover svg{ color:var(--verde-hi); }
   color:var(--vc-oscuro,#EAF0F6); text-wrap:balance;
 }
 .sp-fi-cuentas{ margin:0; font-size:var(--t-8); color:#C9D2DA; font-variant-numeric:tabular-nums; line-height:1.5; }
+.sp-fi-vfalta{ margin:0 0 6px; font-size:var(--t-8); line-height:1.5; color:#C9D2DA; }
 
 /* En la portada la placa es un botón: sin borde propio, con un pie que dice
    a dónde lleva. Es lo primero del módulo y ocupa el ancho de la columna. */
@@ -1506,6 +1502,9 @@ a.sp-fuente:hover svg{ color:var(--verde-hi); }
 .sp-fi-techo.manda{ background:color-mix(in srgb, var(--vc-claro,var(--ink-2)) 10%, var(--sup)); color:var(--ink); }
 .sp-fi-techo.manda b, .sp-fi-techo.manda .sp-fi-techo-p, .sp-fi-techo.manda .sp-fi-techo-den{ color:var(--vc-claro,var(--ink)); }
 .sp-fi-vnota{ margin:0; font-size:var(--t-8); line-height:1.55; color:var(--ink-2); }
+.sp-fi-falta{ margin:10px 0 0; padding:10px 12px; border:1px dashed var(--linea);
+  border-radius:var(--r-s); background:var(--linea-2); font-size:var(--t-8); line-height:1.55;
+  color:var(--ink); }
 
 /* Las secciones de la ficha: misma cabecera todas */
 .sp-fi-sec{ display:grid; gap:12px; padding:16px 18px; background:var(--sup); border:1px solid var(--linea); border-radius:var(--r-s); }

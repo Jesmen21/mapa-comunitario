@@ -11941,6 +11941,293 @@ un `?` —el SIN MATERIAL de la v970, que sigue sin material porque el registro
 sigue limpio—.
 
 
+## La ficha no publica peldaño sin sus insumos (v972)
+
+Tres cosas, y la primera la vio el usuario en la pantalla y la puso primera
+con su razón: **la ficha mostraba «FIABILIDAD · Poco fiable» con «0 casos
+confirmados · 0 en investigación · 4 cambios de postura»**, o sea publicando
+un nivel sobre un presidente en ejercicio con uno de sus tres insumos sin
+declarar.
+
+    v971   Poco fiable
+    v972   Sin nivel · falta declarar, en 4 de 4 contradicciones documentadas,
+           si las dos frases hablan del mismo objeto verificado
+
+### La tensión de la v959, resuelta por quien la tenía a su nombre
+
+La v959 dejó escrito, con todas las letras, que el techo `palabra` y el eje A
+son **dos lecturas de la misma familia con reglas distintas**: el techo
+contaba TODAS las contradicciones documentadas y el eje A solo las que además
+tienen identidad de objeto verificada. Y dejó dicho por qué no se unificaba:
+*«unificarlas cambia un veredicto publicado sobre una persona real… Esa
+decisión es de quien firma el módulo, no mía.»*
+
+El usuario la resuelve: **mientras el eje A no publique nivel, la ficha
+tampoco publica etiqueta de fiabilidad.**
+
+### El techo deja de ser un número y pasa a ser un intervalo
+
+Lo que baja el peldaño es una contradicción documentada **con identidad de
+objeto**. Mientras esa identidad no esté declarada, `TECHOS.palabra` no es un
+valor: es el tramo entre lo que ya se sabe que cuenta y lo que contaría si
+todas las pendientes resultaran serlo.
+
+```js
+var ea = ejeA(dd);                                   // una sola cuenta
+var palMin = TECHOS.palabra.f(ea.conIdentidad);
+var palMax = TECHOS.palabra.f(ea.conIdentidad + ea.sinDeclarar);
+```
+
+Se lee de `ejeA(dd)` y no de una cuenta propia, y esa es la unificación: con
+dos cuentas volverían a separarse a la tanda siguiente (v879).
+
+**El veredicto es el PEOR de los tres techos, así que con uno indeterminado el
+veredicto también lo es** — y se calcula comparando las dos cotas, sin ninguna
+bandera que alguien tenga que acordarse de bajar el día que la identidad se
+declare (v903). Hoy: `peorMin = 1`, `peorMax = 3`, así que no hay nivel.
+
+#### La desviación de la lectura literal, medida y no escondida
+
+Hay un caso en el que el peldaño **sí** se publica con la identidad sin
+declarar: cuando los otros dos techos ya lo fijan por encima del intervalo
+entero, o sea cuando el dato que falta no puede cambiar la respuesta. Con dos
+casos confirmados el veredicto es «nada fiable» lo que sea que se declare
+después.
+
+Es la única rama en la que esta versión se aparta de la lectura literal
+«mientras el eje A no publique nivel, la ficha tampoco», y va **medida en su
+propia aserción** en vez de disimulada: retener un veredicto que los casos de
+corrupción ya fijan solos sería callar por un motivo que no es suyo. Hoy esa
+rama no se alcanza con el registro real —los dos techos dan 0 y 1— así que la
+decisión del usuario y esta implementación producen exactamente lo mismo en
+pantalla.
+
+#### Y no es la Capa 3 escribiendo en el veredicto
+
+La regla de oro del pliego prohíbe que una capa escriba en la anterior, y
+`ejeA` es Capa 3. No es el caso: `conIdentidad` **no es una cantidad del eje
+A**, es el mismo registro de contradicciones que el techo `palabra` siempre
+contó, leído por un solo sitio. La guarda de la v957 sigue en verde porque lo
+que prohíbe es que la Capa 1 —la categoría probatoria, el tipo de medición, el
+contrargumento— toque el cálculo, y ninguno de los tres entra.
+
+### Qué falta, dicho en los cuatro sitios donde se lee
+
+* **la placa**, que circula recortada como captura: «Falta declarar, en 4 de 4
+  contradicciones documentadas, si las dos frases hablan del mismo objeto
+  verificado». Sin ese renglón, un «Sin nivel» pelado se lee como que el
+  módulo no supo, cuando lo que pasa es que hay una lectura pendiente y se
+  sabe exactamente cuál;
+* **la línea de cuentas**, que es la regla de la v941: «4 cambios de postura,
+  4 sin identidad de objeto declarada». La cifra sola, al lado de «Sin nivel»,
+  se lee como un error de la ficha;
+* **el techo**, que se dibuja como intervalo —«entre «Confiabilidad
+  inquebrantable» y «Poco fiable», según cómo se declare la identidad»— y no
+  como «como mucho X», que afirmaría sobre una de las dos cotas;
+* **la ficha**, con qué falta **y cómo se consigue**: un «no se puede
+  calcular» que no dice cómo se resuelve es la mitad del trabajo (v880).
+
+«Sin nivel» va en **gris** y no en rojo: un peldaño que no se puede calcular
+es una lectura pendiente nuestra, no un hallazgo sobre el gobierno. Es la
+regla de los dos rojos de la v971 aplicada al veredicto.
+
+### La aserción que se dio vuelta, y las que hubo que apretar
+
+`tficha` exigía desde la v960 que **declarar la identidad de objeto NO moviera
+el veredicto**. Era cierto, y era el defecto. Ahora lo que tiene que fallar es
+justo lo que antes tenía que pasar — la misma vuelta que dieron las dos de la
+v876.
+
+Con ella se apretaron tres más, todas por un cambio legítimo:
+
+* las tres del techo `palabra` —un cambio, dos, tres— usaban contradicciones
+  sin identidad declarada, así que medían la escalera con material que ya no
+  la mide. Ahora la declaran: **lo que baja el peldaño es una contradicción
+  CON identidad**, que es la afirmación de esta versión;
+* la de la escalera exigía **un** peldaño marcado siempre. Ahora exige uno
+  cuando hay nivel y **ninguno** cuando no se publica: exigir siempre uno
+  obligaría a marcar un peldaño que la ficha se niega a publicar, y exigir
+  siempre ninguno dejaría pasar una escalera muerta el día que el nivel vuelva;
+* la reimplementación aparte del veredicto —la que el suite hace con la misma
+  regla escrita por su cuenta, para cazar a quien afloje el criterio— lleva
+  ahora el intervalo. Va reimplementada y no importada: una prueba que llamara
+  a la misma función no comprobaría más que que es igual a sí misma.
+
+Las cuatro ramas se miden contra **registros fabricados** y no contra el real,
+que es la regla de la v970: allá no hay una sola contradicción con identidad
+declarada, así que solo se ejercitaría la primera.
+
+Demostrado contra la v971 revirtiendo solo la decisión: siete en rojo, con
+**«Poco fiable»** impreso en la placa y en la escalera.
+
+## El bloque de gráficos sube a la portada (v972)
+
+Pedido con el orden escrito: ficha del gobernante · bloque de gráficos ·
+enlace a la ficha completa · feed de noticias. *«Hoy los gráficos están en la
+sección 00 y el feed arranca de una.»*
+
+    v971   ficha · muro · título · 4 miniaturas de serie · secciones
+    v972   ficha · 17 gráficos · enlace a la ficha · muro · título · secciones
+
+### Una función, dos superficies
+
+`bloqueDeGraficos(cont)` arma el héroe y todas las tarjetas, y la llaman la
+portada y el tablero. Es lo que `placaDe` hace desde la v791 y por la misma
+razón: dos listas de gráficos se separarían a la tanda siguiente, y la que se
+quedaría vieja sería la de la portada — la que casi nadie revisa porque es la
+que todos ven.
+
+El editorial se movió **después** de los gráficos: una opinión en medio del
+bloque se lee como el pie de la tarjeta de arriba, y el pedido es «solo
+gráficos, sin texto entre gráfico y gráfico más allá del título y el pie
+obligatorio de fuente y fecha de corte».
+
+### Las cuatro miniaturas de la portada se retiraron
+
+Repetían en pequeño, y mandando a otra sección, cuatro de las series que ahora
+salen enteras dos dedos más arriba. Con ellas se fueron sus reglas de CSS: una
+regla sin un solo elemento es código que nadie llama (v885).
+
+### Una serie que ninguna pantalla dibujaba
+
+El hallazgo de la tanda, y salió midiendo qué trae el registro contra qué lee
+cada pantalla. La lista de series estaba escrita a mano —`HERO_SERIES`, cuatro
+claves— y el registro trae **cinco**: `cocaina` está ahí con su título, su
+unidad, sus puntos y su fuente desde hace tandas, y **no la dibujaba nadie**.
+
+Es la **clase C** —un dato que existe y no alcanza a ningún lector— y su cura
+es la de siempre: la lista se deriva del registro (`seriesGraficas`), con un
+orden declarado y lo que no esté en él detrás. Una serie nueva se grafica sin
+que su autor se acuerde (v867).
+
+La aserción es **por su nombre** y no por el conteo, que no la distinguiría.
+
+### Tres gráficos nuevos, y el bloque `fiscal`
+
+Las cifras del CARF y del crédito de 2027 **no son actos de este gobierno**:
+son el contexto contra el que se leen sus decisiones. Van en un bloque
+`fiscal` del registro, con su `corte`, su `estadoProcesal` y sus fuentes, y no
+en `entradas` — metidas ahí contarían en los indicadores por 100 días, y un
+pronunciamiento del CARF anterior a la posesión no es una decisión del
+presidente.
+
+| Gráfico | Qué enseña |
+|---|---|
+| Intereses de la deuda contra inversión pública | los $94,42 contra $86,96 billones del héroe, dibujados |
+| Con cuánta deuda nueva se financia 2027 | crédito interno $150,88 · externo $87,72 · **los dos juntos, calculados** |
+| Déficit primario 2026 | lo que proyecta el Gobierno (2,1 % del PIB) contra lo que estima el CARF (3,7 %) |
+
+**La aritmética se comprobó antes de publicarla**, que es la regla de la v967:
+150,88 + 87,72 = 238,60, y 238,60 / 634,95 = 37,6 %, que es la cifra que la
+prensa publica. La suma y el porcentaje **se calculan de las barras** y no van
+escritos aparte: un total separado de sus sumandos diverge a la tanda
+siguiente.
+
+Y lo que NO está va dicho dentro del propio gráfico: el déficit **total**
+proyectado para 2027 no lo publica el CARF en una forma que se pueda citar, y
+la única cifra de déficit total con fuente es la de 2025 ejecutado —6,4 % del
+PIB—, que es otra cosa y no se dibuja junto a estas.
+
+Las tres comparaciones van por **una** función, `grafBarras`: tres copias del
+mismo trazado divergen, y la que divergiera lo haría en el eje o en el
+formato, que es donde no se ve.
+
+Y una del papel: la barra decía **«$94,4»** dos dedos debajo de un héroe que
+dice **«$94,42»**. El mismo número con dos precisiones a un palmo es la clase
+de la v874, y `bn` tampoco servía —deja «$238,6» al lado de «$150,88» en una
+columna que se lee en vertical, que es lo que la v971 arregló con `un`—. Las
+cifras en billones van con **dos decimales fijos**; las del déficit, que son
+porcentajes del PIB, siguen con uno.
+
+### La serie del Huila sigue declarada sin dato, y ahora se dice por qué
+
+Se volvió a buscar, que era la instrucción. Aparecen las seis cifras en la
+prensa regional —1.468/1.151 · 1.379/0.974 · 1.585/0.653, y hasta las de 2025
+que nadie había pedido, lo que confirma que la fuente existe— pero **el
+artículo que las publica no se pudo abrir desde esta máquina** y el medio que
+aparece no es el que el dossier nombra.
+
+Citar una dirección que no se pudo leer es fabricar una fuente con buena
+apariencia, que es exactamente lo que la v967 dejó escrito. El gráfico se
+queda declarado, con la búsqueda y su resultado escritos dentro.
+
+### El defecto que salió mirando el papel, medido y NO arreglado
+
+**El texto de los ocho gráficos de barras y torta sale a 5,7–6,4 px en un
+teléfono.** El módulo tiene un piso de 13 px para texto corrido desde la v791,
+y estos lo incumplen a menos de la mitad.
+
+| Ventana | Texto de `svg.sp-g` |
+|---|---|
+| 390 px | **5,7 px** |
+| 420 px | **6,4 px** |
+| 768 px | 12,5 px |
+| 1200 px | 14,2 px |
+
+**Y son solo esos ocho, no todos**, que es la precisión que da mirar el papel:
+las cinco series temporales se dibujan con `.sp-lienzo`, que tiene su propio
+dimensionado, y se leen bien en el mismo teléfono.
+
+La causa: el texto de un SVG con `viewBox` **se escala con el dibujo**. Con
+720 unidades de ancho metidas en 342 px de pantalla, los 13,4 px de `--t-8`
+salen impresos a 6,4. No se ve leyendo el CSS —el número está bien escrito— y
+se ve mirando el papel, que es como se encontró (v874, v885).
+
+**No se arregla acá, y el motivo es que no es un cambio de CSS.** Subir el
+tamaño de la fuente rompe la geometría: `pieDentro` pone sus dos renglones a
+13 y 26 unidades, las cotas van a `y + 13` de una barra de 20, y todo eso
+supone un texto de ~13 unidades. La cura es dibujar con un `viewBox` que
+dependa del ancho, y eso toca las funciones de la familia `sp-g` con su propia
+medición cada una. Hacerlo de paso, al final de una tanda larga, es el arreglo
+estructural que este proyecto ya deshizo tres veces (v882, v886, v901).
+
+Queda medido, con los cuatro números, para que la tanda que lo tome no empiece
+por averiguar lo mismo. **Es un defecto anterior a esta versión**: lo que la
+v972 cambió es que ahora lo ve todo el que abre la portada, no solo quien
+entraba a la sección 00.
+
+### Las tarjetas de fuente van plegadas, y eso resuelve dos instrucciones que chocan
+
+«Sin texto entre gráfico y gráfico más allá del título y el pie obligatorio»
+contra «todo lo publicado lleva visible su fuente con enlace», las dos del
+mismo lector. Medido el bloque por partes, en un teléfono de 420 px:
+
+| | Alto |
+|---|---|
+| Los enlaces de fuente | **2.265 px** |
+| Las notas | 2.231 px |
+| **Los gráficos mismos** | **1.719 px** |
+| Títulos y unidades | 973 px |
+| El bloque entero | **10.899 px** |
+
+Los gráficos son el 16 % de su propio bloque y el texto de alrededor el 41 %.
+Y con diecisiete tarjetas, la misma lista de tres o cuatro medios se repite
+hasta seis veces.
+
+Se pliegan los ENLACES y se quedan las NOTAS, y cada mitad por su razón:
+plegar los enlaces no esconde nada —los NOMBRES de las fuentes y la fecha de
+corte siguen impresos dentro del SVG desde la v971, que es lo que viaja en una
+captura, y el enlace queda a un toque—, mientras que la nota lleva el estado
+procesal —«NO es todavía ley»— y eso no puede depender de que alguien
+despliegue.
+
+Medido después: **9.027 px**, con los enlaces en 396. El bloque encoge un 17 %
+sin perder una sola fuente ni una sola advertencia.
+
+### Cuatro colisiones de nombre en la misma tanda
+
+`nd`, `cxId`, `nivelDom` contra `nivelDOM`, y un `assert` que se denunció a sí
+mismo por buscar `HERO_SERIES` en un comentario que explicaba por qué se
+retiró. Las tres primeras las cazó el propio JavaScript o la suite; la cuarta
+es la lección de la v926 en pequeño —**una comprobación que lee el archivo con
+sus comentarios se comprueba a sí misma**— y se arregló mirando el USO y no la
+palabra.
+
+`nivelDom` contra `nivelDOM` merece su renglón: dos claves que se distinguen
+**solo por mayúsculas**, una del peldaño de fiabilidad y otra del nivel de
+gobierno. Es la homonimia que este proyecto persigue desde la v885, con la
+agravante de que ninguna guarda la ve. La mía se llama ahora `peldanoDom`.
+
 ## La lista viva: lo que al pliego educativo todavía le falta (v866)
 
 Esta lista se quedó vieja **cinco veces**. Cuatro dentro de la hoja —la

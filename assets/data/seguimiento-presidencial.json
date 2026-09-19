@@ -6590,6 +6590,86 @@
    ]
   }
  },
+ "fiscal": {
+  "_nota": "CIFRAS FISCALES ESTRUCTURADAS, para que los gráficos del tablero las LEAN en vez de llevarlas escritas a mano. Van acá y no en `entradas` porque NO son actos de este gobierno: son el contexto fiscal contra el que se leen sus decisiones, con su fecha de corte y sus fuentes. Meterlas como hechos del mandato las haría contar en los indicadores por 100 días, y un pronunciamiento del CARF anterior a la posesión no es una decisión del presidente. Toda cifra nueva acá lleva `fuentes` con su `rol` y se comprueba que cuadre con sus sumandos antes de publicarse.",
+  "corte": "2026-09-19",
+  "deficitPrimario": {
+   "titulo": "Déficit primario de 2026: lo que proyecta el Gobierno y lo que estima el CARF",
+   "unidad": "Porcentaje del PIB. Eje desde cero.",
+   "anio": 2026,
+   "corte": "2026-06-25",
+   "estadoProcesal": "pronunciamiento del CARF",
+   "estadoTexto": "Pronunciamiento del Comité Autónomo de la Regla Fiscal de junio de 2026, sobre la vigencia en curso. No es una cifra ejecutada: son dos proyecciones del mismo año.",
+   "barras": [
+    {
+     "t": "Lo que proyecta el Gobierno",
+     "v": 2.1
+    },
+    {
+     "t": "Lo que estima el CARF",
+     "v": 3.7,
+     "alerta": true
+    }
+   ],
+   "brechaPp": 1.6,
+   "brechaBn": 31.1,
+   "nota": "La diferencia son 1,6 puntos del PIB, que el CARF cifra en $31,1 billones de recursos que faltarían para cumplir la meta. Las dos cifras son del mismo año y del mismo concepto: no se promedian ni se elige una. Lo que NO está acá es el déficit TOTAL proyectado para 2027: el CARF no lo publica en una forma que se pueda citar, y la única cifra de déficit total con fuente es la de 2025 ejecutado, 6,4 % del PIB, que es otra cosa y no se dibuja junto a estas.",
+   "fuentes": [
+    {
+     "n": "La República · Carf advierte hueco de $31,1 billones para cumplir meta de déficit primario de 2026",
+     "rol": "acto",
+     "u": "https://www.larepublica.co/economia/carf-advierte-hueco-de-31-1-billones-para-cumplir-meta-de-deficit-primario-de-2026-4339137"
+    },
+    {
+     "n": "Infobae · El Carf alerta que la deuda neta en 2026 alcanzará el 61 % del PIB y exige un ajuste fiscal urgente",
+     "rol": "acto",
+     "u": "https://www.infobae.com/colombia/2026/06/25/el-carf-alerta-que-la-deuda-neta-en-2026-alcanzara-el-61-del-pib-y-exige-un-ajuste-fiscal-urgente/"
+    },
+    {
+     "n": "Comité Autónomo de la Regla Fiscal · Informe al Congreso",
+     "rol": "acto",
+     "u": "https://www.carf.gov.co/documents/d/guest/informe-al-congreso-abril-2026"
+    }
+   ]
+  },
+  "credito": {
+   "titulo": "Con cuánta deuda nueva se financia el presupuesto de 2027",
+   "unidad": "Billones de pesos. Eje desde cero.",
+   "anio": 2027,
+   "corte": "2026-09-10",
+   "estadoProcesal": "en-tramite-legislativo",
+   "estadoTexto": "Cifras del proyecto de presupuesto radicado. NO es todavía ley: sigue su trámite en las plenarias, así que pueden cambiar.",
+   "barras": [
+    {
+     "t": "Crédito interno",
+     "v": 150.88
+    },
+    {
+     "t": "Crédito externo",
+     "v": 87.72
+    }
+   ],
+   "totalPgnBn": 634.95,
+   "nota": "Los dos suman $238,6 billones, el 37,6 % de todo el presupuesto: de cada tres pesos que el Estado va a gastar en 2027, algo más de uno se pide prestado. La suma y el porcentaje se calculan de las dos barras y del total del presupuesto, no van escritos aparte.",
+   "fuentes": [
+    {
+     "n": "La FM · Revelan cómo se financiará el Presupuesto General de la Nación en 2027",
+     "rol": "acto",
+     "u": "https://www.lafm.com.co/economia/presupuesto-general-de-la-nacion-deudas-impuestos-gobierno-409153"
+    },
+    {
+     "n": "El Espectador · Presupuesto de 2027: el Estado tendrá más plata, pero la deuda será cada vez mayor",
+     "rol": "acto",
+     "u": "https://www.elespectador.com/economia/macroeconomia/presupuesto-de-2027-estado-tendra-mas-plata-pero-deuda-sera-cada-vez-mayor/"
+    },
+    {
+     "n": "El Colombiano · Ministerio de Hacienda abrirá cupo de deuda interna y externa para financiar $35 billones",
+     "rol": "efecto",
+     "u": "https://www.elcolombiano.com/negocios/ministerio-hacienda-ampliacion-cupo-endeudamiento-colombia-2027-CG40571232"
+    }
+   ]
+  }
+ },
  "publicacion": {
   "_nota": "LA PUERTA DE PUBLICACIÓN. El registro guarda más de lo que la pantalla publica, y eso es a propósito: lo que no llega a la pantalla no se borra, se queda como material de control —para comprobar que un criterio distingue hace falta tener también lo que rechaza (v964)—. Lo que la pantalla publica como HALLAZGO son hechos verificados, con fuente, fecha y estado procesal. Nada más. La puerta vive en js/70 (`sePublica`) y su recuento sale impreso: una exención silenciosa se lee igual que un aprobado, así que la pantalla dice cuántas entradas quedaron fuera y por qué motivo, SIN nombrarlas —nombrarlas sería publicarlas—.",
   "reglas": [

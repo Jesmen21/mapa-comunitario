@@ -8,7 +8,7 @@
 <meta name="description" content="Línea de tiempo documentada de las actuaciones, decisiones y posiciones del gobierno.">
 <link rel="manifest" href="manifest.json">
 <link rel="icon" href="assets/icons/icon-192.png">
-<link rel="stylesheet" href="css/70-seguimiento.css?v=971-el-tablero-publica-hechos-y-dice-que-retiene">
+<link rel="stylesheet" href="css/70-seguimiento.css?v=972-sin-nivel-sin-insumos-y-los-graficos-arriba">
 </head>
 <body>
 
@@ -35,12 +35,22 @@
 
   <!-- ══ 1. PORTADA ══════════════════════════════════════════════════════ -->
   <section class="sp-view" data-view="home" aria-labelledby="sp-h1">
-    <!-- El módulo abre en el perfil del gobernante: la placa con el veredicto
-         de fiabilidad y las tres cuentas que lo producen es lo PRIMERO. Quien
-         entra pregunta «¿quién gobierna y qué tal va?», y esa es la respuesta
-         corta; tocarla abre la ficha completa. Debajo, lo último publicado;
-         y solo después el título del módulo, que ya se sabe de qué trata. -->
+    <!-- EL ORDEN DE ESTA PANTALLA, y cada pieza está donde está por una razón:
+
+         1. La ficha del gobernante. Quien entra pregunta «¿quién gobierna y
+            qué tal va?», y esa es la respuesta corta.
+         2. EL BLOQUE DE GRÁFICOS, todo seguido y solo gráficos: es lo que la
+            gente viene a mirar y se lee sin entrar a ninguna sección. Hasta
+            la v971 vivía en la sección 00 y el muro arrancaba de una, así que
+            los gráficos no los veía nadie que no entrara a buscarlos.
+         3. El enlace a la ficha completa, DESPUÉS de los gráficos: es donde
+            uno ya tiene motivos para querer abrirla.
+         4. El muro de lo último publicado.
+
+         Y solo después el título del módulo, que ya se sabe de qué trata. -->
     <div id="sp-hero-ficha"></div>
+    <div id="sp-portada-graf"></div>
+    <div id="sp-ir-ficha"></div>
     <div id="sp-acceso-muro"></div>
 
     <div class="sp-lede">
@@ -50,10 +60,6 @@
          posiciones del gobierno. Cada hecho lleva su fecha real y el enlace a la fuente.</p>
       <p class="sp-who"><span id="sp-presi">—</span> <em id="sp-periodo"></em></p>
     </div>
-
-    <!-- Las gráficas van primero: es lo que la gente viene a mirar, y se leen
-         de un vistazo sin tener que entrar a ninguna sección. -->
-    <div id="sp-hero-graf"></div>
 
     <dl class="sp-stats" id="sp-stats"></dl>
 
@@ -328,6 +334,6 @@
   </div>
 </div>
 
-<script src="js/70-seguimiento.js?v=971-el-tablero-publica-hechos-y-dice-que-retiene"></script>
+<script src="js/70-seguimiento.js?v=972-sin-nivel-sin-insumos-y-los-graficos-arriba"></script>
 </body>
 </html>

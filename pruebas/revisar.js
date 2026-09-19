@@ -1117,6 +1117,56 @@ console.log('\n  -- la ficha del gobernante --');
       /categoriaProbatoriaDe/.test(j70c1) && /tipoMedicionDe/.test(j70c1) &&
       /contrargumentoDe/.test(j70c1) && /capaUnoDe_conjunto/.test(j70c1),
       'js/70 resuelve los tres y cuenta el conjunto');
+
+    /* ── EL TECHO `palabra` NO PUBLICA PELDAÑO SIN SUS INSUMOS ───────────
+       La tensión que la v959 dejó a nombre del usuario: el techo contaba
+       TODAS las contradicciones documentadas y el eje A solo las que además
+       tienen identidad de objeto verificada. La ficha publicaba «Poco
+       fiable» sobre un presidente en ejercicio con esa identidad sin
+       declarar.
+
+       Esto NO es la Capa 3 escribiendo en el veredicto: `conIdentidad` no es
+       una cantidad del eje A, es el mismo registro de contradicciones que el
+       techo `palabra` siempre contó, leído por un solo sitio para que las dos
+       lecturas no puedan separarse otra vez (v879). */
+    const tramoV2 = tramoVeredicto;
+    const c70niv = leer('css/70-seguimiento.css');
+    comprobar('el techo de cambios de postura se lee del eje A, no de una cuenta propia',
+      /var ea = ejeA\(dd\);/.test(j70c1) &&
+      /TECHOS\.palabra\.f\(ea\.conIdentidad\)/.test(j70c1) &&
+      /TECHOS\.palabra\.f\(ea\.conIdentidad \+ ea\.sinDeclarar\)/.test(j70c1),
+      'palMin y palMax salen de ejeA(dd): una sola cuenta para las dos lecturas');
+
+    comprobar('la ficha NO publica peldaño mientras el techo sea un intervalo',
+      tramoV2.length > 0 &&
+      /var determinado = peorMin === peorMax;/.test(tramoV2) &&
+      /\} else if \(!determinado\) \{/.test(tramoV2) &&
+      /id: 'sin-nivel'/.test(tramoV2),
+      !tramoV2.length ? 'no se encontró el tramo del veredicto: la comprobación no vale'
+        : 'con peorMin ≠ peorMax el veredicto es «Sin nivel» y dice entre qué dos peldaños queda');
+
+    /* La guarda de la guarda: si `ejeA` dejara de devolver las dos cuentas,
+       todo lo de arriba seguiría en verde sobre `undefined` —y `TECHOS.palabra.f`
+       de `undefined` devuelve 0 en las dos cotas, o sea un techo determinado
+       en el peldaño de arriba: el peor verde posible—. */
+    comprobar('y `ejeA` sigue devolviendo las dos cuentas que el techo necesita',
+      /conIdentidad: conId/.test(j70c1) && /sinDeclarar: sinDeclarar/.test(j70c1),
+      'ejeA publica conIdentidad y sinDeclarar');
+
+    /* La línea de la placa sigue la misma decisión, que es la regla de la
+       v941: «N cambios de postura» al lado de «Sin nivel» se lee como un
+       error de la ficha y no como una regla. */
+    comprobar('la línea de cuentas dice cuántos no se pueden usar todavía',
+      /sin identidad de objeto declarada/.test(j70c1),
+      'cuentasDe nombra los que están sin declarar');
+
+    /* Y que el peldaño nuevo esté pintado: una clase que ninguna regla pinta
+       es HTML válido y no lo dice nadie (v895). Va en GRIS y no en rojo —una
+       lectura pendiente nuestra no es un hallazgo sobre el gobierno—. */
+    comprobar('el peldaño «Sin nivel» tiene su regla en la hoja de estilo, y en gris',
+      /\.sp-fi-v-sin-nivel\{[^}]*--vc-claro:var\(--ink-2\)/.test(c70niv) &&
+      /\.sp-fi-vfalta\{/.test(c70niv) && /\.sp-fi-falta\{/.test(c70niv),
+      'sp-fi-v-sin-nivel, sp-fi-vfalta y sp-fi-falta pintadas');
   }
 
   /* ═══ CAPA 2 DEL PLIEGO · LOS INDICADORES ══════════════════════════════

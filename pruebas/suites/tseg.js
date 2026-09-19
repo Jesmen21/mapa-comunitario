@@ -350,7 +350,8 @@ const server = http.createServer((req, res) => {
     const home = document.querySelector('[data-view="home"]');
     const hijos = Array.from(home.children);
     const rCaja = caja.getBoundingClientRect();
-    const graf = document.getElementById('sp-hero-graf');
+    const graf = document.getElementById('sp-portada-graf');
+    const irf = document.getElementById('sp-ir-ficha');
     const lede = home.querySelector('.sp-lede');
     const dest = caja.querySelector('.sp-nuevo-dest');
     // Las entradas ordenadas por fecha, para saber cuál es la última real.
@@ -364,8 +365,19 @@ const server = http.createServer((req, res) => {
       // Ancho respecto a la columna: "una ventana muy corta" era el reclamo.
       anchoPct: Math.round(100 * rCaja.width / home.getBoundingClientRect().width),
       alto: Math.round(rCaja.height),
-      arribaDeGraficas: !!graf && rCaja.top < graf.getBoundingClientRect().top,
+      /* SE DIO VUELTA en la v972. Hasta la v971 el muro iba por encima de las
+         gráficas —que eran cuatro miniaturas— y los gráficos de verdad vivían
+         en la sección 00, donde no los veía quien no entrara a buscarlos. Ahora
+         el bloque entero va entre la ficha y el muro. */
+      debajoDeGraficas: !!graf && rCaja.top > graf.getBoundingClientRect().top,
+      debajoDelEnlace: !!irf && rCaja.top > irf.getBoundingClientRect().top,
+      enlaceDebajoDeGraficas: !!(irf && graf) &&
+        irf.getBoundingClientRect().top > graf.getBoundingClientRect().top,
       arribaDelTitulo: !!lede && rCaja.top < lede.getBoundingClientRect().top,
+      // Solo gráficos: ningún párrafo suelto entre tarjeta y tarjeta.
+      grafTarjetas: graf ? graf.querySelectorAll('.sp-graf').length : 0,
+      grafSueltos: graf ? Array.from(graf.children)
+        .filter(n => !/sp-graficas|sp-heroe/.test(n.className)).length : 0,
       hayDestacado: !!dest,
       titulo: dest ? (dest.querySelector('.sp-nuevo-tit') || {}).textContent || '' : '',
       detalle: dest ? (dest.querySelector('.sp-nuevo-det') || {}).textContent || '' : '',
@@ -386,9 +398,21 @@ const server = http.createServer((req, res) => {
   chk(!!aldia, 'la portada trae el bloque de lo último publicado');
   chk(aldia.placaPrimero && aldia.primero === 'sp-hero-ficha',
       'lo primero de la portada es la placa del gobernante con su veredicto (' + aldia.primero + ')');
-  chk(aldia.posicion === 1, 'y lo último publicado va justo debajo (va ' + (aldia.posicion + 1) + 'º)');
-  chk(aldia.arribaDelTitulo && aldia.arribaDeGraficas,
-      'por encima del título del módulo y de las gráficas');
+  /* EL ORDEN DE LA PANTALLA (v972): ficha → bloque de gráficos → enlace a la
+     ficha completa → muro. Se mide por POSICIÓN en la página y no por el orden
+     del HTML: lo que hay que comprobar es lo que el lector encuentra al bajar. */
+  chk(aldia.posicion === 3,
+      'el muro va después del bloque de gráficos y del enlace (va ' + (aldia.posicion + 1) + 'º)');
+  chk(aldia.debajoDeGraficas && aldia.enlaceDebajoDeGraficas && aldia.debajoDelEnlace,
+      'y el orden en la pantalla es ficha · gráficos · enlace a la ficha · muro');
+  chk(aldia.grafTarjetas >= 12,
+      'el bloque trae TODO lo que el registro puede graficar, no una muestra (' +
+      aldia.grafTarjetas + ' tarjetas)');
+  chk(aldia.grafSueltos === 0,
+      'y son solo gráficos: ningún párrafo suelto entre tarjeta y tarjeta (' +
+      aldia.grafSueltos + ' sueltos)');
+  chk(aldia.arribaDelTitulo,
+      'por encima del título del módulo, que ya se sabe de qué trata');
   chk(aldia.anchoPct >= 95, 'ocupa el ancho completo de la columna (' + aldia.anchoPct + '%)');
   chk(aldia.alto >= 260, 'con alto suficiente para leerse, no una ventanita (' + aldia.alto + ' px)');
   // Lo esencial: que se pueda uno enterar SIN entrar.

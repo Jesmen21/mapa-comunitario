@@ -1,4 +1,4 @@
-const URBIS_CACHE = 'urbis-v971-el-tablero-publica-hechos-y-dice-que-retiene';
+const URBIS_CACHE = 'urbis-v972-sin-nivel-sin-insumos-y-los-graficos-arriba';
 const URBIS_ASSETS = [
   './',
   './index.html',

@@ -90,8 +90,25 @@ const server = http.createServer((req, res) => {
   const IDS = ['inquebrantable', 'fiable', 'dudosa', 'poco-fiable', 'nada-fiable'];
   const ESCALERA_T = { 'inquebrantable': 'Confiabilidad inquebrantable', 'fiable': 'Fiable',
                        'dudosa': 'Dudosa', 'poco-fiable': 'Poco fiable', 'nada-fiable': 'Nada fiable' };
+  /* El techo de la palabra se unifica con el eje A: lo que baja el peldaño es
+     una contradicción documentada CON identidad de objeto verificada. Con la
+     identidad sin declarar el techo no es un número sino un intervalo, y el
+     veredicto solo se publica cuando las dos cotas coinciden —o sea cuando el
+     dato que falta no puede cambiar la respuesta—.
+
+     Va reimplementado acá, como el resto de la escalera: una prueba que
+     importara la misma función no comprobaría nada más que que es igual a sí
+     misma. */
+  const docCuentan = casos.filter(c => c.estado === 'documentada' && c.cuenta !== false);
+  esperado.conIdentidad = docCuentan.filter(c => c.mismoObjetoVerificado === true).length;
+  esperado.sinIdentidad = docCuentan.filter(c => c.mismoObjetoVerificado === false).length;
+  esperado.sinDeclararId = docCuentan.length - esperado.conIdentidad - esperado.sinIdentidad;
+  const otros = Math.max(techo.casos(esperado.confirmados, esperado.enInvestigacion),
+                         techo.claridad(esperado.pct));
+  esperado.peorMin = Math.max(otros, techo.palabra(esperado.conIdentidad));
+  esperado.peorMax = Math.max(otros, techo.palabra(esperado.conIdentidad + esperado.sinDeclararId));
   esperado.veredicto = (esperado.revisados < 3 || esperado.hechos < 20) ? 'sin-datos'
-    : IDS[Math.max(techo.casos(esperado.confirmados, esperado.enInvestigacion), techo.palabra(esperado.contadas), techo.claridad(esperado.pct))];
+    : (esperado.peorMin !== esperado.peorMax ? 'sin-nivel' : IDS[esperado.peorMin]);
 
   await new Promise(r => server.listen(0, r));
   const base = 'http://127.0.0.1:' + server.address().port;
@@ -125,7 +142,18 @@ const server = http.createServer((req, res) => {
     return { hay: true,
              posicion: hijos.indexOf(hero),
              botonViejo: !!document.getElementById('sp-acceso-ficha'),
-             muroDespues: hijos.indexOf(document.getElementById('sp-acceso-muro')) === hijos.indexOf(hero) + 1,
+             /* SE DIO VUELTA en la v972: entre la placa y el muro entraron el
+                bloque de gráficos y el enlace a la ficha completa. Se mide el
+                ORDEN y no la distancia —«justo debajo» era una constante de la
+                maquetación metida en la aserción—. */
+             ordenPortada: ['sp-hero-ficha', 'sp-portada-graf', 'sp-ir-ficha', 'sp-acceso-muro']
+               .map(id => hijos.indexOf(document.getElementById(id))),
+             /* El héroe es el texto más grande de la página desde la v971 —lo
+                primero que se lee es un hecho con fuente, no un veredicto
+                calculado—, así que el veredicto es el mayor DE LA PLACA. */
+             tamHeroe: (() => { const n = document.querySelector('.sp-heroe-n'); return n ? tam(n) : 0; })(),
+             masGrandePlaca: Math.max(...Array.from(placa.querySelectorAll('*'))
+               .filter(x => x.children.length === 0 && x.textContent.trim()).map(tam)),
              arribaDelTitulo: r.top < home.querySelector('.sp-lede').getBoundingClientRect().top,
              anchoPct: Math.round(100 * r.width / home.getBoundingClientRect().width),
              veredicto: vval ? vval.textContent : '',
@@ -140,14 +168,24 @@ const server = http.createServer((req, res) => {
     console.log('  ' + portada.veredicto + ' · ' + portada.cuentas);
     console.log('  ' + portada.secs.join(' · '));
     chk(portada.posicion === 0, 'y la placa es lo PRIMERO (va ' + (portada.posicion + 1) + 'º)');
-    chk(portada.muroDespues && portada.arribaDelTitulo, 'lo último publicado va justo debajo, y el título después');
+    var o = portada.ordenPortada || [];
+    chk(o.length === 4 && o.every((v, i) => v >= 0 && (!i || v > o[i - 1])) && portada.arribaDelTitulo,
+        'y después van, en este orden, el bloque de gráficos, el enlace a la ficha y el muro (' +
+        o.join(' · ') + ')');
     chk(!portada.botonViejo, 'el botón viejo de acceso a la ficha ya no está');
     chk(portada.anchoPct >= 95, 'ocupa el ancho de la columna (' + portada.anchoPct + '%)');
     chk(/casos? confirmados?/.test(portada.cuentas) && /en investigación/.test(portada.cuentas) &&
         /cambios? de postura/.test(portada.cuentas) && /% verificado|sin verificación/.test(portada.cuentas),
         'enseña las cuentas que producen el veredicto, con los casos en investigación');
-    chk(portada.tamVeredicto >= portada.masGrande - 0.5,
-        'el veredicto es el texto más grande de la portada (' + portada.tamVeredicto + ' px)');
+    chk(portada.tamVeredicto >= portada.masGrandePlaca - 0.5,
+        'el veredicto es el texto más grande de la placa (' + portada.tamVeredicto + ' px)');
+    /* Y el de la PÁGINA es el héroe, que es un hecho con fuente. La aserción
+       anterior pedía que el veredicto fuera el mayor de la portada, y eso dejó
+       de ser cierto —y de ser deseable— el día que el bloque de gráficos subió:
+       lo primero que se lee no es un juicio calculado sobre una persona. */
+    chk(portada.tamHeroe > portada.tamVeredicto,
+        'y el texto más grande de la página es el héroe, que es un hecho con fuente (' +
+        portada.tamHeroe + ' contra ' + portada.tamVeredicto + ' px)');
     /* El tablero abre la rejilla desde la v971: lo primero es un HECHO con
        fuente y no un veredicto calculado. La ficha baja a 01 y el resto
        corre. Se pide el orden y la numeración corrida, que es lo que la
@@ -199,6 +237,24 @@ const server = http.createServer((req, res) => {
         den: den ? den.textContent.replace(/\s+/g, ' ').trim() : '',
         // Visible de verdad, no solo presente en el DOM.
         visible: !!(den && getComputedStyle(den).display !== 'none' && den.offsetHeight > 0)
+      };
+    })();
+    /* El peldaño que NO se publica, leído del papel: la placa circula como
+       captura, así que lo que hay que comprobar es lo que se ve en ella, no
+       lo que devuelve la función. */
+    (function () {
+      const q = sel => { const n = document.querySelector(sel); return n ? n.innerText.replace(/\s+/g, ' ').trim() : null; };
+      const filas = Array.from(document.querySelectorAll('#sp-ficha .sp-fi-techo'));
+      const pal = filas.filter(x => /postura/i.test(x.textContent))[0];
+      o.peldanoDom = {
+        vval: q('#sp-ficha .sp-fi-vval'),
+        vfalta: q('#sp-ficha .sp-fi-vfalta'),
+        cuentas: q('#sp-ficha .sp-fi-cuentas'),
+        falta: q('#sp-ficha .sp-fi-falta'),
+        vnota: q('#sp-ficha .sp-fi-vnota'),
+        techoPalabra: pal ? pal.innerText.replace(/\s+/g, ' ').trim() : null,
+        // Ningún peldaño de la escalera puede salir marcado como el vigente.
+        pasosOn: Array.from(document.querySelectorAll('#sp-ficha .sp-fi-paso.on')).map(n => n.textContent.trim())
       };
     })();
     const caja = document.getElementById('sp-ficha');
@@ -313,6 +369,11 @@ const server = http.createServer((req, res) => {
       entradas: hechos(nHechos, tipo), contradicciones: { casos: cxs },
       casos: { lista: corr || [] }, foda: {} });
     const cx = (estado, cuenta) => ({ estado: estado, cuenta: cuenta, tema: 't' });
+    /* Una contradicción documentada que baja el peldaño lleva su identidad de
+       objeto DECLARADA: desde la v972 el techo `palabra` cuenta las que la
+       tienen, así que una sin declarar ya no mide la escalera —deja la ficha
+       sin peldaño, que es otra cosa y se mide aparte—. */
+    const cxConId = () => ({ estado: 'documentada', tema: 't', mismoObjetoVerificado: true });
     const caso = estado => ({ id: 'c', titulo: 'c', estado: estado, fecha: '2026-08-10', fuentes: [{ n: 'x', u: 'https://x' }] });
     const limpio = [cx('desmentida'), cx('desmentida'), cx('tension')];
     const V = (n, t, cxs, corr) => api.calcularCon(armar(n, t, cxs, corr), '2026-08-20').veredicto.id;
@@ -324,10 +385,10 @@ const server = http.createServer((req, res) => {
     o.pruebas = {
       inquebrantable: Vm(mixto90, limpio),
       // Un cambio de postura → como mucho fiable.
-      unCambio: Vm(mixto90, limpio.concat([cx('documentada')])),
+      unCambio: Vm(mixto90, limpio.concat([cxConId()])),
       // Dos → dudosa. Tres → poco fiable.
-      dosCambios: Vm(mixto90, limpio.concat([cx('documentada'), cx('documentada')])),
-      tresCambios: Vm(mixto90, limpio.concat([cx('documentada'), cx('documentada'), cx('documentada')])),
+      dosCambios: Vm(mixto90, limpio.concat([cxConId(), cxConId()])),
+      tresCambios: Vm(mixto90, limpio.concat([cxConId(), cxConId(), cxConId()])),
       // El % verificado pone su propio techo: 80 → fiable; 60 → dudosa; 40 → poco fiable.
       pct80: Vm(mixto(32, 8), limpio), pct60: Vm(mixto(24, 16), limpio), pct40: Vm(mixto(16, 24), limpio),
       // Un caso CONFIRMADO baja a poco fiable aunque todo lo demás esté limpio; dos, nada fiable.
@@ -695,13 +756,42 @@ const server = http.createServer((req, res) => {
       // Ningún eje trae un total, ni la lista lo trae colgado.
       totales: ejesCon.filter(x => x.total !== undefined || x.indice !== undefined).length
     };
-    // Los ejes NO mueven el veredicto: la misma ficha con y sin contradicciones
-    // que declaran identidad de objeto.
+    /* ── EL TECHO `palabra`, UNIFICADO CON EL EJE A ────────────────────
+       La tensión que la v959 dejó declarada. Cuatro registros fabricados,
+       porque contra el registro real ninguna de estas ramas se distingue: allá
+       no hay una sola contradicción con identidad declarada, así que solo se
+       ejercitaría la primera (v970 — medir el registro es medir el número).
+
+       Los cuatro se diferencian en UNA cosa cada uno, que es lo que permite
+       leer qué falló cuando falla. */
+    // (a) documentada con la identidad SIN declarar → el techo es un intervalo.
     const vSinId = api.calcularCon(armar(40, 'verificado', limpio.concat([cx('documentada')])), '2026-08-20');
+    // (b) declarada FALSE —tensión retórica—: no baja el peldaño, y se publica.
     const cxIdent = limpio.concat([Object.assign(cx('documentada'), { mismoObjetoVerificado: false })]);
     const vConId = api.calcularCon(armar(40, 'verificado', cxIdent), '2026-08-20');
-    o.ejesOro = { sin: vSinId.veredicto.id, con: vConId.veredicto.id,
-                  techoSin: vSinId.techos.palabra.i, techoCon: vConId.techos.palabra.i };
+    // (c) declarada TRUE: baja el peldaño, y se publica.
+    const cxIdentSi = limpio.concat([Object.assign(cx('documentada'), { mismoObjetoVerificado: true })]);
+    const vIdSi = api.calcularCon(armar(40, 'verificado', cxIdentSi), '2026-08-20');
+    /* (d) sin declarar, pero con DOS confirmados: el intervalo entero queda por
+       debajo de lo que ya fijan los otros dos techos, así que el dato que falta
+       no puede cambiar la respuesta y el peldaño SÍ se publica.
+
+       Es la única rama en la que esta versión se aparta de la lectura literal
+       «mientras el eje A no publique nivel, la ficha tampoco», y va medida a
+       propósito en vez de escondida: retener un veredicto que los casos de
+       corrupción ya fijan solos sería callar por un motivo que no es suyo. */
+    const vMandaCasos = api.calcularCon(
+      armar(40, 'verificado', limpio.concat([cx('documentada')]), [caso('confirmado'), caso('confirmado')]),
+      '2026-08-20');
+    const leerV = v => ({ id: v.veredicto.id, det: v.determinado,
+                          i: v.techos.palabra.i, iMax: v.techos.palabra.iMax,
+                          ind: !!v.techos.palabra.indeterminado,
+                          conId: v.techos.palabra.conIdentidad, sinDec: v.techos.palabra.sinDeclarar,
+                          manda: (v.manda || []).join(','),
+                          falta: ((v.ejeA || {}).falta || '').slice(0, 200),
+                          d: (v.veredicto.d || '').slice(0, 420) });
+    o.techoUnificado = { sinDeclarar: leerV(vSinId), idFalse: leerV(vConId),
+                         idTrue: leerV(vIdSi), mandaCasos: leerV(vMandaCasos) };
 
     /* ── CAPA 4 · el marco, el editorial y el control ──────────────────
        Tres registros: sin editorial, con uno firmado que se apoya en una
@@ -1149,10 +1239,62 @@ const server = http.createServer((req, res) => {
   chk(ej.c && ej.c.publicable === false && /deflactada/.test(ej.c.falta || ''),
       'EJE C · declarado con la fuente entera que le falta, no sacado de los titulares');
 
-  const eo = r.ejesOro || {};
-  chk(eo.sin === eo.con && eo.techoSin === eo.techoCon,
-      'REGLA DE ORO · declarar la identidad de objeto no mueve el veredicto ni el techo de la palabra (' +
-      eo.sin + '/' + eo.techoSin + ' contra ' + eo.con + '/' + eo.techoCon + ')');
+  /* ── EL TECHO `palabra`, UNIFICADO CON EL EJE A ──────────────────────
+     Esta aserción SE DIO VUELTA, como las dos de la v876. Hasta la v971 decía
+     que declarar la identidad de objeto NO movía el veredicto —era cierto, y
+     era el defecto: el techo contaba todas las contradicciones documentadas
+     mientras el eje A solo las que tienen identidad, y la ficha publicaba
+     «Poco fiable» sobre un presidente en ejercicio con esa lectura pendiente—.
+     Ahora lo que tiene que fallar es justo lo que antes tenía que pasar. */
+  const tu = r.techoUnificado || {};
+  console.log('\n── El techo de la palabra, unificado con el eje A ────');
+  Object.keys(tu).forEach(k => console.log('  ' + k + ': ' + JSON.stringify(tu[k])));
+
+  chk(tu.sinDeclarar && tu.idFalse && tu.idTrue && tu.mandaCasos &&
+      tu.sinDeclarar.sinDec === 1 && tu.idFalse.sinDec === 0 && tu.idTrue.conId === 1,
+      'MATERIAL · los cuatro registros se distinguen en la identidad de objeto (' +
+      [tu.sinDeclarar, tu.idFalse, tu.idTrue].map(x => (x || {}).conId + '/' + (x || {}).sinDec).join(' · ') + ')');
+
+  chk(tu.sinDeclarar && tu.sinDeclarar.id === 'sin-nivel' && tu.sinDeclarar.det === false &&
+      tu.sinDeclarar.ind === true && tu.sinDeclarar.i === 0 && tu.sinDeclarar.iMax === 1,
+      'con la identidad SIN declarar no se publica peldaño: el techo es un intervalo (' +
+      (tu.sinDeclarar || {}).id + ' · ' + (tu.sinDeclarar || {}).i + '–' + (tu.sinDeclarar || {}).iMax + ')');
+
+  chk(tu.sinDeclarar && /entre «/.test(tu.sinDeclarar.d) && /sin sus insumos/.test(tu.sinDeclarar.d) &&
+      /MISMO objeto verificado/.test(tu.sinDeclarar.falta || ''),
+      'y dice entre qué dos peldaños queda y qué falta para decidirlo');
+
+  chk(tu.idFalse && tu.idFalse.id === 'inquebrantable' && tu.idFalse.det === true && tu.idFalse.ind === false,
+      'declarada como tensión retórica —identidad FALSE— no baja el peldaño, y el veredicto se publica (' +
+      (tu.idFalse || {}).id + ')');
+
+  chk(tu.idTrue && tu.idTrue.id === 'fiable' && tu.idTrue.det === true && tu.idTrue.i === 1,
+      'declarada con identidad TRUE sí lo baja, y el veredicto se publica (' + (tu.idTrue || {}).id + ')');
+
+  /* La rama medida donde el dato que falta no puede cambiar la respuesta. Sin
+     ella, la regla sería «no se publica nunca que haya una identidad sin
+     declarar», y un veredicto que los casos de corrupción fijan solos se
+     callaría por un motivo que no es suyo. */
+  chk(tu.mandaCasos && tu.mandaCasos.id === 'nada-fiable' && tu.mandaCasos.det === true &&
+      tu.mandaCasos.ind === true && tu.mandaCasos.sinDec === 1,
+      'con dos confirmados el intervalo no puede cambiar la respuesta, y el peldaño SÍ se publica (' +
+      (tu.mandaCasos || {}).id + ')');
+
+  /* Y sobre el registro REAL, leído del papel. */
+  const pd = r.peldanoDom || {};
+  console.log('  DOM: ' + JSON.stringify(pd).slice(0, 460));
+  chk(pd.vval === 'Sin nivel' && (pd.pasosOn || []).length === 0,
+      'la ficha publicada NO enseña peldaño de fiabilidad: dice «Sin nivel» y ningún paso marcado (' +
+      pd.vval + ' · ' + (pd.pasosOn || []).join(',') + ')');
+  chk(/Falta declarar/.test(pd.vfalta || '') && /mismo objeto verificado/.test(pd.vfalta || ''),
+      'y la PLACA —que circula recortada— dice qué falta para calcularlo');
+  chk(/sin identidad de objeto declarada/.test(pd.cuentas || ''),
+      'la línea de cuentas no enseña los cambios de postura como si se pudieran usar');
+  chk(/Qué falta para calcularlo/.test(pd.falta || '') && /mismoObjetoVerificado/.test(pd.falta || ''),
+      'y la ficha dice cómo se consigue, no solo que falta');
+  chk(/entre «/.test(pd.techoPalabra || '') && !/como mucho/.test(pd.techoPalabra || ''),
+      'el techo indeterminado se dibuja como intervalo y no como «como mucho X» (' +
+      String(pd.techoPalabra || '').slice(0, 110) + ')');
 
   console.log('\n── La Capa 4: el marco, el editorial y el control ────');
   const c4 = r.capa4 || {};
@@ -1254,8 +1396,16 @@ const server = http.createServer((req, res) => {
       'un caso sin día publicado enseña el texto de su fuente, no un 1 de enero inventado (' + conTexto.length + ')');
   chk(esperado.enInvestigacion === 0 || /Pesa en el veredicto, menos que un confirmado/.test(r.txt),
       'y cada caso en investigación dice que pesa, menos que un confirmado');
-  chk(r.escalera.length === 5 && r.escalera.filter(x => /\*$/.test(x)).length === 1,
-      'la escalera marca un solo peldaño de cinco: ' + r.escalera.join(' · '));
+  /* La escalera sigue la misma decisión que el veredicto (v972): un peldaño
+     marcado cuando hay nivel, NINGUNO cuando no se publica. Exigir siempre uno
+     habría obligado a marcar un peldaño que la ficha se niega a publicar, y
+     exigir siempre ninguno dejaría pasar una escalera muerta el día que el
+     nivel vuelva. */
+  const pasosMarcados = r.escalera.filter(x => /\*$/.test(x)).length;
+  chk(r.escalera.length === 5 && pasosMarcados === (esperado.veredicto === 'sin-nivel' ||
+        esperado.veredicto === 'sin-datos' ? 0 : 1),
+      'la escalera marca el peldaño del veredicto, y ninguno cuando no se publica nivel (' +
+      esperado.veredicto + ' · ' + pasosMarcados + ' marcados) : ' + r.escalera.join(' · '));
   chk(/peor de los tres techos/.test(r.txt), 'dice en la cara que el veredicto es el peor de tres techos');
 
   // ── El denominador de la cifra que decide el veredicto ─────────────────
@@ -1502,6 +1652,11 @@ const server = http.createServer((req, res) => {
         .filter(x => { const k = getComputedStyle(x).stroke; return k && k !== 'none'; }).length, 0),
       heroe: (t.querySelector('.sp-heroe-n') || {}).textContent || '',
       falta: t ? t.querySelectorAll('.sp-graf-falta').length : 0,
+      titulos: t ? Array.from(t.querySelectorAll('.sp-graf-h')).map(x => x.textContent) : [],
+      /* El editorial va DESPUÉS de los gráficos, no entre ellos: una opinión
+         en medio del bloque se lee como el pie de la tarjeta de arriba. */
+      editDespues: !!(ed && t.querySelector('.sp-graficas') &&
+        ed.getBoundingClientRect().top > t.querySelector('.sp-graficas').getBoundingClientRect().top),
       edit: !!ed,
       editSerif: ed ? /serif|Georgia/i.test(getComputedStyle(ed).fontFamily) : false,
       rect: !!t.querySelector('.sp-rect'),
@@ -1509,10 +1664,40 @@ const server = http.createServer((req, res) => {
     };
   });
   console.log('  tablero: ' + tab.svgs + ' gráficos · ' + tab.falta + ' declarados sin dato · héroe ' + tab.heroe);
-  chk(tab.tarjetas === 7 && tab.heroeSvg === 1 && tab.svgs === 5,
-      'los SIETE gráficos salen, cada uno dibujado o declarado, y el héroe encima: ' +
+  /* EL BLOQUE ES TODO LO QUE EL REGISTRO PUEDE GRAFICAR, no los siete del
+     pliego: la v972 le sumó lo fiscal y las series. El número exacto no se
+     fija acá —sería una constante del registro metida en la comprobación, que
+     es la lección de la v890—: se exige que estén los SIETE del pliego por su
+     nombre, y que el resto del registro también salga. */
+  var DEL_PLIEGO = ['Composición del Presupuesto', 'Variación real por sector',
+                    'dos agregaciones', 'Qué entra al score presidencial',
+                    'Huila', 'decisión nacional al uso municipal', 'técnicas de distorsión'];
+  var faltanDelPliego = DEL_PLIEGO.filter(function (t) {
+    return !(tab.titulos || []).some(function (x) { return x.indexOf(t) >= 0; });
+  });
+  chk(faltanDelPliego.length === 0 && tab.heroeSvg === 1,
+      'los SIETE gráficos del pliego salen, cada uno dibujado o declarado, y el héroe encima: ' +
       'una pieza que reviente en silencio deja de aparecer (' +
-      tab.tarjetas + ' tarjetas · ' + tab.svgs + ' dibujados · héroe ' + tab.heroeSvg + ')');
+      (faltanDelPliego.length ? 'faltan: ' + faltanDelPliego.join(' · ') : 'los siete') +
+      ' · héroe ' + tab.heroeSvg + ')');
+  chk(tab.tarjetas >= 14 && tab.svgs >= 8,
+      'y con ellos TODO lo demás que el registro trae con fuente y fecha (' +
+      tab.tarjetas + ' tarjetas · ' + tab.svgs + ' svg.sp-g)');
+  /* Las tres cifras fiscales que la v972 entró, leídas del PAPEL: si el bloque
+     `fiscal` desapareciera del registro, las tarjetas se caerían en silencio. */
+  chk(['Con cuánta deuda nueva', 'Déficit primario de 2026',
+       'Intereses de la deuda contra inversión'].every(function (t) {
+         return (tab.titulos || []).some(function (x) { return x.indexOf(t) >= 0; }); }),
+      'las tres comparaciones fiscales salen del bloque `fiscal` y del héroe, no de números tecleados');
+  /* `cocaina` está en el registro con su título, su unidad, sus puntos y su
+     fuente desde hace tandas, y NINGUNA pantalla la dibujaba: la lista de
+     series estaba escrita a mano y no la nombraba. Es la clase C —un dato que
+     existe y no alcanza a ningún lector— y por eso la aserción es por su
+     nombre y no por el conteo, que no la distinguiría. */
+  chk((tab.titulos || []).some(function (x) { return /Cocaína incautada/.test(x); }),
+      'y la serie que ninguna pantalla dibujaba —cocaína incautada— ya sale');
+  chk(tab.editDespues,
+      'el editorial va DESPUÉS del bloque y no entre dos gráficos');
   chk(tab.conPie === tab.svgs && tab.svgs > 0,
       'cada gráfico lleva su fuente y su fecha de corte DENTRO del gráfico (' +
       tab.conPie + ' de ' + tab.svgs + ')');
