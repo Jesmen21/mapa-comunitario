@@ -13,7 +13,7 @@
 
    La versión va acá y en vision-territorial.html, idéntica, como en los
    otros siete archivos de versión del sitio: revisar.js lo comprueba. */
-const VT_CACHE = 'urbis-vt-v968-incendio-las-hermosas-en-buga-y-alto-menga-controlado';
+const VT_CACHE = 'urbis-vt-v969-seguimiento-presidencial-ecopetrol-onu-decretos-terremoto';
 const VT_ASSETS = [
   './vision-territorial.html',
   './css/90-vt.css',

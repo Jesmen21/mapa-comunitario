@@ -1,4 +1,4 @@
-const URBIS_CACHE = 'urbis-v968-incendio-las-hermosas-en-buga-y-alto-menga-controlado';
+const URBIS_CACHE = 'urbis-v969-seguimiento-presidencial-ecopetrol-onu-decretos-terremoto';
 const URBIS_ASSETS = [
   './',
   './index.html',
