@@ -3,6 +3,25 @@
 Notas para cualquier sesión que retome el proyecto. Están acá porque cada una
 de ellas costó tiempo averiguarla o romper algo.
 
+## Lo que sigue, y en este orden
+
+**El registro es hoy el cuello de botella, no el código**, así que endurecer
+guardas sobre material que no está solo aumenta la distancia: la guarda de rol
+corre en 1 de 5 entradas que declaran, cuatro criterios siguen sin validar, y
+los ejes B y C no tienen base histórica. Por eso estas dos van antes que
+cualquier otra cosa, y por eso no se abre frente nuevo hasta que estén:
+
+1. **Migrar las veinte entradas con la forma antigua `fuente` + `url`** a
+   `fuentes[]` con su `rol`, para que la guarda de «al menos una fuente
+   documenta el acto» corra sobre todas.
+2. **Entrar como registros los casos del dossier que faltan** — veintidós
+   verificados con fuente, la mayoría todavía sin entrada.
+
+Y una precisión sobre la primera: si al migrar aparece una entrada cuyo rol de
+fuente **no se puede establecer porque ninguna fuente documenta el acto**, no
+se inventa y no se deja pasar. Se queda en `sin-acto` y se sigue. **Es
+hallazgo, no obstáculo.**
+
 ## Antes de tocar nada: traer lo de arriba
 
 ```bash
