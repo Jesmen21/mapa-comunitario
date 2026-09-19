@@ -3,8 +3,8 @@
  "presidente": "Abelardo de la Espriella",
  "periodo": "2026 – 2030",
  "posesion": "2026-08-07",
- "actualizado": "2026-09-18",
- "proximaActualizacion": "2026-09-19",
+ "actualizado": "2026-09-19",
+ "proximaActualizacion": "2026-09-20",
  "categorias": {
   "gobierno": {
    "nombre": "Gobierno y decretos",
@@ -73,6 +73,194 @@
   }
  },
  "entradas": [
+  {
+   "fecha": "2026-09-18",
+   "precision": "exacta",
+   "categoria": "gobierno",
+   "titulo": "De la Espriella lidera un Consejo de Seguridad en Cartagena con 46 alcaldes de Bolívar y da un ultimátum a cabecillas del ELN, disidencias de las FARC y el Clan del Golfo",
+   "categoriaProbatoria": "hecho-probado",
+   "tipoMedicion": "actividad",
+   "detalle": "El presidente Abelardo de la Espriella lideró el 18 de septiembre un Consejo de Seguridad en Cartagena junto al gobernador de Bolívar, Yamil Hernando Arana Padauí, y los alcaldes de los 46 municipios del departamento. Dirigiéndose a cabecillas de estructuras armadas que operan en la región —del ELN (alias «Omar» u «Ocasinga» y alias «Francisco»), de disidencias de las FARC agrupadas en la Segunda Marquetalia y en el «Estado Mayor de Bloques» (alias «Gonzalo» o «Chalo», y alias «Jhon Mechas») y del Clan del Golfo (alias «Piolín» y «Jefferson»)— advirtió que «tienen fecha de expiración» y que deben «entregarse o los doy de baja, como lo manda la ley». Señaló las economías ilícitas, el narcotráfico, la extorsión y el contrabando como los flagelos prioritarios del departamento. En el mismo evento anunció el traslado de la sede de la Dirección General Marítima (Dimar) de Bogotá a Cartagena, $87.703 millones para continuar el Gran Malecón del Mar (tramos 3 y 4), $12.000 millones para infraestructura de salud en María la Baja, Cartagena y El Salado, y $130.000 millones adicionales para la vía Perimetral hasta El Pozón. El presidente citó como antecedente la captura, divulgada un día antes por la Armada Nacional en zona rural de El Carmen de Bolívar, de alias «Julián» o «Pato» (identificado como Carlos Manuel Cerra Tirado), señalado cabecilla de una subestructura del Clan del Golfo en Montes de María con mando sobre cerca de 60 hombres armados.",
+   "tipoFuente": "verificado",
+   "fuentes": [
+    {
+     "n": "Infobae · Abelardo de la Espriella dio ultimátum a cabecillas de grupos armados que operan en Bolívar: están advertidos",
+     "u": "https://www.infobae.com/colombia/2026/09/19/abelardo-de-la-espriella-dio-ultimatum-a-cabecillas-de-grupos-armados-que-operan-en-bolivar-estan-advertidos/"
+    },
+    {
+     "n": "Infobae · Abelardo de la Espriella lideró un Consejo de Seguridad en Cartagena: «es la joya de la corona»",
+     "u": "https://www.infobae.com/colombia/2026/09/18/abelardo-de-la-espriella-lidero-un-consejo-de-seguridad-en-cartagena-es-la-joya-de-la-corona/"
+    },
+    {
+     "n": "El Tiempo · El ultimátum del presidente De la Espriella a las bandas criminales que delinquen en el departamento de Bolívar: «tienen fecha de expiración»",
+     "u": "https://www.eltiempo.com/colombia/otras-ciudades/el-ultimatum-del-presidente-de-la-espriella-a-las-bandas-criminales-que-delinquen-en-el-departamento-de-bolivar-tienen-fecha-de-expiracion-3587162"
+    },
+    {
+     "n": "Publimetro · Abelardo de la Espriella confirmó que trasladará la Dimar de Bogotá a Cartagena, «donde hay mar»",
+     "u": "https://www.publimetro.co/barranquilla/2026/09/18/abelardo-de-la-espriella-confirmo-que-trasladara-la-dimar-de-bogota-a-cartagena-donde-hay-mar/"
+    },
+    {
+     "n": "El Tiempo · Cayó alias 'Julián' o 'Pato', cabecilla del Clan del Golfo y uno de los más buscados en Bolívar y Sucre",
+     "u": "https://www.eltiempo.com/justicia/conflicto-y-narcotrafico/cayo-alias-julian-o-pato-cabecilla-del-clan-del-golfo-y-uno-de-los-mas-buscados-en-bolivar-y-sucre-3586804"
+    }
+   ]
+  },
+  {
+   "fecha": "2026-09-18",
+   "precision": "exacta",
+   "categoria": "exterior",
+   "titulo": "De la Espriella confirma que no asistirá a la Asamblea General de la ONU y encarga al vicepresidente Restrepo movilizar capital de inversión en su representación",
+   "categoriaProbatoria": "hecho-probado",
+   "tipoMedicion": "actividad",
+   "detalle": "El presidente Abelardo de la Espriella confirmó el 18 de septiembre que no viajará a Nueva York para la semana de alto nivel de la Asamblea General de las Naciones Unidas (22 al 28 de septiembre), en cumplimiento de su promesa de campaña de no salir del país durante su mandato: «El vicepresidente me va a representar en la Asamblea de la ONU. Ustedes saben que prometí no salir de Colombia y lo voy a hacer». Según El Colombiano, esto rompería una racha de asistencia presidencial ininterrumpida de al menos los últimos cinco años. El vicepresidente José Manuel Restrepo encabezará la delegación colombiana —que incluye al canciller Omar Bula, la embajadora ante Estados Unidos María Consuelo Araújo y el representante permanente ante la ONU, Mauricio Gaona— y leerá el discurso del jefe de Estado ante el plenario el jueves 24 de septiembre. De la Espriella y Restrepo se reunieron para definir el enfoque del mensaje: el objetivo declarado por el presidente es movilizar capital de inversión desde Nueva York y otros países hacia Colombia.",
+   "contrapunto": "Congresistas del Pacto Histórico calificaron al presidente de «impresentable internacional» por no asistir a la cita multilateral más importante del calendario diplomático; el Gobierno no ha respondido públicamente a ese calificativo.",
+   "tipoFuente": "verificado",
+   "fuentes": [
+    {
+     "n": "Infobae · De la Espriella le puso tarea al vicepresidente que lo representará en la Asamblea General de la ONU: «se trata de hacer las cosas bien»",
+     "u": "https://www.infobae.com/colombia/2026/09/19/de-la-espriella-le-puso-tarea-al-vicepresidente-que-lo-representara-en-la-asamblea-general-de-la-onu-se-trata-de-hacer-las-cosas-bien/"
+    },
+    {
+     "n": "Semana · Abelardo De La Espriella tomó decisión final sobre si saldrá del país para asistir a la Asamblea General de la ONU: «Yo prometí»",
+     "u": "https://www.semana.com/politica/articulo/abelardo-de-la-espriella-tomo-decision-final-sobre-si-saldra-del-pais-para-asistir-a-la-asamblea-general-de-la-onu-yo-prometi/202640/"
+    },
+    {
+     "n": "La República · De la Espriella no irá a la Asamblea General de la ONU y Restrepo irá en su reemplazo",
+     "u": "https://www.larepublica.co/economia/de-la-espriella-no-ira-a-la-asamblea-general-de-la-onu-y-restrepo-ira-en-su-reemplazo-4485614"
+    },
+    {
+     "n": "El Colombiano · Abelardo cumple promesa de no salir del país",
+     "u": "https://www.elcolombiano.com/colombia/abelardo-cumple-promeso-de-no-salir-del-pais-BH41139558"
+    },
+    {
+     "n": "Infobae · Políticos del Pacto Histórico criticaron a Abelardo de la Espriella por no asistir a la Asamblea General de la ONU: «un impresentable internacional»",
+     "u": "https://www.infobae.com/colombia/2026/09/17/politicos-del-pacto-historico-criticaron-a-abelardo-de-la-espriella-por-no-asistir-a-la-asamblea-general-de-la-onu-un-impresentable-internacional/"
+    }
+   ]
+  },
+  {
+   "fecha": "2026-09-18",
+   "precision": "exacta",
+   "categoria": "gobierno",
+   "titulo": "De la Espriella nombra a David Vélez, fundador y CEO de Nubank, como asesor ad honorem para liderar la transformación con inteligencia artificial del Estado",
+   "categoriaProbatoria": "hecho-probado",
+   "tipoMedicion": "actividad",
+   "detalle": "El presidente Abelardo de la Espriella anunció el 18 de septiembre el nombramiento de David Vélez —fundador y CEO de Nubank, la fintech brasileña más valiosa de América Latina, y miembro de la junta directiva de OpenAI— como asesor ad honorem (sin remuneración) de la Presidencia para la «revolución de la inteligencia artificial» en Colombia. El anuncio se produjo tras una reunión de más de tres horas entre ambos en la residencia presidencial de Barranquilla. Según el Gobierno, su mandato es apoyar el diseño de un plan de modernización del Estado que use IA para reducir la burocracia y mejorar la gestión pública, la educación y las políticas sociales, con el objetivo declarado de que «Colombia sea el primer país de Latinoamérica nativo en IA». El vicepresidente José Manuel Restrepo también sostuvo conversaciones directas con Vélez sobre el alcance del cargo.",
+   "contrapunto": "No se identificó un decreto o resolución que formalice el nombramiento: las fuentes consultadas lo describen como una designación anunciada públicamente y no como un acto administrativo con número identificable, y tampoco se registró oposición o crítica documentada al nombramiento en los medios revisados.",
+   "tipoFuente": "verificado",
+   "fuentes": [
+    {
+     "n": "Infobae · El CEO de Nu Bank, David Vélez, el segundo hombre más rico de Colombia, aceptó ser asesor del Gobierno de Abelardo de la Espriella: «tenemos una ambición enorme»",
+     "u": "https://www.infobae.com/colombia/2026/09/18/el-ceo-de-nu-bank-david-velez-el-segundo-hombre-mas-rico-de-colombia-acepto-ser-asesor-del-gobierno-de-abelardo-de-la-espriella-tenemos-una-ambicion-enorme/"
+    },
+    {
+     "n": "El Heraldo · David Vélez, fundador de Nubank, será asesor de la Presidencia para la revolución de la inteligencia artificial en Colombia",
+     "u": "https://www.elheraldo.co/colombia/2026/09/18/david-velez-fundador-de-nubank-sera-asesor-de-la-presidencia-para-la-revolucion-de-la-inteligencia-artificial-en-colombia/"
+    },
+    {
+     "n": "El Tiempo · De la Espriella nombra a David Vélez, fundador de Nubank, como asesor ad honorem para liderar la transformación digital del Estado y la IA",
+     "u": "https://www.eltiempo.com/politica/abelardo-de-la-espriella/de-la-espriella-nombra-a-david-velez-fundador-de-nubank-como-asesor-ad-honorem-para-liderar-la-transformacion-digital-del-estado-y-la-ia-3587193"
+    },
+    {
+     "n": "Portafolio · Nubank apoyará al Gobierno de De la Espriella en la modernización del Estado con IA; Restrepo habló con David Vélez",
+     "u": "https://www.portafolio.co/negocios/empresas/nubank-apoyara-al-gobierno-de-la-espriella-en-la-modernizacion-del-estado-con-ia-restrepo-hablo-con-david-velez-502821"
+    }
+   ]
+  },
+  {
+   "fecha": "2026-09-18",
+   "id": "decretos-emergencia-terremoto-18sep",
+   "precision": "aproximada",
+   "categoria": "emergencia",
+   "titulo": "El Gobierno expide un paquete adicional de 15 decretos —entre ellos la contratación directa por urgencia manifiesta— al cierre de los 30 días de la emergencia declarada por el terremoto del 10 de agosto",
+   "categoriaProbatoria": "hecho-probado",
+   "tipoMedicion": "actividad",
+   "nivelGobierno": "nacional",
+   "estadoProcesal": "en-firme",
+   "tipoEvidencia": "documento-primario",
+   "indicadores": [
+    "I-04"
+   ],
+   "indicadoresPor": {
+    "I-04": {
+     "via": "decreto expedido al amparo de una declaratoria de emergencia",
+     "base": "decretos-emergencia-terremoto-18sep"
+    }
+   },
+   "detalle": "Al cumplirse el plazo de 30 días de la emergencia económica, social y ecológica declarada por el Decreto 1261 del 19 de agosto de 2026 —modificado por el Decreto 1348 del 31 de agosto— por el terremoto de magnitud 7,4 del 10 de agosto con epicentro en San José del Palmar (Chocó), el Gobierno expidió un paquete adicional de 15 decretos, conocido el 18 de septiembre y descrito por la prensa como emitido «un día antes del fin de la emergencia». Es adicional a los 11 decretos del 9 de septiembre —entre ellos el que creó el Fondo Patria Milagro, ya registrado— y no los reemplaza. De los 15, se identificaron con su número al menos diez: el Decreto 1412 (adición presupuestal de $624.656 millones al Presupuesto General de 2026, con cargo a un crédito externo de US$200 millones), el 1413 (incentivos tributarios temporales para atraer inversión en turismo, agroindustria, construcción, manufactura y servicios en las zonas afectadas), el 1414 (autoriza a departamentos y municipios afectados a usar recursos del Sistema General de Regalías para la emergencia), el 1415 (elimina copagos y cuotas moderadoras en salud por 12 meses para damnificados registrados), el 1416 (créditos y leasing sin hipoteca y apertura temporal de sucursales para financiar reparación de vivienda), el 1417 (apoyo a nómina, cesantías y personas que perdieron su empleo por la emergencia), el 1418 (permite usar recursos de las Cámaras de Comercio para reactivar mipymes afectadas), el 1419 (alivios tributarios adicionales, entre ellos reducción de sanciones), el 1420 (declara probada la urgencia manifiesta para que las entidades estatales contraten de forma directa bienes, obras y servicios con conexión directa, territorial y temporal al sismo, sin necesidad de un acto administrativo separado, mientras dure la situación de desastre del Decreto 1171 y sus prórrogas) y el 1424 (facultades especiales a la ANI, Invías y la Aerocivil para acelerar la reconstrucción de corredores viales y aeroportuarios estratégicos). No se pudo confirmar con las fuentes consultadas la numeración completa de los cinco decretos restantes del paquete, ni una prórroga formal del Decreto 1261 en sí mismo, distinta de la situación de desastre del Decreto 1171.",
+   "contrapunto": "El Decreto 1420 se suma a un mecanismo —la contratación directa por urgencia manifiesta— que Transparencia por Colombia había señalado como un riesgo de opacidad días antes: en un informe divulgado a mediados de septiembre, la organización documentó 402 contratos por $88.400 millones entre el 11 de agosto y el 12 de septiembre dentro de la reconstrucción, el 81 % por contratación directa y el 51,5 % por urgencia manifiesta, y advirtió sobre la ausencia de registros públicos de priorización en un año próximo al ciclo electoral territorial de 2027. El Gobierno ha respondido que el Fondo Patria Milagro sigue el modelo del Forec de 1999 y tendrá una junta de empresarios reconocidos diseñada para prevenir la injerencia política. No hay, a la fecha de esta actualización, una denuncia formal ni una investigación abierta sobre los contratos de este paquete específico de decretos.",
+   "tipoFuente": "verificado",
+   "fuentes": [
+    {
+     "n": "Infobae · Estos son los 15 decretos que expidió Abelardo de la Espriella para atender la emergencia por el terremoto del 10 de agosto",
+     "u": "https://www.infobae.com/colombia/2026/09/18/estos-son-los-15-decretos-que-expidio-abelardo-de-la-espriella-para-atender-la-emergencia-por-el-terremoto-del-10-de-agosto-incluye-medidas-en-salud-transporte-vivienda-impuestos-y-empleo/",
+     "rol": "acto"
+    },
+    {
+     "n": "El Tiempo · Un día antes del fin de la emergencia económica y social, Gobierno de De la Espriella emite 15 nuevos decretos para atender damnificados por terremoto",
+     "u": "https://www.eltiempo.com/politica/abelardo-de-la-espriella/un-dia-antes-del-fin-de-la-emergencia-economica-y-social-gobierno-de-la-espriella-emite-15-nuevos-decretos-para-atender-damnificados-por-terremoto-3587186",
+     "rol": "acto"
+    },
+    {
+     "n": "El Espectador · De la Espriella expide 15 decretos para atender la crisis del terremoto a través de la emergencia económica y social: esto dicen",
+     "u": "https://www.elespectador.com/politica/de-la-espriella-expide-15-decretos-para-atender-la-crisis-del-terremoto-a-traves-de-la-emergencia-economica-y-social-esto-dicen/",
+     "rol": "acto"
+    },
+    {
+     "n": "Ámbito Jurídico · Flexibilizan contratación pública para atender emergencia por terremoto (Decreto 1420)",
+     "u": "https://www.ambitojuridico.com/noticias/derecho-publico/flexibilizan-contratacion-publica-para-atender-emergencia-por-terremoto",
+     "rol": "acto"
+    },
+    {
+     "n": "360 Radio · Decreto 1420 de 2026: Gobierno declara urgencia manifiesta para agilizar contratación",
+     "u": "https://360radio.com.co/decreto-1420-de-2026-gobierno-declara-urgencia-manifiesta-para-agilizar-contratacion/232901/",
+     "rol": "acto"
+    },
+    {
+     "n": "Yahoo Noticias · Transparencia por Colombia advierte riesgos de opacidad en la contratación de la reconstrucción",
+     "u": "https://es-us.noticias.yahoo.com/transparencia-colombia-advierte-riesgos-opacidad-230000196.html",
+     "rol": "efecto"
+    },
+    {
+     "n": "Pulzo · Fondo Milagro: la contratación para la reconstrucción tras el terremoto del 10 de agosto y el control anticorrupción",
+     "u": "https://www.pulzo.com/nacion/fondo-milagro-colombia-reconstruccion-tras-terremoto-del-10-de-agosto-y-control-anticorrupcion-PP5285874A",
+     "rol": "efecto"
+    }
+   ]
+  },
+  {
+   "fecha": "2026-09-17",
+   "precision": "exacta",
+   "categoria": "gobierno",
+   "titulo": "La junta directiva de Ecopetrol, con mayoría de personas cercanas a De la Espriella, elige presidente a su exestratega de campaña Carlos Suárez",
+   "categoriaProbatoria": "hecho-probado",
+   "tipoMedicion": "actividad",
+   "detalle": "La Asamblea Extraordinaria de Accionistas de Ecopetrol, con cerca del 92 % de quórum, aprobó el 15 de septiembre de 2026 la lista completa de candidatos a junta directiva presentada por la Nación —accionista mayoritario con cerca del 88,5 %— para el período 2026-2029: seis integrantes nuevos (Carlos Augusto Suárez Rojas, Jorge Alberto Jaller Jaramillo, José Camilo Manzur Jattin, Ludmila del Carmen Vergara Rosales, Betzy Patricia Martínez Zapateiro y Claudia Margarita Lafaurie Taboada) y tres que continuaron (Luis Felipe Henao Cardona, Ricardo Rodríguez Yee y César Eduardo Loza Arenas, representante de los trabajadores). El 17 de septiembre la junta, ya instalada, eligió internamente como presidente a Carlos Augusto Suárez Rojas —estratega de la campaña presidencial de Abelardo de la Espriella y fundador de la consultora Estrategia y Poder— y como vicepresidenta a Claudia Margarita Lafaurie Taboada, abogada con experiencia en el sector de hidrocarburos y energía. Según Infobae, al menos tres de los nueve miembros tienen vínculo directo con el presidente: Suárez, Jorge Alberto Jaller (embajador de Colombia en Venezuela) y Ludmila Vergara (superintendenta de Transporte). Ecopetrol sostiene que Suárez integra la junta como «miembro independiente» pese a esa cercanía.",
+   "contrapunto": "La exalcaldesa de Bogotá Claudia López calificó a los designados de «mafiosongos y farsantes». En la propia Asamblea del 15 de septiembre, el senador y accionista minoritario Jorge Robledo advirtió que la visión económica del presidente es «característica del neoliberalismo» y cuestionó si Ecopetrol seguirá siendo una empresa mayoritariamente estatal, diciendo que «no es raro que la vuelvan transnacional». Ninguna de las dos críticas señala una irregularidad en el procedimiento de elección —que siguió el mecanismo ordinario de una asamblea de accionistas con el Estado como socio mayoritario—, sino el criterio político y la cercanía personal con que se integró la lista.",
+   "tipoFuente": "verificado",
+   "fuentes": [
+    {
+     "n": "Cambio · Carlos Suárez, el estratega de la campaña de De la Espriella, queda al frente de la junta directiva de Ecopetrol",
+     "u": "https://cambiocolombia.com/empresas/articulo/2026/9/carlos-suarez-el-estratega-de-la-campana-de-de-la-espriella-queda-al-frente-de-la-junta-directiva-de-ecopetrol"
+    },
+    {
+     "n": "Infobae · Ecopetrol queda con junta afín a De la Espriella y abre debate por rumbo petrolero",
+     "u": "https://www.infobae.com/colombia/2026/09/19/ecopetrol-queda-con-junta-afin-a-de-la-espriella-y-abre-debate-por-rumbo-petrolero/"
+    },
+    {
+     "n": "Publimetro · Claudia López lanzó fuerte crítica a De la Espriella tras nombramiento en Ecopetrol: los tildó de «mafiosongos y farsantes»",
+     "u": "https://www.publimetro.co/noticias/2026/09/18/claudia-lopez-lanzo-fuerte-critica-a-de-la-espriella-tras-nombramiento-en-ecopetrol-los-tildo-de-mafiosongos-y-farsantes/"
+    },
+    {
+     "n": "Pulzo · ¿Quién es Carlos Suárez, nuevo presidente de la junta directiva de Ecopetrol?",
+     "u": "https://www.pulzo.com/economia/quien-es-carlos-suarez-nuevo-presidente-junta-directiva-ecopetrol-PP5305840"
+    },
+    {
+     "n": "El Universal · Ecopetrol cambia su junta directiva: estos son los seis nuevos miembros",
+     "u": "https://www.eluniversal.com.co/colombia/2026/09/15/ecopetrol-cambia-su-junta-directiva-estos-son-los-seis-nuevos-miembros/"
+    }
+   ]
+  },
   {
    "fecha": "2026-09-17",
    "precision": "aproximada",
