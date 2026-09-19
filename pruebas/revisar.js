@@ -1391,6 +1391,90 @@ console.log('\n  -- la ficha del gobernante --');
       dobles.length ? dobles.join(' · ') : 'los dos indicadores no se solapan en el registro');
   }
 
+  /* ═══ LA PUERTA DE PUBLICACIÓN (v971) ══════════════════════════════════
+     El registro guarda MÁS de lo que la pantalla publica, y esa diferencia
+     es lo que puede costar una demanda si se invierte: un señalamiento que
+     sale como hallazgo sin estar verificado, o un acto municipal contado
+     dentro del score de un presidente.
+
+     Las tres mitades, porque cada una falla por su lado:
+       1 · la puerta EXISTE y devuelve su motivo, no un booleano (v876);
+       2 · el registro no trae ninguna de las cuatro cifras a las que
+           NOSOTROS le encontramos el defecto sin su marca `noPublicar`;
+       3 · y la guarda de la guarda: que el tablero la SIGA llamando. Sin
+           ella las dos de arriba quedarían en verde sobre una función que
+           nadie usa, que es el patrón de la v878 con su propia lista. */
+  {
+    const j70p = soloCodigo(leer('js/70-seguimiento.js'));
+    const reg = JSON.parse(leer('assets/data/seguimiento-presidencial.json'));
+
+    comprobar('la puerta de publicación devuelve su motivo, no un booleano',
+      /function sePublica\(e\)/.test(j70p) &&
+      /'defecto-propio'/.test(j70p) && /'otro-nivel'/.test(j70p) &&
+      /'en-circulacion'/.test(j70p) && /'no-verificado'/.test(j70p) &&
+      /'sin-fecha'/.test(j70p) &&
+      /return \{ publica: false, motivo: m, texto: t \}/.test(j70p),
+      'sePublica devuelve { publica, motivo, texto } con los cinco motivos');
+
+    /* El filtro de nivel vive en `hechosDelMandato`, que es la ÚNICA puerta
+       por la que los hechos entran al score. Si se escribiera en cada
+       indicador serían siete sitios donde se puede olvidar uno (v867). */
+    const tramoMandato = (j70p.match(/function hechosDelMandato\([\s\S]*?\n  \}/) || [''])[0];
+    comprobar('el nivel de gobierno se filtra en la única puerta del score',
+      /nivelGobierno && e\.nivelGobierno !== 'nacional'/.test(tramoMandato) &&
+      /e\.noPublicar/.test(tramoMandato),
+      tramoMandato ? 'hechosDelMandato deja fuera lo que no es nacional y lo marcado con defecto propio'
+                   : 'no se encontró hechosDelMandato');
+
+    /* Las cuatro cifras con defecto propio. Hoy ninguna está en el registro
+       —se revisaron y no se entraron—, así que esto es PROSPECTIVO: existe
+       para que la rutina diaria, que escribe acá sin leer la bitácora, no
+       las entre mañana como hallazgos. Es la misma forma que la puerta de
+       nivel de la v941. */
+    const vet = ((reg.publicacion || {}).vetadasPorDefectoPropio || {}).lista || [];
+    /* La pista se busca con el BORDE de la cifra delante, no como subcadena.
+       En su primera corrida esta guarda denunció «Piden investigar un
+       contrato directo de la UNP por $24.800 millones», que contiene
+       «800 millones» y no tiene nada que ver: es la clase de la v895 —una
+       guarda con falsos positivos termina siendo una lista de excepciones
+       que envejece hasta no significar nada—, y se arregla en la forma y no
+       con un renglón de exención. El borde es el mismo `(?<![\d.,])` que la
+       guarda de concordancia de la v874 usa por la misma razón. */
+    const bordeDePista = (p) => new RegExp(
+      '(?<![\\d.,])' + String(p).replace(/[.*+?^${}()|[\]\\]/g, '\\$&'));
+    const coladas = [];
+    (reg.entradas || []).forEach((e) => {
+      const txt = [e.titulo, e.detalle].join(' ');
+      vet.forEach((v) => {
+        if (v.pista && bordeDePista(v.pista).test(txt) && !e.noPublicar) {
+          coladas.push((e.fecha || '?') + ' «' + v.pista + '»');
+        }
+      });
+    });
+    comprobar('ninguna de las cifras con defecto propio entra al registro sin su marca',
+      vet.length >= 4 && coladas.length === 0,
+      !vet.length ? 'la lista de vetadas está vacía: la guarda no vigila nada'
+                  : coladas.length ? 'entró sin `noPublicar`: ' + coladas.join(' · ')
+                                   : vet.length + ' pistas vigiladas, ninguna colada');
+
+    comprobar('y el tablero sigue pasando las entradas por la puerta',
+      /sePublica\(/.test(j70p) && /entradasPublicables/.test(j70p) &&
+      /censoDePublicacion/.test(j70p) && /censoPublicacion/.test(j70p),
+      'pintarTablero y la ficha leen sePublica y publican su recuento');
+
+    /* El canal de rectificación: no es cosmético, es lo que cierra la
+       mayoría de estos casos antes de llegar a juez. Y el registro de qué
+       se corrigió y cuándo tiene que poder crecer: una lista que no existe
+       no se puede llenar. */
+    comprobar('el canal de rectificación existe, con su plazo y su registro',
+      !!(reg.rectificaciones && reg.rectificaciones.correo &&
+         reg.rectificaciones.plazoDias && Array.isArray(reg.rectificaciones.lista)) &&
+      /bloqueRectificacion/.test(j70p),
+      reg.rectificaciones ? 'correo, plazo de ' + reg.rectificaciones.plazoDias +
+                            ' días y lista de ' + reg.rectificaciones.lista.length + ' correcciones'
+                          : 'no hay bloque de rectificaciones');
+  }
+
   /* ═══ LA VÍA: POR CUÁL RENGLÓN DEL CRITERIO ENTRA CADA HECHO (v963) ════
      La v962 escribió en su bitácora que el caso del DANE entraba por dos
      renglones del `incluye`, y uno de los dos era falso: la remoción que
@@ -2585,6 +2669,10 @@ console.log('\n  -- el FODA del curso --');
     'secretarías', 'veedurías', 'contralorías', 'anomalías', 'fotografías', 'geografías',
     'topografías', 'cartografías', 'mensajerías', 'ferreterías', 'papelerías', 'librerías',
     'peluquerías', 'lavanderías', 'joyerías', 'licorerías', 'cerrajerías',
+    /* Sustantivo del vocabulario presupuestal, que entró con el tablero de
+       la v971. Es el contrato de la v952: un nombre nuevo en -ías cuesta un
+       renglón acá y se ve en rojo hasta que alguien lo agregue. */
+    'regalías',
     /* `vacías` es de las dos: adjetivo —«cajas vacías»— y presente de tú de
        vaciar. Acá es siempre el adjetivo, y va listada con esa razón. */
     'vacías'];

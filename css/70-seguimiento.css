@@ -63,6 +63,10 @@
      font-size sueltos (revisar.js lo comprueba). --t-1 es el veredicto de la
      placa y el h1; --t-9 son solo etiquetas en mayúsculas y sellos; el texto
      corrido más pequeño es --t-8, que en teléfono son 13,4 px. */
+  /* --t-0 es el número del HÉROE del tablero, y es el texto más grande del
+     módulo a propósito: lo primero que se lee es un hecho con fuente, no un
+     veredicto calculado. */
+  --t-0:clamp(2.8rem, 10vw, 5.2rem);
   --t-1:clamp(2rem, 6vw, 2.9rem);
   --t-2:clamp(1.5rem, 4vw, 2rem);
   --t-3:1.45rem;
@@ -1855,3 +1859,144 @@ a.sp-fuente:hover svg{ color:var(--verde-hi); }
 .sp-c2-coberl li { margin-bottom: 7px; font-size: var(--t-8); line-height: 1.45; }
 .sp-c2-coberl li > b { color: var(--sp-amb, #b26a00); }
 .sp-c2-coberl li > p { margin: 2px 0 0; font-size: var(--t-8); }
+
+
+/* ══════════════════════════════════════════════════════════════════════════
+   EL TABLERO · gráficos, el héroe, la opinión firmada y la deuda propia
+   ──────────────────────────────────────────────────────────────────────────
+   LOS DOS ROJOS. El rojo (--rojo) queda reservado para el hallazgo
+   verificado con fuente: el número del héroe, la barra de los intereses, la
+   porción del servicio de la deuda y las barras que caen. Lo que nos falta a
+   NOSOTROS va en gris (--ink-2 sobre --linea-2), en su bloque y al final.
+   Pintar la deuda técnica del registro con la marca de un hallazgo la
+   convierte en una falta del gobierno, y eso es falso.
+   ══════════════════════════════════════════════════════════════════════════ */
+
+.sp-heroe{
+  background:var(--sup); border:1px solid var(--linea); border-left:4px solid var(--rojo);
+  border-radius:var(--r); padding:22px 20px 18px; box-shadow:var(--sombra); margin:0 0 22px;
+}
+.sp-heroe-ojo{
+  margin:0 0 6px; font-size:var(--t-8); font-weight:700; letter-spacing:.08em;
+  text-transform:uppercase; color:var(--ink-2);
+}
+.sp-heroe-cifra{ display:flex; flex-wrap:wrap; align-items:baseline; gap:10px; }
+.sp-heroe-n{
+  margin:0; font-size:var(--t-0); font-weight:800; line-height:.95;
+  color:var(--rojo); font-variant-numeric:tabular-nums;
+}
+.sp-heroe-u{ font-size:var(--t-6); font-weight:600; color:var(--ink); max-width:26ch; }
+.sp-heroe-frase{ margin:12px 0 0; font-size:var(--t-5); line-height:1.45; color:var(--ink); }
+
+/* ── Los dibujos ─────────────────────────────────────────────────────────── */
+/* max-width al ancho del viewBox: un SVG que se estira más allá de 1:1
+   agranda su propio texto —el pie, los rótulos— sin añadir información, y
+   deja el pie del doble de tamaño que el del gráfico de al lado. */
+/* El reset de iconos de arriba —`svg{ fill:none; stroke:currentColor;
+   stroke-width:1.9 }`— vale para los iconos de 20 px y NO para un grafico:
+   `stroke` y `stroke-width` se HEREDAN en SVG, asi que cada <text> salia con
+   un contorno de 1,9 y cada tajada de la torta con un borde del mismo color
+   encima de su relleno. Se leia como una tipografia negra distinta de la de
+   la pagina, que es como lo vi en la captura antes de medirlo. Los dos
+   elementos que si llevan trazo —.sp-g-cero y .sp-g-rule— lo vuelven a
+   poner con su propio ancho. Es la misma linea que .sp-graf .sp-lienzo ya
+   tenia desde antes, y que esta clase no heredaba por ser otra. */
+.sp-g{ display:block; width:100%; max-width:760px; height:auto; margin:16px auto 4px; overflow:visible; font-family:var(--f); fill:currentColor; stroke:none; }
+.sp-g-barra{ stroke:none; }
+.sp-g-rojo{ fill:var(--rojo); color:var(--rojo); }
+.sp-g-gris{ fill:#9AA7AE; color:#9AA7AE; }
+.sp-g-c1{ fill:var(--celeste-mark); color:var(--celeste-mark); }
+.sp-g-c3{ fill:var(--celeste); color:var(--celeste); }
+.sp-g-agr{ fill:var(--indigo); color:var(--indigo); }
+.sp-g-sube{ fill:var(--celeste-mark); color:var(--celeste-mark); }
+.sp-g-baja{ fill:var(--rojo); color:var(--rojo); }
+/* Va DESPUÉS de las clases de color a propósito: misma especificidad, así que
+   gana por orden y la trama pisa el relleno liso. El `color` sigue viniendo
+   de la clase de color, que es lo que alimenta el currentColor del patrón. */
+.sp-g-trama{ fill:url(#sp-trama-tramite); }
+.sp-g-et{ fill:var(--ink); font-size:var(--t-8); font-weight:600; }
+.sp-g-et-in{ fill:#fff; font-size:var(--t-8); font-weight:700; }
+.sp-g-val{ fill:var(--ink); font-size:var(--t-8); font-weight:700; font-variant-numeric:tabular-nums; }
+.sp-g-cero{ stroke:var(--ink); stroke-width:1.5; }
+.sp-g-rule{ stroke:var(--linea); stroke-width:1; }
+.sp-g-pie-t{ fill:var(--ink-2); font-size:var(--t-8); }
+
+/* ── Un gráfico que no se puede dibujar ──────────────────────────────────── */
+.sp-graf-falta{ border-style:dashed; border-color:var(--ambar); }
+.sp-falta-caja{
+  margin:10px 0 0; padding:14px; border:1px dashed var(--ambar); border-radius:var(--r-s);
+  background:#FEF9F0;
+}
+.sp-falta-caja b{ display:block; color:#8A5D12; font-size:var(--t-7); }
+.sp-falta-caja p{ margin:8px 0 0; font-size:var(--t-7); line-height:1.5; color:var(--ink); }
+
+/* ── La opinión firmada. La SERIF hace el trabajo que una etiqueta haría
+      peor: una etiqueta se pasa por alto, una letra distinta no. ─────────── */
+.sp-edit{
+  margin:22px 0; padding:22px 22px 18px; background:var(--marfil);
+  border:1px solid var(--linea); border-left:4px solid var(--indigo); border-radius:var(--r);
+  font-family:Georgia,'Iowan Old Style','Times New Roman',Times,serif;
+}
+.sp-edit-ojo{
+  margin:0 0 10px; font-family:var(--f); font-size:var(--t-8); font-weight:700;
+  letter-spacing:.08em; text-transform:uppercase; color:var(--indigo);
+}
+.sp-edit-txt{ margin:0; font-size:var(--t-4); line-height:1.6; color:var(--ink); }
+.sp-edit-marca{ color:var(--ink-2); font-style:italic; }
+.sp-edit-pie{ margin:14px 0 0; font-size:var(--t-6); color:var(--ink); }
+.sp-edit-ap{ margin:14px 0 0; font-family:var(--f); }
+.sp-edit-ap b{ font-size:var(--t-8); color:var(--ink-2); }
+.sp-edit-aps{ margin:6px 0 0; padding:0 0 0 18px; }
+.sp-edit-aps li{ font-size:var(--t-7); line-height:1.6; }
+.sp-edit-flojo{ color:var(--ink-2); }
+.sp-edit-regla{
+  margin:14px 0 0; padding-top:12px; border-top:1px solid var(--linea);
+  font-family:var(--f); font-size:var(--t-8); line-height:1.5; color:var(--ink-2);
+}
+
+/* ── El canal de rectificación ───────────────────────────────────────────── */
+.sp-rect{
+  margin:22px 0; padding:20px; background:var(--sup);
+  border:1px solid var(--linea); border-left:4px solid var(--celeste-mark); border-radius:var(--r);
+}
+.sp-rect-h{ margin:0; font-size:var(--t-5); }
+.sp-rect-dek{ margin:8px 0 14px; font-size:var(--t-7); line-height:1.55; color:var(--ink); }
+.sp-rect-btn{ display:inline-flex; text-decoration:none; }
+.sp-rect-reg{ margin:16px 0 0; padding-top:14px; border-top:1px solid var(--linea); }
+.sp-rect-reg > b{ font-size:var(--t-7); }
+.sp-rect-f{
+  margin:10px 0 0; padding:10px 12px; background:var(--linea-2); border-radius:var(--r-s);
+  font-size:var(--t-7); line-height:1.5;
+}
+.sp-rect-antes{ margin:6px 0 0; color:var(--ink-2); text-decoration:line-through; }
+.sp-rect-antes b{ text-decoration:none; }
+.sp-rect-dice{ margin:4px 0 0; color:var(--ink); }
+
+/* ── La deuda propia, en GRIS y al final ─────────────────────────────────── */
+.sp-pend{
+  margin:26px 0 0; padding:20px; background:var(--linea-2);
+  border:1px solid var(--linea); border-radius:var(--r); color:var(--ink-2);
+}
+.sp-pend-h{ margin:0; font-size:var(--t-6); color:var(--ink-2); }
+.sp-pend-dek{ margin:8px 0 14px; font-size:var(--t-8); line-height:1.55; }
+.sp-pend-q{ padding:12px 14px; background:var(--sup); border-radius:var(--r-s); }
+.sp-pend-q > b{ font-size:var(--t-7); color:var(--ink); }
+.sp-pend-lista{ margin:8px 0 6px; padding:0 0 0 18px; font-size:var(--t-8); line-height:1.6; }
+.sp-pend-f{
+  margin:10px 0 0; padding:10px 14px; background:var(--sup); border-radius:var(--r-s);
+  border-left:3px solid #9AA7AE;
+}
+.sp-pend-f b{ font-size:var(--t-7); color:var(--ink); }
+.sp-pend-n{ display:block; font-size:var(--t-8); font-weight:700; color:var(--ink-2); margin-top:2px; }
+.sp-pend-f p{ margin:6px 0 0; font-size:var(--t-8); line-height:1.5; }
+
+/* ── Procedencia en la ficha de un hecho ─────────────────────────────────── */
+.sp-proc-f{ margin:0 0 8px; font-size:var(--t-8); line-height:1.45; }
+.sp-proc-f b{ display:block; color:var(--ink-2); font-weight:600; }
+.sp-proc-f span{ color:var(--ink); font-weight:600; }
+.sp-proc-fuera{
+  margin:10px 0 0; padding:10px 12px; background:var(--linea-2);
+  border-left:3px solid #9AA7AE; border-radius:var(--r-s);
+}
+.sp-proc-fuera b{ font-size:var(--t-8); color:var(--ink); }
+.sp-proc-fuera p{ margin:4px 0 0; font-size:var(--t-8); line-height:1.5; color:var(--ink-2); }

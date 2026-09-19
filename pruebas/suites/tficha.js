@@ -148,9 +148,17 @@ const server = http.createServer((req, res) => {
         'enseña las cuentas que producen el veredicto, con los casos en investigación');
     chk(portada.tamVeredicto >= portada.masGrande - 0.5,
         'el veredicto es el texto más grande de la portada (' + portada.tamVeredicto + ' px)');
-    chk(portada.secs[0] === '00 Ficha del gobernante' && portada.secs[1] === '01 Contradicciones' &&
-        portada.secs[2] === '02 Al día',
-        'la rejilla va por polémica: ficha 00, contradicciones 01, al día 02');
+    /* El tablero abre la rejilla desde la v971: lo primero es un HECHO con
+       fuente y no un veredicto calculado. La ficha baja a 01 y el resto
+       corre. Se pide el orden y la numeración corrida, que es lo que la
+       aserción medía; citar los números viejos la volvía una constante del
+       módulo metida en la comprobación (v890). */
+    chk(/^00 /.test(portada.secs[0]) && /Tablero|Presupuesto|Hallazgos/i.test(portada.secs[0]) &&
+        /^01 .*Ficha del gobernante/.test(portada.secs[1]) &&
+        /^02 .*Contradicciones/.test(portada.secs[2]) &&
+        portada.secs.every((t, i) => t.slice(0, 2) === String(i).padStart(2, '0')),
+        'la rejilla va por polémica y numerada sin saltos, con el tablero abriendo (' +
+        portada.secs.slice(0, 3).join(' · ') + ')');
     await pg.evaluate(() => document.querySelector('#sp-hero-ficha button').click());
     await pg.waitForTimeout(500);
     const fue = await pg.evaluate(() => (document.querySelector('.sp-view.on') || {}).getAttribute
@@ -905,14 +913,23 @@ const server = http.createServer((req, res) => {
   console.log('\n── El criterio, como dato, y su puerta ──────────────');
   const gt = r.gate || {};
   console.log('  ' + JSON.stringify(gt));
-  chk(gt.declaradas === 8 && gt.motivos.length === 7,
-      'MATERIAL · las ocho declaraciones ejercitan las siete salidas de la puerta (' +
+  /* Son OCHO declaraciones en el fixture y llegan SIETE al criterio: la
+     municipal la para `hechosDelMandato`, que desde la v971 filtra el nivel
+     en la puerta del score. No es información perdida —el censo de
+     publicación la cuenta y la nombra por su motivo—, es una puerta antes.
+     Y la rama `otro-nivel` del criterio no queda muerta: `corridaHaciaAtras`
+     lo llama sobre listas que NO pasan por esa puerta, y ahí sigue siendo la
+     única que la rechaza. */
+  chk(gt.declaradas === 7 && gt.motivos.length === 6,
+      'MATERIAL · las declaraciones que llegan al criterio ejercitan sus seis salidas (' +
       gt.declaradas + ' declaradas · ' + gt.motivos.length + ' fuera)');
   chk(gt.n === 1,
       'solo la que cumple el criterio escrito cuenta (' + gt.n + ' de ' + gt.declaradas + ')');
   chk(String(gt.motivos) ===
-        'no-cumple,otro-nivel,sin-base-registrada,sin-base-registrada,sin-insumos,sin-via,via-desconocida',
-      'y las otras siete salen con SU motivo, no con un rechazo genérico (' + gt.motivos.join(' · ') + ')');
+        'no-cumple,sin-base-registrada,sin-base-registrada,sin-insumos,sin-via,via-desconocida',
+      'y las otras seis salen con SU motivo, no con un rechazo genérico (' + gt.motivos.join(' · ') + ')');
+  chk(gt.motivos.indexOf('otro-nivel') < 0 && gt.declaradas === 7,
+      'la declaración municipal no llega siquiera al criterio: la para la puerta del score');
   chk(gt.basesFuera.length === 2 &&
       /no dice en qué entrada del registro/.test(gt.basesFuera.join(' ')) &&
       /no está en el registro: nombra la entrada/.test(gt.basesFuera.join(' ')),
@@ -1406,6 +1423,135 @@ const server = http.createServer((req, res) => {
   chk(cmp.contra >= 2 && cmp.haySuya,
       'la desinformación se muestra en las DOS direcciones: lo que le inventaron y lo que difundió (' + cmp.contra + ' bulos + su propio registro)');
   chk(/159|126/.test(cmp.txt), 'con la cuenta de los verificadores sobre él, no solo la de sus atacantes');
+
+  /* ══ LA PUERTA DE PUBLICACIÓN Y EL TABLERO (v971) ══════════════════════
+     El registro guarda más de lo que la pantalla publica, y lo que puede
+     costar una demanda es que esa diferencia se invierta: un señalamiento
+     saliendo como hallazgo, o un acto municipal contado dentro del score de
+     un presidente. */
+
+  /* Las cinco ramas se miden contra un registro FABRICADO y no contra el
+     real: contra el real se mediría el número —hoy hay 56 no verificadas y
+     cero de otro nivel— y el día que el registro mejore la comprobación se
+     quedaría sin material sin decirlo. Es la lección de la v970. */
+  const puerta = await pg.evaluate(() => {
+    const a = window.URBIS_SEG_FICHA;
+    const h = (f, n, extra) => Object.assign({ fecha: f, titulo: n, categoria: 'gobierno',
+      tipoFuente: 'verificado', categoriaProbatoria: 'hecho-probado', tipoMedicion: 'actividad',
+      nivelGobierno: 'nacional' }, extra || {});
+    const reg = { posesion: '2026-08-07', actualizado: '2026-09-19', entradas: [
+      h('2026-09-01', 'nacional verificado'),
+      h('2026-09-02', 'municipal', { nivelGobierno: 'municipal' }),
+      h('2026-09-03', 'en circulación', { categoriaProbatoria: 'en-circulacion' }),
+      h('2026-09-04', 'no verificado', { tipoFuente: 'disputado' }),
+      h('2026-09-05', 'con defecto nuestro', { noPublicar: { motivo: 'La cifra no se sostuvo.' } }),
+      h('', 'sin fecha')
+    ] };
+    return { motivos: reg.entradas.map(e => a.sePublica(e).motivo),
+             textos: reg.entradas.map(e => a.sePublica(e).texto),
+             censo: a.censoPublicacion(reg),
+             publicables: a.publicables(reg).length,
+             // El nivel se filtra en la ÚNICA puerta por la que los hechos
+             // entran al score: acá entran los tres nacionales publicables
+             // más… ninguno más. El municipal, el sin fecha y el de defecto
+             // propio se quedan fuera de la CUENTA, no solo de la pantalla.
+             hechosScore: a.indicadores(reg).hechos };
+  });
+  console.log('  puerta: ' + puerta.censo.publica + ' publica de ' + puerta.censo.n +
+              ' · al score ' + puerta.hechosScore + ' · motivos ' +
+              puerta.motivos.map(m => m || 'publica').join(', '));
+  const ramas = ['otro-nivel', 'en-circulacion', 'no-verificado', 'defecto-propio', 'sin-fecha'];
+  chk(puerta.motivos[0] === null && ramas.every(r => puerta.motivos.indexOf(r) > 0),
+      'MATERIAL · el registro fabricado ejercita las cinco ramas de la puerta (' +
+      puerta.motivos.map(m => m || 'publica').join(' · ') + ')');
+  chk(puerta.censo.publica === 1 && puerta.censo.fuera === 5 &&
+      Object.keys(puerta.censo.por).every(k => puerta.censo.por[k] === 1),
+      'la puerta publica solo el hecho verificado, fechado y nacional (' +
+      puerta.censo.publica + ' de ' + puerta.censo.n + ')');
+  chk(puerta.textos.slice(1).every(t => t && t.length > 20) &&
+      /defecto/i.test(puerta.textos[4]) && /La cifra no se sostuvo/.test(puerta.textos[4]),
+      'y cada rechazo devuelve SU motivo en palabras, no un false (v876)');
+  chk(puerta.hechosScore === 3,
+      'el nivel de gobierno se filtra en la puerta del score: un acto municipal no entra (' +
+      puerta.hechosScore + ' hechos)');
+  chk(puerta.publicables === 1, 'y la lista publicable sale de la misma puerta, no de un segundo filtro');
+
+  await pg.goto(base + '/seguimiento.html#/tablero', { waitUntil: 'load' });
+  await pg.waitForTimeout(1600);
+  const tab = await pg.evaluate(() => {
+    const t = document.getElementById('sp-tablero');
+    const ed = t && t.querySelector('.sp-edit');
+    const svgs = t ? Array.from(t.querySelectorAll('svg.sp-g')) : [];
+    return {
+      hijos: t ? t.children.length : 0,
+      // Los SIETE gráficos del pliego, cada uno dibujado o declarado sin
+      // dato: es la cuenta que dice que ninguna pieza se cayó en silencio.
+      // Un `children.length` sería un proxy —hoy son cinco bloques y siete
+      // tarjetas dentro de uno solo— y mediría otra cosa de la que dice.
+      tarjetas: t ? t.querySelectorAll('.sp-graficas .sp-graf').length : 0,
+      heroeSvg: t ? t.querySelectorAll('.sp-heroe svg.sp-g').length : 0,
+      svgs: svgs.length,
+      // Cada gráfico lleva su fuente y su fecha de corte DENTRO del SVG.
+      conPie: svgs.filter(s => {
+        const p = Array.from(s.querySelectorAll('.sp-g-pie-t')).map(x => x.textContent).join(' ');
+        return /Fuente:/.test(p) && /Fecha de corte:/.test(p);
+      }).length,
+      // Ningún glifo con trazo encima: el reset de iconos se hereda y pintaba
+      // un contorno de 1,9 sobre cada letra y cada tajada.
+      conTrazo: svgs.reduce((n, s) => n + Array.from(s.querySelectorAll('text'))
+        .filter(x => { const k = getComputedStyle(x).stroke; return k && k !== 'none'; }).length, 0),
+      heroe: (t.querySelector('.sp-heroe-n') || {}).textContent || '',
+      falta: t ? t.querySelectorAll('.sp-graf-falta').length : 0,
+      edit: !!ed,
+      editSerif: ed ? /serif|Georgia/i.test(getComputedStyle(ed).fontFamily) : false,
+      rect: !!t.querySelector('.sp-rect'),
+      pend: !!t.querySelector('.sp-pend')
+    };
+  });
+  console.log('  tablero: ' + tab.svgs + ' gráficos · ' + tab.falta + ' declarados sin dato · héroe ' + tab.heroe);
+  chk(tab.tarjetas === 7 && tab.heroeSvg === 1 && tab.svgs === 5,
+      'los SIETE gráficos salen, cada uno dibujado o declarado, y el héroe encima: ' +
+      'una pieza que reviente en silencio deja de aparecer (' +
+      tab.tarjetas + ' tarjetas · ' + tab.svgs + ' dibujados · héroe ' + tab.heroeSvg + ')');
+  chk(tab.conPie === tab.svgs && tab.svgs > 0,
+      'cada gráfico lleva su fuente y su fecha de corte DENTRO del gráfico (' +
+      tab.conPie + ' de ' + tab.svgs + ')');
+  chk(tab.conTrazo === 0,
+      'y ningún rótulo se dibuja con un trazo encima del glifo (' + tab.conTrazo + ' con trazo)');
+  chk(tab.falta >= 1,
+      'lo que no se puede dibujar con el registro se declara, no se inventa (' +
+      tab.falta + ' gráficos con su vacío escrito)');
+  chk(tab.edit && tab.editSerif,
+      'la opinión firmada va en serif, que la separa de los datos sin etiqueta');
+  chk(tab.rect, 'y el canal de rectificación está en la pantalla, no solo en el registro');
+
+  /* El recuento de lo que NO se publica sale en pantalla, en GRIS y con su
+     cifra, y SIN los títulos: nombrarlos sería publicarlos, que es justo lo
+     que la puerta viene a impedir. Se mide acá y no en la ficha porque el
+     bloque vive en el tablero; medirlo allá lo habría dado por ausente y la
+     aserción habría fallado por el sitio y no por el código. */
+  const censoDom = await pg.evaluate(() => {
+    const a = window.URBIS_SEG_FICHA, c = a.censoPublicacion();
+    const caja = document.querySelector('#sp-tablero .sp-pend');
+    const txt = caja ? caja.innerText : '';
+    const ROJOS = /rgb\(201, 90, 85\)|rgb\(184, 17, 46\)|rgb\(138, 18, 32\)/;
+    // Ninguno de los títulos retenidos puede aparecer en el bloque.
+    const fuera = a.retenidas().map(e => e.titulo).filter(Boolean);
+    return { hay: !!caja, censo: c,
+             diceCuantas: new RegExp(String(c.fuera)).test(txt),
+             rojo: caja ? Array.from(caja.querySelectorAll('*')).some(x =>
+                     ROJOS.test(getComputedStyle(x).color)) : true,
+             titulos: fuera.filter(t => t.length > 25 && txt.indexOf(t) >= 0).length,
+             nFuera: fuera.length };
+  });
+  chk(censoDom.hay && censoDom.diceCuantas,
+      'el recuento de lo que NO se publica sale en pantalla con su cifra (' +
+      censoDom.censo.fuera + ' de ' + censoDom.censo.n + ')');
+  chk(censoDom.hay && !censoDom.rojo,
+      'y va en gris: nuestra deuda interna no se pinta con el rojo de un hallazgo del gobierno');
+  chk(censoDom.hay && censoDom.titulos === 0,
+      'y sin los títulos de lo retenido: nombrarlos en pantalla sería publicarlos (' +
+      censoDom.titulos + ' de ' + censoDom.nFuera + ' asomados)');
 
   chk(errores.length === 0, 'sin errores de página' + (errores.length ? ': ' + errores[0] : ''));
 

@@ -129,19 +129,29 @@
   // tono vivo. El ámbar es el caso que obliga a separarlos: vivo da 2.44:1.
   // El orden es por POLÉMICA, no por cronología ni por método: lo que el
   // lector quiere leer primero va primero. La ficha abre el módulo.
-  var ORDEN_SECS = ['ficha', 'contradicciones', 'hoy', 'timeline', 'balance',
+  var ORDEN_SECS = ['tablero', 'ficha', 'contradicciones', 'hoy', 'timeline', 'balance',
                     'extranjera', 'indicadores', 'temas', 'foda'];
   var SECS = {
-    ficha:           { n: '00', c: '#6B4B16', m: '#A67C2E', t: 'Ficha del gobernante', d: 'Fiabilidad, casos, contradicciones y rasgos, contados sobre el registro.' },
-    contradicciones: { n: '01', c: '#8A5D12', m: '#D99A32', t: 'Contradicciones',  d: 'Cambios de postura y posiciones en tensión.' },
-    hoy:             { n: '02', c: '#0B6E9B', m: '#34CCFE', t: 'Al día',           d: 'Lo último publicado, como un muro.' },
-    timeline:        { n: '03', c: '#0B6E9B', m: '#0E86BC', t: 'Línea de tiempo',  d: 'Hechos y decisiones documentadas.' },
-    balance:         { n: '04', c: '#7A4A6B', m: '#A96A94', t: 'Balance del periodo', d: 'El patrón que dejan todos los hechos juntos.' },
-    extranjera:      { n: '05', c: '#0F6E62', m: '#2AA391', t: 'Participación extranjera', d: 'Hechos documentados donde interviene un actor de fuera.' },
-    indicadores:     { n: '06', c: '#946A00', m: '#C79200', t: 'Indicadores',      d: 'Deuda, dólar y cifras que se pueden seguir.' },
-    temas:           { n: '07', c: '#06405A', m: '#0A5678', t: 'Temas de fondo',   d: 'Contexto que no pertenece a una fecha concreta.' },
-    foda:            { n: '08', c: '#5D5FA8', m: '#5D5FA8', t: 'Balance FODA',     d: 'Fortalezas, debilidades, oportunidades y amenazas.' }
+    tablero:         { c: '#8A1220', m: '#B8112E', t: 'El tablero',        d: 'Los hallazgos verificados del presupuesto, con su fuente y su fecha de corte dentro del gráfico.' },
+    ficha:           { c: '#6B4B16', m: '#A67C2E', t: 'Ficha del gobernante', d: 'Fiabilidad, casos, contradicciones y rasgos, contados sobre el registro.' },
+    contradicciones: { c: '#8A5D12', m: '#D99A32', t: 'Contradicciones',  d: 'Cambios de postura y posiciones en tensión.' },
+    hoy:             { c: '#0B6E9B', m: '#34CCFE', t: 'Al día',           d: 'Lo último publicado, como un muro.' },
+    timeline:        { c: '#0B6E9B', m: '#0E86BC', t: 'Línea de tiempo',  d: 'Hechos y decisiones documentadas.' },
+    balance:         { c: '#7A4A6B', m: '#A96A94', t: 'Balance del periodo', d: 'El patrón que dejan todos los hechos juntos.' },
+    extranjera:      { c: '#0F6E62', m: '#2AA391', t: 'Participación extranjera', d: 'Hechos documentados donde interviene un actor de fuera.' },
+    indicadores:     { c: '#946A00', m: '#C79200', t: 'Indicadores',      d: 'Deuda, dólar y cifras que se pueden seguir.' },
+    temas:           { c: '#06405A', m: '#0A5678', t: 'Temas de fondo',   d: 'Contexto que no pertenece a una fecha concreta.' },
+    foda:            { c: '#5D5FA8', m: '#5D5FA8', t: 'Balance FODA',     d: 'Fortalezas, debilidades, oportunidades y amenazas.' }
   };
+
+  /* El número de cada sección SE CALCULA de su puesto en `ORDEN_SECS`, y no
+     se escribe. Escrito a mano es una cifra que envejece sola (v903), y ya
+     envejeció: al abrir el tablero en 00, la ficha y las contradicciones
+     quedaron las dos en «01» y nada lo dijo —lo cazó la aserción de tficha
+     que pide la numeración corrida—. Reordenar `ORDEN_SECS` renumera solo. */
+  ORDEN_SECS.forEach(function (k, i) {
+    if (SECS[k]) SECS[k].n = (i < 10 ? '0' : '') + i;
+  });
   var ICONOS = {
     hoy:             '<path d="M4 5h16v14H4z"/><path d="M4 10h16M9 10v9"/>',
     balance:         '<path d="M12 3v18"/><path d="M5 8l7-3 7 3"/><path d="M3 14l2-6 2 6a2 2 0 0 1-4 0zM17 14l2-6 2 6a2 2 0 0 1-4 0z"/>',
@@ -151,6 +161,7 @@
     foda:            '<path d="M4 20V10M10 20V4M16 20v-7M22 20h-2"/><path d="M2 20h20"/>',
     temas:           '<path d="M4 6h16M4 12h16M4 18h10"/>',
     indicadores:     '<path d="M3 17l5-6 4 4 6-8"/><path d="M15 7h4v4"/>',
+    tablero:         '<path d="M3 3v18h18"/><path d="M7 15l4-5 3 3 5-7"/>',
     ficha:           '<path d="M12 3l2.4 4.9 5.4.8-3.9 3.8.9 5.4-4.8-2.6-4.8 2.6.9-5.4L4.2 8.7l5.4-.8z"/>'
   };
   function pintarSeccion(nodo, v) {
@@ -233,6 +244,7 @@
       case 'temas': return '#/temas-de-fondo';
       case 'indicadores': return '#/indicadores';
       case 'extranjera': return '#/participacion-extranjera';
+      case 'tablero': return '#/tablero';
       case 'ficha': return '#/ficha-del-gobernante';
       case 'tema': return '#/tema/' + r.i;
       default: return '#/';
@@ -259,6 +271,7 @@
       case 'temas-de-fondo': return { v: 'temas' };
       case 'indicadores':    return { v: 'indicadores' };
       case 'participacion-extranjera': return { v: 'extranjera' };
+      case 'tablero':        return { v: 'tablero' };
       case 'ficha-del-gobernante': return { v: 'ficha' };
       case 'tema':           return { v: 'tema', i: +partes[1] || 0 };
       default:               return { v: 'home' };
@@ -359,6 +372,7 @@
     if (r.v === 'indicadores') pintarIndicadores();
     if (r.v === 'extranjera') pintarExtranjera();
     if (r.v === 'ficha') pintarFicha();
+    if (r.v === 'tablero') pintarTablero();
 
     // La cabecera de cada vista toma el color de su sección
     var vh = document.querySelector('.sp-view.on .sp-vhead');
@@ -1037,6 +1051,38 @@
     cc.appendChild(co);
 
     $('sp-d-cat').textContent = cat(e.categoria).nombre;
+
+    /* LOS CUATRO DATOS QUE LLEVA TODO LO PUBLICADO, juntos y a la vista:
+       la fuente con su enlace (abajo), la fecha del hecho, la fecha de corte
+       del registro y el estado procesal. Los dos últimos faltaban, y son los
+       que impiden leer un hecho en trámite como uno en firme, o una ficha de
+       hace un mes como la de hoy. */
+    var pr = vaciar($('sp-d-proc'));
+    var ep = estadoProcesalDe(e);
+    [['Fecha del hecho', fechaLarga(e.fecha) + (e.precision === 'aproximada' ? ' (aproximada)' : '')],
+     ['Fecha de corte del registro', fechaLarga(D.actualizado)],
+     ['Estado procesal', ep.declarado ? ep.t : 'Sin declarar']].forEach(function (par) {
+      var f = el('div', 'sp-proc-f');
+      f.appendChild(el('b', null, par[0]));
+      f.appendChild(el('span', null, par[1]));
+      pr.appendChild(f);
+    });
+    if (ep.declarado && ep.d) pr.appendChild(el('p', 'sp-h-meta', ep.d));
+    else if (!ep.declarado) pr.appendChild(el('p', 'sp-h-meta',
+      'Sin el estado procesal no se puede saber si esto está en firme, en trámite o en revisión, y esas tres ' +
+      'cosas se leen muy distinto.'));
+
+    /* Y si este hecho NO se publica en el tablero, se dice acá y no en
+       silencio: quien llegue por un enlace directo tiene que ver por qué no
+       aparece en los recuentos. */
+    var g = sePublica(e);
+    if (!g.publica) {
+      var av = el('div', 'sp-proc-fuera');
+      av.appendChild(el('b', null, 'No se publica como hallazgo'));
+      av.appendChild(el('p', null, g.texto));
+      pr.appendChild(av);
+    }
+
     pintarFuentes($('sp-d-fuentes'), fuentesDe(e));
   }
 
@@ -2556,10 +2602,28 @@
   // personal que no dice nada sobre su palabra.
   function casoCuenta(c) { return c.estado === 'documentada' && c.cuenta !== false; }
 
+  /* UNA DECISIÓN QUE NO ES DEL PRESIDENTE NO ENTRA AL SCORE PRESIDENCIAL.
+     Es la puerta de la v941 para los casos, traída acá, que es por donde
+     pasa TODO lo que cuenta: los indicadores, las tasas por 100 días, los
+     rasgos y la comparación. Un punto único y no una condición repetida en
+     cada consumidor (v867).
+
+     Se declara y no se deduce: deducir el nivel de que el título nombre una
+     ciudad sacaría de la cuenta los hechos NACIONALES ocurridos en una
+     ciudad, que son decenas. Sin declarar, el hecho sigue contando — un
+     valor por omisión sería una afirmación que nadie escribió, y acá
+     afirmaría de quién es una decisión. Lo que impide que esa rama abierta
+     la alcance un hecho que pesa es `revisar.js`, no un valor por defecto.
+
+     Y lo mismo con la marca `noPublicar`: una cifra a la que NOSOTROS le
+     encontramos el defecto no puede seguir sumando al veredicto por el solo
+     hecho de estar escrita en el archivo. */
   function hechosDelMandato(dd, corte) {
     var desde = dd.posesion || '';
     return (dd.entradas || []).filter(function (e) {
       if (!e.fecha) return false;
+      if (e.nivelGobierno && e.nivelGobierno !== 'nacional') return false;
+      if (e.noPublicar) return false;
       if (desde && e.fecha < desde) return false;
       return corte ? e.fecha <= corte : true;
     });
@@ -2810,7 +2874,14 @@
                              catalogoIndicadores: INDICADORES, capaUno: capaUnoDe_conjunto,
                              ejes: ejesDe, ejeA: ejeA, ejeB: ejeB, ejeC: ejeC,
                              marco: marcoDeclarado, editorial: editorialDe,
-                             control: controlDeCalidad };
+                             control: controlDeCalidad,
+                             // La puerta de publicación y su censo: lo que una prueba
+                             // necesita leer se agrega acá (v871).
+                             sePublica: sePublica, censoPublicacion: censoDePublicacion,
+                             publicables: entradasPublicables, retenidas: entradasRetenidas,
+                             motivosPublicacion: MOTIVOS_PUB,
+                             censoNivel: censoDeNivel, presupuesto: presupuestoDe,
+                             pendientesPropios: pendientesPropios };
 
   // ── Piezas de dibujo ──────────────────────────────────────────────────────
   // Barra apilada: cada tramo es una CUENTA, no un porcentaje inventado. Si un
@@ -4194,6 +4265,644 @@
       c.appendChild(w);
     }
     return c;
+  }
+
+  /* ══ LA PUERTA DE PUBLICACIÓN ══════════════════════════════════════════════
+     El registro guarda MÁS de lo que la pantalla publica, y es a propósito:
+     para comprobar que un criterio distingue hace falta tener también lo que
+     rechaza (v964). Lo que sale a pantalla como HALLAZGO son hechos
+     verificados con fuente, fecha y estado procesal. Nada más.
+
+     Devuelve un objeto con su motivo y NUNCA un booleano (v876): «no se
+     publica porque es de otro nivel» y «no se publica porque nadie declaró
+     su naturaleza» piden cosas distintas —una es del hecho y la otra es
+     nuestra deuda—, y un `false` las juntaría en una.
+
+     Y el recuento SE PUBLICA. Si 64 entradas desaparecen de la pantalla sin
+     que nada lo diga, la exención se lee igual que un aprobado, que es lo
+     que este proyecto lleva cinco tandas evitando. Lo que NO se publica son
+     sus títulos: nombrarlas en pantalla sería publicarlas, y es justo lo que
+     la puerta viene a impedir. */
+  var MOTIVOS_PUB = {
+    'sin-fecha':      'Sin fecha: un hecho que no se puede situar no se puede contrastar.',
+    'otro-nivel':     'De nivel municipal, distrital o departamental: no es una decisión del presidente.',
+    'en-circulacion': 'Su categoría probatoria dice que es una afirmación en circulación, no un hecho probado.',
+    'no-verificado':  'Su naturaleza no está declarada como verificada.',
+    'defecto-propio': 'Le encontramos un defecto a la cifra al revisarla. Queda como material de control.'
+  };
+
+  function sePublica(e) {
+    if (!e) return { publica: false, motivo: 'sin-fecha', texto: MOTIVOS_PUB['sin-fecha'] };
+    var m = null;
+    if (e.noPublicar) m = 'defecto-propio';
+    else if (!e.fecha) m = 'sin-fecha';
+    else if (e.nivelGobierno && e.nivelGobierno !== 'nacional') m = 'otro-nivel';
+    else if (e.categoriaProbatoria === 'en-circulacion') m = 'en-circulacion';
+    else if (e.tipoFuente !== 'verificado') m = 'no-verificado';
+    if (!m) return { publica: true, motivo: null, texto: '' };
+    var t = MOTIVOS_PUB[m];
+    if (m === 'defecto-propio' && e.noPublicar && e.noPublicar.motivo) t += ' ' + e.noPublicar.motivo;
+    return { publica: false, motivo: m, texto: t };
+  }
+
+  function entradasPublicables(dd) {
+    return ((dd || D).entradas || []).filter(function (e) { return sePublica(e).publica; });
+  }
+
+  /* La contraparte simétrica, y sale de la MISMA puerta: un segundo filtro
+     «lo que no se publica» divergiría del primero a la tanda siguiente
+     (v879). Es material de control: se cuenta y se puede listar por dentro,
+     y lo que NO se hace con ella es pintar sus títulos —nombrarlos en
+     pantalla sería publicarlos, que es justo lo que la puerta impide—. */
+  function entradasRetenidas(dd) {
+    return ((dd || D).entradas || []).filter(function (e) { return !sePublica(e).publica; });
+  }
+
+  function censoDePublicacion(dd) {
+    var ent = ((dd || D).entradas || []);
+    var por = { 'sin-fecha': 0, 'otro-nivel': 0, 'en-circulacion': 0, 'no-verificado': 0, 'defecto-propio': 0 };
+    var pub = 0;
+    ent.forEach(function (e) {
+      var g = sePublica(e);
+      if (g.publica) pub++; else por[g.motivo]++;
+    });
+    return { n: ent.length, publica: pub, fuera: ent.length - pub, por: por };
+  }
+
+  /* ══ LOS DOS ROJOS ═════════════════════════════════════════════════════════
+     El rojo queda reservado para el hallazgo verificado con fuente. Lo que
+     nos falta a NOSOTROS —contrargumentos sin revisar, criterios sin
+     contrastar, entradas sin migrar— va en gris y en su propio bloque, al
+     final de la página.
+
+     No es cosmética: pintar la deuda técnica del registro con la misma marca
+     que un hecho del gobierno la convierte en una falta suya, y eso es
+     falso. Es la lección de la v886 sobre las alarmas dicha al revés: una
+     alarma que también se enciende por lo nuestro deja de señalar lo suyo. */
+  function pendientesPropios(dd) {
+    var d0 = dd || D;
+    var out = [];
+    var c1 = capaUnoDe_conjunto((d0.entradas || []));
+    if (c1.contra.sinRevisar) out.push({
+      t: 'Contrargumento oficial sin revisar',
+      n: c1.contra.sinRevisar + ' de ' + (d0.entradas || []).length + ' hechos',
+      d: 'Nadie ha buscado todavía si el Gobierno respondió. NO significa que no respondiera: mientras no se ' +
+         'busque, el indicador I-06 no se puede calcular y así se publica.' });
+
+    var sinVal = [];
+    Object.keys(INDICADORES).forEach(function (k) {
+      if (CRITERIOS[k]) sinVal.push(k);
+    });
+    if (sinVal.length) out.push({
+      t: 'Criterios de indicador sin contrastar',
+      n: sinVal.length + ' criterios (' + sinVal.join(', ') + ')',
+      d: 'Sus listas de qué incluye y qué excluye se escribieron mirando ESTE registro. Hasta que corran contra ' +
+         'un gobierno anterior con material suficiente, no están validados.' });
+
+    var cob = coberturaDeRol((d0.entradas || []).filter(function (e) { return (e.indicadores || []).length; }));
+    if (cob.sinCorrer) out.push({
+      t: 'Procedencia de fuentes sin comprobar',
+      n: cob.sinCorrer + ' de ' + cob.n + ' entradas que declaran indicador',
+      d: 'La comprobación de «al menos una fuente documenta el acto» no pudo correr sobre ellas.' });
+
+    var sinNivel = (d0.entradas || []).filter(function (e) { return !e.nivelGobierno; }).length;
+    if (sinNivel) out.push({
+      t: 'Entradas sin nivel de gobierno declarado',
+      n: sinNivel + ' de ' + (d0.entradas || []).length,
+      d: 'El filtro que saca del score lo municipal, distrital y departamental no las puede separar todavía.' });
+
+    var sinTipo = (d0.entradas || []).filter(function (e) { return !e.tipoFuente; }).length;
+    if (sinTipo) out.push({
+      t: 'Entradas sin naturaleza de fuente declarada',
+      n: sinTipo + ' de ' + (d0.entradas || []).length,
+      d: 'Son las más viejas del registro, escritas sin citar fuente. No están «sin clasificar»: están sin ' +
+         'documentar, y por eso no se publican.' });
+    return out;
+  }
+
+  function bloquePendientes(dd) {
+    var s = el('section', 'sp-pend');
+    s.appendChild(el('h3', 'sp-pend-h', 'Lo que nos falta a nosotros'));
+    s.appendChild(el('p', 'sp-pend-dek',
+      'Esto NO son faltas del gobierno: es la deuda de este registro. Va en gris y al final a propósito — el ' +
+      'rojo de esta pantalla está reservado para el hallazgo verificado con fuente, y pintar lo nuestro con ' +
+      'la misma marca sería cobrárselo a otro.'));
+
+    var cen = censoDePublicacion(dd);
+    var q = el('div', 'sp-pend-q');
+    q.appendChild(el('b', null, 'Qué publica esta pantalla: ' + cen.publica + ' de ' + cen.n + ' hechos del registro.'));
+    var ul = el('ul', 'sp-pend-lista');
+    Object.keys(cen.por).forEach(function (k) {
+      if (!cen.por[k]) return;
+      var li = el('li', null, null);
+      li.appendChild(el('b', null, cen.por[k] + ' · '));
+      li.appendChild(el('span', null, MOTIVOS_PUB[k]));
+      ul.appendChild(li);
+    });
+    if (cen.fuera) q.appendChild(ul);
+    q.appendChild(el('p', 'sp-h-meta',
+      cen.fuera
+        ? 'Las ' + cen.fuera + ' que quedan fuera siguen en el registro como material de control y no se nombran ' +
+          'acá: nombrarlas en pantalla sería publicarlas.'
+        : 'Hoy no queda ninguna fuera.'));
+    s.appendChild(q);
+
+    var lista = pendientesPropios(dd);
+    lista.forEach(function (x) {
+      var f = el('div', 'sp-pend-f');
+      f.appendChild(el('b', null, x.t));
+      f.appendChild(el('span', 'sp-pend-n', x.n));
+      f.appendChild(el('p', null, x.d));
+      s.appendChild(f);
+    });
+    return s;
+  }
+
+  /* ══ LA OPINIÓN FIRMADA ════════════════════════════════════════════════════
+     Bloque propio y en SERIF, para que se distinga de los datos sin
+     necesidad de una etiqueta: la tipografía hace el trabajo que una etiqueta
+     haría peor, porque una etiqueta se puede pasar por alto y una letra
+     distinta no.
+
+     Y la regla de oro del pliego sigue en pie: esto NO alimenta ningún
+     cálculo y ningún cálculo lo cita como evidencia. El texto, el autor y la
+     fecha los escribe una persona en el registro; este código no los
+     inventa. */
+  function bloqueEditorial() {
+    var ed = editorialDe(D) || {};
+    var s = el('section', 'sp-edit');
+    s.appendChild(el('p', 'sp-edit-ojo', 'Opinión firmada'));
+    if (ed.hay && ed.texto) {
+      s.appendChild(el('p', 'sp-edit-txt', ed.texto));
+      var pie = el('p', 'sp-edit-pie');
+      pie.appendChild(el('b', null, ed.autor || 'Sin firmar'));
+      if (ed.fecha) pie.appendChild(el('span', null, ' · ' + fechaLarga(ed.fecha)));
+      s.appendChild(pie);
+      /* Los apoyos NO son fuentes: son referencias a entradas de este mismo
+         registro, y cada una dice si se encontró y de qué clase probatoria
+         es. Un apoyo flojo —una atribución causal, una afirmación en
+         circulación— se marca: no descalifica la opinión, pero el lector
+         tiene que poder ver sobre qué se apoya. */
+      if (ed.apoyos && ed.apoyos.length) {
+        var w = el('div', 'sp-edit-ap');
+        w.appendChild(el('b', null, 'Se apoya en estos registros'));
+        var ul = el('ul', 'sp-edit-aps');
+        ed.apoyos.forEach(function (a) {
+          var li = el('li', a.flojo ? 'sp-edit-flojo' : null);
+          li.appendChild(el('span', null, a.hallado ? a.titulo : a.ref));
+          if (!a.hallado) li.appendChild(tag('cp-mal', 'no está en el registro'));
+          else if (a.clase) li.appendChild(tag(a.flojo ? 'dis' : 'ok', a.clase.t));
+          ul.appendChild(li);
+        });
+        w.appendChild(ul);
+        s.appendChild(w);
+      }
+    } else {
+      s.appendChild(el('p', 'sp-edit-txt sp-edit-marca',
+        'Acá va la opinión firmada de quien opera URBIS. El texto lo escribe una persona, no este programa: ' +
+        'firmar una opinión sobre un presidente en ejercicio con el nombre de otro sería lo más grave que este ' +
+        'módulo podría hacer, y lo sería aunque la opinión fuera buena. Mientras no esté escrita, este bloque ' +
+        'dice que no está.'));
+      s.appendChild(el('p', 'sp-edit-pie sp-edit-marca',
+        'Pendiente: autor, fecha y los enlaces a los registros que la sustentan.'));
+    }
+    s.appendChild(el('p', 'sp-edit-regla',
+      'Una opinión firmada y enlazada a evidencia se defiende; un juicio metido dentro de un cálculo solo se ' +
+      'desacredita. Por eso esto no mueve ninguna cifra de esta pantalla, y ninguna cifra lo cita como prueba.'));
+    return s;
+  }
+
+  /* ══ EL CANAL DE RECTIFICACIÓN ═════════════════════════════════════════════
+     Dos mitades, y las dos hacen falta: un botón sin registro es un buzón, y
+     un registro sin botón es una promesa. Lo que se corrige queda escrito
+     con qué decía, qué dice y cuándo cambió — un registro que reescribe su
+     pasado en silencio no se puede auditar, y su corrección no vale como
+     descargo. */
+  function rectDe(dd) { return ((dd || D) || {}).rectificaciones || null; }
+
+  function bloqueRectificacion(ctx) {
+    var r = rectDe(D) || {};
+    var s = el('section', 'sp-rect');
+    s.appendChild(el('h3', 'sp-rect-h', 'Pedir una corrección'));
+    s.appendChild(el('p', 'sp-rect-dek',
+      'Si algo de lo publicado sobre usted es inexacto, pídalo por escrito y se revisa. Lo que se corrija queda ' +
+      'anotado abajo con lo que decía, lo que dice y la fecha: no se borra el pasado, se deja la huella.'));
+
+    var correo = r.correo || 'urbisprocity@gmail.com';
+    var asunto = 'Solicitud de corrección · Seguimiento presidencial URBIS' + (ctx ? ' · ' + ctx : '');
+    var cuerpo = 'Qué dice hoy:\n\nQué debería decir:\n\nPor qué (con la fuente o el documento):\n\n' +
+                 'Quién lo pide (nombre y calidad en que actúa):\n';
+    var a = el('a', 'sp-btn sp-btn-solid sp-rect-btn', 'Solicitar corrección');
+    a.href = 'mailto:' + correo + '?subject=' + encodeURIComponent(asunto) +
+             '&body=' + encodeURIComponent(cuerpo);
+    s.appendChild(a);
+    s.appendChild(el('p', 'sp-h-meta',
+      'Se responde en ' + (r.plazoDias || 15) + ' días. Si la corrección procede, se aplica y se publica en el ' +
+      'registro de correcciones; si no procede, se contesta por qué.'));
+
+    var lista = (r.lista || []);
+    var h = el('div', 'sp-rect-reg');
+    h.appendChild(el('b', null, 'Correcciones hechas: ' + lista.length));
+    if (!lista.length) {
+      h.appendChild(el('p', 'sp-h-meta',
+        'Todavía no se ha pedido ninguna. La sección se publica vacía a propósito: esconderla haría imposible ' +
+        'saber si nunca hubo correcciones o si las hubo y no se contaron.'));
+    } else {
+      lista.slice().sort(function (a2, b2) { return (b2.fecha || '') < (a2.fecha || '') ? -1 : 1; })
+        .forEach(function (x) {
+          var f = el('div', 'sp-rect-f');
+          f.appendChild(el('b', null, fechaCorta(x.fecha) + ' · ' + (x.entrada || 'sin entrada')));
+          if (x.pidio) f.appendChild(el('p', 'sp-h-meta', 'Lo pidió: ' + x.pidio));
+          var d1 = el('p', 'sp-rect-antes'); d1.appendChild(el('b', null, 'Decía: '));
+          d1.appendChild(el('span', null, x.decia || '')); f.appendChild(d1);
+          var d2 = el('p', 'sp-rect-dice'); d2.appendChild(el('b', null, 'Dice: '));
+          d2.appendChild(el('span', null, x.dice || '')); f.appendChild(d2);
+          if (x.motivo) f.appendChild(el('p', 'sp-h-meta', x.motivo));
+          h.appendChild(f);
+        });
+    }
+    s.appendChild(h);
+    return s;
+  }
+
+  /* ══ TABLERO · LOS GRÁFICOS DEL PRESUPUESTO ════════════════════════════════
+     Cinco reglas, y las cinco son del pliego de pantalla:
+
+     1. LEEN DEL REGISTRO. Ninguna cifra de estos gráficos está escrita en
+        este archivo: todas salen de `D.presupuesto`, que trae su `base` —el
+        id de la entrada que documenta el hecho—, su corte y sus fuentes. Un
+        número tecleado acá sería una cifra que envejece sola (v903) y que
+        nadie podría abrir. Si el bloque no está, el gráfico NO se dibuja con
+        supuestos: dice qué le falta.
+     2. FUENTE Y FECHA DE CORTE VAN DENTRO DEL DIBUJO, no en una nota aparte.
+        Un gráfico viaja solo —se recorta, se comparte— y el pie se queda.
+     3. EJE DESDE CERO en todas las barras.
+     4. LO QUE ESTÁ EN TRÁMITE VA CON TRAMA DISTINTA de lo que está en firme.
+     5. Y el rojo se reserva para el hallazgo verificado: la deuda propia va
+        en gris, al final, en su bloque. */
+
+  /* Un decimal para las coordenadas del SVG. Se escribe acá y no se toma
+     prestado: `n1` existe en js/74, que esta página NO carga, así que
+     llamarlo daba un ReferenceError que se tragaba el render del tablero a
+     partir de la torta —el héroe salía, lo demás no, y la consola callada—.
+     Es la regla de la v863: se comprueba leyendo el archivo, no recordando
+     que la función existe «en alguna parte». */
+  function svgN1(v) { return Math.round(v * 10) / 10; }
+
+  var TRAMA_ID = 'sp-trama-tramite';
+
+  function presupuestoDe(dd) {
+    var p = ((dd || D) || {}).presupuesto;
+    return (p && p.totalBn) ? p : null;
+  }
+  function enTramite(p) { return !!p && p.estadoProcesal === 'en-tramite-legislativo'; }
+
+  // La trama que separa lo que está en trámite de lo que está en firme. Va
+  // una sola vez por SVG y se referencia por url(#id): dos definiciones con
+  // el mismo id en la misma página se pisan.
+  function defsTrama(svg) {
+    var d = svgEl('defs', {});
+    var pt = svgEl('pattern', { id: TRAMA_ID, width: 6, height: 6,
+                                patternUnits: 'userSpaceOnUse', patternTransform: 'rotate(45)' });
+    pt.appendChild(svgEl('rect', { width: 6, height: 6, fill: 'currentColor', 'fill-opacity': '0.07' }));
+    pt.appendChild(svgEl('rect', { width: 2.2, height: 6, fill: 'currentColor', 'fill-opacity': '0.38' }));
+    d.appendChild(pt);
+    svg.appendChild(d);
+  }
+
+  /* El pie va DENTRO del SVG. Devuelve el alto que ocupa para que quien
+     dibuja reserve su sitio: un pie superpuesto al último dato es peor que
+     no ponerlo. */
+  var PIE_ALTO = 34;
+  function pieDentro(svg, w, y, fuenteTxt, corteTxt) {
+    var g = svgEl('g', { class: 'sp-g-pie' });
+    var l = svgEl('line', { x1: 0, y1: y, x2: w, y2: y, class: 'sp-g-rule' });
+    g.appendChild(l);
+    var t1 = svgEl('text', { x: 0, y: y + 13, class: 'sp-g-pie-t' });
+    t1.textContent = 'Fuente: ' + fuenteTxt;
+    g.appendChild(t1);
+    var t2 = svgEl('text', { x: 0, y: y + 26, class: 'sp-g-pie-t' });
+    t2.textContent = corteTxt;
+    g.appendChild(t2);
+    svg.appendChild(g);
+  }
+  function corteTexto(p) {
+    return 'Fecha de corte: ' + fechaCorta(p.corte) +
+           ' · ' + (enTramite(p) ? 'en trámite legislativo (trama rayada)' : 'en firme');
+  }
+  function fuenteCorta(lista) {
+    var ns = (lista || []).map(function (f) { return String(f.n || '').split(' · ')[0].split(' — ')[0].trim(); });
+    var u = [];
+    ns.forEach(function (n) { if (n && u.indexOf(n) < 0) u.push(n); });
+    return u.slice(0, 3).join(', ') + (u.length > 3 ? ' y ' + (u.length - 3) + ' más' : '');
+  }
+
+  function bn(v) { return r0(Math.round(v * 100) / 100); }
+  /* Un decimal SIEMPRE, para una columna que se lee en vertical: `r0` solo
+     cambia el punto por la coma, así que un 10.0 salía «+10 %» al lado de
+     «+34,4 %» y se leía como otra precisión. Es la clase de la v874. */
+  function un(v) { return Number(v).toFixed(1).replace('.', ','); }
+  /* El ancho de un rótulo, estimado por caracteres: el SVG no sabe medir
+     texto sin montarlo. El margen va del lado seguro —estimar de MÁS mete el
+     rótulo dentro de la barra, que sigue siendo legible; estimar de menos lo
+     deja pisando el de al lado, que es lo que se vio en el papel—. Es la
+     misma decisión que la v898 tomó con las cotas del lote. */
+  function anchoRotulo(t) { return String(t).length * 7.4; }
+
+  /* Un gráfico que no se puede dibujar NO se calla y NO se rellena: ocupa su
+     sitio diciendo qué dato le falta y de dónde tendría que salir. Es el
+     vacío declarado de la lámina educativa (v849) traído acá, y es lo que
+     impide la salida barata de teclear las cifras en el código. */
+  function grafSinDato(titulo, queMide, queFalta) {
+    var c = el('section', 'sp-graf sp-graf-falta');
+    c.appendChild(el('h3', 'sp-graf-h', titulo));
+    c.appendChild(el('p', 'sp-graf-u', queMide));
+    var b = el('div', 'sp-falta-caja');
+    b.appendChild(el('b', null, 'No se dibuja: el registro todavía no tiene este dato.'));
+    b.appendChild(el('p', null, queFalta));
+    b.appendChild(el('p', 'sp-h-meta',
+      'No se dibuja con cifras escritas a mano. La regla de este tablero es que los gráficos lean del ' +
+      'registro: un número tecleado en el código no se puede abrir, no tiene fuente y nadie se entera el día ' +
+      'que deja de ser cierto.'));
+    c.appendChild(b);
+    return c;
+  }
+
+  // ── El héroe: un hallazgo verificado, no un veredicto ─────────────────────
+  function pintarHeroe(cont, p) {
+    var h = p.heroe;
+    var caja = el('section', 'sp-heroe');
+    caja.appendChild(el('p', 'sp-heroe-ojo', 'Presupuesto General de la Nación · ' + p.anio));
+
+    var fila = el('div', 'sp-heroe-cifra');
+    var big = el('p', 'sp-heroe-n', '$' + bn(h.interesesBn));
+    fila.appendChild(big);
+    fila.appendChild(el('span', 'sp-heroe-u', 'billones de pesos en intereses de la deuda'));
+    caja.appendChild(fila);
+
+    caja.appendChild(el('p', 'sp-heroe-frase', h.titulo + ': $' + bn(h.interesesBn) +
+      ' billones en intereses contra $' + bn(h.inversionBn) + ' billones de inversión pública, ' +
+      '$' + bn(Math.round((h.interesesBn - h.inversionBn) * 100) / 100) + ' billones de diferencia.'));
+
+    // Las dos barras, a la misma escala y desde cero: es la comparación entera.
+    var w = 720, alto = 26, hh = 2 * alto + 26 + PIE_ALTO + 16;
+    var svg = svgEl('svg', { viewBox: '0 0 ' + w + ' ' + hh, class: 'sp-g sp-g-heroe',
+                             role: 'img', 'aria-label':
+      'Intereses de la deuda ' + bn(h.interesesBn) + ' billones frente a inversión ' + bn(h.inversionBn) + ' billones' });
+    defsTrama(svg);
+    var max = Math.max(h.interesesBn, h.inversionBn);
+    var x0 = 0, ancho = w - 150;
+    [{ t: 'Intereses de la deuda', v: h.interesesBn, cls: 'sp-g-rojo' },
+     { t: 'Inversión pública',     v: h.inversionBn, cls: 'sp-g-gris' }].forEach(function (b, i) {
+      var y = i * (alto + 12);
+      var largo = Math.max(2, ancho * (b.v / max));
+      svg.appendChild(svgEl('rect', { x: x0, y: y, width: largo, height: alto, class: b.cls + ' sp-g-barra' }));
+      if (enTramite(p)) svg.appendChild(svgEl('rect', { x: x0, y: y, width: largo, height: alto,
+                                                        class: b.cls + ' sp-g-trama' }));
+      var et = svgEl('text', { x: x0 + 8, y: y + alto - 8, class: 'sp-g-et-in' });
+      et.textContent = b.t;
+      svg.appendChild(et);
+      var vt = svgEl('text', { x: x0 + largo + 10, y: y + alto - 8, class: 'sp-g-val' });
+      vt.textContent = '$' + bn(b.v) + ' bn';
+      svg.appendChild(vt);
+    });
+    pieDentro(svg, w, 2 * (alto + 12) + 6, fuenteCorta(h.fuentes), corteTexto(p));
+    caja.appendChild(svg);
+
+    caja.appendChild(el('p', 'sp-graf-nota', h.nota));
+    var f = el('div', 'sp-fuentes');
+    pintarFuentes(f, h.fuentes);
+    caja.appendChild(f);
+    cont.appendChild(caja);
+  }
+
+  // ── Torta: composición del presupuesto ────────────────────────────────────
+  function grafTorta(p) {
+    var c = p.composicion, w = 720, r = 92, cx = 120, cy = 110;
+    var hh = 2 * cy + PIE_ALTO + 10;
+    var svg = svgEl('svg', { viewBox: '0 0 ' + w + ' ' + hh, class: 'sp-g',
+      role: 'img', 'aria-label': c.partes.map(function (x) { return x.t + ' ' + x.pct + '%'; }).join(', ') });
+    defsTrama(svg);
+    var ang = -Math.PI / 2;
+    var COL = { funcionamiento: 'sp-g-c1', deuda: 'sp-g-rojo', inversion: 'sp-g-c3' };
+    c.partes.forEach(function (x, i) {
+      var da = (x.pct / 100) * Math.PI * 2, fin = ang + da;
+      var x1 = cx + r * Math.cos(ang), y1 = cy + r * Math.sin(ang);
+      var x2 = cx + r * Math.cos(fin), y2 = cy + r * Math.sin(fin);
+      var d = 'M' + cx + ' ' + cy + ' L' + svgN1(x1) + ' ' + svgN1(y1) +
+              ' A' + r + ' ' + r + ' 0 ' + (da > Math.PI ? 1 : 0) + ' 1 ' + svgN1(x2) + ' ' + svgN1(y2) + ' Z';
+      svg.appendChild(svgEl('path', { d: d, class: (COL[x.k] || 'sp-g-c1') + ' sp-g-barra' }));
+      if (enTramite(p)) svg.appendChild(svgEl('path', { d: d, class: (COL[x.k] || 'sp-g-c1') + ' sp-g-trama' }));
+      // Leyenda a la derecha: un rótulo dentro de una porción de 14 % no cabe.
+      var ly = 42 + i * 30;
+      svg.appendChild(svgEl('rect', { x: 268, y: ly - 11, width: 14, height: 14,
+                                      class: (COL[x.k] || 'sp-g-c1') + ' sp-g-barra' }));
+      var t = svgEl('text', { x: 290, y: ly, class: 'sp-g-et' });
+      t.textContent = x.pct + ' % · ' + x.t;
+      svg.appendChild(t);
+      ang = fin;
+    });
+    var tot = svgEl('text', { x: 268, y: 42 + 3 * 30 + 6, class: 'sp-g-pie-t' });
+    tot.textContent = 'Sobre un total de $' + bn(p.totalBn) + ' billones.';
+    svg.appendChild(tot);
+    pieDentro(svg, w, 2 * cy - 6, fuenteCorta(c.fuentes), corteTexto(p));
+    return tarjetaGrafica(c.titulo, 'Porcentaje del presupuesto total', svg, p.estadoTexto, c.fuentes);
+  }
+
+  // ── Barras divergentes: variación real por sector, cero al centro ─────────
+  function grafDivergentes(p) {
+    var lista = p.sectores.lista.filter(function (x) { return x.realPct != null; })
+                 .slice().sort(function (a, b) { return b.realPct - a.realPct; });
+    var w = 720, fila = 30, arriba = 18;
+    var hh = arriba + lista.length * fila + 24 + PIE_ALTO;
+    var svg = svgEl('svg', { viewBox: '0 0 ' + w + ' ' + hh, class: 'sp-g',
+      role: 'img', 'aria-label': lista.map(function (x) { return x.t + ' ' + un(x.realPct) + ' por ciento'; }).join(', ') });
+    defsTrama(svg);
+    var etq = 190, zona = w - etq - 90, cx = etq + zona / 2;
+    var max = Math.max.apply(null, lista.map(function (x) { return Math.abs(x.realPct); }));
+    // El cero va al centro y con su línea: sin ella una barra negativa se lee
+    // como una positiva más corta.
+    svg.appendChild(svgEl('line', { x1: cx, y1: arriba - 12, x2: cx, y2: arriba + lista.length * fila,
+                                    class: 'sp-g-cero' }));
+    var z = svgEl('text', { x: cx, y: arriba - 16, class: 'sp-g-et', 'text-anchor': 'middle' });
+    z.textContent = '0 %';
+    svg.appendChild(z);
+    lista.forEach(function (x, i) {
+      var y = arriba + i * fila, alto = 18;
+      var largo = Math.max(2, (Math.abs(x.realPct) / max) * (zona / 2 - 6));
+      var neg = x.realPct < 0;
+      var bx = neg ? cx - largo : cx;
+      svg.appendChild(svgEl('rect', { x: bx, y: y, width: largo, height: alto,
+                                      class: (neg ? 'sp-g-baja' : 'sp-g-sube') + ' sp-g-barra' }));
+      if (enTramite(p)) svg.appendChild(svgEl('rect', { x: bx, y: y, width: largo, height: alto,
+                                                        class: (neg ? 'sp-g-baja' : 'sp-g-sube') + ' sp-g-trama' }));
+      var t = svgEl('text', { x: etq - 10, y: y + 13, class: 'sp-g-et', 'text-anchor': 'end' });
+      t.textContent = x.t;
+      svg.appendChild(t);
+      /* El rótulo de valor va afuera de la barra mientras quepa, y DENTRO
+         cuando no. La barra la dibuja el dato, así que ninguna canal fija de
+         etiquetas alcanza siempre: la de Deporte, −43,5 %, se comía el
+         «Deporte» de su propia fila e imprimía «De43,5e». Se vio mirando el
+         papel, que es el método que encontró los defectos de la v874, la
+         v882, la v885 y la v887. */
+      var txt = (x.realPct > 0 ? '+' : '') + un(x.realPct) + ' %';
+      var aw = anchoRotulo(txt);
+      var cabe = neg ? (bx - 8 - aw >= etq - 4) : (bx + largo + 8 + aw <= w - 4);
+      var dentro = !cabe && largo >= aw + 14;
+      var vx = dentro ? (neg ? bx + 8 : bx + largo - 8)
+                      : (neg ? bx - 8 : bx + largo + 8);
+      var anc = dentro ? (neg ? 'start' : 'end') : (neg ? 'end' : 'start');
+      var v = svgEl('text', { x: vx, y: y + 13,
+                              class: dentro ? 'sp-g-et-in' : 'sp-g-val', 'text-anchor': anc });
+      v.textContent = txt;
+      svg.appendChild(v);
+    });
+    pieDentro(svg, w, arriba + lista.length * fila + 18, fuenteCorta(p.sectores.fuentes), corteTexto(p));
+    return tarjetaGrafica('Variación real por sector, 2026 → ' + p.anio,
+      'Descontada la inflación (' + r0(p.deflactorPct) + ' %). El cero está al centro.',
+      svg, p.deflactorNota, p.sectores.fuentes);
+  }
+
+  // ── Barras agrupadas: la posición cambia según la agregación ──────────────
+  function grafAgrupadas(p) {
+    var por = {};
+    p.sectores.lista.forEach(function (x) { por[x.k] = x; });
+    var suma = p.agregacion.suma;
+    var vsuma = suma.de.reduce(function (a, k) { return a + ((por[k] || {}).bn || 0); }, 0);
+    vsuma = Math.round(vsuma * 100) / 100;
+
+    var filas = p.sectores.lista.filter(function (x) { return x.k !== 'policia' && x.bn >= 1; })
+                 .map(function (x) { return { t: x.t, v: x.bn, agr: false }; });
+    filas.push({ t: suma.t, v: vsuma, agr: true });
+    filas.sort(function (a, b) { return b.v - a.v; });
+
+    var w = 720, fila = 30, arriba = 10;
+    var hh = arriba + filas.length * fila + 14 + PIE_ALTO;
+    var svg = svgEl('svg', { viewBox: '0 0 ' + w + ' ' + hh, class: 'sp-g',
+      role: 'img', 'aria-label': filas.map(function (x) { return x.t + ' ' + un(x.v) + ' billones'; }).join(', ') });
+    defsTrama(svg);
+    var etq = 210, zona = w - etq - 100;
+    var max = Math.max.apply(null, filas.map(function (x) { return x.v; }));
+    filas.forEach(function (x, i) {
+      var y = arriba + i * fila, alto = 18;
+      var largo = Math.max(2, (x.v / max) * zona);   // desde cero
+      svg.appendChild(svgEl('rect', { x: etq, y: y, width: largo, height: alto,
+                                      class: (x.agr ? 'sp-g-agr' : 'sp-g-c1') + ' sp-g-barra' }));
+      if (enTramite(p)) svg.appendChild(svgEl('rect', { x: etq, y: y, width: largo, height: alto,
+                                                        class: (x.agr ? 'sp-g-agr' : 'sp-g-c1') + ' sp-g-trama' }));
+      var t = svgEl('text', { x: etq - 10, y: y + 13, class: 'sp-g-et', 'text-anchor': 'end' });
+      t.textContent = x.t;
+      svg.appendChild(t);
+      var v = svgEl('text', { x: etq + largo + 8, y: y + 13, class: 'sp-g-val' });
+      v.textContent = '$' + un(x.v);
+      svg.appendChild(v);
+    });
+    pieDentro(svg, w, arriba + filas.length * fila + 8, fuenteCorta(p.agregacion.fuentes), corteTexto(p));
+    return tarjetaGrafica(p.agregacion.titulo, 'Billones de pesos. Eje desde cero.',
+      svg, p.agregacion.nota, p.agregacion.fuentes);
+  }
+
+  /* ── Organigrama: qué entra al score y qué no ──────────────────────────────
+     Este gráfico NO tiene cifras del presupuesto: cuenta el propio registro.
+     Y hay que decir lo que enseña hoy, porque es una medición y no un
+     adorno: la mayoría de las entradas no declara nivel de gobierno, así que
+     lo que el filtro rechaza hoy es cero. Un filtro que no rechaza nada se
+     ve igual que uno que funciona, y por eso el número va impreso. */
+  function censoDeNivel(dd) {
+    var d0 = dd || D;
+    var ent = (d0.entradas || []);
+    var c = { nacional: 0, otro: 0, sinDeclarar: 0 };
+    ent.forEach(function (e) {
+      var n = e.nivelGobierno;
+      if (!n) c.sinDeclarar++;
+      else if (n === 'nacional') c.nacional++;
+      else c.otro++;
+    });
+    var cs = casosDeCorrupcion(d0);
+    var cc = { pesan: 0, fuera: 0, sinDeclarar: 0 };
+    cs.forEach(function (x) {
+      var g = entraAlVeredicto(x);
+      if (!x.nivelGobierno) cc.sinDeclarar++;
+      else if (g.entra) cc.pesan++;
+      else cc.fuera++;
+    });
+    return { entradas: c, casos: cc, nEntradas: ent.length, nCasos: cs.length };
+  }
+
+  function grafOrganigrama(dd) {
+    var z = censoDeNivel(dd);
+    var filas = [
+      { t: 'Nacional · entra al score', n: z.entradas.nacional, cls: 'sp-g-c1' },
+      { t: 'Municipal, distrital o departamental · NO entra', n: z.entradas.otro, cls: 'sp-g-baja' },
+      { t: 'Sin nivel declarado', n: z.entradas.sinDeclarar, cls: 'sp-g-gris' }
+    ];
+    var w = 720, fila = 32, arriba = 10;
+    var hh = arriba + filas.length * fila + 14 + PIE_ALTO;
+    var svg = svgEl('svg', { viewBox: '0 0 ' + w + ' ' + hh, class: 'sp-g',
+      role: 'img', 'aria-label': filas.map(function (x) { return x.t + ': ' + x.n; }).join('. ') });
+    var etq = 330, zona = w - etq - 80;
+    var max = Math.max.apply(null, filas.map(function (x) { return x.n; })) || 1;
+    filas.forEach(function (x, i) {
+      var y = arriba + i * fila, alto = 20;
+      var largo = Math.max(2, (x.n / max) * zona);
+      svg.appendChild(svgEl('rect', { x: etq, y: y, width: largo, height: alto, class: x.cls + ' sp-g-barra' }));
+      var t = svgEl('text', { x: etq - 10, y: y + 15, class: 'sp-g-et', 'text-anchor': 'end' });
+      t.textContent = x.t;
+      svg.appendChild(t);
+      var v = svgEl('text', { x: etq + largo + 8, y: y + 15, class: 'sp-g-val' });
+      v.textContent = String(x.n);
+      svg.appendChild(v);
+    });
+    pieDentro(svg, w, arriba + filas.length * fila + 8,
+      'El propio registro de este seguimiento', 'Fecha de corte: ' + fechaCorta((dd || D).actualizado) +
+      ' · ' + z.nEntradas + ' hechos y ' + z.nCasos + ' casos');
+    var nota = 'De los ' + z.nCasos + ' casos de corrupción, ' + z.casos.pesan + ' pesan en el veredicto y ' +
+      z.casos.fuera + ' quedan fuera por su nivel. ' +
+      (z.entradas.otro === 0
+        ? 'HOY EL FILTRO NO RECHAZA NINGUNA ENTRADA: ninguna declara un nivel distinto del nacional. Eso no ' +
+          'significa que no haya hechos de otro nivel en el registro — significa que ' + z.entradas.sinDeclarar +
+          ' entradas no declaran su nivel, así que el filtro no las puede separar todavía. Un filtro sin nada ' +
+          'que rechazar se ve igual que uno que funciona, y por eso el número va impreso.'
+        : 'El filtro rechaza hoy ' + z.entradas.otro + ' entradas por ser de otro nivel de gobierno.');
+    return tarjetaGrafica('Qué entra al score presidencial y qué no',
+      'Hechos del registro, clasificados por el nivel de gobierno que declaran.', svg, nota, null);
+  }
+
+  // ── La página ─────────────────────────────────────────────────────────────
+  function pintarTablero() {
+    var cont = vaciar($('sp-tablero'));
+    var p = presupuestoDe(D);
+
+    if (!p) {
+      cont.appendChild(grafSinDato('El presupuesto', 'Composición, sectores y agregaciones',
+        'Falta el bloque `presupuesto` en el registro.'));
+    } else {
+      pintarHeroe(cont, p);
+      cont.appendChild(bloqueEditorial());
+      var g = el('div', 'sp-graficas');
+      g.appendChild(grafTorta(p));
+      g.appendChild(grafDivergentes(p));
+      g.appendChild(grafAgrupadas(p));
+      g.appendChild(grafOrganigrama(D));
+      g.appendChild(grafSinDato('Presupuestado contra efectivamente pagado · Huila, 2022-2024',
+        'Dos líneas: lo que se presupuestó y lo que de verdad se giró.',
+        'Falta la serie año por año de lo presupuestado y lo pagado, con la fuente oficial que la publique ' +
+        '—la ejecución del Sistema General de Regalías o el presupuesto departamental—. Se buscó el 19 de ' +
+        'septiembre de 2026 y no se encontró una fuente que publique las dos columnas de los tres años.'));
+      g.appendChild(grafSinDato('De la decisión nacional al uso municipal',
+        'Cadena: decisión nacional → herramienta disponible → uso municipal.',
+        'Faltan los tres eslabones como entradas del registro, cada uno con su acto identificado. Hoy no hay ' +
+        'ninguno registrado, y sin el acto que habilita no se puede sostener la cadena: dibujarla sería ' +
+        'afirmar una orden directa que el registro no documenta.'));
+      g.appendChild(grafSinDato('Frecuencia de las técnicas de distorsión',
+        'Cuántas veces aparece cada técnica en las piezas analizadas.',
+        'Falta el campo `calidadDelEncuadre` por entrada: hoy lo declaran 0 de ' + (D.entradas || []).length +
+        '. Es el mismo campo que deja en «no se puede correr» dos casilleros del control de calidad.'));
+      cont.appendChild(g);
+    }
+
+    cont.appendChild(bloqueRectificacion());
+    cont.appendChild(bloquePendientes(D));
   }
 
   // ══ CONSULTA PROPIA DE URBIS ══════════════════════════════════════════════

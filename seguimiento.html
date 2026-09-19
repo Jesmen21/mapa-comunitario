@@ -8,7 +8,7 @@
 <meta name="description" content="Línea de tiempo documentada de las actuaciones, decisiones y posiciones del gobierno.">
 <link rel="manifest" href="manifest.json">
 <link rel="icon" href="assets/icons/icon-192.png">
-<link rel="stylesheet" href="css/70-seguimiento.css?v=970-un-estado-que-se-cuenta-y-la-guarda-sin-material">
+<link rel="stylesheet" href="css/70-seguimiento.css?v=971-el-tablero-publica-hechos-y-dice-que-retiene">
 </head>
 <body>
 
@@ -138,6 +138,10 @@
           <p id="sp-d-cat" class="sp-d-catname"></p>
         </div>
         <div class="sp-d-block">
+          <h3>Procedencia</h3>
+          <div id="sp-d-proc"></div>
+        </div>
+        <div class="sp-d-block">
           <h3>Fuentes</h3>
           <div class="sp-fuentes" id="sp-d-fuentes"></div>
         </div>
@@ -213,6 +217,18 @@
   </section>
 
   <!-- ══ 9. INDICADORES (gráficas) ═══════════════════════════════════════ -->
+  <!-- ══ TABLERO · los hallazgos verificados del presupuesto ════════════ -->
+  <section class="sp-view" data-view="tablero" aria-labelledby="sp-tb-h">
+    <header class="sp-vhead" id="sp-tb-head">
+      <p class="sp-vnum">00</p>
+      <h2 id="sp-tb-h">El tablero</h2>
+      <p class="sp-vdek">Los hallazgos verificados, con su fuente y su fecha de corte impresas dentro del
+         gráfico. Ningún número de esta pantalla está escrito en el código: todos salen del registro, y lo que
+         el registro todavía no tiene no se dibuja — se dice qué falta.</p>
+    </header>
+    <div id="sp-tablero"></div>
+  </section>
+
   <section class="sp-view" data-view="indicadores" aria-labelledby="sp-ind-h">
     <header class="sp-vhead" id="sp-ind-head">
       <p class="sp-vnum">06</p>
@@ -312,6 +328,6 @@
   </div>
 </div>
 
-<script src="js/70-seguimiento.js?v=970-un-estado-que-se-cuenta-y-la-guarda-sin-material"></script>
+<script src="js/70-seguimiento.js?v=971-el-tablero-publica-hechos-y-dice-que-retiene"></script>
 </body>
 </html>

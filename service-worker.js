@@ -1,4 +1,4 @@
-const URBIS_CACHE = 'urbis-v970-un-estado-que-se-cuenta-y-la-guarda-sin-material';
+const URBIS_CACHE = 'urbis-v971-el-tablero-publica-hechos-y-dice-que-retiene';
 const URBIS_ASSETS = [
   './',
   './index.html',

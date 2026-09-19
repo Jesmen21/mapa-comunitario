@@ -11702,6 +11702,245 @@ reporte de la FAC —el pendiente 9 del dossier— y con él la declaración cue
 sola, sin tocar una línea. Aflojar el criterio para que la cifra suba sería
 exactamente la salida barata que la sección de arriba nombra.
 
+## El tablero publica hechos, y dice cuánto retiene (v971)
+
+La pantalla del módulo presidencial, con los siete gráficos, y la puerta de
+publicación que decide qué de las 180 entradas sale como hallazgo. El orden
+lo cambió el usuario a mitad de tanda —«implementamos la pantalla ahora, es
+lo primero»— pero las dos mitades resultaron ser una: **la pantalla no se
+puede escribir sin decidir antes qué publica.**
+
+    v970   la ficha abre en el veredicto · 180 entradas, todas a la vista del mismo modo
+    v971   el tablero abre en un HECHO con fuente · 116 publicadas, 64 retenidas y contadas
+
+### La puerta: cinco motivos, nunca un booleano
+
+`sePublica(e)` es el único sitio que decide, y devuelve su motivo porque «no
+se publica por municipal» y «no se publica porque nadie declaró su
+naturaleza» **piden cosas distintas**: la primera es del hecho, la segunda es
+deuda nuestra. Un `false` las juntaría en una (v876).
+
+| Motivo | Cuántas hoy |
+|---|---|
+| `no-verificado` · su naturaleza no está declarada como verificada | 56 |
+| `en-circulacion` · es una afirmación en circulación, no un hecho probado | 8 |
+| `otro-nivel` · municipal, distrital o departamental | 0 |
+| `sin-fecha` · un hecho que no se puede situar no se puede contrastar | 0 |
+| `defecto-propio` · le encontramos el defecto a la cifra al revisarla | 0 |
+
+**Y el recuento se PUBLICA.** Si 64 entradas desaparecen de la pantalla sin
+que nada lo diga, la exención se lee igual que un aprobado — que es lo que
+este proyecto lleva seis tandas evitando. Lo que **no** se publica son sus
+títulos: nombrarlas en pantalla sería publicarlas, que es justo lo que la
+puerta viene a impedir, y hay una aserción que lo mide sobre las 64.
+
+#### Tres de los cinco motivos son prospectivos, y hay que decirlo
+
+Medido antes de escribir: de las cuatro cifras a las que **nosotros** le
+encontramos el defecto —los $800 millones del festival, los «1.300 niños», el
+«+400 %» de soldados, los $719.000 millones del SENA— **ninguna está hoy en
+el registro.** Se revisaron y no se entraron, que es lo correcto.
+
+Así que esa puerta no arregla un registro torcido: **impide que el que viene
+lo tuerza.** Es exactamente la forma de la puerta de nivel de la v941, y vale
+decirlo porque la rutina diaria escribe en ese archivo sin leer esta
+bitácora. La lista de pistas vive en el propio registro y `revisar.js` la
+cruza contra las entradas.
+
+##### La guarda denunció un contrato que no tiene nada que ver
+
+En su primera corrida salió en rojo sobre «Piden investigar un contrato
+directo de la UNP por **$24.800 millones**», que contiene «800 millones».
+
+Es la clase de la v895 —una guarda con falsos positivos termina siendo una
+lista de excepciones que envejece hasta no significar nada— y **se arregla en
+la forma, no con un renglón de exención**: la pista se busca con el borde de
+la cifra delante, `(?<![\d.,])`, que es el mismo que la guarda de
+concordancia de la v874 usa por la misma razón. Comprobada contra siete casos
+de respuesta conocida: distingue «$800 millones» de «$24.800 millones» y
+«1.300 niños» de «21.300 niños».
+
+### El nivel se filtra en la puerta del score, y eso movió una cuenta
+
+`hechosDelMandato` es por donde pasa TODO lo que cuenta —los indicadores, las
+tasas por 100 días, los rasgos y la comparación— así que el filtro de nivel y
+la marca `noPublicar` van ahí y no en cada consumidor (v867).
+
+Eso destapó algo que hay que dejar escrito, porque parecía un fallo y no lo
+es: `pasaElCriterio` **también** rechaza por nivel, y con mi cambio esa rama
+dejó de dispararse desde los indicadores. Parecía la clase B —dos rutas para
+un hecho— y medido no lo es: **`corridaHaciaAtras` llama a `pasaElCriterio`
+sobre listas que NO pasan por esa puerta**, que es justamente la corrida sobre
+el registro de un gobierno anterior. Ahí sigue siendo la única que lo
+rechaza. Son dos caminos de entrada distintos, no dos copias.
+
+Lo que sí cambia es lo que la suite mide, y **se apretó**: la declaración
+municipal ya no llega al criterio, y hay una aserción que lo afirma por su
+nombre en vez de contarla entre las siete de antes.
+
+### Los siete gráficos, y los tres que NO se dibujan
+
+La regla que el usuario fijó para los siete es la que decide la tanda:
+**«leen del registro, nunca números escritos a mano»**. Con esa vara, medido:
+
+| | Estado |
+|---|---|
+| Héroe · intereses de deuda contra inversión | **dibujado** |
+| Composición del PGN 2027 | **dibujado** |
+| Variación real por sector | **dibujado** |
+| La misma plata, dos agregaciones | **dibujado** |
+| Organigrama por nivel de gobierno | **dibujado** |
+| Serie Huila: presupuestado contra pagado | declarado sin dato |
+| Cadena decisión nacional → uso municipal | declarado sin dato |
+| Frecuencia de técnicas de distorsión | declarado sin dato |
+
+Los tres últimos componen una tarjeta que **nombra la fuente que le falta**
+—la regla de la v849 y de la v880: un vacío se declara, no se calla—. El de
+Huila se buscó dos veces y ninguna fuente publica las dos columnas para
+2022-2024; escribir esas seis cifras en el código sería exactamente lo que la
+regla del usuario prohíbe.
+
+Las cuatro cifras del presupuesto no se acarrean: viven en un bloque
+`presupuesto` del registro, con su `base` —la entrada que lo soporta—, su
+`corte`, su `estadoProcesal` y sus fuentes. **La suma Defensa + Policía se
+CALCULA de sus sumandos**: da 54,7 exacto, que es la cifra del pliego, y no
+hay un total escrito que se pueda separar de lo que suma.
+
+#### El organigrama es honesto sobre no tener nada que rechazar
+
+Hoy el registro tiene 15 entradas con nivel declarado, **0 de otro nivel** y
+165 sin declarar. Un filtro que no rechaza nada es el verde que este proyecto
+lleva veintisiete tandas persiguiendo, así que el gráfico lo dice en su propia
+nota en vez de presentarse como una medición.
+
+### Los dos rojos, y por qué es de diseño y no de después
+
+Dicho por el usuario mejor de lo que yo lo habría dicho: *«si implementa los
+gráficos sin esto, la pantalla nueva muestra nuestra deuda técnica en rojo
+como si fueran faltas del gobierno. Se ve mal y además es falso.»*
+
+El rojo queda para hallazgo verificado con fuente. Los 201 contrargumentos
+sin revisar, los criterios sin validar y el censo de lo retenido van en
+**gris**, en su propio bloque y al final. Demostrado pintando ese bloque con
+el rojo de hallazgo: la aserción se pone roja.
+
+### El reset de iconos se hereda, y salió en el papel
+
+El hallazgo que solo da mirar la hoja, que es el método que encontró los
+defectos de la v874, la v882, la v885 y la v887. El módulo tiene desde siempre
+`svg{ fill:none; stroke:currentColor; stroke-width:1.9 }` para sus iconos de
+20 px — y **`stroke` y `stroke-width` se HEREDAN en SVG**, así que cada
+`<text>` de mis gráficos salía con un contorno de 1,9 y cada tajada de la
+torta con un borde encima de su relleno.
+
+Lo leí como «una tipografía distinta de la de la página» y **estaba
+equivocado**: la sonda dio `stroke: rgb(21, 34, 41)` sobre un `font-family`
+correcto. La regla de la v863 otra vez —se mide, no se deduce de cómo se ve—
+y la línea que lo arregla es la misma que `.sp-graf .sp-lienzo` ya tenía desde
+antes, y que esta clase no heredaba por ser otra.
+
+#### Una cota que no cabe va dentro de la barra
+
+También del papel: la fila de Deporte imprimía **«De43,5e»** —el rótulo de
+−43,5 % encima de su propia etiqueta—, porque la barra la dibuja el dato y
+ninguna canal fija de etiquetas alcanza siempre. El valor va afuera mientras
+quepa y dentro cuando no, con la clase blanca que ya existía. Es la decisión
+de la v898 con las cotas del lote, y el ancho del rótulo se estima por
+caracteres **del lado seguro**: estimar de más mete el rótulo dentro, que
+sigue leyéndose; estimar de menos lo deja pisando al de al lado.
+
+Y dos columnas que se leen en vertical pasan a un decimal fijo: salían
+«+10 %» junto a «+34,4 %» y «$78,77» junto a «$54,7». Es la clase de la v874
+—una cifra correcta escrita de una manera que se lee como otra precisión— y
+**redondear para imprimir no es redondear para sumar**: la suma sigue
+saliendo de sus sumandos.
+
+### El número de sección se calcula, y ya se había envejecido
+
+Al abrir el tablero en 00, la ficha bajó a 01 y **las contradicciones se
+quedaron también en 01**. Los diez números estaban escritos a mano en `SECS`,
+que es la cifra que envejece sola de la v903 — y nada lo dijo: lo cazó la
+aserción de `tficha` que pide la numeración corrida, después de haberla
+apretado por un cambio legítimo.
+
+Ahora el número sale del puesto en `ORDEN_SECS`. Reordenar renumera solo.
+
+### El canal de rectificación
+
+Un botón que abre el correo con el asunto y el cuerpo ya escritos, el plazo
+de quince días, y el registro de **qué decía, qué dice y cuándo se corrigió**.
+El usuario lo pidió con su razón: *«no es cosmético, es lo que cierra la
+mayoría de estos casos antes de que lleguen a juez.»* La lista arranca vacía y
+`revisar.js` exige que exista: una lista que no existe no se puede llenar.
+
+### Y el registro: la objeción a la ley de mérito
+
+La entrada del 21 de agosto de 2026 —la primera objeción presidencial de este
+gobierno, sobre el proyecto que prohibía bajar los requisitos mínimos de los
+cargos directivos— con sus seis fuentes buscadas una por una y su rol
+declarado, y con el **primer contrargumento oficial sustantivo del registro**:
+las cuatro razones de Andrés Barreto, Secretario Jurídico de Presidencia.
+
+Entra como contradicción con las cuatro piezas fechadas de la promesa, y
+`mismoObjetoVerificado` **queda sin resolver a propósito**, con su fecha de
+revisión —21 de noviembre de 2026— y la prueba que lo decide escrita al lado:
+si el Gobierno presenta una vía alternativa para blindar los requisitos, el
+reparo era de mecanismo; si no la presenta, el objeto es el mismo. Esa la
+decide quien firma el módulo, no yo.
+
+**No declara ningún indicador**, y medido es lo correcto: el `excluye` de
+I-04 nombra «proyecto de ley ordinaria (es el cauce normal, no una
+excepción)».
+
+#### Dos premisas del usuario que la medición desmintió
+
+Es la regla de la v916, y se cobró dos veces:
+
+* **el número del proyecto.** El encargo decía «056 de 2024 Cámara / **245**
+  de 2024 Senado». Cinco fuentes independientes —El Tiempo, Portafolio,
+  Infobae, Cambio, El Nuevo Siglo— dicen **345 de 2024 Senado**. En el
+  registro quedó 345.
+* **«los casos donde nosotros encontramos el defecto».** Medido, ninguno de
+  los cuatro está en el registro, así que esa mitad de la puerta es
+  prospectiva y no correctiva. Va dicho arriba con su número.
+
+### Lo que esta versión NO hace
+
+* **La identidad visual de la muestra** —Archivo + Source Serif 4, señal
+  `#B8112E`, papel `#EDEFF2`, modo oscuro completo— no se adoptó. El módulo va
+  con la pila del sistema y su propia paleta, y **no tiene modo oscuro**: cero
+  reglas `prefers-color-scheme` en `css/70`. Adoptarla entera cambiaría la
+  marca de un módulo que comparte hoja de estilo con el resto, así que lo
+  decide quien la escribió. La serif sí entró, pero **solo en el editorial**,
+  que es donde el pliego la pide para separar la opinión del dato.
+* **El texto del editorial, su autor y su fecha**, que el usuario dijo que
+  escribe él. Va con marcador de posición y el bloque dice qué le falta.
+* **Los tres gráficos sin dato**, cada uno con la fuente que necesita.
+* **`calidadDelEncuadre` y `signoPolitico`**, que son los dos casilleros de
+  control de calidad que siguen en «no se pueden correr».
+
+### Demostrado contra la v970
+
+Revirtiendo **solo lo que decide** —la puerta y lo que `estado()` expone se
+quedan, porque son lo que la suite necesita para LEER (v875)—:
+
+```
+✗ MATERIAL · las declaraciones que llegan al criterio ejercitan sus seis salidas  — 8 declaradas · 7 fuera
+✗ y las otras seis salen con SU motivo  — no-cumple · otro-nivel · sin-base-registrada · …
+✗ la declaración municipal no llega siquiera al criterio: la para la puerta del score
+✗ el nivel de gobierno se filtra en la puerta del score: un acto municipal no entra  — 5 hechos
+```
+
+Y pintando el bloque de pendientes con el rojo de hallazgo: **«y va en gris:
+nuestra deuda interna no se pinta con el rojo de un hallazgo del gobierno»**
+en rojo, que es literalmente el defecto que el usuario nombró antes de que
+existiera.
+
+`tficha` cierra en 203/203, la batería en 121/121 y `revisar.js` en verde con
+un `?` —el SIN MATERIAL de la v970, que sigue sin material porque el registro
+sigue limpio—.
+
+
 ## La lista viva: lo que al pliego educativo todavía le falta (v866)
 
 Esta lista se quedó vieja **cinco veces**. Cuatro dentro de la hoja —la
