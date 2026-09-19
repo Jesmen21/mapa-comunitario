@@ -445,11 +445,9 @@
    "titulo": "De la Espriella declara insubsistente al director del Dane, Ricardo Valencia, tras tres semanas en el cargo, y nombra a Juan Manuel Alvarado Nivia",
    "categoriaProbatoria": "hecho-probado",
    "tipoMedicion": "actividad",
-   "indicadores": [
-    "I-13"
-   ],
+   "indicadores": [],
    "detalle": "El presidente Abelardo de la Espriella firmó el decreto que declara insubsistente a Ricardo Valencia Ramírez como director del Departamento Administrativo Nacional de Estadística (Dane), cargo que había asumido el 19 de agosto, y designó en su reemplazo a Juan Manuel Alvarado Nivia, economista de la región Caribe cuya gestión, según la Presidencia, el propio mandatario conoció durante la organización de ayudas para las víctimas del terremoto. Según explicó la Casa de Nariño, la decisión se tomó después de que Valencia afirmara, en su primera rueda de prensa al frente de la entidad, que no había hallado ninguna anomalía en los indicadores del Dane correspondientes a julio —mes en que el desempleo se ubicó en 8,1 %, la cifra más baja para ese mes desde 2001, y que fue producida durante el último mes del gobierno de Gustavo Petro— sin haberlos sometido antes a una auditoría exhaustiva.",
-   "contrapunto": "Varios medios enmarcaron la salida de Valencia como una consecuencia directa de haber respaldado la cifra de empleo heredada del gobierno de Petro, en momentos en que el propio presidente atribuye la crisis fiscal a la administración anterior; Publimetro tituló que se la «cobraron» tras afirmar que Petro no manipuló las cifras. El otro episodio que le costó el cargo, según Semana, fue la cancelación —treinta minutos antes de empezar— de la rueda de prensa donde el Dane iba a presentar la inflación de agosto, en aplicación de una directriz presidencial que exige autorización del Gobierno para que las entidades hablen con la prensa; la cifra sí se publicó a la hora prevista, pero Valencia no pudo explicarla ante los medios. Ninguna de las dos versiones —la oficial, centrada en la falta de auditoría, y la de la prensa, que la lee como una salida por defender cifras del gobierno anterior— ha sido confirmada o desmentida por un tercero independiente a la fecha de esta actualización.",
+   "contrapunto": "Varios medios enmarcaron la salida de Valencia como una consecuencia directa de haber respaldado la cifra de empleo heredada del gobierno de Petro, en momentos en que el propio presidente atribuye la crisis fiscal a la administración anterior; Publimetro tituló que se la «cobraron» tras afirmar que Petro no manipuló las cifras. El otro episodio que le costó el cargo, según Semana, fue la cancelación —treinta minutos antes de empezar— de la rueda de prensa donde el Dane iba a presentar la inflación de agosto, en aplicación de una directriz presidencial que exige autorización del Gobierno para que las entidades hablen con la prensa; la cifra sí se publicó a la hora prevista, pero Valencia no pudo explicarla ante los medios. Ninguna de las dos versiones —la oficial, centrada en la falta de auditoría, y la de la prensa, que la lee como una salida por defender cifras del gobierno anterior— ha sido confirmada o desmentida por un tercero independiente a la fecha de esta actualización. Esta entrada NO declara el indicador de interferencia en la independencia técnica: su acto es una remoción de un cargo de libre nombramiento y remoción, que es el régimen ordinario. El acto que ese indicador cuenta es la instrucción sobre la difusión —la Directiva Presidencial 01 del 3 de septiembre—, y está registrada aparte, con sus fuentes.",
    "tipoFuente": "disputado",
    "fuentes": [
     {
@@ -471,10 +469,7 @@
    ],
    "nivelGobierno": "nacional",
    "estadoProcesal": "en-firme",
-   "tipoEvidencia": "documento-primario",
-   "indicadoresPor": {
-    "I-13": "instrucción sobre contenido, oportunidad o forma de difusión de información técnica"
-   }
+   "tipoEvidencia": "documento-primario"
   },
   {
    "fecha": "2026-09-13",
@@ -866,6 +861,7 @@
   },
   {
    "fecha": "2026-09-11",
+   "id": "decreto-1384-aplaza-concursos",
    "precision": "exacta",
    "categoria": "gobierno",
    "titulo": "El Gobierno aplaza por decreto los concursos de mérito hasta 2027, entre ellos el de docentes con más de 28.000 vacantes, citando la emergencia del terremoto",
@@ -894,7 +890,10 @@
    "estadoProcesal": "en-firme",
    "tipoEvidencia": "documento-primario",
    "indicadoresPor": {
-    "I-04": "aplazamiento por acto administrativo de un plazo fijado en ley o reglamento"
+    "I-04": {
+     "via": "aplazamiento por acto administrativo de un plazo fijado en ley o reglamento",
+     "base": "decreto-1384-aplaza-concursos"
+    }
    }
   },
   {
@@ -1125,6 +1124,7 @@
   },
   {
    "fecha": "2026-09-09",
+   "id": "decretos-reconstruccion-terremoto",
    "precision": "exacta",
    "categoria": "emergencia",
    "titulo": "Tras seis horas de consejo de ministros, el Gobierno firma 11 decretos de reconstrucción por el terremoto y crea el Fondo Patria Milagro",
@@ -1158,7 +1158,10 @@
    "estadoProcesal": "en-firme",
    "tipoEvidencia": "documento-primario",
    "indicadoresPor": {
-    "I-04": "decreto expedido al amparo de una declaratoria de emergencia"
+    "I-04": {
+     "via": "decreto expedido al amparo de una declaratoria de emergencia",
+     "base": "decretos-reconstruccion-terremoto"
+    }
    }
   },
   {
@@ -1856,6 +1859,48 @@
      "u": "https://www.infobae.com/colombia/2026/09/03/estos-fueron-algunos-de-los-principales-aportantes-a-la-campana-de-abelardo-de-la-espriella-en-segunda-vuelta-varios-terminaron-con-cargos-en-el-gobierno/"
     }
    ]
+  },
+  {
+   "fecha": "2026-09-03",
+   "id": "directiva-presidencial-01-comunicaciones",
+   "precision": "exacta",
+   "categoria": "informacion",
+   "titulo": "Directiva Presidencial 01: los funcionarios necesitan autorización previa de la Presidencia para hablar con los medios",
+   "categoriaProbatoria": "hecho-probado",
+   "tipoMedicion": "actividad",
+   "indicadores": [
+    "I-13"
+   ],
+   "detalle": "La Presidencia expidió la Directiva Presidencial 01 del 3 de septiembre de 2026, que fija los lineamientos de comunicación del Gobierno. Cobija a ministros, directores de departamento administrativo, gerentes y representantes legales de las entidades del orden nacional: pueden dar entrevistas, declaraciones y participar en medios, pero deben consultar y coordinar previamente esas participaciones con la Presidencia, y sus cuentas personales dejan de ser canal primario o fuente oficial para anunciar decisiones, cifras o resultados del Gobierno. Su aplicación al Dane quedó documentada el 7 de septiembre: la rueda de prensa en la que la entidad iba a presentar la inflación de agosto se canceló treinta minutos antes de empezar, invocando la directiva. La cifra se publicó a la hora prevista, pero el director de la entidad no pudo explicarla ante los medios.",
+   "contrapunto": "La directiva es general y no está dirigida al Dane: cobija a todo el Ejecutivo del orden nacional. Lo que la hace contable como interferencia en la independencia técnica es su aplicación documentada a una entidad que la tiene por ley —el Dane, Ley 2335—, no su texto. El Gobierno la presenta como una coordinación de la comunicación institucional, no como una restricción; la FLIP se pronunció el 9 de septiembre diciendo que limita el acceso a la información y genera autocensura, y varios exdirectores del Dane objetaron en particular la cancelación de las ruedas de prensa de los indicadores económicos. Este registro cuenta el acto y no la intención: que la difusión de una cifra técnica quede sujeta a autorización del Gobierno es comprobable en el propio texto de la directiva; que el propósito fuera controlar esa cifra es una atribución que estas fuentes no sostienen.",
+   "tipoFuente": "verificado",
+   "fuentes": [
+    {
+     "n": "El Tiempo · Esta es la directiva presidencial que define lineamientos de comunicación del Gobierno y atención a medios de comunicación",
+     "u": "https://www.eltiempo.com/politica/gobierno/esta-es-la-directiva-presidencial-que-define-lineamientos-de-comunicacion-del-gobierno-y-atencion-a-medios-de-comunicacion-3583293"
+    },
+    {
+     "n": "La Silla Vacía · El Dane cancela sus ruedas de prensa por directiva presidencial",
+     "u": "https://www.lasillavacia.com/en-vivo/el-dane-cancela-sus-ruedas-de-prensa-por-directiva-presidencial/"
+    },
+    {
+     "n": "Infobae · La Flip y organizaciones sociales piden garantías para la libertad de prensa al Gobierno de De la Espriella (pronunciamiento del 9 de septiembre)",
+     "u": "https://www.infobae.com/colombia/2026/09/10/la-flip-y-organizaciones-sociales-piden-garantias-para-la-libertad-de-prensa-al-gobierno-de-de-la-espriella-han-profundizado-la-autocensura/"
+    },
+    {
+     "n": "Cambio · Exdirectores del Dane critican la decisión del Gobierno de cancelar las ruedas de prensa de indicadores económicos",
+     "u": "https://cambiocolombia.com/economia/articulo/2026/9/exdirectores-del-dane-alertaron-por-la-orden-del-gobierno-de-frenar-las-ruedas-de-prensa-de-la-inflacion-y-del-desempleo"
+    }
+   ],
+   "nivelGobierno": "nacional",
+   "estadoProcesal": "en-firme",
+   "tipoEvidencia": "documento-primario",
+   "indicadoresPor": {
+    "I-13": {
+     "via": "instrucción sobre contenido, oportunidad o forma de difusión de información técnica",
+     "base": "directiva-presidencial-01-comunicaciones"
+    }
+   }
   },
   {
    "fecha": "2026-09-02",
@@ -3744,6 +3789,36 @@
    ]
   },
   {
+   "fecha": "2026-08-19",
+   "id": "decreto-1260-relevo-dane",
+   "precision": "exacta",
+   "categoria": "gobierno",
+   "titulo": "Decreto 1260: Ricardo Valencia reemplaza a Piedad Urdinola en la dirección del Dane",
+   "categoriaProbatoria": "hecho-probado",
+   "tipoMedicion": "actividad",
+   "indicadores": [],
+   "detalle": "Por el Decreto 1260 del 19 de agosto de 2026 el Gobierno nombró a Ricardo Valencia Ramírez como director del Departamento Administrativo Nacional de Estadística, en reemplazo de Piedad Urdinola. Valencia es economista de la Pontificia Universidad Javeriana y fue subdirector del Dane entre 2018 y 2022, cuando la entidad la dirigía Juan Daniel Oviedo. El nombramiento rige desde la publicación del decreto y hace parte de la tanda de designaciones de ese día.",
+   "contrapunto": "Entra al registro como CASO DE CONTROL y no cuenta para ningún indicador, con la razón escrita: es un cambio ordinario de gobierno en un cargo de libre nombramiento y remoción, y cae en el renglón de exclusión «nombramiento o remoción ordinarios sin controversia documentada». Es ANTERIOR —quince días— a la Directiva Presidencial 01 y a la controversia por la difusión de las cifras, así que leerlo como coincidente con ella sería invertir el orden de los hechos. Está acá porque un registro que solo guarda lo que cuenta no permite comprobar que el criterio distingue: sin este hecho, que el indicador no dispare acá no se puede ver.",
+   "tipoFuente": "verificado",
+   "fuentes": [
+    {
+     "n": "La Silla Vacía · Abelardo nombra a Ricardo Valencia como director del Dane",
+     "u": "https://www.lasillavacia.com/en-vivo/abelardo-nombra-a-ricardo-valencia-como-director-del-dane/"
+    },
+    {
+     "n": "El Espectador · Ricardo Valencia es el nuevo director del DANE para el Gobierno de De la Espriella",
+     "u": "https://www.elespectador.com/economia/ricardo-valencia-es-el-nuevo-director-del-dane-para-el-gobierno-de-de-la-espriella/"
+    },
+    {
+     "n": "Agencia PI · Los decretos de este 19 de agosto: los nuevos nombramientos del presidente Abelardo De La Espriella",
+     "u": "https://www.agenciapi.co/noticia/nuevo-gobierno/los-decretos-de-este-19-de-agosto-estos-son-los-nuevos-nombramientos-del-presidente-abelardo-de-la-espriella"
+    }
+   ],
+   "nivelGobierno": "nacional",
+   "estadoProcesal": "en-firme",
+   "tipoEvidencia": "documento-primario"
+  },
+  {
    "fecha": "2026-08-18",
    "precision": "exacta",
    "categoria": "emergencia",
@@ -3761,6 +3836,7 @@
   },
   {
    "fecha": "2026-08-18",
+   "id": "suspension-emisoras-de-paz",
    "precision": "exacta",
    "categoria": "informacion",
    "titulo": "El Gobierno suspende la programación de las 20 emisoras de paz y la FLIP alerta",
@@ -3782,7 +3858,10 @@
    "estadoProcesal": "en-firme",
    "tipoEvidencia": "reporte-periodistico",
    "indicadoresPor": {
-    "I-04": "directiva que altera el régimen ordinario de difusión de información pública"
+    "I-04": {
+     "via": "directiva que altera el régimen ordinario de difusión de información pública",
+     "base": "suspension-emisoras-de-paz"
+    }
    }
   },
   {
@@ -4105,6 +4184,7 @@
   },
   {
    "fecha": "2026-08-11",
+   "id": "decreto-1171-desastre-nacional",
    "precision": "exacta",
    "categoria": "gobierno",
    "titulo": "Decreto 1171: declara desastre nacional en 12 departamentos",
@@ -4120,7 +4200,10 @@
    "estadoProcesal": "en-firme",
    "tipoEvidencia": "documento-primario",
    "indicadoresPor": {
-    "I-04": "declaratoria de desastre nacional (Ley 1523)"
+    "I-04": {
+     "via": "declaratoria de desastre nacional (Ley 1523)",
+     "base": "decreto-1171-desastre-nacional"
+    }
    }
   },
   {

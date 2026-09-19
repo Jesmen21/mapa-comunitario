@@ -1810,3 +1810,25 @@ a.sp-fuente:hover svg{ color:var(--verde-hi); }
 .sp-c4-cclista li > div{ display:grid; gap:2px; }
 .sp-c4-cclista li span{ font-size:var(--t-8); line-height:1.5; }
 .sp-c4-ccd{ color:var(--ink-2); }
+
+/* v964 · el indicador que este proyecto inventó y no se ha podido contrastar
+   contra ningún gobierno anterior lo dice JUNTO A SU CIFRA. No comparte el
+   rojo de las contradicciones —esto no es un error, es una advertencia sobre
+   el alcance— ni el verde de lo resuelto. */
+.sp-c2-noval {
+  grid-column: 1 / -1;
+  margin: -2px 0 10px;
+  padding: 10px 12px;
+  border: 1px dashed var(--sp-amb, #b26a00);
+  border-radius: 8px;
+  background: rgba(178, 106, 0, .06);
+}
+.sp-c2-noval > b { display: block; font-size:var(--t-7); color: var(--sp-amb, #b26a00); }
+.sp-c2-noval > p { margin: 5px 0 0; font-size:var(--t-8); line-height: 1.45; }
+.sp-c2-novalc {
+  display: inline-block;
+  margin-top: 4px;
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size:var(--t-9);
+  letter-spacing: .01em;
+}

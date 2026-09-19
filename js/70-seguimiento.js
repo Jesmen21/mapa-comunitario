@@ -1828,10 +1828,44 @@
      mirarlas. */
   function viaDeclarada(e, id) {
     var m = (e && e.indicadoresPor) || {};
-    return String(m[id] || '').trim();
+    var v = m[id];
+    if (v && typeof v === 'object') return String(v.via || '').trim();
+    return String(v || '').trim();
   }
 
-  function pasaElCriterio(e, id) {
+  /* ── EN QUÉ ENTRADA DEL REGISTRO ESTÁ EL ACTO (v964) ──────────────────────
+     La v963 hizo que cada declaración dijera por cuál renglón del criterio
+     entra. Faltaba la otra mitad, y es la que se cobró: la única vía sólida
+     de I-13 era la Directiva Presidencial 01 del 3 de septiembre, y ese acto
+     NO estaba en el registro —vivía en el `contrapunto` de otra entrada—.
+
+     Un indicador no puede contar lo que no está en el registro, aunque el
+     hecho sea cierto: la cifra publicada tiene que poder abrirse y leerse.
+     Así que la declaración nombra la ENTRADA que guarda el acto, y se
+     comprueba que exista.
+
+     La base es OBLIGATORIA, incluso cuando el acto es el de la propia
+     entrada —ahí se nombra a sí misma—. Con la base opcional, el caso que
+     esto vino a cazar habría pasado igual: su autor simplemente la habría
+     omitido. Es el canje de la v880: entre fallar abierto y fallar cerrado,
+     se falla cerrado.
+
+     Una declaración de la v963 —cuyo valor es la vía a secas— queda por
+     tanto SIN BASE, que es exactamente lo que era. No se asciende a lo que
+     nadie escribió (v931). */
+  function baseDeclarada(e, id) {
+    var m = (e && e.indicadoresPor) || {};
+    var v = m[id];
+    return (v && typeof v === 'object') ? String(v.base || '').trim() : '';
+  }
+
+  function idsDelRegistro(dd) {
+    var s = {};
+    ((((dd || D) || {}).entradas) || []).forEach(function (e) { if (e && e.id) s[e.id] = true; });
+    return s;
+  }
+
+  function pasaElCriterio(e, id, ids) {
     var cr = CRITERIOS[id];
     if (!cr) return { cuenta: false, motivo: 'sin-criterio', d: 'No hay criterio escrito para ' + id + '.' };
     var c = capaUnoDe(e);
@@ -1841,6 +1875,19 @@
     if (cr.incluye.indexOf(via) < 0) {
       return { cuenta: false, motivo: 'via-desconocida', via: via,
                d: 'Cita una vía que el criterio de ' + id + ' no tiene: «' + via + '».' };
+    }
+    /* La base, y sus dos maneras de faltar. Es UN estado —el acto no está en
+       el registro— dicho con dos causas distintas, porque para quien escribe
+       son dos tareas: poner el campo, o entrar el hecho. */
+    var base = baseDeclarada(e, id);
+    if (!base) {
+      return { cuenta: false, motivo: 'sin-base-registrada', campo: 'indicadoresPor.base', via: via,
+               d: 'Declara ' + id + ' y no dice en qué entrada del registro está el acto que cuenta.' };
+    }
+    if (!ids || !ids[base]) {
+      return { cuenta: false, motivo: 'sin-base-registrada', via: via, base: base,
+               d: 'El acto que cuenta no está en el registro: nombra la entrada «' + base + '» y ninguna ' +
+                  'la tiene. Mientras el hecho no esté registrado con sus fuentes, la cifra no se puede abrir.' };
     }
     /* El nivel: el pliego prohíbe que un hecho subnacional alimente el score
        presidencial, y sin declararlo no se puede saber. Solo se les exige a
@@ -1860,25 +1907,31 @@
   }
 
   var INDICADORES = {
-    'I-04': { t: 'Mecanismos excepcionales usados', dec: true,
+    /* `origen` separa los indicadores que vienen del pliego de los que
+       inventó este proyecto. Importa para una sola cosa y es la validación:
+       un indicador escrito DESPUÉS de ver el caso que necesitaba capturar
+       puede estar tallado a su medida, y eso no se sabe hasta correrlo
+       contra otro gobierno. Sin declarar se toma por propio, que es la
+       lectura desconfiada: un indicador nuevo nace marcado. */
+    'I-04': { t: 'Mecanismos excepcionales usados', dec: true, origen: 'pliego',
               d: 'Emergencias, decretos de conmoción, aplazamientos de plazos legales y directivas que alteran la difusión de información pública.' },
     /* El DANE estaba en esta lista y NO es un órgano de autonomía
        constitucional: es un departamento administrativo del propio
        Ejecutivo, así que un choque con él no es un choque entre poderes.
        Lo destapó escribir el criterio. */
-    'I-05': { t: 'Choques con órganos autónomos', dec: true,
+    'I-05': { t: 'Choques con órganos autónomos', dec: true, origen: 'pliego',
               d: 'Corte Constitucional, Consejo de Estado, Corte Suprema, JEP, CNSC, Banco de la República, ' +
                  'Procuraduría, Contraloría, Defensoría, Registraduría y CNE.' },
-    'I-13': { t: 'Interferencia en la independencia técnica', dec: true,
+    'I-13': { t: 'Interferencia en la independencia técnica', dec: true, origen: 'propio',
               d: 'Actos sobre entidades del Ejecutivo con independencia técnica de ley —el DANE, las ' +
                  'agencias reguladoras—, que no son órganos autónomos y por eso no caben en I-05.' },
-    'I-07': { t: 'Información pública obtenida por tutela', dec: true,
+    'I-07': { t: 'Información pública obtenida por tutela', dec: true, origen: 'pliego',
               d: 'Solicitudes que solo se respondieron después de una acción judicial.' },
-    'I-06': { t: 'Registros sin respuesta oficial', dec: false,
+    'I-06': { t: 'Registros sin respuesta oficial', dec: false, origen: 'pliego',
               d: 'Hechos en los que se buscó la respuesta del Gobierno y no la hay. Sale de la Capa 1.' },
-    'I-09': { t: 'Actividad reportada', dec: false,
+    'I-09': { t: 'Actividad reportada', dec: false, origen: 'pliego',
               d: 'Lo que el Gobierno hizo. No es lo mismo que lo que cambió, y no se suma con ello.' },
-    'I-10': { t: 'Resultados medidos', dec: false,
+    'I-10': { t: 'Resultados medidos', dec: false, origen: 'pliego',
               d: 'Lo que cambió en el país. Que se mida no dice quién lo causó.' }
   };
   /* El orden de la tabla no es el alfabético: los tres declarados primero
@@ -1897,6 +1950,66 @@
       d: 'Con menos de 180 días esto describe un arranque, no una tendencia. Un mes distinto cambia la cifra.' };
   }
 
+  /* ── ¿ESTE INDICADOR ESTÁ VALIDADO? (v964) ───────────────────────────────
+     I-13 lo inventó este proyecto después de ver el caso que necesitaba
+     capturar, así que está sin contrastar: puede estar tallado a la medida
+     de un solo caso. Eso sale impreso JUNTO A LA CIFRA y no en una nota,
+     porque un indicador de un solo caso que no se puede contrastar se parece
+     demasiado a una medición, y esa confusión es peor que no tenerlo.
+
+     El conteo se CALCULA y no se teclea: un número escrito a mano dentro de
+     un texto es una cifra que envejece sola (v903). Y por eso la marca se
+     quita ella misma el día que el trabajo de archivo entre: no hay ninguna
+     bandera que alguien tenga que acordarse de bajar.
+
+     Un gobierno anterior cuenta como PROBADO cuando su registro pasó por la
+     misma clasificación —tiene entradas con los tres insumos de la Capa 1,
+     así que el criterio se pudo evaluar ahí— y el criterio no disparó. Las
+     dos mitades hacen falta: sin la primera, «no dispara» no significa que
+     distinga, significa que no hay material, que es lo que la v963 midió. */
+  function corridaHaciaAtras(dd, id) {
+    var ent = ((dd || {}).entradas) || [];
+    var ids = idsDelRegistro(dd);
+    var clasificadas = 0, disparos = 0;
+    ent.forEach(function (e) {
+      if (e && e.nivelGobierno && e.estadoProcesal && e.tipoEvidencia) clasificadas++;
+      if ((((e && e.indicadores) || []).indexOf(id) >= 0) && pasaElCriterio(e, id, ids).cuenta) disparos++;
+    });
+    return { n: ent.length, clasificadas: clasificadas, disparos: disparos,
+             probado: clasificadas > 0 && disparos === 0 };
+  }
+
+  function validacionDe(id, anterior) {
+    var ind = INDICADORES[id] || {};
+    var origen = ind.origen || 'propio';
+    if (origen !== 'propio') return null;
+    var regs = anterior ? [anterior] : [];
+    var probados = 0, clasificadas = 0, corridas = [];
+    regs.forEach(function (dd) {
+      var r = corridaHaciaAtras(dd, id);
+      clasificadas += r.clasificadas;
+      if (r.probado) probados++;
+      corridas.push({ quien: dd.gobernante || dd.titulo || 'gobierno anterior', n: r.n,
+                      clasificadas: r.clasificadas, disparos: r.disparos, probado: r.probado });
+    });
+    var razon;
+    if (probados > 0) {
+      razon = 'Se corrió contra ' + probados + ' gobierno' + (probados === 1 ? '' : 's') +
+              ' anterior' + (probados === 1 ? '' : 'es') + ' con registros clasificados y no disparó: ' +
+              'distingue.';
+    } else if (!regs.length) {
+      razon = 'No hay en mano ningún registro de un gobierno anterior con el que contrastarlo.';
+    } else if (!clasificadas) {
+      razon = 'Los registros de gobiernos anteriores que hay no pasaron por esta clasificación, así que el ' +
+              'criterio no se pudo correr ahí. Que no dispare no demuestra que distinga: demuestra que no ' +
+              'hay material.';
+    } else {
+      razon = 'Corrido contra los registros anteriores, disparó: hay que mirar si el criterio distingue.';
+    }
+    return { origen: origen, validado: probados > 0, gobiernosAnterioresProbados: probados,
+             registrosEnMano: regs.length, corridas: corridas, razon: razon };
+  }
+
   function indicadoresDe(dd, corte) {
     /* Sin argumento, el registro del gobierno actual —igual que
        `comparabilidad`. Antes caía en `{}` y medía un registro vacío, que es
@@ -1908,6 +2021,7 @@
       (new Date(hasta + 'T00:00:00') - new Date((dd.posesion || hasta) + 'T00:00:00')) / 86400000));
     var por100 = function (n) { return Math.round(1000 * n / dias) / 10; };
 
+    var idsReg = idsDelRegistro(dd);
     var c1 = capaUnoDe_conjunto(ent);
     var crudo = { 'I-06': c1.contra.ausente, 'I-09': c1.medicion.actividad, 'I-10': c1.medicion.resultado,
                   'I-04': 0, 'I-05': 0, 'I-13': 0, 'I-07': 0 };
@@ -1925,7 +2039,7 @@
       if (!lista.length) sinDeclarar++;
       lista.forEach(function (k) {
         if (crudo[k] === undefined || !INDICADORES[k].dec) return;
-        var g = pasaElCriterio(e, k);
+        var g = pasaElCriterio(e, k, idsReg);
         if (g.cuenta) { crudo[k]++; porVia[k][g.via] = (porVia[k][g.via] || 0) + 1; }
         else fuera[k].push({ titulo: (e && e.titulo) || '', fecha: (e && e.fecha) || '',
                              motivo: g.motivo, d: g.d });
@@ -1942,6 +2056,10 @@
         f.vias = Object.keys(porVia[k]);
         f.declaradas = crudo[k] + fuera[k].length;
       }
+      /* La validación se mide contra el registro del gobierno ANTERIOR, que
+         es otro objeto: pedírselo al propio registro sería comprobar que es
+         igual a sí mismo. */
+      f.validacion = validacionDe(k, dd === D ? DA : null);
       /* I-06 es el único que no se puede publicar como cero: un cero ahí
          diría que el Gobierno respondió a todo, cuando lo que pasa es que
          nadie lo ha revisado. Es la distinción de los tres estados de la
@@ -3171,6 +3289,23 @@
         cif.appendChild(el('span', 'sp-c2-crudo', fi.n + ' en total'));
       }
       li.appendChild(cif);
+
+      /* LA MARCA DE NO VALIDADO VA JUNTO A LA CIFRA, no en una nota al pie.
+         Un indicador que este proyecto inventó y que no se ha podido correr
+         contra ningún gobierno anterior se parece demasiado a una medición
+         contrastada, y esa confusión es peor que no tener el indicador. */
+      if (fi.validacion && !fi.validacion.validado) {
+        var lv = el('li', 'sp-c2-noval');
+        lv.appendChild(el('b', null, fi.id + ' · indicador no validado'));
+        lv.appendChild(el('span', 'sp-c2-novalc',
+          'validado: no · gobiernos anteriores probados: ' + fi.validacion.gobiernosAnterioresProbados));
+        lv.appendChild(el('p', null, fi.validacion.razon));
+        lv.appendChild(el('p', null,
+          'Lo inventó este proyecto después de ver el caso que necesitaba capturar, así que puede estar ' +
+          'tallado a la medida de ese caso. La marca se quita sola el día que su criterio se pueda correr ' +
+          'contra el registro clasificado de un gobierno anterior y no dispare: ahí sí distingue.'));
+        tb.appendChild(lv);
+      }
       tb.appendChild(li);
 
       /* EL CRITERIO, DEBAJO DE SU CIFRA. Va acá y no en una nota de pie

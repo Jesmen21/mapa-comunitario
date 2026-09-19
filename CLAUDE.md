@@ -10768,6 +10768,189 @@ palabra, y esta tanda le añadió el conteo por vía dentro de ese bloque. Se
 puso roja por un cambio legítimo. Ahora pide la forma —que `g.cuenta` guarde
 el conteo— y no el renglón exacto. Es la lección de la v890 otra vez.
 
+## Un indicador no cuenta lo que no está en el registro (v964)
+
+Tres cosas, y la primera es la consecuencia de lo que la v963 midió: la única
+vía sólida de I-13 —la Directiva Presidencial 01 del 3 de septiembre— **no
+era una entrada del registro**. Vivía en el `contrapunto` de otra.
+
+> Mientras eso siga así, I-13 no cuenta 1: cuenta `sin_base_registrada`. Un
+> indicador no puede contar lo que no está en el registro, aunque el hecho
+> sea cierto.
+
+### La declaración dice en qué ENTRADA está el acto
+
+La v963 hizo que cada declaración dijera **por cuál renglón** del criterio
+entra. Faltaba la otra mitad, y es la que se cobró: la vía puede apuntar a un
+acto que nadie registró, y entonces la cifra publicada no se puede abrir.
+
+Así que `indicadoresPor` pasa de una cadena a un objeto con las dos cosas:
+
+```json
+"indicadoresPor": {
+ "I-13": { "via": "instrucción sobre contenido, oportunidad o forma de difusión de información técnica",
+           "base": "directiva-presidencial-01-comunicaciones" }
+}
+```
+
+Y la base tiene que **existir**: `sin-base-registrada` es una salida nueva de
+la puerta, con dos causas dichas aparte —falta el campo, o falta el hecho—,
+porque para quien escribe son dos tareas distintas (v934).
+
+**La base es obligatoria incluso cuando el acto es el de la propia entrada**,
+donde se nombra a sí misma. Con la base opcional esto no cazaría nada: el
+autor del caso del Dane simplemente la habría omitido, que es lo que pasó.
+Entre fallar abierto y fallar cerrado se falla cerrado (v880).
+
+Las entradas no tenían identificador y **40 fechas se repiten**, así que una
+base no se podía referenciar por fecha. Seis entradas ganan `id` —las cinco
+que son base de una declaración y el caso de control—, con la unicidad
+comprobada.
+
+### Las dos entradas, con sus fuentes
+
+Medidas contra prensa antes de escribirlas, que es la regla de la v863
+aplicada a un registro sobre una persona real:
+
+| | |
+|---|---|
+| **Directiva Presidencial 01**, 3 de septiembre de 2026 | lineamientos de comunicación: ministros, directores y representantes legales del orden nacional deben consultar y coordinar previamente sus participaciones en medios. Su aplicación al Dane quedó documentada el 7 de septiembre, con la rueda de prensa de la inflación cancelada treinta minutos antes |
+| **Decreto 1260**, 19 de agosto de 2026 | Valencia reemplaza a Piedad Urdinola en el Dane |
+
+De la directiva se confirmaron **el número y la fecha** contra varios medios
+antes de escribirla, y no se citó una nota de la FLIP fechada el 2 de
+septiembre cuya relación con este acto no se pudo establecer: citar lo que no
+se puede fechar contra el hecho es fabricar respaldo.
+
+#### El relevo entra como CASO DE CONTROL, y eso es media tanda
+
+No cuenta para ningún indicador, y su `contrapunto` dice por qué: es un
+cambio ordinario de gobierno en un cargo de libre nombramiento y remoción, y
+cae en el renglón de exclusión. Es **quince días anterior** a la directiva y
+a la controversia por la difusión, así que leerlo como coincidente con ella
+sería invertir el orden de los hechos.
+
+Está en el registro precisamente porque **un registro que solo guarda lo que
+cuenta no permite comprobar que el criterio distingue**: sin este hecho, que
+el indicador no dispare acá no se puede ver. Es la lección de las veinticinco
+tandas de material pobre, dicha sobre datos reales en vez de sobre un
+fixture.
+
+#### Y la declaración se mudó de entrada
+
+Estaba en la entrada de la **remoción** del 14 de septiembre, cuyo acto es
+justamente lo que el `excluye` rechaza. El acto que I-13 cuenta es la
+instrucción de difusión, así que la declaración vive ahora en la entrada de
+la directiva. La de la remoción lo dice en su `contrapunto`, para que nadie
+lo lea como un descuido.
+
+**I-13 = 1, y ahora su cifra se puede abrir.**
+
+### La marca de no validado, junto a la cifra y calculada
+
+`validado: false` y `gobiernos anteriores probados: 0`, en la tabla de
+indicadores y no en una nota al pie — un indicador de un solo caso que no se
+puede contrastar se parece demasiado a una medición.
+
+Tres decisiones, cada una con su razón:
+
+* **El conteo se CALCULA.** Un número escrito a mano dentro de un texto es
+  una cifra que envejece sola (v903), y acá además es la que tiene que
+  quitarse cuando el trabajo de archivo entre. No hay bandera que nadie tenga
+  que acordarse de bajar.
+* **«Probado» exige las dos mitades**: que el registro anterior haya pasado
+  por la misma clasificación —así el criterio se pudo evaluar ahí— **y** que
+  no dispare. Sin la primera, «no dispara» no significa que distinga:
+  significa que no hay material, que es exactamente lo que la v963 midió.
+* **La marca es solo para los indicadores de origen PROPIO**, y `origen` sin
+  declarar se lee como propio. Un indicador nuevo nace marcado; y ponérsela a
+  los siete la dejaría sin significar nada, que es como muere una alarma
+  (v886).
+
+Queda medido y **no hecho**, para la tanda que lo quiera: los criterios de
+I-04, I-05 e I-07 también se escribieron mirando este registro (v961), así
+que cargan una versión más débil del mismo riesgo. Lo que el pliego fija es
+el indicador, no su `incluye`.
+
+### La corrida hacia atrás no se investiga desde acá
+
+Instrucción literal: *«no investigues los gobiernos anteriores por tu cuenta.
+Eso es trabajo de fuente y de archivo, no de código.»* Queda como pendiente
+medido, con lo que la v963 dejó averiguado: el registro de Petro son 32
+hechos escogidos de cuatro años, ninguno clasificado con los insumos de la
+Capa 1, y de Duque y Santos no hay registros. Por eso `probados` da 0 y la
+razón lo dice con esas palabras.
+
+### El trinquete del contrargumento medía una cifra que crece sola
+
+Salió al entrar las dos entradas: el techo de la v957 se puso en rojo con
+**202 sin revisar sobre un techo de 200**, y nadie había dejado de revisar
+nada — el registro creció.
+
+Es un defecto de construcción y valía encontrarlo: **un trinquete absoluto
+sobre una cantidad que crece con el registro se rompe con la primera entrada
+nueva**, incluida la que escribe la rutina diaria. Un trinquete tiene que
+medir la cosa que solo debe moverse en una dirección, y esa es lo REVISADO,
+que puede subir y no bajar. Con eso un registro que crece no se castiga y
+des-declarar un contrargumento —que es lo que había que impedir— sigue
+saliendo en rojo.
+
+### La guarda de la escala tipográfica daba rojo sobre código correcto
+
+`font-size: var(--t-7)` salía denunciado. La causa es un agujero de
+retroceso: con `/font-size:\s*(?!var\(--t-\d\))/` el motor cede el espacio
+que `\s*` ya había tomado, la mirada negativa se evalúa sobre « var(...)» y
+pasa. La mirada va **pegada a los dos puntos y se traga ella misma el
+espacio**.
+
+No es una guarda aflojada: sigue denunciando `.92rem` y `13px`, comprobado
+contra los cuatro casos. Una guarda con falsos positivos termina siendo una
+lista de excepciones que envejece (v895).
+
+### Y un parche mío que truncó una suite entera
+
+El más caro de la tanda y enteramente mío:
+
+```python
+io.open(p, 'w', encoding='utf-8').write(io.open(p, encoding='utf-8').read().replace(A, B, 1))
+```
+
+`io.open(p, 'w')` se evalúa **antes** que el argumento, así que trunca el
+archivo y lo que se lee después son cero bytes. `tficha.js` quedó **vacío**.
+
+Y lo que lo hace de esta familia: **no falló nada**. El comprobador de
+sintaxis pasó —un archivo vacío es JavaScript válido—, la suite salió con
+código **0** y no imprimió una sola línea. Es exactamente el caso que la
+v963 acababa de enseñar a no leer como verde, cobrado en la tanda siguiente
+y contra su propio autor; sin `correr.js` marcando NO CONCLUYENTE, esto entra
+a `main` como una suite en verde que no comprueba nada.
+
+Dos reglas de las baratas:
+
+* **un parche lee en una variable y escribe una vez al final**, nunca
+  leyendo dentro del `write`;
+* y **después de un parche se mira el TAMAÑO del archivo**, no solo que
+  compile. `wc -c` cuesta un segundo.
+
+Se recuperó con `git checkout --` y se rehízo el parche entero, que es lo
+correcto: reconstruirlo a mano habría dejado un archivo parecido y no el
+mismo.
+
+### Demostrado contra la v963
+
+Tres demostraciones, cada una revirtiendo **solo lo que decide**:
+
+* con el registro de la v963 —el acto sin registrar— I-13 sale
+  **`n13: 0` con motivo `sin-base-registrada`**, que es literalmente lo que
+  se pidió;
+* neutralizando la comprobación de la base, las dos declaraciones sin acto
+  registrado cuentan: «8 declaradas · 5 fuera» donde van 7, y «3 de 8»
+  contadas donde va 1;
+* neutralizando la validación, «sin declarar», «null» y **0 marcas en el
+  papel**.
+
+`tficha` cierra en 176/176.
+
 ## La lista viva: lo que al pliego educativo todavía le falta (v866)
 
 Esta lista se quedó vieja **cinco veces**. Cuatro dentro de la hoja —la

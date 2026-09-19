@@ -812,7 +812,11 @@ console.log('\n  -- la ficha del gobernante --');
   const cuerpo = css.slice(css.indexOf('*{ box-sizing'));
   const sueltos = [];
   cuerpo.split('\n').forEach((l, i) => {
-    const m = /font-size:\s*(?!var\(--t-\d\))([^;}]+)/.exec(l);
+    /* La mirada negativa va pegada a los dos puntos y se traga ella misma
+       el espacio: con `\s*` delante, el motor retrocede a cero espacios,
+       la mirada pasa sobre « var(...)» y la guarda denuncia un tamaño que
+       SÍ sale de la escala. Se vio escribiendo `font-size: var(--t-7)`. */
+    const m = /font-size:(?!\s*var\(--t-\d\))\s*([^;}]+)/.exec(l);
     if (m) sueltos.push((i + 1) + ' → ' + m[1].trim());
   });
   comprobar('todo tamaño de letra del módulo sale de la escala --t-N',
@@ -1010,14 +1014,26 @@ console.log('\n  -- la ficha del gobernante --');
        no se puede clasificar leyendo el registro. Escribir `ausente` sin
        haber buscado sería afirmar que el Gobierno no respondió, que es un
        señalamiento contra una persona real fabricado por comodidad nuestra.
-       Así que el pendiente arranca completo, se ve en la ficha —el pliego
-       manda publicar con la marca de la falla visible— y solo puede bajar. */
-    const TECHO_SIN_CONTRA = 200;
-    comprobar('el pendiente de contrargumento oficial solo puede bajar',
-      sinContra.length <= TECHO_SIN_CONTRA,
-      sinContra.length + ' sin revisar, techo ' + TECHO_SIN_CONTRA +
-      (sinContra.length > TECHO_SIN_CONTRA ? ' · sobran: ' + sinContra.slice(TECHO_SIN_CONTRA).join(', ')
-                                           : ' · solo puede bajar'));
+       Así que el pendiente arranca completo y se ve en la ficha: el pliego
+       manda publicar con la marca de la falla visible.
+
+       PERO EL TRINQUETE VA SOBRE LO REVISADO, NO SOBRE LO PENDIENTE (v964).
+       La v957 puso un techo absoluto de 200 sin revisar, y esa cifra CRECE
+       sola: el registro se alimenta todos los días, así que la primera
+       entrada nueva —de la rutina diaria o de una tanda— lo rompía sin que
+       nadie hubiera dejado de revisar nada. Lo destapó entrar dos hechos y
+       ver el techo en rojo con 202.
+
+       Un trinquete tiene que medir la cosa que solo debe moverse en una
+       dirección, y esa es lo REVISADO: puede subir y no puede bajar. Con eso
+       un registro que crece no se castiga, y des-declarar un contrargumento
+       —que es lo que había que impedir— sigue saliendo en rojo. */
+    const revisados = nEntradas - sinContra.length;
+    const PISO_REVISADOS = 0;
+    comprobar('lo revisado del contrargumento oficial solo puede subir',
+      revisados >= PISO_REVISADOS,
+      revisados + ' revisados de ' + nEntradas + ' (piso ' + PISO_REVISADOS + ') · ' +
+      sinContra.length + ' pendientes, que crecen con el registro y por eso no llevan techo');
 
     /* LA REGLA DE ORO DEL PLIEGO, comprobada sobre el código: ninguna capa
        escribe en la capa anterior. El veredicto sale de `techos` y de `peor`,
@@ -1169,7 +1185,7 @@ console.log('\n  -- la ficha del gobernante --');
        nada — el patrón de la v878 con su propia lista. */
     const tramoConteo = (j70cr.match(/var fuera = \{[\s\S]*?\n    \}\);/) || [''])[0];
     comprobar('y la cuenta de indicadores APLICA el criterio, no solo lo publica',
-      /pasaElCriterio\(e, k\)/.test(tramoConteo) && /if \(g\.cuenta\)[^;]*crudo\[k\]\+\+/.test(tramoConteo),
+      /pasaElCriterio\(e, k\b/.test(tramoConteo) && /if \(g\.cuenta\)[^;]*crudo\[k\]\+\+/.test(tramoConteo),
       tramoConteo ? 'cada declaración pasa por pasaElCriterio antes de contar'
                   : 'no se encontró el tramo del conteo');
 
@@ -1370,7 +1386,9 @@ console.log('\n  -- la ficha del gobernante --');
         const donde = quien + '/' + (e.fecha || '?');
         const por = e.indicadoresPor || {};
         ii.forEach((k) => {
-          const via = String(por[k] || '').trim();
+          const vv = por[k];
+          const via = (vv && typeof vv === 'object') ? String(vv.via || '').trim()
+                                                     : String(vv || '').trim();
           if (!via) { sinVia.push(donde + ' declara ' + k); return; }
           if (!incluyeDe[k]) { viaMala.push(donde + ' declara ' + k + ', sin criterio'); return; }
           if (incluyeDe[k].indexOf(via) < 0) {
@@ -1451,6 +1469,116 @@ console.log('\n  -- la ficha del gobernante --');
       /NO CONCLUYENTE/.test(cj) && /concluye:/.test(cj) &&
       /process\.exit\(mal\.length \+ mudas\.length \? 1 : 0\)/.test(cj),
       'una salida vacía cuenta como no verde y sale aparte de las que fallaron');
+  }
+
+  /* ═══ EL ACTO QUE CUENTA ESTÁ EN EL REGISTRO (v964) ═════════════════════
+     La v963 hizo que cada declaración dijera por cuál renglón del criterio
+     entra. Faltaba la otra mitad: la única vía sólida de I-13 apuntaba a la
+     Directiva Presidencial 01, y ese acto NO estaba en el registro —vivía en
+     el `contrapunto` de otra entrada—. Un indicador no puede contar lo que
+     no está registrado, aunque el hecho sea cierto: la cifra publicada tiene
+     que poder abrirse y leerse.
+
+     La base es obligatoria incluso cuando el acto es el de la propia entrada.
+     Con la base opcional esto no cazaría nada: el autor del caso del Dane
+     simplemente la habría omitido. */
+  {
+    const j70b = leer('js/70-seguimiento.js');
+    const sinBase = [], baseMala = [], idsRepe = [];
+    let declarantes = 0, conId = 0;
+
+    REGISTROS.forEach((ruta) => {
+      const quien = ruta.split('-').pop().replace('.json', '');
+      const ent = (JSON.parse(leer(ruta)).entradas) || [];
+      const ids = {};
+      ent.forEach((e) => {
+        if (!e.id) return;
+        conId++;
+        if (ids[e.id]) idsRepe.push(quien + '/' + e.id);
+        ids[e.id] = true;
+      });
+      ent.forEach((e) => {
+        const ii = e.indicadores || [];
+        if (!ii.length) return;
+        declarantes++;
+        const donde = quien + '/' + (e.fecha || '?');
+        const por = e.indicadoresPor || {};
+        ii.forEach((k) => {
+          const v = por[k];
+          const base = (v && typeof v === 'object') ? String(v.base || '').trim() : '';
+          if (!base) { sinBase.push(donde + ' declara ' + k); return; }
+          if (!ids[base]) baseMala.push(donde + ' ' + k + ' nombra «' + base + '», que no está en el registro');
+        });
+      });
+    });
+
+    comprobar('MATERIAL · hay entradas con identificador, que es lo que una base puede nombrar',
+      conId > 0 && declarantes > 0,
+      conId + ' entradas con id · ' + declarantes + ' declaran indicador');
+
+    comprobar('ningún identificador de entrada se repite dentro de su registro',
+      idsRepe.length === 0,
+      idsRepe.length ? idsRepe.join(' · ') : 'los identificadores son únicos');
+
+    comprobar('toda declaración dice en qué ENTRADA del registro está el acto que cuenta',
+      sinBase.length === 0,
+      sinBase.length ? sinBase.join(' · ') + ' · falta `indicadoresPor.<ind>.base`'
+        : 'las ' + declarantes + ' declaraciones nombran su entrada base');
+
+    comprobar('y esa entrada existe: no se cuenta un acto que no está registrado',
+      baseMala.length === 0,
+      baseMala.length ? baseMala.join(' · ')
+        : 'ninguna base apunta a una entrada que el registro no tenga');
+
+    /* La guarda de la guarda: si la puerta dejara de leer la base, las tres
+       de arriba seguirían en verde sobre un campo decorativo. */
+    comprobar('y la puerta del criterio sigue leyendo la base antes de contar',
+      /function baseDeclarada\(/.test(j70b) &&
+      /var base = baseDeclarada\(e, id\);/.test(j70b) &&
+      /motivo: 'sin-base-registrada'/.test(j70b),
+      'pasaElCriterio rechaza sin base y con una base que el registro no tiene');
+  }
+
+  /* ═══ UN INDICADOR PROPIO NACE MARCADO COMO NO VALIDADO (v964) ══════════
+     I-13 lo inventó este proyecto después de ver el caso que necesitaba
+     capturar, y no se ha podido correr contra ningún gobierno anterior: el
+     material no existe. Mientras eso siga así se dice junto a la cifra, no
+     en una nota.
+
+     Lo que esta guarda protege es que la marca no dependa de acordarse:
+     `origen` sin declarar se lee como PROPIO, así que un indicador nuevo
+     nace marcado, y el conteo de gobiernos probados se CALCULA. */
+  {
+    const j70v = leer('js/70-seguimiento.js');
+
+    const bloqueInd = (j70v.match(/var INDICADORES = \{[\s\S]*?\n  \};/) || [''])[0];
+    const decl = (bloqueInd.match(/'(I-\d\d)': \{[^\n]*origen: '(\w+)'/g) || []).length;
+    const todos = (bloqueInd.match(/'(I-\d\d)': \{/g) || []).length;
+
+    comprobar('MATERIAL · los indicadores declaran de dónde vienen',
+      todos >= 5 && decl === todos, decl + ' de ' + todos + ' con `origen`');
+
+    comprobar('un indicador sin `origen` declarado se toma por PROPIO, no por del pliego',
+      /var origen = ind\.origen \|\| 'propio';/.test(j70v),
+      'el que se olvide nace marcado: se falla cerrado, no abierto');
+
+    comprobar('el conteo de gobiernos anteriores probados se CALCULA, no se teclea',
+      /function corridaHaciaAtras\(/.test(j70v) &&
+      /gobiernosAnterioresProbados: probados/.test(j70v) &&
+      !/gobiernosAnterioresProbados: 0/.test(j70v),
+      'sale de correr el criterio contra el registro anterior, así que la marca se quita sola');
+
+    /* Las dos mitades de «probado», que es la distinción que la v963 midió:
+       sin registros clasificados, «no dispara» no significa que el criterio
+       distinga — significa que no hay material. */
+    comprobar('y «probado» exige registros clasificados Y que el criterio no dispare',
+      /probado: clasificadas > 0 && disparos === 0/.test(j70v),
+      'un registro sin clasificar no valida nada');
+
+    comprobar('la marca se pinta junto a la cifra, no en una nota al pie',
+      /sp-c2-noval/.test(j70v) && /validado: no · gobiernos anteriores probados: /.test(j70v) &&
+      /sp-c2-noval/.test(leer('css/70-seguimiento.css')),
+      'sale en la tabla de indicadores y tiene regla que la pinta');
   }
 
   /* ═══ CAPA 3 DEL PLIEGO · LOS EJES, NUNCA EN UN SOLO NÚMERO ════════════

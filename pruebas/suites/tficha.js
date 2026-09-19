@@ -448,21 +448,35 @@ const server = http.createServer((req, res) => {
        esto signifique algo: si las cuatro quedaran iguales, la comprobación
        pasaría sin tener nada que rechazar. */
     const VIA_OK = 'decreto expedido al amparo de una declaratoria de emergencia';
+    /* La vía dice por CUÁL renglón del criterio entra; la base, en qué
+       ENTRADA del registro está el acto. Cada hecho del fixture se nombra a
+       sí mismo, que es el caso corriente. */
+    const POR = (b) => ({ 'I-04': { via: VIA_OK, base: b } });
     const INSUMOS = [
-      { indicadores: ['I-04'], indicadoresPor: { 'I-04': VIA_OK }, nivelGobierno: 'nacional',
+      { id: 'h0', indicadores: ['I-04'], indicadoresPor: POR('h0'), nivelGobierno: 'nacional',
         estadoProcesal: 'en-firme', tipoEvidencia: 'documento-primario' },          // cuenta
-      { indicadores: ['I-04'], indicadoresPor: { 'I-04': VIA_OK } },                 // sin insumos
-      { indicadores: ['I-04'], indicadoresPor: { 'I-04': VIA_OK }, nivelGobierno: 'municipal',
+      { id: 'h1', indicadores: ['I-04'], indicadoresPor: POR('h1') },                // sin insumos
+      { id: 'h2', indicadores: ['I-04'], indicadoresPor: POR('h2'), nivelGobierno: 'municipal',
         estadoProcesal: 'en-firme', tipoEvidencia: 'documento-primario' },          // otro nivel
-      { indicadores: ['I-04'], indicadoresPor: { 'I-04': VIA_OK }, nivelGobierno: 'nacional',
+      { id: 'h3', indicadores: ['I-04'], indicadoresPor: POR('h3'), nivelGobierno: 'nacional',
         estadoProcesal: 'anunciado-sin-acto', tipoEvidencia: 'reporte-periodistico' }, // no cumple
       /* Las dos de la v963: sin decir por cuál renglón entra, y citando uno
          que el criterio no tiene. Sin las dos, un campo decorativo pasaría. */
-      { indicadores: ['I-04'], nivelGobierno: 'nacional',
+      { id: 'h4', indicadores: ['I-04'], nivelGobierno: 'nacional',
         estadoProcesal: 'en-firme', tipoEvidencia: 'documento-primario' },          // sin vía
-      { indicadores: ['I-04'], indicadoresPor: { 'I-04': 'porque se me ocurrió' },
+      { id: 'h5', indicadores: ['I-04'], indicadoresPor: { 'I-04': 'porque se me ocurrió' },
         nivelGobierno: 'nacional', estadoProcesal: 'en-firme',
-        tipoEvidencia: 'documento-primario' }                                        // vía desconocida
+        tipoEvidencia: 'documento-primario' },                                       // vía desconocida
+      /* Las dos de la v964, que son la misma falta con dos causas: la vía es
+         buena y el ACTO no está en el registro. La primera es la forma vieja
+         —la vía a secas, sin base— y la segunda nombra una entrada que no
+         existe, que es exactamente lo que le pasaba a I-13. */
+      { id: 'h6', indicadores: ['I-04'], indicadoresPor: { 'I-04': VIA_OK },
+        nivelGobierno: 'nacional', estadoProcesal: 'en-firme',
+        tipoEvidencia: 'documento-primario' },                                       // sin base
+      { id: 'h7', indicadores: ['I-04'], indicadoresPor: POR('no-esta-en-el-registro'),
+        nivelGobierno: 'nacional', estadoProcesal: 'en-firme',
+        tipoEvidencia: 'documento-primario' }                                        // base fantasma
     ];
     const regGate = {
       posesion: '2026-08-07', categorias: { gobierno: {} },
@@ -481,7 +495,31 @@ const server = http.createServer((req, res) => {
       incluye: ((f04.criterio || {}).incluye || []).length,
       excluye: ((f04.criterio || {}).excluye || []).length,
       definicion: String((f04.criterio || {}).definicion || '').slice(0, 80),
-      vias: f04.vias || [], porVia: f04.porVia || {}
+      vias: f04.vias || [], porVia: f04.porVia || {},
+      basesFuera: (f04.fuera || []).filter(x => x.motivo === 'sin-base-registrada')
+                                   .map(x => String(x.d || '').slice(0, 64))
+    };
+
+    /* La marca de no validado. Se mide contra el registro REAL, que es donde
+       tiene que salir: I-13 lo inventó este proyecto y no se ha podido correr
+       contra ningún gobierno anterior. */
+    const iR = api.indicadores();
+    const vOf = (k) => (iR.filas.filter(x => x.id === k)[0] || {}).validacion || null;
+    const v13 = vOf('I-13'), v04 = vOf('I-04');
+    o.val = {
+      i13: v13 ? { origen: v13.origen, validado: v13.validado,
+                   probados: v13.gobiernosAnterioresProbados, razon: String(v13.razon || '').slice(0, 80) } : null,
+      i04: v04 ? 'marcado' : 'sin marca',
+      n13: (iR.filas.filter(x => x.id === 'I-13')[0] || {}).n,
+      vias13: ((iR.filas.filter(x => x.id === 'I-13')[0] || {}).vias) || [],
+      fuera13: (((iR.filas.filter(x => x.id === 'I-13')[0] || {}).fuera) || []).map(x => x.motivo),
+      /* Y en el PAPEL: la marca tiene que salir junto a la cifra, que es lo
+         que se pidió. Medirla solo en el objeto dejaría pasar una marca
+         calculada y no pintada. Las dos cuentas de al lado son la guarda de
+         material: sin panel en el DOM, la de arriba no mide nada. */
+      dom: Array.from(document.querySelectorAll('.sp-c2-noval')).map(x => x.textContent.slice(0, 90)),
+      domFilas: document.querySelectorAll('.sp-c2-fila').length,
+      domCrit: document.querySelectorAll('.sp-c2-crit').length
     };
 
     /* `fichaDe` sin registro: caía en `{}` y devolvía un VEREDICTO sobre la
@@ -800,13 +838,46 @@ const server = http.createServer((req, res) => {
   console.log('\n── El criterio, como dato, y su puerta ──────────────');
   const gt = r.gate || {};
   console.log('  ' + JSON.stringify(gt));
-  chk(gt.declaradas === 6 && gt.motivos.length === 5,
-      'MATERIAL · las seis declaraciones ejercitan las seis salidas de la puerta (' +
+  chk(gt.declaradas === 8 && gt.motivos.length === 7,
+      'MATERIAL · las ocho declaraciones ejercitan las siete salidas de la puerta (' +
       gt.declaradas + ' declaradas · ' + gt.motivos.length + ' fuera)');
   chk(gt.n === 1,
       'solo la que cumple el criterio escrito cuenta (' + gt.n + ' de ' + gt.declaradas + ')');
-  chk(String(gt.motivos) === 'no-cumple,otro-nivel,sin-insumos,sin-via,via-desconocida',
-      'y las otras cinco salen con SU motivo, no con un rechazo genérico (' + gt.motivos.join(' · ') + ')');
+  chk(String(gt.motivos) ===
+        'no-cumple,otro-nivel,sin-base-registrada,sin-base-registrada,sin-insumos,sin-via,via-desconocida',
+      'y las otras siete salen con SU motivo, no con un rechazo genérico (' + gt.motivos.join(' · ') + ')');
+  chk(gt.basesFuera.length === 2 &&
+      /no dice en qué entrada del registro/.test(gt.basesFuera.join(' ')) &&
+      /no está en el registro: nombra la entrada/.test(gt.basesFuera.join(' ')),
+      'y las dos maneras de no tener base se dicen distinto: falta el campo, o falta el hecho (' +
+      gt.basesFuera.join(' | ') + ')');
+
+  /* ── LA MARCA DE NO VALIDADO (v964) ─────────────────────────────────────
+     I-13 lo inventó este proyecto despues de ver el caso que necesitaba
+     capturar. Mientras no se pueda correr contra el registro clasificado de
+     un gobierno anterior, la cifra sale con esa advertencia AL LADO. */
+  const vl = r.val || {};
+  console.log('  validacion: ' + JSON.stringify(vl).slice(0, 320));
+  chk(vl.i13 && vl.i13.origen === 'propio',
+      'MATERIAL · I-13 se declara como indicador propio de este proyecto (' +
+      ((vl.i13 || {}).origen || 'sin declarar') + ')');
+  chk(vl.i13 && vl.i13.validado === false && vl.i13.probados === 0,
+      'y sale marcado como NO validado, con los gobiernos anteriores probados en cero (' +
+      JSON.stringify(vl.i13 && { v: vl.i13.validado, p: vl.i13.probados }) + ')');
+  chk(vl.i13 && /no hay material|no pasaron por esta clasificaci|ning[uú]n registro/i.test(vl.i13.razon),
+      'y la razon distingue «no dispara» de «no hay material» (' + ((vl.i13 || {}).razon || '') + ')');
+  chk(vl.i04 === 'sin marca',
+      'un indicador del pliego NO lleva la marca: en los siete dejaria de significar algo (' + vl.i04 + ')');
+  chk(vl.domFilas >= 5 && vl.domCrit >= 3,
+      'MATERIAL · el panel de la Capa 2 está compuesto en el DOM (' +
+      vl.domFilas + ' filas · ' + vl.domCrit + ' criterios)');
+  chk((vl.dom || []).length === 1 && /validado: no/.test(vl.dom[0] || '') &&
+      /gobiernos anteriores probados: 0/.test(vl.dom[0] || ''),
+      'y la marca esta en el papel, junto a la cifra, no en una nota (' +
+      (vl.dom || []).length + ': ' + String((vl.dom || [])[0] || '').slice(0, 60) + ')');
+  chk(vl.n13 === 1 && (vl.vias13 || []).length === 1,
+      'I-13 cuenta 1 y entra por una sola via, ahora que su acto esta registrado (' +
+      vl.n13 + ' · ' + (vl.vias13 || []).join(' · ').slice(0, 60) + ')');
   chk(gt.vias.length === 1 && gt.porVia[gt.vias[0]] === 1,
       'y la que cuenta queda contada POR SU RENGLÓN del criterio, no en un montón (' +
       gt.vias.join(' · ') + ')');
