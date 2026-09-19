@@ -22,6 +22,11 @@ fuente **no se puede establecer porque ninguna fuente documenta el acto**, no
 se inventa y no se deja pasar. Se queda en `sin-acto` y se sigue. **Es
 hallazgo, no obstáculo.**
 
+Después de esas dos está la **especificación de pantalla del módulo
+presidencial**, recibida el 19 de septiembre y medida en su propia sección más
+abajo. No se implementa antes, y la medición dice por qué: de sus siete
+gráficos, cero se pueden dibujar hoy leyendo del registro.
+
 ## Antes de tocar nada: traer lo de arriba
 
 ```bash
@@ -11177,6 +11182,136 @@ Dos demostraciones, cada una revirtiendo solo lo que decide:
   antiguo»: declarar mal por qué no se pudo comprobar es la falta de la v867.
 
 `tficha` cierra en 183/183.
+
+## La pantalla del módulo presidencial: la especificación, medida y NO hecha
+
+Llegó el 19 de septiembre de 2026 como una página HTML de muestra, con la
+instrucción explícita de **no implementarla todavía**: las dos tareas del
+handoff siguen primero. Lo que sigue es la medición contra lo que el módulo
+pinta hoy, para que la tanda que la tome no empiece por averiguar lo mismo.
+
+**El resumen en una línea: de los siete gráficos que pide, CERO se pueden
+dibujar hoy leyendo del registro.** No por falta de código de dibujo —hay
+cuatro funciones y la infraestructura de series ya existe— sino por falta de
+datos. Es exactamente la razón por la que el handoff pone el registro
+primero.
+
+### 1 · Dos rojos distintos
+
+Lo pedido: el rojo solo para hallazgo verificado con fuente; los pendientes
+internos en gris y en su propio bloque al final.
+
+Medido, el defecto es **de posición más que de color**:
+
+| | Hoy |
+|---|---|
+| Casos confirmados, contradicciones, FODA·amenaza | `--rojo:#C95A55` |
+| Control de calidad · casillero que **falla** | `#9A3C38` con una ✕ — misma familia |
+| Marcas de `validado: no` y cobertura de rol (v965, v966) | ámbar `#b26a00`, **no** rojo |
+| Bloque gris de pendientes al final | **no existe** |
+
+O sea que los pendientes ya están medio separados por color —el ámbar de la
+v965 y la v966 no es el rojo de un caso— y **la ✕ roja del control de calidad
+sí colisiona**: «202 contrargumentos sin revisar» es deuda nuestra y sale con
+la misma marca que un hallazgo.
+
+Lo que de verdad los mezcla es el ORDEN. Medido, la ficha va así:
+
+```
+placa · Capa 1 · Capa 2 (con las marcas ámbar y la cobertura de rol)
+      · Capa 3 · Capa 4 (marco + editorial + CONTROL DE CALIDAD)
+      · Casos de corrupción · Contradicciones · Rasgos
+```
+
+Los pendientes están **repartidos por toda la página**, y el control de
+calidad se lee ANTES que los casos de corrupción. Juntarlos en un bloque al
+final es mudanza de tres sitios, no un cambio de color.
+
+### 2 · Un hallazgo como héroe
+
+Hoy lo primero es **el veredicto**, en `--t-1` (máximo 2,9 rem, «el texto más
+grande del módulo» según su propio comentario). La spec quiere una **cifra**
+a 5,2 rem.
+
+Y el cambio de fondo no es el tamaño: es que **hoy lo primero es un juicio
+sobre una persona y la spec pone un hecho con fuente**. Eso va en la
+dirección de lo que este módulo ya defiende —una cifra comprobable se sostiene
+donde un veredicto calculado se discute— así que la spec es más conservadora
+que la pantalla, no menos.
+
+**Pero la cifra del héroe no está en el registro.** Medido: `94,42`, `86,96`,
+`PGN` e «inversión pública» dan **cero coincidencias** en las 170 entradas.
+
+### 3 · La opinión firmada en serif
+
+Medido: **cero reglas serif en `css/70`** — el módulo entero es la pila del
+sistema. Y el editorial se pinta en `--t-8` (.84 rem), que es **el tamaño de
+texto corrido más pequeño de la escala**, dentro de una caja gris a trazos.
+
+O sea que hoy no es que la opinión no se distinga de los datos: es que **se
+pinta más chica que los datos**, que es lo contrario de lo que la spec pide.
+La spec la pone en 1,18 rem serif. El cambio es barato y no toca ningún
+cálculo — la regla de oro de la v957 se cumple igual.
+
+### 4 · Los siete gráficos, uno por uno
+
+Hoy hay cuatro funciones de dibujo: `grafPorFuente` (barras horizontales),
+`grafSerie` (línea de una serie), `grafContradicciones` y `grafDeuda`. Las
+series viven en `indicadores` del JSON —`dolar`, `deudaSerie`, `aprobacion`,
+`consulta`, `bombardeos`, `deuda`, `cocaina`— así que **el molde de «leer del
+registro» ya es el correcto**: lo que falta son las series.
+
+| # | Gráfico | ¿Hay dato? |
+|---|---|---|
+| 1 | Torta · composición del presupuesto | **no** — ninguna serie de PGN |
+| 2 | Barras divergentes · variación real por sector | **no** |
+| 3 | Agrupadas · Defensa sola contra Defensa+Policía | **no** |
+| 4 | Serie · presupuestado contra pagado | **no** — 0 entradas nombran Huila |
+| 5 | Cadena · decisión nacional → herramienta → uso municipal | **no** — 0 ESMAD, 0 Manrique |
+| 6 | Organigrama · filtro por nivel de gobierno | **la cuenta sí, el material no** |
+| 7 | Barras · frecuencia de técnicas de distorsión | **no** — `calidadDelEncuadre` 0 de 170 |
+
+El **6** es el que más vale explicar, porque parece el fácil y no lo es: la
+cuenta existe desde la v941 (`fueraPorNivel`, `sinNivel`) y está probada. Lo
+que no existe es material que dibujar — el registro tiene **7 casos, los
+siete nacionales, ninguno municipal y ninguno sin fecha**, mientras la spec
+dibuja 22 / 13 / 5 / 4. Un organigrama de un filtro que no rechaza nada es el
+verde que este proyecto lleva veintiséis tandas persiguiendo: pasaría por no
+tener nada que rechazar.
+
+El **7** ya está declarado como pendiente en la v961 y la v962, con su nombre:
+`calidadDelEncuadre` y `signoPolitico` son los dos campos que volverían
+computables los dos casilleros de control de calidad que hoy salen «no se
+pueden correr».
+
+**Las cinco reglas de los siete, medidas aparte:**
+
+* **leen del registro** — el patrón ya es ese, y es lo que hace que la tabla
+  de arriba sea una lista de datos que faltan y no de código que falta;
+* **eje desde cero** — ya se cumple: `grafPorFuente` calcula su tope con
+  `ceil(max/10)*10` desde cero;
+* **trama distinta para lo que está en trámite** — el mecanismo existe:
+  `.dudosa` raya la barra de una encuestadora sin metodología publicada. Se
+  reusa, no se inventa otro;
+* **fuente y fecha DENTRO del gráfico** — hoy no: `tarjetaGrafica` las pinta
+  en `sp-graf-src`, **debajo** del cuerpo (9 llamadas a `pintarFuentes`). Es
+  el único de los cinco que pide trabajo de dibujo;
+* **nunca números escritos a mano** — es la regla de la v903 dicha para un
+  gráfico, y la razón por la que la tabla de arriba no se puede saltar
+  metiendo las cifras en el código.
+
+### Y una pregunta que queda abierta
+
+La muestra trae **una identidad visual entera** —Archivo + Source Serif 4,
+señal `#B8112E`, papel `#EDEFF2`, y modo oscuro completo— distinta de la del
+módulo, que va con la pila del sistema, celeste `#34CCFE`, amarillo `#FABD0A`
+y marfil `#F7F6F1`, y que **no tiene modo oscuro** (0 reglas
+`prefers-color-scheme` en `css/70`).
+
+No se supone cuál de las dos cosas es: si la muestra es la identidad nueva de
+esta pantalla, o si es una maqueta para enseñar las reglas y la paleta se
+queda como está. Adoptarla entera cambiaría la marca de un módulo que
+comparte hoja de estilo con el resto, así que lo decide quien la escribió.
 
 ## La lista viva: lo que al pliego educativo todavía le falta (v866)
 
