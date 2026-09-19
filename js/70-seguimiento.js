@@ -2042,6 +2042,67 @@
              registrosEnMano: regs.length, corridas: corridas, razon: razon };
   }
 
+  /* ── DÓNDE PUDO CORRER LA GUARDA DE ROL, Y DÓNDE NO (v966) ───────────────
+     NINGUNA COMPROBACIÓN DESACTIVADA PUEDE SER SILENCIOSA. Si no puede
+     correr, lo dice y se cuenta. Es la regla que este módulo ya tomó cuatro
+     veces —`NO CONCLUYENTE` en el arnés, `sin-base-registrada` en la puerta,
+     `validado: no` en el indicador— y esta es la cuarta: la guarda de la
+     v965 exige que al menos una fuente documente el ACTO, y no puede correr
+     sobre las entradas que usan la forma antigua `fuente` + `url`, que no
+     tiene dónde poner un rol. Sin decirlo, esa exención se lee como que la
+     comprobación pasó.
+
+     Son cuatro estados y no dos, porque piden cosas distintas —la distinción
+     de la v899 entre «sin dato» y «panel fuera»—: declarar los roles cuesta
+     un renglón; migrar el esquema es otra tanda. */
+  var ROL_FUENTE = {
+    'ok': { t: 'comprobada',
+            d: 'Sus fuentes declaran su rol y al menos una documenta el acto.' },
+    'sin-acto': { t: 'sin fuente del acto',
+                  d: 'Declara los roles y ninguna de sus fuentes documenta el acto: una cobertura de ' +
+                     'reacciones no prueba que el acto ocurriera.' },
+    'sin-declarar': { t: 'roles sin declarar',
+                      d: 'Sus fuentes podrían llevar el rol y nadie lo escribió todavía. Cuesta un renglón ' +
+                         'por fuente.' },
+    'no-comprobable-esquema-antiguo': {
+      t: 'no comprobable · esquema antiguo',
+      d: 'Guarda su fuente en los campos `fuente` y `url`, que no tienen dónde poner un rol. La ' +
+         'comprobación no corre acá, y eso NO es que haya pasado: es que no se pudo hacer.' }
+  };
+
+  function rolDeFuentes(e) {
+    var fs = (e && e.fuentes) || [];
+    if (!fs.length) {
+      /* Sin `fuentes` pero con los campos viejos: la forma antigua. Sin
+         ninguna de las dos cosas no hay fuente que clasificar, y eso ya lo
+         dice la guarda de casos. */
+      var vieja = !!((e && e.fuente) || (e && e.url));
+      return vieja ? 'no-comprobable-esquema-antiguo' : 'sin-declarar';
+    }
+    var roles = fs.map(function (f) { return String((f && f.rol) || '').trim(); })
+                  .filter(function (x) { return x; });
+    if (!roles.length) return 'sin-declarar';
+    return roles.indexOf('acto') >= 0 ? 'ok' : 'sin-acto';
+  }
+
+  /* El recuento se hace sobre las entradas que DECLARAN indicador, que son
+     las que sostienen una cifra publicada. Para las demás la procedencia
+     importa igual, pero no hay ninguna cuenta colgando de ellas. */
+  function coberturaDeRol(ent) {
+    var por = { 'ok': 0, 'sin-acto': 0, 'sin-declarar': 0, 'no-comprobable-esquema-antiguo': 0 };
+    var casos = [];
+    (ent || []).forEach(function (e) {
+      if (!(((e && e.indicadores) || []).length)) return;
+      var id = rolDeFuentes(e);
+      por[id]++;
+      casos.push({ fecha: (e && e.fecha) || '', titulo: (e && e.titulo) || '', estado: id,
+                   t: ROL_FUENTE[id].t, d: ROL_FUENTE[id].d });
+    });
+    var n = casos.length;
+    return { n: n, corrio: por.ok + por['sin-acto'], por: por, casos: casos,
+             sinCorrer: n - (por.ok + por['sin-acto']) };
+  }
+
   function indicadoresDe(dd, corte) {
     /* Sin argumento, el registro del gobierno actual —igual que
        `comparabilidad`. Antes caía en `{}` y medía un registro vacío, que es
@@ -2104,7 +2165,8 @@
       return f;
     });
 
-    return { dias: dias, hasta: hasta, desde: dd.posesion || null, hechos: ent.length,
+    return { coberturaRol: coberturaDeRol(ent),
+             dias: dias, hasta: hasta, desde: dd.posesion || null, hechos: ent.length,
              por100Hechos: por100(ent.length), sinDeclarar: sinDeclarar,
              poder: poderPredictivo(dias), filas: filas,
              /* La cobertura del registro, tal como el propio archivo la
@@ -3395,6 +3457,32 @@
       }
     });
     s2.appendChild(tb);
+
+    /* LA COBERTURA DE LA GUARDA DE ROL. Una comprobación que no puede correr
+       lo dice y se cuenta; si no, su exención se lee como que pasó. Van los
+       casos por su nombre porque son pocos y porque el lector tiene que
+       poder ir a mirar cuál es. */
+    var cr = ind.coberturaRol || { n: 0, casos: [] };
+    if (cr.n) {
+      var cx = el('div', 'sp-c2-cober' + (cr.sinCorrer ? ' falta' : ''));
+      cx.appendChild(el('b', null, 'Procedencia de las fuentes: comprobada en ' + cr.corrio +
+        ' de ' + cr.n + (cr.n === 1 ? ' entrada' : ' entradas') + ' que declaran indicador'));
+      cx.appendChild(el('p', null, cr.sinCorrer
+        ? 'En ' + cr.sinCorrer + (cr.sinCorrer === 1 ? ' la comprobación NO pudo correr' :
+           ' la comprobación NO pudo correr') + ', y eso no es que haya pasado. Cada una dice por qué:'
+        : 'La comprobación corrió sobre todas: cada una tiene al menos una fuente que documenta el acto.'));
+      var ul = el('ul', 'sp-c2-coberl');
+      cr.casos.forEach(function (c) {
+        if (c.estado === 'ok') return;
+        var li = el('li', null);
+        li.appendChild(el('b', null, c.fecha + ' · ' + c.t));
+        li.appendChild(el('span', null, ' ' + c.titulo));
+        li.appendChild(el('p', null, c.d));
+        ul.appendChild(li);
+      });
+      if (ul.childNodes.length) cx.appendChild(ul);
+      s2.appendChild(cx);
+    }
 
     /* Los tres declarados son los del eje B, y sin declarar no cuentan. Se
        dice cuántas entradas no declaran ninguno: sin ese renglón, un I-04 de

@@ -1669,6 +1669,59 @@ console.log('\n  -- la ficha del gobernante --');
         : 'una cobertura de reacciones no puede quedarse sola probando que el acto ocurrió');
   }
 
+  /* ═══ UNA COMPROBACIÓN DESACTIVADA NO ES SILENCIOSA (v966) ══════════════
+     La guarda de rol de la v965 no puede correr sobre las entradas que usan
+     la forma antigua `fuente` + `url`: no tienen dónde poner un rol. Eso
+     estaba dicho en la bitácora y no en la ficha, así que desde la pantalla
+     la exención se leía como que la comprobación había pasado.
+
+     Es la cuarta vez que este proyecto toma la misma decisión —`NO
+     CONCLUYENTE`, `sin-base-registrada`, `validado: no`— y va escrita una
+     sola vez en CLAUDE.md, en «Ninguna comprobación desactivada es
+     silenciosa». Acá se comprueba que se cumpla. */
+  {
+    const j70r = leer('js/70-seguimiento.js');
+
+    /* Los cuatro estados existen y la ficha los puede nombrar. */
+    const bloque = (j70r.match(/var ROL_FUENTE = \{[\s\S]*?\n  \};/) || [''])[0];
+    const estados = (bloque.match(/'([a-z-]+)':/g) || []).map((x) => x.replace(/[':]/g, ''));
+    comprobar('MATERIAL · la comprobación de rol de fuente tiene sus estados nombrados',
+      estados.length === 4 && estados.indexOf('no-comprobable-esquema-antiguo') >= 0,
+      estados.join(' | '));
+
+    /* Y el recuento se PUBLICA: si `coberturaRol` no llegara a la ficha, los
+       cuatro estados serían documentación y la exención volvería a ser
+       silenciosa. Es la guarda de la guarda. */
+    comprobar('la cobertura de la comprobación viaja con la cifra y la ficha la pinta',
+      /coberturaRol: coberturaDeRol\(ent\)/.test(j70r) &&
+      /ind\.coberturaRol/.test(j70r) && /sp-c2-cober/.test(j70r) &&
+      /sp-c2-cober/.test(leer('css/70-seguimiento.css')),
+      'se calcula, se pega al resultado, se pinta y tiene regla que la pinta');
+
+    /* Y distingue POR QUÉ no pudo correr. Si dejara de mirar los campos
+       viejos, una entrada con esquema antiguo caería en «roles sin declarar»
+       y la ficha declararía mal la causa, que es la falta de la v867: una
+       pide un renglón y la otra una migración. */
+    comprobar('y distingue el esquema antiguo de los roles sin declarar',
+      /var vieja = !!\(\(e && e\.fuente\) \|\| \(e && e\.url\)\);/.test(j70r) &&
+      /return vieja \? 'no-comprobable-esquema-antiguo' : 'sin-declarar';/.test(j70r),
+      'declarar mal por qué no se pudo comprobar es peor que no decirlo');
+
+    /* MATERIAL sobre el registro: hoy hay entradas en los estados que no son
+       «ok», así que el recuento mide algo. El día que no las haya, esta se
+       pone roja y hay que mirar si es porque se migraron o porque la función
+       dejó de verlas. */
+    const reg = JSON.parse(leer('assets/data/seguimiento-presidencial.json'));
+    const declaran = ((reg.entradas) || []).filter((e) => ((e.indicadores) || []).length);
+    const vieja = declaran.filter((e) => !((e.fuentes) || []).length && (e.fuente || e.url));
+    const sinRol = declaran.filter((e) => ((e.fuentes) || []).length &&
+      !((e.fuentes) || []).some((f) => String(f.rol || '').trim()));
+    comprobar('MATERIAL · hay entradas declarantes sobre las que la comprobación NO corre',
+      declaran.length >= 4 && (vieja.length + sinRol.length) > 0,
+      declaran.length + ' declaran · ' + vieja.length + ' con esquema antiguo · ' +
+      sinRol.length + ' sin roles declarados');
+  }
+
   /* ═══ CAPA 3 DEL PLIEGO · LOS EJES, NUNCA EN UN SOLO NÚMERO ════════════
      La regla que sostiene la capa entera: «se muestran lado a lado, nunca
      combinados en un número único». Es la invariante más fácil de romper sin

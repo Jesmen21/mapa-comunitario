@@ -1838,3 +1838,20 @@ a.sp-fuente:hover svg{ color:var(--verde-hi); }
    es la que urge, y se ve. */
 .sp-c2-novalg { font-weight: 600; }
 .sp-c2-novalg.urge { color: var(--sp-amb, #b26a00); }
+
+/* v966 · dónde la comprobación de rol de fuente NO pudo correr. Ámbar como
+   los demás «esto no se pudo hacer»: no es un error de dato, es una
+   comprobación desactivada, y no puede quedarse callada. */
+.sp-c2-cober {
+  margin: 10px 0 4px;
+  padding: 10px 12px;
+  border: 1px solid var(--sp-bd, #cfdce6);
+  border-radius: 8px;
+}
+.sp-c2-cober.falta { border-style: dashed; border-color: var(--sp-amb, #b26a00); }
+.sp-c2-cober > b { display: block; font-size: var(--t-7); }
+.sp-c2-cober > p { margin: 5px 0 0; font-size: var(--t-8); line-height: 1.45; }
+.sp-c2-coberl { margin: 8px 0 0; padding-left: 18px; }
+.sp-c2-coberl li { margin-bottom: 7px; font-size: var(--t-8); line-height: 1.45; }
+.sp-c2-coberl li > b { color: var(--sp-amb, #b26a00); }
+.sp-c2-coberl li > p { margin: 2px 0 0; font-size: var(--t-8); }

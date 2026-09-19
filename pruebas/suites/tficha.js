@@ -525,6 +525,21 @@ const server = http.createServer((req, res) => {
       domCrit: document.querySelectorAll('.sp-c2-crit').length
     };
 
+    /* LA COBERTURA DE LA GUARDA DE ROL (v966). Una comprobación que no puede
+       correr lo dice y se cuenta; si no, su exención se lee como que pasó. */
+    const cr = iR.coberturaRol || {};
+    const cbEl = document.querySelector('.sp-c2-cober');
+    o.cober = {
+      n: cr.n, corrio: cr.corrio, sinCorrer: cr.sinCorrer, por: cr.por,
+      estados: (cr.casos || []).map(c => c.estado).sort(),
+      dom: cbEl ? cbEl.textContent.slice(0, 2000) : '',
+      domFalta: cbEl ? cbEl.className.indexOf('falta') >= 0 : false,
+      /* El Decreto 1171 es el caso a la vista: declara I-04, cuenta en la
+         cifra, y su rol de fuente no se puede verificar. */
+      d1171: (cr.casos || []).filter(c => /Decreto 1171/.test(c.titulo))
+                             .map(c => c.estado).join('')
+    };
+
     /* `fichaDe` sin registro: caía en `{}` y devolvía un VEREDICTO sobre la
        nada —cero casos, cero contradicciones, peldaño de arriba—. Que la
        forma vacía y la real dieran lo mismo sería imposible, así que la
@@ -891,6 +906,30 @@ const server = http.createServer((req, res) => {
       'y no dicen lo mismo: una nombra la categoria construida y tres la preexistente (' +
       (vl.dom || []).filter(x => /construida para el caso/.test(x)).length + ' · ' +
       (vl.dom || []).filter(x => /preexistente/.test(x)).length + ')');
+
+  /* ── LA EXENCIÓN DE LA GUARDA DE ROL SE VE (v966) ───────────────────────
+     Veinte entradas usan la forma antigua y no pueden llevar rol, así que la
+     guarda de la v965 no corre sobre ellas. Eso estaba en la bitácora y no
+     en la ficha: desde la pantalla se leía como que había pasado. */
+  const cb = r.cober || {};
+  console.log('  cobertura de rol: ' + JSON.stringify({ n: cb.n, corrio: cb.corrio,
+    sinCorrer: cb.sinCorrer, por: cb.por, d1171: cb.d1171 }));
+  chk(cb.n >= 4 && cb.sinCorrer > 0,
+      'MATERIAL · hay entradas declarantes sobre las que la comprobacion NO corre (' +
+      cb.corrio + ' de ' + cb.n + ' · ' + cb.sinCorrer + ' sin correr)');
+  chk(cb.d1171 === 'no-comprobable-esquema-antiguo',
+      'el Decreto 1171 sale como no comprobable por esquema antiguo, no como comprobado (' +
+      (cb.d1171 || 'no aparece') + ')');
+  chk((cb.por || {})['sin-declarar'] > 0 &&
+      (cb.por || {})['no-comprobable-esquema-antiguo'] > 0,
+      'y las dos causas se cuentan aparte: una pide un renglon y la otra una migracion (' +
+      JSON.stringify(cb.por) + ')');
+  chk(/comprobada en \d+ de \d+/.test(cb.dom || '') && /NO pudo correr/.test(cb.dom || '') &&
+      cb.domFalta === true,
+      'y la ficha lo dice con su recuento, no lo deja ausente (' +
+      String(cb.dom || '').slice(0, 70) + ')');
+  chk(/Decreto 1171/.test(cb.dom || '') && /esquema antiguo/.test(cb.dom || ''),
+      'nombrando el caso, para que se pueda ir a mirar cual es');
   chk(vl.n13 === 1 && (vl.vias13 || []).length === 1,
       'I-13 cuenta 1 y entra por una sola via, ahora que su acto esta registrado (' +
       vl.n13 + ' · ' + (vl.vias13 || []).join(' · ').slice(0, 60) + ')');

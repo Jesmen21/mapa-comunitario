@@ -188,6 +188,38 @@ que una guarda que no puede fallar es un verde, así que conviene decir qué hac
 que esta muerda de verdad: **la confirmación impresa**. Sin ese renglón la regla
 es un buen propósito; con él, saltársela se ve en el acto.
 
+## Ninguna comprobación desactivada es silenciosa
+
+Va arriba y una sola vez porque este proyecto ya la tomó **cuatro veces por
+separado**, cada una creyendo que era un caso particular. No lo es: es la
+misma regla, y enunciada es más barata que descubrirla una quinta.
+
+> **Si una comprobación no puede correr, lo dice y se cuenta. No queda
+> ausente.**
+
+Lo que la hace necesaria es que una exención silenciosa **se lee igual que un
+aprobado**. Nadie miente: simplemente no hay nada escrito donde tendría que
+estar la advertencia, y el lector completa el hueco con lo que espera.
+
+| Dónde | Qué se decía antes | Qué dice |
+|---|---|---|
+| El arnés (v963) | una suite que no imprime nada salía con su palomita | `?` **NO CONCLUYENTE**, aparte de las que fallaron, y hace fallar la corrida |
+| La puerta del indicador (v964) | una declaración cuyo acto no está registrado contaba | `sin-base-registrada`, con sus dos causas dichas aparte |
+| El indicador (v965) | un criterio sin contrastar salía como una medición más | `validado: no`, con su gravedad y su recuento |
+| La procedencia (v966) | las entradas con esquema antiguo no pasaban por la guarda de rol y no se notaba | `no-comprobable-esquema-antiguo`, contado y con el caso por su nombre |
+
+Tres cosas que las cuatro tienen en común y conviene copiar:
+
+* **El estado se CALCULA, no se escribe a mano.** Una marca que alguien tiene
+  que acordarse de poner —o de quitar— es una cifra que envejece sola (v903).
+* **Las causas se separan si piden acciones distintas.** «No se pudo
+  comprobar porque falta un campo» y «porque haría falta migrar el esquema»
+  se ven iguales y son dos tareas; juntarlas manda a revisar lo que está
+  bien. Es la distinción de la v899 entre «sin dato» y «panel fuera».
+* **Y lleva su guarda de la guarda**: que el recuento LLEGUE a la pantalla.
+  Sin eso los estados son documentación y la exención vuelve a ser
+  silenciosa, que es el patrón de la v878 con su propia lista.
+
 ## Dos clases de error que se repiten, y no son la misma
 
 Cada una lleva ya tres o más casos. Van nombradas y con su censo para que la
@@ -11060,6 +11092,72 @@ también sale sin validar» en rojo con `null`, **una marca en el papel donde
 van cuatro**, y la distinción de gravedad en «1 · 0».
 
 `tficha` cierra en 178/178.
+
+## La exención de la guarda de rol se ve (v966)
+
+La v965 dejó escrito, con todas las letras, que su guarda —«al menos una
+fuente documenta el acto»— no corre sobre las veinte entradas que usan la
+forma antigua `fuente` + `url`. **Estaba en la bitácora y no en la ficha**, y
+el usuario lo señaló por lo que es: la cuarta vez que aparece el mismo
+patrón, ahora en su forma más mansa.
+
+Desde la pantalla, una comprobación que no corre y no lo dice se lee como una
+que pasó. El principio queda enunciado arriba, en «Ninguna comprobación
+desactivada es silenciosa», y acá está su cuarta aplicación.
+
+### Cuatro estados, no dos
+
+El estado se **calcula** de la forma de la entrada —no se escribe en el
+registro, que sería una segunda codificación de un hecho que ya está en los
+datos—:
+
+| | Qué significa | Qué pide |
+|---|---|---|
+| `ok` | declara sus roles y al menos uno documenta el acto | nada |
+| `sin-acto` | declara los roles y ninguno es del acto | el fallo que la v965 persigue |
+| `sin-declarar` | sus fuentes podrían llevar rol y nadie lo escribió | **un renglón por fuente** |
+| `no-comprobable-esquema-antiguo` | guarda su fuente en `fuente` + `url`, que no tiene dónde ponerlo | **una migración** |
+
+Los dos últimos son «la comprobación no corrió acá» por razones distintas, y
+por eso se cuentan aparte: confundirlos manda a migrar un esquema cuando lo
+que falta es teclear una palabra. Es la distinción de la v899.
+
+Hoy, sobre las cinco entradas que declaran indicador: **corrió en 1, no corrió
+en 4** —3 sin roles declarados y 1 con esquema antiguo—.
+
+### El Decreto 1171 sale por su nombre
+
+Es el caso que el usuario puso a la vista: declara I-04, **cuenta en la
+cifra**, y su rol de fuente no se puede verificar. La ficha lo nombra, con su
+fecha y su razón, porque un recuento sin los casos deja al lector sin poder
+ir a mirar cuál es.
+
+**No se migraron las veinte**, que es lo que se pidió: lo que se hizo es que
+su exención se vea.
+
+### Y lo que salió de paso
+
+* **Una colisión de nombre más**, la tercera en estas tandas: `cx` ya estaba
+  declarada en ese ámbito de `tficha`. Lo cazó el propio JavaScript. Las
+  otras dos fueron `cmp` (v958) y `nombreDeParte` (v932).
+* **Mi propio `<p>` de la lista bajaba a 12,48 px** y la guarda de texto
+  corrido de la v791 lo denunció con razón. Subido, no aflojada.
+* **La captura de la prueba cortaba a 600 caracteres** y el caso que la
+  aserción persigue es el cuarto de la lista: medía el principio del bloque y
+  decía medir el bloque. Es la lección de la v935 —un ancla por distancia
+  envejece— dicha para una captura.
+
+### Demostrado contra la v965
+
+Dos demostraciones, cada una revirtiendo solo lo que decide:
+
+* sin pintar el recuento, «la ficha lo dice con su recuento» sale en rojo con
+  la cadena vacía, que es exactamente la exención silenciosa;
+* sin distinguir el esquema antiguo, el Decreto 1171 sale como
+  **`sin-declarar`** y el recuento da «4 sin declarar · 0 con esquema
+  antiguo»: declarar mal por qué no se pudo comprobar es la falta de la v867.
+
+`tficha` cierra en 183/183.
 
 ## La lista viva: lo que al pliego educativo todavía le falta (v866)
 

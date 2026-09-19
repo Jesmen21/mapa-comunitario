@@ -1,4 +1,4 @@
-const URBIS_CACHE = 'urbis-v965-la-marca-en-los-cuatro-criterios-con-su-gravedad';
+const URBIS_CACHE = 'urbis-v966-ninguna-comprobacion-desactivada-es-silenciosa';
 const URBIS_ASSETS = [
   './',
   './index.html',
