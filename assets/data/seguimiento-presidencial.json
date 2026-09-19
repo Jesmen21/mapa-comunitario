@@ -322,34 +322,50 @@
    "fecha": "2026-09-15",
    "precision": "exacta",
    "categoria": "creditos",
-   "titulo": "El Gobierno anuncia una «Ley de Rescate» con un recorte de hasta $44 billones y recalcula el déficit fiscal de 2026 en 4,4 % del PIB, frente al 2,1 % reportado por el gobierno Petro",
+   "titulo": "El Gobierno anuncia una «Ley de Rescate» y cifra el ajuste en $22 billones ya recortados del presupuesto de 2026 más $21,4 billones de austeridad para 2027, y recalcula el déficit fiscal de 2026 en 4,4 % del PIB frente al 2,1 % reportado por el gobierno Petro",
    "categoriaProbatoria": "hecho-probado",
    "tipoMedicion": "actividad",
-   "detalle": "El ministro de Hacienda, Miguel Gómez Martínez, presentó el 15 de septiembre la hoja de ruta fiscal del Gobierno: un recorte inicial de $21,9 billones del Presupuesto General de la Nación y el anuncio de que radicará ante el Congreso, en octubre, un proyecto de «Ley de Rescate» (también llamada «ley de rescate económico») que buscará un recorte adicional hasta sumar $44 billones, junto con estímulos tributarios entre los que figuran la eliminación del impuesto al patrimonio y la reducción del gravamen a los movimientos financieros (4x1000). Según Hacienda, el déficit fiscal de 2026, sin contar intereses, no es 2,1 % del PIB como había reportado el gobierno de Gustavo Petro, sino 4,4 %; la meta del Gobierno es bajarlo a 3,3 % mediante decreto y a 2,3 % en 2027. El ministro afirmó que «la irresponsabilidad, la corrupción y, sobre todo, el mal manejo de las finanzas públicas nos han llevado a una situación en la que la única opción es implementar una política de austeridad muy fuerte». El 16 de septiembre viajó a Estados Unidos para reunirse con banca comercial, calificadoras de riesgo e inversionistas que ya tienen deuda colombiana, encuentros que, según dijo, buscan que esos actores «sepan cuál es el enfoque de esta política de austeridad» que emprende el Gobierno; por ahora no incluyen a organismos multilaterales.",
-   "contrapunto": "Gustavo Petro rechazó en su cuenta de X el anuncio de eliminar el impuesto al patrimonio y reducir el 4x1000, calificándolo de «un regalo para los más ricos» en momentos en que, dijo, los más ricos de Colombia necesitan pagar más impuestos; el expresidente cuestionó además el recálculo del déficit y afirmó, por su cuenta, que el endeudamiento podría llegar al 66 % del PIB y el déficit al 9,2 %. La Silla Vacía, en un análisis titulado «Medias verdades del sinceramiento presupuestal del gobierno de Abelardo», cuestionó la forma en que el Gobierno presenta la comparación con las cifras heredadas. Las dos series de cifras —la del gobierno saliente y la del entrante— corresponden a metodologías o supuestos distintos que ningún organismo de control independiente ha reconciliado a la fecha de esta actualización.",
+   "detalle": "El ministro de Hacienda, Miguel Gómez Martínez, presentó el 15 de septiembre la hoja de ruta fiscal del Gobierno: un ajuste en DOS componentes, cada uno con su año y su estado, y que suman más de $43 billones entre 2026 y 2027. El primero son cerca de $22 billones ya recortados del presupuesto de 2026 —«cortamos 1 % del gasto», ejecutado y no proyectado—. El segundo son cerca de $21,4 billones de austeridad dentro del presupuesto de 2027, que todavía es un proyecto en trámite: revisión de compras de bienes y servicios, de transferencias y de las estructuras de las entidades públicas. El vehículo legislativo es un proyecto de «Ley de Rescate» (también llamada «ley de rescate económico») que el ministro anunció que radicará ante el Congreso en la segunda quincena de octubre, y que llevaría además estímulos tributarios entre los que figuran la eliminación del impuesto al patrimonio y la reducción del gravamen a los movimientos financieros (4x1000). Según Hacienda, el déficit fiscal de 2026, sin contar intereses, no es 2,1 % del PIB como había reportado el gobierno de Gustavo Petro, sino 4,4 %; la meta del Gobierno es bajarlo a 3,3 % mediante decreto y a 2,3 % en 2027. El ministro afirmó que «la irresponsabilidad, la corrupción y, sobre todo, el mal manejo de las finanzas públicas nos han llevado a una situación en la que la única opción es implementar una política de austeridad muy fuerte». El 16 de septiembre viajó a Estados Unidos para reunirse con banca comercial, calificadoras de riesgo e inversionistas que ya tienen deuda colombiana, encuentros que, según dijo, buscan que esos actores «sepan cuál es el enfoque de esta política de austeridad» que emprende el Gobierno; por ahora no incluyen a organismos multilaterales.",
+   "contrapunto": "Gustavo Petro rechazó en su cuenta de X el anuncio de eliminar el impuesto al patrimonio y reducir el 4x1000, calificándolo de «un regalo para los más ricos» en momentos en que, dijo, los más ricos de Colombia necesitan pagar más impuestos; el expresidente cuestionó además el recálculo del déficit y afirmó, por su cuenta, que el endeudamiento podría llegar al 66 % del PIB y el déficit al 9,2 %. La Silla Vacía, en un análisis titulado «Medias verdades del sinceramiento presupuestal del gobierno de Abelardo», cuestionó la forma en que el Gobierno presenta la comparación con las cifras heredadas. Las dos series de cifras —la del gobierno saliente y la del entrante— corresponden a metodologías o supuestos distintos que ningún organismo de control independiente ha reconciliado a la fecha de esta actualización. Y una cifra en disputa que no se resuelve acá porque las dos lecturas circulan y no son compatibles: la suma de los dos componentes da algo más de $43 billones entre los dos años —es la que reporta Pulzo con esas palabras, «reducción de 43 billones para 2026-2027»— mientras El Nuevo Siglo describe el proyecto como un recorte «de alrededor de $44 a $45 billones ADICIONALES» en el gasto del Estado. La palabra «adicionales» es lo que las separa: con ella la Ley de Rescate pediría un recorte nuevo por encima de los dos componentes ya anunciados, y sin ella los $43 billones SON el paquete completo. Ninguna fuente concilia las dos, así que van las dos con quién dice cada una, y la suma de arriba se publica por componentes y no como un total único.",
    "tipoFuente": "disputado",
    "fuentes": [
     {
      "n": "Infobae · Ley de Rescate: en qué consisten las medidas que tomará el Gobierno De la Espriella para superar el hueco fiscal que habría dejado Gustavo Petro",
-     "u": "https://www.infobae.com/colombia/2026/09/15/ley-de-rescate-en-que-consisten-las-medidas-que-tomara-el-gobierno-de-la-espriella-para-superar-el-hueco-fiscal-que-habria-dejado-gustavo-petro/"
+     "u": "https://www.infobae.com/colombia/2026/09/15/ley-de-rescate-en-que-consisten-las-medidas-que-tomara-el-gobierno-de-la-espriella-para-superar-el-hueco-fiscal-que-habria-dejado-gustavo-petro/",
+     "rol": "acto"
     },
     {
      "n": "Semana · MinHacienda anuncia que radicará en octubre la Ley de Rescate al Congreso, con la que se busca reducir el gasto del Estado",
-     "u": "https://www.semana.com/politica/articulo/minhacienda-anuncia-que-radicara-en-octubre-la-ley-de-rescate-al-congreso-con-la-que-se-busca-reducir-el-gasto-del-estado/202625/"
+     "u": "https://www.semana.com/politica/articulo/minhacienda-anuncia-que-radicara-en-octubre-la-ley-de-rescate-al-congreso-con-la-que-se-busca-reducir-el-gasto-del-estado/202625/",
+     "rol": "acto"
     },
     {
      "n": "Valora Analitik · MinHacienda se reúne esta semana con banca, calificadoras e inversionistas de EE. UU.",
-     "u": "https://www.valoraanalitik.com/minhacienda-se-reune-esta-semana-con-banca-calificadoras-e-inversionistas-de-ee-uu/"
+     "u": "https://www.valoraanalitik.com/minhacienda-se-reune-esta-semana-con-banca-calificadoras-e-inversionistas-de-ee-uu/",
+     "rol": "efecto"
     },
     {
      "n": "Infobae · Gustavo Petro reaccionó a anuncio de ministro de Hacienda de quitar el impuesto al patrimonio y reducir el 4x1.000: «Es un regalo para los más ricos»",
-     "u": "https://www.infobae.com/colombia/2026/09/15/gustavo-petro-reacciono-a-anuncio-de-ministro-de-hacienda-de-quitar-el-impuesto-al-patrimonio-y-reducir-el-4x1000-es-un-regalo-para-los-mas-ricos/"
+     "u": "https://www.infobae.com/colombia/2026/09/15/gustavo-petro-reacciono-a-anuncio-de-ministro-de-hacienda-de-quitar-el-impuesto-al-patrimonio-y-reducir-el-4x1000-es-un-regalo-para-los-mas-ricos/",
+     "rol": "efecto"
     },
     {
      "n": "La Silla Vacía · Medias verdades del «sinceramiento» presupuestal del gobierno de Abelardo",
-     "u": "https://www.lasillavacia.com/silla-nacional/medias-verdades-del-sinceramiento-presupuestal-del-gobierno-de-abelardo/"
+     "u": "https://www.lasillavacia.com/silla-nacional/medias-verdades-del-sinceramiento-presupuestal-del-gobierno-de-abelardo/",
+     "rol": "efecto"
+    },
+    {
+     "n": "Pulzo · Recorte histórico al gasto público en Colombia: Gobierno anuncia reducción de 43 billones para 2026-2027",
+     "u": "https://www.pulzo.com/economia/recorte-historico-al-gasto-publico-en-colombia-gobierno-anuncia-reduccion-de-43-billones-para-2026-2027-PP5302170A",
+     "rol": "acto"
+    },
+    {
+     "n": "El Nuevo Siglo · Proyecto de Presupuesto 2027: un comienzo de debate muy movido y polarizado (cifra el recorte de la Ley de Rescate en $44 a $45 billones adicionales)",
+     "u": "https://www.elnuevosiglo.com.co/politica/proyecto-de-presupuesto-2027-un-comienzo-de-debate-muy-movido-y-polarizado",
+     "rol": "acto"
     }
-   ]
+   ],
+   "id": "ley-de-rescate-ajuste-fiscal"
   },
   {
    "fecha": "2026-09-15",
@@ -4039,11 +4055,8 @@
    "titulo": "El Gobierno suspende la programación de las 20 emisoras de paz y la FLIP alerta",
    "categoriaProbatoria": "hecho-probado",
    "tipoMedicion": "actividad",
-   "indicadores": [
-    "I-04"
-   ],
    "detalle": "Las 20 emisoras de paz, creadas por el Acuerdo de 2016 en municipios afectados por el conflicto, pasaron a emitir solo música desde el 18 de agosto. La Fundación para la Libertad de Prensa alertó por la suspensión. El Gobierno sostuvo que bajo la administración anterior se habían vuelto un «aparato de propaganda»; el senador Enrique Gómez las llamó «altavoces oficiales de las Farc para adoctrinar regiones».",
-   "contrapunto": "Dos hechos distintos que se están mezclando en el debate: que se investigue si fueron usadas como propaganda es una cosa, y que se apaguen mientras tanto es otra. Lo segundo es lo que la FLIP objeta.",
+   "contrapunto": "Dos hechos distintos que se están mezclando en el debate: que se investigue si fueron usadas como propaganda es una cosa, y que se apaguen mientras tanto es otra. Lo segundo es lo que la FLIP objeta. Esta entrada NO declara indicador, y las dos razones se dejan escritas para que no haya que volver a averiguarlas. Primero, la vía: según la prensa la instrucción se impartió por WhatsApp desde Inravisión a los directores de las emisoras, y eso no es «una directiva que altera el régimen ordinario de difusión de información pública», que es el renglón del criterio de I-04 por el que habría entrado. Segundo, la prueba: el criterio exige un acto expedido y un documento primario o un dato oficial, y de esto solo consta el relato de un medio. Si aparece el acto —con su número o su radicado—, la declaración vuelve.",
    "tipoFuente": "verificado",
    "fuentes": [
     {
@@ -4053,13 +4066,7 @@
    ],
    "nivelGobierno": "nacional",
    "estadoProcesal": "en-firme",
-   "tipoEvidencia": "reporte-periodistico",
-   "indicadoresPor": {
-    "I-04": {
-     "via": "directiva que altera el régimen ordinario de difusión de información pública",
-     "base": "suspension-emisoras-de-paz"
-    }
-   }
+   "tipoEvidencia": "reporte-periodistico"
   },
   {
    "fecha": "2026-08-17",

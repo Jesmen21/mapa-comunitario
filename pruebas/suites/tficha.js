@@ -545,6 +545,50 @@ const server = http.createServer((req, res) => {
                                .map(c => String(c.titulo || '').slice(0, 90))
     };
 
+    /* LA RAMA CON MATERIAL, SOBRE UN REGISTRO DE MENTIRA (v968). El registro
+       de verdad quedó en cero: la v968 migró las veinte entradas de la forma
+       antigua y quitó la declaración de las emisoras, así que las cinco que
+       declaran indicador tienen su fuente del acto. Eso es lo que había que
+       conseguir, y deja la rama de «no pudo correr» sin material.
+
+       Medirla contra el registro real sería medir el número y no el
+       mecanismo, que es justo lo que se puso rojo al mejorar el registro. Se
+       mide contra cuatro entradas fabricadas, una por estado, que es lo que
+       permite afirmar la pieza que decide: que `sin-acto` cuenta DENTRO de
+       lo que corrió. Un `sin-acto` fuera de `corrio` volvería a empujar a
+       declararlo `sin-declarar`, que miente.
+
+       Lo que NO se puede medir acá es la redacción del DOM para esa rama:
+       la ficha se pinta una vez, con el registro real, y abrirle una costura
+       para repintarla con otro sería una puerta trasera de pruebas (v869).
+       Eso lo comprueba `revisar.js`, exigiendo que las DOS redacciones estén
+       escritas. */
+    const F = (id, fu) => Object.assign(
+      { fecha: '2026-09-01', titulo: 'Hecho de prueba ' + id, categoria: 'gobierno',
+        tipoFuente: 'verificado', categoriaProbatoria: 'hecho-probado',
+        tipoMedicion: 'actividad', indicadores: ['I-04'] }, fu);
+    const regRol = {
+      posesion: '2026-08-07', categorias: { gobierno: {} },
+      contradicciones: { casos: [] }, casos: { lista: [] },
+      entradas: [
+        F('ok', { fuentes: [{ n: 'A', u: 'https://a', rol: 'efecto' },
+                            { n: 'B', u: 'https://b', rol: 'acto' }] }),
+        F('sinacto', { fuentes: [{ n: 'C', u: 'https://c', rol: 'efecto' }] }),
+        F('sindeclarar', { fuentes: [{ n: 'D', u: 'https://d' }] }),
+        F('vieja', { fuente: 'E', url: 'https://e' }),
+        /* Y una que NO declara indicador, para que se vea que el denominador
+           es la lista de declarantes y no el registro entero. */
+        { fecha: '2026-09-01', titulo: 'Sin indicador', categoria: 'gobierno',
+          tipoFuente: 'verificado', categoriaProbatoria: 'hecho-probado',
+          tipoMedicion: 'actividad', fuentes: [{ n: 'F', u: 'https://f' }] }
+      ]
+    };
+    const crF = (api.indicadores(regRol) || {}).coberturaRol || {};
+    o.coberFix = {
+      n: crF.n, corrio: crF.corrio, sinCorrer: crF.sinCorrer, por: crF.por,
+      titulos: (crF.casos || []).filter(c => c.estado !== 'ok')
+                                .map(c => String(c.titulo || ''))};
+
     /* `fichaDe` sin registro: caía en `{}` y devolvía un VEREDICTO sobre la
        nada —cero casos, cero contradicciones, peldaño de arriba—. Que la
        forma vacía y la real dieran lo mismo sería imposible, así que la
@@ -919,9 +963,45 @@ const server = http.createServer((req, res) => {
   const cb = r.cober || {};
   console.log('  cobertura de rol: ' + JSON.stringify({ n: cb.n, corrio: cb.corrio,
     sinCorrer: cb.sinCorrer, por: cb.por, titulos: cb.titulos }));
-  chk(cb.n >= 4 && cb.sinCorrer > 0,
-      'MATERIAL · hay entradas declarantes sobre las que la comprobacion NO corre (' +
-      cb.corrio + ' de ' + cb.n + ' · ' + cb.sinCorrer + ' sin correr)');
+  const cf = r.coberFix || {};
+  console.log('  cobertura de rol (fixture): ' + JSON.stringify(cf));
+
+  /* ── LA RAMA CON MATERIAL, SOBRE EL FIXTURE (v968) ──────────────────────
+     Hasta la v967 esto medía el registro REAL y pedía que hubiera entradas
+     sin comprobar. La v968 las quitó —migó las veinte y retiró la
+     declaración de las emisoras— y la aserción se puso roja sobre un
+     registro que había mejorado: señal de que medía el número y no el
+     mecanismo. El mecanismo se mide contra cuatro entradas fabricadas, una
+     por estado, y sobrevive a que el registro se limpie del todo. */
+  chk(cf.n === 4 && (cf.por || {}).ok === 1 && (cf.por || {})['sin-acto'] === 1 &&
+      (cf.por || {})['sin-declarar'] === 1 &&
+      (cf.por || {})['no-comprobable-esquema-antiguo'] === 1,
+      'MATERIAL · el fixture ejercita los cuatro estados, uno cada uno (' +
+      JSON.stringify(cf.por) + ')');
+  /* LA PIEZA QUE DECIDE (v968). `sin-acto` cuenta DENTRO de lo que corrió:
+     la comprobación SÍ se hizo y su resultado fue que ninguna fuente
+     documenta el acto. Si cayera en `sinCorrer`, volvería la presión de la
+     v967 —declararlo `sin-declarar` para no poner la corrida en rojo—, que
+     dice «nadie escribió el rol» donde lo cierto es otra cosa. */
+  chk(cf.corrio === 2 && cf.sinCorrer === 2,
+      'y «sin acto» cuenta como CORRIDA, no como comprobacion que no se pudo hacer (' +
+      cf.corrio + ' corrieron de ' + cf.n + ' · ' + cf.sinCorrer + ' sin correr)');
+  chk((cf.titulos || []).length === 3 &&
+      (cf.titulos || []).some(x => /sinacto/.test(x)),
+      'y el recuento nombra los tres que no son «ok», el sin-acto entre ellos (' +
+      (cf.titulos || []).join(' | ') + ')');
+  chk(cf.n === 4,
+      'el denominador son las que declaran indicador, no el registro entero (4 de 5 entradas)');
+
+  /* ── Y EL REGISTRO REAL, QUE HOY ESTÁ EN CERO ──────────────────────────
+     Es la afirmación que la v968 compró: antes de migrar, la ficha decía
+     que en una de cinco la comprobación no había podido correr. Ahora dice
+     que corrió sobre todas, y eso es cierto. La guarda es contra pasarse de
+     avisar por el otro lado: con cero material, la ficha no puede marcarse
+     en falta ni nombrar a nadie. */
+  chk(cb.n >= 4 && cb.sinCorrer === 0 && cb.corrio === cb.n,
+      'en el registro real la comprobacion corre sobre TODAS las declarantes (' +
+      cb.corrio + ' de ' + cb.n + ')');
   /* Las tres de abajo se dieron vuelta al migrar las veinte entradas de la
      forma antigua. La v966 medía que el Decreto 1171 estuviera EXENTO por su
      esquema; ahora lo que hay que medir es que ya no lo esté, y que ninguna
@@ -935,24 +1015,29 @@ const server = http.createServer((req, res) => {
   chk((cb.titulos || []).length === cb.sinCorrer,
       'el recuento nombra uno por uno los casos que no se pudieron comprobar (' +
       (cb.titulos || []).length + ' nombrados de ' + cb.sinCorrer + ' sin correr)');
-  /* Las CAUSAS se siguen contando aparte aunque una esté hoy en cero: que el
-     recuento las nombre a las cuatro es lo que impide que mañana se fundan.
-     Que la del esquema esté vacía es el resultado de la migración, no una
-     guarda sin material — su mecanismo lo vigila `revisar.js`, que exige que
-     `rolDeFuentes` conserve su rama de la forma antigua. */
+  /* Las CUATRO CASILLAS SIGUEN EXISTIENDO aunque hoy las tres que no son
+     «ok» estén en cero: fundirlas en un «falta algo» sería perder la
+     distinción entre «ninguna fuente documenta el acto», «nadie escribió el
+     rol» y «hay que migrar el esquema», que piden tres tareas distintas.
+     Que estén en cero es el resultado de la v968 y no una guarda sin
+     material: el mecanismo lo ejercita el fixture de arriba, una por
+     casilla, y la rama de la forma antigua la vigila además `revisar.js`. */
   chk(['ok', 'sin-acto', 'sin-declarar', 'no-comprobable-esquema-antiguo']
         .every(k => typeof (cb.por || {})[k] === 'number') &&
-      (cb.por || {})['sin-declarar'] > 0,
-      'las cuatro causas se siguen contando aparte, con la viva en su casilla (' +
+      (cb.por || {}).ok === cb.n,
+      'las cuatro causas se siguen contando aparte, hoy todas en la de «ok» (' +
       JSON.stringify(cb.por) + ')');
-  chk(/comprobada en \d+ de \d+/.test(cb.dom || '') && /NO pudo correr/.test(cb.dom || '') &&
-      cb.domFalta === true,
-      'y la ficha lo dice con su recuento, no lo deja ausente (' +
-      String(cb.dom || '').slice(0, 70) + ')');
-  chk((cb.titulos || []).length > 0 &&
-      (cb.titulos || []).every(t => String(cb.dom || '').indexOf(t.slice(0, 40)) >= 0),
-      'y los nombra EN LA PANTALLA, para que se pueda ir a mirar cual es (' +
-      (cb.titulos || []).map(t => t.slice(0, 44)).join(' | ') + ')');
+  chk(/comprobada en \d+ de \d+/.test(cb.dom || '') &&
+      /corrió sobre todas/.test(cb.dom || '') && cb.domFalta === false,
+      'y la ficha lo dice con su recuento: corrio sobre todas, sin marca de falta (' +
+      String(cb.dom || '').slice(0, 80) + ')');
+  /* LA GUARDA CONTRA PASARSE DE AVISAR, que es la que de verdad protege hoy:
+     con cero sin comprobar, la ficha no puede nombrar a nadie. Un nombre ahí
+     sería una entrada señalada por una exención que ya no tiene. */
+  chk((cb.titulos || []).length === 0 && !/sin fuente del acto/.test(cb.dom || '') &&
+      !/roles sin declarar/.test(cb.dom || ''),
+      'y no nombra a ninguna, porque hoy no hay ninguna que nombrar (' +
+      ((cb.titulos || []).join(' | ') || 'ninguna') + ')');
   chk(vl.n13 === 1 && (vl.vias13 || []).length === 1,
       'I-13 cuenta 1 y entra por una sola via, ahora que su acto esta registrado (' +
       vl.n13 + ' · ' + (vl.vias13 || []).join(' · ').slice(0, 60) + ')');

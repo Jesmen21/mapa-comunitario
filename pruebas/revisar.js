@@ -29,6 +29,7 @@ const R = f => path.join(RAIZ, f);
 const leer = f => fs.readFileSync(R(f), 'utf8');
 
 let fallos = 0;
+let sinMaterial = 0;
 /* Dónde cae cada carácter de un archivo de JavaScript: 1 si está dentro de
    un comentario, 0 si no. Estaba dentro del bloque de la guarda del voseo y
    sube a nivel de módulo en la v926, porque hace falta en dos sitios y una
@@ -87,6 +88,27 @@ function soloCodigo(txt) {
 function comprobar(nombre, ok, detalle) {
   console.log('  ' + (ok ? '\u2713' : '\u2717') + ' ' + nombre + (detalle ? '  \u2014 ' + detalle : ''));
   if (!ok) fallos++;
+}
+
+/* UNA COMPROBACION SIN MATERIAL NO SE CALLA Y NO SE PONE ROJA (v968).
+   Es la quinta vez que este proyecto toma la misma decision y la primera
+   dentro de este arnes: el arnes de suites la tomo en la v963 con su `?` NO
+   CONCLUYENTE, y la ficha en la v964, la v965 y la v966.
+
+   Lo que la hace distinta del `?` de `correr.js` es que ALLA hace fallar la
+   corrida y aca NO, y el motivo hay que dejarlo escrito porque es la
+   tentacion: una suite que no imprime nada es un defecto, siempre. Una
+   guarda de MATERIAL se queda sin material cuando el registro MEJORA, y si
+   eso pusiera la corrida en rojo, la salida barata seria dejar el registro
+   torcido para que la guarda siga teniendo algo que rechazar. Es
+   exactamente la presion que la v968 vino a quitar de la guarda de rol.
+
+   Lo que si hace falta es que se VEA: sale con su `?`, con su nombre, con
+   la razon, y el recuento del final la cuenta aparte de las que fallaron
+   porque piden cosas distintas. */
+function anotarSinMaterial(nombre, detalle) {
+  console.log('  ? ' + nombre + '  \u2014 SIN MATERIAL HOY: ' + detalle);
+  sinMaterial++;
 }
 
 // ── 1. la lista de precarga apunta a archivos que existen ────────────────
@@ -1667,10 +1689,38 @@ console.log('\n  -- la ficha del gobernante --');
     comprobar('ningún rol de fuente sale de la lista conocida',
       malRol.length === 0, malRol.length ? malRol.join(' · ') : 'acto | efecto');
 
-    comprobar('y donde los roles se declaran, al menos una fuente documenta el ACTO',
-      soloEfecto.length === 0,
-      soloEfecto.length ? soloEfecto.join(' · ') + ' · solo trae fuentes de efecto'
-        : 'una cobertura de reacciones no puede quedarse sola probando que el acto ocurrió');
+    /* `sin-acto` SE CUENTA Y SE NOMBRA, NO PONE ESTO EN ROJO (v968).
+       La v965 lo escribió como fallo y eso empujaba a la salida peor: una
+       entrada cuya única fuente documenta la reacción y no el acto se
+       quedaba en `sin-declarar` para no poner la corrida en rojo — y eso
+       MIENTE, porque dice «nadie escribió el rol» donde lo cierto es
+       «ninguna fuente documenta el acto». Una exención disfrazada de dato
+       ausente es peor que el rojo.
+
+       Es el principio de arriba —si una comprobación no puede correr, lo
+       dice y se cuenta— y además es lo que `js/70` ya hacía: `coberturaDeRol`
+       suma `sin-acto` dentro de `corrio`, porque la comprobación CORRIÓ y su
+       resultado fue que no hay fuente del acto. Los dos coinciden ahora.
+
+       Lo que sigue siendo un fallo es un rol que la ficha no sabe leer: ahí
+       no hay estado que contar, hay un valor inventado. */
+    comprobar('los roles declarados se cuentan, y «sin acto» es un estado y no un fallo',
+      true,
+      soloEfecto.length
+        ? soloEfecto.length + ' con todas sus fuentes de efecto, contadas y nombradas en la ficha: ' +
+          soloEfecto.join(' · ')
+        : 'hoy ninguna entrada declara roles y se queda sin fuente del acto');
+
+    /* LA GUARDA DE LA GUARDA. Contar acá no sirve de nada si el módulo deja
+       de calcular el estado: las dos líneas de arriba seguirían en verde
+       sobre un estado que ya no existe. Se exige que `rolDeFuentes` lo
+       devuelva y que `coberturaDeRol` lo sume dentro de lo que SÍ corrió. */
+    const j70rol = soloCodigo(leer('js/70-seguimiento.js'));
+    comprobar('y la ficha sigue calculando «sin acto» y contándolo como corrido',
+      /'sin-acto'/.test(j70rol) && /por\.ok \+ por\['sin-acto'\]/.test(j70rol),
+      /por\.ok \+ por\['sin-acto'\]/.test(j70rol)
+        ? 'rolDeFuentes lo devuelve y coberturaDeRol lo suma en `corrio`'
+        : 'coberturaDeRol dejó de sumarlo: volvería a leerse como que no se pudo comprobar');
   }
 
   /* ═══ UNA COMPROBACIÓN DESACTIVADA NO ES SILENCIOSA (v966) ══════════════
@@ -1711,19 +1761,50 @@ console.log('\n  -- la ficha del gobernante --');
       /return vieja \? 'no-comprobable-esquema-antiguo' : 'sin-declarar';/.test(j70r),
       'declarar mal por qué no se pudo comprobar es peor que no decirlo');
 
-    /* MATERIAL sobre el registro: hoy hay entradas en los estados que no son
-       «ok», así que el recuento mide algo. El día que no las haya, esta se
-       pone roja y hay que mirar si es porque se migraron o porque la función
-       dejó de verlas. */
+    /* LA PROPIEDAD QUE SOBREVIVE AL CERO (v968). Hasta la v967 ací se exigía
+       que HUBIERA entradas en los estados que no son «ok», «porque así el
+       recuento mide algo». La v968 migró las veinte y quitó la declaración
+       de las emisoras, y con eso el registro se quedó en cero: la guarda se
+       puso roja sobre un registro que había MEJORADO.
+
+       Esa es la señal de que medía el número y no la propiedad. Lo que hay
+       que guardar es que el recuento se calcule sobre TODAS las declarantes
+       —no sobre una lista aparte que envejece— y que la ficha tenga ESCRITAS
+       las dos redacciones: la de «corrió sobre todas» y la de «en N no pudo
+       correr». Eso se puede comprobar con cero material, y es justo lo que
+       hace falta el día que el material vuelva: sin la segunda redacción, una
+       entrada sin fuente del acto entraría y la pantalla seguiría diciendo
+       que la comprobación corrió sobre todas. */
+    const j70cb = soloCodigo(leer('js/70-seguimiento.js'));
+    comprobar('la cobertura se calcula sobre TODAS las que declaran indicador, y sobre ninguna más',
+      /if \(!\(\(\(e && e\.indicadores\) \|\| \[\]\)\.length\)\) return;/.test(j70cb) &&
+      /n: n, corrio: por\.ok \+ por\['sin-acto'\]/.test(j70cb),
+      'el filtro es declarar indicador y el denominador es esa misma lista');
+
+    comprobar('y la ficha tiene escritas las DOS redacciones, la de cero y la de N',
+      /La comprobación corrió sobre todas/.test(j70cb) &&
+      /la comprobación NO pudo correr/.test(j70cb) &&
+      /cr\.sinCorrer \? /.test(j70cb),
+      'sin la segunda, una entrada sin fuente del acto entraría y la pantalla diría que corrió sobre todas');
+
+    /* Y el censo de hoy, que es un HECHO del registro y no una afirmación:
+       se publica pase lo que pase. Con material, el recuento mide algo y se
+       dice cuánto; sin material, se dice que se quedó sin él y por qué —que
+       es lo único que distingue «todas corrieron» de «la función dejó de
+       verlas», porque desde la pantalla se leen igual—. */
     const reg = JSON.parse(leer('assets/data/seguimiento-presidencial.json'));
     const declaran = ((reg.entradas) || []).filter((e) => ((e.indicadores) || []).length);
     const vieja = declaran.filter((e) => !((e.fuentes) || []).length && (e.fuente || e.url));
     const sinRol = declaran.filter((e) => ((e.fuentes) || []).length &&
       !((e.fuentes) || []).some((f) => String(f.rol || '').trim()));
-    comprobar('MATERIAL · hay entradas declarantes sobre las que la comprobación NO corre',
-      declaran.length >= 4 && (vieja.length + sinRol.length) > 0,
-      declaran.length + ' declaran · ' + vieja.length + ' con esquema antiguo · ' +
-      sinRol.length + ' sin roles declarados');
+    const censo = declaran.length + ' declaran · ' + vieja.length + ' con esquema antiguo · ' +
+      sinRol.length + ' sin roles declarados';
+    if (vieja.length + sinRol.length) {
+      comprobar('MATERIAL · hay entradas declarantes sobre las que la comprobación NO corre', true, censo);
+    } else {
+      anotarSinMaterial('MATERIAL · entradas declarantes sobre las que la comprobación no corre',
+        censo + '. Las dos redacciones se comprueban arriba; lo que hoy no se ejercita es el recuento');
+    }
   }
 
   /* ═══ CAPA 3 DEL PLIEGO · LOS EJES, NUNCA EN UN SOLO NÚMERO ════════════
@@ -3212,5 +3293,10 @@ console.log('\n  -- las listas vivas --');
   });
 }
 
-console.log('\n  ' + (fallos ? fallos + ' comprobaciones fallaron' : 'todas las comprobaciones pasaron') + '\n');
+/* Las dos cuentas van APARTE porque piden cosas distintas: una fallada hay
+   que arreglarla, una sin material hay que mirarla —o se quedó sin él porque
+   el registro mejoró, o porque la función dejó de ver lo que medía—. Sumarlas
+   mandaría a revisar lo que está bien. */
+console.log('\n  ' + (fallos ? fallos + ' comprobaciones fallaron' : 'todas las comprobaciones pasaron') +
+  (sinMaterial ? ' · ' + sinMaterial + (sinMaterial === 1 ? ' se quedó sin material' : ' se quedaron sin material') : '') + '\n');
 process.exit(fallos ? 1 : 0);

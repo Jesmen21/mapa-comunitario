@@ -244,7 +244,7 @@ Tres cosas que las cuatro tienen en común y conviene copiar:
   Sin eso los estados son documentación y la exención vuelve a ser
   silenciosa, que es el patrón de la v878 con su propia lista.
 
-## Dos clases de error que se repiten, y no son la misma
+## Tres clases de error que se repiten, y no son la misma
 
 Cada una lleva ya tres o más casos. Van nombradas y con su censo para que la
 próxima se busque **por la forma y no por el caso**, que es lo que no pasó
@@ -316,6 +316,37 @@ solo cuando las dos listas **significan cosas distintas** y coinciden por
 accidente. La prueba para distinguirlo es una pregunta: *¿existe un cambio
 razonable que deba mover una y no la otra?* Si la respuesta es sí, son dos
 cosas y hay que atarlas con una guarda, no derivarlas.
+
+### C · El dato está y ninguna pantalla lo alcanza
+
+**La forma:** el dato existe en el sistema —está escrito en el archivo, o se
+calcula en cada corrida— y **ninguna superficie lo enseña**. Desde afuera se
+ve **exactamente igual que un dato ausente**, y por eso la tanda siguiente lo
+declara faltante o lo vuelve a levantar.
+
+La nombró el usuario al leer la v967, sobre el hallazgo del Decreto 1136, y
+tiene razón en que es aparte: la A es una cifra que se lee mal porque no se
+miró su discriminante, la B son dos codificaciones de un hecho; esta es **un
+hecho con una sola codificación, correcta, que no llega a ningún lector**.
+
+| | El dato | Por qué no llegaba |
+|---|---|---|
+| v929 | el análisis post-sector entero, que `compararConCampo` ya calculaba | usaba `res.pois` para el diff y **descartaba el resto en la línea siguiente** |
+| v935 | la malla de flujo, calculada por el motor en cada corrida | el pliego la recibía y la botaba: cero `mapaCalor` en `js/68` |
+| v967 | la única fuente que documenta el acto del Decreto 1136 | vivía en `fuente`+`url` y `fuentesDe` prefiere `fuentes[]` cuando existe |
+
+**Cómo se busca:** al revés que las otras dos. En la A y la B se parte de una
+cifra impresa; acá hay que partir de **lo que el sistema produce** —lo que el
+motor devuelve, lo que el archivo guarda— y preguntar qué superficie lo
+enseña. Un campo que ningún consumidor lee, y un cálculo cuyo resultado se
+descarta a la línea siguiente, son los dos síntomas.
+
+**Y no tiene guarda, a propósito.** Perseguir «campo del registro que ninguna
+pantalla lee» daría docenas de falsos positivos —campos internos, campos que
+solo alimentan una cuenta— y terminaría en una lista de excepciones que
+envejece hasta no significar nada, que es la razón por la que la v895 no
+persigue «clase sin regla». Queda **anotada con su censo**, que es lo que el
+usuario pidió: la próxima se busca por la forma.
 
 ### No se confundan: una corrección de esta misma sesión
 
@@ -7798,7 +7829,7 @@ esta tanda—. El FALLO es de la clase B, «dos cosas que codifican un solo
 hecho»: una lista derivada que dejó de coincidir. Que `panelVacio` fuera un
 discriminante que nadie leía es cómo se ENCONTRÓ el arreglo, no cómo se produjo
 el fallo — la clase A es otra, y su contador ya iba en tres desde la v903. Las
-dos están nombradas arriba, en «Dos clases de error que se repiten».
+dos están nombradas arriba, en «Tres clases de error que se repiten».
 
 Como en las demás de la clase B, **no hizo falta tocar nada más**: solo dejar de
 derivar una lista de la otra.
@@ -11436,6 +11467,163 @@ una fuente no se puede verificar abriéndola desde acá**, y el único canal es
 la búsqueda. Queda escrito porque la tentación de dar por buena una dirección
 que uno mismo compuso es exactamente lo que produce una fuente falsa con
 aspecto correcto.
+
+## Un estado que se cuenta, y la guarda que se quedó sin material (v968)
+
+Las cinco respuestas al informe de la v967. Tres cambian el registro o las
+guardas; una no se hace por decisión del usuario y otra confirma tres
+apartados. Y la primera **corrige una decisión mía de la v967**.
+
+### 1 · `sin-acto` es un estado y no un fallo, y manda el módulo
+
+La v965 escribió la guarda de rol como un fallo: `soloEfecto.length === 0`. La
+v967 se topó con el primer caso real —las emisoras de paz, cuya única fuente
+documenta la reacción de la FLIP y no el acto— y lo dejó en `sin-declarar`
+para no poner la corrida en rojo.
+
+El usuario lo cortó por lo sano, y tiene razón:
+
+> Como está hoy nos empuja a declarar `sin-declarar`, que MIENTE: dice «nadie
+> escribió el rol» cuando lo cierto es «ninguna fuente documenta el acto». Es
+> peor que el rojo.
+
+**Y el módulo ya lo tenía bien desde la v966.** `coberturaDeRol` calcula
+`corrio: por.ok + por['sin-acto']`: la comprobación SÍ corrió, y su resultado
+fue que ninguna fuente documenta el acto. Los que no corrieron son los otros
+dos —roles sin declarar, esquema antiguo—. O sea que la guarda y el módulo
+decían cosas distintas del mismo estado, y la que estaba mal era la guarda.
+
+Es el mismo principio que este proyecto lleva cinco tandas aplicando y que
+está arriba en «Ninguna comprobación desactivada es silenciosa», con un
+agravante que conviene tener escrito: **una guarda que se pone roja sobre un
+hallazgo empuja a esconder el hallazgo.** El coste de un rojo mal puesto no es
+un renglon en una lista: es que la salida barata sea mentir en el registro.
+
+`revisar.js` cuenta ahora las entradas sin fuente del acto y las nombra, con
+su guarda de la guarda: que `rolDeFuentes` lo siga devolviendo y que
+`coberturaDeRol` lo siga sumando en `corrio`. Demostrada quitando ese sumando:
+sale «coberturaDeRol dejó de sumarlo: volvería a leerse como que no se pudo
+comprobar».
+
+### La guarda de MATERIAL se quedó sin material, y eso es lo interesante
+
+Con la declaración de las emisoras retirada (punto 2), las cinco entradas que
+declaran indicador tienen su fuente del acto. La guarda de la v966 —«MATERIAL
+· hay entradas declarantes sobre las que la comprobación NO corre»— se puso
+**roja sobre un registro que había MEJORADO**.
+
+Esa es la señal de que medía el número y no la propiedad. Lo que hay que
+guardar sobrevive al cero:
+
+* el recuento se calcula sobre TODAS las que declaran indicador y sobre
+  ninguna más —el filtro y el denominador son la misma lista—;
+* y la ficha tiene **escritas las dos redacciones**, la de «corrió sobre
+  todas» y la de «en N no pudo correr». Sin la segunda, la primera entrada
+  sin fuente del acto entraría y la pantalla seguiría diciendo que corrió
+  sobre todas.
+
+#### El tercer estado del arnés, y por qué aquí NO hace fallar
+
+`anotarSinMaterial` imprime `?` con su nombre y su razón, y el recuento final
+lo cuenta **aparte** de las que fallaron: una fallada hay que arreglarla, una
+sin material hay que mirarla —o se quedó sin él porque el registro mejoró, o
+porque la función dejó de ver lo que medía—. Sumarlas mandaría a revisar lo
+que está bien.
+
+Es el `?` NO CONCLUYENTE que la v963 le puso a `correr.js`, y **la diferencia
+con aquel hay que dejarla escrita porque es la tentación**: allá hace fallar
+la corrida, porque una suite que no imprime nada es un defecto siempre. Una
+guarda de MATERIAL se queda sin material cuando el registro mejora, y si eso
+pusiera la corrida en rojo, la salida barata sería dejar el registro torcido
+para que la guarda siga teniendo algo que rechazar — exactamente la presión
+que el punto 1 vino a quitar.
+
+#### Y la rama con material se mide contra un registro de mentira
+
+Medirla contra el real sería volver a medir el número. `tficha` compone
+cuatro entradas fabricadas, **una por estado**, y sobre ellas afirma la pieza
+que decide: `n: 4 · corrio: 2 · sinCorrer: 2`, con `sin-acto` DENTRO de lo que
+corrió. Una quinta entrada sin indicador comprueba que el denominador son las
+declarantes y no el registro entero.
+
+Lo que **no** se puede medir ahí es la redacción del DOM de esa rama: la ficha
+se pinta una vez, con el registro real, y abrirle una costura para repintarla
+con otro sería una puerta trasera de pruebas (v869). Eso lo cubre
+`revisar.js`, exigiendo que las dos redacciones estén escritas — y queda
+dicho como reparto de trabajo y no como cobertura completa.
+
+Sobre el registro real se mide la otra mitad, que es la que la v968 compró:
+que la ficha diga «corrió sobre todas», que **no** se marque en falta y que
+**no nombre a nadie**. Esa última es la guarda contra pasarse de avisar: un
+nombre ahí sería una entrada señalada por una exención que ya no tiene.
+
+Demostradas contra el registro de la v967: las cuatro en rojo con el texto
+viejo impreso —«5 de 6», y «El Gobierno suspende la programación de las 20
+emisoras de paz» nombrado como «roles sin declarar»—.
+
+### 2 · La declaración de las emisoras se cae, por dos motivos
+
+La v967 dejó abiertas dos dudas sobre esa entrada y el usuario las cerró las
+dos, la segunda de las cuales yo no había identificado:
+
+* **la vía no encaja**: si la instrucción se impartió por WhatsApp desde
+  Inravisión, eso no es «una directiva que altera el régimen ordinario de
+  difusión»;
+* **y no pasa el `requiere` de I-04**, que pide un acto expedido con documento
+  primario o dato oficial y no admite `anunciado-sin-acto`. Solo consta el
+  relato del medio.
+
+La entrada **se queda** como hecho registrado sin indicador, con los dos
+motivos escritos en su `contrapunto` y con la puerta abierta: si aparece el
+acto —con su número o su radicado— la declaración vuelve. **I-04 baja de 3 a
+2.** Borrar la entrada habría sido esconder un hecho; dejarle la declaración,
+sostener una cifra sobre un acto que nadie ha visto.
+
+### 3 · Los $22 y los $44 billones no se contradicen: son dos componentes
+
+La v967 entró la Ley de Rescate Social con una cifra y dejó la contradicción
+anotada sin elegir, que es lo que se había pedido. El usuario la resolvió:
+
+| | Qué es |
+|---|---|
+| $22 billones | recorte **ya ejecutado** en el presupuesto de 2026 |
+| $21,4 billones | austeridad **dentro del** presupuesto de 2027 |
+
+22 + 21 = 43, que es el «más de 43 billones entre 2026 y 2027» de Pulzo. Se
+escriben como dos componentes con su año y su estado, y **no como un total**:
+un solo número perdería que uno está ejecutado y el otro proyectado, que es
+justamente lo que los distingue.
+
+Lo que **sí** queda en `valores_en_disputa` es una sola cosa, y la palabra que
+la produce va señalada: El Nuevo Siglo dice «$44 a $45 billones
+**ADICIONALES**», y «adicionales» es incompatible con la suma. Las dos
+lecturas se registran sin elegir.
+
+De paso, la entrada gana su `id` y **sus siete fuentes quedan con rol** —dos
+del acto, tres de efecto, y las dos nuevas del acto—, que es lo que la
+migración de la v967 dejó como forma.
+
+### 4 y 5 · Lo que no se hace, por decisión de quien firma
+
+* **Alex Saab se queda fuera** hasta que el usuario decida la v941. No se
+  entra.
+* **Los tres apartados de la v967 eran correctos**, y Manrique en particular:
+  el pendiente 18 sigue abierto y sin el decreto confirmado no se puede
+  sostener la cadena de habilitación.
+
+### 6 · Y una clase de error que se anota y no se persigue
+
+Del hallazgo del Decreto 1136 —una fuente que existe en los datos y que
+ninguna pantalla enseña— sale una tercera clase, con tres casos ya. Va
+nombrada arriba, con su censo, en «Tres clases de error que se repiten»:
+**dato presente e inalcanzable se ve igual que dato ausente.** No lleva
+guarda, y por qué no está escrito ahí.
+
+### El registro al cerrar
+
+174 entradas, **5 declarantes y las cinco con su fuente del acto**; cero con
+esquema antiguo; I-04 en 2, I-07 en 1, I-13 en 1. `tficha` 188/188, la
+batería 121/121, y `revisar.js` en verde con un `?`.
 
 ## La lista viva: lo que al pliego educativo todavía le falta (v866)
 
