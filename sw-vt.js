@@ -13,7 +13,7 @@
 
    La versión va acá y en vision-territorial.html, idéntica, como en los
    otros siete archivos de versión del sitio: revisar.js lo comprueba. */
-const VT_CACHE = 'urbis-vt-v966-ninguna-comprobacion-desactivada-es-silenciosa';
+const VT_CACHE = 'urbis-vt-v967-las-veinte-migradas-y-el-caso-que-no-se-pudo-cerrar';
 const VT_ASSETS = [
   './vision-territorial.html',
   './css/90-vt.css',

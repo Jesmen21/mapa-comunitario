@@ -1,4 +1,4 @@
-const URBIS_CACHE = 'urbis-v966-ninguna-comprobacion-desactivada-es-silenciosa';
+const URBIS_CACHE = 'urbis-v967-las-veinte-migradas-y-el-caso-que-no-se-pudo-cerrar';
 const URBIS_ASSETS = [
   './',
   './index.html',
