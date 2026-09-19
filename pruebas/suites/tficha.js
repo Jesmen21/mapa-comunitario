@@ -447,14 +447,22 @@ const server = http.createServer((req, res) => {
        Y va con su guarda de MATERIAL, porque el fixture es lo que hace que
        esto signifique algo: si las cuatro quedaran iguales, la comprobación
        pasaría sin tener nada que rechazar. */
+    const VIA_OK = 'decreto expedido al amparo de una declaratoria de emergencia';
     const INSUMOS = [
-      { indicadores: ['I-04'], nivelGobierno: 'nacional',
+      { indicadores: ['I-04'], indicadoresPor: { 'I-04': VIA_OK }, nivelGobierno: 'nacional',
         estadoProcesal: 'en-firme', tipoEvidencia: 'documento-primario' },          // cuenta
-      { indicadores: ['I-04'] },                                                     // sin insumos
-      { indicadores: ['I-04'], nivelGobierno: 'municipal',
+      { indicadores: ['I-04'], indicadoresPor: { 'I-04': VIA_OK } },                 // sin insumos
+      { indicadores: ['I-04'], indicadoresPor: { 'I-04': VIA_OK }, nivelGobierno: 'municipal',
         estadoProcesal: 'en-firme', tipoEvidencia: 'documento-primario' },          // otro nivel
+      { indicadores: ['I-04'], indicadoresPor: { 'I-04': VIA_OK }, nivelGobierno: 'nacional',
+        estadoProcesal: 'anunciado-sin-acto', tipoEvidencia: 'reporte-periodistico' }, // no cumple
+      /* Las dos de la v963: sin decir por cuál renglón entra, y citando uno
+         que el criterio no tiene. Sin las dos, un campo decorativo pasaría. */
       { indicadores: ['I-04'], nivelGobierno: 'nacional',
-        estadoProcesal: 'anunciado-sin-acto', tipoEvidencia: 'reporte-periodistico' } // no cumple
+        estadoProcesal: 'en-firme', tipoEvidencia: 'documento-primario' },          // sin vía
+      { indicadores: ['I-04'], indicadoresPor: { 'I-04': 'porque se me ocurrió' },
+        nivelGobierno: 'nacional', estadoProcesal: 'en-firme',
+        tipoEvidencia: 'documento-primario' }                                        // vía desconocida
     ];
     const regGate = {
       posesion: '2026-08-07', categorias: { gobierno: {} },
@@ -472,8 +480,18 @@ const server = http.createServer((req, res) => {
       tieneCriterio: !!f04.criterio,
       incluye: ((f04.criterio || {}).incluye || []).length,
       excluye: ((f04.criterio || {}).excluye || []).length,
-      definicion: String((f04.criterio || {}).definicion || '').slice(0, 80)
+      definicion: String((f04.criterio || {}).definicion || '').slice(0, 80),
+      vias: f04.vias || [], porVia: f04.porVia || {}
     };
+
+    /* `fichaDe` sin registro: caía en `{}` y devolvía un VEREDICTO sobre la
+       nada —cero casos, cero contradicciones, peldaño de arriba—. Que la
+       forma vacía y la real dieran lo mismo sería imposible, así que la
+       aserción compara las dos. */
+    const fSin = api.calcularCon();            // sin argumento
+    const fVacio = api.calcularCon({ posesion: '2026-08-07', categorias: {}, entradas: [],
+                                     contradicciones: { casos: [] }, casos: { lista: [] } });
+    o.omision = { v: (fSin.veredicto || {}).id, vVacio: (fVacio.veredicto || {}).id };
 
     /* ── I-13 SOBRE EL REGISTRO DE VERDAD (v962) ──────────────────────
        Este indicador nació de que un caso real —la remoción del director del
@@ -782,13 +800,31 @@ const server = http.createServer((req, res) => {
   console.log('\n── El criterio, como dato, y su puerta ──────────────');
   const gt = r.gate || {};
   console.log('  ' + JSON.stringify(gt));
-  chk(gt.declaradas === 4 && gt.motivos.length === 3,
-      'MATERIAL · las cuatro declaraciones ejercitan las cuatro salidas de la puerta (' +
+  chk(gt.declaradas === 6 && gt.motivos.length === 5,
+      'MATERIAL · las seis declaraciones ejercitan las seis salidas de la puerta (' +
       gt.declaradas + ' declaradas · ' + gt.motivos.length + ' fuera)');
   chk(gt.n === 1,
       'solo la que cumple el criterio escrito cuenta (' + gt.n + ' de ' + gt.declaradas + ')');
-  chk(String(gt.motivos) === 'no-cumple,otro-nivel,sin-insumos',
-      'y las otras tres salen con SU motivo, no con un rechazo genérico (' + gt.motivos.join(' · ') + ')');
+  chk(String(gt.motivos) === 'no-cumple,otro-nivel,sin-insumos,sin-via,via-desconocida',
+      'y las otras cinco salen con SU motivo, no con un rechazo genérico (' + gt.motivos.join(' · ') + ')');
+  chk(gt.vias.length === 1 && gt.porVia[gt.vias[0]] === 1,
+      'y la que cuenta queda contada POR SU RENGLÓN del criterio, no en un montón (' +
+      gt.vias.join(' · ') + ')');
+
+  const om = r.omision || {};
+  console.log('  fichaDe sin registro: ' + JSON.stringify(om));
+  /* MATERIAL de esta pareja: un registro vacío SÍ da el peldaño de arriba, y
+     eso es lo que hacía peligroso el `{}` por omisión. Sin esta mitad, la de
+     abajo podría pasar porque los dos dan lo mismo. */
+  /* MATERIAL medido y no supuesto: un registro vacío da «sin datos» —los
+     mínimos de la v791 impiden dictaminar sin casos ni hechos—, NO el peldaño
+     de arriba. Así que el `{}` por omisión daba una ficha muda y no un
+     veredicto falso; se arregla igual, porque medía la nada teniendo el
+     registro al lado. */
+  chk(om.vVacio === 'sin-datos',
+      'MATERIAL · un registro vacío da «sin datos», no un veredicto (' + om.vVacio + ')');
+  chk(om.v && om.v !== om.vVacio,
+      'y calcularCon() sin argumento mide el registro real, no ese vacío (' + om.v + ')');
   chk((gt.dichos || []).every(x => x.length > 12),
       'cada rechazo dice qué le falta a ESA entrada, no solo que no pasó');
   chk(gt.tieneCriterio && gt.incluye >= 3 && gt.excluye >= 3 && gt.definicion.length > 30,

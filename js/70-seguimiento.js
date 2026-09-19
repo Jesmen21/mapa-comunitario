@@ -1813,10 +1813,35 @@
      «cuenta», «le faltan los campos para comprobarlo» y «los tiene y no
      cumple» son tres cosas que piden tres acciones distintas a quien
      mantiene el registro. Es la regla de la v876. */
+  /* LA VÍA (v963). Un criterio con seis renglones de `incluye` deja sin decir
+     POR CUÁL de los seis entra cada hecho, y eso es justo lo que hay que
+     poder auditar: la v962 escribió en la bitácora que el caso del DANE
+     entraba por dos vías y una de las dos era falsa —la remoción de Urdinola
+     era anterior a la controversia y ordinaria—. Nadie lo habría visto,
+     porque la declaración era solo `['I-13']`.
+
+     Así que la vía se declara en la entrada y se comprueba contra el texto
+     EXACTO del `incluye`. Citar por número sería la trampa de la v878 —el id
+     que se separa de su título—: reordenar la lista repuntaría todas las
+     citas en silencio. Con el texto, reescribir un renglón del criterio
+     rompe las entradas que lo citan, que es lo correcto: hay que volver a
+     mirarlas. */
+  function viaDeclarada(e, id) {
+    var m = (e && e.indicadoresPor) || {};
+    return String(m[id] || '').trim();
+  }
+
   function pasaElCriterio(e, id) {
     var cr = CRITERIOS[id];
     if (!cr) return { cuenta: false, motivo: 'sin-criterio', d: 'No hay criterio escrito para ' + id + '.' };
     var c = capaUnoDe(e);
+    var via = viaDeclarada(e, id);
+    if (!via) return { cuenta: false, motivo: 'sin-via', campo: 'indicadoresPor',
+                       d: 'Declara ' + id + ' y no dice por cuál renglón del criterio entra.' };
+    if (cr.incluye.indexOf(via) < 0) {
+      return { cuenta: false, motivo: 'via-desconocida', via: via,
+               d: 'Cita una vía que el criterio de ' + id + ' no tiene: «' + via + '».' };
+    }
     /* El nivel: el pliego prohíbe que un hecho subnacional alimente el score
        presidencial, y sin declararlo no se puede saber. Solo se les exige a
        las entradas que declaran indicador — pedírselo a las 200 sería un
@@ -1830,8 +1855,8 @@
                                         d: 'Declara ' + id + ' y no dice en qué estado procesal está el acto.' };
     if (!c.evidencia.declarado) return { cuenta: false, motivo: 'sin-insumos', campo: 'tipoEvidencia',
                                          d: 'Declara ' + id + ' y no dice qué clase de evidencia lo sostiene.' };
-    if (!cr.requiere(c)) return { cuenta: false, motivo: 'no-cumple', d: cr.falta };
-    return { cuenta: true, motivo: '', d: '' };
+    if (!cr.requiere(c)) return { cuenta: false, motivo: 'no-cumple', via: via, d: cr.falta };
+    return { cuenta: true, motivo: '', d: '', via: via };
   }
 
   var INDICADORES = {
@@ -1891,13 +1916,17 @@
        con su motivo. Un indicador que baja sin decir por qué se lee como que
        el hecho no ocurrió. */
     var fuera = { 'I-04': [], 'I-05': [], 'I-13': [], 'I-07': [] };
+    /* Por cuál renglón del criterio entró cada uno. Un indicador cuyo conteo
+       entero viene de UNA sola vía dice algo distinto de uno repartido, y sin
+       esto las dos cifras se ven iguales. */
+    var porVia = { 'I-04': {}, 'I-05': {}, 'I-13': {}, 'I-07': {} };
     ent.forEach(function (e) {
       var lista = (e && e.indicadores) || [];
       if (!lista.length) sinDeclarar++;
       lista.forEach(function (k) {
         if (crudo[k] === undefined || !INDICADORES[k].dec) return;
         var g = pasaElCriterio(e, k);
-        if (g.cuenta) crudo[k]++;
+        if (g.cuenta) { crudo[k]++; porVia[k][g.via] = (porVia[k][g.via] || 0) + 1; }
         else fuera[k].push({ titulo: (e && e.titulo) || '', fecha: (e && e.fecha) || '',
                              motivo: g.motivo, d: g.d });
       });
@@ -1909,6 +1938,8 @@
       if (CRITERIOS[k]) {
         f.criterio = CRITERIOS[k];
         f.fuera = fuera[k];
+        f.porVia = porVia[k];
+        f.vias = Object.keys(porVia[k]);
         f.declaradas = crudo[k] + fuera[k].length;
       }
       /* I-06 es el único que no se puede publicar como cero: un cero ahí
@@ -2402,7 +2433,17 @@
      con registros de mentira: se le pasa uno con un caso confirmado y tiene
      que decir «poco fiable», sin tocar el JSON de verdad. */
   function fichaDe(dd, corte) {
-    if (!dd) dd = {};
+    /* Sin registro toma el del gobierno actual, como todas las demás de esta
+       API. Caía en `{}`, y ahí medía la nada en vez del registro real.
+
+       MEDIDO, no supuesto: un registro vacío NO da el peldaño de arriba —da
+       `sin-datos`, porque los mínimos de la v791 impiden dictaminar sin casos
+       ni hechos—. Escribí primero que daría «Confiabilidad inquebrantable» y
+       la aserción lo desmintió, así que el peligro era menor del que declaré:
+       una ficha muda, no un veredicto falso. Se arregla igual, porque medir
+       un objeto vacío cuando existe el registro es medir otra cosa de la que
+       se dice medir; pero el motivo va escrito como es. */
+    dd = dd || D;
     var ent = hechosDelMandato(dd, corte);
     var cx = casosDeCx(dd);
 
@@ -3144,10 +3185,24 @@
           var dv = el('div', 'sp-c2-lista sp-c2-' + par[2]);
           dv.appendChild(el('span', null, par[0]));
           var ul = el('ul', null);
-          par[1].forEach(function (x) { ul.appendChild(el('li', null, x)); });
+          par[1].forEach(function (x) {
+            var li2 = el('li', null, x);
+            /* POR CUÁL renglón entró cada hecho contado. Con seis vías y una
+               sola cifra, «tres mecanismos excepcionales» no dice si son tres
+               clases distintas o la misma tres veces — y eso cambia lo que
+               significa. */
+            var n = par[2] === 'si' ? (fi.porVia[x] || 0) : 0;
+            if (n) li2.appendChild(el('b', 'sp-c2-via', n === 1 ? '1 hecho' : n + ' hechos'));
+            ul.appendChild(li2);
+          });
           dv.appendChild(ul);
           lc.appendChild(dv);
         });
+        if (fi.n && fi.vias.length === 1 && fi.n > 1) {
+          lc.appendChild(el('p', 'sp-c2-unavia', 'Los ' + fi.n + ' entran por el mismo renglón del criterio. ' +
+            'No es un defecto, pero conviene saberlo: la cifra mide una sola clase de acto, no la variedad ' +
+            'que el criterio describe.'));
+        }
         /* Y lo declarado que el criterio NO deja contar. El motor de
            referencia lo filtra en silencio; acá se dice, porque un conteo que
            baja sin decir por qué se lee como que el hecho no ocurrió. */

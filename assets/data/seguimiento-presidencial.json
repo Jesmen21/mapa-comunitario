@@ -1,5 +1,5 @@
 {
- "_comentario": "URBIS · Seguimiento Presidencial. Cada entrada DEBE tener fuente verificable. Si un dato es disputado, se incluye la crítica en 'contrapunto'. Actualización DIARIA: agregar entradas al principio del array y mover 'actualizado'. El muro las reordena por fecha, así que el orden del array no importa. — CAPA 1 DEL PLIEGO PRESIDENCIAL, tres campos por entrada y ninguno mueve el veredicto: `categoriaProbatoria` (hecho-probado | correlacion | atribucion-causal | en-circulacion) dice qué CLASE de afirmación es y NO es lo mismo que `tipoFuente`, que dice quién la cuenta; `tipoMedicion` (actividad | resultado | no-aplica) separa lo que el Gobierno hizo de lo que cambió en el país, y esas dos cuentas no se suman nunca; `contrargumentoOficial` lleva la respuesta del Gobierno, o la palabra `ausente` cuando se buscó y no la hay —que es un dato—, y se deja SIN ESCRIBIR mientras nadie lo haya revisado, que no es lo mismo. Ojo: `contrapunto` es otra cosa —la advertencia metodológica de URBIS— y no se usa para la respuesta del Gobierno. Una entrada nueva sin estos campos hace subir el pendiente que `revisar.js` vigila. — CAPA 3: cada contradicción documentada declara `mismoObjetoVerificado` (true | false). Es lo que separa un INCUMPLIMIENTO de una TENSIÓN RETÓRICA: solo las que tienen identidad de objeto alimentan el eje A de confiabilidad. NO es lo mismo que `estado: 'tension'`, que es un estado probatorio —todavía no está documentada—; una contradicción puede estar perfectamente documentada y aun así no hablar del mismo objeto. Sin declarar, el eje A no publica nivel y lo dice: publicar una acusación floja al lado de varias sólidas no suma, resta. — CAPA 1, v961: `tipoMedicion` pasa de `no-aplica` a `contexto-estructural`, que dice lo que ES y no lo que no es. Y el `contrargumentoOficial` «ausente» exige CONSTANCIA: se escribe { ausente: true, busco: [\"dónde se buscó\"], fecha: \"AAAA-MM-DD\" }. La palabra suelta «ausente» se ve y NO pesa en el indicador I-06 — afirmar que el Gobierno no respondió sin decir dónde se buscó es un señalamiento sin respaldo. — CAPA 2, v961: los criterios de I-04, I-05 e I-07 están ESCRITOS en js/70 (`CRITERIOS`), con su definición, su lista de lo que incluye y su lista de lo que NO. Antes de declarar un indicador se leen: si el hecho cae en el `excluye`, no se declara. Y una entrada que declara indicador trae además tres campos o no cuenta: `nivelGobierno` (nacional | departamental | distrital | municipal), `estadoProcesal` (en-firme | en-tramite-legislativo | en-revision-judicial | en-disputa-institucional | anunciado-sin-acto) y `tipoEvidencia` (documento-primario | dato-oficial | reporte-periodistico | testimonio | captura-de-pantalla). Es documento primario cuando el acto está identificado por su número o radicado, aunque la copia llegue por prensa. Lo declarado que no pasa el criterio no desaparece: la ficha dice cuántas se declararon, cuántas cuentan y qué le falta a cada una. — v962: nace el indicador I-13 (interferencia en la independencia técnica) para los actos sobre entidades del Ejecutivo con independencia solo TÉCNICA —el DANE (Ley 2335), las agencias reguladoras—, que NO son órganos autónomos y por eso no caben en I-05. La lista cerrada de órganos autónomos está en js/70 (`ORGANOS_AUTONOMOS`) y se consulta antes de declarar un I-05; el DANE no está en ella. I-13 cuenta una COINCIDENCIA documentada, no una causa probada, y no alimenta el eje B porque no hay media histórica suya. Un hecho no declara I-05 e I-13 a la vez: una entidad es autónoma o no lo es.",
+ "_comentario": "URBIS · Seguimiento Presidencial. Cada entrada DEBE tener fuente verificable. Si un dato es disputado, se incluye la crítica en 'contrapunto'. Actualización DIARIA: agregar entradas al principio del array y mover 'actualizado'. El muro las reordena por fecha, así que el orden del array no importa. — CAPA 1 DEL PLIEGO PRESIDENCIAL, tres campos por entrada y ninguno mueve el veredicto: `categoriaProbatoria` (hecho-probado | correlacion | atribucion-causal | en-circulacion) dice qué CLASE de afirmación es y NO es lo mismo que `tipoFuente`, que dice quién la cuenta; `tipoMedicion` (actividad | resultado | no-aplica) separa lo que el Gobierno hizo de lo que cambió en el país, y esas dos cuentas no se suman nunca; `contrargumentoOficial` lleva la respuesta del Gobierno, o la palabra `ausente` cuando se buscó y no la hay —que es un dato—, y se deja SIN ESCRIBIR mientras nadie lo haya revisado, que no es lo mismo. Ojo: `contrapunto` es otra cosa —la advertencia metodológica de URBIS— y no se usa para la respuesta del Gobierno. Una entrada nueva sin estos campos hace subir el pendiente que `revisar.js` vigila. — CAPA 3: cada contradicción documentada declara `mismoObjetoVerificado` (true | false). Es lo que separa un INCUMPLIMIENTO de una TENSIÓN RETÓRICA: solo las que tienen identidad de objeto alimentan el eje A de confiabilidad. NO es lo mismo que `estado: 'tension'`, que es un estado probatorio —todavía no está documentada—; una contradicción puede estar perfectamente documentada y aun así no hablar del mismo objeto. Sin declarar, el eje A no publica nivel y lo dice: publicar una acusación floja al lado de varias sólidas no suma, resta. — CAPA 1, v961: `tipoMedicion` pasa de `no-aplica` a `contexto-estructural`, que dice lo que ES y no lo que no es. Y el `contrargumentoOficial` «ausente» exige CONSTANCIA: se escribe { ausente: true, busco: [\"dónde se buscó\"], fecha: \"AAAA-MM-DD\" }. La palabra suelta «ausente» se ve y NO pesa en el indicador I-06 — afirmar que el Gobierno no respondió sin decir dónde se buscó es un señalamiento sin respaldo. — CAPA 2, v961: los criterios de I-04, I-05 e I-07 están ESCRITOS en js/70 (`CRITERIOS`), con su definición, su lista de lo que incluye y su lista de lo que NO. Antes de declarar un indicador se leen: si el hecho cae en el `excluye`, no se declara. Y una entrada que declara indicador trae además tres campos o no cuenta: `nivelGobierno` (nacional | departamental | distrital | municipal), `estadoProcesal` (en-firme | en-tramite-legislativo | en-revision-judicial | en-disputa-institucional | anunciado-sin-acto) y `tipoEvidencia` (documento-primario | dato-oficial | reporte-periodistico | testimonio | captura-de-pantalla). Es documento primario cuando el acto está identificado por su número o radicado, aunque la copia llegue por prensa. Lo declarado que no pasa el criterio no desaparece: la ficha dice cuántas se declararon, cuántas cuentan y qué le falta a cada una. — v962: nace el indicador I-13 (interferencia en la independencia técnica) para los actos sobre entidades del Ejecutivo con independencia solo TÉCNICA —el DANE (Ley 2335), las agencias reguladoras—, que NO son órganos autónomos y por eso no caben en I-05. La lista cerrada de órganos autónomos está en js/70 (`ORGANOS_AUTONOMOS`) y se consulta antes de declarar un I-05; el DANE no está en ella. I-13 cuenta una COINCIDENCIA documentada, no una causa probada, y no alimenta el eje B porque no hay media histórica suya. Un hecho no declara I-05 e I-13 a la vez: una entidad es autónoma o no lo es. — v963: toda declaración de indicador dice además POR CUÁL renglón del criterio entra, en `indicadoresPor`: { \"I-04\": \"<texto exacto de una línea del incluye>\" }. Se comprueba contra el texto literal del criterio en js/70, así que se copia y pega de ahí; una cita que el criterio no tenga no cuenta y se ve. Sin vía, la declaración no cuenta. Y la regla de la v961 al escribirla: si el hecho cae en el `excluye`, no se declara —se quitaron dos por eso, un anuncio sin acto y un acto del gobierno anterior.",
  "presidente": "Abelardo de la Espriella",
  "periodo": "2026 – 2030",
  "posesion": "2026-08-07",
@@ -471,7 +471,10 @@
    ],
    "nivelGobierno": "nacional",
    "estadoProcesal": "en-firme",
-   "tipoEvidencia": "documento-primario"
+   "tipoEvidencia": "documento-primario",
+   "indicadoresPor": {
+    "I-13": "instrucción sobre contenido, oportunidad o forma de difusión de información técnica"
+   }
   },
   {
    "fecha": "2026-09-13",
@@ -889,7 +892,10 @@
    ],
    "nivelGobierno": "nacional",
    "estadoProcesal": "en-firme",
-   "tipoEvidencia": "documento-primario"
+   "tipoEvidencia": "documento-primario",
+   "indicadoresPor": {
+    "I-04": "aplazamiento por acto administrativo de un plazo fijado en ley o reglamento"
+   }
   },
   {
    "fecha": "2026-09-11",
@@ -1150,7 +1156,10 @@
    ],
    "nivelGobierno": "nacional",
    "estadoProcesal": "en-firme",
-   "tipoEvidencia": "documento-primario"
+   "tipoEvidencia": "documento-primario",
+   "indicadoresPor": {
+    "I-04": "decreto expedido al amparo de una declaratoria de emergencia"
+   }
   },
   {
    "fecha": "2026-09-08",
@@ -3771,7 +3780,10 @@
    ],
    "nivelGobierno": "nacional",
    "estadoProcesal": "en-firme",
-   "tipoEvidencia": "reporte-periodistico"
+   "tipoEvidencia": "reporte-periodistico",
+   "indicadoresPor": {
+    "I-04": "directiva que altera el régimen ordinario de difusión de información pública"
+   }
   },
   {
    "fecha": "2026-08-17",
@@ -4027,9 +4039,7 @@
    "titulo": "Anuncia emergencia económica por el terremoto",
    "categoriaProbatoria": "hecho-probado",
    "tipoMedicion": "actividad",
-   "indicadores": [
-    "I-04"
-   ],
+   "indicadores": [],
    "detalle": "Herramienta para acelerar el giro de recursos a la reconstrucción. El Gobierno afirmó que “cada peso girado quedará expuesto” a control público.",
    "fuente": "Infobae",
    "url": "https://www.infobae.com/colombia/2026/08/13/terremoto-en-colombia-que-es-la-emergencia-economica-que-declarara-abelardo-de-la-espriella-y-por-que-cada-peso-girado-quedara-expuesto/",
@@ -4108,7 +4118,10 @@
    "url": "https://www.moncloa.com/2026/08/13/reconstruccion-colombia-empresas-espanolas-3414876/",
    "nivelGobierno": "nacional",
    "estadoProcesal": "en-firme",
-   "tipoEvidencia": "documento-primario"
+   "tipoEvidencia": "documento-primario",
+   "indicadoresPor": {
+    "I-04": "declaratoria de desastre nacional (Ley 1523)"
+   }
   },
   {
    "fecha": "2026-08-10",
@@ -4240,9 +4253,7 @@
    "titulo": "Decreto 1012: suspende por 15 días los requisitos de meritocracia para cargos de libre nombramiento",
    "categoriaProbatoria": "hecho-probado",
    "tipoMedicion": "actividad",
-   "indicadores": [
-    "I-04"
-   ],
+   "indicadores": [],
    "detalle": "Expedido por el gobierno saliente un día antes de la posesión, para agilizar la conformación del nuevo gabinete.",
    "fuente": "El Heraldo",
    "url": "https://www.elheraldo.co/colombia/2026/08/06/este-es-el-decreto-que-facilitara-a-abelardo-de-la-espriella-el-nombramiento-de-su-gabinete-desde-el-7-de-agosto/",

@@ -10530,17 +10530,16 @@ la haya causado es una atribución que el registro no sostiene — y el
 `tipoFuente` de esa entrada es `disputado` justamente porque el motivo está en
 disputa. La aserción persigue esa palabra en la definición.
 
-Medido antes de declararlo, el caso encaja por **las dos vías del `incluye`**:
+Medido antes de declararlo, el caso encaja por **una** vía del `incluye`: la
+**directriz presidencial** que exige autorización del Gobierno para que las
+entidades hablen con la prensa, por la que se canceló treinta minutos antes la
+rueda de prensa de la inflación de agosto (documentado por Semana).
 
-* la **directriz presidencial** que exige autorización del Gobierno para que
-  las entidades hablen con la prensa, por la que se canceló treinta minutos
-  antes la rueda de prensa de la inflación de agosto (documentado por Semana);
-* la **remoción coincidente** con esa controversia.
-
-Si no hubiera existido la primera, el caso habría caído en el `excluye`
-—«nombramiento o remoción ordinarios sin controversia documentada»— y lo
-honesto habría sido dejarlo sin indicador. Se comprobó leyendo la entrada
-entera, no el título.
+**Esta sección decía «las dos vías» y la segunda era falsa. La v963 la
+corrige**, y el detalle está allá: no hay ninguna remoción coincidente con la
+controversia —el relevo que existe es anterior a ella y es ordinario—. Sin la
+directriz, el caso habría caído en el `excluye` y lo honesto habría sido
+dejarlo sin indicador.
 
 ### I-13 no entra al eje B, y esa es la parte que hay que vigilar
 
@@ -10618,6 +10617,156 @@ registro actual por omisión. Lo destapó la aserción nueva, que salió roja co
 * **Aplicar los criterios al resto del registro**: 153 de 159 hechos del
   mandato siguen sin declarar indicador.
 * **El eje C entero** y la media histórica del eje B.
+
+## Una vía inventada, y dos guardas que no dependen de acordarse (v963)
+
+Tres cosas, y la primera es una corrección de la v962 que llegó con la
+secuencia de hechos en la mano.
+
+### La segunda vía del caso DANE no existía
+
+La v962 escribió que el caso entraba por **dos** renglones del `incluye` de
+I-13. El segundo —«remoción o bloqueo de nombramientos coincidente con una
+controversia sobre difusión»— es falso, y la secuencia real lo enseña:
+
+| | |
+|---|---|
+| 19 de agosto | Valencia es nombrado por Decreto 1260, reemplazando a Urdinola |
+| 3 de septiembre | directiva general que exige autorización previa para hablar con prensa |
+| 7 de septiembre | se cancela la rueda de prensa de la inflación |
+
+**El relevo de Urdinola es ANTERIOR a la controversia y es un cambio ordinario
+de gobierno**: cae en el `excluye` —«nombramiento o remoción ordinarios sin
+controversia documentada»—. Yo había leído la remoción de Valencia del 14 de
+septiembre como la coincidencia, y eso confunde dos cosas: que un hecho
+posterior exista no lo vuelve «coincidente» con la controversia en el sentido
+que el criterio pide.
+
+Lo que sí existe, y no es lo mismo: **la Presidencia frenó nombramientos que
+Valencia quería hacer** (La Silla Vacía). Eso es bloqueo y el criterio lo
+contempla — pero el motivo reportado es la cercanía de esas personas con
+Oviedo, que es **una tensión distinta de la de difusión**: la coincidencia es
+con el clima general, no con el hecho específico. Así que no se cuenta como
+vía, y queda escrito para que nadie lo vuelva a leer como una.
+
+**I-13 = 1 se mantiene, por UNA vía sólida.** La cifra no cambia; lo que
+cambia es que ahora dice cuál es.
+
+### Y de ahí sale el arreglo de fondo: la vía se declara en la entrada
+
+El defecto no fue equivocarme al leer: fue que **la declaración en el registro
+era solo `['I-13']`**, así que la vía vivía en la prosa de una bitácora y nadie
+podía auditarla. Un criterio con seis renglones de `incluye` y una declaración
+que no dice por cuál entra es medio criterio.
+
+Ahora cada entrada lleva `indicadoresPor`, con el texto **exacto** del renglón:
+
+```json
+"indicadores": ["I-13"],
+"indicadoresPor": { "I-13": "instrucción sobre contenido, oportunidad o forma de difusión de información técnica" }
+```
+
+Y se comprueba contra el criterio. **Citar por número sería la trampa de la
+v878** —el id que se separa de su título—: reordenar la lista repuntaría todas
+las citas en silencio. Con el texto, reescribir un renglón rompe las entradas
+que lo citan, que es lo correcto — hay que volver a mirarlas.
+
+Dos salidas nuevas de la puerta, cada una con su motivo: `sin-via` y
+`via-desconocida`. Y la ficha imprime, al lado de cada renglón del `incluye`,
+cuántos hechos entraron por él — más un aviso cuando todos entran por el mismo:
+«la cifra mide una sola clase de acto, no la variedad que el criterio
+describe».
+
+#### Dos declaraciones más caen, ahora por el `excluye`
+
+Aplicando la regla de la v961 —`excluye` quita, `requiere` deja sin contar—
+al escribir las vías aparecieron dos que no tenían ninguna posible:
+
+* **«Anuncia emergencia económica»** → «anuncio sin acto administrativo
+  expedido». El acto es el decreto 1261, que va en la entrada del 9 de
+  septiembre.
+* **Decreto 1012** → «acto de un gobierno anterior». La v958 lo dejó declarado
+  como simetría y el primer renglón del `excluye` lo rechaza.
+
+I-04 sigue en 3: las dos estaban fuera de la cuenta por otra vía.
+
+### 2 · La corrida hacia atrás NO se puede correr, y hay que decirlo
+
+El encargo era validar I-13 sobre Petro, Duque y Santos, empezando por el
+episodio de Urdinola «que ya está en el registro». Medido:
+
+* **el relevo de Urdinola NO está en el registro.** No hay entrada, ni Decreto
+  1260, ni fuentes. Lo único que consta es que Valencia «había asumido el 19 de
+  agosto», dentro de otra entrada;
+* **la directiva del 3 de septiembre tampoco tiene entrada propia.** Vive en el
+  `contrapunto` de la entrada del 14. O sea que **la única vía sólida de I-13
+  se apoya en un hecho que no es un registro** — eso es un hueco real y va
+  nombrado, no tapado;
+* **en el registro de Petro, cero candidatos.** El único que el patrón
+  encuentra es la Procuraduría destituyendo a los responsables de los
+  carrotanques de la UNGRD: eso es un órgano AUTÓNOMO actuando sobre
+  funcionarios, la dirección contraria a la que I-13 mide;
+* **no existen registros de Duque ni de Santos.**
+
+Así que el aviso que se pidió, tal cual: **I-13 no dispara ni una vez en
+ningún gobierno anterior, y eso NO demuestra que el criterio distinga.**
+Demuestra que no hay material. El registro de Petro son 32 hechos escogidos de
+cuatro años —su propio campo `cobertura` dice que no es exhaustivo— así que
+«no dispara» ahí es evidencia débil, y de los otros dos gobiernos no hay nada.
+
+Lo único que sí se pudo medir es la discriminación **dentro del registro
+actual**: el patrón encuentra 5 entradas con entidad técnica y acto del
+Ejecutivo, y el criterio deja pasar 1. Es una señal, no una validación.
+
+Para validarlo de verdad haría falta entrar los tres episodios que el
+diagnóstico nombra —el relevo de Urdinola, la directiva del 3 de septiembre y
+el freno de nombramientos— cada uno con su fuente, y después correr el
+criterio sobre ellos. Eso es trabajo de registro, no de código.
+
+### 3 · Las dos guardas permanentes
+
+#### Una salida vacía nunca es verde
+
+`correr.js` medía el código de salida, que dice si el proceso terminó bien —no
+si la suite **comprobó** algo. Ahora cuenta las marcas de aserción (`✓ ✅ ✗ ❌`,
+porque las suites de este repositorio usan las dos familias) y el conteo final
+`N/M`; sin ninguna de las dos, la suite sale con `?` **NO CONCLUYENTE**, se
+lista aparte de las que fallaron —piden cosas distintas— y **hace fallar la
+corrida**.
+
+Demostrada con una suite que solo hace `process.exit(0)`: sale «? NO
+CONCLUYENTE · no imprimió ni una aserción ni un conteo» y la corrida termina
+en 1. Es el caso exacto de la v962, donde un TypeError dejó la salida muda y
+leerla como pase o como fallo habría sido igual de falso.
+
+#### Ningún parámetro por omisión mide una estructura vacía
+
+Barridas las doce funciones de `js/70` que reciben un registro, quedaba **una**
+de la familia: `fichaDe`, que es la que produce el veredicto. Las demás ya
+tomaban el registro actual.
+
+Y acá **medir desmintió mi propia afirmación**, que es lo que la regla existe
+para hacer: escribí que una ficha sobre `{}` saldría con «Confiabilidad
+inquebrantable», y la aserción devolvió **`sin-datos`** — los mínimos de la
+v791 ya impiden dictaminar sin casos ni hechos. Así que el peligro era menor
+del que declaré: una ficha muda, no un veredicto falso. Se arregla igual
+—medir la nada teniendo el registro al lado es medir otra cosa de la que se
+dice medir— pero el motivo queda escrito como es, y el comentario del código
+también se corrigió.
+
+La guarda se mide sobre las FIRMAS y no buscando una cadena. Y su primera
+versión estaba mal de una manera que vale anotar: `([\s\S]{0,400}?)\n` con
+cuantificador perezoso captura **la cadena vacía** —es lo más corto que
+cumple—, así que denunció las doce funciones por no encontrar nada en ninguna.
+Se corta por índice, que es la lección de la v961 con el extractor de tablas.
+Demostrada devolviendo el `{}`: sale con los cuatro nombres.
+
+### Una guarda de la v961 citaba una línea literal
+
+«La cuenta APLICA el criterio» exigía `if (g.cuenta) crudo[k]++;` palabra por
+palabra, y esta tanda le añadió el conteo por vía dentro de ese bloque. Se
+puso roja por un cambio legítimo. Ahora pide la forma —que `g.cuenta` guarde
+el conteo— y no el renglón exacto. Es la lección de la v890 otra vez.
 
 ## La lista viva: lo que al pliego educativo todavía le falta (v866)
 

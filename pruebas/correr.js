@@ -62,7 +62,23 @@ function correr(nombre) {
     const reloj = setTimeout(() => { try { hijo.kill('SIGKILL'); } catch (e) {} }, TOPE_MS);
     hijo.on('close', codigo => {
       clearTimeout(reloj);
+      /* ── UNA SALIDA VACÍA NO ES UNA SALIDA BUENA ──────────────────────
+         El código de salida dice si el proceso terminó bien, no si la suite
+         COMPROBÓ algo. Una que revienta antes de su primera aserción, o que
+         se queda sin material y no asierta nada, puede terminar en 0 y salir
+         con su palomita — y eso ya pasó: en la v962, al demostrar en rojo,
+         una suite murió con un TypeError y no imprimió una sola línea; leer
+         ese silencio como pase o como fallo habría sido igual de falso.
+
+         Así que se mide la CONCLUSIÓN y no solo el código: una suite tiene
+         que dejar en su salida al menos un resultado de aserción —las suites
+         de este repositorio usan ✓ y ✅, y ✗ o ❌ cuando fallan— o un conteo
+         final «N/M» con M mayor que cero. Si no deja ninguna de las dos
+         cosas, no concluyó nada, y eso NUNCA se pinta como verde. */
+      const marcas = (salida.match(/[✓✔✅✗✘❌]/g) || []).length;
+      const conteo = /(^|\s)(\d+)\s*\/\s*([1-9]\d*)(\s|$)/m.test(salida);
       resolve({ nombre: nombre, ok: codigo === 0, salida: salida,
+                concluye: marcas > 0 || conteo, marcas: marcas,
                 seg: Math.round((Date.now() - inicio) / 100) / 10 });
     });
   });
@@ -76,8 +92,9 @@ function correr(nombre) {
       const n = cola.shift();
       const r = await correr(n);
       resultados.push(r);
-      console.log('  ' + (r.ok ? '✓' : '✗') + ' ' + n.padEnd(14) + r.seg + ' s');
-      if (!r.ok) {
+      console.log('  ' + (!r.concluye ? '?' : r.ok ? '✓' : '✗') + ' ' + n.padEnd(14) + r.seg + ' s' +
+        (!r.concluye ? '   NO CONCLUYENTE · no imprimió ni una aserción ni un conteo' : ''));
+      if (!r.ok || !r.concluye) {
         // Solo las líneas que dicen qué falló: la salida entera de una suite
         // son doscientas líneas y acá lo que hace falta es el porqué.
         const motivos = r.salida.split('\n')
@@ -88,8 +105,14 @@ function correr(nombre) {
   }
   await Promise.all(Array.from({ length: Math.min(EN_PARALELO, cola.length) }, trabajador));
 
-  const mal = resultados.filter(r => !r.ok);
-  console.log('\n' + (resultados.length - mal.length) + '/' + resultados.length + ' en verde' +
-    (mal.length ? '. Fallaron: ' + mal.map(r => r.nombre).join(', ') : '.'));
-  process.exit(mal.length ? 1 : 0);
+  /* Las no concluyentes van APARTE de las que fallaron, porque piden otra
+     cosa: una que falla dice qué encontró; una que no concluye no encontró
+     nada y hay que ir a ver por qué. Las dos cuentan como no verde. */
+  const mal = resultados.filter(r => r.concluye && !r.ok);
+  const mudas = resultados.filter(r => !r.concluye);
+  console.log('\n' + (resultados.length - mal.length - mudas.length) + '/' + resultados.length + ' en verde' +
+    (mal.length ? '. Fallaron: ' + mal.map(r => r.nombre).join(', ') : '') +
+    (mudas.length ? '. NO CONCLUYENTES: ' + mudas.map(r => r.nombre).join(', ') : '') +
+    (!mal.length && !mudas.length ? '.' : '.'));
+  process.exit(mal.length + mudas.length ? 1 : 0);
 })();

@@ -1169,7 +1169,7 @@ console.log('\n  -- la ficha del gobernante --');
        nada — el patrón de la v878 con su propia lista. */
     const tramoConteo = (j70cr.match(/var fuera = \{[\s\S]*?\n    \}\);/) || [''])[0];
     comprobar('y la cuenta de indicadores APLICA el criterio, no solo lo publica',
-      /pasaElCriterio\(e, k\)/.test(tramoConteo) && /if \(g\.cuenta\) crudo\[k\]\+\+;/.test(tramoConteo),
+      /pasaElCriterio\(e, k\)/.test(tramoConteo) && /if \(g\.cuenta\)[^;]*crudo\[k\]\+\+/.test(tramoConteo),
       tramoConteo ? 'cada declaración pasa por pasaElCriterio antes de contar'
                   : 'no se encontró el tramo del conteo');
 
@@ -1328,6 +1328,129 @@ console.log('\n  -- la ficha del gobernante --');
     comprobar('ningún hecho declara I-05 e I-13 a la vez: una entidad es autónoma o no lo es',
       dobles.length === 0,
       dobles.length ? dobles.join(' · ') : 'los dos indicadores no se solapan en el registro');
+  }
+
+  /* ═══ LA VÍA: POR CUÁL RENGLÓN DEL CRITERIO ENTRA CADA HECHO (v963) ════
+     La v962 escribió en su bitácora que el caso del DANE entraba por dos
+     renglones del `incluye`, y uno de los dos era falso: la remoción que
+     citaba era anterior a la controversia y ordinaria. Nadie lo habría visto,
+     porque la declaración en el registro era solo `['I-13']` y la vía vivía
+     en la prosa de la bitácora.
+
+     Con la vía en la entrada y comprobada contra el texto EXACTO del
+     criterio, una cita inventada se ve acá y no tres tandas después. */
+  {
+    const j70v = leer('js/70-seguimiento.js');
+
+    /* Las listas de `incluye` de cada criterio, leídas del propio módulo: una
+       comprobación que copiara los textos no comprobaría nada más que que dos
+       listas son iguales entre sí. */
+    const incluyeDe = {};
+    const bloqueCr = (j70v.match(/var CRITERIOS = \{[\s\S]*?\n  \};/) || [''])[0];
+    (bloqueCr.match(/'(I-\d\d)': \{[\s\S]*?incluye: \[([\s\S]*?)\],\n/g) || []).forEach((tr) => {
+      const id = (tr.match(/'(I-\d\d)'/) || [])[1];
+      const cuerpo = (tr.match(/incluye: \[([\s\S]*?)\],\n/) || ['', ''])[1];
+      incluyeDe[id] = (cuerpo.match(/'((?:[^'\\]|\\.)*)'/g) || [])
+        .map((x) => x.slice(1, -1).replace(/\\'/g, "'"));
+    });
+
+    comprobar('MATERIAL · las listas de «incluye» se leen de js/70, con sus renglones',
+      Object.keys(incluyeDe).length >= 3 &&
+      Object.keys(incluyeDe).every((k) => incluyeDe[k].length >= 1),
+      Object.keys(incluyeDe).map((k) => k + ':' + incluyeDe[k].length).join(' · '));
+
+    const sinVia = [], viaMala = [];
+    let declarantes = 0;
+    REGISTROS.forEach((ruta) => {
+      const quien = ruta.split('-').pop().replace('.json', '');
+      ((JSON.parse(leer(ruta)).entradas) || []).forEach((e) => {
+        const ii = e.indicadores || [];
+        if (!ii.length) return;
+        declarantes++;
+        const donde = quien + '/' + (e.fecha || '?');
+        const por = e.indicadoresPor || {};
+        ii.forEach((k) => {
+          const via = String(por[k] || '').trim();
+          if (!via) { sinVia.push(donde + ' declara ' + k); return; }
+          if (!incluyeDe[k]) { viaMala.push(donde + ' declara ' + k + ', sin criterio'); return; }
+          if (incluyeDe[k].indexOf(via) < 0) {
+            viaMala.push(donde + ' ' + k + ' cita «' + via.slice(0, 54) + '»');
+          }
+        });
+      });
+    });
+
+    comprobar('toda declaración de indicador dice por cuál renglón del criterio entra',
+      declarantes > 0 && sinVia.length === 0,
+      sinVia.length ? sinVia.join(' · ')
+        : 'las ' + declarantes + ' entradas que declaran indicador traen su `indicadoresPor`');
+
+    /* Y la vía tiene que existir de verdad en el criterio. Un texto parecido
+       pero no idéntico es una cita a algo que nadie escribió. */
+    comprobar('y esa vía es un renglón EXACTO del «incluye» de ese indicador',
+      viaMala.length === 0,
+      viaMala.length ? viaMala.join(' · ')
+        : 'ninguna cita apunta a un renglón que el criterio no tenga');
+
+    /* La guarda de la guarda: si la puerta dejara de leer la vía, las dos de
+       arriba seguirían en verde sobre un campo decorativo. */
+    comprobar('y la puerta del criterio sigue leyendo la vía antes de contar',
+      /function viaDeclarada\(/.test(j70v) &&
+      /var via = viaDeclarada\(e, id\);/.test(j70v) &&
+      /cr\.incluye\.indexOf\(via\) < 0/.test(j70v),
+      'pasaElCriterio rechaza sin vía y con una vía que el criterio no tiene');
+  }
+
+  /* ═══ NINGÚN PARÁMETRO POR OMISIÓN MIDE UNA ESTRUCTURA VACÍA (v963) ═════
+     `api.indicadores()` sin argumento caía en `{}` y devolvía ceros con la
+     forma de una medición; `fichaDe()` hacía lo mismo y eso es peor —una
+     ficha sobre la nada sale con «Confiabilidad inquebrantable» y cero casos,
+     que es un veredicto sobre una persona sacado de un objeto vacío—.
+
+     La regla: toda función de este módulo que reciba un REGISTRO lo toma del
+     gobierno actual por omisión, nunca de un objeto vacío. Se mide sobre las
+     firmas y no buscando una cadena, para que no se escape una escrita de
+     otra forma. */
+  {
+    const j70d = leer('js/70-seguimiento.js');
+    const conRegistro = [], malas = [];
+    /* Por ÍNDICE y no con un cuantificador perezoso: `([\s\S]{0,400}?)\n`
+       captura la cadena VACÍA —lo más corto que cumple— así que la primera
+       versión de esta guarda denunció las diez funciones por no encontrar
+       nada en ellas. Es la misma lección que la v961 con el extractor de
+       tablas: se corta por posición. */
+    const re = /\n  function ([A-Za-z_$][\w$]*)\(dd(?:,[^)]*)?\) \{/g;
+    let m;
+    while ((m = re.exec(j70d))) {
+      const nombre = m[1];
+      const cabeza = j70d.slice(m.index, m.index + 900);
+      conRegistro.push(nombre);
+      /* Vale cualquier forma de tomar el actual: `dd = dd || D`, leerlo con
+         `(dd || D)` adentro, o delegar en otra que ya lo haga. Lo que no vale
+         es caer en un objeto vacío. */
+      const tomaActual = /dd = dd \|\| D\b/.test(cabeza) || /\(dd \|\| D\)/.test(cabeza) ||
+                         /\(\(dd \|\| D\)/.test(cabeza) || /\(dd, /.test(cabeza) ||
+                         /\(dd\)/.test(cabeza);
+      const cae = /if \(!dd\)\s*dd = \{\}|dd = dd \|\| \{\}|dd = \{\}/.test(cabeza);
+      if (cae || !tomaActual) malas.push(nombre + (cae ? ' (cae en {})' : ' (no toma el actual)'));
+    }
+
+    comprobar('MATERIAL · se encuentran las funciones que reciben un registro',
+      conRegistro.length >= 5, conRegistro.join(', '));
+
+    comprobar('ninguna cae en un registro vacío por omisión: ceros con forma de medición',
+      malas.length === 0,
+      malas.length ? malas.join(' · ') + ' · se toma `dd = dd || D`'
+        : 'las ' + conRegistro.length + ' toman el registro del gobierno actual');
+
+    /* Y el arnés: una suite que no imprime ni una aserción ni un conteo no se
+       pinta verde. Va acá porque es la mitad estática de la regla —que el
+       corredor sepa hacerlo— y la otra mitad la demuestra una suite muda. */
+    const cj = leer('pruebas/correr.js');
+    comprobar('el corredor marca NO CONCLUYENTE una suite que no imprime nada',
+      /NO CONCLUYENTE/.test(cj) && /concluye:/.test(cj) &&
+      /process\.exit\(mal\.length \+ mudas\.length \? 1 : 0\)/.test(cj),
+      'una salida vacía cuenta como no verde y sale aparte de las que fallaron');
   }
 
   /* ═══ CAPA 3 DEL PLIEGO · LOS EJES, NUNCA EN UN SOLO NÚMERO ════════════
