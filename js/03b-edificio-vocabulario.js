@@ -316,6 +316,7 @@
   // un lote baldío no tienen pisos, y preguntarlos estorba.
   const USOS_MATRIZ_SIN_PISOS = new Set([
     'Esp. Público', 'Deportivo', 'Mobiliario Urbano', 'Vías e Infraestructura Vial',
+    'Redes en Vía (tapas y registros)',
     /* Un árbol no tiene pisos. Entró al catálogo en la v973 y nadie lo
        declaró acá, así que la ficha de una palma preguntaba «¿cuántos pisos
        tiene?» y prellenaba «1 piso · No se sabe». Se vio mirando el papel. */

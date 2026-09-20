@@ -13654,6 +13654,144 @@ un árbol no pregunta material y un poste no pregunta especie—. Lo que no se
 ejercitó es **publicar y volver a abrir**: eso pide el servidor.
 
 
+## Lo que se mapea mirando al suelo (v982)
+
+Pedido: *«Hidrantes, tapas de alcantarillas, cancha polideportiva etc etc»*.
+
+Medido antes de escribir sobre los 538 tipos del catálogo, **una de las tres
+ya estaba y las otras dos no existían**:
+
+| | Estado en la v981 |
+|---|---|
+| Cancha polideportiva | **existe**: `Deportivo · Cancha múltiple (polideportivo)`, más sintética, tierra/cemento y tenis |
+| Hidrante | **cero menciones** |
+| Tapa de alcantarillado · sumidero · pozo | **cero menciones** |
+
+Y con ellas, toda una familia: válvula, medidor, caja de registro, cámara de
+energía. Nada de eso tenía dónde entrar.
+
+    v981   49 usos · 538 tipos · «hidrante» y «tapa» dan cero
+    v982   50 usos · 559 tipos · las diez palabras de la calle encuentran lo suyo
+
+### Un uso nuevo, porque no era de ninguno de los que había
+
+Los usos del catálogo son todos **cosas grandes**: plantas, vías, estadios.
+`Infra. Servicios (Plantas)` es la PTAP y la subestación; `Mobiliario
+Urbano` es la banca y la caneca. Una tapa de alcantarillado no es ninguna de
+las dos: no es una obra y no es mobiliario — **es lo que la red deja en la
+vía**, la parte que se pisa.
+
+`Redes en Vía (tapas y registros)` es el hermano de `Infra. Servicios
+(Plantas)`: las mismas redes, el otro extremo. Doce tipos, con los nombres
+de la calle en Colombia —«caja de registro», no «cámara de inspección»;
+«tragante» al lado de «sumidero»— porque quien mapea teclea lo que dice
+señalando.
+
+#### Un uso nuevo toca CUATRO inventarios
+
+Y basta olvidar uno para que quede roto **en silencio**:
+
+| Inventario | Qué se pierde si falta |
+|---|---|
+| `PROCITY_MATRIZ_USOS` | no existe |
+| `MATRIZ_GRUPOS` | solo aparece buscándolo, nunca navegando |
+| `USO_A_SUB` (js/64) | se puede mapear y el análisis lo descarta |
+| `USOS_MATRIZ_SIN_PISOS` (js/03b) | hereda «es un edificio» y la ficha de una tapa pregunta cuántos pisos tiene |
+
+La última es literalmente lo que costó la v974 con la palma. La guarda los
+exige los cuatro, y **se cobró en el acto**: escribí el de `js/64` con el
+nombre en escapes `\u00ed` y los otros tres con el nombre literal. En
+JavaScript funciona igual; **leyendo los archivos no se puede comparar**, y
+esa divergencia es la que un día deja el uso fuera del análisis sin que nada
+lo diga. Queda literal en los cuatro.
+
+Y llevan **material** (v981): una tapa de hierro y una de concreto no son lo
+mismo para quien tiene que reponerla.
+
+### El «etc etc», medido y no adivinado
+
+Barrido el catálogo con las palabras de alguien que camina la cuadra,
+apareció una segunda familia con cero entradas: **paso peatonal (cebra),
+rampa de accesibilidad, escalera pública, baranda o pasamanos, muro de
+contención, gaviones, cuneta, bahía de parqueo y berma**.
+
+Van a `Vías e Infraestructura Vial` y no a mobiliario, y la razón se dice en
+una línea: **una baranda no es para sentarse, es para no caerse.** Son del
+derecho de vía, como el sumidero.
+
+### Dos defectos del buscador que solo dijo el papel
+
+Los dos, tecleando lo que teclearía quien está en la calle:
+
+* **«tapa» devolvía «Hidrante» de primero.** El nombre del uso —«Redes en Vía
+  (tapas y registros)»— casa para sus doce tipos por igual, así que salían en
+  el orden del catálogo. Ahora **una coincidencia en el TIPO vale el doble que
+  una que solo está en el nombre del USO**: el tipo es la cosa concreta y el
+  uso es la familia. Quien teclea «tapa» quiere la que se llama así.
+* Y con ese mismo rango se ordena también el camino por palabras, que antes
+  solo pesaba por rareza.
+
+El orden es `2 × (casa el tipo) + 1 × (empieza palabra)`, y el `sort` de
+JavaScript es estable: **dentro de un mismo rango se conserva el orden del
+catálogo y no se pierde ni se reordena nada más.** Declarar en vez de
+bloquear, que es lo que este módulo hace siempre.
+
+Medido después, las diez búsquedas ponen la respuesta correcta de primera:
+hidrante, alcantarilla, tapa, sumidero, tragante, registro, medidor, válvula,
+polideportivo y cancha.
+
+#### Y la guarda de la v981 citaba la línea, no la propiedad
+
+Se puso roja al cambiar el orden por rango, porque exigía `abre.concat(resto)`
+—la implementación de ese día—. Es la constante del material metida dentro de
+la comprobación (v890), cometida en la guarda de un buscador. Ahora pide que
+el camino de la frase entera **ordene** y que el orden mire el inicio de
+palabra, que es lo que tiene que seguir siendo cierto.
+
+### Mi propio barrido se equivocó otra vez
+
+Buscando qué faltaba escribí el filtro **sin quitar tildes**, así que «anden»
+dio cero y estuve a punto de declarar faltando `Andén / vía peatonal`, que
+existe desde siempre — y de paso de denunciar como no-op el sinónimo
+`acera → anden`, que funciona perfectamente.
+
+Lo salvó ir a comprobarlo contra la guarda que ya existe, que normaliza. Es
+la tercera vez que un barrido propio se equivoca donde la guarda del proyecto
+acierta (v878, v891, v897, v903, y esta): **antes de creerle a un barrido
+propio conviene comprobarlo contra la guarda que ya está escrita.**
+
+### Lo que esta versión NO hace, y queda medido
+
+* **La tapa ROTA o FALTANTE**, que es lo que de verdad se quiere reportar de
+  un alcantarillado. No entra como tipo porque es un ESTADO, y meterlo sería
+  exactamente lo que la guarda de la v981 me cazó con la jardinera. Lo cierra
+  la tanda del estado, que es la de la línea de vías.
+* **Murales, grafitis, vallas publicitarias y estatuas** — medido, cero
+  entradas. Son otra familia (arte y publicidad en el espacio público) y otra
+  tanda.
+* **Teléfonos públicos, buzones, cajeros y parquímetros** — cero entradas
+  también, y de mobiliario. Se dejan dichos con su medición para que la
+  próxima no vuelva a barrer.
+
+### Demostrado contra la v981
+
+Cuatro de cinco en rojo, contra una copia guardada:
+
+```
+✗ lo que se mapea mirando al suelo tiene su tipo  — sin tipo: hidrante · alcantarillado · sumidero
+✗ el uso nuevo está declarado en los CUATRO inventarios  — falta en: análisis
+✗ y lleva el campo de material  — una tapa de hierro y una de concreto se registran igual
+✗ el buscador prefiere el tipo antes que el nombre del uso  — «tapa» devuelve el hidrante primero
+```
+
+### Lo que NO se pudo correr
+
+**Ninguna suite de navegador**, por lo mismo que la v973 a la v981. Corrió
+`revisar.js` entero y se recorrió el camino de verdad con la sonda: las diez
+búsquedas, abrir el hidrante, y comprobar que su ficha pregunta el material y
+**no** pregunta los pisos ni la especie.
+
+
 ## La lista viva: lo que al pliego educativo todavía le falta (v866)
 
 Esta lista se quedó vieja **cinco veces**. Cuatro dentro de la hoja —la

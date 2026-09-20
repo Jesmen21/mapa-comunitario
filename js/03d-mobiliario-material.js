@@ -68,7 +68,7 @@
      guarda (revisar.js) es que todo nombre de acá exista en el catálogo —un
      renombre allá dejaría el campo apagado en silencio, que es la forma de
      la v974—. */
-  var USOS_CON_MATERIAL = ['Mobiliario Urbano'];
+  var USOS_CON_MATERIAL = ['Mobiliario Urbano', 'Redes en Vía (tapas y registros)'];
   function esUsoConMaterial(uso){
     return USOS_CON_MATERIAL.indexOf(String(uso || '').trim()) !== -1;
   }

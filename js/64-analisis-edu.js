@@ -61,6 +61,10 @@
     'Gestión de Residuos / Reciclaje': 'infra_servicios',
     'Transporte (Terminales/Estaciones)': 'parada_bus',
     'Infra. Servicios (Plantas)': 'infra_servicios',
+    /* Las tapas, hidrantes y registros entran como infraestructura de
+       servicios y no como mobiliario: una banca es para la gente y una tapa
+       de alcantarillado es de la red. */
+    'Redes en Vía (tapas y registros)': 'infra_servicios',
     'Comunicaciones / Antenas': 'infra_servicios',
     'Servicios Funerarios': 'funerario',
     'Vías e Infraestructura Vial': 'via_arteria',

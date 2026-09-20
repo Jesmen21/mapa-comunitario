@@ -5265,10 +5265,26 @@
     { u:'Mobiliario Urbano', i:'🪑', t:['Banca','Luminaria pública','Poste de alumbrado público','Poste de energía sin luminaria','Poste con transformador','Poste de telecomunicaciones','Poste inclinado o en riesgo','Señalización vial','Parada de bus / paradero','Caneca / punto ecológico','Jardinera o matera','Bolardo / protección peatonal','Kiosco / caseta','Baño público','Bebedero / fuente','Punto digital / WiFi','Reductor de velocidad','Semáforo peatonal','Tótem informativo'] },
     { u:'Gestión de Residuos / Reciclaje', i:'♻️', t:['Punto de acopio de reciclaje','Planta de tratamiento de residuos','Relleno sanitario','Estación de transferencia','Escombrera','Punto limpio','Bodega de reciclador','Planta de compostaje','Incinerador (peligrosos/hospitalarios)','Botadero a cielo abierto (ilegal)'] },
     { u:'Transporte (Terminales/Estaciones)', i:'🚏', t:['Terminal intermunicipal','Terminal satélite','Estación de bus / metro','Parada techada','Estación de transporte masivo (BRT)','Patio-taller de buses','Terminal de carga','Aeropuerto','Aeródromo / pista','Puerto fluvial','Estación de taxis / piquete','Ciclo-estación (bicis públicas)'] },
+    /* Lo que la red deja EN LA VÍA, que es lo que se ve mirando al suelo y
+       lo que no tenía dónde entrar: medido antes de escribir, «hidrante»,
+       «alcantarilla», «tapa», «sumidero» y «pozo» daban CERO en los 538 tipos
+       del catálogo. Es el hermano de «Infra. Servicios (Plantas)» —las mismas
+       redes— pero la parte que se pisa: una planta de agua es una obra y una
+       tapa de alcantarillado es un accesorio de la misma red.
+
+       Los nombres son los de la calle en Colombia: «caja de registro», no
+       «cámara de inspección»; «tragante» al lado de «sumidero». Quien mapea
+       teclea lo que dice señalando. */
+    { u:'Redes en Vía (tapas y registros)', i:'🚰', t:['Hidrante',
+      'Tapa de alcantarillado (pozo de inspección)','Sumidero / tragante de aguas lluvias',
+      'Caja de registro de acueducto','Válvula de acueducto','Caja o poste de medidor (contador)',
+      'Caja de registro eléctrico','Cámara subterránea de energía',
+      'Caja de telecomunicaciones','Registro de gas','Rejilla de canal o cuneta',
+      'Boca de riego'] },
     { u:'Infra. Servicios (Plantas)', i:'🔌', t:['Planta de agua potable (PTAP)','Planta de aguas residuales (PTAR)','Subestación eléctrica','Planta de gas','Tanque de almacenamiento de agua','Bocatoma / captación','Estación de bombeo','Central telefónica / nodo','Central de generación (energía)','Reservorio de servicio','Estación reguladora de gas'] },
     { u:'Comunicaciones / Antenas', i:'📡', t:['Antena de telefonía celular','Torre de comunicaciones','Repetidora','Antena de radio / TV','Estación satelital','Nodo de fibra óptica','Data center','Antena de radioaficionados','Torre de vigilancia / cámaras','Punto WiFi público'] },
     { u:'Servicios Funerarios', i:'⚰️', t:['Funeraria','Sala de velación','Cementerio','Parque cementerio / jardín','Osario / columbario','Crematorio','Morgue / anfiteatro','Cementerio patrimonial','Lapidaria / bodega de ataúdes','Cementerio de mascotas'] },
-    { u:'Vías e Infraestructura Vial', i:'🛣️', t:['Vía principal / arteria','Vía secundaria / local','Vía peatonal','Ciclorruta','Puente vehicular','Puente peatonal','Intercambiador (glorieta, deprimido)','Túnel','Vía sin pavimentar','Trocha / camino rural','Malla vial en construcción','Peaje'] },
+    { u:'Vías e Infraestructura Vial', i:'🛣️', t:['Vía principal / arteria','Vía secundaria / local','Vía peatonal','Ciclorruta','Puente vehicular','Puente peatonal','Intercambiador (glorieta, deprimido)','Túnel','Vía sin pavimentar','Trocha / camino rural','Malla vial en construcción','Peaje','Paso peatonal (cebra)','Rampa de accesibilidad','Escalera pública','Baranda o pasamanos','Muro de contención','Gaviones','Cuneta o canal de aguas lluvias','Bahía de parqueo','Berma o zona verde vial'] },
     { u:'Protección Ambiental', i:'🌿', t:['Reserva natural','Zona de conservación','Humedal protegido','Parque natural (regional/nacional)','Recarga de acuíferos','Corredor ecológico','Área de compensación ambiental','Vivero municipal','Jardín botánico','Zona de amortiguación'] },
     /* Un ÁRBOL, que hasta la v972 no se podía mapear (v973).
        Llegó de la calle: «iba a mapear un árbol, una palma, un árbol grande
@@ -5310,7 +5326,7 @@
     { id:'industria', i:'🏭', t:'Industria y logística', usos:['Industrial (Pesada/Ligera)','Logístico / Almacenamiento','Extractivo (Minería/Canteras)','Logística de carga (patios y talleres)'] },
     { id:'salud', i:'🚑', t:'Salud y emergencias', usos:['Salud (Clínicas/Hospitales)','Emergencias (Bomberos/Rescate)','Cuidado Animal (Veterinaria)','Hogar de Cuidado'] },
     { id:'cultura', i:'🎭', t:'Cultura, educación y culto', usos:['Cultural / Patrimonio','Educativo (Básico/Superior)','Religioso / Culto','Espacio Ferial / Eventos Masivos'] },
-    { id:'servicios', i:'🚛', t:'Servicios e infraestructura', usos:['Mobiliario Urbano','Gestión de Residuos / Reciclaje','Transporte (Terminales/Estaciones)','Infra. Servicios (Plantas)','Comunicaciones / Antenas','Servicios Funerarios','Vías e Infraestructura Vial'] },
+    { id:'servicios', i:'🚛', t:'Servicios e infraestructura', usos:['Mobiliario Urbano','Redes en Vía (tapas y registros)','Gestión de Residuos / Reciclaje','Transporte (Terminales/Estaciones)','Infra. Servicios (Plantas)','Comunicaciones / Antenas','Servicios Funerarios','Vías e Infraestructura Vial'] },
     { id:'ambiente', i:'🌳', t:'Ambiente y zona rural', usos:['Protección Ambiental','Arbolado Urbano','Forestal','Agropecuario / Rural','Ronda Hídrica / Protección de Cuerpos de Agua'] },
     { id:'riesgo', i:'⚠️', t:'Riesgo, deterioro y suelo sin definir', usos:['Zona Baldía','Zona de Riesgo','En Obra / Construcción','Abandono / Ruina','Espacio Residual','Asentamiento Informal','Zona de Expansión Urbana'] },
     { id:'mixtos', i:'🧩', t:'Usos combinados', usos:['Mixto (Residencial-Comercial)','Mixto (Residencial-Industrial)','Uso Múltiple / Mixto General'] },
@@ -5415,6 +5431,14 @@
     'luz': 'alumbrado', 'farola': 'luminaria', 'lampara': 'luminaria',
     'energia': 'poste de energia', 'cableado': 'poste de energia',
     'trafo': 'transformador', 'matera': 'jardinera',
+    'alcantarilla': 'alcantarillado', 'manhole': 'alcantarillado',
+    'tragante': 'sumidero', 'desague': 'sumidero', 'imbornal': 'sumidero',
+    'registro': 'caja de registro', 'camara': 'camara subterranea',
+    'contador': 'medidor', 'llave de paso': 'valvula',
+    'polideportivo': 'cancha multiple', 'multiple': 'cancha multiple',
+    'cebra': 'paso peatonal', 'paso de cebra': 'paso peatonal',
+    'pasamanos': 'baranda', 'barandilla': 'baranda',
+    'muro': 'muro de contencion', 'gavion': 'gaviones',
 
     'ciclovia': 'ciclorruta', 'bicicarril': 'ciclorruta',
     'sardinel': 'anden', 'acera': 'anden',
@@ -5440,10 +5464,19 @@
        «Panadería / repostería». `inicio` dice si la coincidencia empieza
        palabra, y con eso se ORDENA sin quitar nada, que es lo que este
        módulo hace siempre: declarar en vez de bloquear. */
-    const inicio = (x, t) => {
-      const re = new RegExp('(^|[^a-z0-9ñ])' + String(t).replace(/[.*+?^${}()|[\]\\]/g, '\\$&'));
-      return re.test(_norm(x.tipo)) || re.test(_norm(x.uso));
-    };
+    const reDe = (t) => new RegExp('(^|[^a-z0-9ñ])' + String(t).replace(/[.*+?^${}()|[\]\\]/g, '\\$&'));
+    const inicio = (x, t) => { const re = reDe(t); return re.test(_norm(x.tipo)) || re.test(_norm(x.uso)); };
+    /* Y una coincidencia en el TIPO vale más que una que solo está en el
+       nombre del USO. Lo destapó el papel con el uso nuevo de la v982:
+       buscando «tapa», el nombre «Redes en Vía (tapas y registros)» casa para
+       sus doce tipos por igual, así que salía «Hidrante» de primero. El tipo
+       es la cosa concreta y el uso es la familia: quien teclea «tapa» quiere
+       la que se llama así. */
+    const enTipo = (x, t) => _norm(x.tipo).includes(t);
+    /* 2 puntos por casar el tipo, 1 por empezar palabra. El `sort` de
+       JavaScript es estable, así que dentro de un mismo rango se conserva el
+       orden del catálogo y no se pierde ni se reordena nada más. */
+    const rango = (x, t) => (enTipo(x, t) ? 2 : 0) + (inicio(x, t) ? 1 : 0);
     const hits = [], vistos = new Set();
     const sumar = (t) => {
       if(!t) return;
@@ -5454,12 +5487,11 @@
     if(hits.length){
       /* El camino de la frase entera NO ordenaba: devolvía en el orden del
          catálogo, así que «poste» ponía la repostería primero por estar
-         Comercial más arriba en la lista. Se parte en dos manteniendo el
-         orden dentro de cada mitad —lo que empieza palabra, y lo demás—, así
-         que no se pierde ningún resultado. */
-      const abre = hits.filter(x => inicio(x, q));
-      const resto = hits.filter(x => !inicio(x, q));
-      return abre.concat(resto).slice(0, 60);
+         Comercial más arriba en la lista, y «tapa» ponía el hidrante primero
+         porque el nombre del uso casa para todos sus tipos. Se ordena por
+         rango y el orden del catálogo se conserva dentro de cada uno: no se
+         pierde ningún resultado, se ordenan. */
+      return hits.slice().sort((a, b) => rango(b, q) - rango(a, q)).slice(0, 60);
     }
 
     /* «parque de niños» no casa con nada: el buscador mira SUBCADENAS y no
@@ -5495,7 +5527,7 @@
       const casan = flat.filter(x => casa(x, w));
       if(!casan.length) return;
       const peso = 1 / casan.length;
-      casan.forEach(x => puntos.set(x, (puntos.get(x) || 0) + peso + (inicio(x, w) ? peso : 0)));
+      casan.forEach(x => puntos.set(x, (puntos.get(x) || 0) + peso * (1 + rango(x, w))));
     });
     return Array.from(puntos.keys())
       .sort((a, b) => puntos.get(b) - puntos.get(a))

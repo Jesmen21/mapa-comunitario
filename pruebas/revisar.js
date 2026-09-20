@@ -3699,6 +3699,74 @@ console.log('\n  -- el mapeo de Pro City --');
     llamadas + ' llamadas a urbisSinDireccion');
 }
 
+console.log('\n  -- lo que se mapea mirando al suelo (v982) --');
+{
+  const j20 = soloCodigo(leer('js/20-mobile-functional-app.js'));
+  const j03b = soloCodigo(leer('js/03b-edificio-vocabulario.js'));
+  const j03d = soloCodigo(leer('js/03d-mobiliario-material.js'));
+  const j64 = soloCodigo(leer('js/64-analisis-edu.js'));
+  const nrm = x => String(x || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+  const tipos = (() => {
+    const i = j20.indexOf('const PROCITY_MATRIZ_USOS = [');
+    if (i < 0) return [];
+    const blk = j20.slice(i, j20.indexOf('\n  ];', i));
+    return (blk.match(/'[^']+'/g) || []).map(x => x.slice(1, -1));
+  })();
+
+  comprobar('MATERIAL · se lee el catálogo de tipos',
+    tipos.length > 500,
+    tipos.length > 500 ? tipos.length + ' cadenas en el catálogo' : 'no se pudo leer PROCITY_MATRIZ_USOS');
+
+  /* Lo que el reporte pidió por su nombre, y lo que se midió faltando al
+     lado. Se persigue la PALABRA de la calle y no el nombre del tipo: un
+     renombre no puede dejar el hueco abierto en silencio, que es la forma de
+     la guarda que la v973 dejó para el árbol y la banca. */
+  const sePuede = t => tipos.some(x => nrm(x).indexOf(nrm(t)) >= 0);
+  const pedidos = ['hidrante', 'alcantarillado', 'sumidero', 'polideportivo',
+                   'medidor', 'valvula', 'paso peatonal', 'rampa de accesibilidad',
+                   'baranda', 'muro de contencion', 'gaviones'];
+  const sinTipo = pedidos.filter(t => !sePuede(t));
+  comprobar('lo que se mapea mirando al suelo tiene su tipo',
+    sinTipo.length === 0,
+    sinTipo.length ? 'sin tipo: ' + sinTipo.join(' · ') : 'los ' + pedidos.length + ' se pueden mapear');
+
+  /* Un uso NUEVO toca CUATRO inventarios y basta olvidar uno para que quede
+     roto en silencio: sin grupo solo aparece buscándolo, sin casilla en el
+     análisis se puede mapear y el análisis lo descarta, y sin declararlo en
+     el vocabulario del edificio hereda «es un edificio» y la ficha de una
+     tapa de alcantarillado pregunta cuántos pisos tiene. Es literalmente lo
+     que costó la v974. */
+  const REDES = 'Redes en Vía (tapas y registros)';
+  const enCuatro = {
+    'catálogo': j20.indexOf("u:'" + REDES + "'") >= 0,
+    'grupo': j20.indexOf("'" + REDES + "'") >= 0 && (j20.match(new RegExp("'" + REDES.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + "'", 'g')) || []).length >= 2,
+    'análisis': j64.indexOf(REDES) >= 0,
+    'sin pisos': j03b.indexOf(REDES) >= 0
+  };
+  const faltanInv = Object.keys(enCuatro).filter(k => !enCuatro[k]);
+  comprobar('el uso nuevo está declarado en los CUATRO inventarios',
+    faltanInv.length === 0,
+    faltanInv.length ? 'falta en: ' + faltanInv.join(' · ')
+                     : 'catálogo · grupo · análisis · sin pisos');
+
+  /* Y lleva material, que es lo que distingue una tapa de hierro de una de
+     concreto. El nombre tiene que ser el MISMO que en el catálogo o el campo
+     queda apagado sin decirlo (v974). */
+  comprobar('y lleva el campo de material, con el nombre exacto del catálogo',
+    j03d.indexOf(REDES) >= 0 && j20.indexOf("u:'" + REDES + "'") >= 0,
+    j03d.indexOf(REDES) >= 0 ? 'declarado en USOS_CON_MATERIAL con el mismo nombre'
+      : 'no lleva material: una tapa de hierro y una de concreto se registran igual');
+
+  /* Una coincidencia en el TIPO vale más que una que solo está en el nombre
+     del USO. Sin esto, «tapa» devuelve «Hidrante» de primero, porque el
+     nombre del uso casa para sus doce tipos por igual. */
+  comprobar('el buscador prefiere el tipo antes que el nombre del uso',
+    j20.indexOf('const enTipo = (x, t)') >= 0 && /rango\s*=\s*\(x, t\)\s*=>\s*\(enTipo/.test(j20),
+    (j20.indexOf('const enTipo = (x, t)') >= 0 && /rango\s*=\s*\(x, t\)\s*=>\s*\(enTipo/.test(j20))
+      ? 'el rango suma 2 por el tipo y 1 por empezar palabra'
+      : 'el nombre del uso pesa igual que el del tipo: «tapa» devuelve el hidrante primero');
+}
+
 console.log('\n  -- el mobiliario urbano: postes y de qué está hecho (v981) --');
 {
   const j03d = soloCodigo(leer('js/03d-mobiliario-material.js'));
@@ -3795,10 +3863,20 @@ console.log('\n  -- el mobiliario urbano: postes y de qué está hecho (v981) --
 
   /* El buscador ordena lo que empieza palabra por delante. Lo destapó el
      papel: «poste» salía debajo de «Panadería / repostería». */
-  comprobar('el buscador pone delante lo que empieza palabra',
-    j20.indexOf('const inicio = (x, t)') >= 0 && /abre\.concat\(resto\)/.test(j20),
-    (j20.indexOf('const inicio = (x, t)') >= 0 && /abre\.concat\(resto\)/.test(j20))
-      ? 'la frase entera se parte en «empieza palabra» y el resto'
+  /* Se mide la PROPIEDAD y no la línea: la primera versión citaba
+     `abre.concat(resto)` —la implementación de ese día— y se puso roja en la
+     v982, que ordena por rango en vez de partir en dos. Es la constante del
+     material metida dentro de la comprobación (v890), cometida en la guarda
+     de un buscador. Lo que tiene que seguir siendo cierto es que el camino
+     de la frase entera ORDENE, y que el orden mire el inicio de palabra. */
+  const ordena = j20.indexOf('const inicio = (x, t)') >= 0
+    && j20.indexOf('const rango = (x, t)') >= 0
+    && /if\(hits\.length\)\{[\s\S]{0,700}?rango\(/.test(j20);
+  comprobar('el buscador ordena lo que encuentra, y no lo deja en el orden del catálogo',
+    ordena,
+    ordena ? 'la frase entera se ordena por rango (inicio de palabra y tipo)'
+      : j20.indexOf('const inicio = (x, t)') < 0 ? 'no existe el criterio de inicio de palabra'
+      : j20.indexOf('const rango = (x, t)') < 0 ? 'no existe el rango'
       : 'volvió a devolver en el orden del catálogo: «poste» cae debajo de «repostería»');
 }
 
