@@ -13221,6 +13221,165 @@ defecto que la v973 encontró y la v977 volvió a cometer. Cada una cierra ahora
 en una frase de éxito y una causa por rama.
 
 
+## El árbol sin especie lo dice, y por eso se puede volver (v979)
+
+Pedido mapeando: *«hay una especie de árbol que yo no conozco, poder editarlo
+para después poner la especie correcta… que me dé la opción de editar el ítem
+que yo ponga ahí, el mapeo del árbol.»*
+
+Medida la premisa antes de escribir —la regla de la v863 y la v916— **editar
+ya existía y ya funcionaba entero**:
+
+| | Estado en la v978 |
+|---|---|
+| Botón «✏️ Editar» en el punto | sí, desde antes |
+| El formulario vuelve con la especie guardada | sí, la v975 lo dejó puesto |
+| Cambiarla escribe solo su casilla y no pisa lo demás | sí, `fichaSlotsEscritos` + `urbisFusionarEdicion` |
+
+Así que la tanda **no era escribir el editar**. Si se hubiera dado por bueno el
+enunciado, habría salido una segunda ruta para algo que ya estaba —la clase B
+comprada a sabiendas— y el pedido habría quedado igual de sin resolver.
+
+### Lo que de verdad faltaba: cuáles
+
+El pedido dice **«más adelante»**, y ahí está el hueco. Un árbol mapeado sin
+especie **no lo decía en ninguna pantalla**: el globo y la ficha imprimen la
+especie cuando la hay, y cuando no la hay no imprimen nada. Desde afuera, «a
+nadie se le preguntó» y «este punto no tiene ese campo» se ven exactamente
+igual — la **clase C**, con la vuelta de que acá el dato ausente es una TAREA:
+volver días después pedía acordarse de cuál era el árbol.
+
+    v978   el árbol sin especie no se distingue de uno que no es árbol
+    v979   se marca en el globo, en la ficha y en «Mis mapeos», con cuántos faltan
+
+### «No se sabe» NO está pendiente, y es lo que sostiene todo
+
+Es la decisión que decide la función entera. `No se sabe` es una **respuesta**
+—alguien miró el árbol y no pudo determinarlo desde la acera— y la distinción
+la defienden js/03b y js/03c desde que existen. Marcarla como pendiente sería
+pedirle que «complete» lo que ya contestó, o sea **empujarlo a inventar**, que
+es exactamente lo que el campo opcional vino a evitar (v973).
+
+Cuatro ramas, y las cuatro medidas en el navegador contra registros armados
+con las casillas de verdad:
+
+| | ¿pendiente? |
+|---|---|
+| árbol sin nada anotado | **sí** — a nadie se le preguntó |
+| árbol con «No se sabe» | no — es una respuesta |
+| árbol con una especie de la lista | no |
+| árbol con «Otro» **sin** nombrar | **sí** — eligió la salida y no la llenó |
+| árbol con «Otro» nombrado | no — la nombró, solo que no está en la lista |
+| una banca, una vivienda | no — no tienen especie que faltar |
+
+La última fila no es un detalle: decir «sin especie» sobre una banca es ruido,
+y un aviso que sale donde no aplica deja de significar algo (v886).
+
+### Una sola función, y el uso sale del propio registro
+
+`URBIS_ARBOL.pendiente(descripcion)` vive en `js/04`, al lado de `leer` y por
+la misma razón que `URBIS_AUTOR` y la ficha del edificio: **lo que depende del
+ORDEN de las casillas se calcula una vez y en un solo sitio.**
+
+Y toma **un solo argumento**: el uso se saca de `d[0]` —«Uso · Tipo»— en vez
+de pedirlo por parámetro. Quien pregunta no tiene por qué saber en qué casilla
+vive el uso, que es justamente lo que esa regla evita.
+
+Las tres superficies preguntan lo mismo, y `pendientesDe` —el recuento—
+**delega** en `pendiente`: con su propio recorrido, la cifra del banner y las
+marcas de las tarjetas podrían no cuadrar en la misma pantalla.
+
+### Las tres superficies, y cuál hace posible el «más adelante»
+
+* **el globo** lo dice cuando ya se encontró el punto, **con el camino**: el
+  botón «✏️ Editar» está en ese mismo globo. Un vacío que no dice cómo se
+  llena es la mitad del trabajo (v880);
+* **la ficha** lo mismo, para quien entra por el detalle;
+* **«Mis mapeos»** es la que de verdad resuelve el pedido —es donde se
+  **encuentran**—, con la marca por tarjeta y, arriba, cuántos faltan.
+
+El recuento **se calcula** de la misma lista que se pinta (v903): tiene que
+bajar a cero solo el día que se llenen, sin que nadie se acuerde de una
+bandera. Con cero no se imprime — un «0 árboles sin especie» es ruido.
+
+El globo se lo enseña **solo a su autor**: a un vecino no le toca ir a
+determinar la especie del árbol de otro, y un aviso que sale para todos deja
+de ser una tarea y pasa a ser una queja.
+
+### El aviso de la ficha va sobre fondo OSCURO
+
+Costó una vuelta y por eso quedó medido. `.detalle-especie` se pinta en verde
+claro sobre oscuro; mi ámbar `#8a4b06` —pensado para el papel claro del
+globo— ahí no se lee. **Y peor: lo escribí ANTES de `.detalle-especie`**, con
+la misma especificidad, así que esa regla se lo comía sin decir nada.
+
+Las dos mitades están en la guarda: que exista la regla de la ficha y que vaya
+**después**. Copiar el color del globo en vez de medirlo en su sitio es lo que
+produce un aviso invisible que en el código se lee perfecto.
+
+### Demostrado contra la v978
+
+Seis comprobaciones, todas en rojo contra una copia guardada:
+
+```
+✗ las tres superficies preguntan por la misma función  — solo 2
+✗ ninguna marca se pinta sin preguntarle a esa función — popup-especie-falta · detalle-especie-falta
+✗ el recuento cuenta lo mismo que se marca  — pendientesDe lleva su propio criterio
+✗ y la función sigue mirando el uso y lo guardado  — marcaría una banca como árbol sin especie
+✗ el aviso de la ficha se pinta después del verde  — va antes: gana la de abajo y el ámbar no se ve
+```
+
+#### Dos guardas mías que no mordían
+
+* La primera versión de «ninguna pantalla decide por su cuenta» buscaba
+  comparaciones contra `NO_SE_SABE()` y **denunció el formulario**, que lo que
+  hace es OFRECER esa opción. Una guarda con falsos positivos termina en una
+  lista de excepciones que envejece hasta no significar nada (v895). Se
+  reemplazó por atar la MARCA a la pregunta, que discrimina sin ninguno.
+* Y esa buscaba `URBIS_ARBOL.pendiente` sin paréntesis, así que
+  **`pendientesDe` la satisfacía por prefijo**. El token va completo.
+
+De qué no responde va escrito al lado: caza una marca en un archivo que nunca
+pregunta; una segunda criteriología DENTRO de un archivo que sí pregunta se le
+escapa, y esa la caza el recuento de llamadas. Declarar cubrir más de lo que
+se cubre es tan engañoso como cubrir menos (v945, v952).
+
+### Lo que la sonda midió, y lo que le costó llegar
+
+El bucle entero en el navegador: tres mapeos sembrados, dos árboles sin
+especie y uno con «Nim» → **el banner dice 2**, dos tarjetas marcadas y la
+tercera no → tocar la marcada → «Editar mapeo» con el bloque de especie vacío
+→ buscar «nim» y salir **Nim (Azadirachta indica)** con sus dos salidas.
+
+Tres cosas del método que costaron una vuelta cada una y valen para cualquier
+sonda futura:
+
+* **`BASE_OFFSET` es una const de módulo, no está en `window`.** Escribirlo a
+  mano en la sonda sería meter una constante del código dentro de la prueba
+  (v890) y encima una equivocada. Se DEDUCE preguntándole a `URBIS_AUTOR.de`
+  en qué casilla lee el nombre.
+* **`globalData` NO es `window.globalData`.** Medido: `globalData ===
+  window.globalData` da **false**. Sembrando el de `window`, la aplicación no
+  ve nada y la lista sale vacía por un motivo que no es el que se mide.
+* **Sin sesión nada es «mío»** y la lista sale vacía igual. Se ponen los
+  globales de identidad, que es lo que `applyGlobalsFromSession` escribe al
+  entrar.
+
+Y una del entorno, no del producto: sin servidor, `loadProCityFolders()` falla
+y repinta el panel una y otra vez, así que el click de Playwright ve el botón
+desprendido. Se dispara sobre el nodo — sigue siendo el botón de verdad y su
+manejador de verdad.
+
+### Lo que NO se pudo correr
+
+**Ninguna suite de navegador**, por lo mismo que la v973 a la v978: este
+contenedor no tiene `../urbis-motor` ni el `node_modules` del banco de
+pruebas. Y **el bucle completo con publicación real tampoco**: guardar la
+especie editada pide el backend. Lo que sí se midió es todo lo anterior —que
+la marca aparece, que el editar abre con el bloque vacío y que el buscador
+encuentra— más las cuatro ramas de `pendiente` contra registros de verdad.
+
+
 ## La lista viva: lo que al pliego educativo todavía le falta (v866)
 
 Esta lista se quedó vieja **cinco veces**. Cuatro dentro de la hoja —la

@@ -3692,6 +3692,102 @@ console.log('\n  -- el mapeo de Pro City --');
     llamadas + ' llamadas a urbisSinDireccion');
 }
 
+console.log('\n  -- el árbol al que le falta la especie (v979) --');
+{
+  const j04 = soloCodigo(leer('js/04-marker-proximity.js'));
+  const j10 = soloCodigo(leer('js/10-visible-markers.js'));
+  const j20 = soloCodigo(leer('js/20-mobile-functional-app.js'));
+  const c83 = leer('css/83-moderacion-foto.css');
+
+  const trozo = (src, desde, hasta) => {
+    const i = src.indexOf(desde), j = src.indexOf(hasta, i + 1);
+    return (i < 0 || j < 0) ? '' : src.slice(i, j + hasta.length);
+  };
+  const cuerpo = trozo(j04, 'pendiente: function (descripcion) {', '\n    },');
+
+  /* MATERIAL primero (v920): sin la función, todo lo de abajo se cumpliría
+     sobre la nada. */
+  comprobar('MATERIAL · se lee la función que decide si a un árbol le falta la especie',
+    !!cuerpo && j04.indexOf('pendientesDe: function') >= 0,
+    !!cuerpo ? 'URBIS_ARBOL.pendiente y URBIS_ARBOL.pendientesDe'
+             : 'no se pudo leer URBIS_ARBOL.pendiente');
+
+  /* Las TRES superficies preguntan lo mismo. El globo, la ficha del punto y
+     la lista de «Mis mapeos» tienen que marcar exactamente los mismos
+     árboles: tres recorridos con su propio criterio se separan a la tanda
+     siguiente, y el que se quedaría viejo sería el de la lista —que es
+     justo el que permite volver días después—. */
+  const usos = (j10.match(/URBIS_ARBOL\.pendiente\(/g) || []).length
+             + (j20.match(/URBIS_ARBOL\.pendiente\(/g) || []).length;
+  comprobar('las tres superficies preguntan por la misma función',
+    usos >= 3,
+    usos >= 3 ? usos + ' llamadas a URBIS_ARBOL.pendiente'
+              : 'solo ' + usos + ': alguna superficie decide por su cuenta');
+
+  /* Y NINGUNA marca se pinta sin haber preguntado. La primera versión de
+     esta comprobación buscaba comparaciones contra «No se sabe» y denunció
+     el formulario, que lo que hace es OFRECER esa opción —legítimo—: una
+     guarda con falsos positivos termina en una lista de excepciones que
+     envejece hasta no significar nada (v895). Lo que sí discrimina sin
+     ninguno es atar la MARCA a la pregunta: quien pinte «sin especie» tiene
+     que haber llamado a `pendiente` en el mismo archivo. Así, una cuarta
+     superficie con su propio criterio sale en rojo — y ese criterio propio
+     es donde se pierde que «No se sabe» es una respuesta y no un pendiente.
+
+     De qué NO responde, dicho: caza una marca en un archivo que NUNCA
+     pregunta. Una segunda criteriología DENTRO de un archivo que sí
+     pregunta se le escapa —la de arriba, que cuenta las llamadas, es la que
+     la caza—. Y el token va completo con su paréntesis: `pendientesDe`
+     empieza igual, así que buscando `pendiente` a secas el recuento hacía
+     pasar a la marca. */
+  const MARCAS = [['popup-especie-falta', j10], ['detalle-especie-falta', j10],
+                  ['u52-procity-mine-falta', j20], ['u52-procity-mine-faltan', j20]];
+  const sinPreguntar = MARCAS
+    .filter(([cls, src]) => src.indexOf(cls) >= 0
+      && src.indexOf('URBIS_ARBOL.pendiente(') < 0 && src.indexOf('URBIS_ARBOL.pendientesDe(') < 0)
+    .map(([cls]) => cls);
+  const marcasPuestas = MARCAS.filter(([cls, src]) => src.indexOf(cls) >= 0).length;
+  comprobar('ninguna marca de «sin especie» se pinta sin preguntarle a esa función',
+    sinPreguntar.length === 0 && marcasPuestas === MARCAS.length,
+    sinPreguntar.length ? sinPreguntar.join(' · ') + ' se pinta con criterio propio'
+      : marcasPuestas < MARCAS.length
+      ? 'faltan marcas por pintar: ' + marcasPuestas + ' de ' + MARCAS.length
+      : 'las ' + marcasPuestas + ' marcas salen de preguntarle a pendiente');
+
+  /* El recuento delega. Con su propio recorrido, la cifra del banner y las
+     marcas de las tarjetas podrían no cuadrar en la misma pantalla. */
+  const cuenta = trozo(j04, 'pendientesDe: function (lista) {', '\n    }\n  });');
+  comprobar('el recuento cuenta lo mismo que se marca',
+    !!cuenta && cuenta.indexOf('URBIS_ARBOL.pendiente(') >= 0,
+    (!!cuenta && cuenta.indexOf('URBIS_ARBOL.pendiente(') >= 0)
+      ? 'pendientesDe delega en pendiente'
+      : 'pendientesDe lleva su propio criterio: el banner y las marcas pueden no cuadrar');
+
+  /* Guarda de la guarda: si `pendiente` dejara de mirar el uso, marcaría una
+     banca; si dejara de leer el registro, marcaría todo o nada. Las dos
+     seguirían con todo lo de arriba en verde (v878). */
+  comprobar('y la función sigue mirando el uso y lo guardado',
+    !!cuerpo && cuerpo.indexOf('esUsoDeArbol(') >= 0 && cuerpo.indexOf('.leer(') >= 0,
+    (!!cuerpo && cuerpo.indexOf('esUsoDeArbol(') >= 0 && cuerpo.indexOf('.leer(') >= 0)
+      ? 'filtra por uso de árbol y lee la especie guardada'
+      : !cuerpo ? 'no se pudo leer la función'
+      : cuerpo.indexOf('esUsoDeArbol(') < 0
+      ? 'dejó de mirar el uso: marcaría una banca como árbol sin especie'
+      : 'dejó de leer lo guardado');
+
+  /* El aviso de la FICHA va sobre fondo oscuro y con la misma especificidad
+     que `.detalle-especie`: escrito antes, esa regla —más abajo en el
+     archivo— se lo come sin decir nada, y el ámbar no se ve. Costó una
+     vuelta y por eso queda medido. */
+  const iBase  = c83.indexOf('.detalle-especie{');
+  const iFalta = c83.indexOf('.detalle-especie.detalle-especie-falta{');
+  comprobar('el aviso de la ficha se pinta después del verde que si no se lo come',
+    iBase >= 0 && iFalta > iBase,
+    (iBase >= 0 && iFalta > iBase) ? 'va después de .detalle-especie'
+      : iFalta < 0 ? 'no existe la regla del aviso en la ficha'
+      : 'va antes de .detalle-especie: misma especificidad, gana la de abajo y el ámbar no se ve');
+}
+
 console.log('\n  -- la precisión del GPS al ubicar un punto (v978) --');
 {
   const j20 = soloCodigo(leer('js/20-mobile-functional-app.js'));

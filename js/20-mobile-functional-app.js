@@ -3161,9 +3161,20 @@
       const folderIdDeEste = proCityPointFolderId(p);
       const folderDeEste = folderIdDeEste ? proCity.myFolders.find(f=>f.id === folderIdDeEste) : null;
       const folderTag = folderIdDeEste ? `<small class="u52-procity-mine-folder-tag">🔗 En carpeta cooperativa${folderDeEste ? ': ' + esc(folderDeEste.nombre) : ''}</small>` : '';
+      /* El árbol al que le falta la especie, marcado en la lista. Es la
+         superficie que hace posible el «más adelante» del pedido: el globo lo
+         dice cuando ya se encontró el punto, y acá es donde se encuentra. La
+         misma función que el globo y la ficha (URBIS_ARBOL.pendiente): tres
+         recorridos con su propio criterio contarían tres cosas distintas. */
+      let faltaEsp = '';
+      try{
+        if(window.URBIS_ARBOL && window.URBIS_ARBOL.pendiente(p.descripcion)){
+          faltaEsp = '<small class="u52-procity-mine-falta">🌳 Sin especie anotada · tóquelo para ponerla</small>';
+        }
+      }catch(e){}
       return `<button type="button" class="u52-procity-mine-card${marcado?' seleccionado':''}" data-u52-procity-mine="${esc(lat)}" data-u52-procity-select-target="${esc(lat)}">
         <span class="u52-procity-mine-ico" style="background:var(--pc-chip);color:var(--pc-lav-deep)">${dInfo.icon}</span>
-        <div class="u52-procity-mine-info"><b>${esc(label)}</b><small>${esc(subUso)} · ${esc(fecha)}</small>${autorTag}${folderTag}</div>
+        <div class="u52-procity-mine-info"><b>${esc(label)}</b><small>${esc(subUso)} · ${esc(fecha)}</small>${autorTag}${folderTag}${faltaEsp}</div>
         ${enSeleccion ? `<span class="u52-procity-mine-check">${marcado?'✅':'⬜'}</span>` : '<span class="u52-procity-mine-arrow">›</span>'}
       </button>`;
     }
@@ -3176,7 +3187,16 @@
           ${proCity.selectMode && proCity.selectedLats.size ? `<button type="button" class="u52-procity-select-bulk-add" data-u52-call="procity-select-bulk-add">📁 Agregar ${proCity.selectedLats.size} a carpeta</button>` : ''}
           ${proCity.selectMode && proCity.selectedLats.size ? `<button type="button" class="u52-procity-select-bulk-del" data-u52-call="procity-select-bulk-delete">🗑️ Eliminar ${proCity.selectedLats.size}</button>` : ''}
         </div>` : '';
-      body = mios.length ? `${selToolbar}<div class="u52-procity-mine-list">${mios.map(p=>_mineCard(p, true)).join('')}</div>`
+      /* El recuento SE CALCULA de la misma lista que se pinta (v903): una
+         cifra escrita a mano envejece sola, y esta tiene que bajar a cero
+         sola el día que se llenen. Con cero no se imprime: un «0 árboles sin
+         especie» es ruido, y un aviso que sale siempre deja de avisar. */
+      const _nFaltan = (window.URBIS_ARBOL && typeof window.URBIS_ARBOL.pendientesDe === 'function')
+        ? window.URBIS_ARBOL.pendientesDe(mios) : 0;
+      const faltanBanner = _nFaltan ? `<div class="u52-procity-mine-faltan">🌳 ${_nFaltan === 1
+        ? 'Un árbol suyo está sin especie anotada'
+        : _nFaltan + ' árboles suyos están sin especie anotada'}. Tóquelo y use «✏️ Editar» para ponerla cuando la sepa.</div>` : '';
+      body = mios.length ? `${selToolbar}${faltanBanner}<div class="u52-procity-mine-list">${mios.map(p=>_mineCard(p, true)).join('')}</div>`
         : `<div class="u52-empty-card"><span>🗺️</span><div><b>Aún no has georreferenciado nada</b><small>Lo que mapees en Pro City aparecerá aquí.</small></div></div>`;
     } else if(proCity.statsTab === 'amigos'){
       body = deAmigos.length ? `<div class="u52-procity-mine-list">${deAmigos.map(p=>_mineCard(p, false)).join('')}</div>`

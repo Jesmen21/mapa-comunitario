@@ -933,6 +933,58 @@
         idxEspecie: URBIS_SLOTS.especieArbol,
         idxEspecieOtro: URBIS_SLOTS.especieArbolOtro
       };
+    },
+
+    /* ¿A este árbol le falta la especie? Pedido en la calle: «hay una especie
+       de árbol que yo no conozco, poder editarlo para después poner la
+       especie correcta». Editar ya existía y la especie ya volvía como se
+       guardó (v975) — lo que NO existía es cómo encontrar después cuáles
+       quedaron sin ella: un árbol sin especie no lo decía en ninguna
+       pantalla, así que desde afuera se veía igual que uno que no tiene ese
+       campo. Es la clase del dato presente que ningún lector alcanza, con la
+       vuelta de que acá el dato es una TAREA.
+
+       Tres cosas que decide esta función y por eso está en un solo sitio:
+
+       · Solo los usos que TIENEN especie. Decir «sin especie» sobre una
+         banca es ruido, y un aviso que sale donde no aplica deja de
+         significar algo (v886).
+       · «No se sabe» NO está pendiente. Es una RESPUESTA —alguien miró el
+         árbol y no pudo determinarlo desde la acera— y la distinción es la
+         que js/03b y js/03c defienden desde que existen. Pedirle que
+         «complete» lo que ya contestó es empujarlo a inventar, que es
+         exactamente lo que el campo opcional vino a evitar (v973).
+       · «Otro» con su texto tampoco: nombró la especie, solo que no está en
+         la lista. Sin el texto sí queda pendiente — eligió la salida y no la
+         llenó.
+
+       El uso se saca del propio registro (`d[0]` es «Uso · Tipo») y no se
+       pide por parámetro: quien pregunta no tiene por qué saber en qué
+       casilla vive el uso, que es la razón de que esto viva acá y no en
+       js/03c. */
+    pendiente: function (descripcion) {
+      const V = window.URBIS_ARBOL_VOC;
+      if (!V || typeof V.esUsoDeArbol !== 'function') return false;
+      const d = String(descripcion || '').split(' | ');
+      const uso = String(d[0] || '').split(' \u00b7 ')[0].trim();
+      if (!V.esUsoDeArbol(uso)) return false;
+      const a = window.URBIS_ARBOL.leer(descripcion);
+      if (!a.especie) return true;                 // a nadie se le preguntó
+      if (a.esOtro && !a.otroTexto) return true;   // eligió la salida y no la llenó
+      return false;                                // incluida «No se sabe»
+    },
+
+    /* Cuántos de una lista. Va acá y no en cada pantalla porque las tres que
+       lo cuentan —el globo, la ficha y «Mis mapeos»— tienen que contar lo
+       mismo: dos recorridos con su propio criterio se separan a la tanda
+       siguiente. */
+    pendientesDe: function (lista) {
+      if (!Array.isArray(lista)) return 0;
+      let n = 0;
+      for (let i = 0; i < lista.length; i++) {
+        try { if (window.URBIS_ARBOL.pendiente(lista[i] && lista[i].descripcion)) n++; } catch (e) {}
+      }
+      return n;
     }
   });
 

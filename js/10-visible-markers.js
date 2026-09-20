@@ -426,6 +426,20 @@
     try {
       const _ab = window.URBIS_ARBOL ? window.URBIS_ARBOL.leer(p.descripcion) : null;
       if (_ab && _ab.texto) especiePopup = `<div class="popup-desc popup-especie">🌳 ${limpiarHTML(_ab.texto)}</div>`;
+      /* Y el árbol al que todavía le falta. Sin este renglón, volver «más
+         adelante» a ponerle la especie pide acordarse de cuál era: el punto
+         se veía igual que uno que no tiene ese campo. Se dice CON el camino
+         —el botón de editar está ahí mismo, en este globo— porque un vacío
+         que no dice cómo se llena es la mitad del trabajo.
+
+         Solo a quien puede hacer algo con eso, que es su autor: a un vecino
+         no le toca ir a determinar la especie del árbol de otro, y un aviso
+         que sale para todos deja de ser una tarea y pasa a ser una queja. */
+      else if (window.URBIS_ARBOL && window.URBIS_ARBOL.pendiente(p.descripcion)
+               && typeof esAutorDelReporte === 'function' && esAutorDelReporte(p)) {
+        especiePopup = '<div class="popup-desc popup-especie-falta">🌳 Sin especie anotada.'
+          + ' Cuando sepa cuál es, tóquele «✏️ Editar» acá abajo y elíjala.</div>';
+      }
     } catch(e){}
 
     let descPopup = (d[2] && d[2].trim() && d[2] !== 'N/A') ? `<div class="popup-desc">${limpiarHTML(d[2])}</div>` : '';
@@ -911,6 +925,10 @@
     try {
       const _abD = (_visD.verDetalle && window.URBIS_ARBOL) ? window.URBIS_ARBOL.leer(p.descripcion) : null;
       if (_abD && _abD.texto) _especieDet = `<div class="detalle-especie">🌳 Especie: <b>${limpiarHTML(_abD.texto)}</b></div>`;
+      else if (_visD.verDetalle && window.URBIS_ARBOL && window.URBIS_ARBOL.pendiente(p.descripcion)) {
+        _especieDet = '<div class="detalle-especie detalle-especie-falta">🌳 Especie: <b>sin anotar</b>'
+          + ' — edite el mapeo para ponerla cuando la sepa.</div>';
+      }
     } catch(e){}
     const _notaDet     = _visD.verDetalle ? (d[2] || 'Sin notas.')
                                           : 'Lo que se escribió acá se publica cuando un administrador confirme el reporte.';

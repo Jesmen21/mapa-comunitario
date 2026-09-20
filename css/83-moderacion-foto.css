@@ -156,6 +156,10 @@ body[data-role="gov"] .urbis-sello-aprobar{
    este proyecto significa «esto está resuelto» desde la v880— y no en el
    gris del apunte de arriba ni en el ámbar de lo que falta. */
 .popup-especie{ color:#4f9d69; font-weight:700; }
+/* El árbol sin especie, en el globo. Ámbar y no verde: el verde de al lado
+   dice «ya está determinada» y esto dice lo contrario, y dos cosas distintas
+   con el mismo color se leen como una sola. */
+.popup-especie-falta{ color:#8a4b06; font-weight:700; }
 .detalle-especie{
   margin:0 0 10px; padding:8px 11px;
   border-radius:8px; border:1px solid rgba(79,157,105,.35);
@@ -164,6 +168,16 @@ body[data-role="gov"] .urbis-sello-aprobar{
   color:#8fd3a5 !important; -webkit-text-fill-color:#8fd3a5;
 }
 .detalle-especie b{ color:#cdeeda !important; -webkit-text-fill-color:#cdeeda; }
+/* El mismo aviso en la ficha, que va sobre fondo OSCURO: el ámbar del globo
+   —#8a4b06, pensado para papel claro— no se lee acá. Se mide en su sitio,
+   no se copia del otro. Y va DESPUÉS de `.detalle-especie`, o esa regla
+   —misma especificidad, escrita más abajo— se lo comería sin decir nada. */
+.detalle-especie.detalle-especie-falta{
+  border-color:rgba(217,119,6,.45);
+  background:rgba(217,119,6,.12);
+  color:#f0c38a !important; -webkit-text-fill-color:#f0c38a;
+}
+.detalle-especie.detalle-especie-falta b{ color:#ffd9a8 !important; -webkit-text-fill-color:#ffd9a8; }
 
 /* ── Pedir corrección (v835) ──────────────────────────────────────────────
    Ámbar, como todo lo que en URBIS dice «esto todavía no está confirmado».
