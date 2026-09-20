@@ -12855,6 +12855,166 @@ los dos campos y leyendo dónde acabó—, que es lo que produjo la tabla de
 arriba. Lo que no se ejercitó en navegador es la publicación con foto: eso
 pide servidor.
 
+## Cuáles bloquean la fiabilidad, y lo que no se dibuja se pliega (v977)
+
+Dos cosas pedidas el mismo día, y medida la premisa antes de tocar nada
+(v916), la primera resultó **no ser una regresión**:
+
+> «no quiere salir la fiabilidad de abelardo y lo que dice registro no tiene
+> datos déjalos guardados en un menú desplegable para no tener tanta
+> información innecesaria»
+
+### La fiabilidad no sale porque la v972 decidió que no saliera
+
+Medido en la pantalla, la placa imprime «Sin nivel» **con su línea de qué
+falta**, y el cálculo es el de la v972: el techo `palabra` no es un número
+sino un intervalo, y con `peorMin = 1` y `peorMax = 3` el veredicto queda
+entre «Confiabilidad inquebrantable» y «Poco fiable». Publicar cualquiera de
+los dos sería publicar un peldaño sin sus insumos.
+
+Lo que lo bloquea son **4 de 4 contradicciones documentadas sin
+`mismoObjetoVerificado`**. Y esa lectura —si lo prometido y lo hecho son el
+mismo objeto— **la toma quien firma el módulo, no esta sesión**: es lo que la
+v959 dejó escrito y la v972 confirmó, porque mueve en público el juicio sobre
+una persona real. Declararla de paso, para que la cifra salga, es exactamente
+la salida barata que este proyecto lleva siete tandas deshaciendo.
+
+### Pero el módulo no daba con qué tomarla: clase C
+
+Ese es el defecto de verdad, y es de los caros. El módulo **sabe
+exactamente** cuáles son las cuatro —las cuenta para decir «faltan 4 de 4»— y
+**ninguna pantalla decía cuáles**:
+
+* la ficha imprimía «Se declara con `mismoObjetoVerificado` en cada
+  contradicción documentada del registro» y no nombraba ninguna;
+* la lista de contradicciones —el sitio donde el lector tiene los ocho casos
+  delante— **no marcaba nada**: un caso que bloquea el veredicto y uno que no
+  se veían idénticos.
+
+Es la clase C con su forma exacta: **un dato presente e inalcanzable se ve,
+desde afuera, igual que uno ausente.** Y su consecuencia es peor que la
+habitual, porque el dato ausente es una INSTRUCCIÓN: «declare
+mismoObjetoVerificado» sin la lista no se puede seguir.
+
+Ahora la ficha las nombra una por una debajo de «Qué falta para calcularlo»,
+y cada contradicción documentada dice, en su propia tarjeta, su identidad de
+objeto con la consecuencia y dónde se declara.
+
+**Las dos mitades hacen falta y miden cosas distintas**: con solo la ficha,
+quien entra por la lista no ve nada; con solo la lista, hay que recorrer ocho
+casos para saber cuáles son los cuatro. Cada una tiene su aserción.
+
+#### Y un cuarto estado, que también era una exención silenciosa
+
+Al medir apareció que «Religión: de ateo declarado a activista religioso»
+está documentada y lleva `cuenta: false` —el registro la deja fuera del
+cálculo a propósito, y el `matiz` explica por qué—. En la pantalla eso se veía
+**igual que un caso sin marcar**: el motivo estaba y la consecuencia no. Es la
+v966 otra vez, y por eso `IDENT` tiene cuatro estados y no tres.
+
+#### Una sola lectura para la cuenta y para la pantalla
+
+`identidadDe(c)` y `cuentaEnEjeA(c)`, y las llaman las dos. Con dos lecturas
+se separarían a la tanda siguiente (v879) — **y la que se quedaría vieja sería
+la de la pantalla**, porque la cuenta la mira una prueba desde la v972 y la
+lista no la miraba nadie. La guarda de la guarda exige justamente eso: que
+`ejeA` filtre por `cuentaEnEjeA` y lea por `identidadDe`.
+
+### El pliegue: se pliega el vacío que no acompaña a ninguna cifra
+
+La segunda mitad del pedido. Los tres gráficos que el registro no puede
+dibujar —la serie del Huila, la cadena de decisión y las técnicas de
+distorsión— ocupaban **1.310 px de los 9.027** del bloque de la portada,
+sueltos y en ámbar entre los que sí se dibujan.
+
+    v976   9.027 px · 3 tarjetas sueltas de 534, 445 y 402 px
+    v977   7.717 px · un pliegue de 75 px, cerrado, con el recuento a la vista
+
+**La línea que decide qué se puede plegar** es la que la v972 dejó puesta para
+las fuentes, dicha ahora para un vacío: *se pliega el vacío que no acompaña a
+ninguna cifra publicada.* Una nota que dice «NO es todavía ley» se queda
+visible porque el lector la necesita para no leer mal el número de al lado;
+estos tres **no tienen número al lado** —no publican nada— y lo que declaran
+es una carencia NUESTRA, que es la misma deuda interna que la v971 mandó en
+gris y al final.
+
+Tres decisiones, cada una con su razón:
+
+* **el recuento NO se pliega.** El resumen dice cuántos son y se lee sin abrir
+  nada: si desaparecen y nada lo dice, la exención se lee igual que un
+  aprobado (v971).
+* **el recuento se CALCULA de la lista** que el propio pliegue tiene dentro,
+  nunca tecleado (v903): un gráfico nuevo sin dato sube la cifra sin que su
+  autor se acuerde.
+* **con cero no hay pliegue.** Un «0 gráficos que no se dibujan» es ruido.
+
+Y el resumen va en **gris** aunque las tarjetas de adentro sigan siendo
+ámbar: el resumen es deuda nuestra, el ámbar de adentro es el vacío declarado
+de cada gráfico. Dos cosas distintas con el mismo color se leen como una sola
+(v880).
+
+**Una sola puerta**: los cuatro `grafSinDato` entran por `guardar()` y ninguno
+por `poner()`. Con dos maneras, el gráfico sin dato de la tanda siguiente
+quedaría a medio camino (v940, v951), y la guarda falla cerrado.
+
+### Dos detalles de aserción que se describían a sí mismos como verdes
+
+Los dos salieron de demostrar en rojo, y los dos son el defecto que la v973
+encontró en su propia guarda: **el detalle de un fallo tiene que decir QUÉ
+mitad falló.** «Todo gráfico sin dato entra al pliegue» se puso roja
+imprimiendo «las 4 entran por guardar() y salen por el pliegue», que es el
+texto del verde; y «la ficha NOMBRA…» lo mismo. Las dos tienen ahora una
+salida por causa.
+
+### Y una injección que no era fiel
+
+La primera demostración puso `var idt = null;` y `if (false) {` en vez de
+retirar los bloques. La guarda de la ficha **pasó en verde**, porque una
+comprobación estática cuenta menciones y no alcanzabilidad —es la lección que
+la v976 dejó escrita, cobrada en la tanda siguiente—. El estado fiel de la
+v976 es el bloque AUSENTE, y así demostrado salen las tres en rojo con su
+causa.
+
+### Demostrado contra la v976
+
+```
+✗ la ficha NOMBRA las contradicciones que bloquean el veredicto
+    — ejeA las tiene y la ficha no las imprime: las cuenta y no dice cuáles
+✗ y cada contradicción documentada dice su identidad de objeto donde se lee
+    — la lista de contradicciones no lee la identidad: vuelve a ser un dato
+      que no alcanza a nadie
+✗ todo gráfico sin dato entra al pliegue
+    — 4 quedaron sueltos con poner(): dos maneras para una sola cosa
+```
+
+### Lo que NO se pudo correr, y se dice
+
+**Ninguna suite de navegador** —`tficha` incluida—, por lo mismo que la v973,
+la v975 y la v976: este contenedor no tiene `../urbis-motor` ni el
+`node_modules` del banco de pruebas. Lo que sí se hizo es `revisar.js` entero
+con sus siete comprobaciones nuevas, y **mirar el papel** con la sonda de
+Playwright: el pliegue cerrado y abierto, los cuatro casos nombrados en la
+ficha y la marca de identidad en la tarjeta de cada contradicción. Las
+aserciones de `tficha` que corresponderían a esto —que la lista marque los
+cuatro y que el pliegue cuente— quedan pendientes de un contenedor con el
+banco de pruebas.
+
+### Lo que sigue bloqueado y es del usuario
+
+**Las cuatro declaraciones de `mismoObjetoVerificado`.** Son, con lo que el
+registro ya dice de cada una:
+
+| Contradicción | Lo que hay escrito |
+|---|---|
+| Mérito en el empleo público | su `matiz` ya trae la prueba que la decide y su fecha de revisión: **21 de noviembre de 2026** (v971) |
+| Comunidad LGBTIQ+ | sin prueba escrita todavía |
+| Decretos: prometió 90, firmó 6 | sin prueba escrita todavía |
+| «Los nunca contra los de siempre» | sin prueba escrita todavía |
+
+Declarada cualquiera de las cuatro, el peldaño **se calcula solo**: no hay
+bandera que bajar.
+
+
 ## La lista viva: lo que al pliego educativo todavía le falta (v866)
 
 Esta lista se quedó vieja **cinco veces**. Cuatro dentro de la hoja —la

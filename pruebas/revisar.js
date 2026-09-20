@@ -1167,6 +1167,83 @@ console.log('\n  -- la ficha del gobernante --');
       /\.sp-fi-v-sin-nivel\{[^}]*--vc-claro:var\(--ink-2\)/.test(c70niv) &&
       /\.sp-fi-vfalta\{/.test(c70niv) && /\.sp-fi-falta\{/.test(c70niv),
       'sp-fi-v-sin-nivel, sp-fi-vfalta y sp-fi-falta pintadas');
+
+    /* ── v977 · CUÁLES bloquean el veredicto, no solo cuántas ───────────
+       El módulo sabía exactamente qué contradicciones dejan la fiabilidad sin
+       publicar —las cuenta para decir «faltan N de M»— y NINGUNA pantalla
+       decía cuáles son: la clase C, un dato presente que no alcanza a ningún
+       lector. Desde afuera, «declare mismoObjetoVerificado» sin la lista es
+       una instrucción que no se puede seguir.
+
+       Las dos mitades hacen falta y miden cosas distintas: la ficha las
+       NOMBRA todas juntas, y la lista de contradicciones marca cada caso
+       donde el lector lo está mirando. Con solo la primera, quien entra por
+       la lista no ve nada; con solo la segunda, hay que recorrer ocho casos
+       para saber cuáles son los cuatro. */
+    const cuerpoEjeA = (j70c1.match(/function ejeA\(dd\) \{[\s\S]*?\n  \}/) || [''])[0];
+    const cuerpoCx = (j70c1.match(/function pintarContradicciones\(\) \{[\s\S]*?\n  \}/) || [''])[0];
+    comprobar('MATERIAL · se leen ejeA y la lista de contradicciones',
+      cuerpoEjeA.length > 0 && cuerpoCx.length > 0,
+      'ejeA ' + cuerpoEjeA.length + ' car. · pintarContradicciones ' + cuerpoCx.length + ' car.');
+
+    comprobar('la ficha NOMBRA las contradicciones que bloquean el veredicto, no solo las cuenta',
+      /pendientes: pendientes/.test(cuerpoEjeA) &&
+      /f\.ejeA\.pendientes/.test(j70c1) && /sp-fi-pend/.test(j70c1) && /\.sp-fi-pend\{/.test(c70niv),
+      !/pendientes: pendientes/.test(cuerpoEjeA)
+        ? 'ejeA no devuelve la lista de las que faltan'
+        : !/f\.ejeA\.pendientes/.test(j70c1) || !/sp-fi-pend/.test(j70c1)
+          ? 'ejeA las tiene y la ficha no las imprime: las cuenta y no dice cuáles'
+          : !/\.sp-fi-pend\{/.test(c70niv)
+            ? 'la lista se imprime y ninguna regla la pinta (v895)'
+            : 'ejeA devuelve `pendientes` y la ficha las imprime una por una');
+
+    comprobar('y cada contradicción documentada dice su identidad de objeto donde se lee',
+      /identidadDe\(x\)/.test(cuerpoCx) && /sp-cx-ident/.test(cuerpoCx) &&
+      /\.sp-cx-ident\{/.test(c70niv) && /\.sp-cx-ident-falta\{/.test(c70niv),
+      !/identidadDe\(x\)/.test(cuerpoCx)
+        ? 'la lista de contradicciones no lee la identidad: vuelve a ser un dato que no alcanza a nadie'
+        : 'la lista marca cada caso, con su regla en la hoja de estilo');
+
+    /* La guarda de la guarda: la cuenta y la pantalla tienen que leer la
+       identidad por la MISMA función y filtrar por el MISMO predicado. Con
+       dos lecturas volverían a separarse a la tanda siguiente (v879) —y la
+       que se quedaría vieja sería la de la pantalla, porque la cuenta la
+       mira una prueba y la lista no la miraba nadie—. */
+    comprobar('y las dos leen la identidad por la misma función y el mismo filtro',
+      /function identidadDe\(c\)/.test(j70c1) && /function cuentaEnEjeA\(c\)/.test(j70c1) &&
+      /if \(!cuentaEnEjeA\(c\)\) return IDENT\.fuera;/.test(j70c1) &&
+      /casosDeCx\(dd\)\.filter\(cuentaEnEjeA\)/.test(cuerpoEjeA) &&
+      /identidadDe\(c\)/.test(cuerpoEjeA),
+      'identidadDe y cuentaEnEjeA, leídas por ejeA y por la lista');
+
+    /* ── v977 · lo que no se dibuja se pliega, PERO se cuenta a la vista ───
+       Plegar un vacío está bien mientras el recuento se lea sin abrir nada: si
+       tres gráficos desaparecen y nada lo dice, la exención se lee igual que
+       un aprobado, que es lo que este proyecto lleva siete tandas evitando.
+       Y el recuento se CALCULA de la lista, nunca tecleado (v903). */
+    const cuerpoBg = (j70c1.match(/function bloqueDeGraficos\(cont\) \{[\s\S]*?\n  \}/) || [''])[0];
+    const cuerpoPl = (j70c1.match(/function pliegueSinDato\(lista\) \{[\s\S]*?\n  \}/) || [''])[0];
+    const sueltos = (cuerpoBg.match(/poner\(grafSinDato\(/g) || []).length;
+    const recogidos = (cuerpoBg.match(/guardar\(grafSinDato\(/g) || []).length;
+
+    comprobar('MATERIAL · hay gráficos que el registro no puede dibujar',
+      recogidos + sueltos >= 2,
+      (recogidos + sueltos) + ' llamadas a grafSinDato · ' + recogidos + ' recogidas · ' + sueltos + ' sueltas');
+
+    comprobar('todo gráfico sin dato entra al pliegue, y ninguno queda suelto entre los que sí se dibujan',
+      cuerpoBg.length > 0 && sueltos === 0 && recogidos >= 2 &&
+      /poner\(pliegueSinDato\(sinDato\)\)/.test(cuerpoBg),
+      sueltos ? sueltos + ' quedaron sueltos con poner(): dos maneras para una sola cosa (v940, v951)'
+        : !/poner\(pliegueSinDato\(sinDato\)\)/.test(cuerpoBg)
+          ? 'se recogen en `sinDato` y el pliegue no se pone: salen sueltos igual, o no salen'
+          : 'las ' + recogidos + ' entran por guardar() y salen por el pliegue');
+
+    comprobar('y el pliegue dice CUÁNTOS son sin abrirlo, contando su propia lista',
+      cuerpoPl.length > 0 && /lista\.length/.test(cuerpoPl) &&
+      /el\('summary'/.test(cuerpoPl) && /if \(!lista\.length\) return null;/.test(cuerpoPl) &&
+      /\.sp-graf-falta-t\{/.test(c70niv),
+      !cuerpoPl.length ? 'no se encontró pliegueSinDato: la comprobación no vale'
+        : 'el resumen cuenta lista.length, y con cero no hay pliegue');
   }
 
   /* ═══ CAPA 2 DEL PLIEGO · LOS INDICADORES ══════════════════════════════

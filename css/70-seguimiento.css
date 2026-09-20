@@ -1929,6 +1929,45 @@ a.sp-fuente:hover svg{ color:var(--verde-hi); }
 .sp-falta-caja b{ display:block; color:#8A5D12; font-size:var(--t-7); }
 .sp-falta-caja p{ margin:8px 0 0; font-size:var(--t-7); line-height:1.5; color:var(--ink); }
 
+/* El pliegue que los recoge. En GRIS y no en ámbar, aunque las tarjetas de
+   adentro sigan siendo ámbar: el resumen es deuda NUESTRA —el registro no
+   tiene el dato— y la v971 dejó la deuda interna en gris; el ámbar de
+   adentro es el vacío declarado de cada gráfico. Dos cosas distintas con el
+   mismo color se leen como una sola (v880). */
+.sp-graf-falta-w{
+  margin:18px 0 6px; padding:2px 16px; background:var(--marfil);
+  border:1px solid var(--linea); border-radius:var(--r);
+}
+.sp-graf-falta-t{
+  cursor:pointer; padding:12px 0; list-style:none;
+  font-size:var(--t-7); font-weight:650; color:var(--ink-2);
+}
+.sp-graf-falta-t::-webkit-details-marker{ display:none; }
+.sp-graf-falta-t::before{ content:'\25B8  '; }
+.sp-graf-falta-w[open] .sp-graf-falta-t::before{ content:'\25BE  '; }
+.sp-graf-falta-d{
+  margin:0 0 12px; font-size:var(--t-8); line-height:1.55; color:var(--ink-2); max-width:62ch;
+}
+.sp-graf-falta-w .sp-graf{ margin:0 0 14px; }
+
+/* ── La identidad de objeto de una contradicción ────────────────────
+      Es lo que decide si ESE caso baja el peldaño de fiabilidad. El que está
+      sin declarar lleva el borde ámbar a trazos de los vacíos: es una lectura
+      pendiente nuestra, no un hallazgo sobre el gobierno. ────────────── */
+.sp-cx-ident{
+  margin:12px 0 0; padding:12px 14px; border-radius:var(--r-s);
+  border:1px solid var(--linea); background:var(--marfil);
+}
+.sp-cx-ident-falta{ border:1px dashed var(--ambar); background:#FEF9F0; }
+.sp-cx-ident-h{ display:flex; flex-wrap:wrap; align-items:center; gap:10px; }
+.sp-cx-ident-h b{ font-size:var(--t-8); letter-spacing:.06em; text-transform:uppercase; color:var(--ink-2); }
+.sp-cx-ident p{ margin:8px 0 0; font-size:var(--t-7); line-height:1.5; color:var(--ink); }
+.sp-cx-ident p.sp-h-meta{ color:var(--ink-2); }
+
+/* Las contradicciones que bloquean el veredicto, nombradas en la ficha. */
+.sp-fi-pend{ margin:10px 0 0; padding-left:20px; }
+.sp-fi-pend li{ margin:4px 0; font-size:var(--t-7); line-height:1.5; color:var(--ink); }
+
 /* ── La opinión firmada. La SERIF hace el trabajo que una etiqueta haría
       peor: una etiqueta se pasa por alto, una letra distinta no. ─────────── */
 .sp-edit{

@@ -1,4 +1,4 @@
-const URBIS_CACHE = 'urbis-v976-la-foto-del-mapeo-se-conecta';
+const URBIS_CACHE = 'urbis-v977-cuales-bloquean-la-fiabilidad';
 const URBIS_ASSETS = [
   './',
   './index.html',

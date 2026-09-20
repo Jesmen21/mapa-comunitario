@@ -1234,6 +1234,30 @@
         art.appendChild(m);
       }
 
+      /* La identidad de objeto, en el caso al que le toca. Es lo que decide si
+         ESTE caso baja el peldaño de fiabilidad, y hasta la v976 no se decía
+         en ninguna pantalla: el veredicto salía «Sin nivel» diciendo que
+         faltaban N de M, y cuáles eran las N no lo sabía nadie desde afuera.
+
+         Solo en las DOCUMENTADAS, que son las únicas que entran al eje: una
+         desmentida no tiene identidad de objeto que declarar, y marcarla
+         ensuciaría un caso que no aplica (v925). */
+      var idt = identidadDe(x);
+      if (idt) {
+        var ib = el('div', 'sp-cx-ident sp-cx-ident-' + idt.k);
+        var ih = el('div', 'sp-cx-ident-h');
+        ih.appendChild(el('b', null, 'Identidad de objeto'));
+        ih.appendChild(tag(idt.cls, idt.t));
+        ib.appendChild(ih);
+        ib.appendChild(el('p', null, idt.d));
+        if (idt.k === 'falta') {
+          ib.appendChild(el('p', 'sp-h-meta',
+            'Se declara con `mismoObjetoVerificado: true` o `false` en este caso del registro. ' +
+            'En cuanto estén todas, el peldaño se calcula solo.'));
+        }
+        art.appendChild(ib);
+      }
+
       var src = el('div', 'sp-cx-src');
       src.appendChild(el('b', null, 'Fuentes'));
       var fl = el('div', 'sp-fuentes');
@@ -2322,20 +2346,62 @@
     2: { id: 'A2', t: 'Baja' }, 1: { id: 'A1', t: 'No confiable' }
   };
 
+  /* La identidad de objeto de una contradicción, leída en UN solo sitio para
+     las dos superficies que la enseñan —la lista de contradicciones y la
+     ficha— y para la cuenta que decide el peldaño. Con dos lecturas se
+     separarían a la tanda siguiente (v879), y la que se quedaría vieja sería
+     la de la pantalla: la cuenta la mira una prueba, la lista no la miraba
+     nadie.
+
+     Y es lo que cierra el hueco de clase C que dejó la v972: el módulo sabía
+     exactamente cuáles contradicciones bloquean el veredicto —las cuenta para
+     decir «faltan N de M»— y NINGUNA pantalla decía cuáles son. Desde
+     afuera, «declare mismoObjetoVerificado» sin la lista es una instrucción
+     que no se puede seguir. */
+  var IDENT = {
+    si: { k: 'si', cls: 'ok', t: 'Identidad de objeto verificada',
+          d: 'Lo que prometió y lo que hizo son el mismo objeto, así que este caso SÍ baja el ' +
+             'peldaño de fiabilidad.' },
+    no: { k: 'no', cls: 'interp', t: 'Tensión retórica',
+          d: 'Está documentada y las dos frases NO hablan del mismo objeto, así que se publica y no ' +
+             'baja el peldaño. Contarla junto a las que sí lo son restaría en vez de sumar.' },
+    falta: { k: 'falta', cls: 'dis', t: 'Identidad de objeto sin declarar',
+             d: 'Nadie ha declarado todavía si las dos frases hablan del mismo objeto verificado. ' +
+                'Mientras falte, el módulo no publica peldaño de fiabilidad.' },
+    /* Un caso documentado que el registro deja FUERA de la cuenta a propósito
+       (`cuenta: false`). Se ve igual que los demás en la lista, y hasta la
+       v976 nada decía que no pesa: desde afuera, un caso sin marca de
+       identidad y uno exento se ven idénticos. El motivo lo da su matiz. */
+    fuera: { k: 'fuera', cls: 'interp', t: 'Fuera de la cuenta de fiabilidad',
+             d: 'El registro lo deja fuera del cálculo a propósito: se publica porque es un giro ' +
+                'documentado, y no se cuenta como incumplimiento. El motivo está en el matiz de arriba.' }
+  };
+
+  /* El MISMO filtro para la cuenta y para la pantalla: una contradicción que
+     la ficha marcara y el eje no contara sería la clase B otra vez. */
+  function cuentaEnEjeA(c) { return !!c && c.estado === 'documentada' && c.cuenta !== false; }
+
+  function identidadDe(c) {
+    if (!c || c.estado !== 'documentada') return null;
+    if (!cuentaEnEjeA(c)) return IDENT.fuera;
+    var v = c.mismoObjetoVerificado;
+    return IDENT[v === true ? 'si' : v === false ? 'no' : 'falta'];
+  }
+
   function ejeA(dd) {
-    var cx = casosDeCx(dd);
-    var doc = cx.filter(function (c) { return c.estado === 'documentada' && c.cuenta !== false; });
-    var conId = 0, sinId = 0, sinDeclarar = 0, retoricas = [];
+    var doc = casosDeCx(dd).filter(cuentaEnEjeA);
+    var conId = 0, sinId = 0, sinDeclarar = 0, retoricas = [], pendientes = [];
     doc.forEach(function (c) {
-      var v = c.mismoObjetoVerificado;
-      if (v === true) conId++;
-      else if (v === false) { sinId++; retoricas.push(c.tema || ''); }
-      else sinDeclarar++;
+      var id = identidadDe(c);
+      if (id.k === 'si') conId++;
+      else if (id.k === 'no') { sinId++; retoricas.push(c.tema || ''); }
+      else { sinDeclarar++; pendientes.push(c.tema || ''); }
     });
     var r = { eje: 'A', t: 'Confiabilidad',
               pregunta: '¿lo que dice coincide con lo que hace?',
               documentadas: doc.length, conIdentidad: conId, sinIdentidad: sinId,
               sinDeclarar: sinDeclarar, tensionRetorica: retoricas,
+              pendientes: pendientes,
               nivel: null, publicable: false, falta: '' };
     if (sinDeclarar) {
       r.falta = sinDeclarar + ' de ' + doc.length + ' contradicciones documentadas no declaran si las dos ' +
@@ -3476,6 +3542,14 @@
         ' Se declara con `mismoObjetoVerificado` en cada contradicción documentada del registro; ' +
         'en cuanto estén las ' + f.ejeA.sinDeclarar + ', el peldaño se calcula solo.'));
       ver.appendChild(fal);
+      /* Y CUÁLES son. Contarlas sin nombrarlas deja la instrucción sin poder
+         seguirse: el módulo sabe exactamente qué casos bloquean el veredicto
+         y hasta la v976 no los decía en ninguna parte (clase C). */
+      if ((f.ejeA.pendientes || []).length) {
+        var ul = el('ul', 'sp-fi-pend');
+        f.ejeA.pendientes.forEach(function (t) { ul.appendChild(el('li', null, t)); });
+        ver.appendChild(ul);
+      }
     }
     izq.appendChild(ver);
 
@@ -4747,6 +4821,41 @@
      sitio diciendo qué dato le falta y de dónde tendría que salir. Es el
      vacío declarado de la lámina educativa (v849) traído acá, y es lo que
      impide la salida barata de teclear las cifras en el código. */
+  /* Y van PLEGADOS, todos juntos y al final. Es la mitad del pedido del
+     usuario: «lo que dice que el registro no tiene datos, déjalos guardados
+     en un menú desplegable para no tener tanta información innecesaria».
+
+     La línea que los separa de lo que NO se puede plegar es la que la v972
+     dejó puesta para las fuentes, dicha para un vacío: **se pliega el vacío
+     que no acompaña a ninguna cifra publicada.** Una nota que dice «NO es
+     todavía ley» se queda visible porque el lector la necesita para no leer
+     mal el número de al lado; estos tres no tienen número al lado — no
+     publican nada, y lo que declaran es una carencia NUESTRA, que es la misma
+     deuda interna que la v971 mandó en gris y al final.
+
+     Lo que NO se pliega es el RECUENTO: el resumen dice cuántos son y se lee
+     sin abrir nada, que es la regla de la v971 —si desaparecen sin que nada
+     lo diga, la exención se lee igual que un aprobado—. Y el recuento se
+     CALCULA de la lista que el propio pliegue tiene dentro, nunca tecleado
+     (v903): un gráfico nuevo que no se pueda dibujar sube la cifra sin que su
+     autor se acuerde.
+
+     Con cero no hay pliegue: un «0 gráficos que no se dibujan» es ruido. */
+  function pliegueSinDato(lista) {
+    if (!lista.length) return null;
+    var d = el('details', 'sp-graf-falta-w');
+    var sm = el('summary', 'sp-graf-falta-t', lista.length === 1
+      ? '1 gráfico que el registro todavía no puede dibujar'
+      : lista.length + ' gráficos que el registro todavía no puede dibujar');
+    d.appendChild(sm);
+    d.appendChild(el('p', 'sp-graf-falta-d',
+      'No se dibujan con cifras escritas a mano. La regla de este tablero es que los gráficos lean del ' +
+      'registro: un número tecleado en el código no se puede abrir, no tiene fuente y nadie se entera el ' +
+      'día que deja de ser cierto. Cada uno dice, adentro, qué le falta y de dónde tendría que salir.'));
+    lista.forEach(function (n) { d.appendChild(n); });
+    return d;
+  }
+
   function grafSinDato(titulo, queMide, queFalta) {
     var c = el('section', 'sp-graf sp-graf-falta');
     c.appendChild(el('h3', 'sp-graf-h', titulo));
@@ -4754,10 +4863,6 @@
     var b = el('div', 'sp-falta-caja');
     b.appendChild(el('b', null, 'No se dibuja: el registro todavía no tiene este dato.'));
     b.appendChild(el('p', null, queFalta));
-    b.appendChild(el('p', 'sp-h-meta',
-      'No se dibuja con cifras escritas a mano. La regla de este tablero es que los gráficos lean del ' +
-      'registro: un número tecleado en el código no se puede abrir, no tiene fuente y nadie se entera el día ' +
-      'que deja de ser cierto.'));
     c.appendChild(b);
     return c;
   }
@@ -5138,6 +5243,12 @@
 
     var g = el('div', 'sp-graficas');
     var poner = function (n) { if (n) g.appendChild(n); };
+    /* Los que no se pueden dibujar NO se cuelgan sueltos entre los que sí:
+       se recogen acá y salen plegados al final, con su recuento a la vista.
+       Una sola puerta, para que un gráfico nuevo sin dato no quede a medio
+       camino entre las dos maneras (v940, v951). */
+    var sinDato = [];
+    var guardar = function (n) { if (n) sinDato.push(n); };
 
     // 1 · La plata: presupuesto, deuda y déficit.
     if (p) {
@@ -5146,7 +5257,7 @@
       poner(grafDivergentes(p));
       poner(grafAgrupadas(p));
     } else {
-      poner(grafSinDato('El presupuesto', 'Composición, sectores y agregaciones',
+      guardar(grafSinDato('El presupuesto', 'Composición, sectores y agregaciones',
         'Falta el bloque `presupuesto` en el registro.'));
     }
     poner(grafCredito(f));
@@ -5177,21 +5288,23 @@
     poner(grafOrganigrama(D));
 
     // 4 · Los tres que el registro todavía no puede dibujar.
-    poner(grafSinDato('Presupuestado contra efectivamente pagado · Huila, 2022-2024',
+    guardar(grafSinDato('Presupuestado contra efectivamente pagado · Huila, 2022-2024',
       'Dos líneas: lo que se presupuestó y lo que de verdad se giró.',
       'Faltan las dos columnas año por año con una fuente que se pueda abrir. Se volvió a buscar el 19 de ' +
       'septiembre de 2026: aparecen las seis cifras en la prensa regional, pero el artículo que las publica ' +
       'no se pudo abrir desde acá y el medio que aparece no es el que el dossier nombra. Citar una dirección ' +
       'que no se pudo leer sería fabricar una fuente con buena apariencia, así que la serie no se dibuja.'));
-    poner(grafSinDato('De la decisión nacional al uso municipal',
+    guardar(grafSinDato('De la decisión nacional al uso municipal',
       'Cadena: decisión nacional → herramienta disponible → uso municipal.',
       'Faltan los tres eslabones como entradas del registro, cada uno con su acto identificado. Hoy no hay ' +
       'ninguno registrado, y sin el acto que habilita no se puede sostener la cadena: dibujarla sería ' +
       'afirmar una orden directa que el registro no documenta.'));
-    poner(grafSinDato('Frecuencia de las técnicas de distorsión',
+    guardar(grafSinDato('Frecuencia de las técnicas de distorsión',
       'Cuántas veces aparece cada técnica en las piezas analizadas.',
       'Falta el campo `calidadDelEncuadre` por entrada: hoy lo declaran 0 de ' + (D.entradas || []).length +
       '. Es el mismo campo que deja en «no se puede correr» dos casilleros del control de calidad.'));
+
+    poner(pliegueSinDato(sinDato));
 
     cont.appendChild(g);
     return cont;
