@@ -870,7 +870,16 @@
        guarda de él es su nombre, no necesariamente su usuario, así que un
        mensaje directo no siempre llegaría—. Al final, como toda casilla
        nueva; se lee y se escribe desde js/05. */
-    correccionPedida:     BASE_OFFSET + TIMELINE_EXTRA_OFFSET + 16
+    correccionPedida:     BASE_OFFSET + TIMELINE_EXTRA_OFFSET + 16,
+    /* Qué árbol es (v975). Al final, como toda casilla nueva; el vocabulario
+       y el buscador viven en js/03c. Son DOS casillas y no una porque son dos
+       hechos: la especie elegida de la lista, y —solo cuando se eligió «Otro
+       (no está en la lista)»— cómo la llamó quien mapeó. Codificar las dos en
+       una sola casilla obligaría a un prefijo, y un prefijo es una convención
+       que el lector siguiente tiene que adivinar; el edificio ya resolvió lo
+       mismo con `edificioOtroTexto` aparte. */
+    especieArbol:         BASE_OFFSET + TIMELINE_EXTRA_OFFSET + 17,
+    especieArbolOtro:     BASE_OFFSET + TIMELINE_EXTRA_OFFSET + 18
   };
   // La casilla que las tres funciones se disputaban. Se conserva con nombre
   // propio porque hay registros viejos con validaciones o con código de carpeta
@@ -892,6 +901,41 @@
      correo y la cédula de quien reportó, y la vista del curso no los necesita
      para nada: contar cuántos puntos levantó cada estudiante no requiere
      tener su documento a mano. Lo que no se expone no se filtra. */
+  /* La especie del árbol, leída del registro. Vive acá y no en js/03c por la
+     misma razón que `leerEdificio` y que `URBIS_AUTOR`: lo que depende del
+     ORDEN de las casillas se calcula una sola vez y en un solo sitio. Tres
+     funciones repartiéndoselo por su cuenta ya se pisaron los datos una vez.
+
+     Devuelve '' —y no la cadena guardada— cuando lo que hay no es una
+     observación utilizable. Eso mantiene la distinción que js/03b escribió y
+     que acá importa igual: una casilla en blanco es «a nadie se le preguntó»,
+     y «No se sabe» es una respuesta —se miró el árbol y no se pudo
+     determinar—. Las dos se ven igual en la pantalla si se juntan. */
+  window.URBIS_ARBOL = Object.assign(window.URBIS_ARBOL || {}, {
+    leer: function (descripcion) {
+      const d = String(descripcion || '').split(' | ');
+      const V = window.URBIS_ARBOL_VOC;
+      const crudo = String(d[URBIS_SLOTS.especieArbol] || '').trim();
+      const otro = String(d[URBIS_SLOTS.especieArbolOtro] || '').trim();
+      const valor = (!crudo || crudo === 'undefined') ? '' : crudo;
+      const otroTexto = (!otro || otro === 'undefined') ? '' : otro;
+      const noSeSabe = !!(V && valor === V.NO_SE_SABE());
+      const esOtro = !!(V && valor === V.OTRO());
+      return {
+        especie: valor,
+        // Utilizable para cualquier cuenta: '' en cuanto sea una de las dos
+        // salidas. El valor crudo se conserva para poder informarlo.
+        especieUtil: (noSeSabe || esOtro) ? '' : valor,
+        noSeSabe: noSeSabe,
+        esOtro: esOtro,
+        otroTexto: otroTexto,
+        texto: V ? V.texto(valor, otroTexto) : valor,
+        idxEspecie: URBIS_SLOTS.especieArbol,
+        idxEspecieOtro: URBIS_SLOTS.especieArbolOtro
+      };
+    }
+  });
+
   window.URBIS_AUTOR = Object.assign(window.URBIS_AUTOR || {}, {
     de: function (descripcion) {
       const d = String(descripcion || '').split(' | ');

@@ -737,6 +737,80 @@
   }
   /* El edificio piso por piso: el número de pisos y un desplegable por
      planta, del último piso al primero, como se mira un edificio. */
+  /* ── Qué árbol es (v975) ──────────────────────────────────────────────
+     Hereda la caja del bloque del edificio —misma forma, mismo sitio en el
+     formulario— y se nombra por lo que ES y no por aquel: un árbol no es un
+     edificio (v974), y reusar su clase habría vuelto a borrar esa línea en
+     la hoja de estilo. Las reglas de campo llevan !important por la razón
+     que está escrita más abajo: los estilos de formulario de la aplicación
+     pintan tinta sobre tinta en el teléfono. */
+  #urbis-mobile-app .u52-procity-especie{
+    display:grid; gap:7px; padding:11px 12px; border-radius:18px;
+    background:var(--pc-sky-1); box-shadow:inset 0 0 0 1px var(--pc-sky-line);
+  }
+  #urbis-mobile-app .u52-procity-especie > label{
+    font-size:.7rem; font-weight:850; color:var(--pc-sky-ink); -webkit-text-fill-color:var(--pc-sky-ink);
+    text-transform:uppercase; letter-spacing:.04em;
+  }
+  #urbis-mobile-app .u52-procity-especie > label i{
+    font-style:normal; font-weight:700; opacity:.7; text-transform:none; letter-spacing:0;
+  }
+  /* La lista se recorre con el dedo y no empuja el resto del formulario: sin
+     un techo, cincuenta especies dejan la dirección y el botón de guardar
+     fuera de la pantalla. */
+  #urbis-mobile-app .u52-procity-especie .especie-lista{
+    display:grid; gap:5px; max-height:210px; overflow-y:auto;
+    -webkit-overflow-scrolling:touch; padding-right:2px;
+  }
+  #urbis-mobile-app .u52-procity-especie .especie-op{
+    display:grid; gap:1px; text-align:left; width:100%;
+    border:0 !important; border-radius:11px !important;
+    background:#fff !important; padding:7px 10px !important;
+    box-shadow:inset 0 0 0 1px rgba(207,224,236,.72) !important;
+  }
+  #urbis-mobile-app .u52-procity-especie .especie-op b{
+    color:#173f75 !important; -webkit-text-fill-color:#173f75;
+    font-size:.78rem; font-weight:800; line-height:1.2;
+  }
+  /* El binomio en cursiva, que es como se escribe un nombre científico. */
+  #urbis-mobile-app .u52-procity-especie .especie-op small{
+    color:var(--pc-sky-ink); -webkit-text-fill-color:var(--pc-sky-ink);
+    font-size:.66rem; font-weight:700; font-style:italic; line-height:1.2;
+  }
+  #urbis-mobile-app .u52-procity-especie .especie-op:active{ transform:scale(.98); }
+  #urbis-mobile-app .u52-procity-especie .especie-elegida{
+    display:flex; align-items:center; justify-content:space-between; gap:8px;
+    border-radius:12px; padding:8px 10px;
+    background:rgba(79,157,105,.14); box-shadow:inset 0 0 0 1px rgba(79,157,105,.4);
+    color:#1f6b40; -webkit-text-fill-color:#1f6b40; font-size:.78rem; font-weight:800;
+  }
+  #urbis-mobile-app .u52-procity-especie .especie-elegida[hidden]{ display:none; }
+  #urbis-mobile-app .u52-procity-especie .especie-elegida button{
+    border:0 !important; background:transparent !important; padding:0 4px !important;
+    color:#1f6b40 !important; -webkit-text-fill-color:#1f6b40;
+    font-size:1.05rem !important; font-weight:900 !important; line-height:1 !important;
+  }
+  #urbis-mobile-app .u52-procity-especie .especie-otro{ display:grid; gap:5px; }
+  #urbis-mobile-app .u52-procity-especie .especie-otro[hidden]{ display:none; }
+  #urbis-mobile-app .u52-procity-especie .especie-otro label{
+    font-size:.67rem; font-weight:700; color:var(--pc-sky-ink); -webkit-text-fill-color:var(--pc-sky-ink);
+  }
+  #urbis-mobile-app .u52-procity-especie input[type="text"]{
+    width:100% !important; border:0 !important; border-radius:12px !important;
+    background:#fff !important; color:#173f75 !important; -webkit-text-fill-color:#173f75 !important;
+    font-size:.78rem !important; font-weight:800 !important; padding:8px 10px !important;
+    box-shadow:inset 0 0 0 1px rgba(207,224,236,.72) !important;
+    outline:none !important; min-height:0 !important;
+  }
+  /* El tipo y la especie no concuerdan. Ámbar: no bloquea nada, dice que hay
+     algo que mirar antes de guardar. */
+  #urbis-mobile-app .u52-procity-especie .especie-aviso{
+    color:#8a5b00; -webkit-text-fill-color:#8a5b00;
+    font-size:.68rem; font-weight:800; line-height:1.35;
+    background:rgba(250,189,10,.16); border-radius:9px; padding:6px 9px;
+  }
+  #urbis-mobile-app .u52-procity-especie .especie-aviso[hidden]{ display:none; }
+
   #urbis-mobile-app .u52-procity-edificio{
     display:grid; gap:7px; padding:11px 12px; border-radius:18px;
     background:var(--pc-sky-1); box-shadow:inset 0 0 0 1px var(--pc-sky-line);

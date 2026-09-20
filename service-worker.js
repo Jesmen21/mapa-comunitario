@@ -1,4 +1,4 @@
-const URBIS_CACHE = 'urbis-v974-un-arbol-no-tiene-pisos';
+const URBIS_CACHE = 'urbis-v975-que-arbol-es';
 const URBIS_ASSETS = [
   './',
   './index.html',
@@ -76,6 +76,7 @@ const URBIS_ASSETS = [
   './js/02-auth-roles.js',
   './js/03-map-data-config.js',
   './js/03b-edificio-vocabulario.js',
+  './js/03c-arbol-especies.js',
   './js/03c-reportes-rapidos.js',
   './js/04-marker-proximity.js',
   './js/05-helpers-temporal-security.js',

@@ -3414,6 +3414,117 @@ console.log('\n  -- el mapeo de Pro City --');
     faltan.length === 0,
     faltan.length ? 'sin tipo: ' + faltan.join(' · ') : 'los cinco tienen su tipo');
 
+  /* ── Qué árbol es (v975) ─────────────────────────────────────────────────
+     Un campo nuevo sobre el arbolado, con tres cosas que guardar. La primera
+     es la de siempre y va PRIMERO: si el extractor devolviera vacío, todo lo
+     de abajo pasaría en verde sin vigilar una sola especie. */
+  const j03c = leer('js/03c-arbol-especies.js');
+  const j04 = leer('js/04-marker-proximity.js');
+  let ESPECIES = [], USOS_ESPECIE = [];
+  /* `trozo` DEVUELVE el terminador, así que el literal ya viene cerrado: es
+     el mismo `eval(trozo(...))` con el que se leen los otros inventarios de
+     este bloque, y envolverlo otra vez en corchetes es un error de sintaxis.
+     Lo cazó la guarda de MATERIAL de abajo, que por eso va primero. */
+  try { ESPECIES = eval(trozo(j03c, 'var ESPECIES = ', '\n  ];')); } catch (e) {}
+  try { USOS_ESPECIE = eval(trozo(j03c, 'var USOS_CON_ESPECIE = ', '];')); } catch (e) {}
+
+  const sinBinomio = (ESPECIES || []).filter(e => !e || !e.c || !/ /.test(String(e.c)));
+  comprobar('la lista de especies se lee, y cada una trae su nombre científico',
+    ESPECIES.length > 25 && sinBinomio.length === 0 && USOS_ESPECIE.length > 0,
+    ESPECIES.length < 5 ? 'no se pudo leer la lista de especies'
+      : sinBinomio.length ? 'sin binomio: ' + sinBinomio.map(e => e && e.n).join(' · ')
+      : ESPECIES.length + ' especies · ' + ESPECIES.filter(e => e.p).length + ' palmas · ' +
+        USOS_ESPECIE.length + ' uso(s) con especie');
+
+  /* Un sinónimo que se normaliza igual que el nombre de su propia especie no
+     aporta nada —el buscador ya quita los acentos— y uno que se normaliza
+     como OTRA especie la secuestra. Los dos se leen exactamente igual que uno
+     que funciona, que es el no-op que la v973 tuvo que perseguir. */
+  const nrmE = x => String(x || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+  const nombresE = (ESPECIES || []).map(e => nrmE(e.n));
+  const repetidas = nombresE.filter((x, i) => nombresE.indexOf(x) !== i);
+  const sinonimoInutil = [];
+  (ESPECIES || []).forEach(e => {
+    const vistos = [];
+    (e.alt || []).forEach(a => {
+      const k = nrmE(a);
+      if (!k || k === nrmE(e.n) || vistos.indexOf(k) >= 0 || nombresE.indexOf(k) >= 0) {
+        sinonimoInutil.push(e.n + ' → ' + a);
+      }
+      vistos.push(k);
+    });
+  });
+  comprobar('ninguna especie se repite y ningún sinónimo es un no-op',
+    repetidas.length === 0 && sinonimoInutil.length === 0,
+    repetidas.length ? 'nombres repetidos: ' + repetidas.join(' · ')
+      : sinonimoInutil.length ? 'sinónimos que no cambian nada: ' + sinonimoInutil.join(' · ')
+      : (ESPECIES || []).reduce((n, e) => n + (e.alt || []).length, 0) + ' sinónimos, todos con trabajo');
+
+  /* Las dos salidas se DERIVAN de js/03b y no se copian. Son un solo hecho
+     —«se miró y no se pudo determinar» contra «no está en la lista»— y dos
+     copias de una advertencia se separan a la tanda siguiente (v867).
+
+     Y se mide CADA UNA por separado, no que el archivo nombre a js/03b en
+     alguna parte. La primera versión buscaba `URBIS_EDIFICIO` en todo el
+     archivo, y con eso copiar el literal en UNA de las dos salidas la dejaba
+     en verde: la otra seguía derivando y el nombre seguía apareciendo. Se
+     vio demostrándola en rojo —la inyección no la movió— y una guarda que no
+     puede fallar es un verde (v878). Lo que se exige es que cada salida lea
+     el campo del MISMO nombre del vocabulario, con el literal de respaldo. */
+  const cuerpoDe = (src, nombre) => {
+    const i = src.indexOf('function ' + nombre + '(');
+    if (i < 0) return '';
+    const j = src.indexOf('{', i);
+    let d = 0;
+    for (let k = j; k < src.length; k++) {
+      if (src[k] === '{') d++;
+      else if (src[k] === '}' && --d === 0) return src.slice(j + 1, k);
+    }
+    return '';
+  };
+  const j03cCod = soloCodigo(j03c);
+  const salidaCopiada = ['NO_SE_SABE', 'OTRO'].filter(k =>
+    !new RegExp('v\\s*&&\\s*v\\.' + k + '\\b').test(cuerpoDe(j03cCod, k)));
+  /* Y su guarda de la guarda: si `voc()` dejara de leer el vocabulario, las
+     dos seguirían diciendo `v && v.X` sobre un objeto propio y todo lo de
+     arriba seguiría en verde sin vigilar una sola palabra. */
+  const vocLee = /URBIS_EDIFICIO/.test(cuerpoDe(j03cCod, 'voc'));
+  comprobar('las dos salidas del árbol salen del vocabulario, no de un literal propio',
+    salidaCopiada.length === 0 && vocLee,
+    salidaCopiada.length ? 'escribe su propio literal en: ' + salidaCopiada.join(' · ')
+      : !vocLee ? 'voc() dejó de leer URBIS_EDIFICIO: las dos derivan de un objeto propio'
+      : 'las dos derivadas de js/03b, y voc() lo lee');
+
+  /* Y el uso que declara especie tiene que existir en el catálogo: un
+     renombre allá dejaría el campo apagado en silencio, que es exactamente la
+     forma de la v974 con el vocabulario del edificio. */
+  const usoFantasmaEsp = (USOS_ESPECIE || []).filter(u => nombres.indexOf(u) < 0);
+  comprobar('todo uso que declara especie existe en el catálogo de la matriz',
+    USOS_ESPECIE.length > 0 && usoFantasmaEsp.length === 0,
+    usoFantasmaEsp.length ? 'declara especie y no está en el catálogo: ' + usoFantasmaEsp.join(' · ')
+      : USOS_ESPECIE.join(' · ') + ', en el catálogo');
+
+  /* La casilla nueva se reparte desde URBIS_SLOTS y NUNCA se calcula aparte:
+     tres funciones haciéndolo por su cuenta ya se pisaron los datos una vez,
+     y por eso existe esa tabla. */
+  comprobar('la especie tiene su casilla en URBIS_SLOTS y nadie la calcula por su lado',
+    /especieArbol:\s*BASE_OFFSET/.test(j04) && /especieArbolOtro:\s*BASE_OFFSET/.test(j04) &&
+      !/BASE_OFFSET\s*\+\s*TIMELINE_EXTRA_OFFSET\s*\+\s*1[78]/.test(soloCodigo(leer('js/12-spa-ui.js')) +
+        soloCodigo(leer('js/20-mobile-functional-app.js')) + soloCodigo(leer('js/10-visible-markers.js'))),
+    /especieArbol:\s*BASE_OFFSET/.test(j04) ? 'las dos casillas, repartidas desde la tabla'
+      : 'la especie no está en URBIS_SLOTS');
+
+  /* Y llega a una PANTALLA. Un dato que se guarda y que ninguna superficie
+     enseña se ve, desde afuera, exactamente igual que un dato que no está —la
+     clase que este proyecto tiene anotada con su censo—. Se busca el hueco de
+     la plantilla y no el identificador, que es la lección de la v973: con la
+     declaración en pie y el hueco quitado, el texto se calcula y no se pinta. */
+  const dondeSaleEspecie = ['${especiePopup}', '${_especieDet}'].filter(x => j10.indexOf(x) >= 0);
+  comprobar('la especie llega al globo y a la ficha, no solo al registro',
+    /URBIS_ARBOL/.test(soloCodigo(j10)) && dondeSaleEspecie.length === 2,
+    dondeSaleEspecie.length === 2 ? 'las 2 superficies la pintan'
+      : 'solo la pintan ' + dondeSaleEspecie.length + ' de 2 superficies');
+
   /* ── La dirección dejó de ser obligatoria (v973) ─────────────────────────
      El campo se contestaba con relleno para poder publicar, que es conseguir
      un dato falso en vez de ninguno. Las dos mitades se guardan juntas: que

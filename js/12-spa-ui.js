@@ -764,6 +764,41 @@
         }
         descripcionFinal = d.join(' | ');
     })();
+    /* ── Qué árbol es (v975) ─────────────────────────────────────────────
+       Va en su propio bloque y no dentro de la ficha del edificio: un árbol
+       no es un edificio, y la v974 tuvo que escribir una guarda entera
+       justamente porque esa línea se había borrado sola.
+
+       Se escribe SOLO si el campo está en pantalla, que es la misma regla
+       que la ficha del edificio aprendió a las malas: los formularios que
+       llegan hasta acá no preguntan lo mismo, y escribir siempre significaba
+       que editar un punto por otra pantalla le borraba lo que alguien había
+       levantado en la calle. Sin el bloque, `insEsp` es null y no se toca
+       ninguna de las dos casillas. */
+    (function guardarEspecieArbol(){
+        const insEsp = document.getElementById('ins-especie');
+        if (!insEsp) return;
+        const A = window.URBIS_ARBOL;
+        const S = window.URBIS_SLOTS || {};
+        if (!A || S.especieArbol == null) return;
+        const d = String(descripcionFinal).split(' | ');
+        const tope = Math.max(S.especieArbol, S.especieArbolOtro || 0);
+        for (let k = 0; k < tope; k++) if (d[k] === undefined) d[k] = '';
+        const esp = String(insEsp.value || '').replace(/\|/g, '-').trim();
+        d[S.especieArbol] = esp; fichaSlotsEscritos.push(S.especieArbol);
+        /* El texto libre SOLO acompaña a «Otro». Con cualquier otra especie
+           elegida se limpia: dejarlo pegado convertiría un descarte en un
+           dato que nadie volvió a escribir, y la pantalla lo imprimiría como
+           si fuera la especie. */
+        const insOtroEsp = document.getElementById('ins-especie-otro');
+        const esOtro = !!(window.URBIS_ARBOL_VOC && esp === window.URBIS_ARBOL_VOC.OTRO());
+        if (S.especieArbolOtro != null) {
+            d[S.especieArbolOtro] = (esOtro && insOtroEsp)
+                ? String(insOtroEsp.value || '').replace(/\|/g, '-').slice(0, 60).trim() : '';
+            fichaSlotsEscritos.push(S.especieArbolOtro);
+        }
+        descripcionFinal = d.join(' | ');
+    })();
     // ── ¿Hubo gente herida? ───────────────────────────────────────────────
     // Se guarda DESPUÉS del bloque temporal y de la ficha del edificio, en su
     // propia casilla (URBIS_SLOTS.victimas). Solo se escribe si el formulario

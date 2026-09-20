@@ -411,6 +411,23 @@
       ? '<div class="popup-desc popup-sin-dir">Sin dirección anotada: quien lo publicó no escribió el punto de referencia.</div>'
       : '';
 
+    /* Qué árbol es (v975). Sale SOLO cuando alguien contestó: una casilla en
+       blanco es «a nadie se le preguntó» y no hay nada que declarar, mientras
+       que «No se sabe» sí es una respuesta —se miró y no se pudo determinar—
+       y por eso se imprime. Un aviso que saliera en todos los árboles dejaría
+       de significar algo, que es como muere una alarma (v886).
+
+       Y va a la PANTALLA, no solo al registro: un dato que se guarda y que
+       ninguna superficie enseña se ve, desde afuera, exactamente igual que un
+       dato que no está — la clase que este proyecto tiene anotada con su
+       censo. Una sola redacción para el globo y para la ficha, por la misma
+       función de js/03c. */
+    let especiePopup = '';
+    try {
+      const _ab = window.URBIS_ARBOL ? window.URBIS_ARBOL.leer(p.descripcion) : null;
+      if (_ab && _ab.texto) especiePopup = `<div class="popup-desc popup-especie">🌳 ${limpiarHTML(_ab.texto)}</div>`;
+    } catch(e){}
+
     let descPopup = (d[2] && d[2].trim() && d[2] !== 'N/A') ? `<div class="popup-desc">${limpiarHTML(d[2])}</div>` : '';
 
     // Botones de dueño dentro del popup (en móvil el popup ES el detalle visible).
@@ -582,6 +599,7 @@
         ${avisoModeracion}
         <span class="popup-title">${construirBadgeIcono(p.tipo, d[0], 'popup-icon-badge')}${limpiarHTML(d[1] || d[0])} ${likeBadge}</span>
         ${sinDirPopup}
+        ${especiePopup}
         ${fotoMiniPopup}
         ${descPopup}
         ${victimasHTML}
@@ -886,6 +904,14 @@
     const _sinDirDet = (_visD.verDetalle && window.urbisSinDireccion(d))
       ? '<div class="detalle-sin-dir">Sin dirección anotada: quien lo publicó no escribió el punto de referencia.</div>'
       : '';
+    /* La misma declaración que el globo, por la misma función. Solo para
+       quien puede ver el detalle, por la razón de la v973: sin confirmar, el
+       detalle no está publicando nada del reporte todavía. */
+    let _especieDet = '';
+    try {
+      const _abD = (_visD.verDetalle && window.URBIS_ARBOL) ? window.URBIS_ARBOL.leer(p.descripcion) : null;
+      if (_abD && _abD.texto) _especieDet = `<div class="detalle-especie">🌳 Especie: <b>${limpiarHTML(_abD.texto)}</b></div>`;
+    } catch(e){}
     const _notaDet     = _visD.verDetalle ? (d[2] || 'Sin notas.')
                                           : 'Lo que se escribió acá se publica cuando un administrador confirme el reporte.';
     const _autorDet    = _visD.verDetalle ? creadorNombre : 'Se dice al confirmarse';
@@ -916,6 +942,7 @@
       <div class="header-identificador" style="border-left-color: ${dimColor}; color: ${dimColor}; display:flex; align-items:center; gap:8px;">${iconoDetalleHTML}<span>${limpiarHTML(_tituloDet)}</span> ${tituloEstado}</div>
       <div class="form-section">
         ${_sinDirDet}
+        ${_especieDet}
         ${_pedidoDet}
         ${_avisoDet}
         ${_victimasDet}

@@ -12541,6 +12541,185 @@ la pantalla.** No es lo mismo —no hay motor, así que nada de lo que dependa
 del análisis se ejercita— y por eso se dice por separado; pero es lo que
 encontró esto.
 
+## Qué árbol es, y un buscador que no pide saber el nombre exacto (v975)
+
+Pedido el mismo día que la v974, mirando la captura: **«que pueda elegir la
+especie del árbol, ejemplo, palma, árbol de nena creo que se llama, árbol de
+urbano y un buscador para elegir de tantas especies»**.
+
+Las dos cosas que el pedido nombra de oído —«árbol de nena» y «árbol de
+urbano»— son el **nim** y el **urapán**, y son exactamente el caso que el
+campo tiene que resolver: quien mapea reconoce el árbol y **no acierta a
+escribir su nombre**. Un desplegable de cuarenta y ocho renglones no sirve
+para eso, y una casilla de texto libre convierte el dato en algo que después
+no se puede contar.
+
+    v974   el tipo dice «Palma» y ahí se acaba
+    v975   48 especies con su nombre científico, 90 sinónimos y dos salidas
+
+### La especie vive en su propio archivo, y es por lo que la v974 acababa de decidir
+
+Lo más corto era meterla en `js/03b-edificio-vocabulario.js`, que es donde ya
+viven las dos salidas y el reparto de pisos. **Y la v974 acaba de escribir que
+un árbol no es un edificio**: meter su vocabulario en el del edificio es
+volver a juntar lo que esa tanda separó, con la guarda de partición al lado
+diciendo lo contrario.
+
+`js/03c-arbol-especies.js`, entonces. Y **las dos salidas se DERIVAN de js/03b
+en vez de copiarse**:
+
+```js
+function voc(){ return window.URBIS_EDIFICIO || null; }
+function NO_SE_SABE(){ var v = voc(); return (v && v.NO_SE_SABE) || 'No se sabe'; }
+function OTRO(){ var v = voc(); return (v && v.OTRO) || 'Otro (no está en la lista)'; }
+```
+
+Es un solo hecho —«se miró y no se pudo determinar» contra «sí se sabe y no
+está en la lista»— y dos copias de una advertencia se separan a la tanda
+siguiente (clase B). El literal queda de respaldo y no de valor.
+
+**Y las dos salidas van SIEMPRE, con resultados o sin ellos.** Sin ellas,
+quien tiene delante un árbol que la lista no trae elige «el más parecido» para
+poder seguir, que es exactamente el dato falso que `js/03b` existe para no
+producir.
+
+#### La guarda de eso pasó en verde bajo la inyección, y por poco se queda
+
+El hallazgo más caro de la tanda, y es de mis propias comprobaciones. La
+primera versión decía:
+
+```js
+/URBIS_EDIFICIO/.test(soloCodigo(j03c)) && !/NO_SE_SABE\s*=\s*['"]No se sabe/…
+```
+
+o sea **buscaba el nombre en todo el archivo**. Al demostrarla en rojo
+—copiando el literal dentro de `NO_SE_SABE()`— **no se movió**: `OTRO()`
+seguía derivando, así que `URBIS_EDIFICIO` seguía apareciendo y la guarda
+seguía verde con el defecto dentro. Una guarda que no puede fallar es un verde
+(v878), y esta lo era.
+
+Se mide ahora **cada salida por separado** —que lea el campo del MISMO nombre
+del vocabulario— y con su guarda de la guarda: que `voc()` siga leyendo
+`URBIS_EDIFICIO`. Sin esa última, reescribir `voc()` para que devolviera un
+objeto propio dejaría a las dos diciendo `v && v.X` y todo lo de arriba en
+verde sin vigilar una palabra.
+
+Demostrada con **tres inyecciones distintas**, y cada una sale con su causa:
+
+```
+✗ escribe su propio literal en: NO_SE_SABE
+✗ escribe su propio literal en: OTRO
+✗ voc() dejó de leer URBIS_EDIFICIO: las dos derivan de un objeto propio
+```
+
+### El buscador NO pesa por rareza, y hay que decir por qué
+
+La v973 hizo justo lo contrario para el catálogo de usos: «parque» casa 22
+tipos y no dice casi nada, «niños» casa 3 y decide. Acá **la mitad de la lista
+comparte su primera palabra a propósito** —ocho palmas que empiezan por
+«Palma»— así que pesar por rareza hundiría las ocho al buscar «palma», que es
+literalmente lo que el pedido nombra primero.
+
+Son dos problemas distintos: allá hay que ordenar veintidós resultados que el
+usuario no pidió; acá los diez resultados de «palma» son todos los que quería
+ver. El orden es el de la lista, con las palmas delante.
+
+**Los sinónimos van pegados a su fila** y no en una tabla aparte, que es lo que
+la v973 sí necesitaba: un sinónimo de especie apunta a UNA especie y nada más,
+mientras que allá una palabra de la calle casa con varios tipos. Y
+`revisar.js` exige que ninguno sea un no-op: **trece lo eran** —`Oití → oiti`,
+`Urapán → urapan`, `Trupillo → cuji`…— duplicados sin tilde de su propio
+nombre, que el buscador ya normaliza. Un sinónimo que no cambia nada se lee
+igual que uno que funciona.
+
+### La lista es de trabajo y lo declara
+
+48 especies con **sesgo regional escrito**: son las que se ven en Cúcuta y
+Norte de Santander, no un catálogo botánico. Y el nombre científico va al lado
+de cada una por una razón que la propia pantalla imprime: «roble» o «acacia»
+son varios árboles distintos según la región, así que el nombre común solo no
+identifica nada.
+
+### La contradicción entre el tipo y la especie se DICE, no se bloquea
+
+«Palma» con un mango dentro son dos casillas correctas por separado que no
+pueden ser las dos ciertas. Sale el aviso, en ámbar, donde todavía se puede
+corregir — y **quien mapea decide**, que es la decisión de la v886 con los
+mapas de 6,5 cm y la de la v890 con el aviso de escala.
+
+La bandera `p` de palma va **pegada a la fila de cada especie** y no en una
+segunda lista de palmas: dos listas codificando un solo hecho se separan el día
+que entre la novena palma (clase B).
+
+Hay una aserción para **cada rama**, y la que de verdad guarda es la segunda:
+con una palma elegida el aviso NO sale. Sin ella, el arreglo podría ser
+imprimirlo siempre, y una alarma que salta siempre deja de significar algo.
+
+### La casilla se pide a `URBIS_SLOTS` y no se calcula por un lado
+
+Dos casillas al FINAL de la tabla —68 y 69—, que es la regla escrita ahí desde
+que existe: las posiciones se reparten una sola vez y **una existente no se
+puede reordenar jamás**, porque hay datos guardados dentro. Y las dos entran en
+`fichaSlotsEscritos`, que es lo que hace que la fusión al editar las respete:
+sin eso, editar un punto por otra cosa devolvería la especie a lo que había
+antes.
+
+El texto libre **solo acompaña a «Otro»** y se limpia con cualquier otra
+elección: dejarlo pegado convertiría un descarte en un dato que nadie volvió a
+escribir, y la pantalla lo imprimiría como si fuera la especie.
+
+Comprobada la ida y vuelta contra las cuatro formas, en el navegador y sobre
+la función de verdad: `Nim` → «Nim (Azadirachta indica)»; `Otro` + «Carreto» →
+«Carreto (no está en la lista de URBIS)»; `No se sabe` → «No se pudo
+determinar desde la acera»; y **una descripción anterior a la v975 vuelve
+vacía**, sin inventarle nada (v930).
+
+### Lo que salió mirando el papel
+
+Que es el método que encontró los defectos de la v874, la v882, la v885, la
+v887 y la v974. Con la especie ya elegida, **la lista se quedaba abierta con
+sus diez resultados viejos**, y eso hacía dos daños que no se ven leyendo el
+código: invita a elegir otra vez —se lee como que la elección no entró— y
+**empuja el aviso de contradicción cuatrocientos píxeles por debajo del chip
+del que habla**, detrás de una lista que hay que recorrer.
+
+Con una elección puesta y la casilla de búsqueda vacía no hay nada que
+ofrecer, así que la lista se pliega. Escribiendo vuelve —que es como se
+corrige una elección— y al quitar la especie vuelve entera: medido, 0 opciones
+tras elegir y 50 tras quitar. El aviso queda pegado al chip, y debajo se ven
+otra vez la dirección y la nota.
+
+Y el repintado **toca solo su nodo**, nunca `renderProCityItemForm`:
+recomponer el formulario a cada letra borraría la dirección y la nota que la
+persona ya escribió. Es la decisión de la barra de espera de la v870.
+
+### La guarda de MATERIAL cazó a su propio extractor
+
+`trozo()` **incluye** su terminador, así que `eval('([' + trozo(…) + '])')` es
+un error de sintaxis y `ESPECIES` volvía vacía. La guarda de MATERIAL —que va
+primero (v920)— salió en rojo con «no se pudo leer la lista de especies»,
+mientras la comprobación de abajo pasaba **en verde con «0 sinónimos»**: sin
+ella, la de los sinónimos habría vigilado la nada durante toda la vida del
+módulo. Es la lección de la v957 repitiéndose, y es exactamente para lo que la
+guarda de material va primero.
+
+### Lo que NO se pudo correr, y se dice
+
+**Ninguna suite de navegador**, por lo mismo que la v973: este contenedor no
+tiene `../urbis-motor` ni el `node_modules` del banco de pruebas. Lo que sí se
+hizo es mirar la pantalla con la sonda de Playwright —que es lo que la v974
+dejó escrito que se puede hacer sin motor— y recorrer el flujo entero con
+clics de verdad: el grupo, el mapa, el uso, el tipo, las tres búsquedas del
+pedido («palma» → las ocho, «neem» → Nim, «urapan» → Urapán), el aviso y su
+apagado.
+
+Lo que **no** se ejercitó en un navegador es el globo y la ficha de un punto ya
+guardado: eso pide publicar un reporte, y el servidor no está. Queda cubierto
+por la comprobación estática —que exige que las dos superficies lo pinten, no
+solo que el registro lo guarde— y por la ida y vuelta de arriba, que corre la
+función de verdad. Se dice por lo que es y no se presenta como más de lo que
+es.
+
 ## La lista viva: lo que al pliego educativo todavía le falta (v866)
 
 Esta lista se quedó vieja **cinco veces**. Cuatro dentro de la hoja —la

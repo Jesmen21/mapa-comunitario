@@ -5267,6 +5267,8 @@
     const editando = !!proCity.editLat;
     let dirPrefill = '';
     let notaPrefill = '';
+    let especiePre = '';
+    let especieOtroPre = '';
     if(editando){
       const dp = (typeof globalData !== 'undefined' && Array.isArray(globalData)) ? globalData.find(x => String(x.lat) === String(proCity.editLat)) : null;
       if(dp){
@@ -5281,6 +5283,14 @@
         const tipoOrig = dpCampos[0] || '';
         dirPrefill = (!nomOrig || nomOrig === tipoOrig) ? '' : (nomOrig.split(' — ')[0] || '');
         notaPrefill = dpCampos[2] || '';
+        /* La especie vuelve como se guardó. Sin esto, editar un árbol para
+           corregirle la dirección le borraría la especie que alguien
+           determinó en la calle: es lo que la v973 estuvo a punto de hacer
+           con la dirección misma. */
+        try{
+          const ab = window.URBIS_ARBOL ? window.URBIS_ARBOL.leer(dp.descripcion) : null;
+          if(ab){ especiePre = ab.especie; especieOtroPre = ab.otroTexto; }
+        }catch(e){}
       }
     }
     window.__urbisCurrentFormContext = {
@@ -5334,6 +5344,41 @@
           <small class="u52-procity-edificio-pista">Qué hay en cada planta. Tienda abajo y vivienda arriba es un edificio mixto, y así entra al análisis y a las alturas del sector.</small>
         </div>`;
     }
+    /* ── Qué árbol es (v975) ──────────────────────────────────────────
+       Pedido en la calle: «que pueda elegir la especie del árbol —palma,
+       nim, urapán— y un buscador para elegir de tantas especies». Sale solo
+       en los usos que TIENEN especie: preguntarle la suya a una vía o a una
+       bodega estorba exactamente igual que preguntarle los pisos a una palma,
+       que es el defecto que la v974 tuvo que arreglar.
+
+       Es opcional a propósito. La mayoría de quien mapea no sabe qué árbol
+       tiene delante, y un campo obligatorio que no se sabe contestar se
+       contesta con relleno — que es el hallazgo de la v973 con la dirección.
+       Quien SÍ lo miró y no pudo determinarlo tiene «No se sabe», que es una
+       respuesta distinta de no haber contestado. */
+    const VOC_ARBOL = window.URBIS_ARBOL_VOC || null;
+    let htmlEspecie = '';
+    if(proCity.dim === MATRIZ_USOS_KEY && VOC_ARBOL && VOC_ARBOL.esUsoDeArbol(usoParteSel)){
+      htmlEspecie = `
+        <div class="u52-procity-especie" id="ins-especie-bloque" data-tipo="${esc(tipoParteSel)}">
+          <label for="ins-especie-busca">¿Qué árbol es? <i>opcional</i></label>
+          <input type="hidden" id="ins-especie" value="${esc(especiePre)}">
+          <div id="ins-especie-elegida" class="especie-elegida"${especiePre ? '' : ' hidden'}>
+            ${especiePre ? esc(VOC_ARBOL.texto(especiePre, especieOtroPre)) : ''}
+            <button type="button" data-u52-especie-quitar aria-label="Quitar especie">×</button>
+          </div>
+          <input type="text" id="ins-especie-busca" class="u52-matriz-search" autocomplete="off"
+                 placeholder="🔎 Buscar especie (nim, palma, urapán…)"
+                 oninput="window.urbisEspecieBuscar(this.value)">
+          <div id="ins-especie-lista" class="especie-lista"></div>
+          <div id="ins-especie-otro-caja" class="especie-otro"${especieOtroPre ? '' : ' hidden'}>
+            <label for="ins-especie-otro">¿Cómo la llaman? Así entra en la lista de la próxima versión.</label>
+            <input type="text" id="ins-especie-otro" maxlength="60" autocomplete="off" value="${esc(especieOtroPre)}">
+          </div>
+          <small id="ins-especie-aviso" class="especie-aviso" hidden></small>
+          <small class="u52-procity-edificio-pista">El nombre científico va al lado porque «roble» o «acacia» son varios árboles distintos según la región. Si no lo sabe, déjelo sin marcar.</small>
+        </div>`;
+    }
     panel.innerHTML = `
       <div class="u52-quick-report-head u52-procity-panel-head">
         <button type="button" data-u52-call="procity-back" aria-label="Volver">‹</button>
@@ -5352,6 +5397,7 @@
         <select id="sel-mat" hidden><option value="N/A" selected>N/A</option></select>
         <input id="ins-foto" type="hidden" value="">
         ${htmlEdificio}
+        ${htmlEspecie}
         <input id="ins-direccion" type="text" maxlength="120" placeholder="Dirección o punto de referencia (opcional)" autocomplete="street-address" value="${esc(dirPrefill)}">
         <textarea id="ins-nota" maxlength="180" placeholder="Descripción técnica opcional">${esc(notaPrefill)}</textarea>
         ${bloqueFotoHTML('ins-foto-file', '📷 Foto de referencia (opcional)')}
@@ -5365,6 +5411,90 @@
     if(htmlEdificio && EDIF_PC && typeof EDIF_PC.activarUsosPorPiso === 'function'){
       try{ EDIF_PC.activarUsosPorPiso(panel, defectoPiso); }catch(e){}
     }
+    if(htmlEspecie){ try{ pintarListaEspecies(''); avisoDeEspecie(); }catch(e){} }
+  }
+
+  /* La lista de especies se repinta SOLA y no llamando a renderProCityItemForm:
+     recomponer el formulario entero a cada letra borraría la dirección y la
+     nota que la persona ya escribió. Es la misma decisión que la barra de
+     espera de la v870, que toca solo sus nodos. */
+  function pintarListaEspecies(q){
+    const cont = document.getElementById('ins-especie-lista');
+    const V = window.URBIS_ARBOL_VOC;
+    if(!cont || !V) return;
+    /* Con una especie ya elegida y la casilla de búsqueda vacía no hay nada
+       que ofrecer, y la lista entera ahí hace dos daños que se vieron mirando
+       el papel: invita a elegir otra vez —se lee como que la elección no
+       entró— y empuja el aviso de contradicción cuatrocientos píxeles por
+       debajo del chip del que habla. Escribiendo vuelve, que es como se
+       corrige una elección; y al quitarla vuelve entera. */
+    const yaHay = (document.getElementById('ins-especie') || {}).value || '';
+    if(yaHay && !String(q || '').trim()){ cont.innerHTML = ''; return; }
+    const hits = V.buscar(q);
+    const fila = (nombre, pie) => `<button type="button" class="especie-op" data-u52-especie="${esc(nombre)}">
+        <b>${esc(nombre)}</b>${pie ? `<small>${esc(pie)}</small>` : ''}</button>`;
+    /* Las dos salidas van SIEMPRE, con o sin resultados, y al final como en
+       js/03b. Sin ellas, quien tiene delante un árbol que la lista no trae
+       elige «el más parecido» para poder seguir, y eso mete un dato falso que
+       después nadie distingue de uno bueno. */
+    cont.innerHTML =
+      (hits.length ? hits.map(e => fila(e.n, e.c)).join('')
+                   : `<div class="u52-matriz-empty">Ninguna especie de la lista se llama así.</div>`) +
+      fila(V.NO_SE_SABE(), 'Se miró el árbol y no se pudo determinar') +
+      fila(V.OTRO(), 'Sí se sabe cuál es, y no está en esta lista');
+  }
+  window.urbisEspecieBuscar = function(val){ try{ pintarListaEspecies(val); }catch(e){} };
+
+  /* El tipo y la especie son dos casillas correctas por separado que pueden
+     contradecirse —«Palma» con un mango dentro—. Se dice acá, donde todavía
+     se puede corregir, y no se bloquea: quien mapea decide (v886). */
+  function avisoDeEspecie(){
+    const bloque = document.getElementById('ins-especie-bloque');
+    const aviso = document.getElementById('ins-especie-aviso');
+    const hid = document.getElementById('ins-especie');
+    const V = window.URBIS_ARBOL_VOC;
+    if(!bloque || !aviso || !hid || !V) return;
+    const t = V.contradiceAlTipo(bloque.dataset.tipo || '', hid.value || '');
+    aviso.textContent = t;
+    aviso.hidden = !t;
+  }
+
+  function elegirEspecie(nombre){
+    const hid = document.getElementById('ins-especie');
+    const chip = document.getElementById('ins-especie-elegida');
+    const caja = document.getElementById('ins-especie-otro-caja');
+    const busca = document.getElementById('ins-especie-busca');
+    const V = window.URBIS_ARBOL_VOC;
+    if(!hid || !V) return;
+    hid.value = nombre;
+    const esOtro = nombre === V.OTRO();
+    if(caja) caja.hidden = !esOtro;
+    if(chip){
+      const otro = (document.getElementById('ins-especie-otro') || {}).value || '';
+      chip.innerHTML = esc(V.texto(nombre, otro)) +
+        '<button type="button" data-u52-especie-quitar aria-label="Quitar especie">×</button>';
+      chip.hidden = false;
+    }
+    if(busca){ busca.value = ''; }
+    pintarListaEspecies('');
+    avisoDeEspecie();
+    if(esOtro){ try{ document.getElementById('ins-especie-otro').focus(); }catch(e){} }
+  }
+
+  function quitarEspecie(){
+    const hid = document.getElementById('ins-especie');
+    const chip = document.getElementById('ins-especie-elegida');
+    const caja = document.getElementById('ins-especie-otro-caja');
+    const otro = document.getElementById('ins-especie-otro');
+    if(hid) hid.value = '';
+    if(chip){ chip.hidden = true; chip.innerHTML = ''; }
+    if(caja) caja.hidden = true;
+    if(otro) otro.value = '';
+    /* Se repinta DESPUÉS de vaciar la casilla oculta, que es lo que la lista
+       mira para saber si hay algo elegido: al revés se quedaría plegada y el
+       campo sin manera de volver a contestarse. */
+    pintarListaEspecies('');
+    avisoDeEspecie();
   }
 
   function ensureCommunityChooser(){
@@ -5886,6 +6016,10 @@
     if(evSection){ ev.preventDefault(); ev.stopPropagation(); communityEventComposer.activeSection=evSection.dataset.u52EventSection; renderQuickEventCategories(); return; }
     const procityDim = ev.target.closest('[data-u52-procity-dim]');
     if(procityDim){ beginProCityMapSelection(procityDim.dataset.u52ProcityDim); return; }
+    const especieOp = ev.target.closest('[data-u52-especie]');
+    if(especieOp){ elegirEspecie(especieOp.dataset.u52Especie); return; }
+    const especieQuitar = ev.target.closest('[data-u52-especie-quitar]');
+    if(especieQuitar){ quitarEspecie(); return; }
     const procityGroupEntry = ev.target.closest('[data-u52-procity-group-entry]');
     if(procityGroupEntry){ beginProCityGroupSelection(procityGroupEntry.dataset.u52ProcityGroupEntry); return; }
     const procitySearchItem = ev.target.closest('[data-u52-procity-search-item]');

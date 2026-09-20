@@ -150,6 +150,21 @@ body[data-role="gov"] .urbis-sello-aprobar{
   color:#b9b9b9 !important; -webkit-text-fill-color:#b9b9b9;
 }
 
+/* ── Qué árbol es (v975) ──────────────────────────────────────────────────
+   Un DATO, no un aviso: acá no se está advirtiendo de nada, se está diciendo
+   qué se determinó en la calle. Por eso va en verde apagado —el verde de
+   este proyecto significa «esto está resuelto» desde la v880— y no en el
+   gris del apunte de arriba ni en el ámbar de lo que falta. */
+.popup-especie{ color:#4f9d69; font-weight:700; }
+.detalle-especie{
+  margin:0 0 10px; padding:8px 11px;
+  border-radius:8px; border:1px solid rgba(79,157,105,.35);
+  background:rgba(79,157,105,.09);
+  font-size:.76rem; line-height:1.45;
+  color:#8fd3a5 !important; -webkit-text-fill-color:#8fd3a5;
+}
+.detalle-especie b{ color:#cdeeda !important; -webkit-text-fill-color:#cdeeda; }
+
 /* ── Pedir corrección (v835) ──────────────────────────────────────────────
    Ámbar, como todo lo que en URBIS dice «esto todavía no está confirmado».
    Va arriba de la tarjeta y del detalle: es lo único de esas pantallas que
