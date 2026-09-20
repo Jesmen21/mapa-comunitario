@@ -155,6 +155,7 @@
                 <img id="evidence-preview" class="evidence-preview" src="${fotoActual && fotoActual.startsWith('data:image') ? fotoActual : ''}" style="${fotoActual && fotoActual.startsWith('data:image') ? 'display:block;' : ''}" alt="Vista previa de evidencia">
                 <div class="evidence-hint">La foto se comprime automáticamente antes de guardarse. Para producción real conviene usar Firebase Storage, Supabase Storage o un servidor propio.</div>
                 <div id="evidence-file-name" class="evidence-hint"></div>
+                ${(typeof window.urbisBloqueFotoGuardada === 'function') ? window.urbisBloqueFotoGuardada(fotoActual, false) : ''}
             </div>
         </div>
         

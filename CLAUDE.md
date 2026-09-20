@@ -14171,6 +14171,157 @@ Lo que no se ejercitó es **publicar con foto y volver a abrirla**: eso pide el
 servidor.
 
 
+## Editar un mapeo le borraba la foto (v986)
+
+Llegó mapeando: *«cuando le voy a editar no salió la foto tampoco. Tuve que
+volver a tomar la foto y volver a elegir la categoría de árbol que era. Siento
+que las fotos no están quedando guardadas.»*
+
+Medido antes de escribir nada —la regla de la v863 y la v916—, de las dos
+mitades del reporte **una era peor de lo que dice y la otra no existía**.
+
+### La foto no se escondía: se DESTRUÍA en la primera edición
+
+Con un árbol sembrado con foto y especie, entrando a editar por el botón de
+verdad y guardando **sin tocar nada**, la fusión de la edición devolvió esto:
+
+```
+origFoto    data:image/svg+xml;base64,PHN2…   ← la que había
+nuevaFoto   N/A                               ← lo que el formulario escribe
+salidaFoto  N/A                               ← lo que queda guardado
+```
+
+O sea que la intuición de quien lo reportó **acierta en el resultado y se
+equivoca en el momento**: se guardan bien, y editar las borra. Es la diferencia
+entre «no se ve» y «ya no está», y decide el arreglo entero: enseñarla no
+alcanzaba.
+
+La causa es **una casilla que el formulario reclama y no sabe contestar**.
+`escribeElFormulario` da por escrita la cabecera entera —`0 … BASE_OFFSET+7`,
+que es lo que la v835 decidió— y ahí adentro va la foto; pero ninguno de los
+dos formularios que editan trae la foto guardada, así que `enviarDatos` la
+resuelve en `N/A` y la fusión la escribe encima.
+
+Es la regla de la v835 al revés. Aquella escribió **«el formulario manda en las
+casillas que escribió, y en las demás manda lo que ya había»** justamente para
+que olvidar una casilla nueva pasara de destruir un dato a conservarlo de más.
+Acá el formulario mandaba en una casilla **que no preguntaba**, que es el hueco
+que esa frase no cubre.
+
+### Y la especie SÍ volvía, medido
+
+`insEspecie: "Nim"`, con su chip pintado. Así que la afirmación de la v975 es
+cierta y lo que el usuario tuvo que volver a elegir no fue la especie: fue
+pasar otra vez por el selector de tipo. Se midió en vez de darlo por bueno —y
+también en vez de «arreglar» algo que no estaba roto, que es lo que este
+proyecto lleva cinco tandas deshaciendo.
+
+### Se le da con qué contestar, no se le quita la casilla
+
+La otra salida era sacar la foto de `escribeElFormulario`. Se descartó: es una
+**regla sobre el registro**, y tocarla para tapar lo que un formulario no
+pregunta es arreglar en el sitio equivocado — y dejaría la foto sin manera de
+quitarse nunca.
+
+Entra un **carrero oculto**, `#ins-foto-actual`, con lo que ya había. La fusión
+se queda exactamente como está, y la resolución vive **en un solo sitio**,
+`enviarDatos`, que es por donde pasan los dos formularios (v879):
+
+| | Gana |
+|---|---|
+| un archivo nuevo | sobre todo |
+| un enlace tecleado | sobre lo que había |
+| **lo que había** | sobre el vacío |
+
+Medido, las tres ramas en la misma corrida:
+
+```
+sin tocar   orig data:image… → nueva data:image… → GUARDA data:image…
+quitar      orig data:image… → nueva N/A         → GUARDA N/A
+foto nueva  orig data:image… → nueva data:webp…  → GUARDA data:webp…
+```
+
+### Quitarla a propósito es la mitad sin la cual el arreglo es un candado
+
+Sin botón de quitar, una foto equivocada no se podría sacar nunca: se cambiaría
+una pérdida por un candado, que es la mentira más pequeña que este módulo no
+tiene permitida (v875).
+
+Y **quitar limpia TODO lo que podría devolverla** —el carrero, el enlace y los
+dos campos de archivo—: con cualquiera vivo, «quitar» no quitaría nada y la
+pantalla diría que sí, que es la señal de éxito que no lo es.
+
+Lo que el botón **no** dice es «se quitó». Dice **«La foto se quitará al
+guardar»**, porque hasta entonces no ha pasado nada: es la separación de la
+v897 entre el momento y el estado.
+
+### El pie que mentía en la rama más común
+
+Salió mirando el papel. Con una foto nueva elegida, «si no toca nada, se queda
+como está» es **falso** —la nueva manda— y esa es justamente la rama de quien
+va a corregir una foto que salió mal. La frase vive en un sitio
+(`urbisFotoGuardadaAlElegir`) y la llaman los dos caminos por donde entra un
+archivo; dos redacciones de lo mismo se separan a la tanda siguiente.
+
+### El formulario ciudadano tenía el mismo defecto, y más viejo
+
+`js/11` prefilla `#ins-foto` **solo si la foto es un enlace**, nunca si es
+`data:image` —y eso está bien para un `<input type="url">`—, pero nada la
+llevaba adelante. O sea que **una foto tomada con la cámara se destruía al
+editar también ahí**, en el formulario que usa la mayoría, desde mucho antes de
+que Pro City existiera. Y es peor: esa pantalla **sí enseña** la foto en su
+vista previa, así que decía «tu foto está acá» y guardar la borraba.
+
+Se arregla por el mismo sitio único. Medido en el formulario ciudadano de
+verdad: `carrero: con la foto`, `resuelve: data:image…`.
+
+### La marca del que no edita no es una palabra
+
+La guarda falla **cerrado**: todo sitio que pinte `id="ins-foto"` lleva el
+carrero o dice por qué no. El único exento es el reporte rápido, que no edita
+nunca — y su marca **vale solo si ese formulario declara `isEdit:false`** en su
+propio contexto. El día que aprenda a editar, la excepción se cae sola en vez
+de quedarse siendo una palabra escrita.
+
+### Demostrado contra la v985
+
+Seis de siete en rojo, contra una copia guardada y no con `git checkout --`
+sobre trabajo sin confirmar (v973):
+
+```
+✗ la foto que ya había entra en la resolución de enviarDatos
+    — no lee el carrero: al editar, la foto guardada se resuelve en «N/A» y se destruye
+✗ todo formulario con foto trae la que ya había, o dice por qué no
+    — pierde la foto al editar: js/20-mobile-functional-app.js:5933
+✗ quitar la foto limpia todo lo que podría devolverla
+    — se le queda vivo: la cámara — diría que la quitó sin quitarla
+✗ el pie deja de decir «se queda como está» con una foto nueva  — no lo avisa: Pro City
+✗ y el carrero que se pinta es el mismo que enviarDatos lee
+    — el bloque pinta otro id: la resolución leería un campo que no existe
+✗ y sin foto guardada el bloque no se pinta
+    — pintaría «ya tiene una foto» sobre un mapeo que no la tiene
+```
+
+La séptima es MATERIAL y va primero (v920). Y la última de la lista es la
+guarda contra pasarse de avisar: un «ya tiene una foto» sobre un mapeo que no
+la tiene sería la mentira contraria.
+
+### La guarda del voseo se cobró su contrato por tercera vez
+
+«reemplazará» salió denunciado: es un futuro de tercera persona y la mitad
+estructural de -á **lista lo permitido y denuncia todo lo demás** (v880). Es el
+contrato que aquella dejó escrito —«un futuro nuevo cuesta un renglón y se ve
+en rojo hasta que alguien lo agregue»— y se cobró ya en la v909 y en la v983.
+
+### Lo que NO se pudo correr
+
+**Ninguna suite de navegador**, por lo mismo que la v973 a la v985: este
+contenedor no tiene `../urbis-motor` ni el `node_modules` del banco de pruebas.
+Corrió `revisar.js` entero y se midió con la sonda el camino de verdad —sembrar
+el árbol con foto, abrir el mapa, tocar el punto, «Editar», y capturar la
+fusión REAL con el formulario REAL—, que es lo que produjo las tres tablas de
+arriba. Lo que no se ejercitó es publicar contra el servidor: eso pide backend.
+
 ## La lista viva: lo que al pliego educativo todavía le falta (v866)
 
 Esta lista se quedó vieja **cinco veces**. Cuatro dentro de la hoja —la

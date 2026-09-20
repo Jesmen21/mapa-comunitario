@@ -2607,6 +2607,9 @@
         <input id="sel-nombre" type="hidden" value="${esc(nombreLugar)}">
         <select id="sel-estado" hidden><option value="Malo" selected>Malo</option></select>
         <select id="sel-mat" hidden><option value="N/A" selected>N/A</option></select>
+        <!-- sin-carrero: este formulario NO edita nunca —su contexto declara
+             isEdit:false unas líneas más arriba—, así que no hay foto
+             guardada que traer ni que se pudiera destruir al guardar. -->
         <input id="ins-foto" type="hidden" value="">
         <input id="ins-direccion" type="text" maxlength="120" placeholder="Dirección o punto de referencia (opcional)" autocomplete="street-address">
         <textarea id="ins-nota" maxlength="180" placeholder="Descripción corta opcional"></textarea>
@@ -5753,6 +5756,7 @@
     let especieOtroPre = '';
     let materialPre = '';
     let materialOtroPre = '';
+    let fotoPre = '';
     if(editando){
       const dp = (typeof globalData !== 'undefined' && Array.isArray(globalData)) ? globalData.find(x => String(x.lat) === String(proCity.editLat)) : null;
       if(dp){
@@ -5781,6 +5785,15 @@
         try{
           const mb = window.URBIS_MOBILIARIO ? window.URBIS_MOBILIARIO.leer(dp.descripcion) : null;
           if(mb){ materialPre = mb.material; materialOtroPre = mb.otroTexto; }
+        }catch(e){}
+        /* Y la foto, que es la que costó una (v986). Va por el portero y no
+           leyendo la casilla en crudo: quien edita es su autor o un
+           moderador, y los dos la ven —pero es el portero quien lo sabe, y
+           tenerlo en dos sitios con criterios que se pueden separar es
+           justamente lo que la v832 no quiso—. */
+        try{
+          const fb = (typeof window.urbisFotoDeReporte === 'function') ? window.urbisFotoDeReporte(dp) : null;
+          if(fb && fb.hay && fb.puedeVerla) fotoPre = fb.url;
         }catch(e){}
       }
     }
@@ -5925,6 +5938,7 @@
         <input id="ins-direccion" type="text" maxlength="120" placeholder="Dirección o punto de referencia (opcional)" autocomplete="street-address" value="${esc(dirPrefill)}">
         <textarea id="ins-nota" maxlength="180" placeholder="Descripción técnica opcional">${esc(notaPrefill)}</textarea>
         ${bloqueFotoHTML('ins-foto-file', ROTULO_FOTO_PC)}
+        ${(typeof window.urbisBloqueFotoGuardada === 'function') ? window.urbisBloqueFotoGuardada(fotoPre, true) : ''}
         <button type="button" class="u52-quick-publish u52-procity-publish" data-u52-call="procity-publish">${editando ? 'Actualizar en Pro City' : 'Guardar en Pro City'}</button>
       </div>`;
     panel.classList.add('u52-procity-mode');
@@ -5963,6 +5977,9 @@
       if(!cajaF || !txtF) return;
       cajaF.classList.toggle('has-file', !!f);
       txtF.textContent = f ? '\u2713 Foto lista' : ROTULO_FOTO_PC;
+      /* Y el pie de la foto guardada deja de decir «se queda como está»,
+         que con una nueva elegida es falso (v986). */
+      if(typeof window.urbisFotoGuardadaAlElegir === 'function') window.urbisFotoGuardadaAlElegir(!!f);
     }, function(ev, inp){
       /* La verificación NO es una exigencia nueva: `urbisPermitirPublicar`
          (js/13e) ya llama a `urbisExigirNivel2('foto')` para todo reporte

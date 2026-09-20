@@ -2504,7 +2504,7 @@ console.log('\n  -- el FODA del curso --');
     'desaparecer\u00e1', 'encajar\u00e1', 'enviar\u00e1', 'estar\u00e1', 'evaluar\u00e1',
     'guardar\u00e1', 'llegar\u00e1', 'marcar\u00e1', 'mostrar\u00e1', 'pedir\u00e1', 'pelear\u00e1',
     'perder\u00e1', 'podr\u00e1', 'pondr\u00e1', 'quedar\u00e1', 'quitar\u00e1',
-    'realizar\u00e1', 'recibir\u00e1', 'recomendar\u00e1', 'renombrar\u00e1',
+    'realizar\u00e1', 'recibir\u00e1', 'recomendar\u00e1', 'reemplazar\u00e1', 'renombrar\u00e1',
     'seguir\u00e1', 'ser\u00e1', 'tendr\u00e1', 'usar\u00e1', 'validar\u00e1', 'ver\u00e1',
     'volver\u00e1', 'habr\u00e1', 'har\u00e1', 'dir\u00e1', 'saldr\u00e1', 'vendr\u00e1',
     'querr\u00e1', 'sabr\u00e1', 'cabr\u00e1', 'valdr\u00e1'];
@@ -4509,6 +4509,109 @@ console.log('\n  -- lo que la fila guarda y el panel de Pro City enseña (v985) 
       unSitio,
       unSitio ? 'el panel entra en la misma regla de css/83'
               : 'el panel estrena un tratamiento propio: se separarán');
+  }
+}
+
+console.log('\n  -- la foto que ya tenía el reporte, al editarlo (v986) --');
+{
+  const j05 = soloCodigo(leer('js/05-helpers-temporal-security.js'));
+  const j11 = soloCodigo(leer('js/11-report-form.js'));
+  const j12 = soloCodigo(leer('js/12-spa-ui.js'));
+  const j20 = soloCodigo(leer('js/20-mobile-functional-app.js'));
+
+  /* MATERIAL primero (v920): sin las dos piezas, todo lo de abajo pasaría
+     sobre la nada. */
+  const hayBloque = /function urbisBloqueFotoGuardada\(/.test(j05);
+  const hayQuitar = /function urbisQuitarFotoGuardada\(/.test(j05);
+  comprobar('MATERIAL · se leen el carrero de la foto guardada y su botón de quitar',
+    hayBloque && hayQuitar,
+    'urbisBloqueFotoGuardada ' + (hayBloque ? 'sí' : 'NO') + ' · urbisQuitarFotoGuardada ' + (hayQuitar ? 'sí' : 'NO'));
+
+  if (hayBloque && hayQuitar) {
+    /* Lo medido: al editar, ninguno de los dos formularios traía la foto
+       guardada, `enviarDatos` la resolvía en «N/A» y la fusión la escribía
+       encima de la que había. La foto no se escondía: se DESTRUÍA en la
+       primera edición.
+
+           origFoto   data:image/svg+xml;base64,PHN2…
+           nuevaFoto  N/A
+           salidaFoto N/A                                                */
+    const idx = j12.indexOf("document.getElementById('ins-foto').value");
+    const tramo = idx >= 0 ? j12.slice(idx, idx + 600) : '';
+    const resuelve = /ins-foto-actual/.test(tramo);
+    comprobar('la foto que ya había entra en la resolución de enviarDatos',
+      resuelve,
+      resuelve ? 'un archivo nuevo manda; después el enlace tecleado; después la que había'
+        : idx < 0 ? 'no se pudo leer la resolución de la foto en enviarDatos'
+        : 'no lee el carrero: al editar, la foto guardada se resuelve en «N/A» y se destruye');
+
+    /* Falla CERRADO: un formulario de edición nuevo que no pinte el carrero
+       pierde fotos en silencio, que es exactamente como llegó esto. Lo que
+       no lo necesite lo dice con su marca, que es la forma de la guarda del
+       voseo en -á (v880): se lista lo permitido y se denuncia lo demás. */
+    const sinCarrero = [];
+    [['js/11-report-form.js', j11], ['js/20-mobile-functional-app.js', j20]].forEach(function (par) {
+      const arch = par[0], txt = par[1];
+      let k = txt.indexOf('id="ins-foto"');
+      while (k >= 0) {
+        const linea = txt.slice(0, k).split('\n').length;
+        const vecindad = txt.slice(k, k + 3000);
+        /* La marca no es una palabra: vale solo si ese formulario DECLARA que
+           no edita. El día que aprenda a editar, la excepción se cae sola. */
+        const alrededor = txt.slice(Math.max(0, k - 4000), k + 3000);
+        const pegada = txt.slice(Math.max(0, k - 500), k + 3000);
+        const exento = /sin-carrero:/.test(pegada) && /isEdit:\s*false/.test(alrededor);
+        if (!/urbisBloqueFotoGuardada/.test(vecindad) && !exento) {
+          sinCarrero.push(arch + ':' + linea);
+        }
+        k = txt.indexOf('id="ins-foto"', k + 1);
+      }
+    });
+    comprobar('todo formulario con foto trae la que ya había, o dice por qué no',
+      sinCarrero.length === 0,
+      sinCarrero.length ? 'pierde la foto al editar: ' + sinCarrero.join(' · ')
+                        : 'los formularios de foto llevan el carrero o su marca');
+
+    /* Quitar es un acto explícito, y por eso tiene que limpiar TODO lo que
+       podría devolver la foto. Con cualquiera de esos campos vivo, «quitar»
+       no quitaría nada y la pantalla diría que sí — la señal de éxito que no
+       lo es. */
+    const iq = j05.indexOf('function urbisQuitarFotoGuardada(');
+    const cq = iq >= 0 ? j05.slice(iq, j05.indexOf('\n  }', iq)) : '';
+    const olvida = [];
+    if (!/ins-foto-actual/.test(cq)) olvida.push('el carrero');
+    if (!/getElementById\('ins-foto'\)/.test(cq)) olvida.push('el enlace tecleado');
+    if (!/ins-foto-file-cam/.test(cq)) olvida.push('la cámara');
+    comprobar('quitar la foto limpia todo lo que podría devolverla',
+      olvida.length === 0,
+      olvida.length ? 'se le queda vivo: ' + olvida.join(' · ') + ' — diría que la quitó sin quitarla'
+                    : 'limpia el carrero, el enlace y los dos campos de archivo');
+
+    /* Con una foto nueva elegida, «si no toca nada se queda como está» es
+       falso. Los dos caminos por los que entra un archivo lo dicen. */
+    const avisa11 = /urbisFotoGuardadaAlElegir\(/.test(j05);
+    const avisa20 = /urbisFotoGuardadaAlElegir\(/.test(j20);
+    comprobar('el pie deja de decir «se queda como está» con una foto nueva',
+      avisa11 && avisa20,
+      (avisa11 && avisa20) ? 'lo avisan los dos caminos de archivo'
+        : 'no lo avisa: ' + [!avisa11 ? 'el ciudadano' : '', !avisa20 ? 'Pro City' : ''].filter(Boolean).join(' · '));
+
+    /* GUARDA DE LA GUARDA: si el id del carrero cambiara en un lado, todo lo
+       de arriba seguiría en verde sobre un carrero que nadie lee. */
+    const ib = j05.indexOf('function urbisBloqueFotoGuardada(');
+    const cb = ib >= 0 ? j05.slice(ib, j05.indexOf('\n  }', ib)) : '';
+    const mismoId = /id="ins-foto-actual"/.test(cb);
+    comprobar('y el carrero que se pinta es el mismo que enviarDatos lee',
+      mismoId,
+      mismoId ? 'los dos hablan de ins-foto-actual'
+              : 'el bloque pinta otro id: la resolución leería un campo que no existe');
+
+    /* Guarda contra pasarse: un «ya tiene una foto» sobre un mapeo que no la
+       tiene sería la mentira contraria. */
+    const calla = /if\s*\(\s*!f\s*\|\|\s*f\s*===\s*'N\/A'\s*\)\s*return\s*''/.test(cb);
+    comprobar('y sin foto guardada el bloque no se pinta',
+      calla,
+      calla ? 'sin foto devuelve vacío' : 'pintaría «ya tiene una foto» sobre un mapeo que no la tiene');
   }
 }
 

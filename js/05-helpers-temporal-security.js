@@ -229,6 +229,98 @@
   window.urbisFotoDeReporte = urbisFotoDeReporte;
   window.urbisAvisoFotoEnRevision = urbisAvisoFotoEnRevision;
 
+  /* ── La foto que YA tenía el reporte, al editarlo (v986) ──────────────
+     Llegó mapeando: «cuando le voy a editar no salió la foto tampoco. Tuve
+     que volver a tomar la foto… siento que las fotos no están quedando
+     guardadas». Medido en el navegador sobre un árbol con foto y especie,
+     entrando a editar por el botón de verdad y guardando sin tocar nada, la
+     fusión de la edición devolvía esto:
+
+         origFoto   data:image/svg+xml;base64,PHN2…   ← la que había
+         nuevaFoto  N/A                               ← lo que el formulario escribe
+         salidaFoto N/A                               ← lo que queda guardado
+
+     O sea que la foto no es que no se enseñe: **se destruye en la primera
+     edición**. La intuición de quien lo reportó acierta en el resultado y
+     se equivoca en el momento — se guardan bien, y editar las borra.
+
+     La causa es una casilla que el formulario RECLAMA y no sabe contestar.
+     `escribeElFormulario` da por escrita la cabecera entera (0 … BASE+7) y
+     ahí adentro va la foto; pero ninguno de los dos formularios de edición
+     trae la foto guardada, así que `enviarDatos` la resuelve en «N/A» y la
+     fusión la escribe encima. Es la regla de la v835 al revés: el
+     formulario mandaba en una casilla que no preguntaba.
+
+     Se arregla dándole al formulario con qué contestar, no quitándole la
+     casilla: un CARRERO oculto con lo que ya había. Así la fusión se queda
+     como está —una regla sobre el registro no se toca para tapar un
+     formulario— y la resolución vive en un solo sitio, `enviarDatos`, que
+     es por donde pasan los dos.
+
+     Y con ella su otra mitad, o el arreglo cambiaría una pérdida por un
+     candado: **quitar la foto a propósito**. Sin ese botón, una foto
+     equivocada no se podría sacar nunca. Lo que el botón NO dice es «se
+     quitó»: dice que se quitará al guardar, porque hasta entonces no ha
+     pasado nada (v897). */
+  function urbisBloqueFotoGuardada(fotoActual, conVista) {
+      const f = String(fotoActual || '').trim();
+      if(!f || f === 'N/A') return '';
+      const vista = conVista
+        ? `<img id="ins-foto-guardada-img" class="foto-guardada-img" src="${f.replace(/"/g, '&quot;')}" alt="Foto que ya tenía este mapeo">`
+        : '';
+      return `<div class="foto-guardada" id="ins-foto-guardada">
+          <input type="hidden" id="ins-foto-actual" value="${f.replace(/"/g, '&quot;')}">
+          ${vista}
+          <div class="foto-guardada-pie">
+            <span id="ins-foto-guardada-txt">Ya tiene una foto. Si no toca nada, se queda como está.</span>
+            <button type="button" class="foto-guardada-quitar" onclick="window.urbisQuitarFotoGuardada()">🗑️ Quitar la foto</button>
+          </div>
+        </div>`;
+  }
+
+  /* Quitar es un acto explícito y por eso limpia TODO lo que podría volver
+     a meter la foto: el carrero, el campo de enlace y los dos campos de
+     archivo. Con cualquiera de ellos vivo, «quitar» no quitaría nada y la
+     pantalla diría que sí — que es la señal de éxito que no lo es. */
+  function urbisQuitarFotoGuardada() {
+      try {
+          const car = document.getElementById('ins-foto-actual');
+          if(car) car.value = '';
+          const url = document.getElementById('ins-foto');
+          if(url) url.value = '';
+          ['ins-foto-file', 'ins-foto-file-cam'].forEach(function(id){
+              const inp = document.getElementById(id);
+              if(inp) { try { inp.value = ''; } catch(e){} }
+          });
+          ['ins-foto-guardada-img', 'evidence-preview'].forEach(function(id){
+              const img = document.getElementById(id);
+              if(img) { img.removeAttribute('src'); img.style.display = 'none'; }
+          });
+          const txt = document.getElementById('ins-foto-guardada-txt');
+          if(txt) {
+              txt.textContent = 'La foto se quitará al guardar.';
+              txt.classList.add('foto-guardada-quitada');
+          }
+          const btn = document.querySelector('.foto-guardada-quitar');
+          if(btn) btn.remove();
+      } catch(e){}
+  }
+  /* Con una foto nueva elegida, «si no toca nada se queda como está» es
+     falso: la nueva manda. La frase vive acá y no escrita en cada
+     formulario —dos redacciones de lo mismo se separan (v879)— y la llaman
+     los dos sitios por donde entra un archivo. */
+  function urbisFotoGuardadaAlElegir(hayNueva) {
+      const txt = document.getElementById('ins-foto-guardada-txt');
+      if(!txt) return;
+      txt.classList.remove('foto-guardada-quitada');
+      txt.textContent = hayNueva
+        ? 'La foto nueva reemplazará a esta al guardar.'
+        : 'Ya tiene una foto. Si no toca nada, se queda como está.';
+  }
+  window.urbisBloqueFotoGuardada = urbisBloqueFotoGuardada;
+  window.urbisQuitarFotoGuardada = urbisQuitarFotoGuardada;
+  window.urbisFotoGuardadaAlElegir = urbisFotoGuardadaAlElegir;
+
   /* ── Pedir corrección (v835) ───────────────────────────────────────────
      Faltaba la otra mitad de lo que se pidió junto al portero de la foto:
      «si la cédula es falsa, se le dice a la persona que la corrija».
@@ -797,6 +889,7 @@
           const dataUrl = await procesarImagenSeleccionada(file);
           if(img) { img.src = dataUrl; img.style.display = 'block'; }
           if(label) label.textContent = `Foto lista para guardar (${Math.round(dataUrl.length / 1024)} KB aprox. en base64).`;
+          urbisFotoGuardadaAlElegir(true);
       } catch(error) {
           if(label) label.textContent = error.message;
           if(input) input.value = '';

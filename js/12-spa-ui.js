@@ -607,7 +607,26 @@
     // Recoger valores aunque estén ocultos
     let est = document.getElementById('sel-estado') ? document.getElementById('sel-estado').value : "Bueno";
     let mat = document.getElementById('sel-mat') ? document.getElementById('sel-mat').value : "N/A";
+    /* De dónde sale la foto, en orden y en UN solo sitio (v986). Los dos
+       formularios que llegan hasta acá —el ciudadano y el de Pro City— pasan
+       por esta línea, así que la orden de preferencia se escribe una vez o se
+       separa a la tanda siguiente (v879).
+
+       El tercer escalón es el que faltaba y el que costaba una foto: al
+       editar, ninguno de los dos traía la foto guardada, así que esto caía en
+       «N/A» y la fusión la escribía encima de la que había. Medido: una foto
+       tomada con la cámara se destruía en la primera edición.
+
+       Un archivo nuevo manda sobre todo (más abajo); un enlace tecleado manda
+       sobre lo que había; y lo que había manda sobre el vacío. Quitarla es un
+       acto explícito que vacía el carrero —`urbisQuitarFotoGuardada`—, y
+       entonces esto vuelve a dar «N/A» porque el formulario lo está diciendo,
+       no porque no sepa. */
     let fotoInput = document.getElementById('ins-foto').value;
+    if(!fotoInput) {
+        const _car = document.getElementById('ins-foto-actual');
+        if(_car) fotoInput = _car.value;
+    }
     let foto = fotoInput ? fotoInput.replace(/\|/g, '-') : "N/A";
     const fileInput = document.getElementById('ins-foto-file');
     const file = fileInput && fileInput.files ? fileInput.files[0] : null;
