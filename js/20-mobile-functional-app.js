@@ -299,6 +299,116 @@
       try{ map.panTo([point.lat, point.lng], {animate:true, duration:.55}); mobileGps.lastCenterAt = Date.now(); }catch(e){}
     }
   }
+  /* ══ LA MEJOR LECTURA DE UNA VENTANA, NO LA PRIMERA ════════════════
+     Llegado mapeando: «el GPS se va para otro lado de donde estoy parado …
+     a veces sale bien, o a veces, aunque yo esté quieto, el punto se va para
+     otro lado».
+
+     Estando quieto, el teléfono NO da una posición: da una secuencia, y las
+     primeras son las malas. El primer arreglo sale casi siempre de las
+     antenas o del wifi —cientos de metros— y la precisión mejora durante
+     los segundos siguientes, a medida que el receptor engancha satélites.
+     Quien toca el botón y se lleva la PRIMERA lectura se lleva la peor.
+
+     Así que no se toma la primera: se escucha una ventana corta y se
+     devuelve la MEJOR, con su error al lado. Es el mismo método que el
+     módulo deportivo usa para arrancar un recorrido (`warmWatch`), traído
+     acá con nombre propio en vez de escrito por segunda vez.
+
+     Devuelve SIEMPRE un objeto con su `estado` y nunca un par de números
+     pelado: «no hay permiso», «no llegó ninguna lectura» y «llegó y es
+     mala» piden tres cosas distintas de quien está mapeando, y un null las
+     juntaría en una. */
+  var GPS_BUENO_M   = 12;    // con esto se distingue una casa de la de al lado
+  var GPS_DUDOSO_M  = 15;    // el frente de una casa y el ancho de una calle
+                             // están los dos en el orden de los 10 m: por
+                             // encima de esto el punto puede caer enfrente
+  var GPS_INSERVIBLE_M = 50; // el mismo corte que ya usa `onMobileGpsPoint`
+                             // para no dibujar el punto azul —uno solo, para
+                             // que no puedan separarse
+  var GPS_VENTANA_MS = 9000; // lo que se espera como mucho
+  var GPS_FRESCA_MS  = 8000; /* Una lectura guardada sirve mientras el error
+        por haber caminado no pase del error de la propia lectura: a paso
+        normal (~1,4 m/s) ocho segundos son unos 11 m, que es el orden de
+        magnitud de un arreglo bueno. Más vieja que eso y lo que se ve en
+        pantalla ya no dice dónde está uno —que es justo lo que pasa cuando
+        Android suspende el seguimiento al pasar a otra aplicación y nadie
+        se entera, como este mismo archivo tiene escrito más arriba—. */
+
+  function mejorLecturaGps(alProgreso){
+    return new Promise(function(listo){
+      if(!navigator.geolocation){
+        listo({ estado:'sin-gps', razon:'Este dispositivo no permite leer el GPS.' });
+        return;
+      }
+      var mejor = null, n = 0, cerrado = false, id = null, reloj = null;
+      function terminar(){
+        if(cerrado) return; cerrado = true;
+        try{ if(id !== null) navigator.geolocation.clearWatch(id); }catch(e){}
+        try{ if(reloj) clearTimeout(reloj); }catch(e){}
+        /* Acá se llega por el RELOJ, así que el remedio que se nombra es el
+           que de verdad aplica: no es un permiso, es que no llegó nada. */
+        if(!mejor){ listo({ estado:'sin-lectura', lecturas:n,
+          razon:'El GPS no alcanzó a dar una lectura en ' + Math.round(GPS_VENTANA_MS/1000) + ' segundos. Bajo techo suele pasar: salga a cielo abierto y vuelva a intentarlo.' }); return; }
+        var a = Math.round(mejor.accuracy);
+        listo({
+          estado: a > GPS_INSERVIBLE_M ? 'imprecisa' : 'ok',
+          lat: mejor.lat, lng: mejor.lng, accuracy: mejor.accuracy,
+          lecturas: n, dudosa: a > GPS_DUDOSO_M,
+          razon: a > GPS_INSERVIBLE_M
+            ? ('La mejor lectura de ' + n + ' quedó en ±' + a + ' m, que es media cuadra.')
+            : ''
+        });
+      }
+      id = navigator.geolocation.watchPosition(function(pos){
+        n++;
+        var a = pos.coords.accuracy || 9999;
+        /* La lectura del seguimiento general se aprovecha igual —mueve el
+           punto azul y el estado—, que es lo que ya hacía este camino. */
+        try{ onMobileGpsPoint(pos); }catch(e){}
+        if(!mejor || a < mejor.accuracy){
+          mejor = { lat:pos.coords.latitude, lng:pos.coords.longitude, accuracy:a };
+        }
+        if(typeof alProgreso === 'function'){
+          try{ alProgreso(Math.round(mejor.accuracy), n); }catch(e){}
+        }
+        // Con una lectura buena y confirmada por una segunda no hay para qué
+        // seguir esperando: es el corte del módulo deportivo.
+        if(mejor.accuracy <= GPS_BUENO_M && n >= 2) terminar();
+      }, function(err){
+        /* UN ERROR NO CIERRA LA VENTANA, y esto es el corazón del arreglo.
+           En un teléfono, un POSITION_UNAVAILABLE suelto es lo que pasa al
+           pasar bajo un alero o entre dos edificios: el chip se cae un
+           segundo y vuelve MEJOR. Cerrando ahí se congela la PEOR lectura,
+           que es exactamente el punto que «se va para otro lado» aunque uno
+           esté quieto. Medido contra el doble: llega ±420, un error, y
+           detrás ±95 y ±7 — cerrando en el error se publicaban los ±420.
+           Quien cierra es el reloj, o una lectura ya suficientemente buena.
+
+           La única excepción es el permiso NEGADO, porque no puede
+           resolverse solo: esperar nueve segundos por un permiso que nadie
+           va a dar es no hacer nada. Los otros dos códigos —2 sin señal,
+           3 corte por tiempo— se dejan correr, y el reloj los reporta por
+           lo que son. */
+        if((err && err.code) !== 1) return;
+        cerrado = true;
+        try{ if(id !== null) navigator.geolocation.clearWatch(id); }catch(e){}
+        try{ if(reloj) clearTimeout(reloj); }catch(e){}
+        listo({ estado:'sin-permiso', lecturas:n,
+          razon:'La aplicación no tiene permiso para leer su ubicación. Actívelo en los ajustes del teléfono.' });
+      /* `maximumAge` NO va en cero. Con cero, el navegador rechaza el arreglo
+         que ya tiene y espera uno NUEVO: de pie y quieto —que es justo el caso
+         del reporte— el chip puede no producir ninguno dentro de la ventana, y
+         entonces se tira una lectura de dos segundos que servía, para acabar
+         diciendo que el GPS falló. El número no se inventa: es el MISMO
+         `GPS_FRESCA_MS` con el que `beginProCityLocationGps` decide si la
+         lectura guardada todavía vale. Dos constantes para un solo hecho se
+         separan a la tanda siguiente. */
+      }, { enableHighAccuracy:true, maximumAge:GPS_FRESCA_MS, timeout:GPS_VENTANA_MS });
+      reloj = setTimeout(terminar, GPS_VENTANA_MS);
+    });
+  }
+
   function startMobileGpsWatch(){
     enableMobileMapGestures();
     if(mobileGps.watchId !== null || !navigator.geolocation) return;
@@ -2700,16 +2810,83 @@
     setMapReportStatus('📍 Toque el mapa para ubicar lo que quiere mapear.');
   }
 
+  /* Hasta la v977 este botón hacía las dos cosas que ponen el punto donde
+     uno no está, y ninguna de las dos se veía desde afuera:
+
+       1. se servía de `mobileGps.last` SIN mirar su edad. Esa lectura pasa
+          por el corte de 50 m, así que era buena —cuando se tomó—; lo que
+          nadie comprobaba es CUÁNDO. Con el seguimiento suspendido por
+          Android, la «ubicación» era la de la cuadra anterior;
+       2. y si no había ninguna, tomaba la PRIMERA lectura que llegara, sin
+          leerle el `accuracy` —que venía en el mismo objeto—. La primera
+          suele ser la de las antenas, de cientos de metros.
+
+     Ahora la fresca se usa, la vieja se descarta, y lo que no se puede
+     sostener se DICE en vez de dejar caer un punto a media cuadra. */
   function beginProCityLocationGps(){
     proCity.dim = ''; proCity.editLat = '';
-    const usar = (lat, lng) => pickProCityPoint(lat, lng);
-    if(mobileGps.last){ usar(Number(mobileGps.last.lat), Number(mobileGps.last.lng)); return; }
-    if(!navigator.geolocation){ setMapReportStatus('Sin GPS disponible. Use "En el mapa".'); return; }
-    setMapReportStatus('Buscando su ubicación GPS…');
-    navigator.geolocation.getCurrentPosition(pos=>{
-      onMobileGpsPoint(pos);
-      usar(pos.coords.latitude, pos.coords.longitude);
-    }, ()=>{ setMapReportStatus('Sin GPS. Use "En el mapa".'); }, { enableHighAccuracy:true, maximumAge:1000, timeout:12000 });
+    const usar = (lat, lng, acc) => {
+      pickProCityPoint(lat, lng, acc);
+      avisarPrecisionGps(proCity.gpsAccuracy);
+    };
+
+    // La guardada sirve si es FRESCA. La edad es lo que no se miraba.
+    const g = mobileGps.last;
+    const edad = g ? (Date.now() - (g.t || 0)) : Infinity;
+    if(g && edad <= GPS_FRESCA_MS && (g.accuracy || 0) <= GPS_INSERVIBLE_M){
+      usar(Number(g.lat), Number(g.lng), g.accuracy);
+      return;
+    }
+
+    setMapReportStatus('📍 Buscando su ubicación… no se mueva unos segundos.');
+    mejorLecturaGps(function(acc, n){
+      setMapReportStatus('📍 Afinando la ubicación… ±' + acc + ' m (' + n +
+        (n === 1 ? ' lectura)' : ' lecturas)'));
+    }).then(function(r){
+      if(r.estado === 'ok'){ usar(r.lat, r.lng, r.accuracy); return; }
+      /* NO se pone el punto. Un punto con ±400 m se ve en el mapa igual que
+         uno bueno, y después nadie distingue cuál era cuál: es mejor no
+         ubicar que ubicar mal en silencio. Se dice el error medido y se
+         nombra la salida que sí funciona bajo techo. */
+      setMapReportStatus('⚠️ ' + (r.razon || 'No se pudo ubicar con el GPS.') +
+        ' Toque «En el mapa» y marque el sitio con el dedo.');
+    });
+  }
+
+  /* El error de la lectura, dicho donde se está mapeando. Sin esto, un
+     arreglo de ±3 m y uno de ±40 m se ven exactamente igual en la pantalla
+     —el mismo alfiler, en un sitio parecido— y por eso «a veces sale bien y
+     a veces no» no tiene causa visible. Con el número a la vista, quien
+     mapea sabe cuándo corregir con el dedo. */
+  /* La precisión es una propiedad DEL PUNTO, y el punto se ve en dos
+     superficies: la hoja de categorías que se abre encima del mapa, y el
+     formulario donde se escribe la dirección. La barra de estado NO sirve
+     para esto y se midió: en cuanto se pone el punto, la hoja la tapa
+     —`elementFromPoint` sobre ella devuelve `u52-procity-grid`—, así que el
+     aviso quedaba escrito y sin lector, que es un dato presente al que
+     ninguna pantalla alcanza. Una sola función para las dos, o las dos
+     redacciones se separan a la tanda siguiente. */
+  function avisoDePrecisionHTML(){
+    if(proCity.movidoAMano){
+      return '<div class="u52-gps-band ok">📍 Punto corregido a mano sobre el mapa.</div>';
+    }
+    var a = proCity.gpsAccuracy;
+    if(a === null || a === undefined) return '';
+    if(a > GPS_DUDOSO_M){
+      return '<div class="u52-gps-band dudosa">📍 Ubicado por GPS con ±' + a + ' m. A esa distancia el punto '
+           + 'puede caer en la casa de al lado o al otro lado de la calle: cierre esta hoja y arrastre el '
+           + 'alfiler hasta donde usted está.</div>';
+    }
+    return '<div class="u52-gps-band ok">📍 Ubicado por GPS con ±' + a + ' m.</div>';
+  }
+
+  /* La barra del mapa se queda con el dato escueto y NO repite el consejo:
+     el consejo vive en `avisoDePrecisionHTML`, y dos redacciones de la misma
+     advertencia se separan. Esta se lee al cerrar la hoja, que es justo
+     cuando el consejo ya se pudo seguir. */
+  function avisarPrecisionGps(acc){
+    if(acc === null || acc === undefined){ return; }
+    setMapReportStatus('📍 Ubicado con ±' + acc + ' m.');
   }
 
 
@@ -2809,6 +2986,7 @@
           <div><b>🏙️ URBIS Pro City</b><small>Elija qué va a ubicar</small></div>
           <button type="button" data-u52-call="procity-category-close" aria-label="Cerrar">×</button>
         </div>
+        ${avisoDePrecisionHTML()}
         <input type="text" class="u52-matriz-search" id="u52-category-search" placeholder="🔎 Buscar en la Matriz de Usos (ej. hospital, cancha…)" value="${esc(proCity.categorySearch)}" oninput="window.urbisProCityCategorySearch(this.value)" autocomplete="off">
         <div class="u52-procity-grid" id="u52-procity-category-results"></div>
       </div>`;
@@ -4898,9 +5076,18 @@
     setMapReportStatus(`📍 Toque el mapa para ubicar: <b>${esc(dim)}</b>`);
   }
 
-  function pickProCityPoint(lat, lng){
+  /* La precisión ENTRA con el punto y no se pega después. Escribiéndola
+     afuera, `showProCityCategorySheet()` —que esta misma función llama en su
+     último renglón— ya había compuesto la hoja sin ella, así que la banda
+     salía vacía: medido con la sonda, «(sin banda)» sobre un punto de ±7 m.
+     Es una propiedad del punto, así que va donde se pone el punto. */
+  function pickProCityPoint(lat, lng, acc){
     proCity.pickMode = '';
     proCity.selected = { lat:Number(lat), lng:Number(lng) };
+    // Punto nuevo: lo del anterior no se hereda. Sin esto, el siguiente
+    // nacería declarando una corrección que nadie hizo (v897).
+    proCity.movidoAMano = false;
+    proCity.gpsAccuracy = (acc || acc === 0) ? Math.round(acc) : null;
     try{ window.urbisDisableReportMapClick = true; }catch(e){}
     setMapReportStatus('');
     try{ if(window.map) map.setView([lat, lng], Math.max(map.getZoom ? map.getZoom() : 17, 17), { animate:true }); }catch(e){}
@@ -5405,6 +5592,7 @@
         <input id="ins-foto" type="hidden" value="">
         ${htmlEdificio}
         ${htmlEspecie}
+        ${avisoDePrecisionHTML()}
         <input id="ins-direccion" type="text" maxlength="120" placeholder="Dirección o punto de referencia (opcional)" autocomplete="street-address" value="${esc(dirPrefill)}">
         <textarea id="ins-nota" maxlength="180" placeholder="Descripción técnica opcional">${esc(notaPrefill)}</textarea>
         ${bloqueFotoHTML('ins-foto-file', ROTULO_FOTO_PC)}
@@ -5601,11 +5789,25 @@
     if(clearSelection) communityComposer.selected = null;
   }
 
+  /* EL ALFILER SE ARRASTRA, y eso no es un adorno: es la otra mitad de la
+     precisión. El GPS de un teléfono no baja de unos metros ni al aire
+     libre —y bajo un alero o entre dos paredes, mucho menos—, así que la
+     última corrección la hace quien está parado ahí y ve dónde está.
+     Hasta la v977 la única manera de mover un punto mal puesto era volver
+     a empezar por «En el mapa».
+
+     Lo que HAY que hacer al soltarlo es escribir el sitio nuevo en
+     `proCity.selected`: un alfiler que se deja arrastrar y guarda las
+     coordenadas viejas es peor que uno clavado —se ve corregido y no lo
+     está—, que es la familia de fallos que este proyecto llama «una señal
+     de éxito que no lo es». */
   function renderCommunityPickMarker(lat, lng){
     try{
       if(!window.map || !window.L) return;
       if(typeof tempMarker !== 'undefined' && tempMarker){ map.removeLayer(tempMarker); tempMarker = null; }
       tempMarker = L.marker([lat, lng], {
+        draggable: true,
+        autoPan: true,
         zIndexOffset: 2600,
         icon: L.divIcon({
           className: 'u52-community-pick-pin-wrap',
@@ -5614,6 +5816,18 @@
           iconAnchor: [29,29]
         })
       }).addTo(map);
+      tempMarker.on('dragend', function(){
+        try{
+          var ll = tempMarker.getLatLng();
+          proCity.selected = { lat: Number(ll.lat), lng: Number(ll.lng) };
+          /* Y deja de ser una lectura del GPS. Seguir imprimiendo «±3 m»
+             sobre un punto que movió un dedo sería declarar mal la
+             procedencia, que en este proyecto es peor que no declararla. */
+          proCity.gpsAccuracy = null;
+          proCity.movidoAMano = true;
+          setMapReportStatus('📍 Punto corregido a mano.');
+        }catch(e){}
+      });
     }catch(e){}
   }
 

@@ -656,6 +656,23 @@
   /* !important en los textos por el mismo motivo que el conteo: css/42
      pinta <small>/<span> casi blancos con !important. */
   #urbis-mobile-app .u52-procity-sheet-head b{ display:block; color:var(--pc-ink) !important; -webkit-text-fill-color:var(--pc-ink) !important; font-size:1rem; font-weight:900; }
+  /* La precisión del GPS, dicha donde el punto se ve. El ámbar es el de
+     «esto todavía no se sostiene» y el verde el de «ya quedó», los mismos
+     dos colores que el resto de la aplicación usa para eso: darles un color
+     nuevo sería enseñar dos códigos para un solo significado. */
+  #urbis-mobile-app .u52-gps-band{
+    display:block; margin:8px 0 2px; padding:9px 11px; border-radius:12px;
+    font-size:.8rem; font-weight:700; line-height:1.35;
+  }
+  #urbis-mobile-app .u52-gps-band.ok{
+    background:rgba(22,163,74,.10); border:1px solid rgba(22,163,74,.38);
+    color:#14603a !important; -webkit-text-fill-color:#14603a !important;
+  }
+  #urbis-mobile-app .u52-gps-band.dudosa{
+    background:rgba(217,119,6,.10); border:1px dashed rgba(180,83,9,.55);
+    color:#8a4b06 !important; -webkit-text-fill-color:#8a4b06 !important;
+  }
+
   #urbis-mobile-app .u52-procity-sheet-head small{ display:block; color:var(--pc-sky-ink) !important; -webkit-text-fill-color:var(--pc-sky-ink) !important; font-size:.76rem; margin-top:2px; font-weight:700; }
   #urbis-mobile-app .u52-procity-sheet-head button{
     border:0; background:var(--pc-sky-2); color:var(--pc-sky-ink); width:34px; height:34px;

@@ -3692,6 +3692,146 @@ console.log('\n  -- el mapeo de Pro City --');
     llamadas + ' llamadas a urbisSinDireccion');
 }
 
+console.log('\n  -- la precisión del GPS al ubicar un punto (v978) --');
+{
+  const j20 = soloCodigo(leer('js/20-mobile-functional-app.js'));
+  /* `trozo` de los otros bloques está en SU ámbito. Se repite acá en vez de
+     subirlo a nivel de módulo porque subir un ayudante que otros bloques ya
+     tienen escrito de otra manera sería cambiar comprobaciones que no son
+     de esta tanda. */
+  const trozo = (src, desde, hasta) => {
+    const i = src.indexOf(desde), j = src.indexOf(hasta, i + 1);
+    return (i < 0 || j < 0) ? '' : src.slice(i, j + hasta.length);
+  };
+  const cuerpo = trozo(j20, 'function mejorLecturaGps(', '\n  }\n');
+  const begin  = trozo(j20, 'function beginProCityLocationGps(', '\n  }\n');
+  const pick   = trozo(j20, 'function pickProCityPoint(', '\n  }\n');
+  const marca  = trozo(j20, 'function renderCommunityPickMarker(', '\n  }\n');
+
+  /* MATERIAL primero (v920): sin los cuatro trozos, todo lo de abajo se
+     cumpliría sobre la nada. */
+  const material = !!(cuerpo && begin && pick && marca);
+  comprobar('MATERIAL · se leen las cuatro funciones que ubican un punto',
+    material,
+    material ? 'mejorLecturaGps · beginProCityLocationGps · pickProCityPoint · renderCommunityPickMarker'
+             : 'no se pudo leer: ' + ['mejorLecturaGps','beginProCityLocationGps','pickProCityPoint','renderCommunityPickMarker']
+                 .filter((_, i) => ![cuerpo, begin, pick, marca][i]).join(' · '));
+
+  /* 1 · EL PRIMER ARREGLO ES EL PEOR. Un teléfono devuelve una SECUENCIA de
+     lecturas, no una posición: la primera suele ser de antena o de wifi y
+     mejora en segundos. Tomar la primera es tomar la peor, que es el punto
+     que «se va para otro lado». Así que el camino del GPS no puede volver a
+     `getCurrentPosition`. Falla CERRADO: un camino nuevo que tome la primera
+     sale en rojo en su primera corrida (v880). */
+  comprobar('el botón de GPS no se queda con el PRIMER arreglo',
+    begin.indexOf('getCurrentPosition') < 0 && begin.indexOf('mejorLecturaGps(') >= 0,
+    begin.indexOf('getCurrentPosition') >= 0
+      ? 'volvió a getCurrentPosition: eso publica la primera lectura, que es la peor'
+      : begin.indexOf('mejorLecturaGps(') < 0
+      ? 'no llama a mejorLecturaGps: nadie está afinando la lectura'
+      : 'afina con mejorLecturaGps');
+
+  /* 2 · UN ERROR TRANSITORIO NO CIERRA LA VENTANA. Es el corazón del
+     arreglo y lo destapó la sonda: llega ±420, un POSITION_UNAVAILABLE, y
+     detrás ±95 y ±7. Cerrando en el error se congela la PEOR. Lo único
+     terminal es el permiso negado (código 1), que no puede resolverse solo. */
+  /* Se mide el CUERPO de la rama de error, no que la línea del código 1 esté
+     escrita en alguna parte: con una ventana de caracteres, un `terminar()`
+     puesto delante y separado por el comentario se colaba —pasó al demostrar
+     en rojo, y una guarda que no muerde es un verde (v878)—. La rama va de
+     `}, function(err){` a las opciones del watch, y dentro de ella NINGÚN
+     `terminar()` es aceptable: cerrar ahí congela la peor lectura. */
+  const ramaErr = (() => {
+    const i = cuerpo.indexOf('}, function(err){');
+    if (i < 0) return '';
+    const j = cuerpo.indexOf('}, { enableHighAccuracy', i);
+    return j < 0 ? '' : cuerpo.slice(i, j);
+  })();
+  const soloPermiso = !!ramaErr && /\(\s*err\s*&&\s*err\.code\s*\)\s*!==\s*1\s*\)\s*return\s*;/.test(ramaErr);
+  const cierraEnError = !ramaErr || ramaErr.indexOf('terminar(') >= 0;
+  comprobar('un error transitorio no cierra la ventana: solo lo hace el permiso negado',
+    soloPermiso && !cierraEnError,
+    (soloPermiso && !cierraEnError) ? 'solo el código 1 la cierra'
+      : !ramaErr
+      ? 'no se pudo leer la rama de error de mejorLecturaGps'
+      : !soloPermiso
+      ? 'la rama de error no se limita al código 1: un bache de señal congela la peor lectura'
+      : 'cierra con terminar() dentro de la rama de error: vuelve a congelar la peor lectura');
+
+  /* 3 · LA FRESCURA ES UNA SOLA. `maximumAge:0` rechaza el arreglo que el
+     teléfono ya tiene y espera uno nuevo: de pie y quieto puede no llegar
+     ninguno, y se tira una lectura que servía. El número no se inventa: es
+     el mismo con el que `beginProCityLocationGps` decide si la lectura
+     guardada todavía vale. Dos constantes para un hecho se separan (v879). */
+  const frescaOk = /maximumAge\s*:\s*GPS_FRESCA_MS/.test(cuerpo) && begin.indexOf('GPS_FRESCA_MS') >= 0;
+  comprobar('la ventana no pide un arreglo recién hecho, y la frescura se lee de un solo sitio',
+    frescaOk,
+    frescaOk ? 'la ventana y el arreglo guardado usan el mismo GPS_FRESCA_MS'
+      : /maximumAge\s*:\s*0/.test(cuerpo)
+      ? 'maximumAge volvió a cero: tira la lectura que el teléfono ya tiene'
+      : !/maximumAge\s*:\s*GPS_FRESCA_MS/.test(cuerpo)
+      ? 'la ventana usa otra frescura que la del arreglo guardado: son dos números para un hecho'
+      : 'beginProCityLocationGps dejó de leer GPS_FRESCA_MS');
+
+  /* 4 · LA PRECISIÓN ENTRA CON EL PUNTO. Escrita después, la hoja de
+     categorías —que `pickProCityPoint` abre en su último renglón— ya se
+     compuso sin ella y la banda sale vacía: medido con la sonda. */
+  const entraConElPunto = /function pickProCityPoint\(\s*lat\s*,\s*lng\s*,\s*acc\s*\)/.test(j20)
+      && /proCity\.gpsAccuracy\s*=/.test(pick)
+      && /pickProCityPoint\(\s*lat\s*,\s*lng\s*,\s*acc\s*\)/.test(begin);
+  comprobar('la precisión entra con el punto, no se le pega después',
+    entraConElPunto,
+    entraConElPunto ? 'pickProCityPoint la recibe y la guarda antes de componer la hoja'
+      : !/function pickProCityPoint\(\s*lat\s*,\s*lng\s*,\s*acc\s*\)/.test(j20)
+      ? 'pickProCityPoint no recibe la precisión: la banda se compone antes de saberla'
+      : !/proCity\.gpsAccuracy\s*=/.test(pick)
+      ? 'pickProCityPoint no la guarda'
+      : 'el camino del GPS no se la pasa');
+
+  /* 5 · LA PROMESA IMPRESA SE CUMPLE. La banda manda a arrastrar el alfiler;
+     un alfiler que no se arrastra convierte esa frase en mentira (v892). Y
+     el arrastre tiene que ESCRIBIR el punto: mover el dibujo y dejar la
+     coordenada vieja sería peor que no dejar arrastrarlo. */
+  const arrastreOk = /draggable\s*:\s*true/.test(marca) && /on\(\s*'dragend'/.test(marca)
+      && /proCity\.selected\s*=/.test(marca) && /proCity\.movidoAMano\s*=\s*true/.test(marca);
+  comprobar('el alfiler se arrastra y el arrastre escribe el punto',
+    arrastreOk,
+    arrastreOk ? 'arrastrable, y al soltarlo escribe la coordenada y la marca de corregido a mano'
+      : !/draggable\s*:\s*true/.test(marca)
+      ? 'el alfiler no es arrastrable, y la banda dice que lo arrastre'
+      : !/on\(\s*'dragend'/.test(marca)
+      ? 'se arrastra y nadie escucha dónde quedó'
+      : !/proCity\.selected\s*=/.test(marca)
+      ? 'el arrastre mueve el dibujo y no el punto: la coordenada se queda vieja'
+      : 'no marca que el punto se corrigió a mano');
+
+  /* 6 · LA BANDA LLEGA A LAS DOS SUPERFICIES. La barra del mapa NO sirve:
+     medido con la sonda, en cuanto se pone el punto la hoja de categorías la
+     tapa. Un dato medido al que ninguna pantalla alcanza se ve igual que un
+     dato ausente. */
+  const bandas = (j20.match(/\$\{avisoDePrecisionHTML\(\)\}/g) || []).length;
+  const pintaOk = bandas >= 2 && j20.indexOf('function avisoDePrecisionHTML(') >= 0;
+  comprobar('la precisión se pinta donde el punto se ve, y por una sola función',
+    pintaOk,
+    pintaOk ? bandas + ' superficies la pintan, todas por avisoDePrecisionHTML'
+      : bandas < 2
+      ? 'solo ' + bandas + ' superficie la pinta: con la hoja encima, el aviso queda sin lector'
+      : 'no existe avisoDePrecisionHTML: las dos redacciones se separan a la tanda siguiente');
+
+  /* Y la guarda de la guarda: si la banda dejara de leer lo que el punto
+     guarda, todo lo de arriba seguiría en verde sobre un aviso que no dice
+     nada (v878). */
+  const banda = trozo(j20, 'function avisoDePrecisionHTML(', '\n  }\n');
+  const leeOk = !!banda && banda.indexOf('proCity.gpsAccuracy') >= 0 && banda.indexOf('proCity.movidoAMano') >= 0;
+  comprobar('y la banda sigue leyendo la precisión y la corrección del punto',
+    leeOk,
+    leeOk ? 'lee las dos cosas del punto'
+      : !banda ? 'no se pudo leer avisoDePrecisionHTML'
+      : banda.indexOf('proCity.gpsAccuracy') < 0
+      ? 'dejó de leer la precisión: imprimiría lo mismo siempre'
+      : 'dejó de leer si el punto se corrigió a mano');
+}
+
 console.log('\n  -- las listas vivas --');
 {
   const md = leer('CLAUDE.md');

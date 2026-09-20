@@ -13015,6 +13015,212 @@ Declarada cualquiera de las cuatro, el peldaño **se calcula solo**: no hay
 bandera que bajar.
 
 
+## El GPS no se queda con la peor lectura (v978)
+
+Pedido con el teléfono en la mano: *«Quiero ubicar desde el GPS, pero a veces
+el GPS se va para otro lado de donde yo estoy parado… a veces sale bien donde
+yo estoy, o a veces, aunque yo esté quieto, el punto de GPS se va para otro
+lado.»*
+
+Medida la premisa antes de escribir —la regla de la v863 y la v916— el
+síntoma es real y la causa no es el chip: **un teléfono no devuelve una
+posición, devuelve una SECUENCIA de lecturas.** La primera sale de la antena
+o del wifi y anda en cientos de metros; la del GPS llega segundos después.
+Hasta la v977, `beginProCityLocationGps` tomaba **la primera** y ahí paraba:
+
+```js
+navigator.geolocation.getCurrentPosition(pos => { usar(pos.coords.latitude, …); },
+  …, { enableHighAccuracy:true, maximumAge:1000, timeout:12000 });
+```
+
+Tomar la primera es tomar la peor, y por eso el punto «se va para otro lado»
+estando quieto. Y peor: **la precisión venía en el mismo objeto** —
+`pos.coords.accuracy`— y nadie la miraba. Es la clase A: el discriminante al
+lado de la cifra, sin leer.
+
+    v977   toma la primera lectura · nunca dice cuánto error tiene · el alfiler no se puede mover
+    v978   se queda con la mejor de la ventana · lo dice en metros · y se corrige con el dedo
+
+### Los cortes se derivan, no se inventan
+
+Poner «espera cinco segundos» o «acepta menos de veinte metros» sería repetir
+el error del techo de Overpass de la v869 — un número a ojo que después nadie
+puede defender. Los cuatro salen de algo:
+
+| | De dónde |
+|---|---|
+| **12 m** · ya es buena, se corta | con eso se distingue una casa de la de al lado |
+| **15 m** · dudosa, se avisa | el frente de una casa y el ancho de una calle están en ese orden |
+| **50 m** · no se publica | es el MISMO corte que `onMobileGpsPoint` ya usaba: no se agrega un segundo |
+| **8 s** · la lectura guardada todavía vale | a ~1,4 m/s caminando, 8 s son ~11 m ≈ el error de un arreglo bueno |
+
+Y la ventana entera son 9 s, que es lo que un teléfono tarda en pasar de la
+antena al satélite. No cierra por reloj si ya llegó algo bueno: con una
+lectura de 12 m o menos **confirmada por una segunda** se corta, que es el
+criterio que el módulo deportivo ya tenía escrito.
+
+### Un error transitorio NO cierra la ventana
+
+Es el corazón del arreglo y **no se ve leyendo: lo destapó la sonda.**
+Instrumentando `watchPosition` con el doble de Playwright salió esta
+secuencia, que es exactamente lo que hace un teléfono al pasar bajo un alero:
+
+```
+GEO fix acc=420
+GEO error code=2            ← el chip se cae un segundo
+GEO error code=2
+GEO fix acc=95
+GEO fix acc=7               ← y vuelve MEJOR
+```
+
+Mi primera versión decía «con una lectura guardada, un error posterior cierra
+con lo mejor que llegó». Suena razonable y **congela los ±420**: publica la
+peor lectura justo por el bache que la iba a mejorar, o sea el defecto del
+reporte reconstruido dentro del arreglo.
+
+Ahora **quien cierra es el reloj, o una lectura ya suficientemente buena**.
+La única excepción es el permiso NEGADO (código 1), porque no puede resolverse
+solo: esperar nueve segundos por un permiso que nadie va a dar es no hacer
+nada. Los códigos 2 y 3 se dejan correr.
+
+#### Y los tres códigos no dicen lo mismo
+
+La misma versión reportaba cualquier error como «Revise los permisos de
+ubicación». Un corte por tiempo bajo techo **no es un problema de permisos**,
+y mandar a alguien a la pantalla de ajustes nombra un remedio que no puede
+funcionar — es la falta de la v867 con el agravante de que el remedio es
+falso. Cada código lleva el suyo: el permiso manda a los ajustes, el corte por
+tiempo manda a cielo abierto, y la falta de señal manda a encender el GPS.
+
+#### `maximumAge` no va en cero
+
+También del papel. Con cero, el navegador **rechaza el arreglo que ya tiene**
+y espera uno nuevo: de pie y quieto —que es justo el caso del reporte— el chip
+puede no producir ninguno dentro de la ventana, y se tira una lectura de dos
+segundos que servía para acabar diciendo que el GPS falló. Medido con la
+sonda: con `maximumAge:0` las dos ramas salían «No se pudo leer el GPS».
+
+El número no se inventa: es el MISMO `GPS_FRESCA_MS` con el que
+`beginProCityLocationGps` decide si la lectura guardada todavía vale. Dos
+constantes para un hecho se separan a la tanda siguiente (v879).
+
+### Lo que no se puede ubicar NO se ubica, y se dice cuánto
+
+Por encima de 50 m **no se pone alfiler**. Poner el punto y susurrar que
+quizá esté mal sería lo que este proyecto lleva veinte tandas deshaciendo: la
+mentira más pequeña en vez del silencio (v875). Se dice la cifra medida —«la
+mejor lectura de N quedó en ±420 m, que es media cuadra»— y se manda a «En el
+mapa», que es la puerta que sí resuelve.
+
+Y mientras busca, la espera **dice en qué va**: «Afinando la ubicación… ±95 m
+(3 lecturas)». Una espera muda de nueve segundos no se distingue de un cuelgue,
+que es la lección de la v870 con la barra.
+
+### La barra de estado no servía para esto, y se midió
+
+El aviso de precisión estaba escrito en `setMapReportStatus`. **Medido con la
+sonda, ahí no lo lee nadie**: en cuanto se pone el punto, `pickProCityPoint`
+abre la hoja de categorías y la tapa — `elementFromPoint` sobre la barra
+devuelve `u52-procity-grid`. Un dato medido al que ninguna pantalla alcanza se
+ve, desde afuera, exactamente igual que un dato ausente: es la **clase C**,
+cometida por mí en la misma tanda.
+
+La precisión es una propiedad DEL PUNTO, y el punto se ve en dos superficies:
+la hoja de categorías y el formulario donde se escribe la dirección. Las dos
+llevan la banda, y **las dos por la misma función** —`avisoDePrecisionHTML`—,
+porque dos redacciones de una advertencia se separan (v879). Verde cuando la
+lectura es buena, ámbar a trazos cuando es dudosa: los dos colores que esta
+aplicación ya usa para eso, sin inventar un tercero (v880).
+
+#### La precisión entra CON el punto
+
+Otra que solo se vio en el papel: escribirla después de `pickProCityPoint`
+llegaba tarde, porque esa función abre la hoja en su último renglón y la hoja
+ya se había compuesto sin ella. La sonda lo imprimió: `banda: "(sin banda)"`
+sobre un punto de ±7 m. Es una propiedad del punto, así que va donde se pone
+el punto: `pickProCityPoint(lat, lng, acc)`.
+
+### El alfiler se arrastra, porque la banda dice que se arrastre
+
+La primera redacción de la banda decía «arrástrelo en el mapa si no quedó
+donde usted está» y **el alfiler no era arrastrable**. Una promesa impresa y
+no cumplida es peor que no hacerla (v892), y acá el arreglo correcto no era
+bajarle el tono a la frase: arrastrar es lo que de verdad resuelve el caso
+—alguien que está parado en el sitio sabe dónde está mejor que el chip—.
+
+`renderCommunityPickMarker` lo pone `draggable`, y el `dragend` **escribe la
+coordenada**, no solo mueve el dibujo: mover el alfiler y dejar el punto viejo
+sería el defecto más caro de los dos. Queda marcado `movidoAMano`, y la banda
+lo dice.
+
+Y las dos marcas **se sueltan al poner un punto nuevo** (v897): sin eso, el
+siguiente nacería declarando una corrección que nadie hizo.
+
+### Lo que el papel enseñó, medido en tres ramas
+
+La sonda recorre el flujo de verdad —portada, botón 🏙️, «Mi ubicación»— con
+el doble de geolocalización moviéndose:
+
+| | Qué sale |
+|---|---|
+| **A** · arranca en ±420 y mejora | «Afinando… ±420 m (1 lectura)» → alfiler puesto, banda verde «±7 m» |
+| **B** · nunca baja de ±420 | **sin alfiler**, y la cifra medida con el remedio al lado |
+| **C** · se queda en ±25 | alfiler puesto, banda ámbar, y arrastrarlo deja «Punto corregido a mano» |
+
+Las tres hacen falta y por razones opuestas: sin B, un «ubicado» puesto en
+todas partes pasaría; sin C, la rama que avisa no se ejercita; y sin A no se
+vería que la lectura mejora, que es el arreglo entero.
+
+### El módulo deportivo conserva su propio bucle, y se dice
+
+`startRunner` tiene desde antes su «mejor de N» escrito en línea, con su
+propio corte de 22 m. Es la misma idea en dos sitios, o sea la **clase B**.
+No se unificó y el motivo es medido, no de pereza: rewire toca la pantalla de
+calentamiento del corredor y su propia suite, y **ninguna suite de navegador
+corre en este contenedor**. Queda declarado con su nombre para la tanda que lo
+tome, en vez de hecho a ojo de paso.
+
+### Lo que NO se pudo correr
+
+**Ninguna suite de navegador** —`tpisos` incluida—, por lo mismo que la v973,
+la v975, la v976 y la v977: este contenedor no tiene `../urbis-motor` ni el
+`node_modules` del banco de pruebas. Corrió `revisar.js` entero con sus ocho
+comprobaciones nuevas, y se miró el papel con la sonda, que es lo que encontró
+**cuatro** de los cinco defectos de esta tanda —el error que congelaba la peor
+lectura, el `maximumAge`, la barra tapada y la precisión escrita tarde—.
+Ninguno se veía leyendo.
+
+Las aserciones que corresponderían a esto en `tpisos` —ubicar por GPS, leer la
+banda, arrastrar el alfiler y comprobar que el punto publicado es el
+corregido— quedan pendientes de un contenedor con el banco de pruebas.
+
+### Demostrado contra la v977
+
+Seis de las ocho en rojo, contra una copia guardada y no con `git checkout --`
+sobre trabajo sin confirmar (v973):
+
+```
+✗ el botón de GPS no se queda con el PRIMER arreglo  — volvió a getCurrentPosition
+✗ un error transitorio no cierra la ventana  — cierra con terminar() dentro de la rama de error
+✗ la ventana no pide un arreglo recién hecho  — maximumAge volvió a cero
+✗ la precisión entra con el punto  — el camino del GPS no se la pasa
+✗ el alfiler se arrastra y el arrastre escribe el punto  — no es arrastrable, y la banda dice que lo arrastre
+✗ la precisión se pinta donde el punto se ve  — solo 1 superficie la pinta
+```
+
+#### Y una guarda mía que no mordía
+
+La del error transitorio **pasó en verde sobre la inyección**: medía con una
+ventana de 400 caracteres y el `terminar()` inyectado quedaba detrás del
+comentario que explica la regla. Una guarda que no puede fallar es un verde
+(v878). Se mide ahora el CUERPO de la rama de error —de `}, function(err){` a
+las opciones del watch— y ahí **ningún** `terminar()` es aceptable.
+
+De paso, cinco de las ocho imprimían el texto del VERDE al fallar, que es el
+defecto que la v973 encontró y la v977 volvió a cometer. Cada una cierra ahora
+en una frase de éxito y una causa por rama.
+
+
 ## La lista viva: lo que al pliego educativo todavía le falta (v866)
 
 Esta lista se quedó vieja **cinco veces**. Cuatro dentro de la hoja —la
