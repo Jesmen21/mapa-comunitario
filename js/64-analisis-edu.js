@@ -183,7 +183,22 @@
     'Poste concreto / madera': 'mobiliario',
     // Cableado expuesto es infraestructura sin frente activo: el motor ya la
     // penaliza como fachada muerta, que es exactamente lo que es en la acera.
-    'Cableado expuesto': 'infra_servicios'
+    'Cableado expuesto': 'infra_servicios',
+    /* Los accesorios de vía de la v982. Una baranda no es una arteria: sin
+       esto caían en `via_arteria` por el uso al que pertenecen, y noventa
+       barandas mapeadas leían como noventa vías principales. Cada una va
+       donde de verdad cuenta —lo que se camina y se toca, mobiliario; lo que
+       sostiene el terreno o conduce agua, infraestructura; la zona verde,
+       verde—. */
+    'Paso peatonal (cebra)': 'mobiliario',
+    'Rampa de accesibilidad': 'mobiliario',
+    'Escalera pública': 'mobiliario',
+    'Baranda o pasamanos': 'mobiliario',
+    'Bahía de parqueo': 'mobiliario',
+    'Muro de contención': 'infra_servicios',
+    'Gaviones': 'infra_servicios',
+    'Cuneta o canal de aguas lluvias': 'infra_servicios',
+    'Berma o zona verde vial': 'verde_natural'
   };
 
   // El estado del andén NO es un punto de interés: es la condición de la
@@ -209,7 +224,19 @@
     // Se mapeaban y no llegaban al análisis. La calle de tierra entra como
     // vía menor: sigue siendo por donde se pasa, aunque no esté pavimentada.
     'Calle asfaltada / adoquinada': 'residential',
-    'Calle de tierra': 'unclassified'
+    'Calle de tierra': 'unclassified',
+    /* Lo que se camina NO es una arteria. Sin su renglón acá, estos tipos
+       caían al `USO_A_SUB` de su uso —«Vías e Infraestructura Vial» →
+       `via_arteria`— y un puente peatonal o una trocha entraban al análisis
+       como vía principal: la jerarquía vial del sector salía inflada con lo
+       que nadie puede recorrer en carro. Se vio midiendo la cadena entera
+       con la sonda, no leyendo. */
+    'Vía peatonal': 'pedestrian',
+    'Andén / vía peatonal': 'footway',
+    'Puente peatonal': 'footway',
+    'Vía sin pavimentar': 'track',
+    'Trocha / camino rural': 'track',
+    'Malla vial en construcción': 'construction'
   };
 
   function partirEtiqueta(descripcion){
@@ -305,12 +332,25 @@
       return {
         type: 'node', id: 'edu' + i + '_' + k, lat: lat, lon: lng,
         tags: (function(){
+          /* `building:levels` SOLO donde el uso es un edificio. Se emitía
+             siempre, así que un hidrante, un mural, una banca y un árbol
+             entraban al motor como edificios de un piso: un sector con
+             sesenta árboles y cuarenta tapas sumaba cien construcciones
+             fantasma a la huella y al reparto de alturas (v880).
+
+             El discriminante ya existía y nadie lo miraba acá: es el MISMO
+             `esUsoDeEdificio` con el que la ficha decide si preguntar los
+             pisos, y la v974 le escribió una guarda entera. Que lo use el
+             formulario y no el análisis es la clase B —una decisión tomada
+             en dos sitios— y se vio midiendo la cadena, no leyendo. */
+          const esEdificio = !!(EDIF && typeof EDIF.esUsoDeEdificio === 'function'
+            && EDIF.esUsoDeEdificio(et.uso));
           const t = {
             'urbis:sub': sub,
             'urbis:intensidad': String(intensidadDe(sub)),
-            'building:levels': String(ficha.pisos),
             name: et.cabeza
           };
+          if (esEdificio) t['building:levels'] = String(ficha.pisos);
           if (ficha.mezcla && ficha.mezcla.mixto) t['urbis:mixto'] = 'si';
           /* El horario que el curso anotó del letrero viaja como
              `opening_hours`, la misma etiqueta con la que llega el de

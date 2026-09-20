@@ -3700,6 +3700,79 @@ console.log('\n  -- el mapeo de Pro City --');
     llamadas + ' llamadas a urbisSinDireccion');
 }
 
+console.log('\n  -- lo mapeado llega al análisis como lo que es (v984) --');
+{
+  const j64 = soloCodigo(leer('js/64-analisis-edu.js'));
+  const j20 = soloCodigo(leer('js/20-mobile-functional-app.js'));
+  const claves = (src, desde) => {
+    const i = src.indexOf(desde); if (i < 0) return [];
+    const j = src.indexOf('\n  };', i); if (j < 0) return [];
+    return (src.slice(i, j).match(/'([^']+)'\s*:/g) || []).map(x => x.slice(1, x.lastIndexOf("'")));
+  };
+  const VIA = claves(j64, 'const TIPO_A_VIA = {');
+  const INFRA = claves(j64, 'const TIPO_INFRA_A_SUB = {');
+  const tiposVia = (() => {
+    const m = j20.match(/\{ u:'Vías e Infraestructura Vial'[^\n]*/);
+    if (!m) return [];
+    const t = m[0].match(/t:\[([^\]]*)\]/);
+    return t ? (t[1].match(/'([^']+)'/g) || []).map(x => x.slice(1, -1)) : [];
+  })();
+
+  const mat = VIA.length > 8 && INFRA.length > 8 && tiposVia.length > 15;
+  comprobar('MATERIAL · se leen las dos tablas y los tipos de vía',
+    mat,
+    mat ? VIA.length + ' en TIPO_A_VIA · ' + INFRA.length + ' en TIPO_INFRA_A_SUB · ' + tiposVia.length + ' tipos de vía'
+        : 'no se pudieron leer: ' + [VIA.length <= 8 ? 'TIPO_A_VIA' : '', INFRA.length <= 8 ? 'TIPO_INFRA_A_SUB' : '',
+            tiposVia.length <= 15 ? 'los tipos de vía' : ''].filter(Boolean).join(' · '));
+
+  /* NINGÚN tipo de «Vías e Infraestructura Vial» puede caer por omisión.
+     Lo que no esté en una de las dos tablas cae al `USO_A_SUB` de su uso,
+     que es `via_arteria`: un puente peatonal, una trocha o una baranda
+     entraban al análisis como vía principal e inflaban la jerarquía vial del
+     sector con lo que nadie puede recorrer en carro. Falla CERRADO: un tipo
+     de vía nuevo sale en rojo hasta que alguien diga qué es. */
+  const porOmision = tiposVia.filter(t => VIA.indexOf(t) < 0 && INFRA.indexOf(t) < 0);
+  comprobar('ningún tipo de vía cae en «arteria» por omisión',
+    porOmision.length === 0 && tiposVia.length > 15,
+    tiposVia.length <= 15 ? 'no se leyeron los tipos de vía'
+      : porOmision.length ? porOmision.join(' · ') + ': entran al análisis como vía principal'
+      : 'los ' + tiposVia.length + ' dicen qué son');
+
+  /* `building:levels` SOLO donde el uso es un edificio, y por el MISMO
+     discriminante que usa la ficha para decidir si pregunta los pisos. Con
+     él emitido siempre, un árbol y un hidrante entran al motor como
+     construcciones de un piso. */
+  const cuerpo = (() => {
+    const i = j64.indexOf('function puntoAElemento(');
+    return i < 0 ? '' : j64.slice(i, j64.indexOf('\n  }\n', i));
+  })();
+  const condicionado = !!cuerpo
+    && cuerpo.indexOf('esUsoDeEdificio(') >= 0
+    && /if\s*\(esEdificio\)\s*t\['building:levels'\]/.test(cuerpo)
+    && !/'building:levels'\s*:/.test(cuerpo);
+  comprobar('solo un edificio entra al análisis con pisos',
+    condicionado,
+    !cuerpo ? 'no se pudo leer puntoAElemento'
+      : /'building:levels'\s*:/.test(cuerpo) ? 'los pisos se emiten siempre: un árbol y un hidrante cuentan como construcciones'
+      : cuerpo.indexOf('esUsoDeEdificio(') < 0 ? 'no usa el mismo discriminante que la ficha: la decisión queda en dos sitios'
+      : 'los pisos van condicionados a esUsoDeEdificio');
+
+  /* Y la guarda contra pasarse: los pisos tienen que SEGUIR emitiéndose.
+     Quitarlos del todo dejaría al motor sin alturas de lo levantado en
+     campo, que es lo contrario de lo que esta tanda vino a arreglar. */
+  /* Se mide la PROPIEDAD y no la forma: la primera versión citaba la línea
+     exacta de la asignación y salía roja contra la inyección que emite los
+     pisos SIEMPRE —donde sí viajan—. Es la v890 cometida en la guarda que la
+     acompaña. Lo que tiene que seguir siendo cierto es que la etiqueta se
+     emita y salga de la ficha. */
+  const siguenViajando = !!cuerpo && cuerpo.indexOf("'building:levels'") >= 0
+    && cuerpo.indexOf('ficha.pisos') >= 0;
+  comprobar('y un edificio sigue entrando con sus pisos',
+    siguenViajando,
+    siguenViajando ? 'los pisos de la ficha siguen viajando'
+      : 'ya no se emiten: el motor se queda sin las alturas levantadas en campo');
+}
+
 console.log('\n  -- el arte de la calle y la publicidad, que no son lo mismo (v983) --');
 {
   const j20 = soloCodigo(leer('js/20-mobile-functional-app.js'));

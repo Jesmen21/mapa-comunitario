@@ -13921,6 +13921,100 @@ búsquedas, abrir el mural, y comprobar que su ficha pregunta el material y no
 pregunta pisos ni especie.
 
 
+## Lo mapeado llega al análisis como lo que es (v984)
+
+Dicho antes de salir a mapear: *«no olvide que estos nuevos mapeos van
+diagramados y cuantificados en todo análisis, geometrías etc y PDF»*.
+
+Se midió la cadena entera —punto mapeado → `puntoAElemento` → etiquetas →
+motor— con once casos, uno por familia. **Llegan las once**, con su
+subcategoría correcta: el árbol entra como verde, la banca y el poste como
+mobiliario, el hidrante como infraestructura, el mural como cultural y la
+valla como comercio. Eso estaba bien y es lo que hace que cuenten en el
+análisis, en las geometrías y en el PDF, que leen todos del mismo sitio.
+
+**Y salieron tres defectos que solo se ven midiendo, no leyendo.**
+
+### Un árbol entraba al motor como un edificio de un piso
+
+`puntoAElemento` emitía `building:levels` **siempre**. Así que un hidrante,
+un mural, una banca y un árbol entraban al motor como construcciones de una
+planta: un sector con sesenta árboles y cuarenta tapas sumaba **cien
+edificios fantasma** a la huella construida y al reparto de alturas de la
+v880 —la moda, la mediana y el máximo de pisos—.
+
+El discriminante **ya existía y nadie lo miraba acá**: es el mismo
+`esUsoDeEdificio` con el que la ficha decide si pregunta los pisos, y al que
+la v974 le escribió una guarda entera. Que lo usara el formulario y no el
+análisis es la clase B —una decisión tomada en dos sitios— y no hizo falta
+tocar nada más que dejar de emitir la etiqueta donde no aplica.
+
+Es la quinta vez que el discriminante está al lado y nadie lo lee (v875,
+v899, v903, v936, y esta).
+
+### Un puente peatonal contaba como vía principal
+
+`TIPO_A_VIA` traduce los tipos de vía a su `highway`. Lo que no esté ahí cae
+al `USO_A_SUB` de su uso, y el de «Vías e Infraestructura Vial» es
+**`via_arteria`**. Medido, **catorce tipos caían por omisión**:
+
+| | |
+|---|---|
+| **Anteriores a esta serie** | Vía peatonal · Puente peatonal · Vía sin pavimentar · Trocha / camino rural · Malla vial en construcción |
+| **Introducidos por la v982** | paso peatonal · rampa · escalera · baranda · bahía · muro de contención · gaviones · cuneta · berma |
+
+O sea que una trocha y un puente peatonal llevaban entrando al análisis como
+arteria desde mucho antes, y la v982 le sumó nueve accesorios más: noventa
+barandas mapeadas leían como noventa vías principales, e inflaban la
+jerarquía vial del sector con lo que nadie puede recorrer en carro.
+
+Cada uno dice ahora qué es: lo que se camina va a su `highway` propio
+—`footway`, `pedestrian`, `track`—, y los accesorios van a la subcategoría
+que les toca: lo que se toca y se pisa a mobiliario, lo que sostiene el
+terreno o conduce agua a infraestructura, la zona verde a verde.
+
+#### La guarda falla CERRADO, que es lo que importa
+
+No persigue los catorce: exige que **todo** tipo de «Vías e Infraestructura
+Vial» esté en una de las dos tablas. Un tipo de vía nuevo sale en rojo hasta
+que alguien diga qué es, en vez de entrar de arteria en silencio — que es
+como entraron estos catorce.
+
+### Y mi propia guarda medía la forma, no la propiedad
+
+La que protege contra pasarse —«un edificio sigue entrando con sus pisos»—
+citaba la línea exacta de la asignación, así que salió **roja contra una
+inyección donde los pisos sí viajan**. Es la v890 cometida una tanda después
+de escribirla, y en la guarda que acompaña al arreglo. Mide ahora que la
+etiqueta se emita y salga de la ficha, sea cual sea la forma.
+
+### Demostrado contra la v983
+
+Tres en rojo, con los catorce nombrados uno por uno:
+
+```
+✗ ningún tipo de vía cae en «arteria» por omisión  — Vía peatonal · Puente peatonal ·
+  Vía sin pavimentar · Trocha · Malla vial en construcción · Paso peatonal (cebra) ·
+  Rampa · Escalera · Baranda · Muro de contención · Gaviones · Cuneta · Bahía · Berma
+✗ solo un edificio entra al análisis con pisos  — los pisos se emiten siempre
+✗ y un edificio sigue entrando con sus pisos  — ya no se emiten
+```
+
+### Lo que sigue sin cuantificarse, y se dice
+
+**La especie del árbol (v975) y el material del mobiliario (v981) no entran
+en ninguna cuenta.** Se guardan, se ven en el globo y en la ficha del punto,
+y se editan — pero ninguna pantalla dice «de los 62 árboles mapeados, 20 son
+palmas» ni «de las 30 canecas, 18 son metálicas». Viajan con el punto y no
+con el análisis.
+
+No se hace acá porque es otra cosa: pide un panel propio —el de «lo levantado
+en la calle»— y decidir dónde va, si en el análisis por área de Pro City o en
+la lámina. Queda medido para que la tanda que lo tome no empiece por
+averiguar lo mismo: el dato está completo en el registro y lo que falta es
+quién lo cuenta.
+
+
 ## La lista viva: lo que al pliego educativo todavía le falta (v866)
 
 Esta lista se quedó vieja **cinco veces**. Cuatro dentro de la hoja —la
