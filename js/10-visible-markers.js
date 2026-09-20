@@ -442,6 +442,14 @@
       }
     } catch(e){}
 
+    /* De qué está hecho, donde se ve. Una sola redacción para el globo y
+       para la ficha, por la misma función de js/03d. */
+    let materialPopup = '';
+    try {
+      const _mb = window.URBIS_MOBILIARIO ? window.URBIS_MOBILIARIO.leer(p.descripcion) : null;
+      if (_mb && _mb.texto) materialPopup = `<div class="popup-desc popup-material">\ud83e\uddf1 ${limpiarHTML(_mb.texto)}</div>`;
+    } catch(e){}
+
     let descPopup = (d[2] && d[2].trim() && d[2] !== 'N/A') ? `<div class="popup-desc">${limpiarHTML(d[2])}</div>` : '';
 
     // Botones de dueño dentro del popup (en móvil el popup ES el detalle visible).
@@ -614,6 +622,7 @@
         <span class="popup-title">${construirBadgeIcono(p.tipo, d[0], 'popup-icon-badge')}${limpiarHTML(d[1] || d[0])} ${likeBadge}</span>
         ${sinDirPopup}
         ${especiePopup}
+        ${materialPopup}
         ${fotoMiniPopup}
         ${descPopup}
         ${victimasHTML}
@@ -930,6 +939,11 @@
           + ' — edite el mapeo para ponerla cuando la sepa.</div>';
       }
     } catch(e){}
+    let _materialDet = '';
+    try {
+      const _mbD = (_visD.verDetalle && window.URBIS_MOBILIARIO) ? window.URBIS_MOBILIARIO.leer(p.descripcion) : null;
+      if (_mbD && _mbD.texto) _materialDet = `<div class="detalle-especie detalle-material">\ud83e\uddf1 Material: <b>${limpiarHTML(_mbD.texto)}</b></div>`;
+    } catch(e){}
     const _notaDet     = _visD.verDetalle ? (d[2] || 'Sin notas.')
                                           : 'Lo que se escribió acá se publica cuando un administrador confirme el reporte.';
     const _autorDet    = _visD.verDetalle ? creadorNombre : 'Se dice al confirmarse';
@@ -961,6 +975,7 @@
       <div class="form-section">
         ${_sinDirDet}
         ${_especieDet}
+        ${_materialDet}
         ${_pedidoDet}
         ${_avisoDet}
         ${_victimasDet}

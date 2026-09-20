@@ -3699,6 +3699,109 @@ console.log('\n  -- el mapeo de Pro City --');
     llamadas + ' llamadas a urbisSinDireccion');
 }
 
+console.log('\n  -- el mobiliario urbano: postes y de qué está hecho (v981) --');
+{
+  const j03d = soloCodigo(leer('js/03d-mobiliario-material.js'));
+  const j04  = soloCodigo(leer('js/04-marker-proximity.js'));
+  const j10  = soloCodigo(leer('js/10-visible-markers.js'));
+  const j12  = soloCodigo(leer('js/12-spa-ui.js'));
+  const j20  = soloCodigo(leer('js/20-mobile-functional-app.js'));
+  const idx  = leer('index.html');
+  const sw   = leer('service-worker.js');
+
+  const lista = (src, desde) => {
+    const i = src.indexOf(desde); if (i < 0) return [];
+    const j = src.indexOf('];', i); if (j < 0) return [];
+    return (src.slice(i, j).match(/'([^']+)'/g) || []).map(x => x.slice(1, -1));
+  };
+  const USOS_MAT = lista(j03d, 'var USOS_CON_MATERIAL =');
+  const mobTipos = (() => {
+    const m = j20.match(/\{ u:'Mobiliario Urbano'[^\n]*\}/);
+    if (!m) return [];
+    const t = m[0].match(/t:\[([^\]]*)\]/);
+    return t ? (t[1].match(/'([^']+)'/g) || []).map(x => x.slice(1, -1)) : [];
+  })();
+  const usosCat = (j20.match(/\{ u:'([^']+)'/g) || []).map(x => x.slice(5, -1));
+
+  const material = USOS_MAT.length > 0 && mobTipos.length > 0 && usosCat.length > 10;
+  comprobar('MATERIAL · se leen el vocabulario, los tipos y el catálogo',
+    material,
+    material ? USOS_MAT.length + ' usos con material · ' + mobTipos.length + ' tipos de mobiliario · ' + usosCat.length + ' usos'
+             : 'no se pudo leer: ' + [!USOS_MAT.length ? 'USOS_CON_MATERIAL' : '',
+                 !mobTipos.length ? 'los tipos de Mobiliario Urbano' : '',
+                 usosCat.length <= 10 ? 'el catálogo' : ''].filter(Boolean).join(' · '));
+
+  /* Todo uso que lleve material tiene que EXISTIR en el catálogo. Un renombre
+     allá dejaría el campo apagado en silencio, que es la forma exacta de la
+     v974 —y la misma guarda que la v975 le puso a la especie—. */
+  const huerfanos = USOS_MAT.filter(u => usosCat.indexOf(u) < 0);
+  comprobar('todo uso que lleva material existe en el catálogo',
+    huerfanos.length === 0,
+    huerfanos.length ? huerfanos.join(' · ') + ' no está en la Matriz: el campo queda apagado sin decirlo'
+                     : USOS_MAT.join(' · ') + ' está en el catálogo');
+
+  /* Los postes son TIPOS y no un campo: lo que los separa es qué cargan
+     —alumbrado del municipio, red del operador, transformador con su
+     servidumbre—, y eso es otro objeto, no otra propiedad del mismo. */
+  const postes = mobTipos.filter(t => /^Poste/.test(t));
+  comprobar('los postes están en el catálogo, con sus casos separados',
+    postes.length >= 4,
+    postes.length >= 4 ? postes.length + ' tipos de poste' : 'solo ' + postes.length + ': los casos que el reporte nombra no se pueden mapear');
+
+  /* Y el material NO se codifica como tipo. «Caneca metálica» y «Caneca
+     plástica» como tipos multiplican el catálogo y rompen el conteo por
+     tipo: el análisis tendría que sumar cuatro entradas que alguien debe
+     acordarse de mantener juntas. Es la clase B, y por eso el material es un
+     campo. */
+  const tipoConMaterial = mobTipos.filter(t => /met[aá]lic|pl[aá]stic|de madera|de concreto\b/i.test(t));
+  comprobar('y el material no se coló como tipo',
+    tipoConMaterial.length === 0,
+    tipoConMaterial.length ? tipoConMaterial.join(' · ') + ': eso es el campo, no un tipo'
+                           : 'ningún tipo codifica de qué está hecho');
+
+  /* UN solo selector de lista cerrada. La segunda copia era el 80 % del
+     mismo código con otros ids, y la que se quedaría vieja sería la nueva. */
+  const unSelector = j20.indexOf('function pintarLista(clave, q)') >= 0
+    && j20.indexOf('LISTAS_CERRADAS') >= 0
+    && (j20.match(/function pintarListaEspecies\(q\)\{ pintarLista/) || []).length === 1;
+  comprobar('las dos fichas usan el MISMO selector de lista cerrada',
+    unSelector,
+    unSelector ? 'especie y material salen de pintarLista'
+      : j20.indexOf('LISTAS_CERRADAS') < 0 ? 'no existe la tabla de listas: hay dos selectores'
+      : 'pintarListaEspecies dejó de delegar');
+
+  /* Se escribe, se lee y se pinta: sin cualquiera de las tres, el campo es
+     una casilla que nadie ve o un dato que nadie guarda. */
+  const escribe = j12.indexOf('guardarMaterialMobiliario') >= 0;
+  const leeSlot = j04.indexOf('mobiliarioMaterial:') >= 0 && j04.indexOf('URBIS_MOBILIARIO = Object.assign') >= 0;
+  const pinta = (j10.match(/URBIS_MOBILIARIO\.leer\(/g) || []).length >= 2;
+  comprobar('el material se guarda, se lee y se pinta en las dos superficies',
+    escribe && leeSlot && pinta,
+    (escribe && leeSlot && pinta) ? 'js/12 lo escribe · js/04 lo lee · js/10 lo pinta en globo y ficha'
+      : !leeSlot ? 'no hay casilla ni lector en js/04'
+      : !escribe ? 'el formulario lo pregunta y nadie lo guarda'
+      : 'se guarda y ninguna pantalla lo enseña: un dato que nadie alcanza');
+
+  /* Y el archivo nuevo entra por las dos puertas. Sin el service worker, un
+     teléfono con la aplicación instalada no lo descarga y el campo no sale
+     —sin un solo error—. */
+  const enIndex = idx.indexOf('js/03d-mobiliario-material.js') >= 0;
+  const enSW = sw.indexOf('js/03d-mobiliario-material.js') >= 0;
+  comprobar('el archivo nuevo está en index.html y en el service worker',
+    enIndex && enSW,
+    (enIndex && enSW) ? 'en las dos listas'
+      : !enIndex ? 'falta en index.html: no carga en ninguna parte'
+      : 'falta en el service worker: no carga en un teléfono con la app instalada');
+
+  /* El buscador ordena lo que empieza palabra por delante. Lo destapó el
+     papel: «poste» salía debajo de «Panadería / repostería». */
+  comprobar('el buscador pone delante lo que empieza palabra',
+    j20.indexOf('const inicio = (x, t)') >= 0 && /abre\.concat\(resto\)/.test(j20),
+    (j20.indexOf('const inicio = (x, t)') >= 0 && /abre\.concat\(resto\)/.test(j20))
+      ? 'la frase entera se parte en «empieza palabra» y el resto'
+      : 'volvió a devolver en el orden del catálogo: «poste» cae debajo de «repostería»');
+}
+
 console.log('\n  -- el botón de GPS del mapa (v980) --');
 {
   const j20 = soloCodigo(leer('js/20-mobile-functional-app.js'));

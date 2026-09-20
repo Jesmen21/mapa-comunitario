@@ -799,6 +799,32 @@
         }
         descripcionFinal = d.join(' | ');
     })();
+    /* De qué está hecho el mobiliario (v981). Mismo molde que la especie y
+       por la misma razón: sin el bloque en pantalla, `insMat` es null y no se
+       toca ninguna de las dos casillas, así que editar un punto por otro
+       camino no borra lo que alguien levantó en la calle. */
+    (function guardarMaterialMobiliario(){
+        const insMat = document.getElementById('ins-material');
+        if (!insMat) return;
+        const S = window.URBIS_SLOTS || {};
+        if (S.mobiliarioMaterial == null) return;
+        const d = String(descripcionFinal).split(' | ');
+        const tope = Math.max(S.mobiliarioMaterial, S.mobiliarioMaterialOtro || 0);
+        for (let k = 0; k < tope; k++) if (d[k] === undefined) d[k] = '';
+        const mat = String(insMat.value || '').replace(/\|/g, '-').trim();
+        d[S.mobiliarioMaterial] = mat; fichaSlotsEscritos.push(S.mobiliarioMaterial);
+        /* El texto libre SOLO acompaña a «Otro». Con cualquier otro material
+           elegido se limpia: dejarlo pegado convertiría un descarte en un
+           dato que nadie volvió a escribir. */
+        const insOtroMat = document.getElementById('ins-material-otro');
+        const esOtro = !!(window.URBIS_MOBILIARIO_VOC && mat === window.URBIS_MOBILIARIO_VOC.OTRO());
+        if (S.mobiliarioMaterialOtro != null) {
+            d[S.mobiliarioMaterialOtro] = (esOtro && insOtroMat)
+                ? String(insOtroMat.value || '').replace(/\|/g, '-').slice(0, 60).trim() : '';
+            fichaSlotsEscritos.push(S.mobiliarioMaterialOtro);
+        }
+        descripcionFinal = d.join(' | ');
+    })();
     // ── ¿Hubo gente herida? ───────────────────────────────────────────────
     // Se guarda DESPUÉS del bloque temporal y de la ficha del edificio, en su
     // propia casilla (URBIS_SLOTS.victimas). Solo se escribe si el formulario

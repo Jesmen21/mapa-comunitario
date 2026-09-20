@@ -5262,7 +5262,7 @@
     { u:'Educativo (Básico/Superior)', i:'📚', t:['Jardín infantil / preescolar','Colegio (básica/media)','Universidad','Instituto técnico / tecnológico','Centro de capacitación (SENA)','Escuela rural','Educación para adultos','Biblioteca escolar','Internado','Escuela de idiomas','Academia (música, danza…)','Centro de investigación'] },
     { u:'Religioso / Culto', i:'⛪', t:['Iglesia católica','Templo cristiano no católico','Culto de otra religión','Capilla','Catedral / basílica','Salón del reino','Mezquita','Sinagoga','Convento / monasterio','Seminario','Cementerio parroquial','Casa de retiro espiritual'] },
     { u:'Espacio Ferial / Eventos Masivos', i:'🎪', t:['Centro de convenciones','Recinto ferial','Coliseo de exposiciones','Plaza de toros / coso','Concha acústica','Parque de eventos / conciertos','Lote de circo','Parque de diversiones itinerante','Sala de banquetes','Autódromo / kartódromo'] },
-    { u:'Mobiliario Urbano', i:'🪑', t:['Banca','Luminaria pública','Señalización vial','Parada de bus / paradero','Caneca / punto ecológico','Bolardo / protección peatonal','Kiosco / caseta','Baño público','Bebedero / fuente','Punto digital / WiFi','Reductor de velocidad','Semáforo peatonal','Tótem informativo'] },
+    { u:'Mobiliario Urbano', i:'🪑', t:['Banca','Luminaria pública','Poste de alumbrado público','Poste de energía sin luminaria','Poste con transformador','Poste de telecomunicaciones','Poste inclinado o en riesgo','Señalización vial','Parada de bus / paradero','Caneca / punto ecológico','Jardinera o matera','Bolardo / protección peatonal','Kiosco / caseta','Baño público','Bebedero / fuente','Punto digital / WiFi','Reductor de velocidad','Semáforo peatonal','Tótem informativo'] },
     { u:'Gestión de Residuos / Reciclaje', i:'♻️', t:['Punto de acopio de reciclaje','Planta de tratamiento de residuos','Relleno sanitario','Estación de transferencia','Escombrera','Punto limpio','Bodega de reciclador','Planta de compostaje','Incinerador (peligrosos/hospitalarios)','Botadero a cielo abierto (ilegal)'] },
     { u:'Transporte (Terminales/Estaciones)', i:'🚏', t:['Terminal intermunicipal','Terminal satélite','Estación de bus / metro','Parada techada','Estación de transporte masivo (BRT)','Patio-taller de buses','Terminal de carga','Aeropuerto','Aeródromo / pista','Puerto fluvial','Estación de taxis / piquete','Ciclo-estación (bicis públicas)'] },
     { u:'Infra. Servicios (Plantas)', i:'🔌', t:['Planta de agua potable (PTAP)','Planta de aguas residuales (PTAR)','Subestación eléctrica','Planta de gas','Tanque de almacenamiento de agua','Bocatoma / captación','Estación de bombeo','Central telefónica / nodo','Central de generación (energía)','Reservorio de servicio','Estación reguladora de gas'] },
@@ -5408,7 +5408,14 @@
     'columpio': 'juegos infantiles', 'columpios': 'juegos infantiles',
     'rodadero': 'juegos infantiles', 'resbaladero': 'juegos infantiles',
     'banco': 'banca', 'silla': 'banca', 'asiento': 'banca', 'escano': 'banca',
-    'poste': 'luminaria', 'alumbrado': 'luminaria', 'farola': 'luminaria',
+    /* «poste» ya NO redirige a «luminaria»: desde la v981 los postes existen
+       por su nombre, y redirigirlos mandaba a la lámpara —que es otra cosa,
+       y puede ir en un muro—. «luz» sí, porque nadie dice «poste de
+       alumbrado público» señalando: dice «poste de luz». */
+    'luz': 'alumbrado', 'farola': 'luminaria', 'lampara': 'luminaria',
+    'energia': 'poste de energia', 'cableado': 'poste de energia',
+    'trafo': 'transformador', 'matera': 'jardinera',
+
     'ciclovia': 'ciclorruta', 'bicicarril': 'ciclorruta',
     'sardinel': 'anden', 'acera': 'anden',
     'bebedero': 'fuente', 'wifi': 'punto digital',
@@ -5427,6 +5434,16 @@
     if(!q) return [];
     const flat = matrizFlatIndex();
     const casa = (x, t) => _norm(x.tipo).includes(t) || _norm(x.uso).includes(t);
+    /* Casar subcadenas es lo correcto —«banca» tiene que encontrar «Banca»—,
+       pero una coincidencia a mitad de palabra casi nunca es lo que se
+       buscaba: el papel lo destapó con «poste», que salía debajo de
+       «Panadería / repostería». `inicio` dice si la coincidencia empieza
+       palabra, y con eso se ORDENA sin quitar nada, que es lo que este
+       módulo hace siempre: declarar en vez de bloquear. */
+    const inicio = (x, t) => {
+      const re = new RegExp('(^|[^a-z0-9ñ])' + String(t).replace(/[.*+?^${}()|[\]\\]/g, '\\$&'));
+      return re.test(_norm(x.tipo)) || re.test(_norm(x.uso));
+    };
     const hits = [], vistos = new Set();
     const sumar = (t) => {
       if(!t) return;
@@ -5434,7 +5451,16 @@
     };
     sumar(q);
     sumar(SINONIMOS_MATRIZ[q]);
-    if(hits.length) return hits.slice(0, 60);
+    if(hits.length){
+      /* El camino de la frase entera NO ordenaba: devolvía en el orden del
+         catálogo, así que «poste» ponía la repostería primero por estar
+         Comercial más arriba en la lista. Se parte en dos manteniendo el
+         orden dentro de cada mitad —lo que empieza palabra, y lo demás—, así
+         que no se pierde ningún resultado. */
+      const abre = hits.filter(x => inicio(x, q));
+      const resto = hits.filter(x => !inicio(x, q));
+      return abre.concat(resto).slice(0, 60);
+    }
 
     /* «parque de niños» no casa con nada: el buscador mira SUBCADENAS y no
        palabras, así que una frase entera casi nunca aparece tal cual en un
@@ -5457,12 +5483,19 @@
       palabras.push(w);
       if(SINONIMOS_MATRIZ[w]) palabras.push(_norm(SINONIMOS_MATRIZ[w]));
     });
+    /* Y una coincidencia al PRINCIPIO de una palabra vale más que una en
+       mitad de otra. Lo destapó el papel: buscando «poste» salía primero
+       «Panadería / repostería», porque «poste» es subcadena de «repostería».
+       Casar subcadenas es lo correcto —«banca» tiene que encontrar «Banca»—,
+       pero una coincidencia a mitad de palabra casi nunca es lo que se
+       buscaba. No se prohíbe, se ordena: es la misma decisión que este
+       módulo toma siempre, declarar en vez de bloquear. */
     const puntos = new Map();
     palabras.forEach(w => {
       const casan = flat.filter(x => casa(x, w));
       if(!casan.length) return;
       const peso = 1 / casan.length;
-      casan.forEach(x => puntos.set(x, (puntos.get(x) || 0) + peso));
+      casan.forEach(x => puntos.set(x, (puntos.get(x) || 0) + peso + (inicio(x, w) ? peso : 0)));
     });
     return Array.from(puntos.keys())
       .sort((a, b) => puntos.get(b) - puntos.get(a))
@@ -5590,6 +5623,8 @@
     let notaPrefill = '';
     let especiePre = '';
     let especieOtroPre = '';
+    let materialPre = '';
+    let materialOtroPre = '';
     if(editando){
       const dp = (typeof globalData !== 'undefined' && Array.isArray(globalData)) ? globalData.find(x => String(x.lat) === String(proCity.editLat)) : null;
       if(dp){
@@ -5611,6 +5646,13 @@
         try{
           const ab = window.URBIS_ARBOL ? window.URBIS_ARBOL.leer(dp.descripcion) : null;
           if(ab){ especiePre = ab.especie; especieOtroPre = ab.otroTexto; }
+        }catch(e){}
+        /* Y el material, por la misma razón: editar un poste para corregirle
+           la dirección no puede borrar de qué es, que alguien determinó en la
+           calle. */
+        try{
+          const mb = window.URBIS_MOBILIARIO ? window.URBIS_MOBILIARIO.leer(dp.descripcion) : null;
+          if(mb){ materialPre = mb.material; materialOtroPre = mb.otroTexto; }
         }catch(e){}
       }
     }
@@ -5686,7 +5728,7 @@
           <input type="hidden" id="ins-especie" value="${esc(especiePre)}">
           <div id="ins-especie-elegida" class="especie-elegida"${especiePre ? '' : ' hidden'}>
             ${especiePre ? esc(VOC_ARBOL.texto(especiePre, especieOtroPre)) : ''}
-            <button type="button" data-u52-especie-quitar aria-label="Quitar especie">×</button>
+            <button type="button" data-u52-lista-quitar="especie" aria-label="Quitar especie">×</button>
           </div>
           <input type="text" id="ins-especie-busca" class="u52-matriz-search" autocomplete="off"
                  placeholder="🔎 Buscar especie (nim, palma, urapán…)"
@@ -5698,6 +5740,37 @@
           </div>
           <small id="ins-especie-aviso" class="especie-aviso" hidden></small>
           <small class="u52-procity-edificio-pista">El nombre científico va al lado porque «roble» o «acacia» son varios árboles distintos según la región. Si no lo sabe, déjelo sin marcar.</small>
+        </div>`;
+    }
+    /* ── De qué está hecho (v981) ──────────────────────────────────────
+       Pedido con la foto de una caneca de varilla oxidada: «bancas,
+       jardineras, canecas y postes… basura metálica». Sale solo en los usos
+       que llevan material, igual que la especie sale solo en los árboles: es
+       la lección de la v974, donde preguntarle los pisos a una palma costó
+       una guarda entera.
+
+       Opcional a propósito, por la razón de la v973: un campo obligatorio
+       que no se sabe contestar se contesta con relleno. */
+    const VOC_MOB = window.URBIS_MOBILIARIO_VOC || null;
+    let htmlMaterial = '';
+    if(proCity.dim === MATRIZ_USOS_KEY && VOC_MOB && VOC_MOB.esUsoConMaterial(usoParteSel)){
+      htmlMaterial = `
+        <div class="u52-procity-especie" id="ins-material-bloque">
+          <label for="ins-material-busca">¿De qué está hecho? <i>opcional</i></label>
+          <input type="hidden" id="ins-material" value="${esc(materialPre)}">
+          <div id="ins-material-elegida" class="especie-elegida"${materialPre ? '' : ' hidden'}>
+            ${materialPre ? esc(VOC_MOB.texto(materialPre, materialOtroPre)) : ''}
+            <button type="button" data-u52-lista-quitar="material" aria-label="Quitar material">×</button>
+          </div>
+          <input type="text" id="ins-material-busca" class="u52-matriz-search" autocomplete="off"
+                 placeholder="🔎 Buscar material (metal, concreto, madera…)"
+                 oninput="window.urbisMaterialBuscar(this.value)">
+          <div id="ins-material-lista" class="especie-lista"></div>
+          <div id="ins-material-otro-caja" class="especie-otro"${materialOtroPre ? '' : ' hidden'}>
+            <label for="ins-material-otro">¿De qué es? Así entra en la lista de la próxima versión.</label>
+            <input type="text" id="ins-material-otro" maxlength="60" autocomplete="off" value="${esc(materialOtroPre)}">
+          </div>
+          <small class="u52-procity-edificio-pista">De qué está hecho, no cómo está: una banca de madera puede estar nueva o podrida, y eso es otra cosa que todavía no se registra.</small>
         </div>`;
     }
     panel.innerHTML = `
@@ -5719,6 +5792,7 @@
         <input id="ins-foto" type="hidden" value="">
         ${htmlEdificio}
         ${htmlEspecie}
+        ${htmlMaterial}
         ${avisoDePrecisionHTML()}
         <input id="ins-direccion" type="text" maxlength="120" placeholder="Dirección o punto de referencia (opcional)" autocomplete="street-address" value="${esc(dirPrefill)}">
         <textarea id="ins-nota" maxlength="180" placeholder="Descripción técnica opcional">${esc(notaPrefill)}</textarea>
@@ -5734,6 +5808,7 @@
       try{ EDIF_PC.activarUsosPorPiso(panel, defectoPiso); }catch(e){}
     }
     if(htmlEspecie){ try{ pintarListaEspecies(''); avisoDeEspecie(); }catch(e){} }
+    if(htmlMaterial){ try{ pintarLista('material', ''); }catch(e){} }
 
     /* La foto del mapeo: el bloque se pintaba desde antes y NADIE lo
        conectaba. Medido en el navegador sobre la ficha de un árbol, con el
@@ -5779,32 +5854,69 @@
      recomponer el formulario entero a cada letra borraría la dirección y la
      nota que la persona ya escribió. Es la misma decisión que la barra de
      espera de la v870, que toca solo sus nodos. */
-  function pintarListaEspecies(q){
-    const cont = document.getElementById('ins-especie-lista');
-    const V = window.URBIS_ARBOL_VOC;
+  /* ── Un solo selector de lista cerrada ─────────────────────────────
+     Lo usan las dos fichas que lo necesitan: la especie del árbol (v975) y
+     el material del mobiliario (v981). La segunda copia iba a ser el 80 % de
+     este código con otros ids y otras dos frases — la clase B comprada a
+     sabiendas, y la copia que se quedaría vieja sería la nueva, que es la
+     que nadie revisa. Lo que cambia entre las dos va en la tabla; lo que
+     hace el selector, acá y una sola vez.
+
+     `alElegir` es el gancho de lo que NO comparten: el árbol avisa cuando el
+     tipo y la especie se contradicen —«Palma» con un mango dentro—, y el
+     mobiliario no tiene ninguna contradicción que avisar. Un gancho vacío es
+     más honesto que una condición escrita dentro del selector. */
+  const LISTAS_CERRADAS = {
+    especie: {
+      pfx: 'ins-especie',
+      voc: () => window.URBIS_ARBOL_VOC,
+      pie: e => e.c,
+      vacio: 'Ninguna especie de la lista se llama así.',
+      pieNoSabe: 'Se miró el árbol y no se pudo determinar',
+      pieOtro: 'Sí se sabe cuál es, y no está en esta lista',
+      alElegir: () => avisoDeEspecie()
+    },
+    material: {
+      pfx: 'ins-material',
+      voc: () => window.URBIS_MOBILIARIO_VOC,
+      pie: m => m.d,
+      vacio: 'Ningún material de la lista se llama así.',
+      pieNoSabe: 'Se miró y no se pudo determinar de qué es',
+      pieOtro: 'Sí se sabe de qué es, y no está en esta lista',
+      alElegir: null
+    }
+  };
+
+  function pintarLista(clave, q){
+    const cfg = LISTAS_CERRADAS[clave];
+    if(!cfg) return;
+    const cont = document.getElementById(cfg.pfx + '-lista');
+    const V = cfg.voc();
     if(!cont || !V) return;
-    /* Con una especie ya elegida y la casilla de búsqueda vacía no hay nada
-       que ofrecer, y la lista entera ahí hace dos daños que se vieron mirando
-       el papel: invita a elegir otra vez —se lee como que la elección no
-       entró— y empuja el aviso de contradicción cuatrocientos píxeles por
-       debajo del chip del que habla. Escribiendo vuelve, que es como se
-       corrige una elección; y al quitarla vuelve entera. */
-    const yaHay = (document.getElementById('ins-especie') || {}).value || '';
+    /* Con un valor ya elegido y la casilla de búsqueda vacía no hay nada que
+       ofrecer, y la lista entera ahí hace dos daños que se vieron mirando el
+       papel: invita a elegir otra vez —se lee como que la elección no entró—
+       y empuja lo que va debajo cuatrocientos píxeles hacia abajo.
+       Escribiendo vuelve, que es como se corrige una elección; y al quitarla
+       vuelve entera. */
+    const yaHay = (document.getElementById(cfg.pfx) || {}).value || '';
     if(yaHay && !String(q || '').trim()){ cont.innerHTML = ''; return; }
     const hits = V.buscar(q);
-    const fila = (nombre, pie) => `<button type="button" class="especie-op" data-u52-especie="${esc(nombre)}">
+    const fila = (nombre, pie) => `<button type="button" class="especie-op" data-u52-lista="${esc(clave)}" data-u52-op="${esc(nombre)}">
         <b>${esc(nombre)}</b>${pie ? `<small>${esc(pie)}</small>` : ''}</button>`;
     /* Las dos salidas van SIEMPRE, con o sin resultados, y al final como en
-       js/03b. Sin ellas, quien tiene delante un árbol que la lista no trae
-       elige «el más parecido» para poder seguir, y eso mete un dato falso que
+       js/03b. Sin ellas, quien tiene delante algo que la lista no trae elige
+       «el más parecido» para poder seguir, y eso mete un dato falso que
        después nadie distingue de uno bueno. */
     cont.innerHTML =
-      (hits.length ? hits.map(e => fila(e.n, e.c)).join('')
-                   : `<div class="u52-matriz-empty">Ninguna especie de la lista se llama así.</div>`) +
-      fila(V.NO_SE_SABE(), 'Se miró el árbol y no se pudo determinar') +
-      fila(V.OTRO(), 'Sí se sabe cuál es, y no está en esta lista');
+      (hits.length ? hits.map(e => fila(e.n, cfg.pie(e))).join('')
+                   : `<div class="u52-matriz-empty">${esc(cfg.vacio)}</div>`) +
+      fila(V.NO_SE_SABE(), cfg.pieNoSabe) +
+      fila(V.OTRO(), cfg.pieOtro);
   }
-  window.urbisEspecieBuscar = function(val){ try{ pintarListaEspecies(val); }catch(e){} };
+  function pintarListaEspecies(q){ pintarLista('especie', q); }
+  window.urbisEspecieBuscar = function(val){ try{ pintarLista('especie', val); }catch(e){} };
+  window.urbisMaterialBuscar = function(val){ try{ pintarLista('material', val); }catch(e){} };
 
   /* El tipo y la especie son dos casillas correctas por separado que pueden
      contradecirse —«Palma» con un mango dentro—. Se dice acá, donde todavía
@@ -5820,33 +5932,37 @@
     aviso.hidden = !t;
   }
 
-  function elegirEspecie(nombre){
-    const hid = document.getElementById('ins-especie');
-    const chip = document.getElementById('ins-especie-elegida');
-    const caja = document.getElementById('ins-especie-otro-caja');
-    const busca = document.getElementById('ins-especie-busca');
-    const V = window.URBIS_ARBOL_VOC;
+  function elegirDeLista(clave, nombre){
+    const cfg = LISTAS_CERRADAS[clave];
+    if(!cfg) return;
+    const V = cfg.voc();
+    const hid = document.getElementById(cfg.pfx);
+    const chip = document.getElementById(cfg.pfx + '-elegida');
+    const caja = document.getElementById(cfg.pfx + '-otro-caja');
+    const busca = document.getElementById(cfg.pfx + '-busca');
     if(!hid || !V) return;
     hid.value = nombre;
     const esOtro = nombre === V.OTRO();
     if(caja) caja.hidden = !esOtro;
     if(chip){
-      const otro = (document.getElementById('ins-especie-otro') || {}).value || '';
+      const otro = (document.getElementById(cfg.pfx + '-otro') || {}).value || '';
       chip.innerHTML = esc(V.texto(nombre, otro)) +
-        '<button type="button" data-u52-especie-quitar aria-label="Quitar especie">×</button>';
+        `<button type="button" data-u52-lista-quitar="${esc(clave)}" aria-label="Quitar">×</button>`;
       chip.hidden = false;
     }
     if(busca){ busca.value = ''; }
-    pintarListaEspecies('');
-    avisoDeEspecie();
-    if(esOtro){ try{ document.getElementById('ins-especie-otro').focus(); }catch(e){} }
+    pintarLista(clave, '');
+    if(typeof cfg.alElegir === 'function') cfg.alElegir();
+    if(esOtro){ try{ document.getElementById(cfg.pfx + '-otro').focus(); }catch(e){} }
   }
 
-  function quitarEspecie(){
-    const hid = document.getElementById('ins-especie');
-    const chip = document.getElementById('ins-especie-elegida');
-    const caja = document.getElementById('ins-especie-otro-caja');
-    const otro = document.getElementById('ins-especie-otro');
+  function quitarDeLista(clave){
+    const cfg = LISTAS_CERRADAS[clave];
+    if(!cfg) return;
+    const hid = document.getElementById(cfg.pfx);
+    const chip = document.getElementById(cfg.pfx + '-elegida');
+    const caja = document.getElementById(cfg.pfx + '-otro-caja');
+    const otro = document.getElementById(cfg.pfx + '-otro');
     if(hid) hid.value = '';
     if(chip){ chip.hidden = true; chip.innerHTML = ''; }
     if(caja) caja.hidden = true;
@@ -5854,8 +5970,8 @@
     /* Se repinta DESPUÉS de vaciar la casilla oculta, que es lo que la lista
        mira para saber si hay algo elegido: al revés se quedaría plegada y el
        campo sin manera de volver a contestarse. */
-    pintarListaEspecies('');
-    avisoDeEspecie();
+    pintarLista(clave, '');
+    if(typeof cfg.alElegir === 'function') cfg.alElegir();
   }
 
   function ensureCommunityChooser(){
@@ -6404,10 +6520,10 @@
     if(evSection){ ev.preventDefault(); ev.stopPropagation(); communityEventComposer.activeSection=evSection.dataset.u52EventSection; renderQuickEventCategories(); return; }
     const procityDim = ev.target.closest('[data-u52-procity-dim]');
     if(procityDim){ beginProCityMapSelection(procityDim.dataset.u52ProcityDim); return; }
-    const especieOp = ev.target.closest('[data-u52-especie]');
-    if(especieOp){ elegirEspecie(especieOp.dataset.u52Especie); return; }
-    const especieQuitar = ev.target.closest('[data-u52-especie-quitar]');
-    if(especieQuitar){ quitarEspecie(); return; }
+    const listaOp = ev.target.closest('[data-u52-lista][data-u52-op]');
+    if(listaOp){ elegirDeLista(listaOp.dataset.u52Lista, listaOp.dataset.u52Op); return; }
+    const listaQuitar = ev.target.closest('[data-u52-lista-quitar]');
+    if(listaQuitar){ quitarDeLista(listaQuitar.dataset.u52ListaQuitar); return; }
     const procityGroupEntry = ev.target.closest('[data-u52-procity-group-entry]');
     if(procityGroupEntry){ beginProCityGroupSelection(procityGroupEntry.dataset.u52ProcityGroupEntry); return; }
     const procitySearchItem = ev.target.closest('[data-u52-procity-search-item]');

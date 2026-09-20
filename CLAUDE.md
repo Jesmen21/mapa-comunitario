@@ -13504,6 +13504,156 @@ las dos cosas que no se veían leyendo: la esquina ocupada y la rejilla de
 cuatro columnas.
 
 
+## Mobiliario urbano: los postes, y de qué está hecho (v981)
+
+Pedido en dos tandas de la misma conversación: *«falta poner lo que son
+bancas, mobiliario urbano, que son basuras, basura metálica, postes de luz…
+que es el poste de luz o poste solamente de cableado, poste sin luz o poste
+con transformador»*, y después *«ahora sí el mobiliario urbano: bancas,
+jardineras, canecas y postes»*. Con la foto de una caneca de varilla oxidada
+delante.
+
+Medido antes de escribir, de las cuatro familias **tres existían y una no**:
+
+| | Estado en la v980 |
+|---|---|
+| Banca | existe, un solo tipo |
+| Caneca | existe («Caneca / punto ecológico») |
+| Jardinera | existe, pero como **planta** en Arbolado Urbano |
+| **Postes** | **cero menciones en todo el repositorio** |
+
+Y ninguna decía **de qué está hecha**, que es lo que el reporte llamó «basura
+metálica».
+
+    v980   13 tipos de mobiliario · ningún poste · nada dice de qué es
+    v981   19 tipos con los cinco postes · el material como campo
+
+### Los postes son TIPOS; el material es un CAMPO
+
+La distinción decide el diseño y las dos mitades tienen su razón.
+
+**Los postes son objetos distintos.** Lo que los separa no es de qué son sino
+**qué cargan**, y eso es lo que se ve desde el andén y lo que decide a quién
+le toca: el alumbrado es del municipio, la red es del operador de energía y
+un transformador es una servidumbre con su propia norma. Entran los cinco
+casos que el reporte nombra, incluido el poste inclinado o en riesgo.
+
+**El material es una propiedad.** La tentación era escribir «Caneca
+metálica», «Caneca plástica», «Banca de concreto», «Banca de madera»… y el
+catálogo se multiplica por seis sin decir nada nuevo: seguirían siendo una
+caneca y una banca. Peor: **el análisis dejaría de poder contar canecas** —
+tendría que sumar cuatro tipos que alguien tiene que acordarse de mantener
+juntos, que es la clase B en su forma más cara.
+
+Con un campo, quien mapea da dos toques y el conteo por tipo sigue siendo
+uno. Es la misma decisión que la v975 tomó con la especie del árbol, y por
+eso `js/03d` se parece a `js/03c` a propósito.
+
+#### Y la guarda me cazó a mí en el acto
+
+Escribí el tipo **«Jardinera de concreto o matera»** y la comprobación que
+acababa de escribir lo denunció: *«eso es el campo, no un tipo»*. Tenía
+razón — una jardinera puede ser de concreto, de metal o una matera plástica.
+Quedó **«Jardinera o matera»**, y el material lo dice el campo.
+
+Que una guarda escrita en la misma tanda muerda a su autor es exactamente
+para lo que existe.
+
+### La jardinera de mobiliario no es la de arbolado
+
+`'Jardinera o matera'` (Mobiliario Urbano) es **la obra**; `'Jardinera o
+arbusto ornamental'` (Arbolado Urbano, v975) es **lo sembrado**. Son dos
+cosas y se mapean por separado: una matera de concreto vacía no es arbolado,
+y un arbusto en tierra no es mobiliario. El uso va delante en el resultado
+de la búsqueda, así que quien busca «jardinera» ve las dos y cuál es cuál.
+
+No se renombró la de arbolado, y no por descuido: el tipo se guarda como
+texto dentro del registro, y renombrarlo dejaría las entradas viejas
+apuntando a un nombre que el catálogo ya no tiene.
+
+### UN selector de lista cerrada, no dos
+
+El picker del material iba a ser el 80 % del de la especie con otros ids y
+otras dos frases. Eso es la clase B comprada a sabiendas — **y la copia que
+se quedaría vieja sería la nueva**, que es la que nadie revisa.
+
+`LISTAS_CERRADAS` tiene lo que cambia entre las dos —el prefijo de los ids,
+el vocabulario, el pie de cada fila, las dos frases de las salidas— y
+`pintarLista`, `elegirDeLista` y `quitarDeLista` hacen el trabajo una sola
+vez. `alElegir` es el gancho de lo único que NO comparten: el árbol avisa
+cuando el tipo y la especie se contradicen —«Palma» con un mango dentro— y el
+mobiliario no tiene ninguna contradicción que avisar. **Un gancho vacío es
+más honesto que una condición escrita dentro del selector.**
+
+Comprobado que la unificación no costó nada: el selector de especie sigue
+encontrando «nim», sigue avisando de la contradicción con «Palma», y al
+quitarla la lista vuelve entera con sus cincuenta opciones.
+
+### Dos defectos del buscador que solo dijo el papel
+
+Los dos con la búsqueda de verdad, tecleando lo que teclearía quien está en
+la calle:
+
+* **«poste» devolvía «Panadería / repostería» de primero.** «Poste» es
+  subcadena de «repostería», y el camino de la frase entera **no ordenaba
+  nada**: devolvía en el orden del catálogo, y Comercial está más arriba que
+  Mobiliario. Ahora lo que **empieza palabra** va delante, manteniendo el
+  orden dentro de cada mitad: no se pierde ningún resultado, se ordenan. Es
+  la decisión de siempre —declarar en vez de bloquear— y arregla la clase,
+  no el caso.
+* **«poste de luz» devolvía el poste SIN luminaria de primero.** El sinónimo
+  `'poste' → 'luminaria'` era correcto cuando no había postes y ahora mandaba
+  a la lámpara, que es otra cosa y puede ir en un muro. Se retiró, y entró
+  `'luz' → 'alumbrado'`: nadie dice «poste de alumbrado público» señalando,
+  dice «poste de luz».
+
+Medido después, las cinco búsquedas del reporte ponen la respuesta correcta
+de primera: poste, poste de luz, transformador, jardinera, basura.
+
+### El archivo nuevo entra por DOS puertas
+
+`js/03d` va en `index.html` **y** en la lista del service worker. Sin la
+segunda, un teléfono con la aplicación instalada no lo descarga, el
+vocabulario no existe y el campo **no sale, sin un solo error**. Tiene su
+comprobación porque es la mitad que se olvida.
+
+### Demostrado contra la v980
+
+Siete de ocho en rojo, contra una copia guardada:
+
+```
+✗ todo uso que lleva material existe en el catálogo  — «Mobiliario urbano» no está en la Matriz
+✗ los postes están en el catálogo  — solo 0
+✗ y el material no se coló como tipo  — Caneca metálica · Caneca plástica
+✗ las dos fichas usan el MISMO selector  — pintarListaEspecies dejó de delegar
+✗ el material se guarda, se lee y se pinta  — el formulario lo pregunta y nadie lo guarda
+✗ el archivo nuevo está en index.html y en el service worker  — falta en el service worker
+✗ el buscador pone delante lo que empieza palabra  — «poste» cae debajo de «repostería»
+```
+
+### Lo que esta versión NO hace, y queda medido
+
+* **El ESTADO del mobiliario** —bueno, regular, malo—. Es otro hecho y se
+  decide de otra manera: el material se ve, el estado se juzga, y dos
+  personas califican distinto la misma banca. Mezclarlos haría que
+  «metálica» y «oxidada» fueran valores del mismo campo. Va con la tanda de
+  la línea de vías, que es donde el reporte lo pidió —«verde está buena,
+  naranja medio regular, malo, muy malo»—.
+* **El árbol con o sin jardinera** —«que diga si el árbol tiene su propia
+  jardinera o es un árbol normal»—. Es un campo de ARBOLADO, no de
+  mobiliario, y tiene su propio molde: la misma forma de la especie.
+* **Arbustos, flores y cactus**, que siguen pendientes de la v975.
+
+### Lo que NO se pudo correr
+
+**Ninguna suite de navegador**, por lo mismo que la v973 a la v980: este
+contenedor no tiene `../urbis-motor` ni el `node_modules` del banco de
+pruebas. Corrió `revisar.js` entero y se recorrió el camino de verdad con la
+sonda —buscar la caneca, abrir su ficha, elegir «Metálico», y comprobar que
+un árbol no pregunta material y un poste no pregunta especie—. Lo que no se
+ejercitó es **publicar y volver a abrir**: eso pide el servidor.
+
+
 ## La lista viva: lo que al pliego educativo todavía le falta (v866)
 
 Esta lista se quedó vieja **cinco veces**. Cuatro dentro de la hoja —la

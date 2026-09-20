@@ -879,7 +879,14 @@
        que el lector siguiente tiene que adivinar; el edificio ya resolvió lo
        mismo con `edificioOtroTexto` aparte. */
     especieArbol:         BASE_OFFSET + TIMELINE_EXTRA_OFFSET + 17,
-    especieArbolOtro:     BASE_OFFSET + TIMELINE_EXTRA_OFFSET + 18
+    especieArbolOtro:     BASE_OFFSET + TIMELINE_EXTRA_OFFSET + 18,
+    /* De qué está hecho el mobiliario urbano (v981). Al final, como toda
+       casilla nueva. Dos y no una por la misma razón que la especie: el
+       material elegido de la lista, y —solo con «Otro»— cómo lo llamó quien
+       mapeó. Un prefijo dentro de una sola casilla es una convención que el
+       lector siguiente tiene que adivinar. */
+    mobiliarioMaterial:     BASE_OFFSET + TIMELINE_EXTRA_OFFSET + 19,
+    mobiliarioMaterialOtro: BASE_OFFSET + TIMELINE_EXTRA_OFFSET + 20
   };
   // La casilla que las tres funciones se disputaban. Se conserva con nombre
   // propio porque hay registros viejos con validaciones o con código de carpeta
@@ -985,6 +992,34 @@
         try { if (window.URBIS_ARBOL.pendiente(lista[i] && lista[i].descripcion)) n++; } catch (e) {}
       }
       return n;
+    }
+  });
+
+  /* De qué está hecho un elemento de mobiliario. Vive acá y no en js/03d por
+     la misma razón que `URBIS_ARBOL.leer`: lo que depende del ORDEN de las
+     casillas se calcula una sola vez y en un solo sitio. */
+  window.URBIS_MOBILIARIO = Object.assign(window.URBIS_MOBILIARIO || {}, {
+    leer: function (descripcion) {
+      const d = String(descripcion || '').split(' | ');
+      const V = window.URBIS_MOBILIARIO_VOC;
+      const crudo = String(d[URBIS_SLOTS.mobiliarioMaterial] || '').trim();
+      const otro = String(d[URBIS_SLOTS.mobiliarioMaterialOtro] || '').trim();
+      const valor = (!crudo || crudo === 'undefined') ? '' : crudo;
+      const otroTexto = (!otro || otro === 'undefined') ? '' : otro;
+      const noSeSabe = !!(V && valor === V.NO_SE_SABE());
+      const esOtro = !!(V && valor === V.OTRO());
+      return {
+        material: valor,
+        /* Utilizable para cualquier cuenta: '' en cuanto sea una de las dos
+           salidas. El valor crudo se conserva para poder informarlo. */
+        materialUtil: (noSeSabe || esOtro) ? '' : valor,
+        noSeSabe: noSeSabe,
+        esOtro: esOtro,
+        otroTexto: otroTexto,
+        texto: V ? V.texto(valor, otroTexto) : valor,
+        idxMaterial: URBIS_SLOTS.mobiliarioMaterial,
+        idxMaterialOtro: URBIS_SLOTS.mobiliarioMaterialOtro
+      };
     }
   });
 

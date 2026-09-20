@@ -1,4 +1,4 @@
-const URBIS_CACHE = 'urbis-v981-mobiliario-postes-y-de-que-esta-hecho';
+const URBIS_CACHE = 'urbis-v980-el-boton-de-gps-del-mapa';
 const URBIS_ASSETS = [
   './',
   './index.html',

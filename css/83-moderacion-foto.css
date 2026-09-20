@@ -156,6 +156,10 @@ body[data-role="gov"] .urbis-sello-aprobar{
    este proyecto significa «esto está resuelto» desde la v880— y no en el
    gris del apunte de arriba ni en el ámbar de lo que falta. */
 .popup-especie{ color:#4f9d69; font-weight:700; }
+/* De qué está hecho, en el globo. Gris azulado y no el verde del árbol: el
+   verde de ahí significa «especie determinada» y esto es otro hecho; darle
+   el mismo color sería enseñar que los dos dicen lo mismo. */
+.popup-material{ color:#4a5a78; font-weight:700; }
 /* El árbol sin especie, en el globo. Ámbar y no verde: el verde de al lado
    dice «ya está determinada» y esto dice lo contrario, y dos cosas distintas
    con el mismo color se leen como una sola. */
@@ -178,6 +182,15 @@ body[data-role="gov"] .urbis-sello-aprobar{
   color:#f0c38a !important; -webkit-text-fill-color:#f0c38a;
 }
 .detalle-especie.detalle-especie-falta b{ color:#ffd9a8 !important; -webkit-text-fill-color:#ffd9a8; }
+/* El mismo dato en la ficha, sobre fondo oscuro. Va DESPUÉS de
+   `.detalle-especie`, que es la lección que la v979 pagó: misma
+   especificidad, gana la de abajo. */
+.detalle-especie.detalle-material{
+  border-color:rgba(122,140,175,.40);
+  background:rgba(122,140,175,.12);
+  color:#c3cfe4 !important; -webkit-text-fill-color:#c3cfe4;
+}
+.detalle-especie.detalle-material b{ color:#e6ecf7 !important; -webkit-text-fill-color:#e6ecf7; }
 
 /* ── Pedir corrección (v835) ──────────────────────────────────────────────
    Ámbar, como todo lo que en URBIS dice «esto todavía no está confirmado».
