@@ -59,7 +59,16 @@
     { n:'Mampostería o ladrillo', d:'Pegado en obra, con pañete o ladrillo a la vista.',
       alt:['ladrillo','mamposteria','bloque','obra'] },
     { n:'Piedra', d:'Bloque o enchape en piedra natural.',
-      alt:['piedra','roca','granito'] }
+      alt:['piedra','roca','granito'] },
+    /* Entraron con la v983: un pasacalle es de lona y un aviso de fachada
+       suele ser de acrílico o vidrio. La lista creció porque el material del
+       uso nuevo no estaba, no por completarla de adorno. */
+    { n:'Lona o tela', d:'Flexible, tensada o colgada. Se rasga y destiñe.',
+      alt:['lona','tela','banner','pendon','pasacalle','vinilo'] },
+    { n:'Vidrio o acrílico', d:'Transparente o traslúcido. Se raya y se estrella.',
+      alt:['vidrio','acrilico','policarbonato','cristal'] },
+    { n:'Bronce o fundición', d:'Metal fundido, oscuro y con pátina verde.',
+      alt:['bronce','fundicion','latón','laton','cobre'] }
   ];
 
   /* Qué usos llevan este campo. Una sola entrada hoy, y va como LISTA por lo
@@ -68,7 +77,8 @@
      guarda (revisar.js) es que todo nombre de acá exista en el catálogo —un
      renombre allá dejaría el campo apagado en silencio, que es la forma de
      la v974—. */
-  var USOS_CON_MATERIAL = ['Mobiliario Urbano', 'Redes en Vía (tapas y registros)'];
+  var USOS_CON_MATERIAL = ['Mobiliario Urbano', 'Redes en Vía (tapas y registros)',
+    'Arte Urbano', 'Publicidad Exterior Visual'];
   function esUsoConMaterial(uso){
     return USOS_CON_MATERIAL.indexOf(String(uso || '').trim()) !== -1;
   }

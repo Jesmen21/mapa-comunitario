@@ -13792,6 +13792,135 @@ búsquedas, abrir el hidrante, y comprobar que su ficha pregunta el material y
 **no** pregunta los pisos ni la especie.
 
 
+## El arte de la calle y la publicidad no son lo mismo (v983)
+
+Pedido: *«Ahora murales, grafitis, vallas y estatuas»* — la familia que la
+v982 dejó medida y declarada pendiente.
+
+Medido sobre los 559 tipos, **ninguna de las cuatro existía**: «mural»,
+«grafiti», «valla», «estatua», «escultura», «placa», «pantalla» y
+«pasacalle» daban cero. Lo único cercano era `Cultural / Patrimonio ·
+Monumento / sitio histórico`, y esa lista son todos **edificios e
+instituciones** —museo, teatro, biblioteca—. Un mural no es una institución:
+es una pieza sobre un muro.
+
+    v982   50 usos · 559 tipos · las cuatro palabras dan cero
+    v983   52 usos · 581 tipos · las doce palabras de la calle encuentran lo suyo
+
+### Son DOS usos, y ahí está toda la tanda
+
+El reporte los nombró juntos y **no pueden ir juntos**. En Colombia la
+publicidad exterior la regula la **Ley 140 de 1994** y los decretos
+municipales: un municipio la inventaría para **cobrarla y controlarla**. El
+arte urbano se inventaría para lo contrario, para **protegerlo**.
+
+Metidos en un solo uso, el análisis contaría **las vallas de la avenida como
+equipamiento cultural del sector** — que es exactamente la clase de cifra
+correcta con la conclusión falsa que este módulo lleva ochenta tandas
+persiguiendo. Así que:
+
+| | Cuenta como |
+|---|---|
+| `Arte Urbano` · mural, grafiti, escultura, placa, mosaico, fuente ornamental | **cultural** |
+| `Publicidad Exterior Visual` · valla, aviso, pantalla LED, pasacalle, monoposte | **comercio** |
+
+Y tiene su comprobación, que es la que sostiene la tanda: **ningún tipo de
+uno puede aparecer en el otro**, y el análisis tiene que contarlos aparte —
+si los dos cayeran en «cultural», separarlos en el catálogo no habría
+servido de nada.
+
+#### El mural publicitario va con la publicidad, a propósito
+
+Un muro pintado con una marca es publicidad **aunque esté bien pintado**, y
+sin ese tipo iría a parar a «Mural artístico». Es el caso ambiguo de verdad y
+por eso está nombrado en los dos sitios: en el uso donde va y en el comentario
+que explica por qué.
+
+### El nombre dice lo que SE VE, no lo que se supone
+
+La tentación era escribir «Grafiti ilegal» o «Mural no autorizado». **Si tenía
+permiso o no es un hecho que nadie puede determinar desde la acera**, y
+metido en el nombre del tipo queda en el registro como si fuera una
+observación — sobre la pared de alguien.
+
+Queda `Grafiti o rayado en muro`, que es lo que se ve. Y hay una guarda que
+persigue la clase: ningún tipo de estos dos usos puede llevar «ilegal», «no
+autorizado», «sin permiso» ni «vandálico».
+
+#### La guarda tuvo que acotarse, y se dice por qué
+
+Sobre el catálogo entero denunció **«Botadero a cielo abierto (ilegal)»** y
+**«Extracción ilegal»**, que NO son el mismo caso: ahí la ilegalidad **ES la
+categoría** —no existe un botadero a cielo abierto autorizado, eso es un
+relleno sanitario— y no una afirmación sobre el permiso de una pieza
+concreta.
+
+Una guarda con falsos positivos termina en una lista de excepciones que
+envejece hasta no significar nada (v895), así que se acota a los dos usos
+donde la tentación existe en vez de coleccionar excepciones. **De qué no
+responde va escrito al lado**: de que alguien escriba el juicio en otro uso.
+
+#### Y pasó en verde sin material
+
+Al demostrarla en rojo, la inyección quitó uno de los dos usos y la guarda
+salió **verde con «0 tipos»**: no tenía nada que rechazar. Es el verde que
+este proyecto lleva veintisiete tandas persiguiendo, cometido en la guarda
+que más importaba de la tanda. Lleva ahora su precondición —al menos quince
+tipos leídos— y se demostró con la inyección fiel: «Grafiti ilegal (sin
+permiso)» sale denunciado con su nombre.
+
+### El material creció porque el uso nuevo lo necesitaba
+
+Tres entradas: **lona o tela** —un pasacalle no es de ninguno de los siete
+que había—, **vidrio o acrílico** —un aviso de fachada— y **bronce o
+fundición** —una escultura—. Creció porque faltaba, no por completar la lista
+de adorno; y los dos usos nuevos llevan el campo, igual que el mobiliario y
+las redes.
+
+### Y la guarda del tuteo se cobró con «monoposte»
+
+`revisar.js` lo denunció en cuanto entró el tipo: acaba en **-ste** y la
+mitad estructural de esa guarda (v945) no distingue un sustantivo de un
+pretérito. Es el contrato que aquella dejó escrito —«un sustantivo nuevo
+cuesta un renglón y se ve en rojo hasta que alguien lo agregue»— y es la
+segunda vez que se cobra. Se agregó con su razón: en el medio publicitario
+colombiano, un monoposte es la valla de una sola columna.
+
+### Un error mío que solo se vio en el papel
+
+Escribí el tipo **«Publicidad en mobiliario (paradero, caneta)»** — «caneta»
+por «caneca». No lo caza ninguna guarda y no da error: se vio leyendo la
+salida de la sonda, que es el método que encontró los defectos de la v978 a
+la v982.
+
+### Demostrado contra la v982
+
+Seis de siete en rojo, contra una copia guardada, con la inyección de un solo
+uso que mezcla las dos cosas:
+
+```
+✗ el arte de la calle y la publicidad tienen su tipo  — sin tipo: placa · aviso
+✗ el arte y la publicidad son DOS usos  — falta alguno de los dos
+✗ y el análisis los cuenta aparte  — falta en USO_A_SUB: Publicidad Exterior Visual
+✗ los dos usos nuevos están en los CUATRO inventarios  — falta en catálogo · grupo · análisis
+✗ el material cubre lo que los usos nuevos necesitan  — falta el material: Lona o tela
+✗ ningún tipo encierra un juicio  — «Grafiti ilegal (sin permiso)»
+```
+
+### Lo que sigue pendiente de esta familia
+
+**Teléfonos públicos, buzones, cajeros y parquímetros**, que la v982 dejó
+medidos en cero y son de mobiliario. Y la **tapa rota o faltante**, que sigue
+esperando el campo de estado.
+
+### Lo que NO se pudo correr
+
+**Ninguna suite de navegador**, por lo mismo que la v973 a la v982. Corrió
+`revisar.js` entero y se recorrió el camino de verdad con la sonda: las doce
+búsquedas, abrir el mural, y comprobar que su ficha pregunta el material y no
+pregunta pisos ni especie.
+
+
 ## La lista viva: lo que al pliego educativo todavía le falta (v866)
 
 Esta lista se quedó vieja **cinco veces**. Cuatro dentro de la hoja —la

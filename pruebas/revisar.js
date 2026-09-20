@@ -2781,6 +2781,7 @@ console.log('\n  -- el FODA del curso --');
      hasta que alguien la agregue. */
   const NO_ES_PRETERITO = ['este', 'oeste', 'noreste', 'noroeste', 'sureste', 'suroeste',
     'sudeste', 'sudoeste', 'celeste', 'triste', 'chiste', 'poste', 'coste', 'ajuste',
+    'monoposte',
     'desajuste', 'reajuste', 'contraste', 'desgaste', 'gaste', 'guste', 'liste', 'conteste',
     'existe', 'consiste', 'asiste', 'insiste', 'persiste', 'resiste', 'subsiste', 'desiste',
     'preste', 'reste', 'baste', 'aste', 'peste', 'agreste', 'hueste', 'este.', 'waste'];
@@ -3697,6 +3698,113 @@ console.log('\n  -- el mapeo de Pro City --');
   comprobar('y las dos lo declaran por la misma función',
     llamadas >= 2,
     llamadas + ' llamadas a urbisSinDireccion');
+}
+
+console.log('\n  -- el arte de la calle y la publicidad, que no son lo mismo (v983) --');
+{
+  const j20 = soloCodigo(leer('js/20-mobile-functional-app.js'));
+  const j03b = soloCodigo(leer('js/03b-edificio-vocabulario.js'));
+  const j03d = soloCodigo(leer('js/03d-mobiliario-material.js'));
+  const j64 = soloCodigo(leer('js/64-analisis-edu.js'));
+  const nrm = x => String(x || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+  const tipos = (() => {
+    const i = j20.indexOf('const PROCITY_MATRIZ_USOS = [');
+    if (i < 0) return [];
+    const blk = j20.slice(i, j20.indexOf('\n  ];', i));
+    return (blk.match(/'[^']+'/g) || []).map(x => x.slice(1, -1));
+  })();
+  const ARTE = 'Arte Urbano', PUB = 'Publicidad Exterior Visual';
+
+  comprobar('MATERIAL · se lee el catálogo de tipos',
+    tipos.length > 550,
+    tipos.length > 550 ? tipos.length + ' cadenas en el catálogo' : 'no se pudo leer PROCITY_MATRIZ_USOS');
+
+  const sePuede = t => tipos.some(x => nrm(x).indexOf(nrm(t)) >= 0);
+  const pedidos = ['mural', 'grafiti', 'valla', 'escultura', 'placa', 'pasacalle', 'aviso'];
+  const sinTipo = pedidos.filter(t => !sePuede(t));
+  comprobar('el arte de la calle y la publicidad tienen su tipo',
+    sinTipo.length === 0,
+    sinTipo.length ? 'sin tipo: ' + sinTipo.join(' · ') : 'los ' + pedidos.length + ' se pueden mapear');
+
+  /* LOS DOS USOS VAN SEPARADOS, y esta es la comprobación que sostiene la
+     tanda. Una valla no es arte: en Colombia la regula la Ley 140 de 1994 y
+     se inventaría para cobrarla y controlarla, no para protegerla. Juntarlas
+     en un uso haría que el análisis contara las vallas de la avenida como
+     equipamiento cultural del sector. */
+  const artePub = (() => {
+    const i = j20.indexOf("u:'" + ARTE + "'");
+    const k = j20.indexOf("u:'" + PUB + "'");
+    if (i < 0 || k < 0) return null;
+    const corte = (p) => { const a = j20.indexOf("t:[", p); const b = j20.indexOf(']', a); return j20.slice(a, b); };
+    return { arte: corte(i), pub: corte(k) };
+  })();
+  const mezclado = !artePub ? true
+    : /valla|pasacalle|pantalla digital/i.test(artePub.arte) || /mural art|escultura|grafiti/i.test(artePub.pub);
+  comprobar('el arte y la publicidad son DOS usos, y no se mezclan sus tipos',
+    !mezclado,
+    !artePub ? 'falta alguno de los dos usos'
+      : mezclado ? 'hay publicidad dentro de Arte Urbano o arte dentro de Publicidad: el análisis contaría vallas como cultura'
+      : 'cada uso con lo suyo');
+
+  /* Y cuentan cosas distintas en el análisis. Si los dos cayeran en
+     «cultural», separarlos en el catálogo no habría servido de nada. */
+  const subArte = (j64.match(new RegExp("'" + ARTE + "':\\s*'([a-z_]+)'")) || [])[1];
+  const subPub  = (j64.match(new RegExp("'" + PUB + "':\\s*'([a-z_]+)'")) || [])[1];
+  comprobar('y el análisis los cuenta aparte',
+    !!subArte && !!subPub && subArte !== subPub,
+    (!subArte || !subPub) ? 'falta en USO_A_SUB: ' + [!subArte ? ARTE : '', !subPub ? PUB : ''].filter(Boolean).join(' · ')
+      : subArte === subPub ? 'los dos caen en «' + subArte + '»: separarlos en el catálogo no sirvió de nada'
+      : ARTE + ' → ' + subArte + ' · ' + PUB + ' → ' + subPub);
+
+  /* Los cuatro inventarios, para los dos usos. Es la misma exigencia de la
+     v982 y por la misma razón: basta olvidar uno para que quede roto sin que
+     nada lo diga. */
+  const faltanInv = [];
+  [ARTE, PUB].forEach(u => {
+    if (j20.indexOf("u:'" + u + "'") < 0) faltanInv.push(u + ': catálogo');
+    if ((j20.match(new RegExp("'" + u + "'", 'g')) || []).length < 2) faltanInv.push(u + ': grupo');
+    if (j64.indexOf("'" + u + "'") < 0) faltanInv.push(u + ': análisis');
+    if (j03b.indexOf("'" + u + "'") < 0) faltanInv.push(u + ': sin pisos');
+  });
+  comprobar('los dos usos nuevos están en los CUATRO inventarios',
+    faltanInv.length === 0,
+    faltanInv.length ? 'falta ' + faltanInv.join(' · ') : 'catálogo · grupo · análisis · sin pisos, los dos');
+
+  /* El nombre del tipo dice lo que SE VE, no lo que se supone. «Grafiti
+     ilegal» o «mural no autorizado» meten en el catálogo un juicio sobre un
+     permiso que nadie puede verificar desde la acera — y una vez escrito en
+     el tipo, queda en el registro como si fuera una observación. */
+  /* Acotada a ESTOS DOS usos, y se dice por qué. Sobre el catálogo entero
+     denunciaba «Botadero a cielo abierto (ilegal)» y «Extracción ilegal», que
+     NO son el mismo caso: ahí la ilegalidad ES la categoría —no existe un
+     botadero a cielo abierto autorizado, eso es un relleno sanitario— y no
+     una afirmación sobre el permiso de una pieza concreta. Una guarda con
+     falsos positivos termina en una lista de excepciones que envejece hasta
+     no significar nada (v895), así que se acota en vez de coleccionar
+     excepciones. De qué NO responde: de que alguien escriba el juicio en
+     otro uso. */
+  const tiposDeLosDos = artePub ? (artePub.arte + artePub.pub).match(/'[^']+'/g) || [] : [];
+  const juicios = tiposDeLosDos.map(x => x.slice(1, -1))
+    .filter(t => /ilegal|no autorizad|sin permiso|vandalic|vandalis|permitid/i.test(t));
+  /* Y con su propio material: sin los dos usos leídos, `tiposDeLosDos` sale
+     vacío y esto pasaría en verde sin vigilar un solo nombre — pasó al
+     demostrarla en rojo, y una guarda que no puede fallar es un verde
+     (v878). */
+  comprobar('ningún tipo de arte o publicidad encierra un juicio que no se ve desde la acera',
+    juicios.length === 0 && tiposDeLosDos.length >= 15,
+    tiposDeLosDos.length < 15 ? 'solo se leyeron ' + tiposDeLosDos.length + ' tipos de los dos usos: no hay sobre qué comprobar'
+      : juicios.length ? juicios.join(' · ') + ': el permiso no se puede determinar mirando'
+      : tiposDeLosDos.length + ' tipos, ninguno afirma un permiso');
+
+  /* Y el material creció porque el uso nuevo lo necesitaba: un pasacalle es
+     de lona y una escultura puede ser de bronce. */
+  const mats = (j03d.match(/\{ n:'([^']+)'/g) || []).map(x => x.slice(5, -1));
+  const nuevos = ['Lona o tela', 'Bronce o fundición'].filter(m => mats.indexOf(m) < 0);
+  comprobar('el material cubre lo que los usos nuevos necesitan',
+    nuevos.length === 0 && j03d.indexOf(ARTE) >= 0 && j03d.indexOf(PUB) >= 0,
+    nuevos.length ? 'falta el material: ' + nuevos.join(' · ')
+      : (j03d.indexOf(ARTE) < 0 || j03d.indexOf(PUB) < 0) ? 'los usos nuevos no llevan el campo de material'
+      : mats.length + ' materiales, y los dos usos lo llevan');
 }
 
 console.log('\n  -- lo que se mapea mirando al suelo (v982) --');

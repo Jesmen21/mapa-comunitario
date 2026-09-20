@@ -5258,6 +5258,35 @@
     { u:'Emergencias (Bomberos/Rescate)', i:'🚒', t:['Estación de bomberos','Base de defensa civil','Cruz Roja / rescate','Base de ambulancias','Central de emergencias (123)','Punto de encuentro / evacuación','Refugio ante desastres','Base de rescate acuático','Helipuerto de emergencia','Bodega de ayuda humanitaria'] },
     { u:'Cuidado Animal (Veterinaria)', i:'🐾', t:['Clínica veterinaria','Refugio de animales','Centro de adopción','Centro de zoonosis / control','Pet shop / tienda de mascotas','Guardería canina','Peluquería canina','Coso municipal','Centro de bienestar animal (público)','Veterinaria móvil'] },
     { u:'Hogar de Cuidado', i:'🏡', t:['Hogar geriátrico / adulto mayor','Hogar de bienestar infantil (ICBF)','Albergue / refugio para migrantes','Hogar de paso (habitante de calle)','Casa hogar / orfanato','Rehabilitación (adicciones)','Atención a discapacidad','Refugio para víctimas de violencia','Comedor comunitario','Guardería / sala cuna'] },
+    /* El arte que está EN la calle, no el edificio que lo guarda. Medido
+       antes de escribir: «mural», «grafiti», «escultura», «placa» y «mosaico»
+       daban cero en los 559 tipos, y «Cultural / Patrimonio» son todos
+       edificios e instituciones —museo, teatro, biblioteca— más «Monumento /
+       sitio histórico». Un mural no es una institución: es una pieza sobre un
+       muro que alguien pintó y que el municipio inventaría para protegerla.
+
+       Los nombres dicen lo que SE VE desde la acera y no lo que se supone:
+       «Grafiti o rayado» y no «grafiti ilegal» —si tenía permiso o no es un
+       hecho que no se puede determinar mirando, y ponerlo en el nombre del
+       tipo sería un juicio disfrazado de observación. */
+    { u:'Arte Urbano', i:'🎨', t:['Mural artístico','Grafiti o rayado en muro',
+      'Escultura','Busto o placa conmemorativa','Mosaico o cerámica en muro',
+      'Intervención de color (fachadas pintadas)','Obelisco o hito conmemorativo',
+      'Fuente ornamental','Arte en piso (pintura o adoquín)','Instalación o arte efímero'] },
+    /* Y la publicidad exterior, que NO es arte y por eso no comparte uso con
+       el anterior. En Colombia la regula la Ley 140 de 1994 y los decretos
+       municipales: se inventaría para cobrarla y para controlarla, no para
+       protegerla. Metérselas en el mismo uso haría que el análisis contara
+       una valla como patrimonio cultural.
+
+       «Mural publicitario» va acá a propósito: un muro pintado con una marca
+       es publicidad aunque esté bien pintado, y sin este tipo iría a parar a
+       «Mural artístico». */
+    { u:'Publicidad Exterior Visual', i:'📢', t:['Valla publicitaria',
+      'Aviso de fachada','Pantalla digital / LED','Pasacalle o pendón',
+      'Mural publicitario','Tapa o cerramiento de obra con publicidad',
+      'Publicidad en mobiliario (paradero, caneca)','Aviso en poste o tubo',
+      'Tótem o monoposte','Publicidad pintada en muro (fachada comercial)'] },
     { u:'Cultural / Patrimonio', i:'🏛️', t:['Museo','Teatro','Biblioteca','Monumento / sitio histórico','Centro cultural / casa de la cultura','Galería de arte','Archivo histórico','Iglesia patrimonial','Edificio patrimonial (BIC)','Sala de cine / cineteca','Escuela de artes / conservatorio','Sitio arqueológico'] },
     { u:'Educativo (Básico/Superior)', i:'📚', t:['Jardín infantil / preescolar','Colegio (básica/media)','Universidad','Instituto técnico / tecnológico','Centro de capacitación (SENA)','Escuela rural','Educación para adultos','Biblioteca escolar','Internado','Escuela de idiomas','Academia (música, danza…)','Centro de investigación'] },
     { u:'Religioso / Culto', i:'⛪', t:['Iglesia católica','Templo cristiano no católico','Culto de otra religión','Capilla','Catedral / basílica','Salón del reino','Mezquita','Sinagoga','Convento / monasterio','Seminario','Cementerio parroquial','Casa de retiro espiritual'] },
@@ -5321,11 +5350,11 @@
   // "usos" deben calzar EXACTO con el campo `u` de PROCITY_MATRIZ_USOS.
   const MATRIZ_GRUPOS = [
     { id:'vivienda', i:'🏠', t:'Vivienda y ocio', usos:['Residencial','Vivienda de Interés Social (VIS/VIP)','Ocio / Negocio','Deportivo','Esp. Público'] },
-    { id:'comercio', i:'🏬', t:'Comercio y economía', usos:['Comercial','Parqueadero / Estacionamiento','Turístico / Hotelero','Zona Franca / Comercio Exterior','Estación de Servicio (Gasolinera)','Abastecimiento Mayorista (Central de Abastos)'] },
+    { id:'comercio', i:'🏬', t:'Comercio y economía', usos:['Comercial','Parqueadero / Estacionamiento','Turístico / Hotelero','Zona Franca / Comercio Exterior','Estación de Servicio (Gasolinera)','Abastecimiento Mayorista (Central de Abastos)','Publicidad Exterior Visual'] },
     { id:'institucional', i:'🏛️', t:'Institucional y gobierno', usos:['Institucional','Gubernamental / Administrativo','Militar / Policial','Seguridad / Judicial'] },
     { id:'industria', i:'🏭', t:'Industria y logística', usos:['Industrial (Pesada/Ligera)','Logístico / Almacenamiento','Extractivo (Minería/Canteras)','Logística de carga (patios y talleres)'] },
     { id:'salud', i:'🚑', t:'Salud y emergencias', usos:['Salud (Clínicas/Hospitales)','Emergencias (Bomberos/Rescate)','Cuidado Animal (Veterinaria)','Hogar de Cuidado'] },
-    { id:'cultura', i:'🎭', t:'Cultura, educación y culto', usos:['Cultural / Patrimonio','Educativo (Básico/Superior)','Religioso / Culto','Espacio Ferial / Eventos Masivos'] },
+    { id:'cultura', i:'🎭', t:'Cultura, educación y culto', usos:['Cultural / Patrimonio','Arte Urbano','Educativo (Básico/Superior)','Religioso / Culto','Espacio Ferial / Eventos Masivos'] },
     { id:'servicios', i:'🚛', t:'Servicios e infraestructura', usos:['Mobiliario Urbano','Redes en Vía (tapas y registros)','Gestión de Residuos / Reciclaje','Transporte (Terminales/Estaciones)','Infra. Servicios (Plantas)','Comunicaciones / Antenas','Servicios Funerarios','Vías e Infraestructura Vial'] },
     { id:'ambiente', i:'🌳', t:'Ambiente y zona rural', usos:['Protección Ambiental','Arbolado Urbano','Forestal','Agropecuario / Rural','Ronda Hídrica / Protección de Cuerpos de Agua'] },
     { id:'riesgo', i:'⚠️', t:'Riesgo, deterioro y suelo sin definir', usos:['Zona Baldía','Zona de Riesgo','En Obra / Construcción','Abandono / Ruina','Espacio Residual','Asentamiento Informal','Zona de Expansión Urbana'] },
@@ -5437,6 +5466,11 @@
     'contador': 'medidor', 'llave de paso': 'valvula',
     'polideportivo': 'cancha multiple', 'multiple': 'cancha multiple',
     'cebra': 'paso peatonal', 'paso de cebra': 'paso peatonal',
+    'graffiti': 'grafiti', 'grafity': 'grafiti', 'rayon': 'grafiti', 'tag': 'grafiti',
+    'estatua': 'escultura', 'monumento': 'escultura', 'busto': 'busto o placa',
+    'publicidad': 'publicidad exterior', 'anuncio': 'aviso',
+    'letrero': 'aviso', 'pendon': 'pasacalle', 'banner': 'pasacalle',
+    'led': 'pantalla digital', 'pantalla': 'pantalla digital',
     'pasamanos': 'baranda', 'barandilla': 'baranda',
     'muro': 'muro de contencion', 'gavion': 'gaviones',
 

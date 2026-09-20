@@ -54,6 +54,12 @@
     'Cuidado Animal (Veterinaria)': 'veterinaria',
     'Hogar de Cuidado': 'hogar_cuidado',
     'Cultural / Patrimonio': 'cultural',
+    /* El arte de la calle cuenta como cultural, que es lo que es. La
+       publicidad NO: entra como comercio porque eso es lo que hace —vender—,
+       y contarla como cultura inflaría el equipamiento cultural de un sector
+       con las vallas de la avenida. */
+    'Arte Urbano': 'cultural',
+    'Publicidad Exterior Visual': 'comercio_otro',
     'Educativo (Básico/Superior)': 'colegio',
     'Religioso / Culto': 'iglesia',
     'Espacio Ferial / Eventos Masivos': 'salon_eventos',

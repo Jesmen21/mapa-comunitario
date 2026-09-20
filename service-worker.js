@@ -1,4 +1,4 @@
-const URBIS_CACHE = 'urbis-v982-lo-que-se-mapea-mirando-al-suelo';
+const URBIS_CACHE = 'urbis-v983-el-arte-de-la-calle-y-la-publicidad';
 const URBIS_ASSETS = [
   './',
   './index.html',
