@@ -14015,6 +14015,162 @@ averiguar lo mismo: el dato está completo en el registro y lo que falta es
 quién lo cuenta.
 
 
+## El panel del punto enseña lo que la fila guarda (v985)
+
+Llegó mapeando: **«los mapeos no muestran la foto cuando le das a los
+iconos»**. Medida la premisa antes de tocar nada —la regla de la v863 y la
+v916—, ni el guardado ni el portero tenían nada que ver.
+
+    v984   la foto se guarda, y ninguna superficie de Pro City la alcanza
+    v985   la foto, la nota, la especie y el material, en el panel del punto
+
+### Los puntos de Pro City no pasan por el globo
+
+Eso es todo el hallazgo. `pintarPuntos` (js/12) **salta** los puntos de Pro
+City —`urbisEsCategoriaProCity(p.tipo)`— y los dibuja `renderProCityPoints`,
+cuyo toque abre `showProCitySelectedPanel`, que es un panel propio y no el
+globo de js/10.
+
+Así que las cuatro cosas que js/10 sí pinta no llegaban ahí. Medido sobre el
+panel compuesto, con una fila que las trae todas:
+
+```
+img: 0 · diceNota: false · diceEspecie: false
+«× 🌳 Palma · Arbolado Urbano · 📍 Calle 5 · 👤 Publicado por Ana Prueba …»
+```
+
+Es la **clase C** con su forma exacta —el dato está en la fila y ninguna
+superficie lo alcanza, así que desde afuera se ve igual que un dato ausente—
+y acá cuesta más de lo normal: la v976 acababa de conectar la cámara, así que
+quien salió a mapear con foto cree que se le perdieron.
+
+**Y explica una cosa de la v979 que hay que decir.** Aquella puso la marca de
+«sin especie» en tres superficies —«Mis mapeos», el globo y la ficha— y las
+dos últimas son de js/10. Para un árbol, que es un uso de Pro City, esas dos
+ramas **no las alcanza nadie**: la marca solo se veía en la lista. Su guarda
+estática pasaba en verde porque contaba superficies que pintan, no
+superficies que se abren. Ahora la cuarta es esta, que es la que se toca en
+el mapa.
+
+### Se arreglan las CUATRO, y no solo la foto
+
+Es el mismo panel y el mismo defecto. Tapar una dejaría las otras tres
+invisibles para que el reporte siguiente diga «ahora tampoco muestra la
+especie» — y son la nota técnica, la especie del árbol (v975) y el material
+del mobiliario (v981).
+
+**Ninguna decide nada por su cuenta**, que es la mitad que de verdad importa:
+la foto pasa por `urbisFotoDeReporte` —el portero de la v829, el que sabe si
+el reporte está Pendiente—, la especie por `URBIS_ARBOL` y el material por
+`URBIS_MOBILIARIO`. Leer la casilla en crudo acá **publicaría sin moderar la
+foto de cualquiera**, y el código se vería perfectamente bien; hay una guarda
+dedicada solo a eso.
+
+Medido en las cuatro ramas, con el filtro «todo el mundo» puesto por su botón
+de verdad para que la rama ajena tenga material (v920):
+
+| | foto | aviso | especie |
+|---|---|---|---|
+| aprobado, mío | sí | — | Nim |
+| pendiente, mío | sí, a trazos | «solo la ve usted y el moderador» | Nim |
+| **pendiente, de otro** | **no** | «está en revisión» | Nim |
+| mío sin especie | — | — | **marca ámbar con el camino** |
+
+La tercera fila es la que guarda: sin ella, un «se ve» puesto en todas partes
+pasaría igual y el portero quedaría de adorno.
+
+### El aviso de revisión salía invisible, y solo lo dijo la captura
+
+`urbisAvisoFotoEnRevision` (js/05) **no fija color**: lo hereda. En el globo y
+en la ficha hereda claro sobre oscuro y se lee; esta tarjeta es blanca, y el
+texto salía en blanco sobre blanco — en la captura solo se veía la lupa.
+
+Es el mismo defecto de la v979 con el ámbar, por el otro lado, y la misma
+cura: **el color se mide en su superficie y no se copia del de al lado**. Se
+pone en css/52, donde vive la tarjeta, sin tocar la regla compartida, que en
+las otras dos está bien.
+
+Lo que sí entra en la regla compartida es el **aspecto de una foto en
+revisión**: el panel se suma al selector de css/83 en vez de estrenar el
+suyo. Qué aspecto tiene «todavía la estoy revisando» lo decide un solo sitio,
+o una de las dos superficies deja de distinguirse de una foto publicada.
+
+### El hallazgo caro: el `${…}` escondía once tuteos
+
+Salió de mirar el papel. El aviso decía **«solo la ves tú y el moderador»** —
+tuteo, en texto que ve el usuario, con `revisar.js` en verde desde la v909.
+
+La v909 dejó escrito que «el `${…}` de una plantilla es CÓDIGO». Es cierto, y
+de ahí salió **saltárselo entero**:
+
+```js
+if (modo === 5 && c === '$' && d === '{') { …busca el cierre…; i = j; continue; }
+```
+
+Dentro de una interpolación vive media interfaz de esta aplicación
+—`${cond ? 'un texto' : 'otro'}`— y **nada de eso lo veían las dos guardas de
+idioma**. Medido: **once pronombres de tú y tres pretéritos en -ste**, en
+cinco archivos, invisibles desde la v909.
+
+Es la forma de la v879 con la regex de js/68: **una guarda que pasa en verde
+no porque funcione, sino porque su recorrido no llega.**
+
+El recorrido **baja** a la interpolación en vez de saltarla: dentro vuelve a
+modo código —así un identificador sigue sin contar— y las cadenas que haya
+ahí se marcan como lo que son. Dos detalles que costaron una vuelta y van en
+el caso de prueba: se cuenta la **profundidad de llaves**, para que un objeto
+literal dentro de la interpolación no la cierre antes de tiempo, y la pila es
+**por interpolación**, porque las plantillas se anidan.
+
+Se comprueba **dónde cae cada cosa** y no que no reviente, que es la regla de
+la v879: el texto del ternario se ve, la condición no, el objeto literal no,
+y después de los dos la plantilla sigue viva.
+
+Los catorce se corrigieron **uno por uno** —«Completa tu fecha» → «Complete
+su fecha», «Crea uno y comparte el código con tus amigos» → «Cree uno y
+comparta el código con sus amigos»—, que es la lección de la v878: cambiar el
+pronombre no conjuga los verbos de alrededor.
+
+### Demostrado contra la v984
+
+Cinco en rojo, cada una con su causa, revirtiendo **solo lo que pinta y lo que
+decide** —la ficha se queda declarada para que la guarda de MATERIAL no corte
+antes, que es lo que hay que ver morder—:
+
+```
+✗ el panel del punto enseña lo que la fila guarda  — la ficha se calcula y NO se pinta
+✗ las cuatro salen, y ninguna por un criterio propio  — no llegan al panel: la foto · el material
+✗ y la foto pasa por el portero, no por la casilla en crudo  — lee la casilla directo:
+    publicaría sin moderar la foto de un reporte Pendiente
+✗ el aviso de foto en revisión tiene color en esta tarjeta clara  — hereda: sobre fondo
+    blanco el texto sale invisible y solo se ve la lupa
+✗ la foto en revisión se marca igual en todas las superficies  — estrena un tratamiento propio
+```
+
+Y el agujero del recorrido, demostrado devolviendo el salto de la v984 y el
+tuteo a su sitio — que es la mitad que más vale, porque enseña el verde:
+
+```
+✗ el recorrido BAJA a la interpolación  — el texto del ternario NO SE VERÍA
+✓ ningún tuteo en el texto que ve el usuario (§9)  — revisados 105 archivos…
+```
+
+**La guarda del idioma en verde con «solo la ves tú» impreso en pantalla.**
+
+### Lo que NO se pudo correr
+
+**Ninguna suite de navegador**, por lo mismo que la v973 a la v984: este
+contenedor no tiene `../urbis-motor` ni el `node_modules` del banco de
+pruebas. Corrió `revisar.js` entero y se recorrió el camino de verdad con la
+sonda —sembrar seis filas, abrir el mapa, quitar «solo lo mío» por su botón,
+tocar cada punto y leer el panel—, que es lo que encontró las dos cosas que
+no se veían leyendo: que el globo de js/10 no es la superficie de Pro City, y
+el aviso invisible.
+
+Lo que no se ejercitó es **publicar con foto y volver a abrirla**: eso pide el
+servidor.
+
+
 ## La lista viva: lo que al pliego educativo todavía le falta (v866)
 
 Esta lista se quedó vieja **cinco veces**. Cuatro dentro de la hoja —la

@@ -222,7 +222,7 @@
       return `<div class="foto-en-revision${suyaOModerador ? ' foto-en-revision-previa' : ''}">
           <span class="fer-icono">🔍</span>
           <span class="fer-texto">${suyaOModerador
-            ? 'Foto en revisión: solo la ves tú y el moderador. Se publica cuando un administrador la apruebe.'
+            ? 'Foto en revisión: solo la ve usted y el moderador. Se publica cuando un administrador la apruebe.'
             : 'Este reporte trae una foto que aún está en revisión. Se publica cuando un administrador la apruebe.'}</span>
         </div>`;
   }

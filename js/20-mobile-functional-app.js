@@ -1287,13 +1287,13 @@
         return `<div class="u52-noti-card aurea"><span>✨</span><div><b>${esc(n.title || '¡Juegos URBIS Premium!')}</b><small>${esc(n.message || 'Hay un evento premium activo. ¡Toca para competir!')}</small></div><div class="u52-noti-actions single"><button type="button" class="aurea-go" data-u52-aurea-go data-aurea-juego="${esc(n.juegoId||'')}" data-aurea-titulo="${esc(n.titulo||'Juegos URBIS')}" data-aurea-premio="${esc(n.premio||'')}" data-aurea-fin="${esc(n.fin||'')}">🎮 Jugar</button></div></div>`;
       }
       if(n.type === 'complete_birthdate'){
-        return `<div class="u52-noti-card demographic"><span>🎂</span><div><b>${esc(n.title || 'Completa tu fecha de nacimiento')}</b><small>${esc(n.message || 'Agrega tu fecha para análisis demográfico y validación de edad.')}</small></div><div class="u52-noti-actions single"><button type="button" data-u52-birthdate-open>Agregar fecha</button></div></div>`;
+        return `<div class="u52-noti-card demographic"><span>🎂</span><div><b>${esc(n.title || 'Complete su fecha de nacimiento')}</b><small>${esc(n.message || 'Agregue su fecha para análisis demográfico y validación de edad.')}</small></div><div class="u52-noti-actions single"><button type="button" data-u52-birthdate-open>Agregar fecha</button></div></div>`;
       }
       if(n.type === 'mi_reporte'){
         // Qué pasó con algo que publicó esta persona (js/13d). Lleva botón para
         // ir al reporte: un aviso que cuenta algo y no lleva a ninguna parte
         // obliga a buscarlo a mano en el mapa.
-        return `<div class="u52-noti-card mireporte"><span>${esc(n.icono || '🔔')}</span><div><b>${esc(n.title || 'Tu reporte')}</b><small>${esc(n.message || '')}</small></div><div class="u52-noti-actions single"><button type="button" data-u52-abrir-reporte data-lat="${esc(n.lat || '')}">Ver en el mapa</button></div></div>`;
+        return `<div class="u52-noti-card mireporte"><span>${esc(n.icono || '🔔')}</span><div><b>${esc(n.title || 'Su reporte')}</b><small>${esc(n.message || '')}</small></div><div class="u52-noti-actions single"><button type="button" data-u52-abrir-reporte data-lat="${esc(n.lat || '')}">Ver en el mapa</button></div></div>`;
       }
       return `<div class="u52-noti-card"><span>🔔</span><div><b>${esc(n.title || 'Notificación')}</b><small>${esc(n.message || 'Nuevo aviso de URBIS.')}</small></div></div>`;
     }).join('');
@@ -1866,11 +1866,11 @@
       </span>`;
     }
     return `<div class="rush-calendar-card${preview ? ' preview' : ''}">
-      <div class="rush-calendar-head"><b>📅 ${_MESES_ES[mes]} ${anio}</b><span>${preview ? 'Así se verá tu racha 🔥' : 'Tu racha de actividad'}</span></div>
+      <div class="rush-calendar-head"><b>📅 ${_MESES_ES[mes]} ${anio}</b><span>${preview ? 'Así se verá su racha 🔥' : 'Su racha de actividad'}</span></div>
       <div class="rush-calendar-week"><span>L</span><span>M</span><span>M</span><span>J</span><span>V</span><span>S</span><span>D</span></div>
       <div class="rush-calendar-grid">${celdas}</div>
       <div class="rush-calendar-legend"><span>Menos</span><i class="lvl0"></i><i class="lvl1"></i><i class="lvl2"></i><i class="lvl3"></i><i class="lvl4"></i><span>Más</span></div>
-      ${preview ? '<button class="rush-cal-cta" data-u52-go="sport">▶ Empieza tu primera actividad</button>' : ''}
+      ${preview ? '<button class="rush-cal-cta" data-u52-go="sport">▶ Empiece su primera actividad</button>' : ''}
     </div>`;
   }
 
@@ -4547,7 +4547,7 @@
             <button type="button" class="u52-procity-folder-create" data-u52-call="procity-folder-create">＋ Crear proyecto cooperativo</button>
             <button type="button" class="u52-procity-folder-join" data-u52-call="procity-folder-join">🔑 Unirme con código</button>
           </div>
-          ${folderCards || `<div class="u52-empty-card"><span>🤝</span><div><b>Aún no tienes proyectos cooperativos</b><small>Crea uno y comparte el código con tus amigos para mapear juntos un mismo sector.</small></div></div>`}
+          ${folderCards || `<div class="u52-empty-card"><span>🤝</span><div><b>Aún no tiene proyectos cooperativos</b><small>Cree uno y comparta el código con sus amigos para mapear juntos un mismo sector.</small></div></div>`}
         </div>`;
     }
     el.hidden = false;
@@ -4783,6 +4783,67 @@
   }
   window.urbisRenderProCityPoints = renderProCityPoints;
 
+  /* Lo que la fila guarda y este panel no enseñaba (v985).
+     Llegó mapeando: «los mapeos no muestran la foto cuando le das a los
+     iconos». Medido antes de tocar nada, el fallo no era del guardado ni del
+     portero: `pintarPuntos` (js/12) SALTA los puntos de Pro City
+     —`urbisEsCategoriaProCity`— y los dibuja `renderProCityPoints`, cuyo
+     toque abre ESTE panel y no el globo de js/10. Así que las cuatro cosas
+     que js/10 sí pinta no llegaban acá: la foto, la nota, la especie del
+     árbol y el material del mobiliario. Medido sobre el panel compuesto:
+     `img: 0 · diceNota: false · diceEspecie: false`.
+
+     Es la clase C con su forma exacta —el dato está en la fila y ninguna
+     superficie lo alcanza, así que desde afuera se ve igual que un dato
+     ausente— y acá cuesta más de lo normal: la v976 acababa de conectar la
+     cámara, así que quien salió a mapear con foto cree que se perdieron.
+
+     Se arreglan las CUATRO y no solo la foto: es el mismo panel y el mismo
+     defecto, y tapar una dejaría las otras tres invisibles para que el
+     reporte siguiente diga «ahora tampoco muestra la especie».
+
+     Y ninguna decide nada por su cuenta: la foto pasa por `urbisFotoDeReporte`
+     —el portero de la v829, que es quien sabe si el reporte está Pendiente—,
+     la especie por `URBIS_ARBOL` y el material por `URBIS_MOBILIARIO`. Dos
+     criterios para un mismo hecho se separan a la tanda siguiente (v879), y
+     acá el que se separaría publicaría la foto de alguien sin moderar. */
+  function fichaDeProCity(p, d){
+    let foto = '', nota = '', especie = '', material = '';
+    try{
+      const f = (typeof window.urbisFotoDeReporte === 'function') ? window.urbisFotoDeReporte(p) : null;
+      if(f && f.hay && f.puedeVerla){
+        foto = `<img class="u52-procity-selpanel-foto${f.enRevision ? ' en-revision' : ''}" src="${esc(f.url)}" alt="Foto del mapeo" onclick="window.urbisAbrirFotoFull && window.urbisAbrirFotoFull(this.src)">`;
+      }
+      if(f && f.hay && f.enRevision && typeof window.urbisAvisoFotoEnRevision === 'function'){
+        foto += window.urbisAvisoFotoEnRevision(f);
+      }
+    }catch(e){}
+    try{
+      const n = (d[2] || '').trim();
+      if(n && n !== 'N/A') nota = `<div class="u52-procity-selpanel-nota">${esc(n)}</div>`;
+    }catch(e){}
+    try{
+      const a = window.URBIS_ARBOL ? window.URBIS_ARBOL.leer(p.descripcion) : null;
+      if(a && a.texto){
+        especie = `<div class="u52-procity-selpanel-dato">\u{1F333} ${esc(a.texto)}</div>`;
+      }
+      /* El árbol al que todavía le falta, y solo a quien puede hacer algo con
+         eso —su autor—: a un vecino no le toca ir a determinar la especie del
+         árbol de otro (v979). Acá el camino es literal: el botón «Editar» está
+         en este mismo panel, dos renglones más abajo. */
+      else if(window.URBIS_ARBOL && window.URBIS_ARBOL.pendiente(p.descripcion)
+              && typeof window.esAutorDelReporte === 'function' && window.esAutorDelReporte(p)){
+        especie = '<div class="u52-procity-selpanel-dato falta">\u{1F333} Sin especie anotada.'
+          + ' Cuando sepa cuál es, toque «Editar» acá abajo y elíjala.</div>';
+      }
+    }catch(e){}
+    try{
+      const m = window.URBIS_MOBILIARIO ? window.URBIS_MOBILIARIO.leer(p.descripcion) : null;
+      if(m && m.texto) material = `<div class="u52-procity-selpanel-dato">\u{1F9F1} ${esc(m.texto)}</div>`;
+    }catch(e){}
+    return foto + nota + especie + material;
+  }
+
   // Panel compacto al tocar un punto: quién lo publicó + Editar (permite
   // cambiar uso/matriz) + Mover. Sin likes/validación/comentarios: esto es
   // análisis urbano, no un reporte ciudadano.
@@ -4852,6 +4913,7 @@
             ${direccion ? `<small class="u52-procity-selpanel-dir">📍 ${esc(direccion)}</small>` : ''}
           </div>` : `<div><b>${esc(label)}</b><small>${esc(dim)}</small></div>`}
         </div>
+        ${fichaDeProCity(p, d)}
         <div class="u52-procity-selpanel-autor">👤 Publicado por <b>${esc(autorFull)}</b></div>
         ${folderTagSel}
         ${addFolderBtn}
@@ -4946,7 +5008,7 @@
         <button type="button" class="u52-procity-filter-mine${proCity.onlyMine?' on':''}" data-u52-call="procity-filter-mine">
           <span>${proCity.onlyMine?'👤':'🌐'}</span>
           <b>${proCity.onlyMine ? 'Mostrando solo lo mío' : 'Mostrando todo lo mapeado'}</b>
-          <small>Toque para ${proCity.onlyMine ? 'ver también lo de otros usuarios' : 'ver solo lo que tú georreferenciaste'}</small>
+          <small>Toque para ${proCity.onlyMine ? 'ver también lo de otros usuarios' : 'ver solo lo que usted georreferenció'}</small>
         </button>
         <div class="u52-procity-filter-tools">
           <button type="button" data-u52-call="procity-filter-all">Mostrar todas</button>

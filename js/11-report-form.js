@@ -73,7 +73,7 @@
           </div>
           ${hor.crudo ? `<div class="edificio-hint">Este punto ya trae un horario que no compuso este formulario: <b>${String(hor.crudo).replace(/[<>&"]/g, '')}</b>. Se conserva tal cual mientras no elijas otra cosa acá.</div>` : ''}
           <div class="edificio-hint">Lo que dice el letrero, no lo que uno supone por el tipo de negocio. El análisis estima las horas fuertes por el uso; esto es el dato de verdad, y cuando los dos no coinciden esa diferencia es el hallazgo. Si cierra después de medianoche, ponga la hora de cierre igual: 18:00 a 02:00 se entiende.</div>
-          <input type="text" id="ins-otro-edificio" value="${(fichaEdif.otroTexto || '').replace(/"/g, '&quot;')}" placeholder="Si marcaste «Otro», descríbelo aquí">
+          <input type="text" id="ins-otro-edificio" value="${(fichaEdif.otroTexto || '').replace(/"/g, '&quot;')}" placeholder="Si marcó «Otro», descríbalo aquí">
           <div class="edificio-hint">Ninguna de estas preguntas es obligatoria. Si el dato no se puede determinar desde la calle marca <b>No se sabe</b>, y si existe pero no está en la lista marca <b>Otro</b> y descríbelo: así entra en la próxima versión de la lista. Elegir «lo más parecido» para salir del paso mete un dato falso que después nadie distingue de uno bueno.</div>
         </div>`;
     }
@@ -160,7 +160,7 @@
         
         <div style="display: ${esEdificio ? 'block' : displayTecnico};">
             <label style="font-size:0.7rem; color:var(--fuchsia); display:block; margin-top:15px; border-top:1px solid #444; padding-top:10px;">${esEdificio ? '6 · ¿QUÉ PASA ADENTRO? MARCA TODOS LOS USOS:' : 'MATRIZ DE USOS MULTIDIMENSIONAL:'}</label>
-            ${esEdificio ? '<div class="edificio-hint">Un mismo edificio puede tener varios usos a la vez: un colegio con cancha y tienda son tres. Márquelos todos — el análisis los reparte entre los pisos que registraste.</div>' : ''}
+            ${esEdificio ? '<div class="edificio-hint">Un mismo edificio puede tener varios usos a la vez: un colegio con cancha y tienda son tres. Márquelos todos — el análisis los reparte entre los pisos que registró.</div>' : ''}
             <div class="usos-container"><div class="usage-grid">${htmlCheckboxes}</div></div>
         </div>
         
@@ -199,7 +199,7 @@
   window.prepararEdicion = function(lat) {
       const punto = buscarPuntoPorLat(lat);
       if(!punto) { alert("No se encontró el punto para editar."); return; }
-      if(!puedeGestionarReporte(punto)) { alert("Solo puedes editar tus propios reportes."); return; }
+      if(!puedeGestionarReporte(punto)) { alert("Solo puede editar sus propios reportes."); return; }
       if(tempMarker) { map.removeLayer(tempMarker); tempMarker = null; }
       try{ map.closePopup(); }catch(e){}
       formPaso2(punto.tipo, punto.lat, punto.lng, punto.descripcion);

@@ -2331,7 +2331,7 @@
       </div>
       <div class="ug-board">
         <b class="ug-board-title">🏆 Tabla de líderes</b>
-        ${miPos ? `<div class="ug-mypos">Tu posición: <b>#${miPos}</b> de ${lb.length}</div>` : ''}
+        ${miPos ? `<div class="ug-mypos">Su posición: <b>#${miPos}</b> de ${lb.length}</div>` : ''}
         <div class="ug-table">
           <div class="ug-thead"><span class="ug-th ug-th-pos">#</span><span class="ug-th ug-th-user">Usuario</span><span class="ug-th ug-th-pts">Puntos</span></div>
           ${lb.length ? lb.map((r,i) => `<div class="ug-row ${r.usuario.toLowerCase()===yo?'me':''}"><span class="ug-pos ug-pos-${i+1}">${i+1}</span><span class="ug-user">@${_escJuego(r.usuario)}</span><span class="ug-pts">${r.puntos}</span></div>`).join('') : '<div class="ug-empty">Aún no hay puntajes. ¡Sé el primero en jugar!</div>'}

@@ -2672,13 +2672,42 @@ console.log('\n  -- el FODA del curso --');
 (function () {
   /* Marca lo que está dentro de una cadena de JavaScript —`${…}` de plantilla
      excluido— o, en un HTML, dentro del texto y de los atributos que se leen. */
+  /* ── El `${…}` de una plantilla también lleva TEXTO (v985) ───────────
+     La v909 dejó escrito que «el `${…}` de una plantilla es CÓDIGO», y es
+     cierto — pero de ahí salió saltárselo ENTERO, y dentro de una
+     interpolación vive media interfaz de esta aplicación:
+     `${cond ? 'un texto' : 'otro'}`. Todo eso era invisible para las dos
+     guardas de idioma.
+
+     Medido al encontrar «Foto en revisión: solo la ves tú y el moderador»
+     impreso en pantalla con `revisar.js` en verde: **once tuteos** escondidos
+     ahí, en cinco archivos, desde la v909. Es la forma de la v879 con la
+     regex de js/68 — una guarda que pasa en verde no porque funcione sino
+     porque su recorrido no llega.
+
+     Se BAJA a la interpolación en vez de saltarla: dentro se vuelve a modo
+     código, así que un identificador sigue sin contar, y las cadenas que haya
+     ahí adentro se marcan como lo que son. El `}` que cierra devuelve a la
+     plantilla, y se cuenta la profundidad de llaves para que un objeto
+     literal dentro de la interpolación no la cierre antes de tiempo. */
   function dentroDeCadena(txt) {
     const s = new Uint8Array(txt.length);
     const ANTES_REGEX = /[(,=:[!&|?{};+\-*%~^<>]$/;
     let i = 0, modo = 0;
+    /* Cada interpolación abierta, con su profundidad de llaves propia: las
+       plantillas se anidan («`a${ `b${c}` }`») y una pila plana las
+       confundiría. */
+    const interp = [];
     while (i < txt.length) {
       const c = txt[i], d = txt[i + 1];
       if (modo === 0) {
+        if (interp.length) {
+          if (c === '{') { interp[interp.length - 1].prof++; i++; continue; }
+          if (c === '}') {
+            if (interp[interp.length - 1].prof > 0) { interp[interp.length - 1].prof--; i++; continue; }
+            interp.pop(); modo = 5; i++; continue;
+          }
+        }
         if (c === '/' && d === '/') { modo = 1; i += 2; continue; }
         if (c === '/' && d === '*') { modo = 2; i += 2; continue; }
         if (c === '/') {
@@ -2703,15 +2732,7 @@ console.log('\n  -- el FODA del curso --');
       if ((modo === 3 || modo === 4) && c === '\n') { modo = 0; i++; continue; }
       if ((modo === 3 && c === "'") || (modo === 4 && c === '"') || (modo === 5 && c === '`')) { modo = 0; i++; continue; }
       if (modo === 5 && c === '$' && d === '{') {
-        let prof = 1, j = i + 2;
-        while (j < txt.length && prof > 0) {
-          const e = txt[j];
-          if (e === '{') prof++;
-          else if (e === '}') prof--;
-          else if (e === "'" || e === '"' || e === '`') { const q = e; j++; while (j < txt.length && txt[j] !== q) { if (txt[j] === '\\') j++; j++; } }
-          j++;
-        }
-        i = j; continue;
+        interp.push({ prof: 0 }); modo = 0; i += 2; continue;
       }
       s[i] = 1; i++;
     }
@@ -2899,6 +2920,30 @@ console.log('\n  -- el FODA del curso --');
       'el «te» de código ' + (c[iCod] ? 'SE DENUNCIARÍA' : 'queda fuera') +
       ', el `${}` ' + (c[iHas] ? 'SE DENUNCIARÍA' : 'queda fuera') +
       ' y el «tu» del texto ' + (c[iTxt] ? 'se ve' : 'NO SE VERÍA'));
+
+    /* Y el caso que la rompió (v985): una CADENA dentro de la interpolación.
+       El recorrido de la v909 se saltaba el `${…}` entero, así que media
+       interfaz —`${cond ? 'un texto' : 'otro'}`— era invisible y la guarda
+       salía verde con once tuteos impresos dentro. Se mide DÓNDE cae cada
+       cosa y no que no reviente, que es la regla de la v879.
+
+       Los dos casos de al lado son los que pueden descolocar el recorrido al
+       bajar: un objeto literal dentro de la interpolación —su `}` no la
+       cierra— y una plantilla anidada dentro de ella. */
+    const N = 'var a = `x ${cond ? \'tu casa\' : \'la otra\'} y`;\n' +
+              'var b = `p ${f({ k: 1 })} tu perro`;\n' +
+              'var c = `q ${ `r ${z}` } tu gato`;\n';
+    const n = dentroDeCadena(N);
+    const iIn = N.indexOf('tu casa'), iCond = N.indexOf('cond ?'),
+          iObj = N.indexOf('k: 1'), iTrasObj = N.indexOf('tu perro'),
+          iTrasTpl = N.indexOf('tu gato');
+    comprobar('el recorrido BAJA a la interpolación: su texto se ve y su código no',
+      !!n[iIn] && !n[iCond] && !n[iObj] && !!n[iTrasObj] && !!n[iTrasTpl],
+      'el texto del ternario ' + (n[iIn] ? 'se ve' : 'NO SE VERÍA') +
+      ', la condición ' + (n[iCond] ? 'SE DENUNCIARÍA' : 'queda fuera') +
+      ', el objeto literal ' + (n[iObj] ? 'SE DENUNCIARÍA' : 'queda fuera') +
+      ', y tras él la plantilla sigue viva ' + (n[iTrasObj] ? 'sí' : 'NO') +
+      ' · tras una plantilla anidada ' + (n[iTrasTpl] ? 'sí' : 'NO'));
 
     /* Y la regla del pretérito, contra su propio caso de respuesta conocida:
        sin esto podría quedarse sin morder —una lista de permitidas que se
@@ -4385,6 +4430,86 @@ console.log('\n  -- la precisión del GPS al ubicar un punto (v978) --');
       : banda.indexOf('proCity.gpsAccuracy') < 0
       ? 'dejó de leer la precisión: imprimiría lo mismo siempre'
       : 'dejó de leer si el punto se corrigió a mano');
+}
+
+console.log('\n  -- lo que la fila guarda y el panel de Pro City enseña (v985) --');
+{
+  const j20 = soloCodigo(leer('js/20-mobile-functional-app.js'));
+  const j12 = soloCodigo(leer('js/12-spa-ui.js'));
+  const css = leer('css/52-urbis-pro-city.css');
+
+  /* MATERIAL primero (v920): si no se leen las dos piezas, todo lo de abajo
+     pasaría sobre la nada. */
+  const hayPanel = j20.indexOf('function showProCitySelectedPanel(') !== -1;
+  const hayFicha = j20.indexOf('function fichaDeProCity(') !== -1;
+  comprobar('MATERIAL · se leen el panel del punto y la ficha que lo llena',
+    hayPanel && hayFicha,
+    'showProCitySelectedPanel ' + (hayPanel ? 'sí' : 'NO') + ' · fichaDeProCity ' + (hayFicha ? 'sí' : 'NO'));
+
+  if (hayPanel && hayFicha) {
+    const i = j20.indexOf('function fichaDeProCity('), j = j20.indexOf('\n  }', i);
+    const cuerpo = j20.slice(i, j);
+
+    /* Los puntos de Pro City NO pasan por el globo de js/10: `pintarPuntos`
+       los salta y los dibuja `renderProCityPoints`, cuyo toque abre este
+       panel. Así que lo que la fila guarda tiene que llegar ACÁ o no llega a
+       ninguna parte — que desde afuera se ve igual que no estar (clase C). */
+    const salta = /urbisEsCategoriaProCity\(p\.tipo\)\)\s*\{\s*return/.test(j12);
+    comprobar('MATERIAL · el globo de js/10 no dibuja los puntos de Pro City',
+      salta,
+      salta ? 'pintarPuntos los salta, así que este panel es su única superficie'
+            : 'pintarPuntos ya NO los salta: esta sección estaría midiendo otra cosa');
+
+    const pinta = j20.indexOf('${fichaDeProCity(p, d)}') !== -1;
+    comprobar('el panel del punto enseña lo que la fila guarda',
+      pinta, pinta ? 'el panel llama a fichaDeProCity' : 'la ficha se calcula y NO se pinta');
+
+    const faltan = [];
+    if (!/urbisFotoDeReporte\(/.test(cuerpo)) faltan.push('la foto');
+    if (!/d\[2\]/.test(cuerpo)) faltan.push('la nota');
+    if (!/URBIS_ARBOL\.leer\(/.test(cuerpo)) faltan.push('la especie');
+    if (!/URBIS_MOBILIARIO\.leer\(/.test(cuerpo)) faltan.push('el material');
+    comprobar('las cuatro salen, y ninguna por un criterio propio',
+      faltan.length === 0,
+      faltan.length ? 'no llegan al panel: ' + faltan.join(' · ')
+                    : 'foto por urbisFotoDeReporte · nota · especie por URBIS_ARBOL · material por URBIS_MOBILIARIO');
+
+    /* La que de verdad guarda. La foto de un reporte Pendiente la ven solo su
+       autor y el moderador (v829): leer la casilla en crudo acá publicaría sin
+       moderar la foto de cualquiera, y el código se vería perfectamente bien. */
+    const cruda = /d\[\s*BASE_OFFSET\s*\]/.test(cuerpo) || /URBIS_SLOTS\.foto/.test(cuerpo);
+    comprobar('y la foto pasa por el portero, no por la casilla en crudo',
+      !cruda && /urbisFotoDeReporte\(/.test(cuerpo),
+      cruda ? 'lee la casilla directo: publicaría sin moderar la foto de un reporte Pendiente'
+            : 'la decide urbisFotoDeReporte, que es quien sabe si está Pendiente');
+
+    /* El árbol al que le falta la especie se marca solo a su autor (v979), y
+       preguntándole a la misma función y no a un criterio nuevo. */
+    const pend = /URBIS_ARBOL\.pendiente\(/.test(cuerpo) && /esAutorDelReporte\(/.test(cuerpo);
+    comprobar('el «sin especie» se marca por la misma función y solo a su autor',
+      pend, pend ? 'pregunta por URBIS_ARBOL.pendiente y por el autor'
+                 : 'o no lo marca, o lo decide por su cuenta');
+
+    /* Lo que salió mirando la captura y no leyendo el CSS: el aviso de «foto
+       en revisión» lo escribe js/05 sin fijar color, y esta tarjeta es BLANCA
+       —en el globo y en la ficha hereda claro sobre oscuro—. Sin una regla
+       propia, el texto sale invisible y solo se ve la lupa. Es el mismo
+       defecto de la v979 con el ámbar sobre fondo oscuro, por el otro lado. */
+    const color = /\.u52-procity-selpanel-card\s+\.foto-en-revision\s*\{[^}]*color:/.test(css.replace(/\s+/g, ' '));
+    comprobar('el aviso de foto en revisión tiene color en esta tarjeta clara',
+      color,
+      color ? 'la tarjeta le fija su propio color'
+            : 'hereda: sobre fondo blanco el texto sale invisible y solo se ve la lupa');
+
+    /* Y el aspecto de una foto que se está revisando lo decide UN sitio: dos
+       tratamientos se separan y uno deja de distinguirse de una publicada. */
+    const c83 = leer('css/83-moderacion-foto.css').replace(/\s+/g, ' ');
+    const unSitio = /\.popup-foto-en-revision,[^{]*u52-procity-selpanel-foto\.en-revision/.test(c83);
+    comprobar('la foto en revisión se marca igual en todas las superficies',
+      unSitio,
+      unSitio ? 'el panel entra en la misma regla de css/83'
+              : 'el panel estrena un tratamiento propio: se separarán');
+  }
 }
 
 console.log('\n  -- las listas vivas --');
