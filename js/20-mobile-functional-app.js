@@ -2530,6 +2530,13 @@
      pasa antes de tocar. El campo de la galería conserva el id de siempre
      porque el publicado lo lee por ahí; lo que se tome con la cámara se copia
      a ese mismo campo, así que el resto del formulario no se entera. */
+  /* El rótulo del bloque de Pro City vive acá y no escrito dos veces: lo
+     pinta `bloqueFotoHTML` y lo restaura el acuse de recibo cuando alguien
+     quita la foto. Dos redacciones del mismo rótulo se separan a la tanda
+     siguiente (v879), y la que se quedaría vieja sería la de restaurar —la
+     que casi nadie ve—. */
+  const ROTULO_FOTO_PC = '\u{1F4F7} Foto de referencia (opcional)';
+
   function bloqueFotoHTML(idFile, texto){
     return `<div class="u52-quick-photo u52-foto-doble">
         <span class="u52-photo-label-text">${texto}</span>
@@ -5400,7 +5407,7 @@
         ${htmlEspecie}
         <input id="ins-direccion" type="text" maxlength="120" placeholder="Dirección o punto de referencia (opcional)" autocomplete="street-address" value="${esc(dirPrefill)}">
         <textarea id="ins-nota" maxlength="180" placeholder="Descripción técnica opcional">${esc(notaPrefill)}</textarea>
-        ${bloqueFotoHTML('ins-foto-file', '📷 Foto de referencia (opcional)')}
+        ${bloqueFotoHTML('ins-foto-file', ROTULO_FOTO_PC)}
         <button type="button" class="u52-quick-publish u52-procity-publish" data-u52-call="procity-publish">${editando ? 'Actualizar en Pro City' : 'Guardar en Pro City'}</button>
       </div>`;
     panel.classList.add('u52-procity-mode');
@@ -5412,6 +5419,45 @@
       try{ EDIF_PC.activarUsosPorPiso(panel, defectoPiso); }catch(e){}
     }
     if(htmlEspecie){ try{ pintarListaEspecies(''); avisoDeEspecie(); }catch(e){} }
+
+    /* La foto del mapeo: el bloque se pintaba desde antes y NADIE lo
+       conectaba. Medido en el navegador sobre la ficha de un árbol, con el
+       archivo puesto por el camino de verdad:
+
+         tras «\u{1F4F7} Tomar foto»   cam: 1 · gal: 0 · rótulo sin cambiar
+         tras «\u{1F5BC} Galería»      gal: 1 · rótulo sin cambiar
+
+       O sea las dos mitades rotas y cada una a su manera. `enviarDatos` lee
+       SOLO `#ins-foto-file` (js/12), y quien copia ahí lo tomado con la
+       cámara es justamente `conectarBloqueFoto`: sin él, **una foto tomada
+       con la cámara se pierde en silencio** y el reporte sale sin ella sin
+       que nada lo diga. Por la galería sí se guardaba, y tampoco había
+       acuse: el rótulo no cambiaba, así que desde afuera «se guardó» y «se
+       perdió» se ven igual — que es la señal de éxito que no lo es.
+
+       Se arregla para el formulario ENTERO y no solo para el árbol, que es
+       de donde vino el reporte: una misma puerta con dos comportamientos es
+       lo que la v940 y la v951 declinaron hacer, y acá sería peor porque la
+       mitad rota es la misma para los 49 usos. */
+    conectarBloqueFoto(panel, 'ins-foto-file', function(f){
+      const cajaF = panel.querySelector('.u52-foto-doble');
+      const txtF = cajaF && cajaF.querySelector('.u52-photo-label-text');
+      if(!cajaF || !txtF) return;
+      cajaF.classList.toggle('has-file', !!f);
+      txtF.textContent = f ? '\u2713 Foto lista' : ROTULO_FOTO_PC;
+    }, function(ev, inp){
+      /* La verificación NO es una exigencia nueva: `urbisPermitirPublicar`
+         (js/13e) ya llama a `urbisExigirNivel2('foto')` para todo reporte
+         nuevo que lleve foto, y Pro City publica por ese mismo camino. Lo
+         que cambia es CUÁNDO se pide — antes de abrir la cámara en vez de
+         al pulsar Guardar, que es después de haber tomado la foto y llenado
+         el formulario. Es la misma decisión del reporte ciudadano y su
+         mismo motivo escrito: ahí es donde la gente abandona. */
+      if(typeof window.urbisNivelCuenta !== 'function') return;
+      if(window.urbisNivelCuenta() === 2) return;
+      ev.preventDefault();
+      window.urbisExigirNivel2('foto').then(function(ok){ if(ok) inp.click(); });
+    });
   }
 
   /* La lista de especies se repinta SOLA y no llamando a renderProCityItemForm:

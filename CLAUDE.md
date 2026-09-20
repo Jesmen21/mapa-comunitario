@@ -12720,6 +12720,141 @@ solo que el registro lo guarde— y por la ida y vuelta de arriba, que corre la
 función de verdad. Se dice por lo que es y no se presenta como más de lo que
 es.
 
+## El botón de la foto estaba pintado y no conectado (v976)
+
+Pedido sobre el árbol de la v975: **«que a esos árboles que se van a mapear
+también esté la opción de tomarle foto. Que no sea obligatorio».**
+
+Medida la premisa antes de escribir (v916), la opción **ya estaba pintada** en
+el formulario de Pro City desde antes, con ese rótulo exacto: «📷 Foto de
+referencia (opcional)», con sus dos botones —tomar y elegir de la galería—.
+Así que la tanda no era agregarla.
+
+    v975   «📷 Tomar foto» pintado · la foto tomada se pierde · ningún acuse
+    v976   la foto llega al campo que se publica, y el rótulo dice «✓ Foto lista»
+
+### Lo que la medición encontró: las dos mitades rotas, cada una a su manera
+
+`bloqueFotoHTML` pinta el bloque y **`conectarBloqueFoto` es quien lo hace
+funcionar**. El formulario de Pro City llamaba al primero y no al segundo — lo
+llaman el reporte ciudadano y el de eventos, y este no—. Medido en el
+navegador sobre la ficha de un árbol, poniendo el archivo por el camino de
+verdad:
+
+| | antes | después |
+|---|---|---|
+| tras «📷 Tomar foto» | `cam: 1 · gal: 0` · rótulo sin cambiar | `gal: 1` · «✓ Foto lista» |
+| tras «🖼️ Elegir de la galería» | `gal: 1` · rótulo sin cambiar | `gal: 1` · «✓ Foto lista» |
+
+Las dos filas dicen cosas distintas y las dos importan:
+
+* **Una foto tomada con la cámara se perdía en silencio.** `enviarDatos` lee
+  SOLO `#ins-foto-file` (js/12) y la cámara escribe en `#ins-foto-file-cam`;
+  quien copia de uno a otro es justamente `conectarBloqueFoto`. Sin él, el
+  reporte se publicaba sin foto y **nada lo decía** — la señal de éxito que no
+  lo es, esta vez con el trabajo de alguien dentro.
+* **Y por la galería sí se guardaba, sin acuse.** El rótulo no cambiaba, así
+  que desde afuera «se guardó» y «se perdió» se ven exactamente igual. Es la
+  separación de la v897 entre el momento y el estado: el iluminado dice «esto
+  que ves está guardado», y sin él no hay manera de saberlo antes de publicar.
+
+No hizo falta tocar el publicado ni el dibujo: el defecto era que **una
+promesa impresa no estaba cumplida** (v892), y la cura es llamar a la función
+que ya existía.
+
+### Se arregla para el formulario entero, no para el árbol
+
+El reporte vino mapeando un árbol, y la mitad rota es la misma para los 49
+usos del catálogo. Arreglarlo solo ahí habría dejado **una puerta con dos
+comportamientos**, que es lo que la v940 y la v951 declinaron hacer por esa
+misma razón.
+
+### La verificación se adelanta y NO se agrega
+
+El `antesDeAbrir` del reporte ciudadano pide cuenta verificada antes de abrir
+la cámara. Medido si eso sería una exigencia nueva en Pro City: **no lo es.**
+`urbisPermitirPublicar` (js/13e) ya llama a `urbisExigirNivel2('foto')` para
+todo reporte nuevo que lleve foto, y Pro City publica por ese mismo camino.
+
+Lo que cambia es CUÁNDO: antes de abrir la cámara en vez de al pulsar Guardar
+—que es después de haber tomado la foto y llenado el formulario—. El motivo lo
+dejó escrito el reporte ciudadano y vale igual acá: ahí es donde la gente
+abandona.
+
+Comprobarlo era obligatorio antes de copiar el parámetro. Si `urbisPermitirPublicar`
+no lo exigiera, adelantarlo habría sido **ponerle un trámite nuevo al mapeo**
+por venir de copiar una llamada, que es ampliar lo pedido sin decirlo.
+
+### El rótulo vive en un solo sitio
+
+`ROTULO_FOTO_PC` lo usan `bloqueFotoHTML` y el acuse cuando alguien quita la
+foto. Escribirlo dos veces es la clase B, y la copia que se quedaría vieja
+sería la de restaurar — la que casi nadie ve.
+
+### La guarda, y lo que NO caza
+
+En `revisar.js`, y falla cerrado: **todo bloque de foto pintado tiene su
+llamada que lo conecta**. Un formulario nuevo que lo pinte queda vigilado sin
+que su autor se acuerde (v867).
+
+**Las dos mitades de la condición hacen falta**, y eso lo enseñó la
+demostración: el id `ins-foto-file` lo pintan dos formularios y el reporte
+ciudadano **sí** lo conectaba, así que la lista de «pintados y sin conectar»
+salía VACÍA sobre el defecto real. Lo que lo cazó es el conteo — tres pintan,
+dos conectan—.
+
+Y su guarda de la guarda: que `conectarBloqueFoto` siga copiando lo de la
+cámara al campo que se publica. Sin eso, las tres llamadas seguirían ahí y la
+foto volvería a perderse igual (v878).
+
+#### La primera inyección la dejó en verde, y por eso el alcance va escrito
+
+Demostrándola puse un `if(0)` delante de la llamada y **la guarda pasó**. No
+es un fallo suyo: una comprobación estática cuenta menciones y no
+alcanzabilidad. La inyección FIEL es otra —retirar la llamada entera, que es
+el estado exacto de la v975— y ahí sí muerde:
+
+```
+✗ todo bloque de foto pintado queda conectado, o la cámara se pierde en silencio
+    — se pinta en 3 formularios y solo se conecta en 2: uno de ellos tiene el botón muerto
+```
+
+De qué responde y de qué no va escrito al lado de la guarda, que es la
+corrección que la v945 y la v952 tuvieron que hacerle a sus antecesoras: una
+guarda que declara cubrir más de lo que cubre es tan engañosa como una que
+declara cubrir menos.
+
+### La lectura ya estaba resuelta, y se midió antes de darla por hecha
+
+El globo y la ficha pintan la foto por el camino de cualquier reporte
+—`d[BASE_OFFSET]` en js/10—, que no depende de la categoría. Así que un árbol
+con foto se ve como cualquier otro punto con foto, sin una línea nueva.
+
+Con una consecuencia que quien la use tiene que saber y no se cambia acá:
+**la foto pasa por moderación desde la v829.** Publicada por una cuenta
+ciudadana, el reporte nace «Pendiente» y su foto la ven **solo su autor y el
+moderador** hasta que se apruebe; el resto ve el punto y el aviso de que hay
+una foto en revisión. Es una decisión con su razón escrita y no un defecto.
+
+### Lo que se vio en el papel y NO se tocó
+
+El rótulo va en una columna estrecha a la izquierda de los dos botones, así
+que «📷 Foto de referencia (opcional)» se parte en tres renglones. Es el
+layout del bloque desde que existe —igual en el reporte ciudadano— y no lo
+introdujo esta tanda. Cambiarlo es una medición propia, y hacerlo de paso para
+que se vea mejor es el arreglo estructural sin causa que este proyecto ya
+deshizo tres veces (v882, v886, v901).
+
+### Lo que NO se pudo correr
+
+Ninguna suite de navegador, por lo mismo que la v973 y la v975: este
+contenedor no tiene `../urbis-motor` ni el `node_modules` del banco de
+pruebas. Lo que sí se hizo es medir el comportamiento con la sonda de
+Playwright sobre el formulario de verdad —poniendo el archivo en cada uno de
+los dos campos y leyendo dónde acabó—, que es lo que produjo la tabla de
+arriba. Lo que no se ejercitó en navegador es la publicación con foto: eso
+pide servidor.
+
 ## La lista viva: lo que al pliego educativo todavía le falta (v866)
 
 Esta lista se quedó vieja **cinco veces**. Cuatro dentro de la hoja —la

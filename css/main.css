@@ -1,111 +1,111 @@
 /* URBIS Brand Identity */
-@import url("./00-app-shell.css?v=975-que-arbol-es");
-@import url("./00-brand-urbis.css?v=975-que-arbol-es");
+@import url("./00-app-shell.css?v=976-la-foto-del-mapeo-se-conecta");
+@import url("./00-brand-urbis.css?v=976-la-foto-del-mapeo-se-conecta");
 /* URBIS modular CSS entrypoint */
-@import url("./01-base-layout.css?v=975-que-arbol-es");
-@import url("./02-map-tools-routing.css?v=975-que-arbol-es");
-@import url("./03-basemap-and-panels.css?v=975-que-arbol-es");
-@import url("./04-automap-markers-performance.css?v=975-que-arbol-es");
-@import url("./05-clusters.css?v=975-que-arbol-es");
-@import url("./06-landing.css?v=975-que-arbol-es");
-@import url("./07-mobile-advanced.css?v=975-que-arbol-es");
+@import url("./01-base-layout.css?v=976-la-foto-del-mapeo-se-conecta");
+@import url("./02-map-tools-routing.css?v=976-la-foto-del-mapeo-se-conecta");
+@import url("./03-basemap-and-panels.css?v=976-la-foto-del-mapeo-se-conecta");
+@import url("./04-automap-markers-performance.css?v=976-la-foto-del-mapeo-se-conecta");
+@import url("./05-clusters.css?v=976-la-foto-del-mapeo-se-conecta");
+@import url("./06-landing.css?v=976-la-foto-del-mapeo-se-conecta");
+@import url("./07-mobile-advanced.css?v=976-la-foto-del-mapeo-se-conecta");
 
-@import url("./08-role-accessibility.css?v=975-que-arbol-es");
-@import url("./09-achievements.css?v=975-que-arbol-es");
+@import url("./08-role-accessibility.css?v=976-la-foto-del-mapeo-se-conecta");
+@import url("./09-achievements.css?v=976-la-foto-del-mapeo-se-conecta");
 
-@import url("./10-sport.css?v=975-que-arbol-es");
+@import url("./10-sport.css?v=976-la-foto-del-mapeo-se-conecta");
 
 /* V36 high-contrast fix */
-@import url("./57-comparar-sector.css?v=975-que-arbol-es");
+@import url("./57-comparar-sector.css?v=976-la-foto-del-mapeo-se-conecta");
 
-@import url("./99-contrast-fix.css?v=975-que-arbol-es");
+@import url("./99-contrast-fix.css?v=976-la-foto-del-mapeo-se-conecta");
 
-@import url("12-module-access.css?v=975-que-arbol-es");
+@import url("12-module-access.css?v=976-la-foto-del-mapeo-se-conecta");
 
 /* URBIS V50 mobile-first app layer */
 
 /* V51 mobile app own interface */
 
-@import url("./14-mobile-functional-app.css?v=975-que-arbol-es");
+@import url("./14-mobile-functional-app.css?v=976-la-foto-del-mapeo-se-conecta");
 
 
 /* V69 mobility cleanup + active-route traffic */
-@import url("./16-mobility-clean-traffic.css?v=975-que-arbol-es");
+@import url("./16-mobility-clean-traffic.css?v=976-la-foto-del-mapeo-se-conecta");
 
 /* V70 contextual interfaces per module */
 
-@import url('./28-mobile-kawaii-entry.css?v=975-que-arbol-es');
+@import url('./28-mobile-kawaii-entry.css?v=976-la-foto-del-mapeo-se-conecta');
 
-@import url('./29-mobile-kawaii-platform.css?v=975-que-arbol-es');
+@import url('./29-mobile-kawaii-platform.css?v=976-la-foto-del-mapeo-se-conecta');
 
-@import url('./30-zoom-marker-optimizer.css?v=975-que-arbol-es');
+@import url('./30-zoom-marker-optimizer.css?v=976-la-foto-del-mapeo-se-conecta');
 
-@import url('./36-mobility-static-search.css?v=975-que-arbol-es');
+@import url('./36-mobility-static-search.css?v=976-la-foto-del-mapeo-se-conecta');
 
 
-@import url('./41-email-registration-auth.css?v=975-que-arbol-es');
+@import url('./41-email-registration-auth.css?v=976-la-foto-del-mapeo-se-conecta');
 
-@import url('./42-turquoise-refresh.css?v=975-que-arbol-es');
+@import url('./42-turquoise-refresh.css?v=976-la-foto-del-mapeo-se-conecta');
 
-@import url('./43-clean-user-entry.css?v=975-que-arbol-es');
+@import url('./43-clean-user-entry.css?v=976-la-foto-del-mapeo-se-conecta');
 
-@import url('./44-mobile-auth-onboarding.css?v=975-que-arbol-es');
+@import url('./44-mobile-auth-onboarding.css?v=976-la-foto-del-mapeo-se-conecta');
 
 /* Módulo Mascotas / Fundación animalista (estética propia cálida) */
-@import url('./45-mascotas-fundacion.css?v=975-que-arbol-es');
+@import url('./45-mascotas-fundacion.css?v=976-la-foto-del-mapeo-se-conecta');
 
 /* Modo Runner · URBIS Rush (estética propia oscura estilo Strava) */
-@import url('./46-runner-strava.css?v=975-que-arbol-es');
+@import url('./46-runner-strava.css?v=976-la-foto-del-mapeo-se-conecta');
 
 /* Menú Premium Evento Áurea (tabla clasificatoria: podio + ranking + jugar) */
-@import url('./47-aurea-menu.css?v=975-que-arbol-es');
-@import url('./48-premio.css?v=975-que-arbol-es');
+@import url('./47-aurea-menu.css?v=976-la-foto-del-mapeo-se-conecta');
+@import url('./48-premio.css?v=976-la-foto-del-mapeo-se-conecta');
 
 /* Runner Stats (analítica Strava: splits, gráfica de ritmo, récords, logros, mapa de calor) */
-@import url('./48-runner-stats.css?v=975-que-arbol-es');
+@import url('./48-runner-stats.css?v=976-la-foto-del-mapeo-se-conecta');
 
 /* URBIS Análisis (estación de escritorio: polígonos, matriz de usos, capa verde) + adaptación PC */
-@import url('./49-urbis-analisis.css?v=975-que-arbol-es');
+@import url('./49-urbis-analisis.css?v=976-la-foto-del-mapeo-se-conecta');
 
 /* URBIS v172 clean core: guard final contra capas viejas */
-@import url('./99-mobile-clean-core.css?v=975-que-arbol-es');
+@import url('./99-mobile-clean-core.css?v=976-la-foto-del-mapeo-se-conecta');
 
 /* URBIS v172 fix1 safe: esconder punto extra sin tocar JS */
-@import url('./99-safe-destination-dot.css?v=975-que-arbol-es');
+@import url('./99-safe-destination-dot.css?v=976-la-foto-del-mapeo-se-conecta');
 
 /* URBIS CUTE · tema pastel de PC (Fase 1). SIEMPRE al final de la cascada:
    pisa el tema verde-oscuro (99-contrast-fix, 12-module-access) solo en
    escritorio; Android queda intacto. */
-@import url('./51-cute-theme-pc.css?v=975-que-arbol-es');
+@import url('./51-cute-theme-pc.css?v=976-la-foto-del-mapeo-se-conecta');
 
 /* URBIS Pro City · mapeo urbano profesional (identidad propia navy/dorado) */
-@import url('./52-urbis-pro-city.css?v=975-que-arbol-es');
+@import url('./52-urbis-pro-city.css?v=976-la-foto-del-mapeo-se-conecta');
 
 /* URBIS Pro City · análisis por área dibujada (polígono, gráficas, KPIs) */
-@import url('./24-procity-analisis.css?v=975-que-arbol-es');
-@import url('./68-procity-reconocimiento.css?v=975-que-arbol-es');
-@import url('./69-licencia.css?v=975-que-arbol-es');
+@import url('./24-procity-analisis.css?v=976-la-foto-del-mapeo-se-conecta');
+@import url('./68-procity-reconocimiento.css?v=976-la-foto-del-mapeo-se-conecta');
+@import url('./69-licencia.css?v=976-la-foto-del-mapeo-se-conecta');
 
 /* Registro en celeste. Va al FINAL a propósito: tiene que ganarle a las reglas
    globales del tema viejo (css/42 y css/01) que se cuelan en estas pantallas. */
-@import url('./53-auth-celeste.css?v=975-que-arbol-es');
+@import url('./53-auth-celeste.css?v=976-la-foto-del-mapeo-se-conecta');
 
 /* Configuración (términos, contacto, peticiones) y panel del administrador.
    Después de css/53 por la misma razón: el tema viejo pinta los párrafos de
    blanco verdoso y sobre papel claro los haría desaparecer. */
-@import url('./54-config-admin.css?v=975-que-arbol-es');
+@import url('./54-config-admin.css?v=976-la-foto-del-mapeo-se-conecta');
 
 /* Vitrina de emprendimientos: la gota dorada, la ficha y el mostrador. */
-@import url('./55-vitrina.css?v=975-que-arbol-es');
+@import url('./55-vitrina.css?v=976-la-foto-del-mapeo-se-conecta');
 /* El último de la lista a propósito: esconde piezas que las hojas
    anteriores muestran, y en CSS gana el que llega después. */
-@import url('./70-modo-app.css?v=975-que-arbol-es');
+@import url('./70-modo-app.css?v=976-la-foto-del-mapeo-se-conecta');
 /* La capa de diseño del modo educativo: corrige encima de todo lo anterior. */
-@import url('./72-edu-diseno.css?v=975-que-arbol-es');
-@import url('./78-presencia.css?v=975-que-arbol-es');
-@import url('./81-curso-servidor.css?v=975-que-arbol-es');
-@import url('./82-calendario.css?v=975-que-arbol-es');
-@import url('./83-moderacion-foto.css?v=975-que-arbol-es');
+@import url('./72-edu-diseno.css?v=976-la-foto-del-mapeo-se-conecta');
+@import url('./78-presencia.css?v=976-la-foto-del-mapeo-se-conecta');
+@import url('./81-curso-servidor.css?v=976-la-foto-del-mapeo-se-conecta');
+@import url('./82-calendario.css?v=976-la-foto-del-mapeo-se-conecta');
+@import url('./83-moderacion-foto.css?v=976-la-foto-del-mapeo-se-conecta');
 
 /* Aviso de salida al pulsar atrás en la pantalla raíz. Va sobre todo lo demás
    pero por debajo de los modales de autenticación. */

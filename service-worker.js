@@ -1,4 +1,4 @@
-const URBIS_CACHE = 'urbis-v975-que-arbol-es';
+const URBIS_CACHE = 'urbis-v976-la-foto-del-mapeo-se-conecta';
 const URBIS_ASSETS = [
   './',
   './index.html',

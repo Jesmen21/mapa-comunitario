@@ -3525,6 +3525,65 @@ console.log('\n  -- el mapeo de Pro City --');
     dondeSaleEspecie.length === 2 ? 'las 2 superficies la pintan'
       : 'solo la pintan ' + dondeSaleEspecie.length + ' de 2 superficies');
 
+  /* ── Un bloque de foto pintado se CONECTA (v976) ──────────────────────
+     El formulario de Pro City pintaba «\u{1F4F7} Tomar foto» y nadie lo conectaba, así
+     que la foto tomada con la cámara no llegaba al campo que el publicado lee
+     y se perdía EN SILENCIO. Es la clase de defecto que no se ve leyendo el
+     formulario —el botón está ahí— y tampoco usando la galería, que sí
+     guardaba.
+
+     Se lee SIN comentarios (v926): los de js/20 nombran `conectarBloqueFoto`
+     al explicar el arreglo, y una comprobación que cuenta menciones dentro de
+     su propia explicación se comprueba a sí misma (v972).
+
+     DE QUÉ RESPONDE, dicho entero (v945): caza una llamada AUSENTE, que es el
+     defecto que ocurrió —demostrado retirando la de Pro City, el estado exacto
+     de la v975—. NO caza una llamada escrita y desactivada: con un `if(0)`
+     delante sigue contando, porque una comprobación estática cuenta menciones
+     y no alcanzabilidad. Se descubrió inyectando ese `if(0)` y viéndola pasar
+     en verde; se dice en vez de dejarla pareciendo completa. Esa mitad la
+     vería una sonda de navegador, que en este contenedor no corre como suite.
+
+     Y las DOS mitades de la condición hacen falta: el id `ins-foto-file` lo
+     pintan dos formularios y el reporte ciudadano sí lo conectaba, así que
+     `sinConectar` salía VACÍO sobre el defecto real. Lo que lo cazó es el
+     conteo —tres pintan, dos conectan—. */
+  {
+    const j20c = soloCodigo(j20);
+    const pinta = [...j20c.matchAll(/bloqueFotoHTML\(\s*'([^']+)'/g)].map(m => m[1]);
+    const conecta = [...j20c.matchAll(/conectarBloqueFoto\(\s*\w+\s*,\s*'([^']+)'/g)].map(m => m[1]);
+
+    /* MATERIAL primero (v920): si el extractor deja de encontrar las
+       llamadas, todo lo de abajo pasaría en verde sobre la nada — que es lo
+       que la v975 se cobró con su propia lista de especies. */
+    if (!pinta.length) {
+      comprobar('MATERIAL · se leen las llamadas que pintan el bloque de foto', false,
+        'no se encontró ninguna: el patrón dejó de casar y las de abajo no vigilan nada');
+    } else {
+      comprobar('MATERIAL · se leen las llamadas que pintan el bloque de foto', true,
+        pinta.length + ' pintan · ' + conecta.length + ' conectan');
+
+      const sinConectar = pinta.filter(id => conecta.indexOf(id) < 0);
+      comprobar('todo bloque de foto pintado queda conectado, o la cámara se pierde en silencio',
+        sinConectar.length === 0 && conecta.length >= pinta.length,
+        sinConectar.length ? 'pintado y sin conectar: ' + [...new Set(sinConectar)].join(' · ')
+          : conecta.length < pinta.length
+            ? 'se pinta en ' + pinta.length + ' formularios y solo se conecta en ' + conecta.length
+              + ': uno de ellos tiene el botón muerto'
+            : 'los ' + pinta.length + ' conectados');
+
+      /* Y su guarda de la guarda: lo de arriba seguiría en verde si
+         `conectarBloqueFoto` dejara de copiar lo tomado con la cámara al
+         campo que `enviarDatos` lee. Las tres llamadas seguirían ahí y la
+         foto volvería a perderse igual (v878). */
+      const cuerpoCbf = trozo(j20c, 'function conectarBloqueFoto(', '\n  }\n');
+      comprobar('y conectarBloqueFoto sigue copiando lo de la cámara al campo que se publica',
+        /inp\s*===\s*camara/.test(cuerpoCbf) && /galeria\.files\s*=/.test(cuerpoCbf),
+        /galeria\.files\s*=/.test(cuerpoCbf) ? 'la cámara escribe en el campo de la galería'
+          : 'dejó de copiarla: conectarlo no bastaría y nada lo diría');
+    }
+  }
+
   /* ── La dirección dejó de ser obligatoria (v973) ─────────────────────────
      El campo se contestaba con relleno para poder publicar, que es conseguir
      un dato falso en vez de ninguno. Las dos mitades se guardan juntas: que
