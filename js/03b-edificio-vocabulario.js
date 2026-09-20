@@ -316,6 +316,10 @@
   // un lote baldío no tienen pisos, y preguntarlos estorba.
   const USOS_MATRIZ_SIN_PISOS = new Set([
     'Esp. Público', 'Deportivo', 'Mobiliario Urbano', 'Vías e Infraestructura Vial',
+    /* Un árbol no tiene pisos. Entró al catálogo en la v973 y nadie lo
+       declaró acá, así que la ficha de una palma preguntaba «¿cuántos pisos
+       tiene?» y prellenaba «1 piso · No se sabe». Se vio mirando el papel. */
+    'Arbolado Urbano',
     'Protección Ambiental', 'Forestal', 'Agropecuario / Rural',
     'Ronda Hídrica / Protección de Cuerpos de Agua', 'Zona Baldía', 'Zona de Riesgo',
     'Espacio Residual', 'Zona de Expansión Urbana', 'Extractivo (Minería/Canteras)',

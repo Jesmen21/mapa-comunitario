@@ -12442,6 +12442,105 @@ ocho comprobaciones nuevas— y la medición del buscador y de los tres
 inventarios contra los archivos de verdad. Queda dicho por lo que es: una
 comprobación que no puede correr lo dice y se cuenta, no queda ausente.
 
+## Un árbol al que le preguntaban cuántos pisos tiene (v974)
+
+Salió **mirando el papel** —el método que encontró los defectos de la v874, la
+v882, la v885 y la v887— y esta vez el papel era la captura que el usuario
+pidió de la v973. La ficha de «Árbol grande (más de 3 m)» abría con:
+
+> **¿CUÁNTOS PISOS TIENE?** · 1 · Piso 1 (calle): No se sabe
+
+Un árbol no tiene pisos, y la ficha además lo prellenaba con un piso de uso
+desconocido — que no es un hueco: es un dato falso que después nadie
+distingue de uno bueno.
+
+### El CUARTO inventario, que mi propia guarda no vigilaba
+
+La v973 escribió su guarda sobre **tres** listas: el catálogo
+`PROCITY_MATRIZ_USOS`, el grupo por el que se navega `MATRIZ_GRUPOS`, y la
+casilla del análisis `USO_A_SUB`. El cuarto es el **vocabulario del
+edificio** (`js/03b`), y ahí `esUsoDeEdificio` **falla abierto**:
+
+```js
+return !!u && !USOS_MATRIZ_SIN_PISOS.has(u);
+```
+
+Lo que no esté en la lista de «sin pisos» cuenta como edificio. Así que
+«Arbolado Urbano» heredó «es un edificio» por omisión, sin que nada lo
+dijera. Es la clase B —un uso nuevo se escribe en varios sitios y basta
+olvidar uno— con el agravante de que la guarda que existe para eso miraba
+tres de los cuatro.
+
+**Que la guarda de la v973 no lo cubriera no es un descuido de redacción:
+midió los inventarios que YO había tocado.** Un uso nuevo toca cuatro, y el
+cuarto no se encuentra leyendo el archivo del catálogo.
+
+### La propiedad era cierta y no estaba escrita
+
+Medido antes de escribir la guarda: las tres listas del vocabulario
+—`USOS_MATRIZ_SIN_PISOS` (15), `USO_PISO_DE_MATRIZ` (30) y
+`MIXTOS_DECLARADOS` (3)— **partían exactamente** los 48 usos del catálogo.
+Cada uso en una y solo una; ninguno suelto; ninguna sobrando.
+
+O sea que la v973 fue **lo primero que la rompió** en la vida del módulo, y
+la rompió en silencio porque nadie la había enunciado. Es exactamente lo que
+la v916 dejó dicho sobre los tramos de edad del censo: la propiedad que hace
+imposible el defecto es una coincidencia entre listas que alguien rompe
+editando una sola.
+
+Escrita, la guarda **falla cerrado**: un uso nuevo sale en rojo hasta que
+alguien decida de qué lado está, en vez de heredar «es un edificio» tres
+tandas sin que nadie se entere. Es el canje de la v880.
+
+Y lleva su guarda de material primero (v920): si los tres extractores
+devolvieran vacío, la partición se cumpliría sola sobre la nada.
+
+### Por qué no se arregló aflojando `esUsoDeEdificio`
+
+La otra salida era darle la vuelta a la lista —enumerar lo que SÍ es
+edificio— y entonces un uso nuevo nacería «sin pisos», que falla cerrado por
+el otro lado. Se descartó porque **`USO_PISO_DE_MATRIZ` ya es esa lista**:
+enumerarla otra vez serían dos listas codificando un solo hecho, o sea la
+clase B comprada a sabiendas en la tanda que vino a deshacerla. La guarda
+ata las tres que ya existen en vez de añadir una cuarta.
+
+### Demostrado contra la v973
+
+Devolviendo **solo** el renglón del vocabulario —la guarda se queda, porque
+es lo que hay que ver morder—:
+
+```
+✗ todo uso de la matriz declara si tiene pisos o no, y solo una vez
+    — sin declarar, así que la ficha le preguntaría los pisos: Arbolado Urbano
+```
+
+Y en verde con el renglón puesto: «49 usos, cada uno de un solo lado».
+
+### Y una del método, que es la que vale
+
+La v973 corrió **solo `revisar.js`**: este contenedor no tiene
+`../urbis-motor` ni el `node_modules` del banco de pruebas, así que ninguna
+suite de navegador podía correr. Eso quedó dicho, y estaba bien dicho.
+
+Lo que la v974 añade es que **sí se podía mirar el papel**: Playwright está
+instalado (`/opt/node22/lib/node_modules/playwright`) con su Chromium en
+`/opt/pw-browsers/chromium-1194/`, y la página se sirve del estático de 8199
+como siempre. Lo único que falta es Leaflet, que `index.html` pide a un CDN
+que el proxy bloquea — y el registro de npm **sí** contesta, así que
+`npm pack leaflet@1.9.4` lo trae y una intercepción de ruta lo sirve del
+paquete local **sin tocar el repositorio**. Las teselas del mapa base se
+responden con un PNG de un píxel.
+
+Con eso se recorre el flujo entero con clics de verdad —`?app=educativo`,
+que es la puerta por la que entra quien reportó esto, el botón 🏙️, el grupo,
+el toque en el mapa, el uso, el tipo— y se mira la ficha impresa. El defecto
+estaba en la primera captura.
+
+**Una tanda que no puede correr las suites del navegador todavía puede mirar
+la pantalla.** No es lo mismo —no hay motor, así que nada de lo que dependa
+del análisis se ejercita— y por eso se dice por separado; pero es lo que
+encontró esto.
+
 ## La lista viva: lo que al pliego educativo todavía le falta (v866)
 
 Esta lista se quedó vieja **cinco veces**. Cuatro dentro de la hoja —la

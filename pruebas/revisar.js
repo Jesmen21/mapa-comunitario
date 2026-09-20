@@ -3356,6 +3356,43 @@ console.log('\n  -- el mapeo de Pro City --');
       : subFantasma.length ? 'el análisis espera lo que no existe: ' + subFantasma.join(' · ')
       : nombres.length + ' usos, todos con su casilla');
 
+  /* ── El CUARTO inventario, que la v973 rompió sin que nada lo dijera ─────
+     Un uso nuevo se escribe en tres sitios —el catálogo, su grupo y la
+     casilla del análisis— y las tres las vigila lo de arriba. El cuarto es
+     el vocabulario del edificio, y ahí `esUsoDeEdificio` falla ABIERTO: lo
+     que no esté en la lista de «sin pisos» cuenta como edificio. Así que
+     «Arbolado Urbano» entró en la v973 y la ficha de una palma preguntaba
+     «¿cuántos pisos tiene?», prellenando un piso con «No se sabe». No lo vio
+     ninguna comprobación: salió mirando el papel.
+
+     Y la propiedad que lo impide no estaba escrita en ninguna parte, aunque
+     fuera cierta: las tres listas del vocabulario PARTEN el catálogo —cada
+     uso en exactamente una—, y la v973 fue lo primero que la rompió. Acá se
+     escribe, y por eso falla cerrado: un uso nuevo sale en rojo hasta que
+     alguien decida de qué lado está, en vez de heredar «es un edificio» tres
+     tandas sin que nadie se entere. */
+  const j03b = leer('js/03b-edificio-vocabulario.js');
+  let SIN_PISOS = [], PISO_DE = {}, MIXTOS = {};
+  try { SIN_PISOS = eval('([' + trozo(j03b, 'const USOS_MATRIZ_SIN_PISOS = new Set([', '\n  ]);').replace(/\]\);\s*$/, '') + '])'); } catch (e) {}
+  try { PISO_DE   = eval('({' + objeto(j03b, 'const USO_PISO_DE_MATRIZ = ').replace(/^\s*\{/, '').replace(/\}\s*$/, '') + '})'); } catch (e) {}
+  try { MIXTOS    = eval('({' + objeto(j03b, 'const MIXTOS_DECLARADOS = ').replace(/^\s*\{/, '').replace(/\}\s*$/, '') + '})'); } catch (e) {}
+  const conPisos = Object.keys(PISO_DE).concat(Object.keys(MIXTOS));
+
+  comprobar('las tres listas del vocabulario del edificio se leen',
+    SIN_PISOS.length > 10 && Object.keys(PISO_DE).length > 20 && Object.keys(MIXTOS).length >= 3,
+    SIN_PISOS.length + ' sin pisos · ' + Object.keys(PISO_DE).length + ' con uso de piso · ' +
+      Object.keys(MIXTOS).length + ' mixtos declarados');
+
+  const sinLado = nombres.filter(u => SIN_PISOS.indexOf(u) < 0 && conPisos.indexOf(u) < 0);
+  const dosLados = nombres.filter(u => SIN_PISOS.indexOf(u) >= 0 && conPisos.indexOf(u) >= 0);
+  const ladoFantasma = SIN_PISOS.concat(conPisos).filter(u => nombres.indexOf(u) < 0);
+  comprobar('todo uso de la matriz declara si tiene pisos o no, y solo una vez',
+    sinLado.length === 0 && dosLados.length === 0 && ladoFantasma.length === 0,
+    sinLado.length ? 'sin declarar, así que la ficha le preguntaría los pisos: ' + sinLado.join(' · ')
+      : dosLados.length ? 'en los dos lados: ' + dosLados.join(' · ')
+      : ladoFantasma.length ? 'el vocabulario nombra lo que no existe: ' + ladoFantasma.join(' · ')
+      : nombres.length + ' usos, cada uno de un solo lado');
+
   /* Un sinónimo que no casa con ningún tipo es un no-op: se lee igual que uno
      que funciona, y quien escriba esa palabra seguirá sin encontrar nada. */
   const nrm = x => String(x || '').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '');
