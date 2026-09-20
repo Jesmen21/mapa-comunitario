@@ -12228,6 +12228,220 @@ palabra.
 gobierno. Es la homonimia que este proyecto persigue desde la v885, con la
 agravante de que ninguna guarda la ve. La mía se llama ahora `peldanoDom`.
 
+## Un campo obligatorio que se contesta con relleno (v973)
+
+Llegó mapeando, y las dos mitades del reporte pedían medirse antes de tocar
+nada (v916):
+
+> «cuando va a publicar me dice que obligatoriamente tengo que ponerle
+> descripción y dirección… ya estoy poniendo de vivienda como por rellenar
+> para poderlo publicar» · «iba a mapear un árbol, una palma, un árbol grande
+> de más de 3 metros, y no vi por ningún lado esa opción; tampoco para mapear
+> una banca, un punto de basuras, un parque de niños. ¿Qué está pasando ahí?»
+
+    v972   la dirección bloquea · «árbol» da 0 resultados · «basura» da 0 · «niños» da 0
+    v973   la dirección es opcional y su ausencia se declara · las cuatro se encuentran
+
+### La descripción NUNCA fue obligatoria, y eso cambia el arreglo
+
+Medido: `publishQuickReport` tiene **una sola** puerta y es la de la
+dirección; el `placeholder` de la nota dice, literalmente, «Descripción corta
+opcional» y nada la valida. Lo que bloquea es el campo rotulado «Dirección o
+punto de referencia \*», cuyo aviso dice «Ingrese la dirección **o punto de
+referencia**» — y de ahí sale la lectura de que pedía las dos cosas.
+
+Vale anotarlo porque cambia dónde se mira: de haber creído la premisa, la
+tanda habría empezado buscando una validación de la nota que no existe.
+
+### Y no costaba nada tenerla: el análisis nunca la leyó
+
+El otro hallazgo de medir antes de escribir. La descripción de un reporte es
+una cadena de posiciones fijas, y el análisis educativo lee la casilla **[0]**
+—el tipo, por `partirEtiqueta` en js/64— y **nunca la [1]**, que es donde vive
+el nombre con la dirección dentro.
+
+Así que la dirección no alimenta ninguna cuenta: es para el lector humano. Un
+campo obligatorio que no entra en ningún cálculo y que se contesta con relleno
+no consigue el dato — **consigue un dato falso que después nadie distingue de
+uno bueno**, que es exactamente la razón por la que `js/03b` tiene «No se
+sabe» y «Otro» desde que existe.
+
+### No se escribe «NN» en el registro
+
+Era lo pedido —«que se deje NN o NA»— y hacerlo habría sido escribir en el
+registro un valor que nadie tecleó, que es la falta de la v930 con el autor de
+los edificios y la de la v931 con la fecha sin distinguir. El campo se queda
+**vacío** y son las PANTALLAS las que declaran que no se anotó. Con eso, el
+día que alguien la agregue editando no hay nada que des-escribir.
+
+**Y el estado se calcula, no se marca** (v903). La dirección vive dentro del
+nombre como «⟨dirección⟩ — ⟨tipo⟩», así que sin ella el nombre queda siendo
+**exactamente el tipo**: `urbisSinDireccion` reconoce «no la anotaron» por esa
+igualdad, sin una bandera que alguien tenga que acordarse de poner ni de
+quitar. Una sola función para las dos superficies —el globo y la ficha—, que
+es la regla de la v867: dos redacciones de la misma advertencia se separan a
+la tanda siguiente.
+
+Va en **gris y no en ámbar**: el ámbar de este módulo dice «esto todavía no
+está confirmado», y esto dice otra cosa —el reporte es válido y le falta un
+dato de referencia que cualquiera puede agregar editándolo—. Dos cosas
+distintas con el mismo color se leen como una sola (v880).
+
+#### La edición habría prefillado el tipo como si fuera una dirección
+
+`dirPrefill = nomOrig.split(' — ')[0]` era correcto mientras la dirección
+fuera obligatoria. Sin ella, ese `split` devuelve el TIPO entero y lo mete en
+la casilla de la dirección: al día siguiente, editar un punto sin dirección la
+habría «rellenado» con «Casa de un piso», convirtiendo un vacío honesto en un
+dato inventado por el propio formulario.
+
+El discriminante no hay que escribirlo: el tipo guardado es la casilla [0] del
+mismo registro. Se lee de ahí y **no del `label` de ahora**, que puede estar
+cambiándose en esa misma edición.
+
+#### Lo que NO se tocó
+
+La dirección del **evento** (`#ev-direccion`) sigue siendo obligatoria, y va
+dicho para que no se lea como un descuido: un evento con fecha y hora del que
+nadie sabe dónde es no sirve para nada, así que ahí el campo carga un
+propósito que en el mapeo no tiene. El reporte era sobre el mapeo y no se
+amplía solo.
+
+## Tres que sí estaban y no se podían encontrar, y una que no estaba (v973)
+
+La segunda mitad, y la medición separó limpio lo que el reporte juntaba:
+
+| Lo que fue a mapear | ¿Está en el catálogo? | ¿Lo encontraba? |
+|---|---|---|
+| **Árbol · palma** | **NO** — de 520 tipos, ninguno | «arbol» → **0** · «palma» → **0** |
+| Banca | sí · Mobiliario Urbano | solo escribiendo «banca» |
+| Punto de basuras | sí · «Caneca / punto ecológico» | «basura» → **0** |
+| Parque de niños | sí · «Juegos infantiles públicos» | «niños» → **0** |
+
+Tres de las cuatro **existían y ninguna superficie las alcanzaba**: es la
+**clase C** de este proyecto —un dato presente e inalcanzable se ve, desde
+afuera, exactamente igual que uno ausente—, y por eso se reportaron como
+faltantes. Y la navegación tampoco ayudaba: la banca y la caneca viven bajo
+«Servicios e infraestructura» y los juegos bajo «Vivienda y ocio», que son los
+dos últimos sitios donde alguien las buscaría.
+
+### El árbol NO entra en «Forestal»
+
+Era lo más parecido y habría sido el error que `js/03b` existe para evitar:
+los tipos de `Forestal` son todos **masas de terreno** —un bosque, una
+plantación, una zona de reforestación—, y meter ahí un árbol suelto es
+«elegir lo más parecido para salir del paso», que mete un dato falso que
+después nadie distingue de uno bueno.
+
+Entra como uso propio, `Arbolado Urbano`, en el grupo «Ambiente y zona rural»,
+con doce tipos que se determinan **desde la acera**: el árbol grande de más de
+tres metros que el reporte nombra, la palma, el que levanta el andén, el que
+está en riesgo, y el **alcorque vacío** —el sitio de siembra sin árbol, que es
+un dato de planeación y no la ausencia de uno—.
+
+Cuenta como `verde_natural` y no como `mobiliario`: una banca es mobiliario y
+un árbol no lo es. Y una consecuencia que conviene tener escrita antes de que
+alguien la descubra: **cada árbol mapeado es UN uso**, así que una cuadra con
+cincuenta árboles suma cincuenta. No es nuevo —cincuenta bancas suman
+cincuenta de mobiliario desde siempre— y **no toca la cobertura vegetal de la
+lámina**, que sale del raster satelital y no de contar puntos.
+
+### El buscador casa subcadenas, así que solo encuentra lo que él mismo se llama
+
+Ahí está la causa de los tres ceros: el catálogo se llama «Caneca» y la calle
+dice «basura»; se llama «Juegos infantiles» y la calle dice «niños».
+`SINONIMOS_MATRIZ` traduce una a la otra.
+
+**De qué NO responde, dicho:** es una LISTA, así que falla abierto — la
+palabra que no esté sigue pidiendo el término literal. Lo que sí está
+guardado es que ninguna entrada apunte al vacío: un sinónimo que no casa con
+ningún tipo es un no-op que **se lee igual que uno que funciona**, y
+`revisar.js` lo denuncia.
+
+#### Una frase entera no casa nunca, y encontrarla enterrada es no encontrarla
+
+«parque de niños» daba **cero**: ninguna frase de dos palabras aparece tal
+cual en un nombre del catálogo. Se reintenta palabra por palabra, y solo
+cuando la frase entera no encontró nada —para que una frase que sí acierta no
+se ahogue entre los resultados sueltos de sus palabras—.
+
+Y ahí estaba la vuelta que costó medir: por palabras sueltas la consulta
+devolvía **veintidós resultados con veinte parques y parqueaderos encima de
+los juegos infantiles**. Encontrar lo que se busca y enterrarlo, desde el dedo
+de quien está mapeando en la calle, se ve igual que no encontrarlo.
+
+Así que cada palabra pesa según **lo rara que sea en el catálogo**: «parque»
+casa 22 tipos y no dice casi nada; «niños» casa 3 y decide. Medido después,
+las cuatro consultas del reporte ponen la respuesta correcta **de primera**.
+
+### La guarda: tres listas que hoy coinciden y nada las ataba
+
+Un uso vive escrito en tres sitios —el catálogo `PROCITY_MATRIZ_USOS`, el
+grupo por el que se navega `MATRIZ_GRUPOS`, y la casilla del análisis
+`USO_A_SUB` en js/64—. Medidos antes de tocar nada: **los 48 coincidían
+exactamente en los tres**, y no había nada que los mantuviera juntos.
+
+Es la **clase B**, y esta misma tanda es la que lo destapa: agregar un uso
+obliga a tocar los tres. Lo que se pierde por olvidar uno no es lo mismo:
+
+* sin grupo, el uso **solo aparece buscándolo** y no navegando;
+* sin casilla en el análisis, se puede **mapear y el análisis lo descarta** —
+  una tarde en la calle levantando algo que ninguna cifra recoge, que desde
+  afuera se ve igual que no haberlo mapeado.
+
+Se comprueba en las **dos direcciones**, porque sobrar también rompe: un grupo
+que nombre un uso que ya no existe deja una tarjeta que no lleva a ninguna
+parte. Y la lista no se escribe en la guarda: se leen los tres inventarios de
+sus propios archivos, así que un uso nuevo queda vigilado sin que su autor se
+acuerde (v867).
+
+### Dos defectos de mis propias guardas, los dos cazados al demostrarlas en rojo
+
+Y los dos de la familia que este proyecto persigue: una guarda que no puede
+fallar es un verde.
+
+* **Un rojo que se describía a sí mismo como verde.** El detalle de «publicar
+  no exige la dirección» era un ternario sobre `pub.length > 200`, no sobre la
+  condición de verdad: con la puerta devuelta, la comprobación salía en rojo
+  imprimiendo «sin puerta en publishQuickReport». Dice ahora «la puerta
+  volvió».
+* **Una guarda que no cazaba lo que nombra.** «Lo declara en el globo y en la
+  ficha» buscaba el identificador `sinDirPopup` en el archivo. Quitando el
+  hueco `${sinDirPopup}` de la plantilla —dejando la declaración en pie— la
+  advertencia se calculaba y **no se pintaba**, y la guarda seguía en verde.
+  Se busca el hueco de la plantilla, que es lo que llega a la pantalla.
+
+Ninguno de los dos se ve leyendo. Los dos salieron de **demostrar en rojo**,
+que es para lo que esa práctica existe.
+
+### Y un error mío que costó rehacer la tanda entera
+
+Para demostrar en rojo escribí un bucle que parcheaba, corría `revisar.js` y
+restauraba con `git checkout -- js/ pruebas/revisar.js`. **Todo el trabajo
+estaba sin confirmar**, así que la primera restauración no deshizo el parche
+de la demostración: deshizo la tanda.
+
+La regla, barata: **una demostración en rojo se hace contra una base que ya
+está guardada**, o copiando los archivos aparte y restaurando de la copia —
+nunca con `git checkout --` sobre trabajo sin confirmar. Lo que se restaura
+tiene que ser algo que se pueda volver a perder.
+
+### Lo que NO se pudo correr, y se dice
+
+**Ninguna suite de navegador**: este contenedor no tiene el repositorio del
+motor (`../urbis-motor`) ni el `node_modules` del banco de pruebas
+(`../urbis-pruebas`), así que ni `playwright-core` ni el motor empaquetado
+existen. `tpisos` —que es la que mapea de punta a punta en Pro City y llena
+`#ins-direccion`— **no se pudo ejercitar**, y es donde vivirían las
+aserciones de la rama sin dirección: mapear sin ella, comprobar que se guarda,
+que el globo lo declara, y que al editar la casilla vuelve **vacía** y no con
+el tipo dentro.
+
+Lo que sí corrió es la comprobación estática entera —`revisar.js`, con las
+ocho comprobaciones nuevas— y la medición del buscador y de los tres
+inventarios contra los archivos de verdad. Queda dicho por lo que es: una
+comprobación que no puede correr lo dice y se cuenta, no queda ausente.
+
 ## La lista viva: lo que al pliego educativo todavía le falta (v866)
 
 Esta lista se quedó vieja **cinco veces**. Cuatro dentro de la hoja —la

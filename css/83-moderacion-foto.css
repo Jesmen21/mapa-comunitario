@@ -134,6 +134,22 @@ body[data-role="gov"] .urbis-sello-aprobar{
 }
 .detalle-sin-confirmar b{ display:block; margin-bottom:4px; font-size:.85rem; }
 
+/* ── Sin dirección anotada (v973) ─────────────────────────────────────────
+   Desde que la dirección dejó de ser obligatoria, un reporte puede no
+   traerla. NO es ámbar: el ámbar de arriba dice «esto todavía no está
+   confirmado», y esto dice otra cosa —el reporte es válido y le falta un
+   dato de referencia que cualquiera puede agregar editándolo—. Dos cosas
+   distintas con el mismo color se leen como una sola. Va en gris, apagado y
+   pequeño, que es lo que corresponde a un apunte y no a una alarma. */
+.popup-sin-dir{ color:#8a8a8a; font-style:italic; }
+.detalle-sin-dir{
+  margin:0 0 10px; padding:8px 11px;
+  border-radius:8px; border:1px dashed rgba(255,255,255,.18);
+  background:rgba(255,255,255,.04);
+  font-size:.74rem; line-height:1.45;
+  color:#b9b9b9 !important; -webkit-text-fill-color:#b9b9b9;
+}
+
 /* ── Pedir corrección (v835) ──────────────────────────────────────────────
    Ámbar, como todo lo que en URBIS dice «esto todavía no está confirmado».
    Va arriba de la tarjeta y del detalle: es lo único de esas pantallas que

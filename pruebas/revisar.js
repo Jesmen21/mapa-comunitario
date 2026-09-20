@@ -3282,6 +3282,132 @@ console.log('\n  -- un nombre, una cosa --');
    mirar una. Un módulo nuevo con su lista entra agregando su entrada acá, y
    mientras no la agregue no se comprueba: por eso la última comprobación
    exige que no haya en CLAUDE.md un bloque marcado que esta tabla no conozca. */
+/* ── El mapeo de Pro City: la matriz, sus grupos y el análisis (v973) ──────
+
+   Un uso de la Matriz de Usos vive escrito en TRES sitios que hoy coinciden
+   exactamente y que nada mantenía juntos:
+
+     · `PROCITY_MATRIZ_USOS` (js/20) — el catálogo: el uso y sus tipos;
+     · `MATRIZ_GRUPOS`       (js/20) — en qué grupo temático se navega;
+     · `USO_A_SUB`           (js/64) — en qué casilla lo cuenta el análisis.
+
+   Un uso que falte en el segundo no aparece navegando —solo buscándolo—, y
+   uno que falte en el tercero se puede mapear y el análisis lo descarta: se
+   puede pasar una tarde en la calle levantando algo que ninguna cifra
+   recoge, y desde afuera eso se ve igual que no haberlo mapeado.
+
+   Es la clase B de este proyecto —tres codificaciones de un hecho que
+   coinciden el día que se escriben— y esta misma tanda es la que lo destapó:
+   agregar «Arbolado Urbano» obliga a tocar los tres. Se comprueba en las dos
+   direcciones, porque sobrar también rompe: un grupo que nombre un uso que
+   ya no existe deja una tarjeta que no lleva a ninguna parte.
+
+   La lista NO se escribe acá: se leen los tres inventarios de sus propios
+   archivos, así que un uso nuevo queda vigilado sin que su autor se acuerde.  */
+console.log('\n  -- el mapeo de Pro City --');
+{
+  const j20 = leer('js/20-mobile-functional-app.js');
+  const j64 = leer('js/64-analisis-edu.js');
+  const j10 = leer('js/10-visible-markers.js');
+  const trozo = (src, desde, hasta) => {
+    const i = src.indexOf(desde), j = src.indexOf(hasta, i + 1);
+    return (i < 0 || j < 0) ? '' : src.slice(i + desde.length, j + hasta.length);
+  };
+  /* El literal, sin el punto y coma final: `eval('({…};)')` es un error de
+     sintaxis, y como el extractor va dentro de un `try` el fallo se leería
+     como «el inventario está vacío» en vez de como «no lo supe leer». Lo cazó
+     la guarda de MATERIAL de abajo, que por eso va primero. */
+  const objeto = (src, desde) => trozo(src, desde, '\n  };').replace(/;\s*$/, '');
+  let USOS = [], GRUPOS = [], SUB = {}, SINON = {};
+  try { USOS   = eval(trozo(j20, 'const PROCITY_MATRIZ_USOS = ', '\n  ];')); } catch (e) {}
+  try { GRUPOS = eval(trozo(j20, 'const MATRIZ_GRUPOS = ',       '\n  ];')); } catch (e) {}
+  try { SUB    = eval('(' + objeto(j64, 'const USO_A_SUB = ')       + ')'); } catch (e) {}
+  try { SINON  = eval('(' + objeto(j20, 'const SINONIMOS_MATRIZ = ') + ')'); } catch (e) {}
+
+  const nombres = (USOS || []).map(x => x && x.u);
+  const tipos = [];
+  (USOS || []).forEach(x => (x && x.t || []).forEach(t => tipos.push({ uso: x.u, tipo: t })));
+  const enGrupo = [];
+  (GRUPOS || []).forEach(g => (g && g.usos || []).forEach(u => enGrupo.push(u)));
+
+  /* La guarda de la guarda, y va PRIMERO: si los extractores devolvieran
+     vacío —porque alguien renombró una constante o cambió su forma—, todas
+     las de abajo pasarían en verde sin vigilar un solo uso. */
+  comprobar('los tres inventarios del mapeo se leen',
+    nombres.length > 40 && tipos.length > 400 && (GRUPOS || []).length >= 8 &&
+      Object.keys(SUB).length > 40 && Object.keys(SINON).length > 5,
+    nombres.length + ' usos · ' + tipos.length + ' tipos · ' + (GRUPOS || []).length +
+      ' grupos · ' + Object.keys(SUB).length + ' en el análisis · ' +
+      Object.keys(SINON).length + ' sinónimos');
+
+  const sinGrupo = nombres.filter(u => enGrupo.indexOf(u) < 0);
+  const grupoFantasma = enGrupo.filter(u => nombres.indexOf(u) < 0);
+  comprobar('todo uso de la matriz se navega por un grupo, y ningún grupo nombra uno que no existe',
+    sinGrupo.length === 0 && grupoFantasma.length === 0,
+    sinGrupo.length ? 'sin grupo: ' + sinGrupo.join(' · ')
+      : grupoFantasma.length ? 'el grupo nombra lo que no existe: ' + grupoFantasma.join(' · ')
+      : nombres.length + ' usos, todos en su grupo');
+
+  const sinSub = nombres.filter(u => !SUB[u]);
+  const subFantasma = Object.keys(SUB).filter(u => nombres.indexOf(u) < 0);
+  comprobar('todo uso de la matriz llega al análisis, y el análisis no espera uno que no existe',
+    sinSub.length === 0 && subFantasma.length === 0,
+    sinSub.length ? 'se podría mapear y el análisis lo descartaría: ' + sinSub.join(' · ')
+      : subFantasma.length ? 'el análisis espera lo que no existe: ' + subFantasma.join(' · ')
+      : nombres.length + ' usos, todos con su casilla');
+
+  /* Un sinónimo que no casa con ningún tipo es un no-op: se lee igual que uno
+     que funciona, y quien escriba esa palabra seguirá sin encontrar nada. */
+  const nrm = x => String(x || '').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '');
+  const huecos = Object.keys(SINON).filter(k => {
+    const t = nrm(SINON[k]);
+    return !tipos.some(x => nrm(x.tipo).indexOf(t) >= 0 || nrm(x.uso).indexOf(t) >= 0);
+  });
+  comprobar('ningún sinónimo del buscador apunta al vacío',
+    huecos.length === 0,
+    huecos.length ? huecos.map(k => k + ' → ' + SINON[k]).join(' · ')
+      : Object.keys(SINON).length + ' sinónimos, todos con destino');
+
+  /* Un árbol se podía reportar y no MAPEAR: buscar «arbol» o «palma» daba
+     cero. Se persigue lo que la calle pidió y no el nombre del uso, para que
+     un renombre no deje el hueco abierto en silencio. */
+  const puedeMapear = t => tipos.some(x => nrm(x.tipo).indexOf(nrm(t)) >= 0);
+  const faltan = ['arbol', 'palma', 'banca', 'caneca', 'juegos infantiles'].filter(t => !puedeMapear(t));
+  comprobar('el árbol, la palma, la banca, la caneca y los juegos infantiles se pueden mapear',
+    faltan.length === 0,
+    faltan.length ? 'sin tipo: ' + faltan.join(' · ') : 'los cinco tienen su tipo');
+
+  /* ── La dirección dejó de ser obligatoria (v973) ─────────────────────────
+     El campo se contestaba con relleno para poder publicar, que es conseguir
+     un dato falso en vez de ninguno. Las dos mitades se guardan juntas: que
+     no vuelva la puerta, y que lo que se publica sin dirección lo DIGA — sin
+     la segunda, un reporte sin dirección se lee igual que uno con ella. */
+  const pub = trozo(j20, 'function publishQuickReport(', '\n  }\n');
+  const hayPuerta = pub.indexOf("alert('Ingrese la dirección") >= 0;
+  comprobar('publicar no exige la dirección',
+    pub.length > 200 && !hayPuerta,
+    pub.length <= 200 ? 'no se pudo leer publishQuickReport'
+      : hayPuerta ? 'la puerta volvió: publicar vuelve a exigirla'
+      : 'sin puerta en publishQuickReport');
+  /* Se busca el hueco de la PLANTILLA —`${…}`— y no el identificador suelto:
+     con la declaración en pie y el hueco quitado, la advertencia se calcula y
+     no se pinta, que desde la pantalla se ve igual que no tenerla. Lo cazó la
+     demostración en rojo: la primera versión de esta guarda no se ponía roja
+     al sacar el renglón del globo. */
+  const dondeSeDice = ['${sinDirPopup}', '${_sinDirDet}'].filter(x => j10.indexOf(x) >= 0);
+  comprobar('un reporte sin dirección lo declara en el globo y en la ficha',
+    j10.indexOf('window.urbisSinDireccion = function') >= 0 && dondeSeDice.length === 2,
+    dondeSeDice.length === 2 ? 'las 2 superficies lo pintan'
+      : dondeSeDice.length + ' de 2 superficies lo pintan');
+  /* Y la guarda de la guarda: las dos superficies tienen que seguir leyendo
+     la MISMA función. Con dos redacciones de la advertencia, una se arregla y
+     la otra no (v879). */
+  const llamadas = (j10.match(/urbisSinDireccion\(/g) || []).length;
+  comprobar('y las dos lo declaran por la misma función',
+    llamadas >= 2,
+    llamadas + ' llamadas a urbisSinDireccion');
+}
+
 console.log('\n  -- las listas vivas --');
 {
   const md = leer('CLAUDE.md');

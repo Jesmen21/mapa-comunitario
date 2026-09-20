@@ -2493,7 +2493,7 @@
         <select id="sel-estado" hidden><option value="Malo" selected>Malo</option></select>
         <select id="sel-mat" hidden><option value="N/A" selected>N/A</option></select>
         <input id="ins-foto" type="hidden" value="">
-        <input id="ins-direccion" type="text" maxlength="120" placeholder="Dirección o punto de referencia *" autocomplete="street-address">
+        <input id="ins-direccion" type="text" maxlength="120" placeholder="Dirección o punto de referencia (opcional)" autocomplete="street-address">
         <textarea id="ins-nota" maxlength="180" placeholder="Descripción corta opcional"></textarea>
         ${victimasHTML}
         ${bloqueFotoHTML('ins-foto-file', photoLabelText).replace('u52-quick-photo', photoClass)}
@@ -2579,13 +2579,24 @@
     const ctx = window.__urbisCurrentFormContext;
     if(!ctx || !ctx.quickReport) return;
 
+    /* La dirección NO es obligatoria (v973). Llegó mapeando: «ya estoy
+       poniendo "vivienda" como por rellenar para poderlo publicar». Un campo
+       obligatorio que se contesta con relleno no consigue el dato: consigue
+       un dato falso que después nadie distingue de uno bueno, que es la misma
+       razón por la que js/03b tiene «No se sabe» y «Otro».
+
+       Y no costaba nada tenerla: el análisis educativo lee el TIPO —la
+       casilla [0] de la descripción, por `partirEtiqueta` en js/64— y nunca
+       el nombre. La dirección es para el lector humano, no para ninguna
+       cuenta.
+
+       Lo que NO se hace es escribir «NN» en el registro. Un valor que nadie
+       tecleó es una afirmación que nadie hizo: el campo se queda vacío y son
+       las pantallas las que declaran que no se anotó (`urbisSinDireccion`,
+       js/10). Así, el día que alguien la agregue editando, no hay nada que
+       des-escribir. */
     const direccionEl = document.getElementById('ins-direccion');
     const direccion = (direccionEl?.value || '').trim();
-    if(!direccion){
-      alert('Ingrese la dirección o punto de referencia del reporte.');
-      direccionEl?.focus();
-      return;
-    }
 
     if(ctx.photoRequired){
       const fileInput = document.getElementById('ins-foto-file');
@@ -2600,8 +2611,14 @@
     const _ic = document.getElementById('info-content');
     if(_ic) _ic.innerHTML = '';
 
+    /* Sin dirección, el nombre queda siendo EXACTAMENTE el tipo. Eso es el
+       discriminante y se calcula, no se marca: `urbisSinDireccion` reconoce
+       «no la anotaron» porque el nombre es igual al tipo, sin una bandera que
+       alguien tenga que acordarse de poner ni de quitar (v903). */
     const nombreEl = document.getElementById('sel-nombre');
-    if(nombreEl) nombreEl.value = direccion + ' — ' + (ctx.quickLabel || nombreEl.value);
+    if(nombreEl) nombreEl.value = direccion
+      ? direccion + ' — ' + (ctx.quickLabel || nombreEl.value)
+      : (ctx.quickLabel || nombreEl.value);
 
     // Recientes de la Matriz de Usos (Pro City): al guardar un uso, queda como
     // acceso directo para volver a colocar el MISMO tipo en otro punto sin
@@ -2812,7 +2829,7 @@
     // Búsqueda directa sobre el listado extendido de la Matriz de Usos (48
     // usos × sus tipos exactos) — acceso inmediato sin tener que abrir la
     // tarjeta "Matriz de Usos" primero ni elegir ubicación antes de buscar.
-    const hits = matrizFlatIndex().filter(x => _norm(x.tipo).includes(q) || _norm(x.uso).includes(q)).slice(0, 60);
+    const hits = buscarEnMatriz(q);
     cont.innerHTML = hits.length
       ? hits.map(x=>`<button type="button" class="u52-procity-card" data-u52-procity-search-item="${esc(x.label)}"><span class="u52-procity-card-ico">${x.i}</span><b>${esc(x.tipo)}</b></button>`).join('')
       : `<div class="u52-matriz-empty">Sin resultados para “${esc(proCity.categorySearch)}”.</div>`;
@@ -4932,6 +4949,21 @@
     { u:'Servicios Funerarios', i:'⚰️', t:['Funeraria','Sala de velación','Cementerio','Parque cementerio / jardín','Osario / columbario','Crematorio','Morgue / anfiteatro','Cementerio patrimonial','Lapidaria / bodega de ataúdes','Cementerio de mascotas'] },
     { u:'Vías e Infraestructura Vial', i:'🛣️', t:['Vía principal / arteria','Vía secundaria / local','Vía peatonal','Ciclorruta','Puente vehicular','Puente peatonal','Intercambiador (glorieta, deprimido)','Túnel','Vía sin pavimentar','Trocha / camino rural','Malla vial en construcción','Peaje'] },
     { u:'Protección Ambiental', i:'🌿', t:['Reserva natural','Zona de conservación','Humedal protegido','Parque natural (regional/nacional)','Recarga de acuíferos','Corredor ecológico','Área de compensación ambiental','Vivero municipal','Jardín botánico','Zona de amortiguación'] },
+    /* Un ÁRBOL, que hasta la v972 no se podía mapear (v973).
+       Llegó de la calle: «iba a mapear un árbol, una palma, un árbol grande
+       de más de 3 metros, y no vi por ningún lado esa opción». Y era cierto:
+       de los 520 tipos, buscar «arbol» o «palma» devolvía CERO. Lo más
+       parecido era «Forestal», cuyos tipos son todos masas de terreno —un
+       bosque, una plantación, una zona de reforestación—; meter ahí un árbol
+       suelto sería justo el «elegir lo más parecido para salir del paso» que
+       js/03b existe para evitar.
+       Va en el grupo «Ambiente y zona rural» y cuenta como verde_natural en
+       el análisis (js/64). Una consecuencia que conviene tener escrita: cada
+       árbol mapeado es UN uso, así que una cuadra con cincuenta árboles suma
+       cincuenta. No es nuevo —cincuenta bancas suman cincuenta de mobiliario
+       desde siempre— y no toca la cobertura vegetal de la lámina, que sale
+       del raster satelital y no de contar puntos. */
+    { u:'Arbolado Urbano', i:'🌳', t:['Árbol grande (más de 3 m)','Árbol pequeño o recién sembrado','Palma','Árbol patrimonial o notable','Árbol en riesgo (inclinado, seco o ahuecado)','Árbol que levanta el andén','Arbolado de andén (varios seguidos)','Árbol en separador o zona verde vial','Árbol en antejardín','Jardinera o arbusto ornamental','Alcorque vacío (sitio de siembra sin árbol)','Tocón (árbol talado)'] },
     { u:'Forestal', i:'🌲', t:['Bosque nativo','Zona de reforestación','Plantación forestal (comercial)','Bosque protector','Área quemada / en recuperación','Vivero forestal','Cerca viva / arborización urbana','Bosque de galería (ronda de río)','Zona de tala controlada','Reserva forestal'] },
     { u:'Agropecuario / Rural', i:'🌾', t:['Cultivo transitorio','Cultivo permanente (frutales, café)','Zona ganadera / potrero','Finca / predio rural','Invernadero / cultivo bajo cubierta','Galpón avícola / porcícola','Establo / lechería','Parcela de pancoger','Distrito de riego','Centro de acopio rural','Agroindustria (trapiche, beneficiadero)'] },
     { u:'Ronda Hídrica / Protección de Cuerpos de Agua', i:'🌊', t:['Ronda de río','Ronda de quebrada','Nacimiento / manantial','Laguna / lago','Humedal','Canal / caño','Jarillón / dique','Zona de inundación periódica','Reservorio / jagüey','Playa / ribera'] },
@@ -4958,7 +4990,7 @@
     { id:'salud', i:'🚑', t:'Salud y emergencias', usos:['Salud (Clínicas/Hospitales)','Emergencias (Bomberos/Rescate)','Cuidado Animal (Veterinaria)','Hogar de Cuidado'] },
     { id:'cultura', i:'🎭', t:'Cultura, educación y culto', usos:['Cultural / Patrimonio','Educativo (Básico/Superior)','Religioso / Culto','Espacio Ferial / Eventos Masivos'] },
     { id:'servicios', i:'🚛', t:'Servicios e infraestructura', usos:['Mobiliario Urbano','Gestión de Residuos / Reciclaje','Transporte (Terminales/Estaciones)','Infra. Servicios (Plantas)','Comunicaciones / Antenas','Servicios Funerarios','Vías e Infraestructura Vial'] },
-    { id:'ambiente', i:'🌳', t:'Ambiente y zona rural', usos:['Protección Ambiental','Forestal','Agropecuario / Rural','Ronda Hídrica / Protección de Cuerpos de Agua'] },
+    { id:'ambiente', i:'🌳', t:'Ambiente y zona rural', usos:['Protección Ambiental','Arbolado Urbano','Forestal','Agropecuario / Rural','Ronda Hídrica / Protección de Cuerpos de Agua'] },
     { id:'riesgo', i:'⚠️', t:'Riesgo, deterioro y suelo sin definir', usos:['Zona Baldía','Zona de Riesgo','En Obra / Construcción','Abandono / Ruina','Espacio Residual','Asentamiento Informal','Zona de Expansión Urbana'] },
     { id:'mixtos', i:'🧩', t:'Usos combinados', usos:['Mixto (Residencial-Comercial)','Mixto (Residencial-Industrial)','Uso Múltiple / Mixto General'] },
   ];
@@ -5023,6 +5055,98 @@
     return flat;
   }
   function _norm(s){ return String(s||'').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,''); }
+
+  /* Lo que la gente escribe contra lo que el catálogo llama (v973).
+
+     Llegó de la calle, junto con lo del árbol: «no vi para mapear una banca,
+     para mapear un punto de basuras, no vi para mapear un parque de niños».
+     Las tres SÍ estaban. Lo que no estaba era manera de encontrarlas:
+
+       «banca»    → Mobiliario Urbano · Banca                    ✓ la encuentra
+       «basura»   → 0 resultados   (el catálogo la llama «Caneca»)
+       «niños»    → 0 resultados   (el catálogo los llama «Juegos infantiles»)
+
+     Y las tres viven bajo nombres de grupo donde nadie las buscaría —la
+     banca y la caneca en «Servicios e infraestructura», los juegos en
+     «Vivienda y ocio»—, así que ni navegando aparecían. Un dato que existe
+     y que ninguna pantalla alcanza se ve, desde afuera, exactamente igual
+     que un dato que no existe: por eso se reportaron como faltantes.
+
+     El buscador casa SUBCADENAS literales, así que solo encuentra lo que el
+     catálogo se llama a sí mismo. Esta tabla traduce la palabra de la calle
+     a la palabra del catálogo. Y hay que decir de qué NO responde: es una
+     LISTA, así que falla abierto — la palabra que no esté acá sigue pidiendo
+     el término literal. Lo que sí está guardado es que ninguna entrada
+     apunte al vacío: un sinónimo que no casa con ningún tipo es un no-op que
+     se lee igual que uno que funciona, y `revisar.js` lo denuncia. */
+  const SINONIMOS_MATRIZ = {
+    'palmera': 'palma',
+    'basura': 'caneca', 'basuras': 'caneca', 'papelera': 'caneca',
+    'residuos': 'reciclaje', 'escombros': 'escombrera',
+    'nino': 'infantil', 'ninos': 'infantil', 'nina': 'infantil', 'ninas': 'infantil',
+    'columpio': 'juegos infantiles', 'columpios': 'juegos infantiles',
+    'rodadero': 'juegos infantiles', 'resbaladero': 'juegos infantiles',
+    'banco': 'banca', 'silla': 'banca', 'asiento': 'banca', 'escano': 'banca',
+    'poste': 'luminaria', 'alumbrado': 'luminaria', 'farola': 'luminaria',
+    'ciclovia': 'ciclorruta', 'bicicarril': 'ciclorruta',
+    'sardinel': 'anden', 'acera': 'anden',
+    'bebedero': 'fuente', 'wifi': 'punto digital',
+    'reductor': 'reductor de velocidad', 'policia acostado': 'reductor de velocidad'
+  };
+  const VACIAS_MATRIZ = new Set(['de','del','la','el','los','las','un','una','en','y','o','para','con','al']);
+
+  /* Una sola ruta de búsqueda para los DOS buscadores —el de la pantalla
+     principal de Pro City y el de dentro de la Matriz—. Estaban escritos con
+     el mismo filtro copiado en dos sitios: agregarle los sinónimos a uno y no
+     al otro los habría separado en esta misma tanda.
+     El resultado literal va PRIMERO y el del sinónimo detrás: quien escribió
+     la palabra exacta tiene que verla arriba. */
+  function buscarEnMatriz(qNorm){
+    const q = _norm(qNorm);
+    if(!q) return [];
+    const flat = matrizFlatIndex();
+    const casa = (x, t) => _norm(x.tipo).includes(t) || _norm(x.uso).includes(t);
+    const hits = [], vistos = new Set();
+    const sumar = (t) => {
+      if(!t) return;
+      flat.forEach(x => { if(!vistos.has(x.label) && casa(x, _norm(t))){ vistos.add(x.label); hits.push(x); } });
+    };
+    sumar(q);
+    sumar(SINONIMOS_MATRIZ[q]);
+    if(hits.length) return hits.slice(0, 60);
+
+    /* «parque de niños» no casa con nada: el buscador mira SUBCADENAS y no
+       palabras, así que una frase entera casi nunca aparece tal cual en un
+       nombre del catálogo. Se reintenta palabra por palabra —y solo cuando la
+       frase entera no encontró nada, para que una frase que sí acierta no se
+       ahogue entre los resultados sueltos de sus palabras—. Las partículas se
+       descartan: «de» es subcadena de media lista.
+
+       Y el ORDEN importa más que el conteo, que es lo que costó una vuelta:
+       por palabras sueltas, «parque de niños» devolvía veintidós resultados
+       con veinte parques y parqueaderos encima de los juegos infantiles —es
+       decir, encontraba lo que se buscaba y lo enterraba, que desde el dedo
+       de quien mapea se ve igual que no encontrarlo—. Así que cada palabra
+       pesa según lo RARA que sea en el catálogo: «parque» casa 22 tipos y no
+       dice casi nada; «niños» casa 3 y decide. Un tipo que case dos palabras
+       va por delante de uno que case una sola, porque suma los dos pesos. */
+    const palabras = [];
+    q.split(/[^a-z0-9ñ]+/).forEach(w => {
+      if(w.length < 3 || VACIAS_MATRIZ.has(w)) return;
+      palabras.push(w);
+      if(SINONIMOS_MATRIZ[w]) palabras.push(_norm(SINONIMOS_MATRIZ[w]));
+    });
+    const puntos = new Map();
+    palabras.forEach(w => {
+      const casan = flat.filter(x => casa(x, w));
+      if(!casan.length) return;
+      const peso = 1 / casan.length;
+      casan.forEach(x => puntos.set(x, (puntos.get(x) || 0) + peso));
+    });
+    return Array.from(puntos.keys())
+      .sort((a, b) => puntos.get(b) - puntos.get(a))
+      .slice(0, 60);
+  }
 
   function renderProCityMatriz(panel, d){
     proCity.matrizSearch = proCity.matrizSearch || '';
@@ -5099,7 +5223,7 @@
       return;
     }
     // Con búsqueda: tipos de TODOS los usos que coincidan (acceso directo, sin pasar por grupos).
-    const hits = matrizFlatIndex().filter(x => _norm(x.tipo).includes(q) || _norm(x.uso).includes(q)).slice(0, 60);
+    const hits = buscarEnMatriz(q);
     cont.innerHTML = hits.length
       ? hits.map(x=>`<button type="button" class="u52-alert-card" data-u52-procity-item="${esc(x.label)}"><span>${x.i}</span><b>${esc(x.tipo)}</b></button>`).join('')
       : `<div class="u52-matriz-empty">Sin resultados para “${esc(proCity.matrizSearch)}”.</div>`;
@@ -5146,9 +5270,16 @@
     if(editando){
       const dp = (typeof globalData !== 'undefined' && Array.isArray(globalData)) ? globalData.find(x => String(x.lat) === String(proCity.editLat)) : null;
       if(dp){
+        /* La dirección vive DENTRO del nombre, como «<dirección> — <tipo>».
+           Desde la v973 puede no haberla, y entonces el nombre es el tipo a
+           secas: partir por ' — ' devolvería el tipo entero y lo prefillaría
+           como si fuera una dirección que alguien escribió. El tipo guardado
+           es la casilla [0] del propio registro —no el `label` de ahora, que
+           puede estar cambiándose en esta misma edición—. */
         const dpCampos = String(dp.descripcion || '').split(' | ');
         const nomOrig = dpCampos[1] || '';
-        dirPrefill = nomOrig.split(' — ')[0] || '';
+        const tipoOrig = dpCampos[0] || '';
+        dirPrefill = (!nomOrig || nomOrig === tipoOrig) ? '' : (nomOrig.split(' — ')[0] || '');
         notaPrefill = dpCampos[2] || '';
       }
     }
@@ -5221,7 +5352,7 @@
         <select id="sel-mat" hidden><option value="N/A" selected>N/A</option></select>
         <input id="ins-foto" type="hidden" value="">
         ${htmlEdificio}
-        <input id="ins-direccion" type="text" maxlength="120" placeholder="Dirección o punto de referencia *" autocomplete="street-address" value="${esc(dirPrefill)}">
+        <input id="ins-direccion" type="text" maxlength="120" placeholder="Dirección o punto de referencia (opcional)" autocomplete="street-address" value="${esc(dirPrefill)}">
         <textarea id="ins-nota" maxlength="180" placeholder="Descripción técnica opcional">${esc(notaPrefill)}</textarea>
         ${bloqueFotoHTML('ins-foto-file', '📷 Foto de referencia (opcional)')}
         <button type="button" class="u52-quick-publish u52-procity-publish" data-u52-call="procity-publish">${editando ? 'Actualizar en Pro City' : 'Guardar en Pro City'}</button>

@@ -386,6 +386,31 @@
        documento, y no al guardarla: lo que se guarda es lo que la persona
        escribió, y el mismo texto sale también al PDF y a las exportaciones,
        donde escapado sobraría. */
+    /* ¿Quedó sin dirección anotada? (v973)
+       Desde que la dirección dejó de ser obligatoria, un reporte puede venir
+       sin ella. Callarlo lo dejaría idéntico a uno cuya dirección alguien sí
+       escribió: por fuera se ven igual, que es exactamente el defecto que
+       este proyecto persigue —un dato ausente y uno presente-pero-invisible
+       no se pueden distinguir sin declararlo—.
+
+       Se CALCULA y no se marca. La dirección vive dentro del nombre como
+       «<dirección> — <tipo>», así que un nombre vacío, o un nombre que es el
+       tipo a secas, es la señal de que nadie la anotó. Ningún «NN» se escribe
+       en el registro: el valor que nadie tecleó no se inventa, se declara en
+       la pantalla (js/20).
+
+       Una sola función para las dos superficies —el globo y la ficha—: dos
+       redacciones de la misma advertencia se separan a la tanda siguiente. */
+    window.urbisSinDireccion = function(campos){
+      const c = campos || [];
+      const tipo = String(c[0] || '').trim();
+      const nom  = String(c[1] || '').trim();
+      return !nom || nom === tipo;
+    };
+    const sinDirPopup = window.urbisSinDireccion(d)
+      ? '<div class="popup-desc popup-sin-dir">Sin dirección anotada: quien lo publicó no escribió el punto de referencia.</div>'
+      : '';
+
     let descPopup = (d[2] && d[2].trim() && d[2] !== 'N/A') ? `<div class="popup-desc">${limpiarHTML(d[2])}</div>` : '';
 
     // Botones de dueño dentro del popup (en móvil el popup ES el detalle visible).
@@ -556,6 +581,7 @@
         <div class="popup-header" style="color:${markerColor}">${limpiarHTML(p.tipo)}</div>
         ${avisoModeracion}
         <span class="popup-title">${construirBadgeIcono(p.tipo, d[0], 'popup-icon-badge')}${limpiarHTML(d[1] || d[0])} ${likeBadge}</span>
+        ${sinDirPopup}
         ${fotoMiniPopup}
         ${descPopup}
         ${victimasHTML}
@@ -853,6 +879,13 @@
     const _visD = (typeof window.urbisVisibilidadReporte === 'function')
       ? window.urbisVisibilidadReporte(p) : { verDetalle: true, enRevision: false };
     const _tituloDet   = _visD.verDetalle ? (d[1] || d[0]) : (d[0] || p.tipo);
+    /* La misma declaración que el globo, por la misma función (v973). Solo
+       para quien puede ver el detalle: sin confirmar, el título ya es el tipo
+       y decir «sin dirección» ahí hablaría de un dato que la pantalla no está
+       enseñando todavía. */
+    const _sinDirDet = (_visD.verDetalle && window.urbisSinDireccion(d))
+      ? '<div class="detalle-sin-dir">Sin dirección anotada: quien lo publicó no escribió el punto de referencia.</div>'
+      : '';
     const _notaDet     = _visD.verDetalle ? (d[2] || 'Sin notas.')
                                           : 'Lo que se escribió acá se publica cuando un administrador confirme el reporte.';
     const _autorDet    = _visD.verDetalle ? creadorNombre : 'Se dice al confirmarse';
@@ -882,7 +915,7 @@
     document.getElementById('info-content').innerHTML = `
       <div class="header-identificador" style="border-left-color: ${dimColor}; color: ${dimColor}; display:flex; align-items:center; gap:8px;">${iconoDetalleHTML}<span>${limpiarHTML(_tituloDet)}</span> ${tituloEstado}</div>
       <div class="form-section">
-        
+        ${_sinDirDet}
         ${_pedidoDet}
         ${_avisoDet}
         ${_victimasDet}

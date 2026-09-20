@@ -65,6 +65,9 @@
     'Servicios Funerarios': 'funerario',
     'Vías e Infraestructura Vial': 'via_arteria',
     'Protección Ambiental': 'verde_natural',
+    // El árbol suelto, que se pudo mapear desde la v973. Entra como verde y
+    // no como mobiliario: una banca es mobiliario y un árbol no lo es.
+    'Arbolado Urbano': 'verde_natural',
     'Forestal': 'verde_natural',
     'Agropecuario / Rural': 'verde_natural',
     'Ronda Hídrica / Protección de Cuerpos de Agua': 'agua',
