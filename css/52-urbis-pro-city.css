@@ -61,6 +61,72 @@
     color:#7986c7 !important; -webkit-text-fill-color:#7986c7 !important;
   }
 
+  /* ---- El estado del GPS, ARRIBA a la derecha (v980) ----
+     Va arriba y no en la columna de abajo a propósito: esa columna son
+     herramientas —qué se ve, qué se dibuja— y esto es un estado del
+     teléfono, que se mira ANTES de empezar. Arriba a la izquierda están los
+     controles de zoom, así que la esquina derecha estaba libre.
+
+     Es más ancho que los redondos porque lleva una cifra: un botón de 52 px
+     con «±120» adentro deja la cifra en cuerpo de nota al pie, y esa cifra
+     es para lo que existe.
+
+     Y va DENTRO de la fila de arriba, no flotando encima de ella. Medido con
+     la sonda: esa esquina NO estaba libre —el botón de centrar («◎») ya vive
+     ahí—, y el flotante quedaba encima de él y sin poder tocarse: el click
+     rebotaba contra `u52-mapcentric-filter`. Puesto en la fila, la coloca el
+     mismo flex que a los demás y no hay dos capas disputándose el dedo. */
+  #urbis-mobile-app .u52-mapcentric-topbar .u52-procity-gps-btn{
+    flex:0 0 auto; align-self:center;
+    min-width:62px; height:44px; padding:0 11px;
+    border:0; border-radius:15px;
+    display:flex; align-items:center; gap:5px;
+    background:rgba(255,255,255,.96);
+    box-shadow:0 8px 18px rgba(51,53,122,.16), inset 0 0 0 1px var(--pc-sky-line);
+    transition:background .2s ease, box-shadow .2s ease, transform .18s ease;
+  }
+  #urbis-mobile-app .u52-mapcentric-topbar .u52-procity-gps-btn:active{ transform:scale(.94); }
+  #urbis-mobile-app .u52-procity-gps-btn[hidden]{ display:none !important; }
+  #urbis-mobile-app .u52-procity-gps-btn .pc-gps-ico{ font-size:1.05rem; line-height:1; }
+  #urbis-mobile-app .u52-procity-gps-btn .pc-gps-txt{
+    font-size:.82rem; font-weight:900; letter-spacing:-.01em;
+    color:var(--pc-ink) !important; -webkit-text-fill-color:var(--pc-ink) !important;
+  }
+  /* Los tres tramos, con los MISMOS colores que el resto de la aplicación ya
+     usa: verde «esto está resuelto», ámbar «esto todavía no» y rojo a trazos
+     «no le crea a esto». Un cuarto código de color sería enseñar dos idiomas. */
+  #urbis-mobile-app .u52-procity-gps-btn[data-tramo="buena"]{
+    box-shadow:0 10px 22px rgba(46,174,102,.30), inset 0 0 0 2px #2fae66 !important;
+  }
+  #urbis-mobile-app .u52-procity-gps-btn[data-tramo="buena"] .pc-gps-txt{
+    color:#14603a !important; -webkit-text-fill-color:#14603a !important;
+  }
+  #urbis-mobile-app .u52-procity-gps-btn[data-tramo="dudosa"]{
+    box-shadow:0 10px 22px rgba(217,119,6,.28), inset 0 0 0 2px #d97706 !important;
+  }
+  #urbis-mobile-app .u52-procity-gps-btn[data-tramo="dudosa"] .pc-gps-txt{
+    color:#8a4b06 !important; -webkit-text-fill-color:#8a4b06 !important;
+  }
+  #urbis-mobile-app .u52-procity-gps-btn[data-tramo="mala"]{
+    box-shadow:0 10px 22px rgba(201,90,85,.30), inset 0 0 0 2px #c95a55 !important;
+  }
+  #urbis-mobile-app .u52-procity-gps-btn[data-tramo="mala"] .pc-gps-txt{
+    color:#8f2d29 !important; -webkit-text-fill-color:#8f2d29 !important;
+  }
+  /* Afinando: el rayado que se mueve dice «sigue viva» aunque la cifra no
+     cambie, que es la regla de la barra de espera de la v870 — una espera
+     muda no se distingue de un cuelgue. */
+  #urbis-mobile-app .u52-procity-gps-btn[data-tramo="afinando"]{
+    background:linear-gradient(110deg,#eef6ff 25%,#d9ecff 37%,#eef6ff 63%) !important;
+    background-size:220% 100% !important;
+    animation:pcGpsLatido 1.15s linear infinite !important;
+    box-shadow:0 10px 22px rgba(14,134,190,.26), inset 0 0 0 2px #34CCFE !important;
+  }
+  @keyframes pcGpsLatido{ from{ background-position:180% 0; } to{ background-position:-40% 0; } }
+  @media (prefers-reduced-motion: reduce){
+    #urbis-mobile-app .u52-procity-gps-btn[data-tramo="afinando"]{ animation:none !important; }
+  }
+
   /* ---- Botón flotante: alternar Emojis ↔ Colores/formas por categoría ---- */
   body.u52-real-map #urbis-mobile-app .u52-jac-mapcentric .u52-procity-visual-toggle{
     position:absolute !important; z-index:2147483200 !important;
@@ -1035,6 +1101,16 @@
      archivo que carga DESPUÉS de css/99 y le gana en especificidad. */
   body.u52-real-map #urbis-mobile-app .u52-jac-mapcentric .u52-mapcentric-topbar{
     grid-template-columns:54px 1fr 54px 54px !important; gap:8px !important;
+  }
+  /* En Pro City son CINCO: entra el estado del GPS (v980). La rejilla tiene
+     las columnas escritas a mano —el comentario de arriba dice «SIEMPRE
+     tiene 4»— así que un quinto hijo no se acomoda solo: se va a un segundo
+     renglón implícito y empuja el botón de centrar debajo. Medido con la
+     sonda, el topbar pasaba de 48 a 120 px de alto y «◎» aparecía en x=26,
+     y=76. La columna nueva va antes del GPS de centrar porque se lee de
+     izquierda a derecha: primero en cuánto anda la señal, después centrar. */
+  body.u52-real-map #urbis-mobile-app .u52-jac-mapcentric.u52-procity-mapscreen .u52-mapcentric-topbar{
+    grid-template-columns:54px 1fr 54px 66px 54px !important;
   }
   body.u52-real-map #urbis-mobile-app .u52-jac-mapcentric .u52-procity-filter-btn{
     color:var(--pc-lav-deep) !important; -webkit-text-fill-color:var(--pc-lav-deep) !important; font-size:1.5rem !important;

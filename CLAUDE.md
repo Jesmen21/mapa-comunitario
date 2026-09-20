@@ -13380,6 +13380,130 @@ la marca aparece, que el editar abre con el bloque vacío y que el buscador
 encuentra— más las cuatro ramas de `pendiente` contra registros de verdad.
 
 
+## El botón de GPS del mapa, y una esquina que no estaba libre (v980)
+
+Pedido: *«¿un botón en el lado derecho arriba donde uno ve el mapa para
+mejorar la precisión de GPS?»*
+
+Son **dos** cosas, y por eso es un botón y no un rótulo: enseña en cuánto anda
+la señal AHORA —que hasta la v979 solo se sabía **después** de poner un punto,
+cuando ya no sirve de nada— y, al tocarlo, afina.
+
+    v979   la precisión se conoce al poner el punto · afinar solo ocurre al ubicar
+    v980   📡 ±9 arriba a la derecha, y tocarlo afina sin poner nada
+
+### No escribe una segunda rutina de afinado
+
+Afina llamando a `mejorLecturaGps` —la de la v978— y a nadie más. Una segunda
+rutina se separaría de aquella a la tanda siguiente (clase B), y **lo que
+divergiría son justamente los cortes que la v978 derivó uno por uno** en vez
+de inventarlos: los 12 m que distinguen una casa de la de al lado, los 15 del
+frente de casa, los 50 con los que no se puede mapear.
+
+Lo mismo los tres tramos del botón: verde, ámbar y rojo salen de
+`GPS_BUENO_M` y `GPS_INSERVIBLE_M`, sin un cuarto número puesto a ojo para
+pintar. Un corte propio diría en verde lo que el resto del módulo llama
+dudoso.
+
+### Y NO pone ningún punto
+
+Ese es el otro botón —«Mi ubicación»—, y mezclarlos haría que asomarse a la
+señal dejara un punto que nadie pidió. Tiene su aserción propia porque es la
+mitad que se rompe sin que nadie se entere: el código quedaría más corto
+juntándolos.
+
+### Una lectura vieja no es la de ahora
+
+`lecturaVigente()` descarta lo que pase de `GPS_FRESCA_MS` —el mismo número
+con el que `beginProCityLocationGps` decide si la lectura guardada sirve para
+poner un punto—. Enseñar «±8 m» de hace diez minutos, parado en otra cuadra,
+es declarar mal la procedencia de una cifra.
+
+Y sin lectura vigente **no se inventa un número**: dice «GPS» y qué hacer. Un
+«±?» ocupa el sitio de una cifra y no es ninguna.
+
+### La esquina NO estaba libre, y eso solo lo dijo el papel
+
+El hallazgo de la tanda. Leyendo el CSS, la esquina superior derecha parecía
+vacía: en modo mapa el topbar se oculta, los controles de zoom están a la
+izquierda, y la columna de botones flotantes va **abajo** a la derecha. Puesto
+ahí, el botón salió pintado y **sin poder tocarse**: el click de la sonda
+rebotaba contra `u52-mapcentric-filter`.
+
+Medido, en esa esquina vive el botón de **centrar en mi ubicación** («◎», en
+x=340), que es otro topbar —`u52-mapcentric-topbar`— que sí se pinta en Pro
+City. Es el defecto de la v895 con la otra cara: allá una clase que no existía
+dejó un botón sin pintar; acá un sitio que sí estaba ocupado lo dejó sin poder
+tocarse. Ninguna de las dos da error.
+
+**Así que el botón va DENTRO de esa fila**, no flotando encima. Lo coloca el
+mismo layout que a los demás y no hay dos capas disputándose el dedo.
+
+#### Y la fila tiene las columnas escritas a mano
+
+Segunda vuelta del mismo sitio. El topbar es una rejilla de **cuatro columnas
+fijas** —`54px 1fr 54px 54px`— y su propio comentario lo dice con esas
+palabras: «SIEMPRE tiene 4 columnas ahora». Un quinto hijo no se acomoda solo:
+se va a un segundo renglón implícito.
+
+Medido: el topbar pasaba de 48 a **120 px** de alto y el botón de centrar
+aparecía abajo, en x=26 · y=76. En Pro City la rejilla declara ahora sus cinco
+columnas, y el alto vuelve a ser el mismo **con y sin** el botón —82 px las
+dos veces—, o sea que no cuesta un milímetro.
+
+La columna nueva va **antes** del GPS de centrar porque se lee de izquierda a
+derecha: primero en cuánto anda la señal, después centrar.
+
+### Lo que la sonda midió, en tres ramas
+
+| | Qué sale |
+|---|---|
+| **A** · entrar al mapa con ±9 | 📡 ±9 en verde, alcanzable, arriba a la derecha |
+| **B** · tocarlo con ±380 y que mejore | rayado de «afinando» con la cifra viva → ±6 en verde · **ningún punto puesto** |
+| **C** · señal que no baja de ±300 | ⚠️ ±300 en rojo, y el estado manda a cielo abierto o a «En el mapa» |
+
+La de en medio es la que de verdad guarda: sin ella, juntar afinar con ubicar
+pasaría en verde.
+
+### El voseo que la bitácora daba por cubierto
+
+Salió abriendo `onMobileGpsPoint` para colgarle el repintado. El aviso de
+señal imprecisa decía **«salí a un sitio abierto»** — voseo, en texto que ve
+el usuario, con `revisar.js` en verde.
+
+Y no era mala suerte: **la v880 lo nombró con todas las letras** —«“salí a un
+sitio abierto” en js/20 es voseo… esas siguen una por una en la lista»— y
+**nunca se agregó a la lista**. Noventa versiones impreso, con la bitácora
+diciendo que estaba cubierto.
+
+Es la mitad de vocabulario de esa guarda fallando ABIERTO, que es exactamente
+lo que la v880 dejó escrito que iba a pasar — y la lección nueva es la otra:
+**una declaración que da por cubierto lo que la lista no trae se lee como un
+aprobado.** Nombrar una palabra en la bitácora no la mete en la guarda.
+
+Corregido el texto y agregada la palabra, con su razón escrita al lado.
+
+### Demostrado contra la v979
+
+Seis de siete en rojo, contra una copia guardada:
+
+```
+✗ el botón afina por la misma rutina y no escribe la suya  — no llama a mejorLecturaGps
+✗ y mirar la señal no deja un punto que nadie pidió  — pone un punto al afinar
+✗ la cifra del botón es de una lectura vigente  — lee la última sin mirar su edad
+✗ los tres tramos salen de los cortes ya derivados  — compara contra un número a mano
+✗ si el botón va en la fila, la quinta columna está declarada  — la fila se parte
+✗ y el botón se repinta con cada lectura  — la cifra se congela en la de al entrar
+```
+
+### Lo que NO se pudo correr
+
+**Ninguna suite de navegador**, por lo mismo que la v973 a la v979. Corrió
+`revisar.js` entero y se miró el papel con la sonda, que es lo que encontró
+las dos cosas que no se veían leyendo: la esquina ocupada y la rejilla de
+cuatro columnas.
+
+
 ## La lista viva: lo que al pliego educativo todavía le falta (v866)
 
 Esta lista se quedó vieja **cinco veces**. Cuatro dentro de la hoja —la

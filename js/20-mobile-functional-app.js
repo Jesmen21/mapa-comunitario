@@ -282,7 +282,7 @@
          contador se reinicia y el estado vuelve a decir los metros. */
       if(mobileGps.imprecisas >= 3){
         setMobilityStatus('Señal imprecisa · ' + Math.round(pos.coords.accuracy) +
-          ' m. Con el cielo tapado el GPS no ubica: salí a un sitio abierto.');
+          ' m. Con el cielo tapado el GPS no ubica: salga a un sitio abierto.');
       }
       return;
     }
@@ -291,6 +291,10 @@
     mobileGps.last = point;
     window.urbisMobileLastGPS = point;
     updateMobileGpsMarker(point);
+    /* El botón del mapa vive de esta misma lectura: sin repintarlo acá se
+       quedaría en la de hace un rato, y una cifra vieja presentada como la
+       de ahora es lo que este módulo no imprime. Solo sus nodos. */
+    try{ pintarBotonGps(); }catch(e){}
     const accuracy = Math.round(point.accuracy || 0);
     const status = accuracy ? `GPS activo · ${accuracy} m` : 'GPS activo';
     const statusEl = app.querySelector('#u56-mobility-status');
@@ -586,6 +590,7 @@
         </div>
         <button class="u52-mapcentric-filter u52-procity-filter-btn" data-u52-call="procity-filter-open" aria-label="Filtrar matriz de usos" hidden>🔷</button>
         <button class="u52-mapcentric-filter u52-cfilter-btn" data-u52-call="cfilter-open" aria-label="Filtrar reportes y eventos"><img src="assets/icons/urbis-filtro.png" alt="" class="u52-btn-img"></button>
+        <button class="u52-procity-gps-btn" data-u52-call="procity-gps-afinar" aria-label="Ver y afinar la precisión del GPS" hidden><span class="pc-gps-ico">📡</span><b class="pc-gps-txt">GPS</b></button>
         <button class="u52-mapcentric-filter" data-u52-call="locate" aria-label="Centrar en mi ubicación GPS">◎</button>
       </header>
       <button class="u52-mapcentric-locate" data-u52-call="locate" aria-label="Centrar mi ubicación">⌖</button>
@@ -2866,6 +2871,101 @@
      aviso quedaba escrito y sin lector, que es un dato presente al que
      ninguna pantalla alcanza. Una sola función para las dos, o las dos
      redacciones se separan a la tanda siguiente. */
+  /* ── El botón de GPS del mapa (v980) ──────────────────────────────
+     Pedido: «un botón arriba a la derecha donde uno ve el mapa para mejorar
+     la precisión del GPS». Son DOS cosas y por eso es un botón y no un
+     rótulo: enseña en cuánto anda la señal AHORA —que hasta la v979 solo se
+     sabía después de poner un punto, cuando ya no sirve de nada— y, al
+     tocarlo, afina.
+
+     Afina llamando a `mejorLecturaGps` y a nadie más: una segunda rutina de
+     afinado se separaría de aquella a la tanda siguiente (v879), y lo que
+     divergiría son justamente los cortes que la v978 derivó uno por uno.
+
+     Y NO pone ningún punto. Ese es el otro botón —«Mi ubicación»—, y
+     mezclarlos haría que mirar la señal dejara un punto que nadie pidió. */
+
+  /* Los tres tramos son los MISMOS de la v978: por debajo de 12 m se
+     distingue una casa de la de al lado, por encima de 50 no se puede
+     mapear. No se inventa un cuarto corte para pintar un botón. */
+  function tramoDeGps(acc){
+    if(acc === null || acc === undefined) return 'sin';
+    if(acc <= GPS_BUENO_M)      return 'buena';
+    if(acc <= GPS_INSERVIBLE_M) return 'dudosa';
+    return 'mala';
+  }
+
+  /* Una lectura VIEJA no es la de ahora. Enseñar «±8 m» de hace diez minutos
+     —parado en otra cuadra— es declarar mal la procedencia de una cifra, que
+     es la falta más cara de este proyecto. La frescura es la misma con la
+     que `beginProCityLocationGps` decide si la lectura guardada sirve para
+     poner un punto: un solo número para un solo hecho. */
+  function lecturaVigente(){
+    const g = mobileGps.last;
+    if(!g) return null;
+    if(Date.now() - (g.t || 0) > GPS_FRESCA_MS) return null;
+    return g;
+  }
+
+  function pintarBotonGps(estado){
+    const b = document.querySelector('.u52-procity-gps-btn');
+    if(!b) return;
+    /* Se tocan SOLO los nodos del botón, nunca `pintar()`: esto se repinta
+       con cada lectura del GPS, y recomponer la hoja entera varias veces por
+       minuto es lo que calienta un teléfono (v870). */
+    const ico = b.querySelector('.pc-gps-ico');
+    const txt = b.querySelector('.pc-gps-txt');
+    if(!ico || !txt) return;
+    if(estado && estado.afinando){
+      b.dataset.tramo = 'afinando';
+      ico.textContent = '📡';
+      txt.textContent = estado.acc ? ('±' + estado.acc) : '···';
+      b.setAttribute('aria-label', 'Afinando la señal del GPS' + (estado.acc ? ', va en ' + estado.acc + ' metros' : ''));
+      return;
+    }
+    const g = lecturaVigente();
+    const acc = g ? Math.round(g.accuracy || 0) : null;
+    const tramo = tramoDeGps(acc);
+    b.dataset.tramo = tramo;
+    ico.textContent = tramo === 'buena' ? '📡' : tramo === 'sin' ? '📡' : '⚠️';
+    /* Sin lectura vigente NO se inventa un número: dice qué hacer. Un «±?»
+       ocupa el sitio de una cifra y no es ninguna. */
+    txt.textContent = acc === null ? 'GPS' : ('±' + acc);
+    b.setAttribute('aria-label', acc === null
+      ? 'Sin lectura reciente del GPS. Tóquelo para afinar la señal.'
+      : 'La señal anda en ' + acc + ' metros. Tóquelo para afinarla.');
+  }
+
+  function afinarGpsDesdeElMapa(){
+    if(proCity.afinandoGps) return;              // dos afinados a la vez se pisan
+    proCity.afinandoGps = true;
+    pintarBotonGps({ afinando:true });
+    setMapReportStatus('📡 Afinando la señal… no se mueva unos segundos.');
+    mejorLecturaGps(function(acc){
+      pintarBotonGps({ afinando:true, acc:acc });
+    }).then(function(r){
+      proCity.afinandoGps = false;
+      if(r.estado === 'ok' || r.estado === 'imprecisa'){
+        /* La lectura se guarda aunque sea imprecisa: el botón tiene que poder
+           decir EN CUÁNTO anda, que es justo lo que se vino a mirar. Lo que
+           no se hace con una imprecisa es poner un punto — de eso responde
+           `beginProCityLocationGps`, que la rechaza por encima de 50 m. */
+        mobileGps.last = { lat:r.lat, lng:r.lng, accuracy:r.accuracy, t:Date.now() };
+        try{ window.urbisMobileLastGPS = mobileGps.last; updateMobileGpsMarker(mobileGps.last); }catch(e){}
+        try{ if(window.map) map.setView([r.lat, r.lng], Math.max(map.getZoom ? map.getZoom() : 17, 17), { animate:true }); }catch(e){}
+        const a = Math.round(r.accuracy);
+        setMapReportStatus(a > GPS_INSERVIBLE_M
+          ? ('⚠️ Lo mejor que dio son ±' + a + ' m, que es media cuadra. Salga a cielo abierto, o marque el sitio con el dedo en «En el mapa».')
+          : a > GPS_DUDOSO_M
+          ? ('📡 La señal quedó en ±' + a + ' m. Alcanza para la cuadra, no para la casa exacta.')
+          : ('📡 Señal buena: ±' + a + ' m.'));
+      } else {
+        setMapReportStatus('⚠️ ' + (r.razon || 'No se pudo leer el GPS.'));
+      }
+      pintarBotonGps();
+    });
+  }
+
   function avisoDePrecisionHTML(){
     if(proCity.movidoAMano){
       return '<div class="u52-gps-band ok">📍 Punto corregido a mano sobre el mapa.</div>';
@@ -2931,6 +3031,13 @@
     // encuentra nunca. Va al lado del lápiz, que es donde se lo busca.
     const reconBtn = app.querySelector('.u52-procity-recon-btn');
     if(reconBtn) reconBtn.hidden = !activo || !window.URBIS_PC_RECON;
+    /* La precisión del GPS, arriba a la derecha y no en la columna de la
+       derecha abajo: esa columna son HERRAMIENTAS —qué se ve, qué se dibuja—
+       y esto es un ESTADO del teléfono, que se mira antes de empezar. Pedido
+       así, y de paso no hay que empujar cinco botones un piso hacia arriba. */
+    const gpsBtn = app.querySelector('.u52-procity-gps-btn');
+    if(gpsBtn) gpsBtn.hidden = !activo;
+    if(activo) pintarBotonGps();
     if(mapScreen) mapScreen.classList.toggle('u52-procity-mapscreen', !!activo);
     // Bandera global del módulo: Pro City y el mapa ciudadano son módulos
     // SEPARADOS. Las capas que se dibujan por fuera de pintarPuntos (la gota
@@ -6062,6 +6169,7 @@
       if(name==='quick-report-back') { renderQuickReportCategories(); return; }
       if(name==='quick-report-publish') { publishQuickReport(app.querySelector('[data-u52-call="quick-report-publish"]')); return; }
       if(name==='procity-open-map') { openProCityMap(); return; }
+      if(name==='procity-gps-afinar') { afinarGpsDesdeElMapa(); return; }
       if(name==='procity-category-open') { showProCityCategorySheet(); return; }
       if(name==='procity-category-close') { hideProCityCategorySheet(); return; }
       if(name==='procity-stats-open') { showProCityStats(); return; }

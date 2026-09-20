@@ -2425,7 +2425,14 @@ console.log('\n  -- el FODA del curso --');
        —«Pruebe desde la ficha… o imprim\u00ed desde un computador»— que es como
        se ven cuando alguien corrige medio aviso. Van una por una porque
        terminan en -\u00ed y ah\u00ed no hay regla: «asist\u00ed a uno» es correcto. */
-    'imprim\u00ed'];
+    'imprim\u00ed',
+    /* `sal\u00ed` estaba NOMBRADO en la bit\u00e1cora desde la v880 —«y “sal\u00ed a un sitio
+       abierto” en js/20 es voseo»— y nunca se agreg\u00f3 a esta lista, as\u00ed que la
+       guarda no pod\u00eda morderlo y el caso sigui\u00f3 impreso noventa versiones.
+       Una declaraci\u00f3n que da por cubierto lo que la lista no trae se lee como
+       un aprobado: es la mitad de vocabulario de esta guarda fallando
+       ABIERTO, que es lo que la v880 dej\u00f3 escrito que iba a pasar. */
+    'sal\u00ed'];
 
   /* ── Los imperativos CON PRONOMBRE PEGADO, derivados y no listados ─────
      El agujero que destapó la v897, y es estructural: al pegarle el pronombre
@@ -3690,6 +3697,96 @@ console.log('\n  -- el mapeo de Pro City --');
   comprobar('y las dos lo declaran por la misma función',
     llamadas >= 2,
     llamadas + ' llamadas a urbisSinDireccion');
+}
+
+console.log('\n  -- el botón de GPS del mapa (v980) --');
+{
+  const j20 = soloCodigo(leer('js/20-mobile-functional-app.js'));
+  const j20crudo = leer('js/20-mobile-functional-app.js');
+  const c52 = leer('css/52-urbis-pro-city.css');
+  const trozo = (src, desde, hasta) => {
+    const i = src.indexOf(desde), j = src.indexOf(hasta, i + 1);
+    return (i < 0 || j < 0) ? '' : src.slice(i, j + hasta.length);
+  };
+  const afinar = trozo(j20, 'function afinarGpsDesdeElMapa(){', '\n  }\n');
+  const pinta  = trozo(j20, 'function pintarBotonGps(estado){', '\n  }\n');
+  const tramo  = trozo(j20, 'function tramoDeGps(acc){', '\n  }\n');
+
+  const material = !!(afinar && pinta && tramo)
+    && j20crudo.indexOf('data-u52-call="procity-gps-afinar"') >= 0;
+  comprobar('MATERIAL · el botón está en el mapa y sus tres funciones se leen',
+    material,
+    material ? 'el botón, afinarGpsDesdeElMapa, pintarBotonGps y tramoDeGps'
+             : 'falta: ' + [
+                 j20crudo.indexOf('data-u52-call="procity-gps-afinar"') < 0 ? 'el botón' : '',
+                 !afinar ? 'afinarGpsDesdeElMapa' : '', !pinta ? 'pintarBotonGps' : '',
+                 !tramo ? 'tramoDeGps' : ''].filter(Boolean).join(' · '));
+
+  /* UNA sola rutina de afinado. El botón afina llamando a `mejorLecturaGps`
+     —la de la v978— y no escribiendo su propio bucle: dos rutinas para un
+     hecho se separan a la tanda siguiente, y lo que divergiría son los
+     cortes que aquella derivó uno por uno en vez de inventarlos. */
+  const unaSola = !!afinar && afinar.indexOf('mejorLecturaGps(') >= 0
+    && afinar.indexOf('watchPosition') < 0 && afinar.indexOf('getCurrentPosition') < 0;
+  comprobar('el botón afina por la misma rutina y no escribe la suya',
+    unaSola,
+    unaSola ? 'llama a mejorLecturaGps'
+      : !afinar ? 'no se pudo leer afinarGpsDesdeElMapa'
+      : afinar.indexOf('mejorLecturaGps(') < 0
+      ? 'no llama a mejorLecturaGps'
+      : 'abre su propio watch: son dos rutinas de afinado para un solo hecho');
+
+  /* Y NO pone ningún punto. Mirar en cuánto anda la señal y dejar caer un
+     punto que nadie pidió son cosas distintas: poner el punto es el otro
+     botón, «Mi ubicación». Mezclarlos haría que asomarse al GPS ensuciara
+     el mapa. */
+  const noPone = !!afinar && afinar.indexOf('pickProCityPoint(') < 0;
+  comprobar('y mirar la señal no deja un punto que nadie pidió',
+    noPone,
+    noPone ? 'no llama a pickProCityPoint' : 'pone un punto al afinar: eso es el otro botón');
+
+  /* La cifra no se inventa. Una lectura vieja presentada como la de ahora
+     —«±8 m» de hace diez minutos, parado en otra cuadra— es declarar mal la
+     procedencia de un número, que es la falta más cara de este proyecto. */
+  const vigente = !!pinta && pinta.indexOf('lecturaVigente(') >= 0;
+  comprobar('la cifra del botón es de una lectura vigente, no de cualquiera',
+    vigente,
+    vigente ? 'pasa por lecturaVigente' : 'lee la última lectura sin mirar su edad');
+
+  /* Y los tramos son los de la v978. Un cuarto corte inventado para pintar
+     un botón diría en verde lo que el resto del módulo llama dudoso. */
+  const sinNumeros = !!tramo && !/[<>]=?\s*\d/.test(tramo)
+    && tramo.indexOf('GPS_BUENO_M') >= 0 && tramo.indexOf('GPS_INSERVIBLE_M') >= 0;
+  comprobar('los tres tramos salen de los cortes ya derivados, sin números nuevos',
+    sinNumeros,
+    sinNumeros ? 'compara contra GPS_BUENO_M y GPS_INSERVIBLE_M'
+      : !tramo ? 'no se pudo leer tramoDeGps'
+      : /[<>]=?\s*\d/.test(tramo)
+      ? 'compara contra un número escrito a mano: es un cuarto corte que nadie derivó'
+      : 'dejó de leer los cortes del módulo');
+
+  /* El topbar tiene las columnas ESCRITAS A MANO. Con el botón adentro y sin
+     declarar la quinta, la fila se parte y el botón de centrar se va a un
+     segundo renglón: medido con la sonda, el topbar pasaba de 48 a 120 px. */
+  const enLaFila = j20crudo.indexOf('u52-mapcentric-topbar') >= 0
+    && trozo(j20crudo, '<header class="u52-mapcentric-topbar"', '</header>').indexOf('procity-gps-afinar') >= 0;
+  const quinta = /u52-procity-mapscreen[^{]*u52-mapcentric-topbar\s*\{[^}]*grid-template-columns:[^;]*54px\s+1fr\s+54px\s+\d+px\s+54px/.test(c52);
+  comprobar('si el botón va en la fila de arriba, la quinta columna está declarada',
+    !enLaFila || quinta,
+    (!enLaFila || quinta)
+      ? (enLaFila ? 'la rejilla de Pro City declara sus cinco columnas' : 'el botón no va en la fila')
+      : 'el botón está en el topbar y la rejilla sigue en cuatro columnas: la fila se parte');
+
+  /* Guarda de la guarda: sin repintar con cada lectura del reloj del GPS, el
+     botón se queda con la cifra del momento en que se entró al mapa — y una
+     cifra vieja presentada como la de ahora es justo lo que las dos de
+     arriba vienen a impedir (v878). */
+  const alLlegar = trozo(j20, 'function onMobileGpsPoint(pos){', '\n  }\n');
+  comprobar('y el botón se repinta con cada lectura que llega',
+    !!alLlegar && alLlegar.indexOf('pintarBotonGps(') >= 0,
+    (!!alLlegar && alLlegar.indexOf('pintarBotonGps(') >= 0)
+      ? 'onMobileGpsPoint lo repinta'
+      : 'onMobileGpsPoint dejó de repintarlo: la cifra se congela en la de al entrar');
 }
 
 console.log('\n  -- el árbol al que le falta la especie (v979) --');
