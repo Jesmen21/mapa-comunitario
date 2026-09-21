@@ -3,29 +3,56 @@
 Notas para cualquier sesión que retome el proyecto. Están acá porque cada una
 de ellas costó tiempo averiguarla o romper algo.
 
-## Lo que sigue, y en este orden
+## Lo que sigue, y en este orden · `LISTA-QUE-SIGUE`
 
-**El registro es hoy el cuello de botella, no el código**, así que endurecer
-guardas sobre material que no está solo aumenta la distancia: la guarda de rol
-corre en 1 de 5 entradas que declaran, cuatro criterios siguen sin validar, y
-los ejes B y C no tienen base histórica. Por eso estas dos van antes que
-cualquier otra cosa, y por eso no se abre frente nuevo hasta que estén:
+**El registro es hoy el cuello de botella, no el código**, y sigue siéndolo:
+endurecer guardas sobre material que no está solo aumenta la distancia.
 
-1. **Migrar las veinte entradas con la forma antigua `fuente` + `url`** a
-   `fuentes[]` con su `rol`, para que la guarda de «al menos una fuente
-   documenta el acto» corra sobre todas.
-2. **Entrar como registros los casos del dossier que faltan** — veintidós
-   verificados con fuente, la mayoría todavía sin entrada.
+Esta lista **se quedó vieja veinticinco versiones** —pedía una migración hecha
+en la v967 y decía que la pantalla presidencial no se implementaba todavía,
+cuando la v971 la implementó entera—, así que ahora cada renglón lleva su
+**condición medible** y `revisar.js` denuncia el que ya esté cumplido. Es la
+forma que la v868 le dio a las listas vivas, aplicada a la lista que toda
+sesión lee primero. Cómo se agrega un renglón: la sección **«Una lista de
+prioridades también se queda vieja (v997)»**, más abajo.
 
-Y una precisión sobre la primera: si al migrar aparece una entrada cuyo rol de
-fuente **no se puede establecer porque ninguna fuente documenta el acto**, no
-se inventa y no se deja pasar. Se queda en `sin-acto` y se sigue. **Es
+Medido el 21 de septiembre de 2026 sobre los dos registros —180 entradas del
+gobierno actual y 32 de Petro—:
+
+1. **Declarar el `rol` de las fuentes.** 185 de 212 entradas tienen `fuentes[]`
+   y **ninguna** con rol, así que la guarda de «al menos una fuente documenta
+   el acto» (v965) no corre sobre ellas: salen `sin-declarar` en la cobertura
+   que la v966 publica. `hecho cuando: roles-declarados`
+2. **Declarar el `nivelGobierno` de las entradas.** 197 de 212 no lo traen, y
+   sin él la puerta del score (v941, v971) no puede dejar fuera un acto que no
+   es del gobierno nacional. Los 13 **casos** sí lo tienen todos.
+   `hecho cuando: nivel-declarado`
+3. **Documentar las 19 entradas del 4 al 17 de agosto**, que se escribieron sin
+   citar fuente. No están «sin clasificar»: están SIN DOCUMENTAR, y su lista
+   —con qué le falta a cada una— ya está escrita dentro del propio registro,
+   en `_pendientesFuente`. `hecho cuando: sin-documentar-cero`
+4. **Decidir la identidad de objeto de las 8 contradicciones documentadas.**
+   Es lo único que bloquea el veredicto de fiabilidad (v972), y **no es de esta
+   sesión**: leer si lo prometido y lo hecho son el mismo objeto cambia en
+   público el juicio sobre una persona real, y lo decide quien firma el módulo.
+   Declarada cualquiera, el peldaño se calcula solo.
+   `hecho cuando: identidad-declarada`
+
+Una precisión sobre la primera, que la lista vieja traía y sigue valiendo: si
+al declarar el rol aparece una entrada cuyas fuentes **ninguna documenta el
+acto**, no se inventa y no se deja pasar. Se queda en `sin-acto` —que desde la
+v970 es un estado que se cuenta y se nombra, no un fallo— y se sigue. **Es
 hallazgo, no obstáculo.**
 
-Después de esas dos está la **especificación de pantalla del módulo
-presidencial**, recibida el 19 de septiembre y medida en su propia sección más
-abajo. No se implementa antes, y la medición dice por qué: de sus siete
-gráficos, cero se pueden dibujar hoy leyendo del registro.
+**Lo que ya NO está en la lista, y por qué:** la migración del esquema antiguo
+`fuente` + `url` la hizo la v967 —cero entradas quedan con esa forma en los dos
+registros— y la pantalla del módulo presidencial la implementó la v971, con sus
+diecisiete gráficos. Las dos seguían pedidas acá hasta la v996.
+
+Lo demás del módulo presidencial —los cuatro criterios sin validar, la media
+histórica del eje B, la fuente del eje C— pide archivo y fuente, no código, y
+vive en las secciones de la v964 y la v965. Lo del módulo educativo y del
+mapeo vive en **la lista viva**, al final.
 
 ## Antes de tocar nada: traer lo de arriba
 
@@ -16027,6 +16054,110 @@ Corrió `revisar.js` entero con sus ocho comprobaciones nuevas, y se midió el
 papel con la sonda —los cuatro casos del clasificador, y el calentamiento con
 el chip cayéndose, contra las dos versiones—, que es lo que produjo las dos
 tablas de arriba.
+
+## Una lista de prioridades también se queda vieja (v997)
+
+Auditada la lista del principio de este archivo —la que dice **«lo que sigue, y
+en este orden»**, que es lo primero que lee cualquier sesión y lo que decide
+qué se hace—, dos de sus tres puntos estaban hechos:
+
+| Pedía | Estado real |
+|---|---|
+| migrar las veinte entradas con `fuente` + `url` | **hecho en la v967**: cero quedan en los dos registros |
+| entrar los casos del dossier que faltan | parcial, y no medible desde el repositorio |
+| «la pantalla presidencial no se implementa antes» | **la v971 la implementó entera**, con diecisiete gráficos |
+
+Y arriba de todo, la frase **«no se abre frente nuevo hasta que estén»** —
+mientras la v972 y las veinticuatro siguientes abrieron frentes.
+
+Es exactamente el fallo que la v866 encontró en la lista viva y que la v868 le
+guardó, cometido en el sitio donde más cuesta: **una lista viva que envejece
+hace que se vuelva a levantar algo ya medido; una lista de prioridades que
+envejece manda a rehacer trabajo hecho y a no hacer lo que sí falta.**
+
+### El renglón que se denuncia es el CUMPLIDO
+
+Esa es la vuelta que la hace guardable. Un renglón pendiente es lo normal y no
+hay nada que decir de él; el que hace daño es el que ya está hecho y sigue
+pedido. Así que cada renglón lleva su condición —`hecho cuando: <id>`— y
+`revisar.js` mide las cuatro contra los dos registros del disco.
+
+Medido el 21 de septiembre de 2026, sobre 212 entradas:
+
+```
+roles-declarados     185 de 212 sin un solo rol
+nivel-declarado      197 de 212 sin nivel
+sin-documentar-cero  19 sin documentar
+identidad-declarada  8 de 8 documentadas sin identidad
+```
+
+Las cuatro pendientes, así que la lista queda con cuatro renglones y los dos
+cumplidos salen —con su párrafo de «lo que ya NO está en la lista, y por qué»,
+para que nadie los vuelva a añadir creyendo que se olvidaron—.
+
+#### La condición no está en el código: está en los registros
+
+Es la diferencia con las listas vivas de la v868, cuyas marcas de capacidad se
+buscan dentro de lo que se sirve al navegador. Acá lo que decide si un renglón
+está hecho es el CONTENIDO de `assets/data/seguimiento-*.json`, así que la
+guarda los lee y cuenta. Es la misma forma con otro material.
+
+### Las cinco comprobaciones, y qué tapa cada una
+
+* **todo renglón declara cuándo está hecho** — uno sin cláusula es un renglón
+  que nadie puede saber cuándo sacar, que es literalmente como envejeció esta
+  lista;
+* **cada condición tiene su medición** — un id sin medición es un renglón que
+  PARECE vigilado y no lo está, que es peor que no tener guarda. Es la primera
+  comprobación de la v868 con las listas vivas, dicha acá;
+* **ninguna medición sobra** — una que no cuelga de ningún renglón es código
+  muerto que un día se lee como si guardara algo (v885);
+* **ningún renglón está ya cumplido** — la que importa, y la que habría cazado
+  esto veinticinco versiones antes;
+* **y una medición sabe decir que SÍ** — la guarda de la guarda. Una que
+  contestara «pendiente» pase lo que pase dejaría la lista envejecer sin que
+  nada lo dijera, y **contra el registro de verdad eso no se ve**, porque las
+  cuatro dicen «pendiente» hoy con razón. Se miden contra un caso fabricado con
+  todo declarado, que es la regla de la v970: la rama con material se mide
+  contra un caso fabricado y no contra el registro.
+
+### Cómo se agrega un renglón
+
+Se escribe en la lista con su cláusula `hecho cuando: <id>` y se le pone su
+medición en el bloque de `revisar.js`. **Sin las dos, la guarda se queja**: un
+id sin medición y una medición sin renglón salen cada uno con su propio
+mensaje, porque son dos descuidos distintos y piden cosas distintas.
+
+La medición recibe el material por parámetro —`{ ents, contr, pend }`— y no lo
+lee de fuera. No es cortesía: es lo que permite medirla contra el caso
+fabricado, y sin eso la guarda de la guarda no se podría escribir.
+
+### Demostrado contra la v996
+
+Cinco en rojo de seis, contra una copia guardada en `/tmp` y con una inyección
+fiel por aserción (v993). La primera es **el estado real de la v996**, con la
+migración del esquema antiguo devuelta a la lista:
+
+```
+✗ ningún renglón de la lista está ya cumplido
+    — ya está hecho y la lista lo sigue pidiendo: esquema-antiguo-cero
+      — la sesión siguiente rehace trabajo hecho
+✗ todo renglón de la lista declara cuándo está hecho  — 4 renglones y 3 condiciones
+✗ y cada condición tiene su medición en la guarda  — sin medición: sin-documentar-cero
+✗ y ninguna medición se quedó sin su renglón  — sin renglón: sin-documentar-cero
+✗ y una medición sabe decir que SÍ, contra un registro fabricado
+    — nunca dirían que sí: nivel-declarado
+```
+
+La sexta es MATERIAL y va primero (v920).
+
+### No sube la versión, y eso también es una decisión
+
+Solo cambian `CLAUDE.md` y `pruebas/revisar.js`, que no se sirven al navegador.
+Subir el token rompería la caché de todos los teléfonos para no cambiarles una
+sola línea de lo que ven, y `revisar.js` lo deja pasar con razón: su regla es
+que la versión suba cuando cambia **el código**. Es el mismo precedente de la
+corrección de «Una declaración de "otra tanda" también se queda vieja».
 
 ## La lista viva: lo que al pliego educativo todavía le falta (v866)
 

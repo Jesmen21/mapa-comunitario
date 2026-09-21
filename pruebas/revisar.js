@@ -6157,6 +6157,144 @@ console.log('\n  -- un error de GPS dice cuál de los tres es (v996) --');
   }
 }
 
+/* ── Una lista de prioridades también se queda vieja (v997) ────────────────
+   La lista del principio de CLAUDE.md es lo PRIMERO que lee cualquier sesión y
+   decide qué se hace, así que una que envejece manda a rehacer trabajo hecho.
+   Se quedó vieja veinticinco versiones: pedía la migración del esquema antiguo
+   —hecha en la v967— y decía que la pantalla presidencial no se implementaba
+   todavía, cuando la v971 la implementó entera.
+
+   Es exactamente el fallo que la v866 encontró en la lista viva y la v868 le
+   guardó: una lista honesta se vuelve vieja la primera vez que alguien
+   implementa algo, y ese es el fallo que nadie ve. La diferencia acá es que la
+   condición no está en el código servido sino en los REGISTROS, así que la
+   guarda lee los dos JSON y mide.
+
+   Se denuncia el renglón CUMPLIDO, que es el que manda a rehacer lo hecho. Un
+   renglón pendiente es lo normal y no se toca.
+
+   Cómo se agrega un renglón a la lista: se escribe con su cláusula
+   `hecho cuando: <id>` y se le pone acá su medición. Sin las dos, la guarda se
+   queja —un id sin medición es un renglón sin vigilar, y una medición sin
+   renglón es una medición muerta—. */
+console.log('\n  -- una lista de prioridades también se queda vieja (v997) --');
+{
+  const md = leer('CLAUDE.md');
+  const reg = f => { try { return JSON.parse(leer('assets/data/' + f)); } catch (e) { return null; } };
+  const R = [reg('seguimiento-presidencial.json'), reg('seguimiento-petro.json')].filter(Boolean);
+  const ents = R.reduce((a, d) => a.concat(d.entradas || []), []);
+  const contr = R.reduce((a, d) => a.concat(((d.contradicciones || {}).casos) || []), [])
+    .filter(c => c.estado === 'documentada');
+
+  /* La medición de cada renglón: recibe el material y devuelve
+     { hecho, cuanto }. Un renglón cuya medición dice `hecho` es el que hay que
+     sacar de la lista.
+
+     Recibe el material por PARÁMETRO y no lo lee de fuera, y eso es lo que
+     permite medirlas contra un caso de respuesta conocida más abajo: una
+     medición que siempre contestara «pendiente» dejaría la lista envejecer sin
+     que nada lo dijera, y contra el registro de verdad eso no se ve (v970). */
+  const MEDIDAS = {
+    'roles-declarados': (m) => {
+      const sin = m.ents.filter(e => (e.fuentes || []).length &&
+        !(e.fuentes || []).some(f => 'rol' in f));
+      return { hecho: sin.length === 0, cuanto: sin.length + ' de ' + m.ents.length + ' sin un solo rol' };
+    },
+    'nivel-declarado': (m) => {
+      const sin = m.ents.filter(e => !e.nivelGobierno);
+      return { hecho: sin.length === 0, cuanto: sin.length + ' de ' + m.ents.length + ' sin nivel' };
+    },
+    'sin-documentar-cero': (m) => {
+      return { hecho: m.pend.length === 0, cuanto: m.pend.length + ' sin documentar' };
+    },
+    'identidad-declarada': (m) => {
+      const sin = m.contr.filter(c => !('mismoObjetoVerificado' in c));
+      return { hecho: sin.length === 0, cuanto: sin.length + ' de ' + m.contr.length + ' documentadas sin identidad' };
+    }
+  };
+
+  /* Lo que hay en el disco hoy. */
+  const HOY = {
+    ents: ents,
+    contr: contr,
+    pend: R.reduce((a, d) => a.concat((((d._pendientesFuente || {}).lista) || [])), [])
+  };
+
+  const iL = md.indexOf('## Lo que sigue, y en este orden');
+  const cL = iL >= 0 ? md.slice(iL, md.indexOf('\n## ', iL + 10)) : '';
+  const pedidos = [...cL.matchAll(/`hecho cuando: ([a-z-]+)`/g)].map(m => m[1]);
+
+  /* MATERIAL primero (v920): sin la lista, sin los dos registros o sin
+     renglones que medir, todo lo de abajo pasaría por no tener nada delante. */
+  if (!cL || R.length < 2 || !pedidos.length) {
+    anotarSinMaterial('MATERIAL · la lista de prioridades y los dos registros se dejan leer',
+      'lista: ' + (cL ? 'sí' : 'no') + ' · registros: ' + R.length + ' · renglones: ' + pedidos.length);
+  } else {
+    comprobar('MATERIAL · la lista de prioridades y los dos registros se dejan leer',
+      true, pedidos.length + ' renglones con condición, y ' + ents.length + ' entradas que medir');
+
+    /* 1 · Todo renglón declara su condición. Uno sin cláusula es un renglón
+       que nadie puede saber cuándo sacar, que es como envejeció esta lista. */
+    const numerados = (cL.match(/^\d+\. \*\*/gm) || []).length;
+    comprobar('todo renglón de la lista declara cuándo está hecho',
+      numerados > 0 && numerados === pedidos.length,
+      numerados === pedidos.length
+        ? 'los ' + numerados + ' renglones llevan su condición medible'
+        : numerados + ' renglones y ' + pedidos.length + ' condiciones: alguno no dice cuándo sacarlo');
+
+    /* 2 · Y cada condición tiene su medición acá. Un id sin medición es un
+       renglón sin vigilar que PARECE vigilado, que es peor que no tenerla
+       —es la primera comprobación de la v868 con las listas vivas—. */
+    const huerfanos = pedidos.filter(k => !MEDIDAS[k]);
+    comprobar('y cada condición tiene su medición en la guarda',
+      huerfanos.length === 0,
+      huerfanos.length === 0
+        ? 'las ' + pedidos.length + ' se miden contra los registros'
+        : 'sin medición: ' + huerfanos.join(' · ') + ' — parecerían vigiladas y no lo estarían');
+
+    /* 3 · Y ninguna medición sobra. Una que no cuelga de ningún renglón es
+       código muerto que un día se lee como si guardara algo (v885). */
+    const sobran = Object.keys(MEDIDAS).filter(k => pedidos.indexOf(k) === -1);
+    comprobar('y ninguna medición se quedó sin su renglón',
+      sobran.length === 0,
+      sobran.length === 0
+        ? 'las ' + Object.keys(MEDIDAS).length + ' cuelgan de un renglón de la lista'
+        : 'sin renglón: ' + sobran.join(' · ') + ' — el renglón se sacó y la medición se quedó');
+
+    /* 4 · LA QUE IMPORTA: ningún renglón pedido está ya cumplido. Es la que
+       habría cazado la lista de la v971, que seguía pidiendo una migración
+       hecha en la v967. */
+    const cumplidos = pedidos.filter(k => MEDIDAS[k]).map(k => [k, MEDIDAS[k](HOY)])
+      .filter(([, m]) => m.hecho).map(([k]) => k);
+    comprobar('ningún renglón de la lista está ya cumplido',
+      cumplidos.length === 0,
+      cumplidos.length === 0
+        ? 'los ' + pedidos.length + ' siguen pendientes: ' +
+          pedidos.filter(k => MEDIDAS[k]).map(k => k + ' (' + MEDIDAS[k](HOY).cuanto + ')').join(' · ')
+        : 'ya está hecho y la lista lo sigue pidiendo: ' + cumplidos.join(' · ') +
+          ' — la sesión siguiente rehace trabajo hecho');
+
+    /* 5 · Guarda de la guarda (v878): una medición que contestara «pendiente»
+       pase lo que pase dejaría la lista envejecer sin que nada lo dijera, y
+       contra el registro de verdad eso no se ve —las cuatro dicen «pendiente»
+       hoy con razón—. Se miden contra un caso FABRICADO con todo declarado, que
+       es la regla de la v970: la rama con material se mide contra un caso
+       fabricado y no contra el registro. */
+    const LIMPIO = {
+      ents: [{ fuentes: [{ rol: 'acto' }], nivelGobierno: 'nacional' }],
+      contr: [{ estado: 'documentada', mismoObjetoVerificado: true }],
+      pend: []
+    };
+    const mudas = Object.keys(MEDIDAS).filter(k => !MEDIDAS[k](LIMPIO).hecho);
+    comprobar('y una medición sabe decir que SÍ, contra un registro fabricado',
+      mudas.length === 0,
+      mudas.length === 0
+        ? 'las ' + Object.keys(MEDIDAS).length + ' contestan «hecho» sobre un registro con todo declarado'
+        : 'nunca dirían que sí: ' + mudas.join(' · ') +
+          ' — la lista podría envejecer sin que nada lo dijera');
+  }
+}
+
 /* Las dos cuentas van APARTE porque piden cosas distintas: una fallada hay
    que arreglarla, una sin material hay que mirarla —o se quedó sin él porque
    el registro mejoró, o porque la función dejó de ver lo que medía—. Sumarlas
