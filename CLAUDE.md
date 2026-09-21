@@ -17145,6 +17145,143 @@ objeto cambia en público el juicio sobre una persona real (v959, v972).
 **Endurecer guardas alrededor no la adelanta ni un día**, y conviene que quede
 dicho ahí arriba y no solo acá.
 
+## Veintitrés archivos que nadie carga, y un comentario que los citaba (v1005)
+
+La v1001 midió once archivos de `js/` que ninguna página ni el service worker
+nombran, y **no los borró**, con su razón escrita: *«son once que no escribí, en
+una tanda que salió de un accidente con un comodín, y borrar de más por arreglar
+de menos es lo contrario de lo que esta tanda vino a hacer»*. Era una buena razón
+para aquella tanda y no para siempre.
+
+    v1004   11 huérfanos medidos en js/ · css/ sin medir · techo en 11
+    v1005   0 en js/ y 0 en css/ · 59,1 KB fuera · los dos techos en cero
+
+### Ocho de los once eran una sola línea de comentario
+
+Leídos enteros, no interpretados: *«URBIS v172-clean-core: módulo legacy
+desactivado para evitar pantallas antiguas superpuestas»* y *«URBIS V87:
+neutralizado. Buscador fijo en 36-mobility-static-search.js»*. **Cero código
+ejecutable**, 101 a 112 bytes cada uno.
+
+Los otros tres sí tienen código —5,7 KB, 4,7 KB y 4,0 KB— y exponen cinco
+globales: `URBIS_MOBILITY_DEFAULT_BASEMAP`, `centrarEnMiUbicacion`,
+`ubicarUsuario`, `URBIS_V175_STABILIZER` y `URBIS_V176_HOME_RESET`. Medido, los
+cinco tienen **cero menciones en todo el repositorio** fuera de los tres archivos
+que los definen: nadie los define en otro sitio y nadie los llama.
+
+Y la cadena de carga se comprobó entera antes de borrar, que es la vara que la
+v885 usó antes de retirar `limpiarRuta` —«comprobado leyendo `window.limpiarRutaReal`
+antes de borrar nada: borrar la primera copia es un no-op de verdad y no una
+suposición sobre cuál de las dos gana»—:
+
+| Qué se miró | Resultado |
+|---|---|
+| Las seis páginas HTML | ninguna los nombra |
+| Los tres service workers | ninguno los precachea |
+| `manifest.json` y `manifest-gobierno.json` | cero referencias a `js/` |
+| Inyección dinámica de `<script>` | **cero en todo el repositorio** |
+| El único `createElement('link')` (js/70) | pone `apple-touch-icon`, `icon` y `manifest`; nunca una hoja de estilo |
+
+### Y la misma medición, corrida sobre `css/`, destapó doce más
+
+Ese es el hallazgo que la v1001 no podía tener, porque su comprobación miraba
+solo `js/`. Hay **doce hojas de estilo** que ninguna página enlaza, ningún
+service worker precachea y ningún `@import` trae — 45,2 KB, cuatro de ellas de
+7 KB largos.
+
+**El defecto no era de `js/`: era de archivos que nadie carga.** Medir solo una
+de las dos carpetas deja la otra creciendo, y la otra resultó pesar tres veces
+más.
+
+#### La cadena de carga necesita los `@import`, y eso se midió
+
+`css/main.css` trae cuarenta y nueve hojas por `@import`, así que una medición
+que solo mirara el HTML denunciaría como huérfanas casi todas. Está demostrado
+en rojo: quitándole los `@import` al lector, **nueve hojas perfectamente vivas
+salen denunciadas** —`00-app-shell`, `14-mobile-functional-app`,
+`30-zoom-marker-optimizer`…—. Una guarda con esa clase de falso positivo termina
+en una lista de excepciones que envejece hasta no significar nada (v895).
+
+### Un comentario vivo que documentaba una regla de una hoja muerta
+
+Lo que hace que esto valga más que una limpieza. `css/54-config-admin.css` abre
+su excepción del mapa de la ficha de aprobar así:
+
+> `css/99-mobile-clean-core.css` **y `css/99-mobile-home-reset.css`** esconden
+> CUALQUIER `.leaflet-container` mientras el cuerpo no esté en modo mapa o
+> movilidad… Está bien que lo hagan.
+
+Medido: **`clean-core` está vivo** —lo trae `main.css` por `@import`, y su regla
+está en la línea 59— y **`home-reset` no lo cargaba nadie**, aunque tenga la
+regla equivalente en su línea 32. O sea que la mitad de la razón escrita ahí no
+estaba en vigor.
+
+Es la forma de la v926 con la marca de capacidad: **un comentario que describe
+una regla que no se aplica es tan engañoso como uno que describe una que no
+existe**, y este además explicaba por qué existe un `!important` que alguien
+podría haber intentado quitar. El párrafo dice ahora solo lo que sigue siendo
+cierto, y deja escrito qué se retiró.
+
+La excepción **no se toca**: sigue haciendo falta, porque la que la obliga es la
+hoja que sí está viva.
+
+### Los dos techos van a CERO
+
+`TECHO_HUERFANOS` pasa de 11 a 0, y la comprobación mira ahora las dos carpetas.
+Es el mismo movimiento que la v1003 hizo con `TECHO_SIN_TIPO`: **un techo en
+cero es el que de verdad falla cerrado** —un archivo nuevo que nadie carga salta
+en su primera corrida, en vez de esconderse dentro de un cupo que nadie vuelve a
+mirar—.
+
+Y el techo ABSOLUTO sigue siendo lo correcto acá con la vara de la v965 —*¿puede
+ese pendiente crecer sin que nadie haga nada mal?*—: no puede. Solo crece si
+alguien agrega un archivo que nadie carga, que es justo lo que hay que impedir.
+Es la diferencia con `sin-acto`, donde la v1004 declinó el trinquete por la razón
+contraria.
+
+### Medido antes y después, que es lo único que prueba un borrado
+
+Las seis páginas, con el navegador, contando los 404 de verdad:
+
+```
+                           ANTES (con los 23)        DESPUÉS
+index.html?app=educativo   404 ninguno · 3 hojas     404 ninguno · 3 hojas
+index.html                 404 ninguno · 3 hojas     404 ninguno · 3 hojas
+seguimiento.html           404 ninguno · 1 hoja      404 ninguno · 1 hoja
+analisis-ia.html           404 ninguno · 3 hojas     404 ninguno · 3 hojas
+vision-territorial.html    404 ninguno · 3 hojas     404 ninguno · 3 hojas
+reportes.html              404 ninguno · 3 hojas     404 ninguno · 3 hojas
+```
+
+**Idéntico en las dos columnas**: mismos 404 —ninguno—, mismas hojas, mismo
+alto de página y los mismos errores de consola, que son un artefacto de la sonda
+(Leaflet por otro CDN en esas entradas) y salen igual con los archivos puestos.
+Y el flujo de mapear entero sigue funcionando de punta a punta, tramo incluido.
+
+**Una columna sola no prueba nada.** Que después no haya 404 se lee igual si el
+borrado fue inocuo y si la página nunca los pidió; la que convierte eso en una
+medición es la de antes.
+
+### Demostrado contra la v1004
+
+Cuatro inyecciones, una por aserción (v993), contra copias guardadas en `/tmp`:
+
+```
+✗ ningún archivo de js/ o css/ se queda sin que nadie lo cargue
+    — 1 que no carga nadie: js/99-mobile-home-reset.js
+✗ ningún archivo de js/ o css/ se queda sin que nadie lo cargue
+    — 1 que no carga nadie: css/99-mobile-home-reset.css
+✗ ningún archivo de js/ o css/ se queda sin que nadie lo cargue
+    — 9 que no carga nadie: css/00-app-shell.css · css/14-mobile-functional-app.css · …
+✗ y la cadena de carga mira las dos carpetas, con los @import dentro
+    — dejó de mirar css/: una hoja que nadie carga volvería sin que nada lo diga
+```
+
+La tercera es la del lector sin `@import`, y **salta la comprobación principal y
+no la guarda de la guarda**: el efecto se ve más alto y con nombres, que es mejor
+para quien lo encuentre. Queda dicho por lo que es y no se presenta como si la
+guarda de la guarda la cazara.
+
 ## La lista viva: lo que al pliego educativo todavía le falta (v866)
 
 Esta lista se quedó vieja **cinco veces**. Cuatro dentro de la hoja —la

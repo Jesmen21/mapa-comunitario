@@ -1,4 +1,4 @@
-const URBIS_CACHE = 'urbis-v1004-la-fuente-del-acto';
+const URBIS_CACHE = 'urbis-v1005-nadie-carga-estos-archivos';
 const URBIS_ASSETS = [
   './',
   './index.html',

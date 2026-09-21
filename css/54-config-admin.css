@@ -555,11 +555,19 @@
 .uadm-apr-mapa .leaflet-container{ height:100%; width:100%; background:#eaf4fa; }
 /* LA EXCEPCIÓN, y por qué existe.
 
-   `css/99-mobile-clean-core.css` y `css/99-mobile-home-reset.css` esconden
-   CUALQUIER `.leaflet-container` mientras el cuerpo no esté en modo mapa o
-   movilidad, con `display:none !important`. Está bien que lo hagan: es lo
-   que evita que un mapa suelto aparezca encima de la pantalla de inicio, y
-   costó arreglarlo en su día.
+   `css/99-mobile-clean-core.css` esconde CUALQUIER `.leaflet-container`
+   mientras el cuerpo no esté en modo mapa o movilidad, con
+   `display:none !important`. Está bien que lo haga: es lo que evita que un
+   mapa suelto aparezca encima de la pantalla de inicio, y costó arreglarlo en
+   su día.
+
+   Hasta la v1005 este párrafo nombraba además `css/99-mobile-home-reset.css`,
+   que tenía una regla equivalente — y esa hoja **no la cargaba nadie**: ni una
+   página ni el service worker ni un `@import`. O sea que la mitad de la razón
+   escrita acá no estaba en vigor, y un comentario que describe una regla que
+   no se aplica es tan engañoso como uno que describe una que no existe. La
+   hoja se retiró con las otras veintidós huérfanas y el párrafo dice ahora
+   solo lo que sigue siendo cierto.
 
    Pero «cualquiera» incluye este, que se dibuja a propósito dentro de la
    ficha de aprobar y sin el cual hay que volver a salir del panel para ver

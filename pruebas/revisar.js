@@ -6543,35 +6543,76 @@ console.log('\n  -- nada de la raíz se copia dentro de js/ (v1001) --');
         : 'con ciclo de vida de service worker dentro de js/: ' + sw.join(' · ') +
           ' — registrarlo por error deja media aplicación vieja en el teléfono');
 
-    /* Y LO QUE LA MEDICIÓN DESTAPÓ AL LADO: once archivos de `js/` que ninguna
-       página ni el service worker nombran. No los carga nadie —este proyecto
-       no inyecta scripts en ningún sitio, comprobado— así que son código que
-       viaja en el repositorio y no llega a un navegador: la forma de la v885 a
-       tamaño de archivo.
+    /* Y LO QUE LA MEDICIÓN DESTAPÓ AL LADO: archivos que NADIE carga.
 
-       NO se borran acá y se dice por qué: son once que no escribí, en una
-       tanda que salió de un accidente con un comodín, y borrar de más por
-       arreglar de menos es lo contrario de lo que esta tanda vino a hacer.
-       Queda el trinquete, que es lo que impide que crezcan.
+       La v1001 midió once en `js/` y no los borró, con su razón escrita: eran
+       once que no había escrito yo, en una tanda que salió de un accidente
+       con un comodín, y borrar de más por arreglar de menos era lo contrario
+       de lo que aquella tanda vino a hacer. La v1005 los midió de frente y sí:
+       ocho eran una sola línea de comentario —su propio texto dice «módulo
+       legacy desactivado»— y los otros tres exponían cinco globales que NO
+       aparecen en ninguna otra parte del repositorio. Ningún `<script>` los
+       nombra, ningún service worker los precachea y este proyecto no inyecta
+       scripts en ningún sitio, así que borrarlos es un no-op comprobado y no
+       una suposición sobre cuál gana — que es la vara que la v885 usó antes de
+       retirar `limpiarRuta`.
 
-       Y el techo ABSOLUTO es el correcto acá, con la vara de la v965: este
-       pendiente no puede crecer solo. Solo crece si alguien agrega un archivo
-       que nadie carga, que es justo lo que hay que impedir. */
-    const TECHO_HUERFANOS = 11;
+       Y la misma medición, corrida sobre `css/`, destapó DOCE más: hojas de
+       estilo que ninguna página enlaza, ningún service worker precachea y
+       ningún `@import` trae. Entre ellas `99-mobile-home-reset.css`, que
+       `css/54-config-admin.css` nombraba en su comentario como si su regla
+       estuviera en vigor.
+
+       Por eso la comprobación mira ahora las DOS carpetas: el defecto no era
+       de `js/`, era de archivos que nadie carga, y medir solo una mitad deja
+       la otra creciendo. La cadena de carga incluye los `@import` porque una
+       hoja puede traer a otra —`css/main.css` trae cuarenta y nueve— y una
+       medición que solo mirara el HTML denunciaría como huérfanas casi todas.
+
+       Los dos techos van en CERO, que es el que de verdad falla cerrado
+       (v880): un archivo nuevo que nadie carga salta en su primera corrida,
+       en vez de esconderse dentro de un cupo que nadie vuelve a mirar. Y el
+       techo ABSOLUTO es lo correcto acá con la vara de la v965 —¿puede el
+       pendiente crecer sin que nadie haga nada mal?—: no puede. Solo crece si
+       alguien agrega un archivo que nadie carga, que es justo lo que hay que
+       impedir. */
+    const TECHO_HUERFANOS = 0;
     const paginas = fs.readdirSync(RAIZ).filter((f) => f.endsWith('.html'))
       .map((f) => leer(f)).join('\n');
-    const swRaiz = leer('service-worker.js');
+    const swTodos = fs.readdirSync(RAIZ)
+      .filter((f) => /^sw-|^service-worker/.test(f) && f.endsWith('.js'))
+      .map((f) => leer(f)).join('\n');
+    const importes = (fs.readdirSync(R('css')).filter((f) => f.endsWith('.css'))
+      .map((f) => leer('css/' + f)).join('\n').match(/@import[^;]+;/g) || []).join(' ');
+    const enCss = fs.readdirSync(R('css')).filter((f) => f.endsWith('.css'));
+
     const huerfanos = enJs.filter((f) =>
-      paginas.indexOf('js/' + f) < 0 && swRaiz.indexOf('js/' + f) < 0);
-    comprobar('ningún archivo de js/ nuevo se queda sin que nadie lo cargue',
+      paginas.indexOf('js/' + f) < 0 && swTodos.indexOf('js/' + f) < 0)
+      .map((f) => 'js/' + f)
+      .concat(enCss.filter((f) =>
+        paginas.indexOf('css/' + f) < 0 && swTodos.indexOf('css/' + f) < 0 &&
+        importes.indexOf(f) < 0).map((f) => 'css/' + f));
+
+    comprobar('ningún archivo de js/ o css/ se queda sin que nadie lo cargue',
       huerfanos.length <= TECHO_HUERFANOS,
       huerfanos.length <= TECHO_HUERFANOS
-        ? huerfanos.length + ' de ' + enJs.length + ' sin cargar, sobre un techo de ' + TECHO_HUERFANOS +
-          ' — medidos en la v1001 y no tocados: son de antes'
-        : huerfanos.length + ' sin cargar, ' + (huerfanos.length - TECHO_HUERFANOS) +
-          ' por encima del techo. ' + TECHO_HUERFANOS + ' son de antes (medidos en la v1001); ' +
-          'el que sobra es el nuevo. Están todos acá: ' + huerfanos.join(' · ') +
-          ' — viaja en el repositorio y no llega a un navegador');
+        ? 'los ' + (enJs.length + enCss.length) + ' que se sirven los carga alguien'
+        : huerfanos.length + ' que no carga nadie: ' + huerfanos.slice(0, 8).join(' · ') +
+          (huerfanos.length > 8 ? ' · …' : '') +
+          ' — viajan en el repositorio y no llegan a un navegador');
+
+    /* La guarda de la guarda: si la cadena de carga dejara de mirar los
+       `@import`, casi toda `css/` saldría huérfana y la tentación sería subir
+       el techo en vez de arreglar el lector; y si dejara de mirar `css/`, las
+       doce de la v1005 podrían volver sin que nada lo dijera. Se mide que las
+       dos mitades sigan puestas y que el lector encuentre material. */
+    const cadenaViva = importes.length > 0 && enCss.length > 0;
+    comprobar('y la cadena de carga mira las dos carpetas, con los @import dentro',
+      cadenaViva && /enCss\.filter/.test(leer('pruebas/revisar.js')),
+      !cadenaViva ? 'no se leyeron @import (' + importes.length + ' car.) ni hojas (' + enCss.length + '): el lector mediría la nada'
+        : (/enCss\.filter/.test(leer('pruebas/revisar.js'))
+          ? enCss.length + ' hojas y ' + (importes.match(/@import/g) || []).length + ' @import en la cadena'
+          : 'dejó de mirar css/: una hoja que nadie carga volvería sin que nada lo diga'));
   }
 }
 
