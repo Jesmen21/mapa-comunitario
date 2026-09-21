@@ -722,8 +722,12 @@
     var pts = (curva || []).filter(function (p) { return p && p.gal != null; });
     if (pts.length < 2) return '';
     var o = opts || {};
-    var W = o.w || 300, H = o.h || 150;
-    var iz = 34, de = 12, ar = 14, ab = 26;
+    var W = o.w || 300, H = o.h || 164;
+    /* Márgenes crecidos en la v1035 junto con la letra: con los rótulos a 9
+       unidades -para que en el papel de 60 × 90 pasen de 1,6 a 2,2 mm- el
+       «0» del eje vertical y el «475» del horizontal se pisaban en la
+       esquina, y el pie del eje X no cabía. Lo cazó el barrido de rótulos. */
+    var iz = 40, de = 12, ar = 22, ab = 34;
     var maxG = Math.max.apply(null, pts.map(function (p) { return p.gal; }));
     var tope = Math.ceil(maxG / 100) * 100;
     var lx = Math.log(pts[0].tr), rx = Math.log(pts[pts.length - 1].tr);
@@ -737,7 +741,7 @@
       var y = py(tope * f);
       rejilla += '<line x1="' + n1(iz) + '" y1="' + n1(y) + '" x2="' + n1(W - de) +
         '" y2="' + n1(y) + '" stroke="' + LINEA + '" stroke-width=".5"/>' +
-        '<text x="' + n1(iz - 4) + '" y="' + n1(y + 3) + '" font-size="7" fill="' + GRIS +
+        '<text x="' + n1(iz - 4) + '" y="' + n1(y + 3) + '" font-size="9" fill="' + GRIS +
         '" text-anchor="end">' + Math.round(tope * f) + '</text>';
     });
 
@@ -752,11 +756,19 @@
       return '<circle cx="' + n1(px(p.tr)) + '" cy="' + n1(py(p.gal)) + '" r="' +
           (esDiseno ? 4 : 2.4) + '" fill="' + (esDiseno ? ALERTA : AZUL) + '"' +
           (esDiseno ? ' stroke="#fff" stroke-width="1.4"' : '') + '/>' +
-        '<text x="' + n1(px(p.tr)) + '" y="' + n1(H - ab + 11) + '" font-size="7" fill="' +
+        '<text x="' + n1(px(p.tr)) + '" y="' + n1(H - ab + 16) + '" font-size="9" fill="' +
           (esDiseno ? TINTA : GRIS) + '" text-anchor="middle"' +
           (esDiseno ? ' font-weight="700"' : '') + '>' + p.tr + '</text>' +
         (esDiseno
-          ? '<text x="' + n1(px(p.tr)) + '" y="' + n1(py(p.gal) - 8) + '" font-size="7.5" ' +
+          /* La anotación del valor se aparta de los rótulos del eje vertical:
+             va centrada sobre su punto, y cuando el punto cae cerca del
+             margen izquierdo su mitad se monta sobre las cifras del eje. No
+             es un choque de geometría fija —depende de dónde caiga el dato—
+             así que se acota el centro en vez de mover la escala. El ancho
+             se estima por caracteres, del lado seguro: pasarse la empuja
+             hacia dentro del dibujo, que sigue leyéndose. */
+          ? '<text x="' + n1(Math.max(iz + 6 + String(p.gal + ' gal').length * 2.4, px(p.tr))) +
+            '" y="' + n1(py(p.gal) - 8) + '" font-size="9.5" ' +
             'fill="' + ALERTA + '" text-anchor="middle" font-weight="700">' +
             p.gal + ' gal</text>'
           : '');
@@ -777,9 +789,11 @@
       '<path d="' + linea + '" fill="none" stroke="' + AZUL + '" stroke-width="1.8" ' +
         'stroke-linejoin="round"/>' +
       marcas +
-      '<text x="' + n1(iz - 4) + '" y="' + n1(ar - 5) + '" font-size="7" fill="' + GRIS +
+      /* El rótulo de la unidad se separa del primer tramo del eje: con la
+         letra a 9 unidades, `ar - 5` lo dejaba pegado al «300» de arriba. */
+      '<text x="' + n1(iz - 4) + '" y="' + n1(ar - 12) + '" font-size="9" fill="' + GRIS +
         '" text-anchor="end">gal</text>' +
-      '<text x="' + n1(W - de) + '" y="' + n1(H - 4) + '" font-size="7" fill="' + GRIS +
+      '<text x="' + n1(W - de) + '" y="' + n1(H - 4) + '" font-size="9" fill="' + GRIS +
         '" text-anchor="end">años de periodo de retorno</text>' +
     '</svg>';
   }

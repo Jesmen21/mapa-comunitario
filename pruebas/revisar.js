@@ -8661,6 +8661,81 @@ console.log('\n  -- la baldosa de cifra, en todo lo servido (v1029) --');
       : NO_CONCUERDA.length + ' declarados, cada uno con por qué no concuerda');
 }
 
+console.log('\n  -- la letra de los dibujos, en milímetros de papel (v1035) --');
+{
+  /* §21 mide el TAMAÑO DE LOS MAPAS en milimetros de papel desde la v886.
+     La letra de dentro de los dibujos no la medía nadie, y medida sobre la
+     lamina compuesta salia asi:
+
+         escalera 1,06 mm · curva sismica 1,59 · el grano 1,59
+         lo que cabe 1,85 · rosa de vientos 2,65
+
+     El piso NO se inventa: es 2,1 mm, el texto mas chico que la hoja
+     imprime a proposito -medido sobre sus 24 tamanos declarados en mm-.
+     Tres de los cinco lo pasan ahora; los otros dos quedan declarados.
+
+     La medida es de LAYOUT, asi que no se puede repetir sin navegador. Lo
+     que si se puede vigilar es que las cifras que la produjeron no bajen:
+     un trinquete sobre las constantes, con los milimetros escritos al lado
+     para que quien las cambie sepa contra que se midieron. */
+  const j68 = soloCodigo(leer('js/68-procity-reconocimiento.js'));
+  const j74 = soloCodigo(leer('js/74-dibujos-analisis.js'));
+  const trozo = (txt, nom) => {
+    /* Con el parentesis: `indexOf('function curvaDeAmenaza')` casa tambien
+       con `curvaDeAmenazaX`, asi que renombrar la funcion dejaba la guarda
+       en verde leyendo la de al lado. Lo cazo la inyeccion. */
+    const i = txt.indexOf('function ' + nom + '(');
+    if (i < 0) return '';
+    const j = txt.indexOf('\n  function ', i + 20);
+    return txt.slice(i, j < 0 ? txt.length : j);
+  };
+
+  /* [ que, texto, patron, minimo, mm medidos ] */
+  const PISOS = [
+    ['la escalera · el nombre de cada casilla', trozo(j68, 'escalasAnidadas'),
+     /font-size="([\d.]+)" fill="' \+ \(ultimo/, 5.4, '2,38 mm'],
+    ['la escalera · las dos líneas del pie', trozo(j68, 'escalasAnidadas'),
+     /font-size="([\d.]+)" fill="#0A6F9E"/, 4.6, '2,38 mm'],
+    ['el grano · el lado de cada cuadrado', trozo(j68, 'granoDeManzana'),
+     /text-anchor="middle" font-size="([\d.]+)"/, 4.2, '2,38 mm'],
+    ['la curva sísmica · los rótulos de los ejes', trozo(j74, 'curvaDeAmenaza'),
+     /font-size="([\d.]+)" fill="' \+ GRIS/, 9, '1,85 mm · sigue bajo el piso'],
+  ];
+
+  const leidos = PISOS.map(([q, txt, re, min, mm]) => {
+    const m = txt ? re.exec(txt) : null;
+    return { q: q, v: m ? +m[1] : null, min: min, mm: mm };
+  });
+  const sinLeer = leidos.filter((x) => x.v == null);
+
+  if (sinLeer.length) {
+    comprobar('MATERIAL · los tamaños de letra de los dibujos se pueden leer', false,
+      'NO PUDO CORRER: ' + sinLeer.length + ' de ' + leidos.length +
+      ' cambiaron de forma (' + sinLeer.map((x) => x.q).join(' · ') + ')');
+  } else {
+    comprobar('MATERIAL · los tamaños de letra de los dibujos se pueden leer', true,
+      leidos.map((x) => x.v).join(' · ') + ' unidades');
+    const bajos = leidos.filter((x) => x.v < x.min);
+    comprobar('ningún dibujo achica su letra por debajo de lo medido',
+      bajos.length === 0,
+      bajos.length
+        ? bajos.map((x) => x.q + ': ' + x.v + ' contra ' + x.min + ' (dio ' + x.mm + ')').join(' · ')
+        : leidos.map((x) => x.q.split(' · ')[0] + ' ' + x.mm).filter((v, i, a) => a.indexOf(v) === i).join(' · '));
+  }
+
+  /* Y el piso, que es lo que hace que los numeros de arriba signifiquen algo:
+     sale del texto mas chico que la hoja imprime a proposito. Si la hoja
+     bajara de 2,1 mm, el piso seria otro y habria que volver a medir. */
+  const mms = (j68.match(/font-size:\s*([\d.]+)mm/g) || [])
+    .map((s) => +(/([\d.]+)mm/.exec(s)[1])).sort((a, b) => a - b);
+  comprobar('el piso sale de la hoja y no de un número a ojo',
+    mms.length > 20 && mms[0] >= 2 && mms[0] <= 2.2,
+    mms.length <= 20 ? 'NO PUDO CORRER: solo ' + mms.length + ' tamaños leídos de la hoja'
+      : (mms[0] < 2 || mms[0] > 2.2)
+        ? 'la hoja bajó su texto más chico a ' + mms[0] + ' mm: el piso de 2,1 hay que volver a medirlo'
+        : 'el texto más chico que la hoja imprime a propósito son ' + mms[0] + ' mm, de ' + mms.length + ' tamaños');
+}
+
 console.log('\n  -- los otros dos dibujos caben en su caja (v1034) --');
 {
   /* Misma aritmetica que la v1033, en los dos dibujos que el barrido de

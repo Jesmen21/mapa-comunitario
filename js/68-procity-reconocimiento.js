@@ -6712,7 +6712,7 @@ function donaHTML(datos, colorDe, nombreDe) {
        renglones y el papel alcanza: el historial —«más grandes incluso que
        los mapas de mapeos, para ver con claridad»— y el lote, que se quedó
        sin la lista de lados y es todo dibujo. */
-    var CAJAS_DOBLES = horiz ? ['Cómo cambió el sitio', 'El lote a intervenir'] : ['El lote a intervenir'];
+    var CAJAS_DOBLES = horiz ? ['Cómo cambió el sitio', 'El lote a intervenir'] : ['El lote a intervenir', 'Dónde queda, escala por escala'];
     /* La fila ENTERA de su banda: «las imágenes satelitales de cómo cambia el
        sitio, sería bueno dedicarle casi toda una celda horizontal completa
        de la hoja para mostrar su línea de tiempo». Cinco fotos en fila a lo
@@ -21731,7 +21731,7 @@ function donaHTML(datos, colorDe, nombreDe) {
      Y el `13` de la banda de rotulos pasa a `17` en los tres sitios, para
      que la silueta siga midiendo lo mismo: lo que crece es el pie, no el
      dibujo. */
-  var ESC_W = 44, ESC_H = 44, ESC_GAP = 6, ESC_PIE = 17;
+  var ESC_W = 54, ESC_H = 58, ESC_GAP = 6, ESC_PIE = 31;
   /* El área de un anillo sobre la esfera. La fórmula plana se queda corta con
      Colombia entera —doce grados de latitud— y acá se imprime al lado del
      área del sector, que son unas hectáreas: dos cifras de la misma columna
@@ -21899,13 +21899,13 @@ function donaHTML(datos, colorDe, nombreDe) {
           ' stroke="' + (ultimo ? '#0A6F9E' : '#C9D6E0') + '"' +
           ' stroke-width="' + (ultimo ? 1.6 : 0.8) + '"/>' +
         fig + dentro +
-        '<text x="' + (ESC_W / 2) + '" y="' + (ESC_H - 11) + '" text-anchor="middle"' +
-          ' font-size="3.4" fill="' + (ultimo ? '#075E88' : '#6B7A8A') + '"' +
+        '<text x="' + (ESC_W / 2) + '" y="' + (ESC_H - 17.5) + '" text-anchor="middle"' +
+          ' font-size="5.4" fill="' + (ultimo ? '#075E88' : '#6B7A8A') + '"' +
           ' font-weight="' + (ultimo ? 700 : 500) + '">' + esc(x.t) + '</text>' +
-        '<text x="' + (ESC_W / 2) + '" y="' + (ESC_H - 6) + '" text-anchor="middle"' +
-          ' font-size="2.9" fill="#0A6F9E">' + esc(pie[0] || '') + '</text>' +
-        '<text x="' + (ESC_W / 2) + '" y="' + (ESC_H - 1.2) + '" text-anchor="middle"' +
-          ' font-size="2.9" fill="#6B7A8A">' + esc(pie[1] || '') + '</text>' +
+        '<text x="' + (ESC_W / 2) + '" y="' + (ESC_H - 9.5) + '" text-anchor="middle"' +
+          ' font-size="4.6" fill="#0A6F9E">' + esc(pie[0] || '') + '</text>' +
+        '<text x="' + (ESC_W / 2) + '" y="' + (ESC_H - 2) + '" text-anchor="middle"' +
+          ' font-size="4.6" fill="#6B7A8A">' + esc(pie[1] || '') + '</text>' +
         '</g>';
     }).join('');
     return {
@@ -21960,7 +21960,11 @@ function donaHTML(datos, colorDe, nombreDe) {
     if (!lado) return null;
     var todos = [{ m: lado, t: 'Este sector', c: '#0A6F9E', mio: true }].concat(GRANO_REF);
     var mayor = Math.max.apply(null, todos.map(function (x) { return x.m; }));
-    var LADO = 34, GAP = 7, H = LADO + 9;
+    /* `H = LADO + 12` desde la v1035: con los rótulos a 4,2 y 3,6 unidades
+       -subidos para que en el papel de 60 × 90 pasen de 1,6 a 2,4 mm- la
+       segunda línea cierra en LADO + 11,6 y con los 9 de antes se salía del
+       dibujo. Lo cazó el barrido de rótulos, no la lectura. */
+    var LADO = 34, GAP = 7, H = LADO + 12;
     var ancho = todos.length * LADO + (todos.length - 1) * GAP;
     var cuadros = todos.map(function (x, i) {
       var l = LADO * Math.sqrt(x.m / mayor);   // área proporcional al cuadrado del lado
@@ -21970,10 +21974,10 @@ function donaHTML(datos, colorDe, nombreDe) {
           ' fill="' + (x.mio ? x.c : 'none') + '" fill-opacity="' + (x.mio ? 0.22 : 0) + '"' +
           ' stroke="' + x.c + '" stroke-width="' + (x.mio ? 1.4 : 0.9) + '"' +
           (x.mio ? '' : ' stroke-dasharray="2 1.5"') + '/>' +
-        '<text x="' + (LADO / 2) + '" y="' + (LADO + 4) + '" text-anchor="middle" font-size="3.2"' +
+        '<text x="' + (LADO / 2) + '" y="' + (LADO + 5) + '" text-anchor="middle" font-size="4.2"' +
           ' fill="' + (x.mio ? '#075E88' : '#6B7A8A') + '" font-weight="' + (x.mio ? 700 : 500) + '">' +
           x.m + ' m</text>' +
-        '<text x="' + (LADO / 2) + '" y="' + (LADO + 8) + '" text-anchor="middle" font-size="2.7"' +
+        '<text x="' + (LADO / 2) + '" y="' + (LADO + 10.5) + '" text-anchor="middle" font-size="3.6"' +
           ' fill="#6B7A8A">' + esc(x.t) + '</text>' +
         '</g>';
     }).join('');

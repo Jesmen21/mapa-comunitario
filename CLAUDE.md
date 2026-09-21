@@ -20924,6 +20924,124 @@ El **informe en hojas** sigue sin poderse componer desde la sonda
 —`htmlImprimible` no está expuesto—, así que de sus dibujos se comprueba la
 geometría, que es la misma, y no el papel.
 
+## La letra de los dibujos, en milímetros de papel (v1035)
+
+§21 mide desde la v886 **el tamaño de los mapas** en milímetros de papel, con
+su piso de 8 cm y su objetivo de 12. De la letra que va DENTRO de los dibujos
+no se ocupa nadie — y la lámina se cuelga en una pared y se lee de lejos.
+
+Medida por primera vez, sobre la hoja compuesta y convertida a milímetros con
+el ancho real del papel:
+
+| Dibujo | Antes |
+|---|---|
+| **La escalera** de las cinco siluetas (v887) | **1,06 mm** |
+| La curva de amenaza sísmica | 1,59 mm |
+| **El grano** de manzana (v859) | 1,59 mm |
+| Lo que cabe en el lote | 1,85 mm |
+| La rosa de vientos (v882) | 2,65 mm |
+
+**1,06 mm son unos tres puntos.** Y la escalera es el caso peor por una razón
+que la v887 dejó escrita: sus nombres SON la figura —«lo real son los nombres,
+salen del geocodificador»—, así que a ese tamaño el dibujo no hace lo único
+que vino a hacer.
+
+    v1034   el más chico 1,06 mm · dos de cinco pasan el piso
+    v1035   el más chico 1,85 mm · tres de cinco lo pasan, y el peor sube a 2,38
+
+### El piso no se inventa: lo pone la hoja
+
+Poner «2 mm porque suena razonable» sería repetir el techo de Overpass de la
+v869. Medidos los **109 tamaños declarados en milímetros** de la hoja, el
+texto más chico que imprime a propósito son **2,1 mm**. Ese es el piso, y hay
+una comprobación que lo recalcula: si la hoja bajara de ahí, el piso sería
+otro y habría que volver a medir.
+
+### Lo que costó, medido en las tres composiciones
+
+La escalera pasa a caja doble y crece su letra; el grano y la curva crecen la
+suya. Medido contra la v1034 en las tres composiciones que la sonda sabe
+producir:
+
+| | Ceden | §21 hoja A |
+|---|---|---|
+| normal | 0 → **0** | idéntico |
+| con cada cifra en uno | 0 → **0** | idéntico |
+| letra de colgar | 6 → **6**, los mismos seis | idéntico |
+
+**Cero paneles.** Y se midió en la composición apretada a propósito, que es
+donde un panel más ancho sí podría costar: es la regla de la v919 —una
+decisión de espacio se juzga midiendo las dos composiciones, no leyendo la
+lista—.
+
+### Cada paso lo corrigió el barrido, no la lectura
+
+Cuatro veces seguidas, y las cuatro invisibles leyendo el código:
+
+* **el grano** creció su letra y su segunda línea se salió del `viewBox`
+  —`H = LADO + 9` no daba para 3,6 unidades—;
+* **la curva sísmica** creció y el «0» del eje vertical chocó con el «475»
+  del horizontal, en la esquina donde los dos ejes se juntan;
+* corrido el eje X, **la anotación del valor** —«216 gal»— se montó sobre las
+  cifras del eje: no es geometría fija, depende de dónde caiga el dato, así
+  que se acota el centro en vez de mover la escala;
+* y bajado el techo del dibujo, **el rótulo de la unidad** quedó pegado al
+  «300» de arriba.
+
+Es para lo que la v1034 dejó el barrido puesto: **subir una letra sin medir
+el resultado es cambiar un defecto por otro.**
+
+### La guarda es un trinquete sobre las constantes
+
+La medida es de LAYOUT y no se puede repetir sin navegador. Lo que sí se
+vigila es que las cifras que la produjeron **no bajen**, con los milímetros
+escritos al lado para que quien las cambie sepa contra qué se midieron. Y el
+piso se recalcula de la hoja en cada corrida.
+
+#### El extractor casaba por prefijo
+
+Lo cazó la inyección, que es para lo que existe.
+`indexOf('function curvaDeAmenaza')` casa también con `curvaDeAmenazaX`, así
+que renombrar la función dejaba la guarda en verde **leyendo el tramo de al
+lado**. Va con el paréntesis. Es la misma familia que la v1034 encontró con
+las dos figuras de `js/74` que comparten constantes: un extractor que cree
+mirar una cosa y mira otra.
+
+### Lo que sigue bajo el piso, y qué costaría
+
+* **La curva sísmica**, en 1,85 mm. Subió de 1,59 con la letra a 9 unidades y
+  los márgenes crecidos; para llegar a 2,1 haría falta ~10,2 y volver a
+  repartir los cuatro choques de arriba.
+* **«Lo que cabe en el lote»**, en 1,85 mm y sin tocar. Su letra es la clase
+  compartida `.pcr-sec-t`, la misma del corte de la calle, cuya geometría
+  acaba de cuadrarse en la v1033: subirla obliga a rehacer aquel reparto, y la
+  guarda de la v1033 lo pondría en rojo — que es lo correcto, y es otra tanda.
+  `pendiente`
+
+### Demostrado contra la v1034
+
+Cuatro en rojo, cada una con su causa, contra una copia guardada en el
+directorio de trabajo (v973):
+
+```
+✗ ningún dibujo achica su letra por debajo de lo medido
+    — la escalera · el nombre de cada casilla: 3.4 contra 5.4 (dio 2,38 mm)
+✗ ningún dibujo achica su letra por debajo de lo medido
+    — el grano · el lado de cada cuadrado: 3.2 contra 4.2 (dio 2,38 mm)
+✗ el piso sale de la hoja y no de un número a ojo
+    — la hoja bajó su texto más chico a 1.4 mm: el piso de 2,1 hay que volver a medirlo
+✗ MATERIAL · los tamaños de letra de los dibujos se pueden leer
+    — NO PUDO CORRER: 1 de 4 cambiaron de forma
+```
+
+### Lo que NO se pudo correr
+
+**Ninguna suite de navegador**, por lo mismo que la v973 en adelante. Corrió
+`revisar.js` entero con sus tres comprobaciones nuevas, y se midió el papel en
+**tres** composiciones —la normal, la de `--uno` y la de la letra de colgar—:
+trece dibujos, ochenta y un rótulos, cero fuera de caja, cero pisados, cero
+defectos de las cuatro reglas del papel y la misma lista de cesión que antes.
+
 ## La lista viva: lo que al pliego educativo todavía le falta (v866)
 
 Esta lista se quedó vieja **cinco veces**. Cuatro dentro de la hoja —la
