@@ -6430,6 +6430,51 @@ console.log('\n  -- una declaración de «otra tanda» lleva su estado (v1006) -
         : fuera.length + ' sin marca: ' + fuera.slice(0, 5).join(' · ') +
           ' — hay que leerlas enteras para saber si ya están hechas, que es como envejecieron seis');
 
+    /* ── Y la OTRA familia, que la v1006 dejó declarada como su punto ciego ──
+       Aquella escribió que una declaración con otras palabras se le escapa. La
+       v1007 midió cuántas eran y por dónde: **veintiocho secciones tituladas
+       «Lo que … NO hace / NO cierra / sigue pendiente»**, con cincuenta y dos
+       renglones dentro, y **siete de ellos ya estaban hechos** —el estado del
+       mobiliario en la v992, el sitio de siembra del árbol en la v993, los
+       murales en la v983, los teléfonos y buzones en la v994, la cuantificación
+       de especies y materiales en la v988, §4 en la v901—.
+
+       Acá el detector NO es la frase sino el ENCABEZADO, y por eso no tiene
+       falsos positivos: una sección con ese título existe solo para declarar
+       trabajo aplazado. Se exige la marca por RENGLÓN y no por sección, porque
+       una sección de cuatro renglones con una sola marca deja tres sin estado —
+       que es exactamente como envejecieron estos siete.
+
+       Queda fuera «Lo que NO se pudo …», que es otra cosa: una limitación de
+       medición del contenedor, no trabajo que alguien decidió aplazar. */
+    const HSEC = /^#{2,4} Lo que .*(NO hace|NO cierra|sigue pendiente|NO se hace|sigue faltando)/;
+    const lns = md.split('\n');
+    const renglones = [];
+    const sinEstado = [];
+    for (let i = 0; i < lns.length; i++) {
+      if (!HSEC.test(lns[i]) || /NO se pudo/.test(lns[i])) continue;
+      let j = i + 1;
+      while (j < lns.length && !/^#{2,4} /.test(lns[j])) j++;
+      const cuerpo = '\n' + lns.slice(i + 1, j).join('\n');
+      const trozos = /\n\* /.test(cuerpo)
+        ? cuerpo.split(/\n(?=\* )/).filter((t) => /^\* /.test(t))
+        : [cuerpo];
+      trozos.forEach((t) => {
+        renglones.push(t);
+        if (!/`pendiente`|`cerrado en v\d+/.test(t)) {
+          sinEstado.push('CLAUDE.md:' + (i + 1) + ' → ' + t.trim().replace(/\n/g, ' ').slice(0, 40));
+        }
+      });
+    }
+    comprobar('y todo renglón de una sección «Lo que NO hace» dice su estado',
+      renglones.length > 10 && sinEstado.length === 0,
+      renglones.length <= 10
+        ? 'solo ' + renglones.length + ' renglones: el lector no encuentra las secciones'
+        : (sinEstado.length === 0
+          ? 'los ' + renglones.length + ' renglones de las secciones de trabajo aplazado llevan su estado'
+          : sinEstado.length + ' sin estado: ' + sinEstado.slice(0, 4).join(' · ') +
+            ' — siete de estos ya estaban hechos y ninguno lo decía'));
+
     /* Una marca que nombre una versión que todavía no existe sería una
        promesa, no un estado. Se compara con el token que este mismo archivo
        ya exige que coincida en los nueve sitios. */

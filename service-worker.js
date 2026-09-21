@@ -1,4 +1,4 @@
-const URBIS_CACHE = 'urbis-v1006-otra-tanda-lleva-su-estado';
+const URBIS_CACHE = 'urbis-v1007-el-punto-ciego-medido';
 const URBIS_ASSETS = [
   './',
   './index.html',

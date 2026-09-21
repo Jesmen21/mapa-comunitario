@@ -3044,6 +3044,7 @@ Queda en la lista viva con su cláusula `ya:`, y las dos casillas **ubican con
 un punto medido** mientras tanto. También queda la población por departamento
 y por comuna: pide anclas del DANE como las municipales, y escribir treinta y
 tres cifras de memoria es exactamente lo que la v863 y la v879 prohíben.
+`pendiente`
 
 ### Demostrado contra la v886
 
@@ -4290,6 +4291,7 @@ Medido hoy, antes de tocar nada:
 | los de categoría | — | 9,2 cm de 10 |
 
 Queda como la tanda siguiente, con la medición hecha.
+`cerrado en v901`
 
 ## El orden de cesión, declarado (v901)
 
@@ -4888,6 +4890,12 @@ cuenta, un sitio— pero **arreglar a ojo lo que no se puede medir es lo que
 este proyecto lleva cinco tandas deshaciendo** (la mudanza de la v882, la
 bisección de la v886, la fila de texto de la v901). Quedan con lo que se
 averiguó de cada una. §12 y §13 quedan enteras.
+`cerrado en v921` las dos que sí se podían —la (c), que la v915 midió que no
+eran dos cuentas, y la (d), que la v921 destapó dándole al doble una tesela
+que cambia por año—. La (b) y la (e) las auditó la v916 y **volvieron con la
+premisa no confirmada**: el mapeo de tramos de edad parte los veintiún
+campos sin repetir ninguno, y las cuatro rutas que imprimen la pendiente
+leen el mismo campo ya redondeado.
 
 ## La etiqueta y los ejemplos hablan de lo mismo (v904)
 
@@ -4962,6 +4970,7 @@ que dibujar el contorno pide una consulta más.
 Se deja sin hacer y no se declara imposible, que es la distinción que este
 módulo lleva cinco tandas defendiendo: queda en la lista viva con lo que sí
 hay —el punto medido dentro del departamento— y con lo que costaría.
+`pendiente`
 
 ## El PDF traía una hoja de las dos (v905)
 
@@ -7455,6 +7464,9 @@ urbana.
 **Y la vista de escritorio tampoco entra acá.** El interruptor vive en la
 ficha que existe hoy; cuando llegue la vista de dos columnas leerá el mismo
 `S.corrida` en vez de tener el suyo.
+`cerrado en v946` — las seis plantillas entre la v934 y la v944, los cuatro
+vacíos con trámite en la v931 y la v932, y los tres paneles de percepción en
+la v946.
 
 ## La procedencia no inventa un autor (v930)
 
@@ -8088,6 +8100,7 @@ plantilla son frente total, con puerta o vitrina, muro ciego y cerrado ese día.
 Ninguna dice vivienda. Esa casilla la cierra el mapeo por edificio, que es lo
 que el propio texto nombra al lado; la mención de la plantilla ahí es una
 inferencia, no una medición, y **no se tocó para no afirmar de más**.
+`pendiente`
 
 ### Y lo que la forma no distingue, declarado
 
@@ -8779,16 +8792,21 @@ Queda escrito para que la tanda siguiente no vuelva a medirlo:
   `atribucion_causal` · `afirmacion_en_circulacion`—. No existe, y `tipoFuente`
   **no es eso**: mide la calidad de la FUENTE, no la clase de la afirmación.
   Son dos ejes y meterlos en uno es lo que el pliego prohíbe.
+  `cerrado en v957`
 * **`tipo_medicion`** —actividad contra resultado—. «Cuatro operativos en un
   día» y «la criminalidad bajó» hoy son la misma clase de entrada.
+  `cerrado en v957`
 * **`contrargumento_oficial`**, con `ausente` explícito. Ojo: `contrapunto` ya
   existe en 112 entradas y **es otra cosa** —es la advertencia metodológica de
   URBIS, no la respuesta del Gobierno—. Usarlo sería la homonimia que este
   proyecto persigue.
+  `cerrado en v957`
 * **Los ejes B (deterioro institucional) y C (orientación del gasto)**, la
   normalización por 100 días y la capa editorial firmada. El propio pliego dice
   que el eje B no se puede publicar sin la media histórica de Petro, Duque y
   Santos: es trabajo de archivo, no de código.
+  `cerrado en v959` — los tres ejes se calculan y **ninguno publica
+  nivel**, cada uno diciendo qué le falta.
 
 ## El ancho libre no es el ancho del andén (v942)
 
@@ -8843,6 +8861,7 @@ tentador porque el número quedaría más redondo.
 La carencia tampoco se borra, **y esa es la mitad que cuesta**: el porcentaje
 de red sin dato sigue siendo cierto. Se SUMA lo caminado en vez de
 sustituirlo — borrarlo sería la mentira contraria a la de la v861.
+`cerrado en v942 · medido y declinado`
 
 #### La frase vive en un solo sitio, porque la carencia tiene dos ramas
 
@@ -8920,6 +8939,8 @@ salir, que es trabajo de curso y no de código.
 Quedan **dos** plantillas por conectar —«Conteo de alturas por manzana», que
 tiene otro camino, y «Cupo real de equipamientos»— y las tres de percepción,
 que además necesitan entrar en `huecosDeCampo` antes de tener formulario.
+`pendiente` — la escala escrita que lo volvería contable llegó en la v992, y
+su lista de usos no incluye esta plantilla.
 
 ## El cupo se pregunta en portería, y no se extrapola (v943)
 
@@ -9033,6 +9054,7 @@ mentira contraria a la v861.
 Queda **una** plantilla por conectar —«Conteo de alturas por manzana», que
 tiene otro camino ya medido— y las tres de percepción, que además necesitan
 entrar en `huecosDeCampo` antes de tener formulario.
+`cerrado en v943 · medido y declinado`
 
 ## La sexta plantilla no se conecta, y eso se declara (v944)
 
@@ -10196,14 +10218,17 @@ Las tres capas que faltan, con lo que cada una necesita:
 * **Capa 2 · los indicadores contables** (I-04 a I-10) normalizados por 100 días
   de gobierno, con `poder_predictivo` según días transcurridos. Se puede
   calcular de los dos registros: `fichaDe` ya cuenta los días desde la posesión.
+  `cerrado en v958`
 * **Capa 3 · los ejes A, B y C**, lado a lado y nunca combinados en un número.
   El eje B no se puede publicar sin la media histórica de Petro, Duque y Santos
   —lo dice el propio pliego— y eso es trabajo de archivo. El eje C pide datos
   presupuestales deflactados que el módulo no tiene.
+  `cerrado en v959`
 * **Capa 4 · el marco declarado y el editorial firmado**, con autor y fecha,
   rotulado como opinión y enlazado a los registros que lo sustentan. Necesita
   las palabras de quien opera URBIS: los supuestos de valor los declara una
   persona, no se deducen.
+  `cerrado en v960`
 
 ## La tasa existe; la comparación entre gobiernos, no (v958)
 
@@ -10312,10 +10337,13 @@ has already been declared`. Se llama `cpb`.
   no existe: el pliego es explícito en que una contradicción retórica sin
   identidad de objeto NO baja el eje A, y sin ese campo las contradicciones del
   registro no se pueden separar en las dos clases.
+  `pendiente`
 * **El bloque D de alerta temprana** pide series de Medicina Legal, Procuraduría
   y Defensoría, y el propio pliego dice que sin serie histórica de gobiernos
   anteriores esos indicadores no significan nada.
+  `pendiente`
 * **Los ejes** (Capa 3) y **el marco declarado con el editorial** (Capa 4).
+  `cerrado en v960` — los ejes en la v959 y la Capa 4 en la v960.
 
 ## Tres ejes lado a lado, y ninguno con nivel (v959)
 
@@ -10423,12 +10451,18 @@ aserción tenía razón y no se aflojó.
 * **I-01, I-02 e I-03** —el conteo de promesas verificables y cumplidas— siguen
   sin fuente: el registro tiene contradicciones, no un inventario de promesas
   con su estado.
+  `pendiente`
 * **El bloque D de alerta temprana**, que pide series de Medicina Legal,
   Procuraduría y Defensoría, y que el propio pliego declara sin sentido sin la
   serie histórica.
+  `pendiente`
 * **Los cinco gráficos** (G-1 a G-5) con sus reglas de honestidad gráfica: los
   cinco son del eje C y ninguno tiene datos que dibujar.
+  `cerrado en v971` — la pantalla entró con diecisiete gráficos; los del
+  eje C siguen sin datos que dibujar y se declaran en su pliegue desde la
+  v977.
 * **La Capa 4**: el marco declarado y el editorial firmado.
+  `cerrado en v960`
 
 ## La opinión va firmada y fuera del cálculo (v960)
 
@@ -10732,14 +10766,18 @@ Queda medido para que la tanda siguiente no empiece por averiguarlo:
   mandato no declaran indicador. Escribir los criterios no los clasifica: los
   hace clasificables. Ese pase es la tanda que sigue, y ahora se puede hacer
   contra una lista y no de memoria.
+  `pendiente`
 * **`calidadDelEncuadre` y `signoPolitico`**, que son los que vuelven
   computables los dos casilleros QC que hoy salen «no se pueden correr». Son
   lecturas sobre el encuadre de cada pieza, no sobre el registro.
+  `pendiente`
 * **`solidezPorTriangulacion`** con `fuentes[].pais` y `confirma` —confirmar
   el HECHO no es compartir el ENCUADRE—, y **`decisionNacionalHabilitante`**
   con su `implicaOrdenDirecta` siempre en falso salvo prueba.
+  `pendiente`
 * **El eje C entero**, que sigue sin fuente, y la media histórica del eje B,
   que sigue siendo trabajo de archivo.
+  `pendiente`
 
 ## El caso que no cabía en ningún indicador tiene el suyo (v962)
 
@@ -10852,13 +10890,18 @@ registro actual por omisión. Lo destapó la aserción nueva, que salió roja co
   I-05 nombre un órgano de la lista cerrada. Hoy hay cero declaraciones de
   I-05, así que la guarda no tendría nada que comprobar y no se escribió a
   medias.
+  `pendiente`
 * **`calidadDelEncuadre` y `signoPolitico`**, los dos casilleros QC que siguen
   en «no se pueden correr».
+  `pendiente`
 * **`solidezPorTriangulacion`** con `fuentes[].pais` y `confirma`, y
   **`decisionNacionalHabilitante`** con su `implicaOrdenDirecta`.
+  `pendiente`
 * **Aplicar los criterios al resto del registro**: 153 de 159 hechos del
   mandato siguen sin declarar indicador.
+  `pendiente`
 * **El eje C entero** y la media histórica del eje B.
+  `pendiente`
 
 ## Una vía inventada, y dos guardas que no dependen de acordarse (v963)
 
@@ -12036,11 +12079,15 @@ Es la regla de la v916, y se cobró dos veces:
   marca de un módulo que comparte hoja de estilo con el resto, así que lo
   decide quien la escribió. La serif sí entró, pero **solo en el editorial**,
   que es donde el pliego la pide para separar la opinión del dato.
+  `pendiente`
 * **El texto del editorial, su autor y su fecha**, que el usuario dijo que
   escribe él. Va con marcador de posición y el bloque dice qué le falta.
+  `pendiente`
 * **Los tres gráficos sin dato**, cada uno con la fuente que necesita.
+  `pendiente`
 * **`calidadDelEncuadre` y `signoPolitico`**, que son los dos casilleros de
   control de calidad que siguen en «no se pueden correr».
+  `pendiente`
 
 ### Demostrado contra la v970
 
@@ -13785,10 +13832,17 @@ Siete de ocho en rojo, contra una copia guardada:
   «metálica» y «oxidada» fueran valores del mismo campo. Va con la tanda de
   la línea de vías, que es donde el reporte lo pidió —«verde está buena,
   naranja medio regular, malo, muy malo»—.
+  `cerrado en v992` — con su escala de cuatro peldaños y el criterio de
+  cada uno escrito, que es lo que lo volvió contable.
 * **El árbol con o sin jardinera** —«que diga si el árbol tiene su propia
   jardinera o es un árbol normal»—. Es un campo de ARBOLADO, no de
   mobiliario, y tiene su propio molde: la misma forma de la especie.
+  `cerrado en v993` — como campo propio, con seis sitios de siembra y la
+  jardinera elevada entre ellos.
 * **Arbustos, flores y cactus**, que siguen pendientes de la v975.
+  `pendiente` — el TIPO «Jardinera o arbusto ornamental» existe desde la
+  v975 y lo que falta es su lista de especies, que js/03c excluye a
+  propósito con su razón escrita.
 
 ### Lo que NO se pudo correr
 
@@ -13912,12 +13966,15 @@ propio conviene comprobarlo contra la guarda que ya está escrita.**
   un alcantarillado. No entra como tipo porque es un ESTADO, y meterlo sería
   exactamente lo que la guarda de la v981 me cazó con la jardinera. Lo cierra
   la tanda del estado, que es la de la línea de vías.
+  `cerrado en v992` — «Redes en Vía» entró en la lista de usos con estado.
 * **Murales, grafitis, vallas publicitarias y estatuas** — medido, cero
   entradas. Son otra familia (arte y publicidad en el espacio público) y otra
   tanda.
+  `cerrado en v983`
 * **Teléfonos públicos, buzones, cajeros y parquímetros** — cero entradas
   también, y de mobiliario. Se dejan dichos con su medición para que la
   próxima no vuelva a barrer.
+  `cerrado en v994`
 
 ### Demostrado contra la v981
 
@@ -14058,6 +14115,7 @@ uso que mezcla las dos cosas:
 **Teléfonos públicos, buzones, cajeros y parquímetros**, que la v982 dejó
 medidos en cero y son de mobiliario. Y la **tapa rota o faltante**, que sigue
 esperando el campo de estado.
+`cerrado en v994`
 
 ### Lo que NO se pudo correr
 
@@ -14808,10 +14866,12 @@ leyendo, y así se cazó.
 * **La lámina no lo imprime.** La v935 dejó la forma —la pantalla primero, el
   papel después— y la v936 midió lo que cuesta una caja más en el pliego. Va
   con su medición o no va.
+  `pendiente`
 * **El recuento NO se lleva al sector.** Contar treinta árboles no dice
   cuántos hay; el panel lo dice con esas palabras y tiene su aserción. Para la
   cifra del sector haría falta el inventario de la autoridad ambiental, que es
   otra fuente.
+  `pendiente`
 
 ### Demostrado contra la v987
 
@@ -15966,6 +16026,7 @@ Queda dicho con su razón en vez de hecho a ojo de paso.
 Y **la identidad visual de la muestra** —Archivo + Source Serif 4, señal
 `#B8112E`, modo oscuro— sigue sin adoptarse, por lo que la v971 dejó escrito:
 la decide quien la escribió.
+`pendiente`
 
 ## Un error de GPS dice cuál de los tres es (v996)
 
@@ -16932,6 +16993,7 @@ motor, que vive en el otro repositorio, y pide su propia medición: cuántos
 metros de vía suma el sector, y qué pasa con la jerarquía cuando la misma calle
 entra mapeada dos veces. Queda dicho con su nombre en vez de hecho a ojo de
 paso, que es lo que este proyecto lleva cinco tandas deshaciendo.
+`pendiente`
 
 ## Las diecinueve del 4 al 17 de agosto, documentadas (v1003)
 
@@ -17499,6 +17561,100 @@ Las dos últimas son del lector y enseñan las dos mitades que hay que conservar
 sin recortar las citas denuncia diecisiete frases que nadie escribió como una
 declaración —incluida la suya—, y leyendo la marca del texto ya recortado las
 pierde todas.
+
+## El punto ciego de la v1006, medido (v1007)
+
+La v1006 le puso marca a las catorce declaraciones escritas con «otra tanda», y
+dejó dicho de qué NO respondía: *«una declaración escrita de otra manera —"queda
+para después", "lo toma quien siga"— se le escapa, y esa mitad se sigue cazando
+leyendo»*.
+
+**Medida esa mitad, es tres veces más grande que la primera.**
+
+    v1006   14 declaraciones con marca · la otra familia sin medir
+    v1007   52 renglones más, en 28 secciones · 19 ya estaban hechos
+
+### El detector no es la frase: es el ENCABEZADO
+
+Ahí está lo que hace que esto se pueda guardar y la v1006 no pudiera. Se probó
+primero el camino obvio —ampliar la lista de frases con `queda medido`, `queda
+dicho`, `para la tanda que lo tome`— y **no sirve**: `queda dicho` significa en
+esta bitácora «esto queda registrado», que es lo contrario de un aplazamiento.
+De 34 apariciones, la mitad eran prosa normal. Una guarda con esa proporción de
+falsos positivos termina en la lista de excepciones que la v895 desaconseja.
+
+Lo que sí discrimina sin un solo falso positivo es el **título de la sección**:
+`### Lo que … NO hace`, `NO cierra`, `sigue pendiente`, `sigue faltando`. Una
+sección con ese título existe **solo** para declarar trabajo aplazado. Son 28,
+con 52 renglones dentro.
+
+Queda fuera `Lo que NO se pudo …`, que es otra cosa: una limitación de medición
+del contenedor —«ninguna suite de navegador»— y no trabajo que alguien decidió
+aplazar. Confundirlas mandaría a cerrar lo que no depende de nadie acá.
+
+### Diecinueve renglones estaban hechos y ninguno lo decía
+
+Siete de ellos en el hilo que el usuario tiene abierto —el catálogo de mapeo—,
+que es donde más caro sale:
+
+| Dónde lo declaraba | Qué | Dónde se hizo |
+|---|---|---|
+| v981 | el ESTADO del mobiliario | **v992**, con su escala de cuatro peldaños |
+| v982 | la tapa ROTA o faltante | **v992**, «Redes en Vía» entró en la lista de usos con estado |
+| v981 | el árbol con o sin jardinera | **v993**, como campo propio con seis sitios de siembra |
+| v982 | murales, grafitis, vallas y estatuas | **v983** |
+| v982 · v983 | teléfonos, buzones, cajeros y parquímetros | **v994** — declarado dos veces y cerrado sin que ninguna lo dijera |
+| v900 | §4 del pliego de ajustes v2 | **v901** |
+| v929 | las trece puertas de entrada de campo | **v946** |
+
+Y doce más en el módulo presidencial: los tres campos de la Capa 1 (v957), las
+capas 2, 3 y 4 (v958, v959, v960), los ejes B y C (v959), los cinco gráficos
+(v971) y dos de las cuatro cifras de §10 (v915 y v921).
+
+**El caso de los teléfonos públicos es el que mejor lo enseña**: la v982 lo
+declaró pendiente, la v983 lo volvió a declarar pendiente citando a la v982, y
+la v994 lo hizo. Dos declaraciones vivas de algo cerrado, y una de ellas nacida
+de leer la otra — que es exactamente cómo se propaga.
+
+### La marca va por RENGLÓN, y eso también se demostró
+
+Una sección de cuatro renglones con una sola marca deja tres sin estado. No es
+una hipótesis: quitándole la marca a dos renglones de la sección de la v971 y
+midiendo por sección, **la comprobación sale en VERDE** con los dos mudos
+dentro; midiendo por renglón, los nombra.
+
+```
+por sección : ✓ los 26 renglones … llevan su estado
+por renglón : ✗ 2 sin estado: CLAUDE.md:12073 · CLAUDE.md:12073
+```
+
+Es la forma de la v900 —una cuenta y una conclusión que se deciden por
+separado— aplicada a una guarda: el grano con el que se mide decide qué puede
+esconderse.
+
+### Demostrado contra la v1006
+
+Tres inyecciones, contra copias guardadas en `/tmp`:
+
+```
+✗ y todo renglón de una sección «Lo que NO hace» dice su estado
+    — 1 sin estado: CLAUDE.md:13827 → * **El ESTADO del mobiliario**
+✗ y todo renglón de una sección «Lo que NO hace» dice su estado
+    — solo 0 renglones: el lector no encuentra las secciones
+✓/✗ la misma sección medida por sección y por renglón (arriba)
+```
+
+La segunda es la guarda de material dentro de la propia aserción: con el
+detector roto no hay nada que mirar, y decir «todos llevan su marca» sobre cero
+renglones sería el verde que este proyecto lleva veintiocho tandas persiguiendo.
+
+### Lo que esta versión NO hace, y queda medido
+
+* **Las declaraciones en prosa suelta siguen sin cubrirse.** Las dos familias
+  guardadas —la frase «otra tanda» y el encabezado de sección— son las que
+  tienen forma. Una escrita en mitad de un párrafo, sin ninguna de las dos, se
+  sigue cazando leyendo, y eso va dicho acá y en el comentario de la guarda en
+  vez de presentarla como completa. `pendiente`
 
 ## La lista viva: lo que al pliego educativo todavía le falta (v866)
 
