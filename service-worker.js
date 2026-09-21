@@ -1,4 +1,4 @@
-const URBIS_CACHE = 'urbis-v1015-el-piso-en-toda-la-pagina';
+const URBIS_CACHE = 'urbis-v1016-lo-que-carga-sin-red';
 const URBIS_ASSETS = [
   './',
   './index.html',
@@ -28,6 +28,16 @@ const URBIS_ASSETS = [
   './assets/brand/aurea.png',
   './assets/icons/icon-192.png',
   './assets/icons/icon-512.png',
+  /* El de 180 es el `apple-touch-icon` de index.html y de analisis-ia.html:
+     sin él, quien instala desde un iPhone sin señal se queda sin icono y no
+     hay error que lo diga (v1016). */
+  './assets/icons/icon-180.png',
+  /* Y los tres de la entrada del APK. `reportes.html` solo redirige, pero es
+     la dirección de arranque que el APK lleva grabada y no se puede quitar
+     (v780): abrirla sin red tiene que traer su manifiesto y sus iconos. */
+  './manifest-reportes.json',
+  './assets/icons/reportes/icon-192.png',
+  './assets/icons/reportes/icon-180.png',
   './assets/icons/llegada.png',
   './assets/icons/urbis-home.png',
   './assets/icons/urbis-car.png',

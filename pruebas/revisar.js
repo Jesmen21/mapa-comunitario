@@ -127,13 +127,43 @@ console.log('\n  -- el modo sin conexión --');
      lista. La app abría sin red y le faltaba media función, sin ningún
      error visible: en plena salida a campo, «Falta el módulo educativo».
      Este lado no se comprobaba porque todo lo listado sí existía. */
-  const idx = leer('index.html');
-  const cargados = [...new Set([...idx.matchAll(
-    /(?:src|href)="((?:\.\/)?(?:js|css)\/[^"?]+)/g)].map(m => m[1].replace(/^\.\//, '')))];
-  const sinCache = cargados.filter(f => !sw.includes(f));
-  comprobar('y todo lo que index.html carga se precarga',
+  /* Y esto valía para index.html y para `js/` y `css/`, nada más (v1016).
+     Las otras páginas que este service worker gobierna —su ámbito es la raíz—
+     nunca pasaban por acá, y los iconos y los manifiestos tampoco: medido,
+     faltaban el `apple-touch-icon` de index y de analisis-ia, y el manifiesto
+     y los dos iconos de `reportes.html`, que es la dirección de arranque que
+     el APK lleva grabada.
+
+     `vision-territorial.html` queda fuera a propósito: tiene service worker
+     propio, con ámbito más específico, y su propia comprobación más abajo. */
+  const PAGINAS = fs.readdirSync(RAIZ)
+    .filter((f) => /\.html$/.test(f) && f !== 'vision-territorial.html').sort();
+  const sinCache = [];
+  let refs = 0;
+  PAGINAS.forEach(function (h) {
+    const t2 = leer(h);
+    const locales = [...new Set(
+      [...t2.matchAll(/<(?:script|link)\b[^>]*?\b(?:src|href)="([^"]+)"/g)].map((m) => m[1]))]
+      .map((r) => r.split('?')[0].replace(/^\.\//, ''))
+      .filter((r) => r && !/^(https?:|data:|#|\/\/)/.test(r));
+    refs += locales.length;
+    locales.forEach(function (r) {
+      if (!sw.includes("'./" + r + "'")) sinCache.push(h + ' → ' + r);
+    });
+  });
+  comprobar('y todo lo que sus páginas cargan se precarga',
     sinCache.length === 0,
-    sinCache.length ? 'SIN PRECACHE: ' + sinCache.join(', ') : cargados.length + ' archivos servidos');
+    sinCache.length ? 'SIN PRECACHE: ' + sinCache.join(' · ')
+                    : refs + ' referencias locales en ' + PAGINAS.length + ' páginas: ' + PAGINAS.join(', '));
+
+  /* La guarda de la guarda: lo de arriba se apoya en mirar TODAS las páginas
+     que este service worker gobierna, no una. Si volviera a mirar solo
+     index.html, el hueco de las otras tres no lo vería nadie (v878). */
+  comprobar('y se miran todas las páginas del ámbito, no una sola',
+    PAGINAS.length >= 3 && PAGINAS.indexOf('index.html') !== -1,
+    PAGINAS.length >= 3
+      ? 'son ' + PAGINAS.length + ' y se leen del disco, así que una página nueva queda vigilada sin que su autor se acuerde'
+      : 'se está mirando ' + PAGINAS.length + ': las demás quedarían sin comprobar');
 }
 
 // ── 2. una sola puerta al servidor ───────────────────────────────────────

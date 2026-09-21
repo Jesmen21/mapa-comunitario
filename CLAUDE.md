@@ -18597,6 +18597,80 @@ Tres inyecciones, contra copias guardadas en `/tmp` (v973):
 `revisar.js` con sus tres comprobaciones nuevas, y se midió el papel con la
 sonda sobre `seguimiento.html` con todas sus secciones abiertas.
 
+## Lo que una página carga sin red, y no solo index.html (v1016)
+
+La misma forma que la v1015 —una regla que se cumple en una superficie y las
+demás la esquivan— en un sitio con más consecuencia: **la lista de precarga**.
+
+    v1015   la comprobación mira index.html, y dentro de ella solo js/ y css/
+    v1016   mira las cuatro páginas del ámbito y TODA referencia local
+
+### Lo que la comprobación no miraba
+
+`revisar.js` comprueba desde hace tandas que «todo lo que index.html carga se
+precarga», y el comentario de al lado cuenta por qué existe: *nueve archivos
+que index.html carga no estaban en la lista, y la aplicación abría sin red con
+media función y sin un solo error visible — «Falta el módulo educativo», en
+plena salida a campo.*
+
+Lo que no miraba:
+
+* **las otras páginas que este mismo service worker gobierna.** Su ámbito es la
+  raíz, así que controla `analisis-ia.html`, `seguimiento.html` y
+  `reportes.html` igual que a `index.html`;
+* **lo que no es `js/` ni `css/`.** El patrón era `(?:js|css)\/`, así que los
+  iconos y los manifiestos quedaban fuera por construcción.
+
+Medido, faltaban cuatro:
+
+| | Qué es |
+|---|---|
+| `assets/icons/icon-180.png` | el `apple-touch-icon` de index.html **y** de analisis-ia.html |
+| `manifest-reportes.json` | el manifiesto de la entrada del APK |
+| `assets/icons/reportes/icon-192.png` · `icon-180.png` | sus dos iconos |
+
+Los tres últimos son de `reportes.html`, que **solo redirige** — y es
+justamente la dirección de arranque que el APK lleva grabada y que no se puede
+quitar (v780). Abrirla sin señal es el caso normal de quien instaló la
+aplicación y salió a la calle.
+
+### Qué se mira ahora, y qué queda fuera a propósito
+
+Las páginas se leen **del disco** y no de una lista escrita, así que una página
+nueva queda vigilada sin que su autor se acuerde (v867). Y se mira **toda**
+referencia local de un `<script>` o un `<link>`, sea del tipo que sea.
+
+`vision-territorial.html` queda fuera, con su razón: tiene **service worker
+propio** con ámbito más específico (`/vision-territorial`), y su propia
+comprobación desde la v868 —que ya mira las dos direcciones—. Meterla acá la
+mediría contra la lista equivocada.
+
+La guarda de la guarda es la que cierra el caso: **que se estén mirando todas
+las páginas del ámbito y no una**. Sin ella, volver al `['index.html']` de
+antes dejaría el hueco de las otras tres sin que nadie lo viera, y todo lo
+demás seguiría en verde.
+
+### Demostrado contra la v1015
+
+Dos inyecciones, contra copias guardadas en `/tmp` (v973):
+
+```
+✗ y todo lo que sus páginas cargan se precarga
+    — SIN PRECACHE: analisis-ia.html → assets/icons/icon-180.png ·
+      index.html → assets/icons/icon-180.png ·
+      reportes.html → manifest-reportes.json · …
+✗ y se miran todas las páginas del ámbito, no una sola
+    — se está mirando 1: las demás quedarían sin comprobar
+```
+
+### Lo que se midió y está bien
+
+De las 116 referencias locales de las cuatro páginas, **todo el JavaScript y
+todo el CSS ya estaba precargado** — incluidos los doce archivos de
+`analisis-ia.html` y los dos de `seguimiento.html`, que nunca habían pasado por
+una comprobación. El hueco era solo de iconos y manifiestos, que es lo que el
+patrón de antes no podía ver.
+
 ## La lista viva: lo que al pliego educativo todavía le falta (v866)
 
 Esta lista se quedó vieja **cinco veces**. Cuatro dentro de la hoja —la
