@@ -1,4 +1,4 @@
-const URBIS_CACHE = 'urbis-v1000-de-que-esta-hecha-la-via';
+const URBIS_CACHE = 'urbis-v1001-un-comodin-dejo-un-sw-muerto';
 const URBIS_ASSETS = [
   './',
   './index.html',

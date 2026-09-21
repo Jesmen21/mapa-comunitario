@@ -6222,6 +6222,92 @@ console.log('\n  -- un error de GPS dice cuál de los tres es (v996) --');
   }
 }
 
+/* ── Nada de la raíz se copia dentro de js/ (v1001) ────────────────────────
+   `js/service-worker.js` existió veinte versiones y no lo cargaba NADIE: ni
+   `serviceWorker.register`, ni una página, ni el propio service worker, ni
+   `revisar.js`. Era una copia del de la raíz congelada en la v980.
+
+   Lo creó un `cp /tmp/.../*.js js/` en la v981 —el comodín encontró el
+   `service-worker.js` que estaba guardado en esa carpeta de respaldo— y lo
+   volvió a pisar el mismo idioma en la v1000. Es la familia de la v964 con el
+   `io.open(p,'w')` que truncaba y de la v995 con el reemplazo global: una
+   orden que hace MÁS de lo que se le pidió y no lo dice.
+
+   Y lo que lo hacía peligroso no era ocupar sitio: era ser una TRAMPA. Un
+   service worker con la lista de archivos de la v980 esperando a que alguien
+   lo registrara por error deja media aplicación vieja en el teléfono, que es
+   justo lo que el reparto de la versión en nueve archivos existe para evitar.
+
+   La guarda persigue el ACCIDENTE y no el síntoma, y sale sin un solo falso
+   positivo: ningún nombre de la raíz puede repetirse dentro de `js/`. Medido
+   antes de escribirla, el único que lo hacía era este. */
+console.log('\n  -- nada de la raíz se copia dentro de js/ (v1001) --');
+{
+  const raiz = fs.readdirSync(RAIZ).filter((f) => f.endsWith('.js'));
+  const enJs = fs.readdirSync(R('js')).filter((f) => f.endsWith('.js'));
+  const repes = raiz.filter((f) => enJs.indexOf(f) >= 0);
+
+  /* MATERIAL primero (v920): sin archivos en los dos sitios no hay nada que
+     cruzar y la comprobación pasaría por no tener nada delante. */
+  if (!raiz.length || !enJs.length) {
+    anotarSinMaterial('MATERIAL · hay archivos en la raíz y en js/ que cruzar',
+      raiz.length + ' en la raíz · ' + enJs.length + ' en js/');
+  } else {
+    comprobar('MATERIAL · hay archivos en la raíz y en js/ que cruzar',
+      true, raiz.length + ' en la raíz y ' + enJs.length + ' en js/');
+
+    comprobar('ningún archivo de la raíz está copiado dentro de js/',
+      repes.length === 0,
+      repes.length === 0
+        ? 'los ' + raiz.length + ' de la raíz no se repiten en js/'
+        : 'copiados: ' + repes.join(' · ') +
+          ' — un comodín los dejó ahí y nadie los carga; un service worker viejo esperando a que lo registren');
+
+    /* Y la otra mitad: un service worker se reconoce por lo que HACE, no por
+       cómo se llama. Un `cp` que lo dejara en js/ con otro nombre pasaría la
+       de arriba, así que se busca el ciclo de vida. Los tres de verdad viven
+       en la raíz y están declarados. */
+    const sw = enJs.filter((f) =>
+      /self\.addEventListener\(\s*['"]install['"]/.test(leer('js/' + f)));
+    comprobar('y ningún archivo de js/ se comporta como un service worker',
+      sw.length === 0,
+      sw.length === 0
+        ? 'los tres service workers viven en la raíz: ' + raiz.filter((f) => /^sw-|^service-worker/.test(f)).join(' · ')
+        : 'con ciclo de vida de service worker dentro de js/: ' + sw.join(' · ') +
+          ' — registrarlo por error deja media aplicación vieja en el teléfono');
+
+    /* Y LO QUE LA MEDICIÓN DESTAPÓ AL LADO: once archivos de `js/` que ninguna
+       página ni el service worker nombran. No los carga nadie —este proyecto
+       no inyecta scripts en ningún sitio, comprobado— así que son código que
+       viaja en el repositorio y no llega a un navegador: la forma de la v885 a
+       tamaño de archivo.
+
+       NO se borran acá y se dice por qué: son once que no escribí, en una
+       tanda que salió de un accidente con un comodín, y borrar de más por
+       arreglar de menos es lo contrario de lo que esta tanda vino a hacer.
+       Queda el trinquete, que es lo que impide que crezcan.
+
+       Y el techo ABSOLUTO es el correcto acá, con la vara de la v965: este
+       pendiente no puede crecer solo. Solo crece si alguien agrega un archivo
+       que nadie carga, que es justo lo que hay que impedir. */
+    const TECHO_HUERFANOS = 11;
+    const paginas = fs.readdirSync(RAIZ).filter((f) => f.endsWith('.html'))
+      .map((f) => leer(f)).join('\n');
+    const swRaiz = leer('service-worker.js');
+    const huerfanos = enJs.filter((f) =>
+      paginas.indexOf('js/' + f) < 0 && swRaiz.indexOf('js/' + f) < 0);
+    comprobar('ningún archivo de js/ nuevo se queda sin que nadie lo cargue',
+      huerfanos.length <= TECHO_HUERFANOS,
+      huerfanos.length <= TECHO_HUERFANOS
+        ? huerfanos.length + ' de ' + enJs.length + ' sin cargar, sobre un techo de ' + TECHO_HUERFANOS +
+          ' — medidos en la v1001 y no tocados: son de antes'
+        : huerfanos.length + ' sin cargar, ' + (huerfanos.length - TECHO_HUERFANOS) +
+          ' por encima del techo. ' + TECHO_HUERFANOS + ' son de antes (medidos en la v1001); ' +
+          'el que sobra es el nuevo. Están todos acá: ' + huerfanos.join(' · ') +
+          ' — viaja en el repositorio y no llega a un navegador');
+  }
+}
+
 /* ── De qué está hecha la vía (v1000) ──────────────────────────────────────
    La otra mitad de lo que se pidió con el estado: «verde está buena, naranja
    medio regular… y el tipo de pavimento». Sin la superficie, el estado no se

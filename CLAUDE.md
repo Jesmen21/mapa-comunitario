@@ -16569,6 +16569,122 @@ con una línea —hoy `puntoAElemento` (v984) emite un nodo, y una vía debería
 entrar como `way` con su `highway`— y cómo se dibuja en el mapa sin que una
 capa de líneas tape los puntos.
 
+## Un comodín dejó un service worker muerto dentro de js/ (v1001)
+
+Salió mirando el diff del empujón de la v1000: entre los archivos cambiados
+estaba **`js/service-worker.js`**, que esa tanda no tocó ni nombró. Es un
+accidente mío y lo que destapó vale más que el accidente.
+
+### Lo que era: una copia congelada que no cargaba nadie
+
+Medido antes de tocar nada:
+
+| | |
+|---|---|
+| ¿lo registra alguien? | **no** — el único `serviceWorker.register` de la aplicación apunta a `./service-worker.js`, el de la raíz |
+| ¿lo nombra alguna página? | **no** |
+| ¿está en la lista de caché del SW? | **no** |
+| ¿lo conoce `revisar.js`? | **no** |
+| ¿en qué versión estaba? | **v980**, veinte por detrás |
+
+O sea: un service worker completo, con su lista de archivos de hace veinte
+versiones, que viajaba en el repositorio y que ningún navegador pedía nunca.
+
+**Y lo que lo hacía peligroso no era ocupar sitio: era ser una TRAMPA.** Un
+service worker esperando a que alguien lo registre por error deja media
+aplicación vieja en el teléfono, que es exactamente lo que el reparto de la
+versión en nueve archivos existe para evitar.
+
+### Lo creó un `cp` con comodín, y el mismo idioma lo volvió a pisar
+
+`git log --follow` lo fecha en la **v981**, y el mecanismo se reconoce solo:
+esa tanda restauró su copia de respaldo con un `cp /tmp/.../*.js js/`, y en
+esa carpeta estaba guardado el `service-worker.js` de la raíz. El comodín lo
+encontró y lo dejó dentro de `js/`.
+
+En la v1000 hice lo mismo, letra por letra, y por eso salió en el diff.
+
+Es la familia que este proyecto lleva persiguiendo desde la v964 —el
+`io.open(p,'w')` que truncaba el archivo— y la v995 —el reemplazo global que
+se comió el cuerpo de su propia función—: **una orden que hace MÁS de lo que
+se le pidió y no lo dice.** La regla, barata:
+
+> **Una restauración nombra los archivos, o la carpeta de respaldo guarda solo
+> los de una carpeta.** Un `cp origen/*.js destino/` copia lo que el comodín
+> encuentre, no lo que uno recuerda haber guardado.
+
+Y la de siempre al lado: **después de un parche o una restauración se mira el
+diff**, que es lo que lo encontró — dos veces tarde, pero lo encontró.
+
+### La guarda persigue el accidente, no el síntoma
+
+Dos, y sin un solo falso positivo:
+
+* **ningún nombre de la raíz puede repetirse dentro de `js/`.** Es exactamente
+  la huella que deja un `cp` con comodín. Medido antes de escribirla, el único
+  que lo hacía era este;
+* **y ningún archivo de `js/` puede comportarse como un service worker.** Un
+  service worker se reconoce por lo que HACE, no por cómo se llama: un `cp`
+  que lo dejara ahí con otro nombre pasaría la primera. Demostrada con un
+  archivo renombrado, que la primera deja pasar y esta caza.
+
+### Lo que la medición destapó al lado: once archivos que no carga nadie
+
+Al comprobar si `js/` tiene más huérfanos salieron **once**, de los 101:
+
+```
+00-mobile-boot-priority · 00-mobile-clean-boot · 24-mobile-login-rescue
+26-android-splash-boot · 29-mobility-compact-controller
+30-destination-transport-bubble · 31-force-destination-flow
+34-destination-architect-flow · 35-mobility-search-persistent
+99-mobile-hard-stabilizer · 99-mobile-home-reset
+```
+
+Ninguna página los nombra, el service worker tampoco, y **este proyecto no
+inyecta scripts en ningún sitio** —comprobado: cero `createElement('script')`
+y cero `import()` en todo el repositorio—, así que no hay una carga dinámica
+que los rescate. Es la forma de la v885 a tamaño de archivo.
+
+**NO se borran acá, y se dice por qué:** son once que no escribí, en una tanda
+que salió de un accidente con un comodín, y borrar de más por arreglar de
+menos es lo contrario de lo que esta tanda vino a hacer. Lo que entra es el
+**trinquete**, que es lo que impide que crezcan.
+
+Y el techo ABSOLUTO es el correcto acá, con la vara que la v965 dejó escrita:
+*¿puede ese pendiente crecer sin que nadie haga nada mal?* **No.** Solo crece
+si alguien agrega un archivo que nadie carga, que es justo lo que hay que
+impedir. Un piso sobre lo hecho lo debilitaría.
+
+#### Y un detalle del mensaje de fallo que importa
+
+La primera versión enseñaba un recorte de cuatro nombres, y por orden
+alfabético **el archivo nuevo se quedaba fuera**: la guarda señalaba
+exactamente lo que estaba bien. Los enseña todos —son pocos— y dice cuántos
+son de antes, para que quien la vea en rojo encuentre el suyo. Es la lección
+de la v973 con el detalle que se describía a sí mismo como verde.
+
+### Por qué SÍ sube la versión
+
+`js/` cambió —por una eliminación— y la comprobación del token mira
+`git status -- js css index.html`. Que ese archivo no lo sirviera nadie es
+cierto y la regla no puede saberlo; afinar la regla **en la tanda que se
+beneficia de afinarla** es lo que este proyecto llama aflojar una aserción.
+Se paga el refresco de caché, que es el coste honesto de tocar `js/`.
+
+### Demostrado contra la v1000
+
+Tres en rojo, cada una con su inyección fiel:
+
+```
+✗ ningún archivo de la raíz está copiado dentro de js/  — copiados: service-worker.js
+✗ y ningún archivo de js/ se comporta como un service worker  — service-worker.js
+✗ y ningún archivo de js/ se comporta como un service worker  — 99-falso-sw.js (renombrado)
+✗ ningún archivo de js/ nuevo se queda sin que nadie lo cargue  — 12 sin cargar, 1 por encima del techo
+```
+
+La primera es el estado real de la v1000 y de las diecinueve versiones
+anteriores.
+
 ## La lista viva: lo que al pliego educativo todavía le falta (v866)
 
 Esta lista se quedó vieja **cinco veces**. Cuatro dentro de la hoja —la
