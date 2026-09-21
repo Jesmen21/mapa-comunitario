@@ -1,4 +1,4 @@
-const URBIS_CACHE = 'urbis-v1028-la-pantalla-del-area';
+const URBIS_CACHE = 'urbis-v1030-seguimiento-presidencial-villa-de-leyva-jep-cpi-y-balance-de-seguridad';
 const URBIS_ASSETS = [
   './',
   './index.html',

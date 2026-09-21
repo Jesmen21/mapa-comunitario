@@ -4,7 +4,7 @@
  "periodo": "2026 – 2030",
  "posesion": "2026-08-07",
  "actualizado": "2026-09-21",
- "proximaActualizacion": "2026-09-20",
+ "proximaActualizacion": "2026-09-22",
  "categorias": {
   "gobierno": {
    "nombre": "Gobierno y decretos",
@@ -73,6 +73,235 @@
   }
  },
  "entradas": [
+  {
+   "fecha": "2026-09-21",
+   "precision": "exacta",
+   "categoria": "gobierno",
+   "titulo": "De la Espriella anuncia la incautación de más de cuatro toneladas de cocaína ocultas en una embarcación en Turbo, Antioquia",
+   "categoriaProbatoria": "hecho-probado",
+   "tipoMedicion": "actividad",
+   "nivelGobierno": "nacional",
+   "detalle": "El presidente Abelardo de la Espriella anunció el 21 de septiembre, a través de su cuenta en X, la captura de cinco hombres —uno de nacionalidad hondureña— que transportaban por vía marítima un cargamento de droga frente a las costas de Turbo, Antioquia. La Estación de Guardacostas de la Armada Nacional incautó 4.022 paquetes de clorhidrato de cocaína, ocultos en 126 bultos dentro de la embarcación.",
+   "tipoFuente": "verificado",
+   "fuentes": [
+    {
+     "n": "El Tiempo · Presidente de Colombia Abelardo de la Espriella anunció golpe al narcotráfico en Turbo, Antioquia: incautaron más de cuatro toneladas de cocaína",
+     "u": "https://www.eltiempo.com/colombia/presidente-de-colombia-abelardo-de-la-espriella-anuncio-golpe-al-narcotrafico-en-turbo-antioquia-incautaron-mas-de-cuatro-toneladas-de-cocaina-3587573",
+     "rol": "acto"
+    },
+    {
+     "n": "Asuntos Legales · Incautan más de cuatro toneladas de cocaína en operativo en Turbo, Urabá",
+     "u": "https://www.asuntoslegales.com.co/actualidad/incautan-mas-de-cuatro-toneladas-de-cocaina-en-operativo-en-turbo-uraba-4486726",
+     "rol": "acto"
+    },
+    {
+     "n": "El Heraldo · Decomisan 4.022 paquetes de clorhidrato de cocaína ocultos en embarcación",
+     "u": "https://www.elheraldo.co/colombia/2026/09/21/decomisan-4022-paquetes-de-clorhidrato-de-cocaina-ocultos-en-embarcacion/",
+     "rol": "acto"
+    },
+    {
+     "n": "NTN24 · 'En la era del Tigre el narcotráfico no tendrá tregua': así luce millonario cargamento de cocaína incautado en Urabá",
+     "u": "https://www.ntn24.com/noticias-actualidad/en-la-era-del-tigre-el-narcotrafico-no-tendra-tregua-asi-luce-millonario-cargamento-de-cocaina-incautado-en-uraba-651899",
+     "rol": "acto"
+    }
+   ]
+  },
+  {
+   "fecha": "2026-09-20",
+   "precision": "exacta",
+   "categoria": "gobierno",
+   "titulo": "La Fuerza Pública rescata a cuatro secuestrados y a cuatro menores reclutados por grupos armados; muere alias 'Huevo', señalado cabecilla de disidencias de 'Calarcá', en un operativo en Gómez Plata, Antioquia",
+   "categoriaProbatoria": "hecho-probado",
+   "tipoMedicion": "actividad",
+   "nivelGobierno": "nacional",
+   "detalle": "El presidente Abelardo de la Espriella reportó el 20 de septiembre que en las 24 horas anteriores la Fuerza Pública rescató a cuatro personas secuestradas, recuperó a cuatro menores de edad reclutados por grupos armados, capturó a 27 personas y dio de baja a dos. Uno de los operativos de rescate, adelantado por tropas del Gaula Militar en zona rural de Gómez Plata (Antioquia), terminó en la muerte de Stiven Martínez Rodríguez, de 20 años, conocido como alias 'Huevo', señalado cabecilla de una comisión de la Estructura 36 de las disidencias de las FARC lideradas por alias 'Calarcá'; según los reportes de prensa, otro presunto integrante de la misma estructura murió en la misma confrontación. Con estos datos, el balance acumulado desde la posesión del 7 de agosto llegó a 22.462 capturas, 93 toneladas de droga incautada y 2.360 armas de fuego retiradas.",
+   "tipoFuente": "verificado",
+   "fuentes": [
+    {
+     "n": "Semana · Presidente De la Espriella entrega nuevo balance de seguridad: se rescataron 4 secuestrados y se capturaron 27 criminales",
+     "u": "https://www.semana.com/nacion/articulo/presidente-de-la-espriella-entrega-nuevo-balance-de-seguridad-se-rescataron-4-secuestrados-y-se-capturaron-27-criminales/202609/",
+     "rol": "acto"
+    },
+    {
+     "n": "Radio Santa Fe · Fuerza Pública rescató a 4 secuestrados, capturó a 27 integrantes de bandas criminales y abatió a 2",
+     "u": "https://www.radiosantafe.com/2026/09/21/fuerza-publica-rescato-a-4-secuestrados-capturo-a-27-integrantes-de-bandas-criminales-y-abatio-a-2/",
+     "rol": "acto"
+    },
+    {
+     "n": "El Tiempo · Presidente De la Espriella anunció duro golpe a las disidencias de 'Calarcá' con la caída de alias 'Huevo' en Antioquia",
+     "u": "https://www.eltiempo.com/justicia/conflicto-y-narcotrafico/presidente-de-la-espriella-anuncio-duro-golpe-a-las-disidencias-de-calarca-con-la-caida-de-alias-huevo-en-antioquia-3587509",
+     "rol": "acto"
+    },
+    {
+     "n": "El Nuevo Siglo · Cae alias 'Mono Huevo', señalado cabecilla financiero de disidencias 'Calarcá'",
+     "u": "https://www.elnuevosiglo.com.co/nacion/cae-alias-mono-huevo-senalado-cabecilla-financiero-de-disidencias-calarca",
+     "rol": "acto"
+    },
+    {
+     "n": "El Tiempo · Presidente Abelardo de la Espriella hace balance de seguridad tras operativos de los últimos días: van más de 22.000 delincuentes capturados",
+     "u": "https://www.eltiempo.com/politica/abelardo-de-la-espriella/presidente-abelardo-de-la-espriella-hace-balance-de-seguridad-tras-operativos-de-los-ultimos-dias-van-mas-de-22-000-delincuentes-capturados-3587411",
+     "rol": "acto"
+    }
+   ]
+  },
+  {
+   "fecha": "2026-09-19",
+   "precision": "aproximada",
+   "categoria": "gobierno",
+   "titulo": "El Gobierno reporta 21.940 capturas desde la posesión, con la caída de alias 'Miguel' de las Autodefensas Conquistadoras y de una red de hurto de hidrocarburos vinculada al ELN",
+   "categoriaProbatoria": "hecho-probado",
+   "tipoMedicion": "actividad",
+   "nivelGobierno": "nacional",
+   "detalle": "El presidente Abelardo de la Espriella reportó el 19 de septiembre un balance acumulado desde la posesión del 7 de agosto de 21.940 capturas y cerca de 100 toneladas de droga incautada, con 42 capturas en las 24 horas anteriores y la captura en Dosquebradas (Risaralda) de alias 'Cuba', señalado jefe de sicarios de la estructura 'La Cordillera'. El 18 de septiembre, en un operativo conjunto del Ejército y la Policía en La Esperanza (Norte de Santander), se capturó a cinco presuntos integrantes de las Autodefensas Conquistadoras de la Sierra Nevada (ACSN), entre ellos alias 'Miguel', señalado líder de escuadra encargado de extorsiones, amenazas e inteligencia criminal contra la Fuerza Pública; se incautaron siete armas de fuego, cinco proveedores de munición, 350 cartuchos, tres morteros para drones, dos minas antipersonal y una antena Starlink. El 18 y 19 de septiembre, en el marco de la campaña 'Urano', la Policía y el Ejército capturaron a siete presuntos integrantes de una red dedicada al hurto de hidrocarburos en Aguachica (Cesar) y en Ocaña y Ábrego (Norte de Santander) que, según el reporte oficial, instalaba válvulas para robar combustible con apoyo del ELN.",
+   "tipoFuente": "verificado",
+   "fuentes": [
+    {
+     "n": "Infobae · Colombia capturó a 21.940 criminales e incautó casi 100 toneladas de droga desde agosto",
+     "u": "https://www.infobae.com/america/agencias/2026/09/19/colombia-capturo-a-21940-criminales-e-incauto-casi-100-toneladas-de-droga-desde-agosto/",
+     "rol": "acto"
+    },
+    {
+     "n": "El Heraldo · Presidente De la Espriella reporta 42 capturas en las últimas 24 horas y casi 22 mil desde el 7 de agosto",
+     "u": "https://www.elheraldo.co/colombia/2026/09/19/presidente-de-la-espriella-reporta-42-capturas-en-las-ultimas-24-horas-y-casi-22-mil-desde-el-7-de-agosto/",
+     "rol": "acto"
+    },
+    {
+     "n": "Semana · Abelardo de la Espriella anunció fuerte golpe contra las Autodefensas Conquistadoras: cayó importante cabecilla",
+     "u": "https://www.semana.com/nacion/articulo/abelardo-de-la-espriella-anuncio-fuerte-golpe-contra-las-autodefensas-conquistadoras-cayo-importante-cabecilla/202611/",
+     "rol": "acto"
+    },
+    {
+     "n": "Ejército Nacional de Colombia · Caen siete integrantes de las Autodefensas Conquistadoras de la Sierra Nevada",
+     "u": "https://www.ejercito.mil.co/caen-siete-integrantes-de-la-autodefensas-conquistadores-de-la-sierra-nevada/",
+     "rol": "acto"
+    },
+    {
+     "n": "El Heraldo · De la Espriella confirma la captura de siete integrantes de una estructura dedicada a la apropiación de hidrocarburos",
+     "u": "https://www.elheraldo.co/colombia/2026/09/19/de-la-espriella-confirma-la-captura-de-siete-integrantes-de-una-estructura-dedicada-a-la-apropiacion-de-hidrocarburos-no-tendran-tregua/",
+     "rol": "acto"
+    },
+    {
+     "n": "La Opinión · Golpe al ELN en Ocaña: capturan a cuatro presuntos integrantes por hurto de hidrocarburos",
+     "u": "https://laopinion.co/region/golpe-al-eln-en-ocana-capturan-cuatro-presuntos-integrantes-por-hurto-de-hidrocarburos",
+     "rol": "acto"
+    }
+   ]
+  },
+  {
+   "fecha": "2026-09-20",
+   "precision": "exacta",
+   "categoria": "gobierno",
+   "titulo": "El presidente de la JEP envía una carta a la Corte Penal Internacional por el recorte presupuestal del tribunal; De la Espriella responde que «no es asfixia ni venganza»",
+   "categoriaProbatoria": "hecho-probado",
+   "tipoMedicion": "actividad",
+   "nivelGobierno": "nacional",
+   "detalle": "El presidente de la Jurisdicción Especial para la Paz (JEP), Alejandro Ramelli, envió el 18 de septiembre una carta a fiscales de la Corte Penal Internacional advirtiendo sobre posibles afectaciones a la independencia del tribunal por iniciativas legislativas y presupuestales del Gobierno, entre ellas el traslado de cerca de $100.000 millones del presupuesto de la JEP hacia la justicia ordinaria. Para el Presupuesto General de 2027 la JEP solicitó $947.642 millones y el proyecto radicado le asignó $821.803 millones. El 20 de septiembre el presidente Abelardo de la Espriella respondió públicamente que «no comparto ni acepto el contenido» de la comunicación de Ramelli, y calificó el ajuste presupuestal como «responsabilidad fiscal», no como «asfixia ni venganza».",
+   "contrapunto": "El recorte presupuestal de la JEP para 2027 frente a lo solicitado por el tribunal es un hecho documentado; si constituye una afectación a su independencia —como sostiene su presidente, Alejandro Ramelli— o un ajuste fiscal ordinario basado en disponibilidad de recursos —como sostiene el Gobierno— es una lectura en disputa entre las partes que esta entrada no resuelve.",
+   "tipoFuente": "disputado",
+   "fuentes": [
+    {
+     "n": "El Tiempo · Alejandro Ramelli, presidente de la JEP, envió carta a la CPI expresando su preocupación ante propuestas de De la Espriella",
+     "u": "https://www.eltiempo.com/justicia/jep-colombia/alejandro-ramelli-presidente-de-la-jep-envio-carta-a-la-cpi-expresando-su-preocupacion-ante-propuestas-de-de-la-espriella-3587397",
+     "rol": "contexto"
+    },
+    {
+     "n": "El Tiempo · Abelardo de la Espriella respondió al presidente de la JEP tras enviar carta a la CPI por presupuesto del tribunal: «no es asfixia ni venganza»",
+     "u": "https://www.eltiempo.com/politica/gobierno/abelardo-de-la-espriella-respondio-al-presidente-de-la-jep-tras-enviar-carta-a-la-cpi-por-presupuesto-del-tribunal-no-es-asfixia-ni-venganza-3587487",
+     "rol": "acto"
+    },
+    {
+     "n": "Infobae · Abelardo de la Espriella respondió a la carta enviada por el presidente de la JEP a la CPI: «no comparto ni acepto el contenido»",
+     "u": "https://www.infobae.com/colombia/2026/09/20/abelardo-de-la-espriella-respondio-a-la-carta-enviada-por-el-presidente-de-la-jep-a-la-cpi-no-comparto-ni-acepto-el-contenido/",
+     "rol": "acto"
+    },
+    {
+     "n": "El Espectador · Presidente de la JEP envió carta a CPI por recorte de presupuesto que propuso Enrique Gómez, hay luz verde de De la Espriella",
+     "u": "https://www.elespectador.com/judicial/presidente-de-la-jep-envio-carta-a-cpi-por-recorte-de-presupuesto-que-propuso-enrique-gomez-hay-luz-verde-de-de-la-espriella/",
+     "rol": "contexto"
+    },
+    {
+     "n": "Vanguardia · De la Espriella se pronuncia sobre la JEP y su carta a la CPI: «no es venganza»",
+     "u": "https://www.vanguardia.com/colombia/2026/09/20/de-la-espriella-se-pronuncia-sobre-la-jep-y-su-carta-a-la-cpi-no-es-venganza/",
+     "rol": "acto"
+    },
+    {
+     "n": "El País · «No es asfixia ni venganza»: la respuesta del presidente De la Espriella a carta enviada por director de la JEP",
+     "u": "https://www.elpais.com.co/colombia/no-es-asfixia-ni-venganza-la-respuesta-del-presidente-de-la-espriella-a-carta-enviada-por-director-de-la-jep-2136.html",
+     "rol": "acto"
+    }
+   ]
+  },
+  {
+   "fecha": "2026-09-19",
+   "precision": "exacta",
+   "categoria": "emergencia",
+   "titulo": "De la Espriella anuncia el despliegue de «todas las capacidades del Estado» por el incendio forestal en el cerro San Marcos, Villa de Leyva, y reporta su control al 50 % un día después",
+   "categoriaProbatoria": "hecho-probado",
+   "tipoMedicion": "actividad",
+   "nivelGobierno": "nacional",
+   "detalle": "Un incendio forestal se originó el 19 de septiembre en el cerro San Marcos, en Villa de Leyva (Boyacá), y llegó a afectar más de 40 hectáreas, obligando a evacuar hoteles de la zona. El presidente Abelardo de la Espriella anunció ese mismo día el despliegue de «todas las capacidades del Estado» para combatirlo. El 20 de septiembre reportó el incendio controlado en un 50 % y confinado en terreno, con 220 personas desplegadas en tierra y la expectativa de llegar a 350.",
+   "tipoFuente": "verificado",
+   "fuentes": [
+    {
+     "n": "El País · Abelardo de la Espriella anuncia refuerzo para mitigar incendio en las montañas de Villa de Leyva: «estamos con ustedes»",
+     "u": "https://www.elpais.com.co/colombia/abelardo-de-la-espriella-anuncia-refuerzo-para-mitigar-incendio-en-las-montanas-de-villa-de-leyva-estamos-con-ustedes-2026.html",
+     "rol": "acto"
+    },
+    {
+     "n": "Infobae · Por incendio forestal evacuaron hoteles en Villa de Leyva; ministro del Interior y gobernador de Boyacá actualizaron sobre la situación",
+     "u": "https://www.infobae.com/colombia/2026/09/20/por-incendio-forestal-evacuaron-hoteles-en-villa-de-leyva-ministro-del-interior-y-gobernador-de-boyaca-actualizaron-sobre-la-situacion/",
+     "rol": "acto"
+    },
+    {
+     "n": "El Heraldo · De la Espriella anuncia que incendio en Villa de Leyva está controlado en un 50 % y confinado en terreno",
+     "u": "https://www.elheraldo.co/colombia/2026/09/20/de-la-espriella-anuncia-que-incendio-en-villa-de-leyva-esta-controlado-en-un-50-y-confinado-en-terreno/",
+     "rol": "acto"
+    },
+    {
+     "n": "Semana · Villa de Leyva no está sola: Abelardo de la Espriella anuncia apoyo del Gobierno nacional ante incendio forestal",
+     "u": "https://www.semana.com/nacion/articulo/villa-de-leyva-no-esta-sola-abelardo-de-la-espriella-anuncia-apoyo-del-gobierno-nacional-ante-incendio-forestal/202655/",
+     "rol": "acto"
+    },
+    {
+     "n": "El Tiempo · Grave incendio consume el cerro de San Marcos en Villa de Leyva, Boyacá; Abelardo de la Espriella anuncia apoyo estatal para combatir el fuego",
+     "u": "https://www.eltiempo.com/colombia/otras-ciudades/grave-incendio-consume-el-cerro-de-san-marcos-en-villa-de-leyva-boyaca-abelardo-de-la-espriella-anuncia-apoyo-estatal-para-combatir-el-fuego-3587403",
+     "rol": "acto"
+    }
+   ]
+  },
+  {
+   "fecha": "2026-09-19",
+   "precision": "exacta",
+   "categoria": "gobierno",
+   "titulo": "De la Espriella ordena el traslado de alias 'Firu', señalado cabecilla de disidencias de las FARC, tras una denuncia del gobernador de Antioquia sobre videollamadas desde la cárcel",
+   "categoriaProbatoria": "hecho-probado",
+   "tipoMedicion": "actividad",
+   "nivelGobierno": "nacional",
+   "detalle": "El gobernador de Antioquia, Andrés Julián Rendón, denunció el 19 de septiembre una presunta videollamada del recluso conocido como alias 'Firu' —señalado cabecilla del Frente 36 de las disidencias de las FARC— con otro señalado cabecilla, alias 'Primo Gay', realizada, según la denuncia, desde un centro penitenciario, además del uso de redes sociales desde prisión. El presidente Abelardo de la Espriella ordenó al director del Inpec trasladar a alias 'Firu' a una cárcel «donde no entre ni la señal de la Santa Cruz». La denuncia sobre el uso de videollamadas y redes desde la cárcel no ha sido confirmada por una investigación judicial; el traslado fue una decisión administrativa del Gobierno en respuesta a ella.",
+   "tipoFuente": "verificado",
+   "fuentes": [
+    {
+     "n": "Vanguardia · De la Espriella ordena trasladar a alias 'Firu' tras denuncia de videollamada desde la cárcel",
+     "u": "https://www.vanguardia.com/colombia/2026/09/19/de-la-espriella-ordena-al-trasladar-a-alias-firu-tras-denuncia-de-videollamada-desde-la-carcel/",
+     "rol": "acto"
+    },
+    {
+     "n": "El Tiempo · Presidente De la Espriella respondió petición y ordenó traslado de alias 'Firu' tras denuncias de videollamadas en prisión: «cárcel que no entre señal»",
+     "u": "https://www.eltiempo.com/politica/gobierno/presidente-de-la-espriella-respondio-peticion-y-ordeno-traslado-de-alias-firu-tras-denuncias-de-videollamadas-en-prision-carcel-que-no-entre-senal-3587318",
+     "rol": "acto"
+    },
+    {
+     "n": "El Universal · Alias 'Firu' habría usado TikTok y videollamadas desde prisión; De la Espriella reaccionó",
+     "u": "https://www.eluniversal.com.co/colombia/2026/09/19/alias-firu-habria-usado-tiktok-y-videollamadas-desde-prision-de-la-espriella-reacciono/",
+     "rol": "contexto"
+    },
+    {
+     "n": "El Tiempo · Así fue el traslado de alias 'Firu' por orden presidencial: lo llevarán a una reclusión donde no entre ni la señal de la Santa Cruz",
+     "u": "https://www.eltiempo.com/colombia/asi-fue-el-traslado-de-alias-firu-por-orden-presidencial-lo-llevaran-a-una-reclusion-donde-no-entre-ni-la-senal-de-la-santa-cruz-3587368",
+     "rol": "acto"
+    }
+   ]
+  },
   {
    "fecha": "2026-09-18",
    "precision": "exacta",
