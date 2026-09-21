@@ -4881,12 +4881,27 @@
    "categoriaProbatoria": "hecho-probado",
    "tipoMedicion": "actividad",
    "detalle": "Las 20 emisoras de paz, creadas por el Acuerdo de 2016 en municipios afectados por el conflicto, pasaron a emitir solo música desde el 18 de agosto. La Fundación para la Libertad de Prensa alertó por la suspensión. El Gobierno sostuvo que bajo la administración anterior se habían vuelto un «aparato de propaganda»; el senador Enrique Gómez las llamó «altavoces oficiales de las Farc para adoctrinar regiones».",
-   "contrapunto": "Dos hechos distintos que se están mezclando en el debate: que se investigue si fueron usadas como propaganda es una cosa, y que se apaguen mientras tanto es otra. Lo segundo es lo que la FLIP objeta. Esta entrada NO declara indicador, y las dos razones se dejan escritas para que no haya que volver a averiguarlas. Primero, la vía: según la prensa la instrucción se impartió por WhatsApp desde Inravisión a los directores de las emisoras, y eso no es «una directiva que altera el régimen ordinario de difusión de información pública», que es el renglón del criterio de I-04 por el que habría entrado. Segundo, la prueba: el criterio exige un acto expedido y un documento primario o un dato oficial, y de esto solo consta el relato de un medio. Si aparece el acto —con su número o su radicado—, la declaración vuelve.",
+   "contrapunto": "Dos hechos distintos que se están mezclando en el debate: que se investigue si fueron usadas como propaganda es una cosa, y que se apaguen mientras tanto es otra. Lo segundo es lo que la FLIP objeta. Esta entrada NO declara indicador, y las dos razones se dejan escritas para que no haya que volver a averiguarlas. Primero, la vía: según la prensa la instrucción se impartió por WhatsApp desde Inravisión a los directores de las emisoras, y eso no es «una directiva que altera el régimen ordinario de difusión de información pública», que es el renglón del criterio de I-04 por el que habría entrado. Segundo, la prueba: el criterio exige un acto expedido y un documento primario o un dato oficial, y de esto solo consta el relato de un medio. Si aparece el acto —con su número o su radicado—, la declaración vuelve. — Queda documentado el acto y no solo la reacción, que es lo que esta entrada no tenía: desde el 18 de agosto Inravisión reemplazó la programación de las veinte emisoras por música emitida desde Bogotá, por nuevos lineamientos de la gerente Ángela María Mora que centralizan la emisión y suspenden los espacios informativos mientras se revisa la organización y el contenido. Las emisoras de paz se crearon en cumplimiento del Acuerdo de Paz de 2016 y operan desde 2014 en Pasto, Manizales, Bucaramanga, San Andrés, Villavicencio, Quibdó, Barranquilla y Valledupar, entre otras. Lo que sigue SIN constar es un acto administrativo con número o radicado, y por eso la declaración de I-04 que esta entrada tuvo hasta la v970 no vuelve: el criterio pide documento primario o dato oficial, y unos lineamientos referidos por prensa no son ninguno de los dos.",
    "tipoFuente": "verificado",
    "fuentes": [
     {
      "n": "El Espectador · la alerta de la FLIP",
      "u": "https://www.elespectador.com/judicial/flip-alerta-por-suspension-temporal-de-20-emisoras-de-paz-en-gobierno-de-la-espriella/",
+     "rol": "efecto"
+    },
+    {
+     "n": "Proclama del Pacífico · Silenciadas las 20 emisoras de paz del sistema RTVC Inravisión",
+     "u": "https://proclamadelpacifico.com/silenciadas-las-20-emisoras-de-paz-del-sistema-rtvc-inravision/",
+     "rol": "acto"
+    },
+    {
+     "n": "HSB Noticias · Las Emisoras de Paz quedan en silencio informativo: la programación regional fue reemplazada por música",
+     "u": "https://www.hsbnoticias.com/gobierno-colombiano-suspende-emisoras-de-paz/",
+     "rol": "acto"
+    },
+    {
+     "n": "Pulzo · Suspensión de emisoras de paz en Colombia: rechazo de la FLIP y organizaciones de prensa",
+     "u": "https://www.pulzo.com/nacion/suspension-de-emisoras-de-paz-en-colombia-rechazo-de-la-flip-y-organizaciones-de-prensa-PP5280954A",
      "rol": "efecto"
     }
    ],

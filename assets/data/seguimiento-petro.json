@@ -1,5 +1,5 @@
 {
-  "_comentario": "URBIS · Seguimiento Presidencial · EL GOBIERNO ANTERIOR. Registro cerrado del mandato de Gustavo Petro (2022–2026), con la MISMA estructura y las MISMAS reglas que el del gobierno actual, para que la ficha se calcule con la misma función y no con una copia con otras reglas. Vive en su propio archivo porque es un registro cerrado: no lo toca la rutina diaria y no engorda el diff del que sí se actualiza. Lee CLAUDE.md antes de editarlo. — Lleva los MISMOS tres campos de Capa 1 que el registro actual, por el principio 1 del pliego: toda regla que se aplica a un gobierno se aplica a todos. Aflojarla acá sería la manera silenciosa de inclinar la comparación. — CAPA 3: cada contradicción documentada declara `mismoObjetoVerificado` (true | false). Es lo que separa un INCUMPLIMIENTO de una TENSIÓN RETÓRICA: solo las que tienen identidad de objeto alimentan el eje A de confiabilidad. NO es lo mismo que `estado: 'tension'`, que es un estado probatorio —todavía no está documentada—; una contradicción puede estar perfectamente documentada y aun así no hablar del mismo objeto. Sin declarar, el eje A no publica nivel y lo dice: publicar una acusación floja al lado de varias sólidas no suma, resta. — CAPA 1, v961: `tipoMedicion` pasa de `no-aplica` a `contexto-estructural`, que dice lo que ES y no lo que no es. Y el `contrargumentoOficial` «ausente» exige CONSTANCIA: se escribe { ausente: true, busco: [\"dónde se buscó\"], fecha: \"AAAA-MM-DD\" }. La palabra suelta «ausente» se ve y NO pesa en el indicador I-06 — afirmar que el Gobierno no respondió sin decir dónde se buscó es un señalamiento sin respaldo. — CAPA 2, v961: los criterios de I-04, I-05 e I-07 están ESCRITOS en js/70 (`CRITERIOS`), con su definición, su lista de lo que incluye y su lista de lo que NO. Antes de declarar un indicador se leen: si el hecho cae en el `excluye`, no se declara. Y una entrada que declara indicador trae además tres campos o no cuenta: `nivelGobierno` (nacional | departamental | distrital | municipal), `estadoProcesal` (en-firme | en-tramite-legislativo | en-revision-judicial | en-disputa-institucional | anunciado-sin-acto) y `tipoEvidencia` (documento-primario | dato-oficial | reporte-periodistico | testimonio | captura-de-pantalla). Es documento primario cuando el acto está identificado por su número o radicado, aunque la copia llegue por prensa. Lo declarado que no pasa el criterio no desaparece: la ficha dice cuántas se declararon, cuántas cuentan y qué le falta a cada una. — v962: nace el indicador I-13 (interferencia en la independencia técnica) para los actos sobre entidades del Ejecutivo con independencia solo TÉCNICA —el DANE (Ley 2335), las agencias reguladoras—, que NO son órganos autónomos y por eso no caben en I-05. La lista cerrada de órganos autónomos está en js/70 (`ORGANOS_AUTONOMOS`) y se consulta antes de declarar un I-05; el DANE no está en ella. I-13 cuenta una COINCIDENCIA documentada, no una causa probada, y no alimenta el eje B porque no hay media histórica suya. Un hecho no declara I-05 e I-13 a la vez: una entidad es autónoma o no lo es. — v963: toda declaración de indicador dice además POR CUÁL renglón del criterio entra, en `indicadoresPor`: { \"I-04\": \"<texto exacto de una línea del incluye>\" }. Se comprueba contra el texto literal del criterio en js/70, así que se copia y pega de ahí; una cita que el criterio no tenga no cuenta y se ve. Sin vía, la declaración no cuenta. Y la regla de la v961 al escribirla: si el hecho cae en el `excluye`, no se declara —se quitaron dos por eso, un anuncio sin acto y un acto del gobierno anterior. \u2014 v998 \u00b7 EL ROL DE CADA FUENTE. Toda fuente de `fuentes[]` lleva su `rol`, y son tres: `acto` (documenta el ACTO de esta entrada: el documento oficial, o la cobertura del hecho mismo), `efecto` (documenta lo que vino DESPU\u00c9S: una reacci\u00f3n, un pronunciamiento, una consecuencia) y `contexto` (ni una cosa ni la otra: antecedente, perfil o cobertura anterior; no prueba el acto). El vocabulario vive en js/70 (`ROLES_DE_FUENTE`) y se copia de ah\u00ed. Se declaran TODAS las fuentes de una entrada o NINGUNA: una entrada a medias se lee como comprobada mientras la mitad de sus fuentes sigue sin mirar, que es la exenci\u00f3n silenciosa que la v966 vino a cerrar. Y si ninguna fuente documenta el acto, la entrada se queda en `sin-acto` \u2014que desde la v970 es un estado que se cuenta y se nombra, no un fallo\u2014: no se asciende una de efecto a acto para que la guarda pase. Es hallazgo, no obst\u00e1culo. \u2014 v999 \u00b7 EL NIVEL DE UN ACTO DE GOBIERNO. Toda entrada con `tipoMedicion: actividad` \u2014las que registran un acto del Gobierno\u2014 declara `nivelGobierno` (nacional | departamental | distrital | municipal). NO se deduce del t\u00edtulo: el nivel es el del ACTO y no el del sitio donde ocurri\u00f3, y este registro tiene decenas de actos nacionales que pasaron en una ciudad. Las de `resultado` y `contexto-estructural` no lo llevan, y eso no es un descuido: una cifra del pa\u00eds o un hecho de otro actor no tienen nivel de gobierno, y escribirles `nacional` ser\u00eda declarar algo falso. La excepci\u00f3n es un acto de gobierno de OTRO gobierno \u2014el Decreto 1012\u2014, que s\u00ed lo lleva. Sin declarar, la entrada SIGUE pesando (v941): el valor por omisi\u00f3n ser\u00eda una afirmaci\u00f3n que nadie escribi\u00f3.",
+  "_comentario": "URBIS · Seguimiento Presidencial · EL GOBIERNO ANTERIOR. Registro cerrado del mandato de Gustavo Petro (2022–2026), con la MISMA estructura y las MISMAS reglas que el del gobierno actual, para que la ficha se calcule con la misma función y no con una copia con otras reglas. Vive en su propio archivo porque es un registro cerrado: no lo toca la rutina diaria y no engorda el diff del que sí se actualiza. Lee CLAUDE.md antes de editarlo. — Lleva los MISMOS tres campos de Capa 1 que el registro actual, por el principio 1 del pliego: toda regla que se aplica a un gobierno se aplica a todos. Aflojarla acá sería la manera silenciosa de inclinar la comparación. — CAPA 3: cada contradicción documentada declara `mismoObjetoVerificado` (true | false). Es lo que separa un INCUMPLIMIENTO de una TENSIÓN RETÓRICA: solo las que tienen identidad de objeto alimentan el eje A de confiabilidad. NO es lo mismo que `estado: 'tension'`, que es un estado probatorio —todavía no está documentada—; una contradicción puede estar perfectamente documentada y aun así no hablar del mismo objeto. Sin declarar, el eje A no publica nivel y lo dice: publicar una acusación floja al lado de varias sólidas no suma, resta. — CAPA 1, v961: `tipoMedicion` pasa de `no-aplica` a `contexto-estructural`, que dice lo que ES y no lo que no es. Y el `contrargumentoOficial` «ausente» exige CONSTANCIA: se escribe { ausente: true, busco: [\"dónde se buscó\"], fecha: \"AAAA-MM-DD\" }. La palabra suelta «ausente» se ve y NO pesa en el indicador I-06 — afirmar que el Gobierno no respondió sin decir dónde se buscó es un señalamiento sin respaldo. — CAPA 2, v961: los criterios de I-04, I-05 e I-07 están ESCRITOS en js/70 (`CRITERIOS`), con su definición, su lista de lo que incluye y su lista de lo que NO. Antes de declarar un indicador se leen: si el hecho cae en el `excluye`, no se declara. Y una entrada que declara indicador trae además tres campos o no cuenta: `nivelGobierno` (nacional | departamental | distrital | municipal), `estadoProcesal` (en-firme | en-tramite-legislativo | en-revision-judicial | en-disputa-institucional | anunciado-sin-acto) y `tipoEvidencia` (documento-primario | dato-oficial | reporte-periodistico | testimonio | captura-de-pantalla). Es documento primario cuando el acto está identificado por su número o radicado, aunque la copia llegue por prensa. Lo declarado que no pasa el criterio no desaparece: la ficha dice cuántas se declararon, cuántas cuentan y qué le falta a cada una. — v962: nace el indicador I-13 (interferencia en la independencia técnica) para los actos sobre entidades del Ejecutivo con independencia solo TÉCNICA —el DANE (Ley 2335), las agencias reguladoras—, que NO son órganos autónomos y por eso no caben en I-05. La lista cerrada de órganos autónomos está en js/70 (`ORGANOS_AUTONOMOS`) y se consulta antes de declarar un I-05; el DANE no está en ella. I-13 cuenta una COINCIDENCIA documentada, no una causa probada, y no alimenta el eje B porque no hay media histórica suya. Un hecho no declara I-05 e I-13 a la vez: una entidad es autónoma o no lo es. — v963: toda declaración de indicador dice además POR CUÁL renglón del criterio entra, en `indicadoresPor`: { \"I-04\": \"<texto exacto de una línea del incluye>\" }. Se comprueba contra el texto literal del criterio en js/70, así que se copia y pega de ahí; una cita que el criterio no tenga no cuenta y se ve. Sin vía, la declaración no cuenta. Y la regla de la v961 al escribirla: si el hecho cae en el `excluye`, no se declara —se quitaron dos por eso, un anuncio sin acto y un acto del gobierno anterior. — v998 · EL ROL DE CADA FUENTE. Toda fuente de `fuentes[]` lleva su `rol`, y son tres: `acto` (documenta el ACTO de esta entrada: el documento oficial, o la cobertura del hecho mismo), `efecto` (documenta lo que vino DESPUÉS: una reacción, un pronunciamiento, una consecuencia) y `contexto` (ni una cosa ni la otra: antecedente, perfil o cobertura anterior; no prueba el acto). El vocabulario vive en js/70 (`ROLES_DE_FUENTE`) y se copia de ahí. Se declaran TODAS las fuentes de una entrada o NINGUNA: una entrada a medias se lee como comprobada mientras la mitad de sus fuentes sigue sin mirar, que es la exención silenciosa que la v966 vino a cerrar. Y si ninguna fuente documenta el acto, la entrada se queda en `sin-acto` —que desde la v970 es un estado que se cuenta y se nombra, no un fallo—: no se asciende una de efecto a acto para que la guarda pase. Es hallazgo, no obstáculo. — v999 · EL NIVEL DE UN ACTO DE GOBIERNO. Toda entrada con `tipoMedicion: actividad` —las que registran un acto del Gobierno— declara `nivelGobierno` (nacional | departamental | distrital | municipal). NO se deduce del título: el nivel es el del ACTO y no el del sitio donde ocurrió, y este registro tiene decenas de actos nacionales que pasaron en una ciudad. Las de `resultado` y `contexto-estructural` no lo llevan, y eso no es un descuido: una cifra del país o un hecho de otro actor no tienen nivel de gobierno, y escribirles `nacional` sería declarar algo falso. La excepción es un acto de gobierno de OTRO gobierno —el Decreto 1012—, que sí lo lleva. Sin declarar, la entrada SIGUE pesando (v941): el valor por omisión sería una afirmación que nadie escribió.",
   "presidente": "Gustavo Petro",
   "periodo": "2022 – 2026",
   "posesion": "2022-08-07",
@@ -64,7 +64,7 @@
       "tipoMedicion": "actividad",
       "nivelGobierno": "nacional",
       "detalle": "Gustavo Petro terminó el 7 de agosto de 2026 el periodo que había empezado el 7 de agosto de 2022, el primero de un presidente de izquierda en la historia de Colombia. Entregó con el dólar por debajo de 3.200 pesos, desempleo de 8,1 %, inflación de 4,8 % y pobreza monetaria de 28,0 %; y con deuda pública por encima del 64 % del PIB, déficit fiscal cercano al 7 % y el crecimiento en 1,7 % proyectado.",
-      "contrapunto": "El mismo balance se lee de dos maneras según qué mitad se mire, y las dos mitades son ciertas: mejoraron empleo, inflación y pobreza; empeoraron crecimiento, deuda y margen fiscal.",
+      "contrapunto": "El mismo balance se lee de dos maneras según qué mitad se mire, y las dos mitades son ciertas: mejoraron empleo, inflación y pobreza; empeoraron crecimiento, deuda y margen fiscal. — El acto de la entrega es la investidura del 7 de agosto de 2026 en la Arena USC de la Universidad Santiago de Cali, la primera transmisión de mando presidencial celebrada fuera de Bogotá. Las dos fuentes de contexto que esta entrada ya traía miden el balance económico del cuatrienio, que es otra cosa.",
       "tipoFuente": "verificado",
       "fuentes": [
         {
@@ -76,6 +76,16 @@
           "n": "XTB · el dólar despide al gobierno Petro por debajo de 3.200",
           "u": "https://www.xtb.com/lat/analisis-y-noticias/analisis-de-mercado/dolar-hoy-colombia-dolar-despide-el-gobierno-petro-por-debajo-de-3-200",
           "rol": "contexto"
+        },
+        {
+          "n": "El Tiempo · Así fue el minuto a minuto de la posesión presidencial de Abelardo De La Espriella en Cali",
+          "u": "https://www.eltiempo.com/politica/abelardo-de-la-espriella/posesion-de-abelardo-de-la-espriella-como-nuevo-presidente-de-colombia-hoy-7-de-agosto-siga-los-actos-protocolarios-en-cali-ultimas-noticias-3576902",
+          "rol": "acto"
+        },
+        {
+          "n": "CNN en Español · Resumen de la investidura presidencial de Abelardo de la Espriella, 7 de agosto",
+          "u": "https://cnnespanol.cnn.com/2026/08/07/colombia/live-news/abelardo-espriella-posesion-investidura-presidencial-orix",
+          "rol": "acto"
         }
       ]
     },
@@ -204,7 +214,7 @@
       "tipoMedicion": "actividad",
       "nivelGobierno": "nacional",
       "detalle": "La reforma laboral quedó sancionada el 25 de junio de 2025. Entre sus cambios: recargo nocturno desde las 7:00 p. m., pago del dominical y festivo al 100 % de forma gradual —80 % en 2025, 90 % en 2026 y 100 % en 2027—, formalización del trabajo doméstico con jornada de ocho horas, y obligación de las plataformas digitales de reparto de aportar a la seguridad social de sus repartidores.",
-      "contrapunto": "Los gremios advirtieron que el aumento de costos laborales podía frenar la formalización, que es justo lo que la reforma buscaba ampliar.",
+      "contrapunto": "Los gremios advirtieron que el aumento de costos laborales podía frenar la formalización, que es justo lo que la reforma buscaba ampliar. — El acto queda documentado por el texto mismo de la ley en el Diario Oficial 53.160 y por el Ministerio del Trabajo: es la Ley 2466 del 25 de junio de 2025, sancionada en la Casa Museo Quinta de Bolívar. Las dos fuentes que esta entrada traía son un balance y un análisis posteriores.",
       "tipoFuente": "verificado",
       "fuentes": [
         {
@@ -216,6 +226,21 @@
           "n": "LexLatin · el legado laboral que deberán resolver los candidatos",
           "u": "https://lexlatin.com/reportajes/reforma-laboral-seguridad-social-colombia-candidatos-petro",
           "rol": "efecto"
+        },
+        {
+          "n": "Diario Oficial 53.160 · Ley 2466 del 25 de junio de 2025 (texto completo, Rama Judicial)",
+          "u": "https://sidn.ramajudicial.gov.co/SIDN/NORMATIVA/TEXTOS_COMPLETOS/7_LEYES/LEYES%202025/LEY%202466%20DE%202025.PDF",
+          "rol": "acto"
+        },
+        {
+          "n": "Ministerio del Trabajo · La Reforma Laboral ya es la Ley 2466 del 25 de junio",
+          "u": "https://www.mintrabajo.gov.co/la-reforma-laboral-ya-es-la-ley-2466-del-25-de-junio",
+          "rol": "acto"
+        },
+        {
+          "n": "El Colombiano · Es oficial: la reforma laboral es Ley de la República, el presidente Petro la sancionó",
+          "u": "https://www.elcolombiano.com/negocios/reforma-laboral-petro-sanciona-ley-trabajo-cambios-entrada-en-vigencia-IJ27848022",
+          "rol": "acto"
         }
       ]
     },
@@ -239,8 +264,24 @@
           "n": "Radio Nacional · reformas laboral y pensional",
           "u": "https://www.radionacional.co/actualidad/reformas-laboral-y-pensional-y-aumento-del-salario-balance-de-medidas-para-trabajadores",
           "rol": "contexto"
+        },
+        {
+          "n": "Presidencia de la República · ABC de la Ley de Reforma Pensional que el presidente Gustavo Petro sanciona este martes en la Plaza de Bolívar",
+          "u": "https://www.presidencia.gov.co/prensa/Paginas/ABC-de-la-Ley-de-Reforma-Pensional-que-el-presidente-Gustavo-Petro-sanciona-240716.aspx",
+          "rol": "acto"
+        },
+        {
+          "n": "INCP · Ley 2381 de 2024: reforma pensional de Colombia",
+          "u": "https://incp.org.co/publicaciones/infoincp-publicaciones/2024/07/ley-2381-de-2024-reforma-pensional-de-colombia/",
+          "rol": "acto"
+        },
+        {
+          "n": "Infobae · La reforma pensional se firmó en la plaza de Bolívar, en Bogotá: Gustavo Petro sancionó la ley",
+          "u": "https://www.infobae.com/colombia/2024/07/16/la-reforma-pensional-se-firma-en-la-plaza-de-bolivar-en-bogota-gustavo-petro-hace-presencia-en-la-ceremonia/",
+          "rol": "acto"
         }
-      ]
+      ],
+      "contrapunto": "El acto es la sanción de la Ley 2381 el 16 de julio de 2024 en la Plaza de Bolívar de Bogotá, documentada por la propia Presidencia. La ley crea el sistema de cuatro pilares y su artículo 94 la hace regir desde el 1 de julio de 2025, así que la sanción y la entrada en vigencia están a casi un año de distancia."
     },
     {
       "fecha": "2026-06-01",
@@ -354,7 +395,7 @@
       "categoriaProbatoria": "atribucion-causal",
       "tipoMedicion": "contexto-estructural",
       "detalle": "La exfiscal Lucy Laborde denunció que se le ordenó retirar el delito de lavado de activos del proceso contra Nicolás Petro y que fue apartada tras negarse. La Fiscal General negó haber dado esa orden y sostuvo que la acusación por lavado de activos y enriquecimiento ilícito se mantiene. Petro respondió públicamente a la denuncia.",
-      "contrapunto": "Es la palabra de una exfiscal contra la de la Fiscal General. Ningún organismo se ha pronunciado sobre quién dice la verdad, y la acusación contra Nicolás Petro sigue en pie con los dos delitos.",
+      "contrapunto": "Es la palabra de una exfiscal contra la de la Fiscal General. Ningún organismo se ha pronunciado sobre quién dice la verdad, y la acusación contra Nicolás Petro sigue en pie con los dos delitos. — El acto de esta entrada es la denuncia de la exfiscal, y queda documentado; lo que esta entrada tenía eran solo las reacciones. La Fiscalía General negó las instrucciones y calificó lo dicho por Laborde de «interpretaciones subjetivas sin sustento», así que las dos versiones están enfrentadas y ninguna autoridad las ha dirimido.",
       "tipoFuente": "disputado",
       "fuentes": [
         {
@@ -365,6 +406,21 @@
         {
           "n": "Radio Santa Fe · la Fiscal General niega haber ordenado eliminar delitos",
           "u": "https://www.radiosantafe.com/2026/08/23/fiscal-general-niega-haber-ordenado-eliminar-delitos-a-nicolas-petro-la-acusacion-por-lavado-de-activos-y-enriquecimiento-ilicito-se-mantiene/",
+          "rol": "efecto"
+        },
+        {
+          "n": "Infobae · La exfiscal del caso de Nicolás Petro denunció que fue presionada por Luz Adriana Camargo para retirar el delito de lavado de activos: «No hice caso»",
+          "u": "https://www.infobae.com/colombia/2026/08/22/exfiscal-del-caso-de-nicolas-petro-denuncio-que-fue-presionada-por-luz-adriana-camargo-para-retirar-el-delito-de-lavado-de-activos-no-hice-caso/",
+          "rol": "acto"
+        },
+        {
+          "n": "Semana · Lucy Laborde habla de cómo la fiscal general intentó beneficiar a Nicolás Petro: «No respetó la independencia»",
+          "u": "https://www.semana.com/nacion/articulo/lucy-laborde-habla-de-como-la-fiscal-general-intento-beneficiar-a-nicolas-petro-no-respeto-la-independencia/202618/",
+          "rol": "acto"
+        },
+        {
+          "n": "Infobae · La Fiscalía responde a la exfiscal Laborde por señalamientos sobre el caso de Nicolás Petro: «interpretaciones subjetivas sin sustento»",
+          "u": "https://www.infobae.com/colombia/2026/08/23/fiscalia-responde-a-exfiscal-laborde-por-senalamientos-sobre-el-caso-de-nicolas-petro-interpretaciones-subjetivas-sin-sustento/",
           "rol": "efecto"
         }
       ]
@@ -600,8 +656,24 @@
           "n": "Canal Trece · principales hitos y reformas del gobierno Petro",
           "u": "https://canaltrece.com.co/noticias/balance-de-gestion-principales-hitos-y-reformas-del-gobierno-de-gustavo-petro/",
           "rol": "contexto"
+        },
+        {
+          "n": "El Colombiano · Gustavo Petro tomó posesión como presidente de Colombia · minuto a minuto del 7 de agosto de 2022",
+          "u": "https://www.elcolombiano.com/colombia/posesion-presidencial-gustavo-petro-y-francia-marquez-minuto-a-minuto-7-de-agosto-2022-HJ18337154",
+          "rol": "acto"
+        },
+        {
+          "n": "CNN en Español · Así fue la toma de posesión de Gustavo Petro como presidente de Colombia",
+          "u": "https://cnnespanol.cnn.com/2022/08/07/en-vivo-toma-de-posesion-gustavo-petro-presidente-colombia-orix/",
+          "rol": "acto"
+        },
+        {
+          "n": "Voz de América · Gustavo Petro toma posesión como presidente de Colombia",
+          "u": "https://www.vozdeamerica.com/a/petro-se-convierte-en-el-primer-presidente-de-izquierda-en-colombia/6690900.html",
+          "rol": "acto"
         }
-      ]
+      ],
+      "contrapunto": "El acto es la investidura del 7 de agosto de 2022 en la Plaza de Bolívar de Bogotá, con el juramento tomado por el presidente del Congreso, Roy Barreras, y ante nueve jefes de Estado. La única fuente que esta entrada traía era un repaso posterior de hitos del cuatrienio."
     },
     {
       "fecha": "2022-10-01",

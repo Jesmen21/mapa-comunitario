@@ -19,25 +19,23 @@ prioridades también se queda vieja (v997)»**, más abajo.
 Medido el 21 de septiembre de 2026 sobre los dos registros —180 entradas del
 gobierno actual y 32 de Petro—:
 
-1. **Conseguir la fuente del ACTO de las seis entradas `sin-acto`.** La v998
-   declaró el rol de las 562 fuentes y seis entradas quedaron sin ninguna que
-   documente su acto: la del Decreto 1012 y las emisoras de paz en el registro
-   actual, y cinco de Petro —la entrega de la Presidencia, las dos sanciones de
-   reforma, la posesión de 2022 y la denuncia de la exfiscal Laborde—. No es un
-   fallo y por eso no está en rojo: es el hallazgo que la guarda vino a
-   producir. `hecho cuando: sin-acto-cero`
-2. **Decidir la identidad de objeto de las 8 contradicciones documentadas.**
+1. **Decidir la identidad de objeto de las 8 contradicciones documentadas.**
    Es lo único que bloquea el veredicto de fiabilidad (v972), y **no es de esta
    sesión**: leer si lo prometido y lo hecho son el mismo objeto cambia en
    público el juicio sobre una persona real, y lo decide quien firma el módulo.
    Declarada cualquiera, el peldaño se calcula solo.
    `hecho cuando: identidad-declarada`
 
+**Queda UN renglón, y no es de esta sesión.** Es la primera vez que esta lista
+llega a eso, y conviene que se lea como lo que es: lo que bloquea el veredicto
+de fiabilidad de una persona real es una lectura —si lo prometido y lo hecho
+son el mismo objeto— y esa la toma quien firma el módulo. Endurecer guardas
+alrededor no la adelanta ni un día.
+
 Una precisión que la lista vieja traía y sigue valiendo: si al declarar el rol
 aparece una entrada cuyas fuentes **ninguna documenta el acto**, no se inventa
-y no se deja pasar. Se queda en `sin-acto` —que desde la
-v970 es un estado que se cuenta y se nombra, no un fallo— y se sigue. **Es
-hallazgo, no obstáculo.**
+y no se deja pasar. Se queda en `sin-acto` —que desde la v970 es un estado que
+se cuenta y se nombra, no un fallo— y se sigue. **Es hallazgo, no obstáculo.**
 
 **Lo que ya NO está en la lista, y por qué:** la migración del esquema antiguo
 `fuente` + `url` la hizo la v967 —cero entradas quedan con esa forma en los dos
@@ -53,7 +51,12 @@ nivel sin mentir, y el renglón pedía las 212. Y **documentar las diecinueve
 entradas del 4 al 17 de agosto**, que era el renglón 1 de esta misma lista, lo
 hizo la v1003: diecisiete verificadas y dos disputadas, con el canal declarado
 —la búsqueda, que es el único que este contenedor tiene— y el techo de
-`TECHO_SIN_TIPO` en cero.
+`TECHO_SIN_TIPO` en cero. Y **la fuente del ACTO de las seis `sin-acto`**, que
+era el renglón siguiente, la consiguió la v1004: una la cerró de paso la v1003
+al documentar el Decreto 1012, y las cinco restantes —la suspensión de las
+emisoras de paz, y cuatro del registro de Petro— quedaron con su acto
+documentado, dos de ellas con el texto de la ley en el Diario Oficial y con la
+Presidencia.
 
 Lo demás del módulo presidencial —los cuatro criterios sin validar, la media
 histórica del eje B, la fuente del eje C— pide archivo y fuente, no código, y
@@ -17051,6 +17054,96 @@ escribió para eso**: «ya está hecho y la lista lo sigue pidiendo:
 sin-documentar-cero». Su medición se retiró de la tabla con el renglón —lo que
 queda no es un pendiente sino un invariante, y vive en su propia comprobación—,
 que es exactamente lo que la v999 hizo con el nivel de gobierno.
+
+## La fuente del ACTO, y una lista que se queda con un renglón (v1004)
+
+El renglón siguiente de la `LISTA-QUE-SIGUE`, por el mismo canal y con el mismo
+límite que la v1003. Seis entradas que la v998 dejó marcadas `sin-acto`: sus
+fuentes documentaban la REACCIÓN y no el hecho.
+
+    v1003   6 entradas sin fuente del acto · 765 fuentes en los dos registros
+    v1004   0 · 212 de 212 entradas con su rol declarado y su acto documentado
+
+Y una la cerró de paso la v1003: al documentar el Decreto 1012 con ColombiaCheck
+y dos medios más, esa entrada dejó de estar `sin-acto` sin que la tanda se lo
+propusiera. Lo dijo la medición al abrir esta, no el recuerdo.
+
+### Dos actos entran con su documento, no con su prensa
+
+* **La reforma laboral** entra con el **Diario Oficial 53.160**: el texto
+  completo de la Ley 2466 del 25 de junio de 2025, más el Ministerio del
+  Trabajo. Lo que la entrada traía era un balance y un análisis posteriores.
+* **La reforma pensional** entra con la **Presidencia de la República**: la
+  sanción de la Ley 2381 el 16 de julio de 2024 en la Plaza de Bolívar. Su
+  artículo 94 la hace regir desde el 1 de julio de 2025, así que la sanción y
+  la vigencia están a casi un año de distancia — y eso va en el contrapunto,
+  porque una entrada que las junte adelanta el reloj de la reforma.
+
+Las otras tres del registro de Petro —la posesión de 2022, la entrega de la
+Presidencia y la denuncia de la exfiscal Laborde— entran con prensa, y con
+varias: no hay documento público que citar para ninguna de las tres.
+
+### Las emisoras de paz: el acto se documenta y la declaración NO vuelve
+
+Es la entrada que la v967 no pudo cerrar y la v970 dejó abierta con dos dudas.
+Una se resuelve: **el acto existe y ahora está documentado**. Desde el 18 de
+agosto Inravisión reemplazó la programación de las veinte emisoras por música
+emitida desde Bogotá, por nuevos lineamientos de su gerente que centralizan la
+emisión y suspenden los espacios informativos.
+
+Lo que **no** cambia es la declaración de I-04, y el motivo es el que la v970
+escribió: el `requiere` del criterio pide documento primario o dato oficial, y
+**unos lineamientos referidos por prensa no son ninguno de los dos.** No consta
+acto administrativo con número ni radicado.
+
+**Documentar el acto y contarlo en un indicador son dos cosas**, y esta entrada
+es donde se ve: la primera se resolvió esta noche, la segunda sigue esperando
+el papel. Aflojar el criterio para que la cifra subiera sería la salida barata
+que este proyecto lleva cuarenta tandas deshaciendo.
+
+### El trinquete que NO se pone, y por qué queda escrito en la guarda
+
+Con `sin-acto` en cero sobre las 212 entradas, la tentación inmediata es fijarlo
+ahí. **No se hace**, y la razón va escrita al lado de la comprobación para que
+la sesión que lo piense no tenga que descubrirla midiendo.
+
+El discriminador es el de la v965 —*¿puede ese pendiente crecer sin que nadie
+haga nada mal?*— y acá la respuesta es **sí**: una entrada nueva cuya única
+fuente documenta la reacción es un hallazgo legítimo. La v970 lo dejó escrito y
+cambió la guarda justamente para que dejara de ser un rojo, porque **un rojo ahí
+pone la salida barata en mentir sobre el rol.** Lo que vigila esto es el
+recuento que llega a la pantalla, no un cupo.
+
+Por eso esta tanda **no agrega una guarda nueva**. Las que la cubren ya existen
+—el rol de la v965, el vocabulario y el todo-o-nada de la v998, el recuento con
+sus dos redacciones de la v966 y su guarda de material de la v970— y las cuatro
+pasan. Inventar una para cerrar la tanda es lo que la v915 y la v951 declinaron.
+
+### Medido sobre el papel
+
+La ficha dice, con las seis entradas que declaran indicador: **«La comprobación
+corrió sobre todas: cada una tiene al menos una fuente que documenta el acto»**.
+El registro verificado sigue en 75 %, el veredicto sigue en «Sin nivel» y los
+hechos publicados siguen en 131 de 180 — esta tanda no mueve ninguna cifra
+pública, y eso es lo correcto: lo que arregla es con qué se sostiene cada una.
+
+Y una precisión de alcance, medida y no construida: el recuento de la ficha está
+acotado a **las entradas que declaran indicador**, que es su diseño desde la
+v966 —son las que sostienen una cifra publicada—. Que las **212** tengan su rol
+declarado es un hecho del registro que ninguna pantalla enseña. No se le agrega
+un renglón: es una cifra que nadie pidió y la v933 dejó la práctica de medir y
+declarar en vez de construir de paso.
+
+### La lista se queda con UN renglón, y no es de esta sesión
+
+Es la primera vez que la `LISTA-QUE-SIGUE` llega a eso desde que la v997 le puso
+condiciones medibles. Lo único que queda —y lo único que bloquea el veredicto de
+fiabilidad— son **las ocho declaraciones de identidad de objeto**, y esa lectura
+la toma quien firma el módulo: decidir si lo prometido y lo hecho son el mismo
+objeto cambia en público el juicio sobre una persona real (v959, v972).
+
+**Endurecer guardas alrededor no la adelanta ni un día**, y conviene que quede
+dicho ahí arriba y no solo acá.
 
 ## La lista viva: lo que al pliego educativo todavía le falta (v866)
 

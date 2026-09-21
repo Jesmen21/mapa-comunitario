@@ -2082,7 +2082,18 @@ console.log('\n  -- la ficha del gobernante --');
        resultado fue que no hay fuente del acto. Los dos coinciden ahora.
 
        Lo que sigue siendo un fallo es un rol que la ficha no sabe leer: ahí
-       no hay estado que contar, hay un valor inventado. */
+       no hay estado que contar, hay un valor inventado.
+
+       Y un trinquete que NO se pone, con su razón, para que la sesión que lo
+       piense no lo descubra midiendo: al cerrar la v1004 `sin-acto` quedó en
+       CERO sobre las 212 entradas de los dos registros, y la tentación
+       inmediata es fijarlo ahí. No se hace. El discriminador de la v965 es
+       «¿puede ese pendiente crecer sin que nadie haga nada mal?», y acá la
+       respuesta es SÍ: una entrada nueva cuya única fuente documenta la
+       reacción y no el acto es un HALLAZGO legítimo —la v970 lo dejó escrito y
+       cambió la guarda justamente para que no fuera un rojo—, y un techo en
+       cero volvería a poner la salida barata en mentir sobre el rol. Lo que
+       vigila esto es el recuento que llega a la pantalla, no un cupo. */
     comprobar('los roles declarados se cuentan, y «sin acto» es un estado y no un fallo',
       true,
       soloEfecto.length
@@ -6845,14 +6856,12 @@ console.log('\n  -- una lista de prioridades también se queda vieja (v997) --')
      medición que siempre contestara «pendiente» dejaría la lista envejecer sin
      que nada lo dijera, y contra el registro de verdad eso no se ve (v970). */
   const MEDIDAS = {
-    'sin-acto-cero': (m) => {
-      const sin = m.ents.filter((e) => {
-        const fs = e.fuentes || [];
-        const r = fs.map((f) => String(f.rol || '').trim()).filter(Boolean);
-        return r.length && r.indexOf('acto') < 0;
-      });
-      return { hecho: sin.length === 0, cuanto: sin.length + ' sin fuente del acto' };
-    },
+    /* La fuente del acto de las seis `sin-acto` salió de esta lista en la
+       v1004, y su medición con ella, como el nivel de gobierno en la v999 y
+       las diecinueve por documentar en la v1003: lo que queda no es un
+       pendiente sino un estado que la ficha cuenta y nombra —`sin-acto`, desde
+       la v970— y que su propia comprobación ya vigila, más arriba, con las dos
+       redacciones escritas. */
     /* El nivel de gobierno salió de esta lista en la v999, y su medición con
        él: lo que queda de aquel renglón no es un pendiente sino un INVARIANTE
        —toda entrada que registra un acto declara su nivel— y vive en su propia
