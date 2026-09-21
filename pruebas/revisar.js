@@ -6350,6 +6350,101 @@ console.log('\n  -- un error de GPS dice cuál de los tres es (v996) --');
    Y lo que de verdad hay que guardar es el MODO: intercepta los toques del
    mapa, así que si se filtrara, cada toque marcaría un vértice en vez de
    abrir el formulario de mapear — y eso es lo que se hace todos los días. */
+console.log('\n  -- una declaración de «otra tanda» lleva su estado (v1006) --');
+{
+  /* La sección «Una declaración de "otra tanda" también se queda vieja» dejó
+     escrito el problema y una receta —un `grep`— que hay que LEER entera para
+     saber cuál sigue abierta. Auditadas las catorce declaraciones, **seis
+     estaban cumplidas y ninguna lo decía**: la columna «Quién informó» la hizo
+     la v951, el borrador al rechazar la v954, la migración del esquema antiguo
+     la v967, la lista de cedidas de la otra hoja la v920, y dos se midieron y
+     se declinaron a propósito (la v936 con el mapa de afluencia y la v947 con
+     la percepción impresa).
+
+     Lo que faltaba no era la receta: era una MARCA que se pueda comprobar. Cada
+     declaración cierra ahora con `pendiente` o con `cerrado en vNNNN`, y el
+     grep pasa de ser un ejercicio de lectura a una lista con su estado al lado.
+
+     De qué NO responde, dicho como la v945 y la v952 corrigieron a sus
+     antecesoras: esto caza una declaración escrita con una de las tres frases
+     conocidas y sin marca. Una escrita de otra manera —«queda para después»,
+     «lo toma quien siga»— se le escapa, y esa mitad se sigue cazando leyendo.
+     Lo que sí impide es que las catorce que hay se queden viejas otra vez. */
+  const md = leer('CLAUDE.md');
+
+  /* El texto se lee sin lo que NO es una declaración: los bloques de código
+     —donde vive el propio grep de la receta—, las líneas de cita `>` y lo que
+     va entre comillas angulares, que es como esta bitácora cita una frase de
+     otra tanda. Sin eso, la receta se denunciaría a sí misma, que es el defecto
+     que la v926 encontró con una capacidad demostrada por su comentario. */
+  const fuera = [];
+  let limpio = md.replace(/```[\s\S]*?```/g, (m) => ' '.repeat(m.length));
+  /* Y el código EN LÍNEA, por lo mismo que el bloque: una frase escrita entre
+     acentos graves se está NOMBRANDO, no usando —la lista de frases de esta
+     misma guarda está escrita así—. Se vio al documentar la v1006: la sección
+     que explica la convención se denunciaba a sí misma cinco veces. */
+  limpio = limpio.replace(/`[^`\n]*`/g, (m) => ' '.repeat(m.length));
+  limpio = limpio.split('\n').map((l) => (/^\s*>/.test(l) ? ' '.repeat(l.length) : l)).join('\n');
+  limpio = limpio.replace(/«[\s\S]{0,400}?»/g, (m) => ' '.repeat(m.length));
+
+  /* Y la LISTA VIVA queda fuera a propósito: tiene su propia convención desde
+     la v866 —la cláusula `ya:`, que revisar.js ya exige— y dos convenciones
+     sobre la misma lista serían dos maneras de decir lo mismo (clase B). */
+  const iLV = limpio.indexOf('## La lista viva: lo que al pliego educativo');
+  if (iLV > 0) limpio = limpio.slice(0, iLV);
+
+  /* Las frases se buscan por su NÚCLEO y no por la fórmula entera: al medirlo,
+     «que es otra FUENTE y otra tanda» —la declaración de la v876 sobre la
+     corrida municipal— se escapaba de `es otra tanda` por una palabra de por
+     medio. Con el núcleo salen las catorce; con la fórmula, diez. */
+  const FRASES = /(otra tanda|su propia tanda|no se hace acá)/g;
+  const declaraciones = [];
+  let m;
+  while ((m = FRASES.exec(limpio))) {
+    /* La frase se DETECTA sobre el texto recortado y la marca se LEE del
+       original: los recortes sustituyen por espacios de la misma longitud, así
+       que los desplazamientos coinciden. Leer la marca del recortado la
+       borraría —va entre acentos graves, como todo lo que acá se nombra— y las
+       catorce saldrían sin marca. Medido: las catorce, en la primera corrida
+       después de añadir el recorte del código en línea. */
+    const cola = md.slice(m.index, m.index + 500);
+    const marca = /`pendiente`|`cerrado en v(\d+)([^`]*)`/.exec(cola);
+    const linea = md.slice(0, m.index).split('\n').length;
+    declaraciones.push({ linea: linea, frase: m[0], marca: marca });
+    if (!marca) fuera.push('CLAUDE.md:' + linea);
+  }
+
+  /* MATERIAL primero (v920): sin declaraciones que mirar, todo lo de abajo
+     pasaría por no tener nada delante. */
+  if (declaraciones.length < 5) {
+    anotarSinMaterial('MATERIAL · la bitácora declara trabajo aplazado',
+      declaraciones.length + ' declaraciones encontradas');
+  } else {
+    comprobar('MATERIAL · la bitácora declara trabajo aplazado',
+      true, declaraciones.length + ' declaraciones de «otra tanda», que es contra lo que muerde la de abajo');
+
+    comprobar('toda declaración de trabajo aplazado dice si sigue abierta o quién la cerró',
+      fuera.length === 0,
+      fuera.length === 0
+        ? 'las ' + declaraciones.length + ' llevan su marca'
+        : fuera.length + ' sin marca: ' + fuera.slice(0, 5).join(' · ') +
+          ' — hay que leerlas enteras para saber si ya están hechas, que es como envejecieron seis');
+
+    /* Una marca que nombre una versión que todavía no existe sería una
+       promesa, no un estado. Se compara con el token que este mismo archivo
+       ya exige que coincida en los nueve sitios. */
+    const token = (leer('index.html').match(/URBIS_APP_VERSION\s*=\s*'([\w-]+)'/) || [])[1] || '';
+    const hoy = parseInt(String(token).split('-')[0], 10);
+    const futuras = declaraciones
+      .filter((d) => d.marca && d.marca[1] && parseInt(d.marca[1], 10) > hoy)
+      .map((d) => 'v' + d.marca[1]);
+    comprobar('y ninguna se declara cerrada por una versión que todavía no existe',
+      !futuras.length,
+      futuras.length ? 'cerradas por el futuro: ' + futuras.join(' · ') + ' — hoy va en v' + hoy
+                     : 'las cerradas nombran versiones ya publicadas, hasta v' + hoy);
+  }
+}
+
 console.log('\n  -- una vía es un tramo, no un punto (v1002) --');
 {
   const j03t = soloCodigo(leer('js/03g-tramo-via.js'));

@@ -1611,6 +1611,12 @@ calcula.
 Lo que sí sigue faltando se nombra por lo que es: espacio público, densidad
 de usos y cobertura de equipamientos de la ciudad piden **una corrida de
 OpenStreetMap sobre el municipio entero**, que es otra fuente y otra tanda.
+`cerrado en v902` — aquella corrió el análisis de siempre sobre un círculo del
+área censada del municipio y trajo **dos de las tres**: la densidad de usos y
+la cobertura de los cuatro equipamientos. El espacio público NO, y con su razón
+propia: su área sale de polígonos, que son justo las capas que la consulta
+suelta por encima de 50 km². Ese renglón sigue vivo en la lista viva, que es
+donde se vigila.
 
 ### Dos comprobaciones que se dieron vuelta
 
@@ -5595,6 +5601,7 @@ se podría medir desde acá y entraría a ciegas. Es la decimosexta vez que este
 proyecto tropieza con material que no puede producir el caso, y la primera en
 que la conclusión es **no tocarlo** en vez de enriquecer el material: enriquecerlo
 aquí significa fabricar una lámina que no cierra, que es otra tanda.
+`pendiente`
 
 Queda escrito acá y **no en la lista viva**, a propósito: esa lista es de
 fuentes que faltan, y esto no es una fuente — es una decisión de diagramación
@@ -5815,7 +5822,10 @@ saberlo— pero **sin una prueba que lo ejercite**, y eso vale decirlo entero en
 vez de dejar una aserción que pase por otra razón. Para ejercitarlo hay que
 correr la serie de fotos de verdad en la suite (`E.rutaWayback` existe desde la
 v907) y después apretar la hoja: son diez descargas y otras tantas pasadas del
-clasificador, y es otra tanda.
+clasificador, y es otra tanda. `cerrado en v920` — y salió mucho más barata de
+lo previsto: **no hizo falta descargar nada**, porque la v917 ya había puesto
+las estampas en el fixture como `data:` en línea y la v918 había medido que con
+ellas la caja pesa. El material que faltaba existía sin que nadie lo notara.
 
 #### La divergencia que lo destapó se cerró en el acto
 
@@ -6080,7 +6090,7 @@ porcentaje de lleno y otro el de las que traen altura.
 trazado (v906) y no toca esta otra, porque cuando se escribió nadie había
 mirado de dónde salía cada número. Unificarlas es del motor y es otra tanda:
 queda con la premisa corregida, que es lo que le faltaba para poder hacerse
-bien.
+bien. `cerrado en v915`
 
 **Y con la premisa corregida se midió, en la v915: no había nada que
 unificar.** Las dos son la MISMA variable del motor —43 y 43 sobre un fixture
@@ -6158,6 +6168,7 @@ aviso viaja pegado a la lista— así que si hubiera sido truncamiento, la hoja
 lo diría. Queda como la comprobación que falta: que dos corridas del mismo
 sector con el mismo radio impriman el mismo total, o que la hoja diga por qué
 no. Eso pide guardar el total de la corrida anterior, que es otra tanda.
+`cerrado en v915`
 
 **Esa tanda fue la v915**, que guarda el total por sector en `pcr_conteos_v1`
 y compara con la corrida anterior, con el umbral sacado de lo que la hoja
@@ -8085,11 +8096,14 @@ Si dos personas caminan cuadras distintas, la entrada guarda **un solo
 una columna «Quién informó», como la que «Cupo real de equipamientos» ya lleva
 desde la v883 justamente porque cada cupo lo dice una portería distinta.
 Cambiar las columnas cambia la plantilla impresa y sus aserciones en
-`tlaminaedu`, así que es su propia tanda.
+`tlaminaedu`, así que es su propia tanda. `cerrado en v951` — y midiendo, la
+razón para aplazarlo no se sostenía: la séptima columna cuesta **cero
+milímetros de papel** y las aserciones de `tlaminaedu` ni se mueven.
 
 Quedan **cinco** plantillas por conectar, y las tres de percepción — que además
 necesitan entrar en `huecosDeCampo` antes de tener formulario, porque hoy el
-almacén no las acepta.
+almacén no las acepta. `cerrado en v944` las seis plantillas y `cerrado en v946`
+los tres paneles de percepción.
 
 ## La afluencia se pinta donde se mide (v935)
 
@@ -8189,6 +8203,9 @@ contenido no**.
 El mapa en la **lámina B**. Toca `mapasDisponibles`, `METODO_PANEL`,
 `ESCALA_PANEL`, `PELDANO_PLIEGO` y los pisos de §21 —cada uno con su regla— y
 va en su propia tanda. La pantalla primero, el papel después.
+`cerrado en v936 · medido y declinado` — se escribió entero y NO se publicó: el
+quinto mapa en esa banda cuesta **diez paneles medidos** y la afluencia cede
+igual, así que la hoja paga por un mapa que no imprime.
 
 Y no se tocó `?app=educativo`: ahí ya está y funciona.
 
@@ -8289,7 +8306,7 @@ de la lista ordenada** (v919) que empieza lejos de ahí: se lleva diez cajas de
 otras bandas antes de llegar a un mapa de movilidad.
 
 Arreglarlo —que la bisección sepa qué banda se desbordó— es su propia tanda y
-no se toca acá. Hacerlo de paso, para que el mapa quepa, sería el arreglo
+no se toca acá. `pendiente` Hacerlo de paso, para que el mapa quepa, sería el arreglo
 estructural que este proyecto ya deshizo tres veces: la mudanza de la v882, la
 bisección de la v886 y la fila de texto de la v901.
 
@@ -8448,11 +8465,12 @@ El remedio con precedente está identificado y no se hace acá: una columna «Qu
 informó», como la que «Cupo real de equipamientos» lleva desde la v883
 justamente porque cada cupo lo dice una portería distinta. Cambiar las columnas
 cambia la plantilla impresa y sus aserciones en `tlaminaedu`, así que es su
-propia tanda.
+propia tanda. `cerrado en v951`, y en las CUATRO que se caminan a la vez: en una
+sola habría dejado cinco puertas con dos comportamientos.
 
 Quedan **cuatro** plantillas por conectar, y las tres de percepción — que además
 necesitan entrar en `huecosDeCampo` antes de tener formulario, porque hoy el
-almacén no las acepta.
+almacén no las acepta. `cerrado en v944` las seis y `cerrado en v946` las tres.
 
 ## El intervalo se resta, y una ruta sin mapear es un hallazgo (v940)
 
@@ -8565,7 +8583,10 @@ crearía justo lo que este proyecto lleva veinte tandas evitando: tres puertas
 con dos comportamientos. El camino con precedente está identificado —el estado
 `borrador` que la v931 diseñó existe para exactamente esto: poder volver a un
 formulario a medio llenar— y es su propia tanda. Queda medido y escrito, como
-la v933 hizo con el `caja-vacio` de servicios públicos.
+la v933 hizo con el `caja-vacio` de servicios públicos. `cerrado en v954`, en
+las CINCO puertas y sin tocar ni el render ni el camino de guardado: lo tecleado
+se fotografía del DOM y se repone al repintar. El otro síntoma del mismo hecho
+—una plantilla ya guardada que no se podía ampliar— lo cerró la v955.
 
 ### Demostrado contra la v939
 
@@ -9374,6 +9395,10 @@ escrito que la hoja acostada tiene **0,1 mm de margen** en el piso de 45 mm de
 las cajas de campo, y llenar tres cajas de texto donde había renglones vacíos
 cambia su alto. Eso hay que medirlo contra las dos orientaciones antes de
 publicarlo, con la corrida completa, y no de paso.
+`cerrado en v947 · medido y declinado` — y el precio resultó ser un ESCALÓN y no
+una pendiente: con una sola caja llena, tres plantillas caen por debajo del piso
+en las dos orientaciones, y da lo mismo un renglón que tres. Guardar no cuesta
+nada; imprimir sí.
 
 Con esto cierran las seis plantillas y los tres paneles de percepción; queda
 la vista de escritorio, que leerá el mismo `S.corrida` en vez de tener el suyo.
@@ -9919,32 +9944,88 @@ Es la clase de la v864 —una afirmación que nació bien y la dejó obsoleta un
 tanda posterior— **dentro de la documentación**, que es donde ya se cobró en
 la v866 y la razón de que las listas vivas tengan su guarda.
 
-### Por qué acá no hay guarda, y qué hay en su lugar
+### Por qué acá no había guarda, y qué hubo que cambiar para tenerla (v1006)
 
-La lista viva se puede vigilar porque tiene FORMA: cada renglón lleva su
-cláusula `ya:` y `revisar.js` la exige. Una declaración de «otra tanda» es
-prosa suelta: no hay nada que comparar contra el código sin adivinar a qué se
-refiere, y una guarda que adivine sería ruido.
+Esta sección escribió, con razón para lo que se sabía entonces, que no se podía
+guardar: *«la lista viva se puede vigilar porque tiene FORMA… una declaración
+de "otra tanda" es prosa suelta»*. Y dejó un barrido como receta.
 
-Lo que sí es barato es el barrido, y queda escrito porque es como se
-encontraron estas dos:
+**El barrido no bastó, y se vio midiéndolo: veintisiete versiones después, SEIS
+de las catorce declaraciones estaban cumplidas y ninguna lo decía.** La receta
+funciona, pero obliga a leer las catorce enteras cada vez para saber cuál sigue
+abierta — y eso nadie lo hace dos veces.
 
-```bash
-grep -n "es su propia tanda\|es otra tanda\|no se hace acá\|queda medido" CLAUDE.md
+Lo que faltaba no era una guarda que adivinara a qué se refiere cada
+declaración: era **una marca que se pueda comprobar**. Cada una cierra ahora
+con una de estas dos, y `revisar.js` las exige:
+
 ```
+`pendiente`                          sigue abierta
+`cerrado en vNNNN`                   la hizo esa versión
+`cerrado en vNNNN · medido y declinado`   se midió y se decidió no hacerla
+```
+
+Con eso el `grep` deja de ser un ejercicio de lectura y pasa a ser una lista
+con su estado al lado. La guarda comprueba tres cosas: que toda declaración
+lleve su marca —falla cerrado, así que una nueva sin ella salta en su primera
+corrida—, que ninguna se declare cerrada por una versión **que todavía no
+existe**, y su guarda de material.
+
+**De qué NO responde, dicho y no disimulado**, que es la corrección que la v945
+y la v952 le hicieron a sus antecesoras: caza una declaración escrita con una
+de las tres frases conocidas. Una escrita de otra manera —«queda para después»,
+«lo toma quien siga»— se le escapa, y esa mitad se sigue cazando leyendo. Lo que
+sí impide es que las catorce que hay vuelvan a envejecer.
+
+Y una del lector, que es la razón de que la guarda no se denuncie a sí misma:
+el texto se lee **sin los bloques de código, sin las líneas de cita y sin lo que
+va entre comillas angulares**, que es como esta bitácora cita una frase de otra
+tanda. Demostrado quitándole ese recorte: **once falsos positivos**, entre ellos
+el propio `grep` de esta receta. Es el defecto de la v926 —una capacidad
+demostrada por el comentario que habla de ella— visto en Markdown.
+
+#### Las seis que estaban cumplidas y no lo decían
+
+| Dónde | Lo que declaraba | Dónde se hizo |
+|---|---|---|
+| v911 | ejercitar la lista de cedidas con la serie real: «diez descargas… es otra tanda» | **v920**, y sin descargar nada: la v917 ya había puesto las estampas en el fixture |
+| v934 · v939 | la columna «Quién informó» por fila | **v951**, en las cuatro plantillas que se caminan — y la razón del aplazamiento no se sostenía: cuesta **cero milímetros** de papel |
+| v935 | el mapa de afluencia en la lámina B | **v936**, medido y **declinado**: cuesta diez paneles y el mapa cede igual |
+| v940 | el formulario que se vacía al rechazar | **v954**, en las cinco puertas; el otro síntoma, en la v955 |
+| v946 | la lámina imprime lo anotado en percepción | **v947**, medido y **declinado**: el precio es un escalón, no una pendiente |
+| v965 | migrar las veinte del esquema antiguo `fuente` + `url` | **v967**, que de paso encontró la única fuente del acto del Decreto 1136 |
+
+Más dos que la corrección original ya traía —la v913 y la v912, las dos cerradas
+por la v915— y una del mismo molde en la prosa de la v876, que declaraba
+la densidad de usos y la cobertura de equipamientos de la ciudad como «otra
+fuente y otra tanda»: **la v902 las hizo**; lo que de verdad sigue faltando de ese renglón —el
+espacio público— vive en la lista viva, que sí estaba al día.
+
+**Dos de las seis se midieron y se declinaron**, y por eso la marca tiene esa
+tercera forma. «Cerrado» y «decidimos no hacerlo» no son lo mismo para quien
+lee: la primera invita a buscar el resultado, la segunda a no volver a medir lo
+mismo. Es la distinción de la v899 entre «sin dato» y «panel fuera», dicha
+sobre el trabajo en vez de sobre un panel.
+
+#### La lista viva queda fuera, a propósito
+
+Tiene su propia convención desde la v866 —la cláusula `ya:`, que `revisar.js`
+ya exige— y dos convenciones sobre la misma lista serían dos maneras de decir lo
+mismo, que es la clase B. La guarda corta el texto ahí.
 
 **Una tanda que cierre algo declarado así vuelve al renglón que lo declaró y
 lo dice ahí**, como se hizo con la nota de la v933 en la v953 y con la de la
-v951 en la v955. Cuando no se hace, la sesión siguiente lee la bitácora y
-vuelve a medir lo que ya estaba medido — que es exactamente el tiempo que esta
-corrección se ahorra.
+v951 en la v955. Ahora, además, el que no lo haga se pone rojo.
 
-### No sube la versión, y eso también es una decisión
+### La v1005 no subió la versión por esto, y la v1006 sí
 
-Solo cambia `CLAUDE.md`, que no se sirve al navegador. Subir el token
-rompería la caché de todos los teléfonos para no cambiarles una sola línea de
-lo que ven, y `revisar.js` lo deja pasar con razón: su regla es que la versión
-suba cuando cambia **el código**.
+Cuando esta corrección se escribió solo cambiaba `CLAUDE.md`, que no se sirve al
+navegador, así que no subió el token: romper la caché de todos los teléfonos
+para no cambiarles una línea de lo que ven no se hace. La v1006 sí lo sube,
+porque toca `pruebas/revisar.js`… y ahí hay una precisión que la v1003 dejó
+medida: lo que obliga a subir el token es **lo que el service worker
+precachea**, y `pruebas/` no lo está. Esta tanda lo sube porque va junto con lo
+demás de la noche, no porque la regla lo exija.
 
 ## La clase de una afirmación no es quién la cuenta (v957)
 
@@ -11180,7 +11261,10 @@ roles se declaran, al menos una fuente tiene que documentar el ACTO**.
 y la guarda muerde donde está declarado. Al medirlo apareció que **veinte
 entradas usan todavía la forma antigua `fuente` + `url`**, que no puede
 llevarlo — dos maneras de codificar las fuentes, o sea la clase B, que queda
-medida para su propia tanda.
+medida para su propia tanda. `cerrado en v967` — y al migrarlas apareció que
+cuatro llevaban las DOS formas a la vez, y una de ellas tenía en el campo viejo
+**la única fuente que documenta su acto**, invisible en toda pantalla porque
+`fuentesDe` prefiere `fuentes[]` cuando existe.
 
 #### Y medir evitó un hallazgo falso
 
@@ -14718,7 +14802,7 @@ leyendo, y así se cazó.
   la v754: hacer que el panel de especies se comporte distinto del de pisos en
   el mismo informe serían dos comportamientos para una familia. Prestarle el
   área al informe archivado los arregla a los dos y es su propia tanda, con su
-  propia medición. **Hecho en la v995**, y al hacerlo apareció que la llave con
+  propia medición. `cerrado en v995` **Hecho en la v995**, y al hacerlo apareció que la llave con
   la que el recuento se memoiza era la de la ficha VIVA: sin arreglar eso, el
   préstamo habría servido las cifras del sector que estuviera en pantalla.
 * **La lámina no lo imprime.** La v935 dejó la forma —la pantalla primero, el
@@ -17281,6 +17365,140 @@ La tercera es la del lector sin `@import`, y **salta la comprobación principal 
 no la guarda de la guarda**: el efecto se ve más alto y con nombres, que es mejor
 para quien lo encuentre. Queda dicho por lo que es y no se presenta como si la
 guarda de la guarda la cazara.
+
+## Una declaración de «otra tanda» lleva su estado (v1006)
+
+La sección **«Una declaración de "otra tanda" también se queda vieja»** —escrita
+en esta misma serie— midió doce declaraciones de trabajo aplazado, encontró dos
+cumplidas que nadie había cerrado, y concluyó que no se podían guardar: *«es
+prosa suelta: no hay nada que comparar contra el código sin adivinar a qué se
+refiere»*. Dejó un `grep` como receta.
+
+    v1005   14 declaraciones · hay que leerlas enteras para saber cuál sigue abierta
+    v1006   14 con su marca · 6 estaban cumplidas y ninguna lo decía
+
+**La receta no bastó, y se vio midiéndola.** Funciona para encontrarlas y no
+para saber su estado: obliga a leer las catorce cada vez, y eso nadie lo hace
+dos veces.
+
+### Las seis que estaban cumplidas
+
+| Dónde | Lo que declaraba | Dónde se hizo |
+|---|---|---|
+| v911 | ejercitar la lista de cedidas con la serie real | **v920**, y sin descargar nada |
+| v934 · v939 | la columna «Quién informó» por fila | **v951**, en las cuatro que se caminan |
+| v935 | el mapa de afluencia en la lámina B | **v936**, medido y **declinado** |
+| v940 | el formulario que se vacía al rechazar | **v954**, en las cinco puertas |
+| v946 | la lámina imprime lo anotado en percepción | **v947**, medido y **declinado** |
+| v965 | migrar las veinte del esquema antiguo | **v967** |
+
+Más una del mismo molde en la prosa de la v876 —la densidad de usos y la
+cobertura de equipamientos de la ciudad, que hizo la v902—. Ahí está además la
+lección que ordena todo lo demás: **el renglón equivalente de la lista viva sí
+estaba al día**, porque esa lista tiene una forma que `revisar.js` exige. La
+prosa de al lado, no.
+
+#### Dos de las seis se midieron y se DECLINARON, y por eso la marca tiene tres formas
+
+«Cerrado» y «decidimos no hacerlo» no son lo mismo para quien lee: la primera
+invita a buscar el resultado, la segunda a no volver a medir lo mismo. Es la
+distinción de la v899 entre «sin dato» y «panel fuera», dicha sobre el trabajo
+en vez de sobre un panel.
+
+```
+`pendiente`                                sigue abierta
+`cerrado en vNNNN`                         la hizo esa versión
+`cerrado en vNNNN · medido y declinado`    se midió y se decidió no hacerla
+```
+
+#### Y dos de las seis tenían una razón de aplazamiento que no se sostenía
+
+Vale anotarlo porque cambia cómo leer un aplazamiento. La v934 y la v939
+aplazaron la columna «Quién informó» diciendo que *«cambiar las columnas cambia
+la plantilla impresa y sus aserciones en `tlaminaedu`»*. Medido por la v951: la
+séptima columna cuesta **cero milímetros de papel** y las aserciones ni se
+mueven.
+
+**Un aplazamiento razonado y no medido es una estimación**, y este proyecto ya
+tiene escrito lo que valen (v919: una decisión de espacio se juzga midiendo las
+dos composiciones, no leyendo la lista). La marca no lo arregla; lo que hace es
+que la estimación no se quede quieta dos años.
+
+### La guarda: tres comprobaciones y un lector que no se denuncia a sí mismo
+
+Falla **cerrado** (v880): una declaración nueva sin marca salta en su primera
+corrida. Y comprueba además que ninguna se declare cerrada por **una versión que
+todavía no existe** —eso sería una promesa, no un estado— leyendo el token de
+`index.html`, que es el que las nueve copias ya tienen que compartir.
+
+El texto se lee **sin código —en bloque y en línea—, sin las líneas de cita `>`
+y sin lo que va entre comillas angulares**, que son las tres maneras en que esta
+bitácora NOMBRA una frase en vez de usarla. Demostrado quitándole el recorte de
+las citas: **once falsos positivos**, y
+entre ellos el propio `grep` de la receta. Es el defecto de la v926 —una
+capacidad demostrada por el comentario que habla de ella— visto en Markdown; y
+sin el recorte, la guarda sería la lista de excepciones que la v895 desaconseja.
+
+#### Las frases se buscan por su NÚCLEO, y eso costó una medición
+
+`es otra tanda` encuentra diez. La declaración de la v876 dice «que es otra
+**fuente** y otra tanda» y se escapaba por una palabra de por medio. Con el
+núcleo —`otra tanda`, `su propia tanda`, `no se hace acá`— salen las catorce.
+
+**De qué NO responde, dicho y no disimulado**, que es la corrección que la v945
+y la v952 le hicieron a sus antecesoras: una declaración escrita de otra manera
+—«queda para después», «lo toma quien siga»— se le escapa, y esa mitad se sigue
+cazando leyendo. Lo que sí impide es que las catorce que hay vuelvan a envejecer.
+
+#### La lista viva queda fuera, a propósito
+
+Tiene su convención desde la v866 —la cláusula `ya:`— y dos convenciones sobre
+la misma lista serían dos maneras de decir lo mismo, que es la clase B. La
+guarda corta el texto ahí.
+
+#### Y detectar y leer no se hacen sobre el mismo texto
+
+La vuelta que costó dos corridas, y vale escribirla porque el error se ve
+correcto: al añadir el recorte del código en línea, **las catorce salieron sin
+marca**. No es que se hubieran perdido — es que la marca va entre acentos
+graves, como todo lo que acá se nombra, así que el mismo recorte que evita el
+falso positivo se la come.
+
+La frase se **detecta** sobre el texto recortado y la marca se **lee** del
+original. Funciona porque todos los recortes sustituyen por espacios de la misma
+longitud: los desplazamientos coinciden, y eso es una propiedad del lector que
+hay que conservar si alguien lo toca.
+
+### La guarda se cobró con su autor, en la misma tanda
+
+Al escribir la tabla de arriba puse «declaraba que … pedían otra tanda» en prosa
+corrida, y la comprobación lo denunció: para un lector que busca la frase, una
+cita sin comillas y una declaración se ven igual. Se puso entre «», que es lo
+que ya era. Es la tercera vez esta semana que una guarda recién escrita muerde a
+quien la escribió —la v981 con la jardinera, la v1000 con los huecos de
+plantilla— y las tres veces tenía razón.
+
+### Demostrado contra la v1005
+
+Cinco inyecciones, contra copias guardadas en `/tmp`:
+
+```
+✗ toda declaración de trabajo aplazado dice si sigue abierta o quién la cerró
+    — 1 sin marca: CLAUDE.md:8585
+✗ y ninguna se declara cerrada por una versión que todavía no existe
+    — cerradas por el futuro: v1400 — hoy va en v1006
+? MATERIAL · la bitácora declara trabajo aplazado
+    — SIN MATERIAL HOY: 0 declaraciones encontradas
+✗ toda declaración de trabajo aplazado dice si sigue abierta o quién la cerró
+    — 17 sin marca (el lector sin recortar las citas)
+✗ toda declaración de trabajo aplazado dice si sigue abierta o quién la cerró
+    — 14 sin marca (la marca leída del texto recortado)
+```
+
+Las dos últimas son del lector y enseñan las dos mitades que hay que conservar:
+sin recortar las citas denuncia diecisiete frases que nadie escribió como una
+declaración —incluida la suya—, y leyendo la marca del texto ya recortado las
+pierde todas.
 
 ## La lista viva: lo que al pliego educativo todavía le falta (v866)
 
