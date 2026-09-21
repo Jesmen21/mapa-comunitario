@@ -6350,6 +6350,71 @@ console.log('\n  -- un error de GPS dice cuál de los tres es (v996) --');
    Y lo que de verdad hay que guardar es el MODO: intercepta los toques del
    mapa, así que si se filtrara, cada toque marcaría un vértice en vez de
    abrir el formulario de mapear — y eso es lo que se hace todos los días. */
+console.log('\n  -- girar el teléfono vuelve a medir los gráficos (v1009) --');
+{
+  const j70 = soloCodigo(leer('js/70-seguimiento.js'));
+
+  /* MATERIAL primero (v920): sin el medidor de la v995 no hay nada que
+     rehacer, y todo lo de abajo pasaría por no tener nada delante. */
+  const hayMedidor = /function medirLienzo\(/.test(j70) && /var _anchoG/.test(j70);
+  if (!hayMedidor) {
+    anotarSinMaterial('MATERIAL · el medidor del lienzo se deja leer',
+      'sin medirLienzo no hay ancho que rehacer');
+  } else {
+    comprobar('MATERIAL · el medidor del lienzo se deja leer',
+      true, 'medirLienzo y _anchoG, que es lo que el giro vuelve a calcular');
+
+    /* El cuerpo del rehacer, de su declaración al cierre de su try/catch. Se
+       mide DENTRO del trozo y no sobre el archivo entero (v854): `medirLienzo`
+       sale también en `bloqueDeGraficos`, y buscarlo suelto daría por buena
+       una función que ya no vuelve a medir. */
+    const iR = j70.indexOf('function rehacerGraficosSiCambioElAncho()');
+    const cR = iR >= 0 ? j70.slice(iR, j70.indexOf("window.addEventListener('resize'", iR)) : '';
+
+    comprobar('el giro vuelve a MEDIR el ancho antes de rehacer nada',
+      /medirLienzo\(/.test(cR),
+      cR ? (/medirLienzo\(/.test(cR)
+        ? 'lo vuelve a medir del sitio, no lo supone de la ventana'
+        : 'no mide: repintaría con el ancho de antes y el texto seguiría a 32,7 px')
+        : 'no se encontró la función que rehace los gráficos');
+
+    /* Y SOLO si cambió. Sin esta condición, la barra de direcciones de un móvil
+       —que dispara `resize` al desplazarse— recompondría trece dibujos por
+       nada, con su salto visual. Es la regla de la v870. */
+    comprobar('y solo rehace cuando el ancho CAMBIÓ de verdad',
+      /Math\.abs\([\s\S]{0,60}\)\s*<\s*GIRO_MIN_PX/.test(cR) && /return;/.test(cR),
+      /Math\.abs\([\s\S]{0,60}\)\s*<\s*GIRO_MIN_PX/.test(cR)
+        ? 'por debajo del umbral se sale sin tocar el DOM'
+        : 'rehace en todo resize: un desplazamiento con la barra de direcciones recompondría trece dibujos');
+
+    /* El rebote: un giro dispara decenas de `resize` y repintar en cada uno es
+       el teléfono caliente que la v870 nombra. */
+    const iL = j70.indexOf('_giro = setTimeout');
+    comprobar('y espera a que el gesto termine, no repinta en cada resize',
+      iL > 0 && /clearTimeout\(_giro\)/.test(j70),
+      iL > 0 && /clearTimeout\(_giro\)/.test(j70)
+        ? 'rebote con clearTimeout: una sola recomposición por giro'
+        : 'sin rebote: decenas de recomposiciones mientras se gira');
+
+    /* No puede tumbar la vista: un ajuste de dibujo no cuesta una pantalla. */
+    comprobar('y un fallo del rehacer no se lleva la página por delante',
+      /try \{/.test(cR) && /catch \(e\)/.test(cR),
+      /catch \(e\)/.test(cR) ? 'se traga el error, como el aviso de paso de la v870'
+                              : 'sin catch: un ajuste de dibujo podría costar la vista');
+
+    /* La guarda de la guarda: si `bloqueDeGraficos` dejara de anotar dónde se
+       pintó, todo lo de arriba seguiría en verde y el rehacer no encontraría
+       nunca su contenedor. */
+    const iB = j70.indexOf('function bloqueDeGraficos(');
+    const cB = iB >= 0 ? j70.slice(iB, iB + 300) : '';
+    comprobar('y el bloque sigue anotando dónde se pintó, que es lo que el giro rehace',
+      /_contGraf = cont/.test(cB),
+      /_contGraf = cont/.test(cB)
+        ? 'bloqueDeGraficos lo anota en su primera línea'
+        : 'dejó de anotarlo: el rehacer no encontraría su contenedor y todo lo de arriba seguiría en verde');
+  }
+}
+
 console.log('\n  -- una declaración de «otra tanda» lleva su estado (v1006) --');
 {
   /* La sección «Una declaración de "otra tanda" también se queda vieja» dejó

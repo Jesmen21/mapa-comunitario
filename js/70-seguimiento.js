@@ -5430,7 +5430,14 @@
      Y lo que NO se puede dibujar con el registro se declara en su sitio, con
      la fuente que le falta: un hueco callado se lee igual que un gráfico que
      nunca se pensó (v849). */
+  /* Dónde se pintó por última vez, para poder rehacerlo ahí al girar el
+     teléfono. Es UNA referencia y no una lista: el bloque vive en la portada o
+     en el tablero, nunca en los dos a la vez —cada uno lo pinta al entrar en su
+     vista—, así que dos referencias serían dos maneras de decir lo mismo. */
+  var _contGraf = null;
+
   function bloqueDeGraficos(cont) {
+    _contGraf = cont;
     /* Se mide ANTES de dibujar nada, y las dos superficies por separado: el
        héroe vive en su propia tarjeta, con otro relleno que las gráficas. */
     _anchoG = medirLienzo(cont, 'sp-graficas', 'sp-graf');
@@ -5864,6 +5871,51 @@
   $('sp-info').addEventListener('click', function () { abrirPanel($('sp-modal')); });
 
   window.addEventListener('resize', function () { pintarMigas(ruta); });
+
+  /* ── Girar el teléfono vuelve a medir los gráficos (v1009) ───────────────
+     Un texto dentro de un SVG con `viewBox` se escala con el dibujo, y por eso
+     la v995 le puso al `viewBox` el ancho medido del sitio: con la escala en 1,
+     un texto de 13 unidades se lee a 13 px. Lo que aquella tanda dejó dicho es
+     que la medida se toma una vez por pintada y no se rehace al girar, y que
+     el texto «no se vuelve ilegible: se escala proporcionalmente».
+
+     Medido, esa tranquilidad era falsa. Girando de 390 a 844 px sin repintar,
+     el SVG pasa a dibujarse a 750 px con un `viewBox` de 312, así que la
+     escala sube a 2,4 y **el texto de 13,4 px sale a 32,7** — más grande que
+     el titular mayor del módulo. No es que el reparto se quede como estaba:
+     es que la letra se descuadra entera.
+
+     Tres reglas, y las tres son de la v870 con la barra de espera:
+
+     * se espera a que el gesto TERMINE. Un `resize` llega decenas de veces
+       mientras se gira, y repintar en cada uno es el teléfono caliente;
+     * y se repinta **solo si el ancho medido CAMBIÓ**. La barra de direcciones
+       de un móvil dispara `resize` al desplazarse sin tocar el ancho, y un
+       teclado que se abre cambia el alto: repintar ahí sería trabajo por nada,
+       y encima con el salto visual de recomponer trece dibujos;
+     * y no puede tumbar la página: si revienta, se traga el error. Un ajuste
+       de dibujo no puede costar la vista.
+
+     El umbral no se inventa: son **8 px**, la misma separación que el dibujo
+     le deja a la cota y que `repartoDeBarras` usa para decidir si cabe afuera
+     de su barra. Por debajo de eso ningún gráfico cambia de reparto, así que
+     repintar no cambiaría nada de lo que se ve. */
+  var GIRO_MS = 180;
+  var GIRO_MIN_PX = 8;
+  var _giro = null;
+  function rehacerGraficosSiCambioElAncho() {
+    try {
+      if (!_contGraf || !_contGraf.isConnected) return;
+      var antes = _anchoG;
+      var ahora = medirLienzo(_contGraf, 'sp-graficas', 'sp-graf');
+      if (Math.abs(ahora - antes) < GIRO_MIN_PX) return;
+      bloqueDeGraficos(vaciar(_contGraf));
+    } catch (e) { /* un ajuste de dibujo no puede costar la vista (v870) */ }
+  }
+  window.addEventListener('resize', function () {
+    if (_giro) clearTimeout(_giro);
+    _giro = setTimeout(rehacerGraficosSiCambioElAncho, GIRO_MS);
+  });
 
   // ── Arranque ──────────────────────────────────────────────────────────────
   fetch('assets/data/seguimiento-presidencial.json?v=' + Date.now())

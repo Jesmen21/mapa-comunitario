@@ -16032,6 +16032,12 @@ siempre— pero el reparto apilado o al lado se queda como estaba. Repintar en
 cada `resize` es lo que la v870 llama un teléfono caliente, así que pide su
 propia medición: cuánto cuesta recomponer trece gráficos y con qué retardo.
 Queda dicho con su razón en vez de hecho a ojo de paso.
+`cerrado en v1009` — con las dos mediciones hechas, y **la tranquilidad de este
+renglón era falsa**: girando de 390 a 844 px el texto no se escala
+«proporcionalmente», pasa de 13,4 px a **32,7**, más grande que el titular mayor
+del módulo. Recomponer los trece cuesta **un fotograma** —17 ms de salto peor,
+contra 18,6 sin recomponer nada— así que el teléfono caliente no era el riesgo:
+el riesgo era repintar en cada `resize`, y eso lo quita el rebote.
 
 Y **la identidad visual de la muestra** —Archivo + Source Serif 4, señal
 `#B8112E`, modo oscuro— sigue sin adoptarse, por lo que la v971 dejó escrito:
@@ -17786,6 +17792,120 @@ enseña dónde estaba el hueco mejor que cualquiera de las tres rojas.
   y distinguirlos pide medir el código contra la prosa de cada renglón, que es
   justo lo que no se puede mecanizar. Lo que sí queda es la práctica, escrita
   arriba: una marca se pone midiendo. `pendiente`
+
+## Girar el teléfono vuelve a medir los gráficos (v1009)
+
+Lo que la v995 dejó declarado y su propia tranquilidad, que era falsa.
+
+    v1008   se gira el teléfono y el texto de los gráficos sale a 32,7 px
+    v1009   vuelve a medir al terminar el gesto y sale a 13,4, como antes de girar
+
+### La v995 dijo «no se vuelve ilegible» y no lo midió
+
+El renglón decía: *«el texto no se vuelve ilegible —se escala
+proporcionalmente, que es lo que hacía siempre— pero el reparto apilado o al
+lado se queda como estaba»*. Medido con el navegador, girando de 390 a 844 px:
+
+| | `viewBox` | texto impreso |
+|---|---|---|
+| vertical, 390 px | 312 | **13,4 px** |
+| girado a 844, sin repintar | 312 | **32,7 px** |
+| recargado a 844 | 750 | 13,4 px |
+
+El SVG pasa a dibujarse a 750 px con un `viewBox` de 312, así que la escala
+sube a 2,4 y la letra con ella. **No es que el reparto se quede como estaba: es
+que el texto sale más grande que el titular mayor del módulo.** La v995 puso
+justamente ese medidor para que un texto de 13 unidades se leyera a 13 px, y al
+girar lo perdía entero.
+
+Es la clase de la v861 dicha sobre una tranquilidad en vez de sobre una
+carencia: **un renglón que dice «esto no pasa» sin medirlo se lee como una
+comprobación hecha.**
+
+### Y el coste que aquel renglón temía son 17 ms
+
+La otra mitad del aplazamiento era el precio: *«repintar en cada `resize` es lo
+que la v870 llama un teléfono caliente… cuánto cuesta recomponer trece gráficos
+y con qué retardo»*. Medido, contando fotogramas alrededor de una recomposición
+completa:
+
+```
+recomponiendo los trece   salto mayor 17,0 ms
+sin recomponer nada       salto mayor 18,6 ms
+```
+
+**Un fotograma, indistinguible del ruido.** El teléfono caliente nunca estuvo en
+recomponer una vez: está en recomponer en cada `resize`, y eso lo quita el
+rebote. La estimación era del mecanismo equivocado — que es lo que la v1008
+acababa de escribir sobre los aplazamientos razonados y no medidos.
+
+### Tres reglas, y las tres son de la v870
+
+* **se espera a que el gesto TERMINE.** Un giro dispara decenas de `resize`, y
+  una recomposición por cada uno sí es el teléfono caliente;
+* **y se repinta solo si el ancho medido CAMBIÓ.** La barra de direcciones de
+  un móvil dispara `resize` al desplazarse sin tocar el ancho, y un teclado que
+  se abre cambia el alto: recomponer ahí es trabajo por nada, y con el salto
+  visual de rehacer trece dibujos encima. Medido con la sonda: un `resize` que
+  solo cambia el alto **no toca el DOM**;
+* **y no puede tumbar la página.** Si revienta, se traga el error: un ajuste de
+  dibujo no puede costar una vista.
+
+El umbral no se inventa (v869): son **8 px**, la misma separación que el dibujo
+le deja a la cota y que `repartoDeBarras` usa para decidir si cabe afuera de su
+barra. Por debajo de eso ningún gráfico cambia de reparto, así que repintar no
+cambiaría nada de lo que se ve.
+
+#### Dónde se pintó se ANOTA, y es una sola referencia
+
+`bloqueDeGraficos` apunta su contenedor en su primera línea. Es una y no una
+lista porque el bloque vive en la portada **o** en el tablero, nunca en los dos
+a la vez —cada uno lo pinta al entrar en su vista—, y dos referencias serían dos
+maneras de decir lo mismo (clase B).
+
+De ahí sale la guarda de la guarda: si dejara de anotarlo, las cinco
+comprobaciones de arriba seguirían en verde y el rehacer no encontraría nunca su
+contenedor.
+
+### Medido de punta a punta
+
+```
+vertical 390 px  : viewBox 305/312 · texto 13,4
+justo al girar   : viewBox 305/312 · texto 32,7
+tras el rehacer  : viewBox 743/750 · texto 13,4   (196 ms desde el giro)
+
+un resize que solo cambia el ALTO: la marca del contenedor sobrevive
+```
+
+Los 196 ms son los 180 del rebote más la recomposición: desde fuera, el gráfico
+se reacomoda al soltar el teléfono.
+
+### Demostrado contra la v1008
+
+Seis inyecciones, una por aserción (v993), contra una copia guardada en `/tmp`:
+
+```
+✗ el giro vuelve a MEDIR el ancho antes de rehacer nada
+    — no se encontró la función que rehace los gráficos   (la v995 devuelta)
+✗ el giro vuelve a MEDIR el ancho antes de rehacer nada
+    — no mide: repintaría con el ancho de antes y el texto seguiría a 32,7 px
+✗ y solo rehace cuando el ancho CAMBIÓ de verdad
+    — rehace en todo resize: un desplazamiento recompondría trece dibujos
+✗ y espera a que el gesto termine, no repinta en cada resize
+✗ y un fallo del rehacer no se lleva la página por delante
+✗ y el bloque sigue anotando dónde se pintó, que es lo que el giro rehace
+```
+
+La primera devuelve el estado exacto de la v995 y pone en rojo tres a la vez,
+que es lo que tiene que hacer: sin la función, ni mide, ni rebota, ni se protege.
+
+### Lo que esta versión NO hace, y queda medido
+
+* **Solo se rehace el bloque de gráficos.** El resto de la página se recompone
+  con CSS y no mide nada en píxeles, así que no lo necesita — comprobado con la
+  sonda: girando, lo único que se queda con una medida vieja son los `viewBox`.
+  Si algún día otra superficie mide para dibujar, hereda el problema y no el
+  arreglo. `pendiente`
 
 ## La lista viva: lo que al pliego educativo todavía le falta (v866)
 
