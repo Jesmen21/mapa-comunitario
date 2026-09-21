@@ -1,4 +1,4 @@
-const URBIS_CACHE = 'urbis-v1014-lo-que-se-toca';
+const URBIS_CACHE = 'urbis-v1015-el-piso-en-toda-la-pagina';
 const URBIS_ASSETS = [
   './',
   './index.html',

@@ -7671,6 +7671,95 @@ console.log('\n  -- lo que se toca, y lo que el marcado dice que es (v1014) --')
   }
 }
 
+console.log('\n  -- el piso de texto vale en toda la pagina, no solo en la ficha (v1015) --');
+{
+  const j70 = leer('js/70-seguimiento.js');
+  const c70 = leer('css/70-seguimiento.css').replace(/\/\*[\s\S]*?\*\//g, (m) => ' '.repeat(m.length));
+  const h70 = leer('seguimiento.html');
+
+  /* El modulo declara la regla en su propio :root: «--t-9 son solo etiquetas
+     en mayusculas y sellos; el texto corrido mas pequeño es --t-8». Se lee de
+     ahi y no se escribe aca (v869). */
+  const declara = /--t-9 son solo etiquetas/.test(leer('css/70-seguimiento.css')) &&
+                  /el texto\s*\n?\s*corrido m[aá]s pequeño es --t-8/.test(leer('css/70-seguimiento.css'));
+
+  /* Que clases pone el modulo en un <p> o un <li>. Los dos caminos: el
+     ayudante `el()` que arma el DOM, y el HTML de la pagina —`.sp-nextup`
+     vive ahi, y mirando solo el JS se escapaba—. */
+  const enParrafo = new Set();
+  let m;
+  const reEl = /\bel\(\s*'(p|li)'\s*,\s*'([^']*)'/g;
+  while ((m = reEl.exec(j70))) m[2].split(/\s+/).forEach((x) => { if (x) enParrafo.add(x); });
+  const reHtml = /<(p|li)\b[^>]*class="([^"]+)"/g;
+  while ((m = reHtml.exec(h70))) m[2].split(/\s+/).forEach((x) => { if (x) enParrafo.add(x); });
+
+  /* Y que declara la regla de cada clase. */
+  const reglas = {};
+  const reCss = /([^{}]+)\{([^{}]*)\}/g;
+  while ((m = reCss.exec(c70))) {
+    const cuerpo = m[2];
+    m[1].split(',').forEach(function (s) {
+      const g = s.trim().match(/\.([a-z0-9-]+)$/);
+      if (!g) return;
+      if (!reglas[g[1]]) reglas[g[1]] = { t9: false, may: false };
+      if (/--t-9/.test(cuerpo)) reglas[g[1]].t9 = true;
+      if (/text-transform:\s*uppercase/.test(cuerpo)) reglas[g[1]].may = true;
+    });
+  }
+
+  /* El defecto: una clase que el modulo pone en un parrafo —o sea, texto
+     corrido por su propia definicion, la que su suite usa desde la v791— y
+     que lleva el tamaño que el modulo reserva para las ETIQUETAS. Las que
+     ademas van en versalitas quedan fuera: ahi la regla las admite. */
+  /* La definicion del modulo tiene tres partes —parrafo, mas de 40
+     caracteres, y no ser una etiqueta— y una comprobacion estatica solo
+     puede ver dos. La tercera cuesta esta excepcion, con su razon escrita:
+     `.sp-count` es un CONTADOR —«184 hechos registrados»— que nunca pasa de
+     cuarenta caracteres, asi que por la propia definicion no es texto
+     corrido. Es una sola y se ve; una lista larga aca seria la que envejece
+     hasta no significar nada (v895). */
+  const NO_ES_CORRIDO = [['sp-count', 'es un contador de una linea, nunca pasa de 40 caracteres']];
+  const malas = [...enParrafo]
+    .filter((x) => reglas[x] && reglas[x].t9 && !reglas[x].may)
+    .filter((x) => !NO_ES_CORRIDO.some((e) => e[0] === x))
+    .sort();
+
+  if (!declara || !enParrafo.size) {
+    anotarSinMaterial('MATERIAL - el modulo declara para que es cada tamaño',
+      !declara ? 'la regla de --t-9 ya no esta escrita en la hoja'
+               : 'no se leyo ninguna clase de parrafo');
+  } else {
+    comprobar('MATERIAL - el modulo declara para que es cada tamaño', true,
+      'la hoja dice que --t-9 es solo para etiquetas, y el modulo pone ' + enParrafo.size +
+      ' clases distintas en un parrafo');
+
+    comprobar('ningun texto corrido lleva el tamaño que el modulo reserva a las etiquetas',
+      malas.length === 0,
+      malas.length === 0
+        ? 'las ' + Object.keys(reglas).filter((k) => reglas[k].t9).length +
+          ' reglas con --t-9 son etiquetas o sellos, ninguna es un parrafo'
+        : malas.map((x) => '.' + x).join(' · ') +
+          ' — el modulo las pinta en un <p> y las mide como etiqueta');
+
+    /* Y la guarda de la guarda: lo de arriba se apoya en saber que clases
+       van en un parrafo. Si se dejaran de leer los dos caminos, la lista
+       quedaria corta y pasaria sin mirar lo que falta. */
+    /* Se mide sobre la LISTA que la comprobacion de arriba usa, no sobre los
+       archivos: que contenga al menos una clase que solo existe en el HTML.
+       Medido contra los archivos, la aserción pasaba igual con el camino del
+       HTML retirado — medía el material y no el mecanismo (v890). */
+    const soloJs = new Set();
+    let z; const reEl2 = /\bel\(\s*'(p|li)'\s*,\s*'([^']*)'/g;
+    while ((z = reEl2.exec(j70))) z[2].split(/\s+/).forEach((x) => { if (x) soloJs.add(x); });
+    const dePagina = [...enParrafo].filter((x) => !soloJs.has(x));
+    comprobar('y la lista trae los parrafos que solo existen en el HTML de la pagina',
+      dePagina.length > 0,
+      dePagina.length
+        ? dePagina.length + ' clases de parrafo vienen solo del HTML, entre ellas .' + dePagina[0]
+        : 'ninguna: se estaria leyendo solo el JS, y asi se escapaba .sp-nextup');
+  }
+}
+
 /* Las dos cuentas van APARTE porque piden cosas distintas: una fallada hay
    que arreglarla, una sin material hay que mirarla —o se quedó sin él porque
    el registro mejoró, o porque la función dejó de ver lo que medía—. Sumarlas

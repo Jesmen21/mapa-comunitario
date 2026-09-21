@@ -218,7 +218,7 @@ svg{ width:20px; height:20px; fill:none; stroke:currentColor; stroke-width:1.9; 
 .sp-sec:hover .sp-sec-go{ transform:translateX(3px); color:var(--verde-hi); }
 
 .sp-nextup{
-  margin-top:26px; font-size:var(--t-9); color:var(--ink-2);
+  margin-top:26px; font-size:var(--t-8); color:var(--ink-2);
   font-variant-numeric:tabular-nums;
 }
 
@@ -335,7 +335,7 @@ svg{ width:20px; height:20px; fill:none; stroke:currentColor; stroke-width:1.9; 
   margin-top:13px; padding-top:12px; border-top:1px solid var(--linea-2);
   display:flex; align-items:center; justify-content:space-between; gap:12px;
 }
-.sp-h-meta{ font-size:var(--t-9); color:var(--ink-2); font-variant-numeric:tabular-nums; }
+.sp-h-meta{ font-size:var(--t-8); color:var(--ink-2); font-variant-numeric:tabular-nums; }
 .sp-h-go{
   display:inline-flex; align-items:center; gap:5px;
   font-size:var(--t-8); font-weight:600; color:var(--verde-hi);
@@ -725,7 +725,7 @@ a.sp-fuente:hover svg{ color:var(--verde-hi); }
 }
 .sp-graf-h{ margin-bottom:3px; font-size:var(--t-6); font-weight:600; color:var(--petroleo); }
 .sp-graf-u{
-  font-size:var(--t-9); color:var(--ink-2); text-transform:uppercase;
+  font-size:var(--t-8); color:var(--ink-2); text-transform:uppercase;
   letter-spacing:.07em; font-weight:600; margin-bottom:14px;
 }
 /* El mismo tope que .sp-g: los dos son gráficos del mismo bloque y con
@@ -779,7 +779,7 @@ a.sp-fuente:hover svg{ color:var(--verde-hi); }
   font-size:var(--t-9); font-weight:700; color:#fff; white-space:nowrap;
   font-variant-numeric:tabular-nums;
 }
-.sp-med-e{ margin-top:6px; font-size:var(--t-9); color:var(--ink-2); }
+.sp-med-e{ margin-top:6px; font-size:var(--t-8); color:var(--ink-2); }
 .sp-med-aparte{
   margin-top:18px; padding:13px 15px; background:var(--marfil);
   border:1px dashed var(--linea); border-radius:var(--r-s);
@@ -1126,7 +1126,7 @@ a.sp-fuente:hover svg{ color:var(--verde-hi); }
   margin:0 0 3px; font-size:var(--t-7); font-weight:650; color:var(--petroleo);
 }
 .sp-fg-nota{
-  margin-bottom:12px; font-size:var(--t-9); color:var(--ink-2); line-height:1.45;
+  margin-bottom:12px; font-size:var(--t-8); color:var(--ink-2); line-height:1.45;
 }
 .sp-fg-fila{ margin-bottom:12px; }
 .sp-fg-cab{
@@ -1205,7 +1205,7 @@ a.sp-fuente:hover svg{ color:var(--verde-hi); }
 .sp-consulta-fila small{ display:block; margin-top:5px; font-size:var(--t-9); color:var(--ink-2); }
 .sp-consulta-total{
   margin-top:14px; padding-top:11px; border-top:1px solid var(--linea-2);
-  font-size:var(--t-9); color:var(--ink-2);
+  font-size:var(--t-8); color:var(--ink-2);
 }
 
 /* Sello y ficha de cada casa encuestadora */
@@ -1462,7 +1462,7 @@ a.sp-fuente:hover svg{ color:var(--verde-hi); }
 .sp-cmp-lado small{ font-size:var(--t-8); line-height:1.45; color:var(--ink-2); }
 .sp-cmp-ahora{ background:var(--celeste-suave); }
 .sp-cmp-aviso{
-  margin:0; font-size:var(--t-9); font-weight:600; color:var(--amarillo-hi);
+  margin:0; font-size:var(--t-8); font-weight:600; color:var(--amarillo-hi);
   background:#FFF8E8; border-radius:8px; padding:7px 10px;
 }
 .sp-cmp-lectura{ margin:0; font-size:var(--t-8); line-height:1.55; color:var(--ink); }

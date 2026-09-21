@@ -18498,6 +18498,105 @@ sale de la nada y todo lo de arriba pasaría sin mirar nada.
 sonda —los 219 controles de las ocho pestañas más la hoja encogida, con el
 alto del objetivo real: el `<label>` que envuelve al control cuando lo hay—.
 
+## El piso de texto vale en toda la página, no solo en la ficha (v1015)
+
+La misma sonda de la v1013 y la v1014, sobre la otra pantalla del proyecto que
+un ciudadano abre: `seguimiento.html`.
+
+    v1014   9 textos corridos a 12,48 px · el piso del módulo son 13
+    v1015   0
+
+### El módulo declara la regla, y la cumplía en un solo sitio
+
+En su propio `:root`, con estas palabras:
+
+> `--t-9` son solo **etiquetas en mayúsculas y sellos**; el **texto corrido más
+> pequeño es `--t-8`**, que en teléfono son 13,4 px.
+
+Y `tficha` lo comprueba desde la v791… **dentro de `.sp-fi-caja`**. El resto de
+la página nunca pasó por ahí: es la forma de la v867 —una regla que se aplica
+en un punto mientras las demás superficies la esquivan— con el agravante de que
+acá la regla estaba escrita y la comprobación también.
+
+Medido con la definición que el propio módulo usa en su suite —`p`, `li` y dos
+spans nombrados, con más de 40 caracteres— pero sobre la PÁGINA entera:
+**9 de 46 textos corridos a 12,48 px**, en siete reglas.
+
+Las siete pasan a `--t-8`. No es un tamaño elegido acá: es el que la hoja
+declara para lo que esas reglas pintan.
+
+### El defecto se puede escribir sin el navegador, y eso es lo que queda
+
+La medición pide un navegador y las suites no corren en este contenedor, así
+que la guarda tenía que ser estática. Se apoya en dos cosas que el propio
+módulo dice:
+
+1. **qué clases pinta en un `<p>` o un `<li>`** —eso es texto corrido por su
+   propia definición—, leídas por los **dos** caminos: el ayudante `el()` que
+   arma el DOM (107) y el HTML de la página (33). Mirando solo el JS se
+   escapaba `.sp-nextup`, que vive en `seguimiento.html`;
+2. **qué reglas usan `--t-9` sin ir en versalitas**, que es donde la propia
+   declaración las admite.
+
+La intersección de las dos da el defecto. Medida contra la v1014: las siete.
+
+#### La tercera parte de la definición cuesta una excepción, y se dice
+
+La definición del módulo tiene tres partes —párrafo, más de 40 caracteres, y no
+ser una etiqueta— y una comprobación estática solo puede ver dos. La tercera
+deja un falso positivo: **`.sp-count`**, que es un contador —«184 hechos
+registrados»— y nunca pasa de cuarenta caracteres, así que por la propia
+definición no es texto corrido.
+
+Va como excepción **con su razón escrita**, que es lo que este proyecto hace
+con `leeme` (v897), con `'TI'` (v909) y con `'ganaste'`. Es una sola y se ve;
+una lista larga ahí sería la que envejece hasta no significar nada (v895).
+
+La otra salida —subirle el tamaño al contador para que la guarda quede sin
+excepciones— habría sido cambiar algo que está bien para callar una
+comprobación, que es lo que este proyecto ya deshizo tres veces (v882, v886,
+v901).
+
+### Una aserción mía que medía el material y no el mecanismo
+
+La tercera comprobación decía «se leen los DOS caminos» y lo medía **contando
+los párrafos de los archivos**. Retirando del código el camino del HTML, la
+aserción **seguía en verde**: los párrafos seguían estando en el archivo, solo
+que la guarda ya no los miraba. Es la v890 otra vez, cometida en la tanda que
+la cita.
+
+Mide ahora sobre la LISTA que la comprobación usa: que contenga al menos una
+clase que **solo** existe en el HTML. Así, retirado ese camino, sale en rojo
+nombrando lo que se escaparía.
+
+### Lo que se midió y NO se tocó
+
+* **Los tres dibujos de la página salen a 13,4 px**: la v990 hizo su trabajo y
+  sigue hecho.
+* **17 objetivos de toque por debajo de 44 px**, el más chico en 21 —«Leer el
+  hecho completo y sus fuentes»—. Este módulo **no declara** un piso de toque
+  como el educativo declara sus 28 px, así que ponerle uno sería el número a
+  ojo de la v869. Medido y declarado. `pendiente`
+
+### Demostrado contra la v1014
+
+Tres inyecciones, contra copias guardadas en `/tmp` (v973):
+
+```
+✗ ningun texto corrido lleva el tamaño que el modulo reserva a las etiquetas
+    — .sp-fg-nota · .sp-med-e
+? MATERIAL - el modulo declara para que es cada tamaño
+    — la regla de --t-9 ya no esta escrita en la hoja
+✗ y la lista trae los parrafos que solo existen en el HTML de la pagina
+    — ninguna: se estaria leyendo solo el JS, y asi se escapaba .sp-nextup
+```
+
+### Lo que NO se pudo correr
+
+**Ninguna suite de navegador**, por lo mismo que la v973 a la v1014. Corrió
+`revisar.js` con sus tres comprobaciones nuevas, y se midió el papel con la
+sonda sobre `seguimiento.html` con todas sus secciones abiertas.
+
 ## La lista viva: lo que al pliego educativo todavía le falta (v866)
 
 Esta lista se quedó vieja **cinco veces**. Cuatro dentro de la hoja —la
