@@ -13,7 +13,7 @@
 
    La versión va acá y en vision-territorial.html, idéntica, como en los
    otros siete archivos de versión del sitio: revisar.js lo comprueba. */
-const VT_CACHE = 'urbis-vt-v987-el-zoom-con-el-que-se-coloca-un-punto-a-mano';
+const VT_CACHE = 'urbis-vt-v988-especies-y-materiales-de-lo-levantado';
 const VT_ASSETS = [
   './vision-territorial.html',
   './css/90-vt.css',

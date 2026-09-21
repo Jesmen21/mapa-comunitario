@@ -513,6 +513,30 @@
   }
 
   function esReporteTemporal(tipo, elemento) {
+      /* UN MAPEO DE LA MATRIZ NO ES UNA ALERTA (v988). Esto decide si un
+         reporte se esconde del mapa a las ocho horas, y lo decidía por el
+         TEXTO de la categoría y del elemento. Con el catálogo de la v981 a la
+         v983 encima, eso se llevaba 26 tipos de 579: TODOS los postes —«Poste
+         de alumbrado público», «Poste con transformador»—, la «Tapa de
+         alcantarillado», las once de «Cuidado Animal (Veterinaria)» por la
+         palabra «animal», y hasta «Panadería / repostería», porque
+         «repostería» contiene «poste».
+
+         El efecto no se ve al mapear: el punto se guarda, se dibuja, y ocho
+         horas después ya no está en el mapa de nadie. Y con él se iba de
+         `urbisDatosVisibles()`, así que tampoco lo contaba ningún análisis —
+         un poste mapeado ayer no existía para el recuento de materiales.
+
+         El discriminante ya existía y nadie lo miraba acá: un punto de la
+         Matriz de Usos es un INVENTARIO permanente, nunca una alerta de ocho
+         horas. `urbisEsCategoriaProCity` es la lista autoritativa y js/12 ya
+         la usa para dos decisiones del mismo molde.
+
+         Si el ayudante no estuviera —js/20 no cargó—, se sigue al criterio
+         viejo en vez de dejar de caducar las alertas de verdad: `revisar.js`
+         exige que exista, que es donde se ve si se pierde. */
+      if (typeof window.urbisEsCategoriaProCity === 'function' &&
+          window.urbisEsCategoriaProCity(tipo)) return false;
       // Categorías completas que siempre son temporales (alertas ciudadanas de 8h)
       const TIPOS_TEMPORALES = new Set(['🚨 Alertas y Riesgos Urbanos','🚗 Reportes de Tráfico','Áreas Verdes y Ambiental','Animal y Bienestar','🌪️ Desastres Naturales y Clima','⛰️ Riesgos del Terreno']);
       if(TIPOS_TEMPORALES.has(tipo)) return true;

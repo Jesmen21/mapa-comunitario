@@ -58,6 +58,27 @@
   font-size:.7rem; font-weight:700; letter-spacing:.06em;
   text-transform:uppercase; color:#5a6472;
 }
+/* El rótulo de una FAMILIA dentro de un panel que lleva varias (v988): el
+   material se cuenta por uso —mobiliario, tapas, arte urbano, publicidad— y
+   cada uno abre el suyo. No va en versalitas como `.pcr-lab` porque no es
+   una etiqueta de sección: es el nombre de la población que se está
+   contando, y se lee como tal. Lleva su propia regla porque una clase que
+   ninguna hoja pinta es la falta de la v895. */
+.pcr-lab-sub,
+.pcr-hoja .pcr-lab-sub,
+.pcr-pestana .pcr-lab-sub{
+  font-size:.8rem !important; font-weight:700 !important;
+  letter-spacing:0 !important; text-transform:none !important;
+  color:#3a3f78 !important; -webkit-text-fill-color:#3a3f78 !important;
+  margin-top:6px !important;
+}
+/* El binomio va al lado del nombre común y no compite con él: es la prueba
+   de que dos personas mapearon el mismo árbol, no el rótulo de la fila. */
+.pcr-nivel-nom em,
+.pcr-hoja .pcr-nivel-nom em,
+.pcr-pestana .pcr-nivel-nom em{
+  font-size:.86em; opacity:.72; font-style:italic;
+}
 .pcr-centro{ display:flex; align-items:center; gap:8px; flex-wrap:wrap; }
 .pcr-centro code{
   font-family:ui-monospace,SFMono-Regular,Menlo,monospace;

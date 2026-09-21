@@ -4870,6 +4870,205 @@ console.log('\n  -- las listas vivas --');
   });
 }
 
+console.log('\n  -- el recuento de especies y materiales (v988) --');
+{
+  const j68 = soloCodigo(leer('js/68-procity-reconocimiento.js'));
+  const j04 = soloCodigo(leer('js/04-marker-proximity.js'));
+  const j03c = soloCodigo(leer('js/03c-arbol-especies.js'));
+  const j03d = soloCodigo(leer('js/03d-mobiliario-material.js'));
+  const c68 = leer('css/68-procity-reconocimiento.css');
+
+  /* MATERIAL primero (v920): los dos vocabularios dicen qué usos llevan el
+     campo y js/04 sabe leerlo. Sin eso, todo lo de abajo pasaría por no tener
+     nada que contar — y el panel entero sería un verde. */
+  const hayVoc = /esUsoDeArbol/.test(j03c) && /esUsoConMaterial/.test(j03d);
+  const hayLect = /URBIS_ARBOL\s*=/.test(j04) && /URBIS_MOBILIARIO\s*=/.test(j04);
+  if (!hayVoc || !hayLect) {
+    anotarSinMaterial('MATERIAL · hay vocabulario y lector de especie y de material',
+      'vocabularios: ' + hayVoc + ' · lectores: ' + hayLect);
+  } else {
+    comprobar('MATERIAL · hay vocabulario y lector de especie y de material', true,
+      'los dos usos declarados y los dos lectores en js/04');
+
+    /* El cuerpo del recorrido, acotado: de `function levantadoDeCampo(` a su
+       cierre. Medir sobre el archivo entero daría por bueno un `leer(` de
+       cualquier otro sitio, que es la lección de la v854. */
+    const i0 = j68.indexOf('function levantadoDeCampo(');
+    const cuerpo = i0 >= 0 ? j68.slice(i0, j68.indexOf('\n  }', i0)) : '';
+
+    comprobar('el recuento existe y recorre los puntos del curso',
+      !!cuerpo && /puntosDelCurso\(\)/.test(cuerpo),
+      cuerpo ? 'levantadoDeCampo recorre puntosDelCurso()'
+             : 'no hay recuento: la especie y el material se guardan y no los cuenta nadie');
+
+    /* La clase B. La especie y el material viven en casillas cuyo ORDEN se
+       resuelve en js/04 y en ningún otro sitio: un recuento que las indexara
+       por su cuenta se separaría del globo y de la ficha la tanda siguiente,
+       y la que se quedaría vieja sería la cuenta, porque nadie la mira dos
+       veces. */
+    /* Se mide la PROPIEDAD y no la forma de la llamada (v890): que el cuerpo
+       ate los dos lectores del módulo y los use, sea cual sea el alias con el
+       que los tenga a mano. Exigir `URBIS_ARBOL.leer(` literal se pondría
+       rojo por guardar el objeto en una variable, que no cambia nada. */
+    const ataLectores = /window\.URBIS_ARBOL\b/.test(cuerpo) && /window\.URBIS_MOBILIARIO\b/.test(cuerpo);
+    const usaLeer = (cuerpo.match(/\.leer\(/g) || []).length >= 2;
+    const porLector = ataLectores && usaLeer;
+    const porCasilla = /URBIS_SLOTS\.(especieArbol|mobiliarioMaterial)/.test(cuerpo);
+    comprobar('el recuento lee por URBIS_ARBOL/URBIS_MOBILIARIO, no por la casilla',
+      porLector && !porCasilla,
+      (porLector && !porCasilla) ? 'los dos lectores de js/04, y ninguna casilla indexada acá'
+        : (!porLector ? 'no llama a los lectores de js/04'
+                      : 'indexa la casilla por su cuenta: se separaría del globo a la tanda siguiente'));
+
+    /* Sector, no dispositivo. Sin este filtro la cifra sería el inventario
+       del teléfono publicado como si fuera del sector — que es lo que
+       distingue una cifra de análisis de una lista de lo mío. */
+    comprobar('el recuento es del SECTOR y no del dispositivo',
+      /puntoDentroDelSector\(/.test(cuerpo),
+      /puntoDentroDelSector\(/.test(cuerpo)
+        ? 'filtra por puntoDentroDelSector'
+        : 'cuenta todo el dispositivo: sería un inventario del teléfono con rótulo de sector');
+
+    /* UN solo recorrido para las dos cuentas (v860). Dos paseos con su propio
+       criterio de «está dentro» darían dos poblaciones parecidas y distintas,
+       y nadie compararía nunca las dos cifras. */
+    const paseos = (j68.match(/pts\.forEach\(|puntosDelCurso\(\)\.forEach\(/g) || []).length;
+    const arbEnCuerpo = /esUsoDeArbol\(/.test(cuerpo), matEnCuerpo = /esUsoConMaterial\(/.test(cuerpo);
+    comprobar('las dos cuentas salen del MISMO recorrido',
+      arbEnCuerpo && matEnCuerpo,
+      (arbEnCuerpo && matEnCuerpo) ? 'arbolado y mobiliario en el mismo paseo (' + paseos + ' paseos en el módulo)'
+        : 'cada cuenta tiene su propio recorrido: dos poblaciones parecidas y distintas');
+
+    /* El material se cuenta POR USO. Los cuatro que llevan el campo —una
+       caneca, una tapa de alcantarillado, un mural y una valla de lona— son
+       cuatro poblaciones, y «el 60 % es metálico» sobre las cuatro juntas no
+       describe ninguna. Es la tabla de escalas de la v854 dicha sobre un
+       reparto. */
+    const iM = j68.indexOf('function resumenMobiliario(');
+    const cM = iM >= 0 ? j68.slice(iM, j68.indexOf('\n  }', iM)) : '';
+    comprobar('el material se cuenta por USO, no en una sola cifra',
+      /usos:\s*lista/.test(cM) && /\.map\(function/.test(cM),
+      cM ? 'resumenMobiliario devuelve una lista por uso'
+         : 'una sola cifra sobre cuatro poblaciones distintas');
+
+    /* Los mínimos de la regla 10-20-30 se DERIVAN del umbral y no se
+       escriben a ojo: por debajo de 1/umbral individuos, uno solo ya lo pasa.
+       La guarda los RECALCULA en vez de leer el comentario — un número
+       tecleado acá sería el techo de Overpass de la v869. */
+    const uE = (j68.match(/UMBRAL_ESPECIE\s*=\s*([\d.]+)/) || [])[1];
+    const uG = (j68.match(/UMBRAL_GENERO\s*=\s*([\d.]+)/) || [])[1];
+    const derivados = /MIN_ESPECIE\s*=\s*Math\.ceil\(1\s*\/\s*UMBRAL_ESPECIE\)/.test(j68) &&
+                      /MIN_GENERO\s*=\s*Math\.ceil\(1\s*\/\s*UMBRAL_GENERO\)/.test(j68);
+    const cuadran = !!uE && !!uG && Math.ceil(1 / Number(uE)) === 10 && Math.ceil(1 / Number(uG)) === 5;
+    comprobar('los mínimos de la regla salen del propio umbral, no de un número a ojo',
+      derivados && cuadran,
+      derivados ? (cuadran ? 'umbral ' + uE + ' → ' + Math.ceil(1 / Number(uE)) + ' árboles · umbral ' +
+                    uG + ' → ' + Math.ceil(1 / Number(uG))
+                  : 'los umbrales no dan los mínimos que la regla necesita')
+                : 'los mínimos van escritos a mano: un número puesto a ojo que nadie puede defender');
+
+    /* La tercera mitad de la regla NO se puede correr y se dice. Darla por
+       buena es el error típico que esta misma hoja declara desde la v879, y
+       acá la familia botánica sencillamente no está en los datos. */
+    const iP = j68.indexOf('function bloqueLevantado(');
+    const cP = iP >= 0 ? j68.slice(iP, j68.indexOf('\n  }', iP)) : '';
+    comprobar('la regla de la FAMILIA se declara sin correr, no se da por buena',
+      /familia/i.test(cP) && /no se puede correr/.test(cP),
+      cP ? (/familia/i.test(cP) ? 'la nombra y dice que no se puede correr'
+                                : 'no nombra la familia: la regla saldría como si estuviera entera')
+         : 'no hay panel');
+
+    /* El denominador LLEGA a la pantalla (v943). Un reparto en porcentajes
+       sin decir sobre cuántos se calculó se lee como si fuera el del sector,
+       que es exactamente lo que este panel no puede afirmar. */
+    const denom = /conEspecie/.test(cP) && /A\.arboles/.test(cP) &&
+                  /u\.conMaterial\s*\+\s*' de '\s*\+\s*u\.n/.test(cP);
+    comprobar('el denominador se imprime al lado del reparto',
+      denom,
+      denom ? 'los dos repartos dicen sobre cuántos se calcularon'
+            : 'un porcentaje sin denominador se lee como si fuera el del sector');
+
+    /* Y que no se extrapole: contar treinta árboles no dice cuántos hay. */
+    comprobar('el panel dice que lo levantado no es el sector',
+      /extrapolar/.test(cP),
+      /extrapolar/.test(cP) ? 'lo acota con esa palabra'
+                            : 'no lo acota: el reparto se leería como el del sector entero');
+
+    /* Guarda de la guarda: si el panel no se compone, todo lo de arriba
+       vigila un recuento que ninguna pantalla enseña — que es justamente la
+       clase de la v984 que esta tanda vino a cerrar. */
+    comprobar('el panel se compone en la ficha',
+      /bloqueLevantado\(\)\s*\+/.test(j68),
+      /bloqueLevantado\(\)\s*\+/.test(j68)
+        ? 'bloqueLevantado entra en la composición'
+        : 'se calcula y no se pinta: el dato seguiría sin alcanzar a ningún lector');
+
+    /* Y las clases que estrena tienen regla: una clase que ninguna hoja
+       pinta es HTML válido y un rótulo invisible (v895). */
+    const clases = ['pcr-lab-sub'].filter(c => !new RegExp('\\.' + c + '\\b').test(c68));
+    comprobar('las clases nuevas del panel están pintadas',
+      clases.length === 0,
+      clases.length ? 'sin regla: ' + clases.join(', ') : 'pcr-lab-sub tiene su regla');
+  }
+}
+
+console.log('\n  -- un mapeo de la Matriz no caduca como una alerta (v988) --');
+{
+  const j05 = soloCodigo(leer('js/05-helpers-temporal-security.js'));
+  const j20 = soloCodigo(leer('js/20-mobile-functional-app.js'));
+
+  /* MATERIAL primero (v920): el catálogo TIENE tipos cuyo nombre contiene las
+     palabras con las que el filtro temporal reconoce una alerta. Sin ellos no
+     habría nada que esconder y la comprobación pasaría por no tener material
+     — que es justamente como esto vivió sin verse. */
+  const PAL = ['inund','drenaje','fuga','trafico','accidente','congest','reten','cerrada',
+               'bloqueada','desvio','hueco','bache','derrumbe','alcantarilla','poste',
+               'basura','incendio','animal'];
+  const i0 = j20.indexOf('const PROCITY_MATRIZ_USOS = [');
+  let tipos = [];
+  if (i0 >= 0) {
+    const j = j20.indexOf('[', i0);
+    let k = j, d = 0;
+    do { if (j20[k] === '[') d++; if (j20[k] === ']') d--; k++; } while (d > 0 && k < j20.length);
+    try {
+      const arr = eval(j20.slice(j, k).replace(/MATRIZ_USOS_KEY/g, "'x'"));
+      arr.forEach(u => (u.t || []).forEach(t => {
+        const tx = (u.u + ' ' + t).toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '');
+        if (PAL.some(p => tx.indexOf(p) >= 0)) tipos.push(u.u + ' · ' + t);
+      }));
+    } catch (e) { tipos = []; }
+  }
+  if (tipos.length < 5) {
+    anotarSinMaterial('MATERIAL · el catálogo trae tipos que el filtro temporal reconocería',
+      tipos.length + ' tipos con palabra de alerta en su nombre');
+  } else {
+    comprobar('MATERIAL · el catálogo trae tipos que el filtro temporal reconocería', true,
+      tipos.length + ' tipos, entre ellos ' + tipos.slice(0, 2).join(' y '));
+
+    /* El discriminante YA existía y no se miraba acá (clase A): un punto de la
+       Matriz es un inventario permanente, nunca una alerta de ocho horas. Sin
+       esta línea, esos tipos se guardan, se dibujan, y desaparecen del mapa de
+       todo el mundo al día siguiente — y con ellos de `urbisDatosVisibles()`,
+       así que ningún análisis los cuenta. */
+    const i1 = j05.indexOf('function esReporteTemporal(');
+    const cuerpo = i1 >= 0 ? j05.slice(i1, j05.indexOf('\n  }', i1)) : '';
+    const sale = /urbisEsCategoriaProCity\s*\(\s*tipo\s*\)\s*\)\s*return false/.test(cuerpo);
+    comprobar('un punto de la Matriz nunca se trata como alerta temporal',
+      sale,
+      sale ? 'esReporteTemporal sale en falso para lo de Pro City'
+           : 'por el TEXTO del tipo: ' + tipos.length + ' tipos del catálogo se esconderían a las 8 h');
+
+    /* Guarda de la guarda: si el ayudante desapareciera, la línea de arriba
+       seguiría escrita y no haría nada — la condición cae al criterio viejo y
+       los tipos vuelven a esconderse, en silencio. */
+    const hayAyuda = /window\.urbisEsCategoriaProCity\s*=/.test(j20);
+    comprobar('y el ayudante que lo decide sigue publicado',
+      hayAyuda,
+      hayAyuda ? 'urbisEsCategoriaProCity se publica en js/20'
+               : 'sin el ayudante la condición cae al criterio viejo y no se nota');
+  }
+}
+
 /* Las dos cuentas van APARTE porque piden cosas distintas: una fallada hay
    que arreglarla, una sin material hay que mirarla —o se quedó sin él porque
    el registro mejoró, o porque la función dejó de ver lo que medía—. Sumarlas

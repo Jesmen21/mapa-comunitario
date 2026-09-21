@@ -14495,6 +14495,213 @@ abierto—, que es lo que encontró las tres cosas que no se veían leyendo: que
 tope ya se alcanzaba, que el alfiler tapa el punto, y que la esquina de abajo
 la ocupa la barra de navegación.
 
+## El recuento de especies y materiales, y lo que caducaba solo (v988)
+
+La mitad que la v984 dejó medida y declarada pendiente con sus palabras: *«La
+especie del árbol (v975) y el material del mobiliario (v981) no entran en
+ninguna cuenta… ninguna pantalla dice «de los 62 árboles mapeados, 20 son
+palmas» ni «de las 30 canecas, 18 son metálicas». Viajan con el punto y no con
+el análisis.»* Es la **clase C** —el dato existe y ninguna superficie lo
+alcanza— y se cierra con un panel en la ficha.
+
+Y al mirar el papel apareció, debajo, un defecto bastante peor.
+
+### El recuento: un solo recorrido, y del SECTOR
+
+`levantadoDeCampo()` es el hermano de `edificiosDeCampo`: recorre
+`puntosDelCurso()`, filtra por `puntoDentroDelSector` y memoiza por repintado.
+Cuatro decisiones, cada una con su razón:
+
+* **Del sector y no del dispositivo.** Sin el filtro sería el inventario del
+  teléfono publicado con rótulo de análisis. Es lo que separa una cifra de
+  sector de una lista de lo mío.
+* **UN solo recorrido para las dos cuentas.** Dos paseos con su propio
+  criterio de «está dentro» darían dos poblaciones parecidas y distintas, y
+  nadie compararía nunca las dos cifras (v860).
+* **Se lee por `URBIS_ARBOL.leer` y `URBIS_MOBILIARIO.leer`, nunca por la
+  casilla.** El orden de las casillas se resuelve en js/04 y en ningún otro
+  sitio: un recuento que las indexara por su cuenta se separaría del globo y
+  de la ficha a la tanda siguiente, y la que se quedaría vieja sería la
+  cuenta, porque nadie la mira dos veces.
+* **El denominador viaja con el resumen.** «El 50 % es Nim» sobre doce árboles
+  con especie de catorce mapeados es una frase distinta de «el 50 % del
+  arbolado del sector», y sin el denominador se leen igual (v943).
+
+### El material va POR USO, y esa es media tanda
+
+Cuatro usos llevan el campo desde la v983: mobiliario urbano, redes en vía,
+arte urbano y publicidad exterior. Una caneca, una tapa de alcantarillado, un
+mural y una valla de lona **no son la misma población**, así que «el 60 % es
+metálico» sobre las cuatro juntas no describe ninguna. Es la tabla de escalas
+de la v854 dicha sobre un reparto.
+
+Cada familia abre la suya, con su denominador y con lo que le falta. Hay una
+guarda dedicada porque una sola cifra es lo que sale si alguien simplifica.
+
+### La regla 10-20-30, con sus tres estados
+
+Un conteo de especies no es una lectura hasta que tiene contra qué leerse. La
+referencia es Santamour (1990): ninguna **especie** por encima del 10 % del
+inventario, ningún **género** del 20 %, ninguna **familia** del 30 %. Un
+arbolado de una sola especie se pierde entero con una plaga, y eso ha pasado
+en ciudades enteras.
+
+* **La especie** se cuenta de lo anotado.
+* **El género** se deriva del binomio que la propia lista lleva al lado
+  —«Roystonea regia» → Roystonea—, no de una segunda tabla que alguien
+  tendría que mantener.
+* **La familia NO se puede correr** y se declara: el vocabulario trae nombre
+  común y binomio, no familia botánica. Darla por buena es el error típico que
+  esta misma hoja declara desde la v879.
+
+#### Los mínimos se derivan del umbral, no se ponen a ojo
+
+Con menos de `1/umbral` individuos, **un solo árbol ya pasa el umbral**, así
+que la regla no puede discriminar y no se aplica: diez árboles para la del
+10 %, cinco para la del 20 %. Sale de la propia cifra y no de un número
+tecleado — poner «mínimo veinte porque suena razonable» sería el techo de
+Overpass de la v869 otra vez. Y la guarda los **recalcula** en vez de leer el
+comentario, que es lo que la v987 dejó como forma.
+
+En el sector de prueba: 14 árboles, 12 con especie, Nim al 50 % —pasa el
+10 %— y el género *Azadirachta* al 50 % —pasa el 20 %—.
+
+### Lo que falta, separado por lo que pide cada caso
+
+Cuatro estados y no uno, porque piden cosas distintas: **sin anotar** es una
+tarea de campo; **«no se sabe»** es una RESPUESTA —alguien miró el árbol y no
+pudo determinarlo desde la acera— y no es un hueco (v973, v979); **«otro» sin
+nombrar** es una salida elegida y no llenada; **«otro» nombrado** es una
+especie que existe y no está en la lista, o sea material para ampliarla.
+Juntarlos mandaría a revisar lo que ya está bien.
+
+### Y lo que el papel destapó: 26 tipos que caducaban solos
+
+El hallazgo de la tanda, y no es del panel. La sonda sembró tres tapas de
+alcantarillado y **el módulo contaba cero**. No era el recuento: los tres
+puntos no llegaban siquiera a `urbisDatosVisibles()`.
+
+`esReporteTemporal` decide si un reporte se esconde del mapa a las ocho horas,
+y lo decidía **por el TEXTO** de la categoría y del elemento —«alcantarilla»,
+«poste», «animal», «basura»…—. Con el catálogo que la v981, la v982 y la v983
+le pusieron encima, eso se llevaba **26 tipos de 579**:
+
+```
+Mobiliario Urbano · Poste de alumbrado público          ← poste
+Mobiliario Urbano · Poste con transformador             ← poste
+Redes en Vía · Tapa de alcantarillado                   ← alcantarilla
+Cuidado Animal (Veterinaria) · Clínica veterinaria      ← animal   (×11)
+Publicidad Exterior Visual · Tótem o monoposte          ← poste
+Comercial · Panadería / repostería                      ← poste
+```
+
+La última es la que enseña la forma: **«repostería» contiene «poste»**.
+
+Lo que lo hace caro es que no se ve al mapear. El punto se guarda, se dibuja,
+y **ocho horas después ya no está en el mapa de nadie** — ni en el de su
+autor. Y con él se iba de `urbisDatosVisibles()`, así que tampoco lo contaba
+ningún análisis: un poste mapeado ayer no existía para el recuento de
+materiales de hoy. Todo el trabajo de las tres tandas del catálogo estaba
+publicándose con fecha de caducidad.
+
+**El discriminante ya existía y nadie lo miraba acá.** Un punto de la Matriz
+de Usos es un INVENTARIO permanente, nunca una alerta de ocho horas, y
+`urbisEsCategoriaProCity` es la lista autoritativa — js/12 ya la usa para dos
+decisiones del mismo molde desde antes. Es la quinta vez que la clase A
+aparece así (v875, v899, v903, v936, v984, y esta), y como en todas ellas **no
+hizo falta tocar nada más**: solo dejar de decidir por el texto teniendo el
+campo al lado.
+
+Si el ayudante no estuviera, se sigue al criterio viejo en vez de dejar de
+caducar las alertas de verdad — y `revisar.js` exige que exista, que es donde
+se ve si se pierde.
+
+### Dos defectos más, los dos de mirar el papel
+
+* **«1 mirados y no determinados».** Un «1» seguido de plural se lee como un
+  descuido de quien firma la hoja, no de quien la programó (v874). Cada
+  renglón de pendientes puede valer uno, así que pasan por un ayudante y la
+  concordancia se comprueba **sobre el papel**: ningún «1» seguido de plural
+  en todo el panel.
+* **«Sector de prueba · de hace NaN días».** Sin `ts` legible,
+  `new Date(undefined)` da NaN y el `try` no salta, porque no hay excepción.
+  Una fecha que no se puede leer no se dice — un `NaN` impreso es lo que la
+  v889 persigue como clase.
+
+Y uno de idioma: **«Antes de salir a mapear, mira qué tiene registrado
+OpenStreetMap»**, en la entrada de la hoja. Es imperativo de tú, y ninguna
+guarda puede verlo: la forma de tú es idéntica a la de tercera persona, que es
+la mitad que la v909 y la v945 dejaron declarada como no cubierta. Se caza
+leyendo, y así se cazó.
+
+### El material tuvo que hacerse fiel dos veces
+
+* **`globalData` NO es `window.globalData`** —es un `let` de ámbito de script,
+  compartido por todos los archivos y ausente de `window`—, así que sembrarlo
+  por `window` deja la aplicación viendo cero puntos. Lo dejó escrito la v979
+  y volvió a costar una vuelta.
+* **El `tipo` de un punto de Pro City es `🗺️ Matriz de Usos`, con emoji.** Con
+  el nombre pelado, `urbisEsCategoriaProCity` devuelve falso y el arreglo del
+  filtro temporal **no se ejercitaba**: la sonda seguía perdiendo las tres
+  tapas con el arreglo puesto, y leerlo como «el arreglo no sirve» habría sido
+  el verde al revés. Es la lección de la v874 —el material tiene que poder
+  producir el caso— dicha sobre una constante de una sola palabra.
+
+### Lo que esta versión NO hace, medido
+
+* **El informe de un sector ARCHIVADO no trae el panel.** Ese camino presta
+  `S.trazado`, `S.terreno` y la geometría del trazado, pero **no** `S.resultado`
+  ni el área, así que `puntoDentroDelSector` no tiene contra qué medir.
+  `edificiosDeCampo` tiene exactamente la misma limitación ahí y la tiene desde
+  la v754: hacer que el panel de especies se comporte distinto del de pisos en
+  el mismo informe serían dos comportamientos para una familia. Prestarle el
+  área al informe archivado los arregla a los dos y es su propia tanda, con su
+  propia medición.
+* **La lámina no lo imprime.** La v935 dejó la forma —la pantalla primero, el
+  papel después— y la v936 midió lo que cuesta una caja más en el pliego. Va
+  con su medición o no va.
+* **El recuento NO se lleva al sector.** Contar treinta árboles no dice
+  cuántos hay; el panel lo dice con esas palabras y tiene su aserción. Para la
+  cifra del sector haría falta el inventario de la autoridad ambiental, que es
+  otra fuente.
+
+### Demostrado contra la v987
+
+Once aserciones en rojo de doce, contra una copia guardada en `/tmp` y no con
+`git checkout --` sobre trabajo sin confirmar (v973):
+
+```
+✗ el recuento existe y recorre los puntos del curso  — no hay recuento: la especie
+  y el material se guardan y no los cuenta nadie
+✗ el recuento lee por URBIS_ARBOL/URBIS_MOBILIARIO, no por la casilla
+✗ el recuento es del SECTOR y no del dispositivo  — sería un inventario del teléfono
+✗ las dos cuentas salen del MISMO recorrido
+✗ el material se cuenta por USO, no en una sola cifra
+✗ los mínimos de la regla salen del propio umbral, no de un número a ojo
+✗ la regla de la FAMILIA se declara sin correr, no se da por buena
+✗ el denominador se imprime al lado del reparto
+✗ el panel dice que lo levantado no es el sector
+✗ el panel se compone en la ficha
+✗ las clases nuevas del panel están pintadas  — sin regla: pcr-lab-sub
+```
+
+La duodécima es MATERIAL y pasa en las dos versiones, que es lo que tiene que
+hacer: es la precondición.
+
+Y el defecto del filtro temporal, demostrado por separado y sobre el
+navegador: con el código de la v987, **26 de 26 puntos sembrados se quedan en
+23** y las tres tapas no existen para ninguna pantalla; con el arreglo, 26.
+
+### Lo que NO se pudo correr
+
+**Ninguna suite de navegador**, por lo mismo que la v973 a la v987: este
+contenedor no tiene `../urbis-motor` ni el `node_modules` del banco de
+pruebas. Corrió `revisar.js` entero con sus quince comprobaciones nuevas, y se
+midió el papel con la sonda por el camino de verdad —sembrar los puntos,
+abrir Pro City, «Analizar otro sector», «Seguir donde quedó» y leer la ficha
+compuesta—, que es lo que encontró las tres cosas que no se veían leyendo: los
+26 tipos que caducaban, el «1 mirados» y el «NaN días».
+
 ## La lista viva: lo que al pliego educativo todavía le falta (v866)
 
 Esta lista se quedó vieja **cinco veces**. Cuatro dentro de la hoja —la

@@ -3346,6 +3346,174 @@
         .sort(function (a, b) { return b.n - a.n; })
     };
   }
+
+  /* ── Lo levantado en la calle: especies y materiales (v988) ──────────
+     La especie del árbol (v975) y el material del mobiliario (v981) se
+     guardaban, se veían en el globo y en la ficha del punto, y se editaban —
+     y NINGUNA pantalla las contaba. Viajaban con el punto y no con el
+     análisis, así que «hay 62 árboles» era todo lo que el sector sabía decir
+     de su arbolado. La v984 lo dejó medido y declarado pendiente.
+
+     UN SOLO RECORRIDO para las dos cuentas, y no dos funciones. Dos paseos
+     con su propio criterio de «está dentro» y de «es de este uso» darían dos
+     poblaciones parecidas y distintas, que es la lección de la v860 con las
+     aristas y los nodos.
+
+     Y se lee por `URBIS_ARBOL.leer` / `URBIS_MOBILIARIO.leer`, nunca por la
+     casilla: el orden de las casillas se resuelve una vez y en un solo sitio
+     (js/04), o la cuenta y el globo se separan a la tanda siguiente. */
+  var memoLevantado = { llave: '', valor: null };
+  function levantadoDeCampo() {
+    var VA = window.URBIS_ARBOL_VOC, VM = window.URBIS_MOBILIARIO_VOC;
+    var LA = window.URBIS_ARBOL, LM = window.URBIS_MOBILIARIO;
+    if (!S.resultado) return null;
+    var pts = puntosDelCurso();
+    var llave = (S.tickPintado || 0) + '·' + pts.length + '·' + (S.fichaActualId || '');
+    if (memoLevantado.llave === llave) return memoLevantado.valor;
+
+    /* El arbolado y el mobiliario se acumulan aparte, y el mobiliario POR
+       USO. Un solo porcentaje de material sobre los cuatro usos que lo
+       llevan —mobiliario, tapas, arte urbano y publicidad— sumaría una
+       caneca con un mural y una valla de lona: cuatro poblaciones distintas
+       bajo una cifra, que es el error que la tabla de escalas de la v854
+       existe para impedir. */
+    var arb = { arboles: 0, conEspecie: 0, sinAnotar: 0, noSeSabe: 0,
+                otroNombrado: 0, otroSinNombrar: 0, palmas: 0,
+                especies: {}, generos: {}, otros: {} };
+    var mob = {};
+
+    pts.forEach(function (p) {
+      var lat = parseFloat(String(p.lat || '').replace(',', '.'));
+      var lng = parseFloat(String(p.lng || '').replace(',', '.'));
+      if (!isFinite(lat) || !isFinite(lng)) return;
+      var cabeza = String(p.descripcion || '').split(' | ')[0] || '';
+      var partes = cabeza.split(' · ');
+      var uso = String(partes[0] || '').trim();
+      var tipo = String(partes[1] || '').trim();
+      var esArbol = !!(VA && typeof VA.esUsoDeArbol === 'function' && VA.esUsoDeArbol(uso));
+      var esMat = !!(VM && typeof VM.esUsoConMaterial === 'function' && VM.esUsoConMaterial(uso));
+      if (!esArbol && !esMat) return;
+      try { if (!puntoDentroDelSector({ lat: lat, lng: lng })) return; } catch (e) { return; }
+
+      if (esArbol && LA && typeof LA.leer === 'function') {
+        var a = LA.leer(p.descripcion);
+        arb.arboles++;
+        if (!a.especie) arb.sinAnotar++;
+        else if (a.noSeSabe) arb.noSeSabe++;
+        else if (a.esOtro) {
+          if (a.otroTexto) { arb.otroNombrado++; arb.otros[a.otroTexto] = (arb.otros[a.otroTexto] || 0) + 1; }
+          else arb.otroSinNombrar++;
+        } else {
+          arb.conEspecie++;
+          arb.especies[a.especie] = (arb.especies[a.especie] || 0) + 1;
+          var e = (VA && typeof VA.porNombre === 'function') ? VA.porNombre(a.especie) : null;
+          if (e) {
+            if (e.p) arb.palmas++;
+            /* El GÉNERO se deriva del binomio que la propia lista lleva al
+               lado —«Roystonea regia» → Roystonea—, no de una segunda tabla
+               que alguien tendría que mantener. La FAMILIA no está en los
+               datos y por eso su regla no se puede correr: se declara. */
+            var g = String(e.c || '').trim().split(/\s+/)[0];
+            if (g) arb.generos[g] = (arb.generos[g] || 0) + 1;
+          }
+        }
+      }
+
+      if (esMat && LM && typeof LM.leer === 'function') {
+        var m = LM.leer(p.descripcion);
+        var u = mob[uso] || (mob[uso] = { uso: uso, n: 0, conMaterial: 0, sinAnotar: 0,
+                                          noSeSabe: 0, otroNombrado: 0, otroSinNombrar: 0,
+                                          materiales: {}, tipos: {} });
+        u.n++;
+        if (tipo) u.tipos[tipo] = (u.tipos[tipo] || 0) + 1;
+        if (!m.material) u.sinAnotar++;
+        else if (m.noSeSabe) u.noSeSabe++;
+        else if (m.esOtro) { if (m.otroTexto) u.otroNombrado++; else u.otroSinNombrar++; }
+        else { u.conMaterial++; u.materiales[m.material] = (u.materiales[m.material] || 0) + 1; }
+      }
+    });
+
+    var salida = { arbolado: resumenArbolado(arb), mobiliario: resumenMobiliario(mob) };
+    if (!salida.arbolado && !salida.mobiliario) salida = null;
+    memoLevantado = { llave: llave, valor: salida };
+    return salida;
+  }
+
+  /* La regla 10-20-30 de diversidad del arbolado urbano (Santamour, 1990):
+     ninguna ESPECIE por encima del 10 % del inventario, ningún GÉNERO por
+     encima del 20 %, ninguna FAMILIA por encima del 30 %. Es lo que convierte
+     un conteo en una lectura: un arbolado de una sola especie se pierde
+     entero con una plaga, y eso ha pasado en ciudades enteras.
+
+     Los umbrales van IMPRESOS al lado de la cifra, que es la regla de la
+     v859: una cifra sin su referencia no es un dato, es un número. */
+  var UMBRAL_ESPECIE = 0.10, UMBRAL_GENERO = 0.20;
+  /* Por debajo de 1/umbral individuos, UN solo árbol ya pasa el umbral, así
+     que la regla no puede discriminar y no se aplica. El mínimo se calcula
+     del propio umbral y no se escribe a ojo: un número puesto a mano acá
+     sería el techo de Overpass de la v869 otra vez. */
+  var MIN_ESPECIE = Math.ceil(1 / UMBRAL_ESPECIE);
+  var MIN_GENERO = Math.ceil(1 / UMBRAL_GENERO);
+
+  function ordenarCuenta(obj, total) {
+    return Object.keys(obj).map(function (k) {
+      return { n: k, cuenta: obj[k], pct: total ? Math.round(1000 * obj[k] / total) / 10 : 0 };
+    }).sort(function (a, b) { return b.cuenta - a.cuenta || a.n.localeCompare(b.n, 'es'); });
+  }
+
+  function resumenArbolado(a) {
+    if (!a.arboles) return null;
+    var especies = ordenarCuenta(a.especies, a.conEspecie);
+    var generos = ordenarCuenta(a.generos, a.conEspecie);
+    var VA = window.URBIS_ARBOL_VOC;
+    especies.forEach(function (x) {
+      var e = (VA && typeof VA.porNombre === 'function') ? VA.porNombre(x.n) : null;
+      x.cientifico = e ? e.c : ''; x.palma = !!(e && e.p);
+    });
+    return {
+      arboles: a.arboles, conEspecie: a.conEspecie, sinAnotar: a.sinAnotar,
+      noSeSabe: a.noSeSabe, otroNombrado: a.otroNombrado, otroSinNombrar: a.otroSinNombrar,
+      palmas: a.palmas,
+      otros: ordenarCuenta(a.otros, a.otroNombrado),
+      especies: especies, generos: generos,
+      /* Cobertura: qué parte de lo mapeado trae una especie utilizable. Es el
+         denominador que impide leer el reparto como si fuera el del sector
+         (v943), y por eso viaja con el resumen y no se recalcula al pintar. */
+      cobertura: Math.round(100 * a.conEspecie / a.arboles),
+      /* La regla, con sus dos mitades: si se puede correr y qué dio. La
+         familia NO se puede: el vocabulario trae nombre y binomio, no
+         familia botánica, y suponerla sería inventar. */
+      regla: {
+        umbralEspecie: Math.round(100 * UMBRAL_ESPECIE), minEspecie: MIN_ESPECIE,
+        umbralGenero: Math.round(100 * UMBRAL_GENERO), minGenero: MIN_GENERO,
+        corre: a.conEspecie >= MIN_ESPECIE,
+        correGenero: a.conEspecie >= MIN_GENERO,
+        especie: especies[0] || null, genero: generos[0] || null,
+        pasaEspecie: !especies[0] || especies[0].pct <= Math.round(100 * UMBRAL_ESPECIE),
+        pasaGenero: !generos[0] || generos[0].pct <= Math.round(100 * UMBRAL_GENERO)
+      }
+    };
+  }
+
+  function resumenMobiliario(mob) {
+    var usos = Object.keys(mob);
+    if (!usos.length) return null;
+    var lista = usos.map(function (k) {
+      var u = mob[k];
+      return {
+        uso: u.uso, n: u.n, conMaterial: u.conMaterial, sinAnotar: u.sinAnotar,
+        noSeSabe: u.noSeSabe, otroNombrado: u.otroNombrado, otroSinNombrar: u.otroSinNombrar,
+        cobertura: Math.round(100 * u.conMaterial / u.n),
+        materiales: ordenarCuenta(u.materiales, u.conMaterial),
+        tipos: ordenarCuenta(u.tipos, u.n)
+      };
+    }).sort(function (x, y) { return y.n - x.n || x.uso.localeCompare(y.uso, 'es'); });
+    var total = lista.reduce(function (s, u) { return s + u.n; }, 0);
+    var conMat = lista.reduce(function (s, u) { return s + u.conMaterial; }, 0);
+    return { usos: lista, total: total, conMaterial: conMat,
+             cobertura: total ? Math.round(100 * conMat / total) : 0 };
+  }
+
   /* ── §10 (v906) · UNA FUENTE POR MAGNITUD: los edificios ───────
      El mismo dato contado dos veces en el mismo código, y las dos cuentas
      impresas a un palmo una de otra. Los edificios llegan por DOS consultas
@@ -14737,7 +14905,7 @@ function donaHTML(datos, colorDe, nombreDe) {
            un sector —adónde fue a parar, qué llevaba— se escribía en un estado
            que nadie llegaba a leer nunca. */
         (S.aviso ? '<p class="pcr-aviso">' + esc(S.aviso) + '</p>' : '') +
-        '<p class="pcr-intro">Antes de salir a mapear, mira qué tiene registrado OpenStreetMap en la zona. ' +
+        '<p class="pcr-intro">Antes de salir a mapear, mire qué tiene registrado OpenStreetMap en la zona. ' +
         'Sirve para llegar sabiendo qué esperar —y sobre todo, para ver qué <b>todavía no está mapeado</b>.</p>' +
 
         selector +
@@ -22924,6 +23092,154 @@ function donaHTML(datos, colorDe, nombreDe) {
     } catch (e) { return false; }
   }
 
+
+  /* ── El panel: qué se levantó, especie por especie y material por material
+     Va en la pestaña de GENTE y pegado a «Lo levantado en campo», porque es
+     la misma pregunta —qué hay acá— al nivel de detalle que solo tiene quien
+     caminó la cuadra. Una mitad en la pestaña de ambiente y otra en otra
+     serían dos paneles para una sola pregunta.
+
+     Lo que este panel NO hace, y va dicho en la hoja: no llevar lo levantado
+     al sector entero. Contar treinta árboles no dice cuántos hay; dice
+     cuántos se levantaron y de qué son. Es la acotación de la v942 y la
+     v943, y acá pesa más porque un reparto en porcentajes se lee solo como
+     si fuera del sector. */
+  /* Un «1» seguido de plural se lee como un descuido de quien firma la hoja,
+     no de quien la programó (v874). Acá pasa en cada renglón de pendientes,
+     porque la cifra puede ser uno. */
+  function pl(n, sing, plur) { return n === 1 ? sing : plur; }
+
+  function bloqueLevantado() {
+    var L = (function () { try { return levantadoDeCampo(); } catch (e) { return null; } })();
+    if (!L) return '';
+    var A = L.arbolado, M = L.mobiliario;
+    var out = h4('verde', 'Especies y materiales de lo levantado');
+
+    out += '<p class="pcr-pista">Lo que el curso mapeó <b>dentro de este sector</b>, con el ' +
+      'detalle que solo se ve desde el andén. Son las cifras de <b>lo levantado</b>, no las del ' +
+      'sector: contar treinta árboles no dice cuántos hay, dice de qué son los treinta que se ' +
+      'contaron. Llevarlas al sector entero sería extrapolar.</p>';
+
+    if (A) {
+      out += '<p class="pcr-lab">El arbolado, por especie</p>' +
+        '<div class="pcr-kpis">' +
+          '<div class="pcr-kpi"><b>' + A.arboles + '</b><small>árbol' + (A.arboles === 1 ? '' : 'es') + ' mapeado' + (A.arboles === 1 ? '' : 's') + '</small></div>' +
+          '<div class="pcr-kpi"><b>' + A.conEspecie + '</b><small>con especie de la lista</small></div>' +
+          '<div class="pcr-kpi"><b>' + A.palmas + '</b><small>son palmas</small></div>' +
+        '</div>';
+
+      if (A.especies.length) {
+        var mayorE = A.especies[0].cuenta || 1;
+        out += '<div class="pcr-niveles">' + A.especies.slice(0, 12).map(function (x) {
+          return '<div class="pcr-nivel">' +
+            '<span class="pcr-nivel-nom">' + esc(x.n) + (x.cientifico ? ' <em>' + esc(x.cientifico) + '</em>' : '') + '</span>' +
+            '<span class="pcr-nivel-barra"><i style="width:' + Math.round(100 * x.cuenta / mayorE) + '%"></i></span>' +
+            '<span class="pcr-nivel-n">' + x.cuenta + '<em>' + x.pct + '%</em></span></div>';
+        }).join('') + '</div>' +
+        (A.especies.length > 12 ? '<p class="pcr-pista">Y ' + (A.especies.length - 12) + ' especie' +
+          (A.especies.length - 12 === 1 ? '' : 's') + ' más con menos individuos.</p>' : '');
+      }
+
+      /* La regla 10-20-30, con su umbral escrito al lado y sus tres estados:
+         la corre y pasa, la corre y no pasa, o no se puede correr. El tercero
+         no se da por bueno —que es el error típico que esta misma hoja
+         declara— y dice por qué no se puede. */
+      var R = A.regla;
+      out += '<p class="pcr-lab">Diversidad: la regla 10-20-30</p>';
+      if (!A.conEspecie) {
+        out += '<p class="pcr-pista">Ningún árbol de los mapeados trae una especie de la lista, ' +
+          'así que no hay reparto que leer. <b>Es tarea de campo:</b> tóquelos en «Mis mapeos» y ' +
+          'use «✏️ Editar» para ponerla.</p>';
+      } else {
+        out += '<p class="pcr-pista">Ninguna especie debería pasar del ' + R.umbralEspecie +
+          ' % del arbolado ni ningún género del ' + R.umbralGenero + ' % (Santamour, 1990): un ' +
+          'arbolado de una sola especie se pierde entero con una plaga.</p>';
+        out += R.corre
+          ? '<p class="pcr-conc">La especie más repetida es <b>' + esc(R.especie.n) + '</b>, el <b>' +
+            R.especie.pct + ' %</b> de los ' + A.conEspecie + ' con especie: ' +
+            (R.pasaEspecie ? 'por debajo del ' + R.umbralEspecie + ' %.'
+                           : '<b>pasa el ' + R.umbralEspecie + ' %</b>, y eso es lo que la regla marca.') + '</p>'
+          : '<p class="pcr-pista">La regla del ' + R.umbralEspecie + ' % <b>no se puede correr</b> ' +
+            'con ' + A.conEspecie + ' árbol' + (A.conEspecie === 1 ? '' : 'es') + ' con especie: por ' +
+            'debajo de ' + R.minEspecie + ', un solo individuo ya pasa el umbral y la cifra no ' +
+            'discrimina nada. No es que el arbolado esté diverso — es que no hay con qué medirlo.</p>';
+        if (R.genero) {
+          out += R.correGenero
+            ? '<p class="pcr-conc">El género que más se repite es <b>' + esc(R.genero.n) + '</b>, el <b>' +
+              R.genero.pct + ' %</b>: ' + (R.pasaGenero ? 'por debajo del ' + R.umbralGenero + ' %.'
+                                                        : '<b>pasa el ' + R.umbralGenero + ' %</b>.') + '</p>'
+            : '<p class="pcr-pista">La del género tampoco: pide al menos ' + R.minGenero + ' árboles con especie.</p>';
+        }
+        out += '<p class="pcr-pista">La tercera mitad de la regla —ninguna <b>familia</b> por ' +
+          'encima del 30 %— <b>no se puede correr</b>: la lista de especies trae el nombre común y ' +
+          'el binomio, no la familia botánica. Haría falta cruzarla con un catálogo taxonómico, y ' +
+          'suponerla sería inventarla.</p>';
+      }
+
+      /* Lo que falta, separado por lo que pide cada caso. «Nadie lo
+         contestó» es una tarea; «no se pudo determinar desde la acera» es una
+         RESPUESTA y no se cuenta como hueco (v973, v979); «otro» nombrado es
+         una especie que existe y no está en la lista, que es material para
+         ampliarla. Juntarlos mandaría a revisar lo que ya está bien. */
+      var pend = [];
+      if (A.sinAnotar) pend.push('<b>' + A.sinAnotar + '</b> sin especie anotada — tarea de campo');
+      if (A.otroSinNombrar) pend.push('<b>' + A.otroSinNombrar + '</b> ' + pl(A.otroSinNombrar, 'marcado', 'marcados') + ' «otro» sin nombrar');
+      if (A.noSeSabe) pend.push('<b>' + A.noSeSabe + '</b> ' + pl(A.noSeSabe, 'mirado', 'mirados') + ' y no ' + pl(A.noSeSabe, 'determinado', 'determinados') + ' desde la acera — es una respuesta, no un hueco');
+      if (A.otroNombrado) pend.push('<b>' + A.otroNombrado + '</b> con una especie que no está en la lista de URBIS');
+      if (pend.length) out += '<p class="pcr-pista">' + pend.join(' · ') + '.</p>';
+      if (A.otros.length) {
+        out += '<p class="pcr-pista">Nombradas a mano: ' + A.otros.slice(0, 8).map(function (x) {
+          return esc(x.n) + (x.cuenta > 1 ? ' (' + x.cuenta + ')' : '');
+        }).join(', ') + '. Si alguna se repite, es candidata a entrar en la lista.</p>';
+      }
+      if (A.cobertura < 60) {
+        out += '<p class="pcr-pista">Ojo con leer ese reparto como si fuera el arbolado del sector: ' +
+          'solo <b>' + A.conEspecie + ' de ' + A.arboles + '</b> árboles mapeados traen la especie.</p>';
+      }
+    }
+
+    if (M) {
+      /* POR USO y no en una sola cifra. Un mural, una tapa de alcantarillado,
+         una caneca y una valla de lona llevan el mismo campo y son cuatro
+         poblaciones distintas: «el 60 % es metálico» sobre las cuatro juntas
+         no dice nada de ninguna. */
+      out += '<p class="pcr-lab">De qué está hecho lo mapeado</p>' +
+        '<p class="pcr-pista">Cada familia va por su cuenta: una caneca, una tapa de ' +
+        'alcantarillado, un mural y una valla llevan el mismo campo y no son la misma población. ' +
+        'Un solo porcentaje sobre las cuatro no describiría ninguna.</p>';
+      M.usos.forEach(function (u) {
+        out += '<p class="pcr-lab pcr-lab-sub">' + esc(u.uso) + ' · ' + u.n + ' mapeado' + (u.n === 1 ? '' : 's') + '</p>';
+        if (u.materiales.length) {
+          var mayorM = u.materiales[0].cuenta || 1;
+          out += '<div class="pcr-niveles">' + u.materiales.map(function (x) {
+            return '<div class="pcr-nivel">' +
+              '<span class="pcr-nivel-nom">' + esc(x.n) + '</span>' +
+              '<span class="pcr-nivel-barra"><i style="width:' + Math.round(100 * x.cuenta / mayorM) + '%"></i></span>' +
+              '<span class="pcr-nivel-n">' + x.cuenta + '<em>' + x.pct + '%</em></span></div>';
+          }).join('') + '</div>' +
+          '<p class="pcr-pista">Sobre <b>' + u.conMaterial + ' de ' + u.n + '</b> con el material ' +
+          'anotado' + (u.tipos.length ? ' · lo más mapeado: ' + esc(u.tipos[0].n) +
+            (u.tipos.length > 1 ? ' y ' + (u.tipos.length - 1) + ' tipo' + (u.tipos.length - 1 === 1 ? '' : 's') + ' más' : '') : '') +
+          '.</p>';
+        }
+        var pm = [];
+        if (u.sinAnotar) pm.push('<b>' + u.sinAnotar + '</b> sin material anotado — tarea de campo');
+        if (u.otroSinNombrar) pm.push('<b>' + u.otroSinNombrar + '</b> ' + pl(u.otroSinNombrar, 'marcado', 'marcados') + ' «otro» sin nombrar');
+        if (u.noSeSabe) pm.push('<b>' + u.noSeSabe + '</b> ' + pl(u.noSeSabe, 'mirado', 'mirados') + ' y no ' + pl(u.noSeSabe, 'determinado', 'determinados') + ' — es una respuesta');
+        if (u.otroNombrado) pm.push('<b>' + u.otroNombrado + '</b> con un material que no está en la lista');
+        if (pm.length) out += '<p class="pcr-pista">' + pm.join(' · ') + '.</p>';
+      });
+      /* No hay regla publicada que leer contra un reparto de materiales, y
+         decirlo es mejor que inventarle un umbral: de lo que sí sirve es de
+         base para un plan de reposición, y eso es lo que se dice. */
+      out += '<p class="pcr-pista">A diferencia del arbolado, acá no hay un umbral publicado ' +
+        'contra el cual leer el reparto. Lo que sí permite es dimensionar una reposición: qué ' +
+        'material predomina, y por tanto con qué se va a tener que trabajar.</p>';
+    }
+
+    return out;
+  }
+
   function bloqueCampo() {
     var c = S.campo;
     if (!c) {
@@ -29969,6 +30285,10 @@ function donaHTML(datos, colorDe, nombreDe) {
            las dos mitades de la misma pregunta —qué hay acá— y compararlas es
            la mitad del ejercicio. */
         bloqueCampo() +
+        /* El detalle de lo levantado: qué especie es cada árbol y de qué está
+           hecho cada elemento. Va pegado al bloque de campo porque es la misma
+           pregunta —qué hay acá— al nivel que solo tiene quien lo caminó. */
+        bloqueLevantado() +
         /* Lo intangible va con la gente y no al final: es lo que se recoge
            caminando y preguntando, no una medición del suelo. */
         bloqueIntangible() +
@@ -30724,8 +31044,12 @@ function donaHTML(datos, colorDe, nombreDe) {
 
     var cuando = '';
     try {
+      /* Sin `ts` legible, `new Date(undefined)` da NaN y el `try` no salta:
+         salía impreso «de hace NaN días». Una fecha que no se puede leer no
+         se dice — un NaN en el papel es lo que la v889 persigue como clase. */
       var dias = Math.floor((Date.now() - new Date(f.ts).getTime()) / 86400000);
-      cuando = dias <= 0 ? 'de hoy' : dias === 1 ? 'de ayer' : 'de hace ' + dias + ' días';
+      cuando = !isFinite(dias) ? ''
+        : dias <= 0 ? 'de hoy' : dias === 1 ? 'de ayer' : 'de hace ' + dias + ' días';
     } catch (e) {}
 
     return '<div class="pcr-medir pcr-reanudar">' +
@@ -32127,6 +32451,14 @@ function donaHTML(datos, colorDe, nombreDe) {
         // Si está consultando. Sin esto, una prueba que ve «no pasó nada» no
         // puede distinguir un análisis que falló de otro que ni empezó.
         consultando: !!S.cargando,
+        /* El recuento de especies y materiales (v988). Va acá y no se
+           recalcula afuera: la guarda de MATERIAL necesita saber si el sector
+           tiene árboles y mobiliario mapeados ANTES de afirmar nada sobre el
+           reparto, y una prueba que se armara su propio recorrido estaría
+           midiendo su recorrido y no el del módulo (v871). */
+        levantado: (function () {
+          try { return levantadoDeCampo(); } catch (e) { return null; }
+        })(),
         /* Lo que la malla de afluencia dice de sí misma (v936). Va acá
            porque la guarda de MATERIAL de las dos ramas lo necesita: un
            sector con usos de sobra no puede ejercitar el aviso, y uno pobre
