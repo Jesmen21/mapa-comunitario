@@ -14702,6 +14702,231 @@ abrir Pro City, «Analizar otro sector», «Seguir donde quedó» y leer la fich
 compuesta—, que es lo que encontró las tres cosas que no se veían leyendo: los
 26 tipos que caducaban, el «1 mirados» y el «NaN días».
 
+## Qué clase de comercio, piso por piso (v989)
+
+Pedido mapeando, con la ficha de una casa de dos pisos delante: *«cuando se
+escoge en el primer piso, que es comercio, me gustaría que eso se desplegara
+debajo de comercio para que yo especifique qué clase de comercio es… hay
+charcuterías, panaderías, papelerías, bares, peluquerías, barberías,
+gimnasios, taekwondo, academia de bailes… y que eso también se cuantifique,
+que nos ayuda a entender que en esa zona hay comercio, pero ¿qué tipo de
+comercio hay? Veterinarias también deberíamos de buscar poner.»*
+
+    v988   el piso 1 dice «Comercio» y ahí se acaba · «charcutería» da cero
+    v989   52 subtipos para el comercio, contados y con su denominador
+
+### El hueco era real, y el archivo decía lo contrario de sí mismo
+
+Medido antes de escribir —la regla de la v863 y la v916— el comentario de
+`USOS_PISO` decía, desde que esa lista existe: *«el detalle fino —qué
+comercio, qué institución— ya lo dice el uso del punto»*.
+
+**Es falso justo donde este campo hace falta.** El punto de una casa de dos
+pisos con tienda abajo se mapea como `Residencial · Casa de dos pisos`: el uso
+del punto describe la casa, no la tienda, y qué comercio es se perdía entero.
+En un edificio de un solo uso la frase es cierta; en el mixto, que es el caso
+que se reportó, no.
+
+### La lista NO se escribe: se DERIVA del catálogo
+
+Es la decisión que sostiene la tanda, y sale de medir. Los 584 tipos de la
+Matriz **ya son exactamente eso** —«Panadería / repostería», «Bar», «Papelería
+/ miscelánea», «Clínica veterinaria»—, así que escribir una segunda lista de
+subtipos habría sido la clase B en su forma más cara: dos inventarios del
+mismo hecho, y **el que se quedaría viejo sería el nuevo**, porque nadie lo
+revisa.
+
+Se invierte `USO_PISO_DE_MATRIZ` —la tabla que ya dice con qué uso de piso se
+prellena cada uso de la Matriz— y los tipos salen de ahí. Un tipo nuevo en el
+catálogo queda ofrecible sin que su autor se acuerde (v867).
+
+| Uso de piso | Subtipos | De dónde salen |
+|---|---|---|
+| Comercio | **52** | Ocio / Negocio · Comercial · Gasolinera · Abastos |
+| Educación, salud o institucional | 90 | ocho familias |
+| Industria, taller o bodega | 63 | seis familias |
+| Oficinas o servicios | 53 | cinco, incluida Cuidado Animal |
+| Vivienda | 35 | Residencial · VIS · Asentamiento |
+| Desocupado o en obra | 20 | En Obra · Abandono |
+| Deportivo o gimnasio | **13** | **por los extras** |
+| Hospedaje · Parqueadero | 11 · 10 | una familia cada uno |
+
+#### Y por qué hay una tabla de EXTRAS, que parece una segunda lista y no lo es
+
+Porque las dos **significan cosas distintas**, y la prueba de la clase B —*¿existe
+un cambio razonable que deba mover una y no la otra?*— tiene su respuesta
+medida y no supuesta: `USO_PISO_DE_MATRIZ` dice con qué se PRELLENA un piso, y
+`Deportivo` no está ahí porque **una cancha no tiene pisos**. Pero un gimnasio
+en el piso 3 sí es un uso de piso.
+
+Sin los extras, `Deportivo o gimnasio` se quedaba con **cero** subtipos y su
+desplegable simplemente no aparecía — que desde afuera se ve igual que «este
+uso no tiene detalle». Medido, es el único de los nueve en ese caso, y por eso
+la tabla de extras tiene **un** renglón y no nueve: lo que se declara es la
+diferencia, no la lista entera.
+
+La guarda persigue la clase y falla cerrado: **todo uso de piso real tiene de
+dónde sacar subtipos**, venga de la inversión o de los extras.
+
+### Lo que el usuario nombró, contra el catálogo
+
+Medido uno por uno antes de agregar nada:
+
+| Lo pedido | Estado |
+|---|---|
+| tiendas, panaderías, papelerías, bares, ropa, gimnasios | **ya estaban** |
+| **veterinarias** | **ya estaban**: `Cuidado Animal (Veterinaria)`, 10 tipos |
+| academia de danza | ya estaba, como `Academia (música, danza…)` |
+| charcutería, tienda de variedades, barbería, uñas, taekwondo | **cero** |
+
+Así que la mitad de «veterinarias también deberíamos de buscar poner» ya
+estaba resuelta, y decirlo es más útil que volver a escribirlas: es la regla de
+la v916 —no se «arregla» lo que no está roto—.
+
+Los cinco que faltaban entran **al catálogo** y no a una lista aparte, así que
+sirven a la vez para mapear un punto y como subtipo de un piso: una edición,
+dos sitios.
+
+* `Comercial` · **Charcutería / salsamentaria**, **Tienda de variedades (todo a
+  mil)**, **Barbería**, **Salón de belleza / manicura**
+* `Deportivo` · **Academia de artes marciales (taekwondo, karate)**
+
+**`Servicios personales (peluquería, lavandería)` NO se renombró**, y va dicho
+porque es la parte que cuesta: el tipo se guarda como texto dentro del
+registro, y renombrarlo dejaría las entradas viejas apuntando a un nombre que
+el catálogo ya no tiene (v982). Los nuevos se llaman de otra manera a
+propósito —«Barbería», «Salón de belleza»— para que el buscador ponga cada uno
+en su sitio sin que el genérico estorbe.
+
+### Una lista cerrada, y esa es la mitad que hace que la cifra se pueda contar
+
+El pedido decía «un buscador». Con texto libre, «panaderia», «Panadería» y
+«panadería de la esquina» son tres valores distintos y **el recuento deja de
+contar**, que es justo la otra mitad de lo que se pidió. Así que el control es
+un `select` con `optgroup` por familia —el buscador es el del propio teléfono,
+que filtra tecleando— y lo que no esté en el catálogo no entra.
+
+Dos decisiones más, cada una con su razón:
+
+* **Se valida contra el uso al escribir Y al leer.** Al escribir, para que un
+  «Panadería» no quede colgado bajo «Vivienda» cuando alguien cambia el
+  desplegable de arriba; al leer, para que un tipo retirado del catálogo no
+  siga impreso y contado sobre una cifra que nadie puede abrir (v932).
+* **Es opcional y arranca sin detallar.** Un desplegable que arrancara en el
+  primer tipo le pondría «Bar» a todo comercio que nadie miró, que es la falta
+  de la v973 dicha al revés.
+
+#### El separador se midió, no se eligió a ojo
+
+`>`, y sale de contar: sobre las **631 cadenas** del catálogo —52 usos y 584
+tipos— ni `>` ni `~` ni `^` ni `@` aparecen una sola vez; `/` sí, en **169**.
+Los otros tres del formato (`;` entre tramos, `:` entre piso y usos, `+` entre
+los usos de un piso) tampoco, y `|` es el del registro.
+
+Un registro anterior a la v989 no trae `>` y se lee igual: el par es entonces
+el uso pelado, sin subtipo.
+
+#### Dos locales del mismo uso en un piso son dos hechos
+
+Se deduplica por el PAR y no por el uso: una panadería y una barbería en el
+piso 1 son dos entradas, que es exactamente el detalle que este campo vino a
+recoger. Lo que sigue deduplicando por uso es `porPisoDe`, así que **la mezcla
+del edificio no cambia** por repartir un comercio en dos.
+
+Y eso destapó un defecto de impresión en el acto: `mezclaDe` imprimía
+**«Mixto: comercio (pisos 1, 1)»**, que se lee como un descuido de quien firma
+la ficha y no como dos comercios. Es la clase de la v874, y el piso sigue
+siendo uno.
+
+### La cuantificación va POR USO de piso, con su denominador
+
+«El 50 % es panadería» sobre las plantas de comercio y las de oficina juntas no
+describe ninguna de las dos: es la decisión de la v988 con el material por uso.
+`alturasDeCampo().subtipos` devuelve un grupo por uso con `conSub` de `total`,
+y el denominador **viaja pegado** al reparto (v943) — sin él, ocho de doce
+plantas detalladas se leen como el comercio del sector entero.
+
+Va a las **dos** superficies: la lámina imprime el uso con más plantas
+detalladas —casi siempre el comercio— y el informe los imprime todos, porque
+una hoja de informe no paga el papel en milímetros de mapa (v936). Una medición
+nueva entra en los dos documentos o en ninguno.
+
+Y a **la pantalla del punto**, que es donde lo ve quien acaba de mapear: un dato
+que se guarda y que ninguna superficie alcanza se ve, desde afuera, igual que
+uno que no existe — la clase C, y el defecto exacto que la v985 encontró en ese
+mismo panel.
+
+### El defecto que solo dijo el papel
+
+Compuesto el formulario y mirado, los dos desplegables salían apilados y el de
+abajo decía **«Sin detallar»**: un renglón del que no se sabe qué pregunta. Y
+no hay sitio para una etiqueta sin gastar una fila por planta —en una torre de
+doce, doce renglones—.
+
+La opción vacía **nombra el campo**: «¿Qué clase de vivienda? (opcional)». Se
+lee de un vistazo, dice que no es obligatorio, y en cuanto hay un tipo elegido
+el propio tipo se explica solo. Es la clase de la v874 —una cifra correcta
+dicha de una manera que no se puede leer— en un control recién escrito.
+
+De paso, el desplegable va en **su propio renglón y con las dos columnas**: la
+rejilla de `.edif-usos` es `1fr auto` —desplegable y botón—, así que un tercer
+hijo caía en una fila implícita ocupando solo la primera columna y quedaba
+corto al lado de un hueco. Es la lección de la v981 con las columnas
+declaradas, y la regla va en **las dos hojas de estilo**, porque el formulario
+vive en dos superficies y el sitio se mide en la suya (v979).
+
+### Lo que NO se pudo correr, y se dice
+
+**Ninguna suite de navegador**, por lo mismo que la v973 a la v988: este
+contenedor no tiene `../urbis-motor` ni el `node_modules` del banco de pruebas.
+Corrió `revisar.js` entero con sus doce comprobaciones nuevas, y se midió el
+papel con la sonda: el vocabulario derivado, el formulario con sus 53 opciones
+en cuatro grupos, la ida y vuelta —`1:Comercio>Panadería / repostería;2:Vivienda`—
+y el rearmado al cambiar el uso, que suelta el subtipo que ya no le toca.
+
+Lo que **no** se pudo ejercitar en el navegador es el **panel del punto**: los
+marcadores de Pro City viven en su propia capa y no se dejaron abrir desde la
+sonda. Queda cubierto por la comprobación estática —que exige que
+`fichaDeProCity` lo lea de `usosPorPiso`— y por el patrón que la v985 dejó
+medido en ese mismo panel. Se dice por lo que es y no se presenta como más.
+
+### Un hueco del catálogo que quedó medido y NO tocado
+
+`Deportivo` está en `USOS_MATRIZ_SIN_PISOS`, así que un punto de esa familia no
+pregunta pisos. Eso es correcto para una cancha y **falso para un gimnasio o
+una academia**, que viven en un edificio — y no lo introdujo esta tanda:
+`Gimnasio / CrossFit` lleva ahí desde siempre.
+
+Arreglarlo pide partir el uso en dos, y el tipo se guarda como texto dentro del
+registro: partirlo dejaría las entradas viejas apuntando a un uso que ya no
+existe. Queda medido, con su razón, para la tanda que lo tome — en vez de hecho
+a ojo de paso, que es lo que este proyecto lleva cinco tandas deshaciendo.
+
+### Demostrado contra la v988
+
+Once aserciones en rojo de doce, contra una copia guardada en `/tmp` y no con
+`git checkout --` sobre trabajo sin confirmar (v973):
+
+```
+✗ el catálogo se publica, y es el MISMO array y no una copia
+✗ los subtipos se DERIVAN del catálogo, no se escriben aparte
+    — no existe familiasDeUsoPiso: la lista estaría escrita a mano
+✗ todo uso de piso real tiene de dónde sacar subtipos
+    — sin una sola familia: Deportivo o gimnasio
+✗ el subtipo se valida contra su uso al escribir Y al leer
+✗ el control del subtipo es una lista cerrada, no texto libre
+✗ el subtipo arranca sin detallar, no en el primer tipo de la lista
+✗ el subtipo se cuenta por uso de piso y con su denominador
+    — una sola cifra para todos los usos: no describe ninguno
+✗ el reparto llega a la lámina Y al informe
+✗ el panel del punto enseña el subtipo que la ficha guarda
+✗ el desplegable del subtipo está pintado en las dos superficies
+✗ y el formulario de pisos sigue llamando al control
+```
+
+La duodécima es MATERIAL y va primero (v920): es la precondición, y pasa en las
+dos versiones porque la tabla que se invierte y el catálogo existían antes.
+
 ## La lista viva: lo que al pliego educativo todavía le falta (v866)
 
 Esta lista se quedó vieja **cinco veces**. Cuatro dentro de la hoja —la

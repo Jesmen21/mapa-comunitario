@@ -1,4 +1,4 @@
-const URBIS_CACHE = 'urbis-v988-especies-y-materiales-de-lo-levantado';
+const URBIS_CACHE = 'urbis-v989-el-subtipo-de-cada-piso';
 const URBIS_ASSETS = [
   './',
   './index.html',

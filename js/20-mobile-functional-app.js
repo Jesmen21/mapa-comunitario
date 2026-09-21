@@ -4811,7 +4811,7 @@
      criterios para un mismo hecho se separan a la tanda siguiente (v879), y
      acá el que se separaría publicaría la foto de alguien sin moderar. */
   function fichaDeProCity(p, d){
-    let foto = '', nota = '', especie = '', material = '';
+    let foto = '', nota = '', especie = '', material = '', pisos = '';
     try{
       const f = (typeof window.urbisFotoDeReporte === 'function') ? window.urbisFotoDeReporte(p) : null;
       if(f && f.hay && f.puedeVerla){
@@ -4844,7 +4844,23 @@
       const m = window.URBIS_MOBILIARIO ? window.URBIS_MOBILIARIO.leer(p.descripcion) : null;
       if(m && m.texto) material = `<div class="u52-procity-selpanel-dato">\u{1F9F1} ${esc(m.texto)}</div>`;
     }catch(e){}
-    return foto + nota + especie + material;
+    /* Qué clase de comercio, piso por piso (v989). Un dato que se guarda y que
+       ninguna pantalla alcanza se ve, desde afuera, exactamente igual que un
+       dato que no existe —es la clase C de este proyecto, y es el defecto que
+       la v985 encontró en este mismo panel—. Solo los pisos que SÍ traen
+       subtipo: repetir «Piso 2 · Vivienda» para las plantas sin detallar
+       llenaría el panel sin decir nada nuevo. */
+    try{
+      const E = window.URBIS_EDIFICIO;
+      if(E && typeof E.leer === 'function'){
+        const det = (E.leer(p.descripcion).usosPorPiso || []).filter(x => x && x.sub);
+        if(det.length){
+          pisos = `<div class="u52-procity-selpanel-dato">\u{1F3EA} ` +
+            det.map(x => `Piso ${x.piso}: ${esc(x.sub)}`).join(' \u00b7 ') + `</div>`;
+        }
+      }
+    }catch(e){}
+    return foto + nota + especie + material + pisos;
   }
 
   // Panel compacto al tocar un punto: quién lo publicó + Editar (permite
@@ -5303,9 +5319,9 @@
     { u:'Residencial', i:'🏠', t:['Casa de un piso','Casa de dos pisos','Casa de tres o más pisos','Casa con antejardín','Casa con garaje','Casa patio / casalote','Casa esquinera','Edificio de apartamentos (1–3 pisos)','Torre residencial (4–10 pisos)','Torre alta (10+ pisos)','Conjunto cerrado / urbanización','Casa campestre / quinta','Vivienda multifamiliar','Inquilinato / pieza en arriendo'] },
     { u:'Vivienda de Interés Social (VIS/VIP)', i:'🏘️', t:['VIS unifamiliar','VIS multifamiliar','Proyecto VIP','Vivienda rural VIS','Mejoramiento de vivienda','Vivienda por autoconstrucción','Reubicación por riesgo','Subsidio nacional','Subsidio de caja de compensación','Proyecto de vivienda gratuita','Legalización / titulación de barrio'] },
     { u:'Ocio / Negocio', i:'🍸', t:['Bar','Discoteca / rumba','Restaurante de entretenimiento','Casino / juegos de azar','Billar / salón de juegos','Café-bar / lounge','Licorera / estanco','Taberna / cantina','Sala de eventos / recepciones','Karaoke','Zona de comidas nocturna','Entretenimiento adulto'] },
-    { u:'Deportivo', i:'⚽', t:['Cancha sintética','Cancha de tierra / cemento','Cancha múltiple (polideportivo)','Coliseo cubierto','Estadio','Gimnasio / CrossFit','Piscina pública','Pista de patinaje / skatepark','Pista de atletismo','Cancha de tenis / pádel','BMX / ciclomontañismo','Gimnasio al aire libre (biosaludable)'] },
+    { u:'Deportivo', i:'⚽', t:['Cancha sintética','Cancha de tierra / cemento','Cancha múltiple (polideportivo)','Coliseo cubierto','Estadio','Gimnasio / CrossFit','Piscina pública','Pista de patinaje / skatepark','Pista de atletismo','Cancha de tenis / pádel','BMX / ciclomontañismo','Academia de artes marciales (taekwondo, karate)','Gimnasio al aire libre (biosaludable)'] },
     { u:'Esp. Público', i:'🌳', t:['Parque de barrio','Parque metropolitano','Plaza / plazoleta','Plaza cívica / de banderas','Andén / vía peatonal','Alameda','Bulevar','Zona verde / separador','Mirador','Malecón / ronda recreativa','Juegos infantiles públicos','Plazoleta de comidas'] },
-    { u:'Comercial', i:'🏬', t:['Café de paso (formato rápido)','Café de estancia (formato premium)','Local pequeño (tienda de barrio)','Centro comercial','Supermercado / gran superficie','Plaza de mercado (minorista)','Almacén de cadena','Servicios personales (peluquería, lavandería)','Taller mecánico / lavadero','Ferretería / materiales','Panadería / repostería','Papelería / miscelánea','Droguería / farmacia','Tecnología / celulares','Ropa / calzado','Comercio informal fijo (caseta)'] },
+    { u:'Comercial', i:'🏬', t:['Café de paso (formato rápido)','Café de estancia (formato premium)','Local pequeño (tienda de barrio)','Centro comercial','Supermercado / gran superficie','Plaza de mercado (minorista)','Almacén de cadena','Servicios personales (peluquería, lavandería)','Taller mecánico / lavadero','Ferretería / materiales','Panadería / repostería','Papelería / miscelánea','Droguería / farmacia','Tecnología / celulares','Ropa / calzado','Charcutería / salsamentaria','Tienda de variedades (todo a mil)','Barbería','Salón de belleza / manicura','Comercio informal fijo (caseta)'] },
     { u:'Parqueadero / Estacionamiento', i:'🅿️', t:['Parqueadero en lote (cielo abierto)','Parqueadero en edificio','Parqueadero subterráneo','Parqueadero de motos','Cicloparqueadero','Parqueadero de carga','Parqueadero público municipal','Parqueadero privado / concesionado','Zona azul (parqueo regulado en vía)','Patio de inmovilizados (grúas)'] },
     { u:'Turístico / Hotelero', i:'🏨', t:['Hotel','Hostal / alojamiento económico','Motel','Apartahotel','Posada / casa de huéspedes','Camping / glamping','Atractivo turístico','Punto de información turística','Balneario / centro recreativo','Finca de agroturismo','Alojamiento de plataforma (tipo Airbnb)'] },
     { u:'Zona Franca / Comercio Exterior', i:'🛂', t:['Bodega de importación/exportación','Punto de control aduanero','Zona franca industrial','Zona franca comercial','Depósito habilitado de aduana','Terminal de carga fronteriza','Paso fronterizo formal','Trocha / paso informal','Casa de cambio / cambista','Bodega de mercancía en tránsito','Puerto seco'] },
@@ -5510,6 +5526,12 @@
      el término literal. Lo que sí está guardado es que ninguna entrada
      apunte al vacío: un sinónimo que no casa con ningún tipo es un no-op que
      se lee igual que uno que funciona, y `revisar.js` lo denuncia. */
+  /* El catálogo sale a `window` porque js/03b lo necesita para ofrecer el
+     SUBTIPO de cada piso (v989) y vive en otro archivo, sin dependencias. Se
+     publica el MISMO array y no una copia: dos listas de los 584 tipos se
+     separarían a la tanda siguiente, que es la clase B de este proyecto. */
+  window.PROCITY_MATRIZ_USOS = PROCITY_MATRIZ_USOS;
+
   const SINONIMOS_MATRIZ = {
     'palmera': 'palma',
     'basura': 'caneca', 'basuras': 'caneca', 'papelera': 'caneca',
@@ -5542,7 +5564,16 @@
     'ciclovia': 'ciclorruta', 'bicicarril': 'ciclorruta',
     'sardinel': 'anden', 'acera': 'anden',
     'bebedero': 'fuente', 'wifi': 'punto digital',
-    'reductor': 'reductor de velocidad', 'policia acostado': 'reductor de velocidad'
+    'reductor': 'reductor de velocidad', 'policia acostado': 'reductor de velocidad',
+    /* Lo que la calle llama a los comercios que la v989 agregó, y que el
+       catálogo nombra de otra manera. «uñas» es el caso claro: nadie dice
+       «salón de belleza» señalando, dice «donde arreglan uñas». */
+    'salsamentaria': 'charcuteria', 'embutidos': 'charcuteria',
+    'todo a mil': 'variedades', 'mil': 'variedades', 'cacharreria': 'variedades',
+    'unas': 'manicura', 'estetica': 'manicura', 'cosmetologia': 'manicura',
+    'taekwondo': 'artes marciales', 'karate': 'artes marciales',
+    'dojo': 'artes marciales', 'judo': 'artes marciales', 'boxeo': 'artes marciales',
+    'gym': 'gimnasio', 'crossfit': 'gimnasio'
   };
   const VACIAS_MATRIZ = new Set(['de','del','la','el','los','las','un','una','en','y','o','para','con','al']);
 

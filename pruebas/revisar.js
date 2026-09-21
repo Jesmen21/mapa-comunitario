@@ -5069,6 +5069,168 @@ console.log('\n  -- un mapeo de la Matriz no caduca como una alerta (v988) --');
   }
 }
 
+console.log('\n  -- el subtipo de cada piso (v989) --');
+{
+  const j03b = soloCodigo(leer('js/03b-edificio-vocabulario.js'));
+  const j20b = soloCodigo(leer('js/20-mobile-functional-app.js'));
+  const j68b = soloCodigo(leer('js/68-procity-reconocimiento.js'));
+  const c01 = leer('css/01-base-layout.css');
+  const c52 = leer('css/52-urbis-pro-city.css');
+
+  /* MATERIAL primero (v920). Las dos mitades de la derivación tienen que
+     poder leerse: la tabla que se invierte y el catálogo del que salen los
+     tipos. Sin cualquiera de las dos, todo lo de abajo pasaría por no tener
+     nada que ofrecer, que es el verde que este proyecto lleva veintisiete
+     tandas persiguiendo. */
+  const iMap = j03b.indexOf('const USO_PISO_DE_MATRIZ = {');
+  const mapa = iMap >= 0 ? j03b.slice(j03b.indexOf('{', iMap), j03b.indexOf('\n  };', iMap)) : '';
+  const nMapa = (mapa.match(/':\s*'/g) || []).length;
+  const iCat = j20b.indexOf('const PROCITY_MATRIZ_USOS = [');
+  const cat = iCat >= 0 ? j20b.slice(iCat, j20b.indexOf('\n  ];', iCat)) : '';
+  const nUsos = (cat.match(/\{\s*u\s*:/g) || []).length;
+  if (nMapa < 20 || nUsos < 40) {
+    anotarSinMaterial('MATERIAL · la tabla que se invierte y el catálogo se dejan leer',
+      'pares en USO_PISO_DE_MATRIZ: ' + nMapa + ' · usos del catálogo: ' + nUsos);
+  } else {
+    comprobar('MATERIAL · la tabla que se invierte y el catálogo se dejan leer', true,
+      nMapa + ' pares y ' + nUsos + ' usos, que es de donde salen los subtipos');
+
+    /* El catálogo es UNO. Si js/20 dejara de publicarlo, js/03b se quedaría
+       sin tipos que ofrecer y el desplegable del subtipo desaparecería sin un
+       solo error — y eso, desde afuera, se ve igual que «este uso no tiene
+       subtipos». */
+    const publica = /window\.PROCITY_MATRIZ_USOS\s*=\s*PROCITY_MATRIZ_USOS/.test(j20b);
+    comprobar('el catálogo se publica, y es el MISMO array y no una copia',
+      publica,
+      publica ? 'js/20 publica PROCITY_MATRIZ_USOS tal cual'
+              : 'sin publicarlo, js/03b se queda sin tipos y el desplegable desaparece en silencio');
+
+    /* La lista NO se escribe: se deriva. Una segunda lista de los 584 tipos
+       sería la clase B en su forma más cara, y la que se quedaría vieja sería
+       la nueva. */
+    const iFam = j03b.indexOf('function familiasDeUsoPiso(');
+    const fam = iFam >= 0 ? j03b.slice(iFam, j03b.indexOf('\n  }', iFam)) : '';
+    const deriva = !!fam && /USO_PISO_DE_MATRIZ/.test(fam) && /SUBTIPO_EXTRA/.test(fam);
+    comprobar('los subtipos se DERIVAN del catálogo, no se escriben aparte',
+      deriva,
+      !fam ? 'no existe familiasDeUsoPiso: la lista estaría escrita a mano'
+           : deriva ? 'invierte USO_PISO_DE_MATRIZ y le suma los extras declarados'
+                    : 'no invierte la tabla: sería una segunda lista del mismo hecho');
+
+    /* Y la otra mitad: TODO uso de piso real tiene de dónde sacar subtipos.
+       Medido, «Deportivo o gimnasio» es el que no sale de la inversión —una
+       cancha no tiene pisos, así que no está en la tabla que se invierte— y
+       por eso existen los extras. Sin esta comprobación, un uso de piso nuevo
+       nacería con cero subtipos y su desplegable simplemente no aparecería. */
+    const iUP = j03b.indexOf('const USOS_PISO = [');
+    const listaUP = iUP >= 0 ? j03b.slice(iUP, j03b.indexOf('\n  ];', iUP)) : '';
+    const usosPiso = (listaUP.match(/'([^']+)'/g) || []).map(x => x.slice(1, -1));
+    const iEx = j03b.indexOf('const SUBTIPO_EXTRA = {');
+    const extra = iEx >= 0 ? j03b.slice(iEx, j03b.indexOf('\n  };', iEx)) : '';
+    const sinFuente = usosPiso.filter(u =>
+      !new RegExp("':\\s*'" + u.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + "'").test(mapa) &&
+      extra.indexOf("'" + u + "'") === -1);
+    comprobar('todo uso de piso real tiene de dónde sacar subtipos',
+      usosPiso.length >= 8 && sinFuente.length === 0,
+      usosPiso.length < 8 ? 'no se pudo leer USOS_PISO'
+        : sinFuente.length ? 'sin una sola familia: ' + sinFuente.join(' · ') +
+            ' — su desplegable no aparecería, y eso se ve igual que «no tiene subtipos»'
+        : usosPiso.length + ' usos de piso, todos con familia (los que no salen de la inversión, por los extras)');
+
+    /* El subtipo se valida contra el uso al ESCRIBIR y al LEER. Sin lo
+       segundo, un tipo renombrado o retirado del catálogo seguiría impreso y
+       contado, y nadie podría abrir la cifra (v932). */
+    const iCod = j03b.indexOf('function codificarPisos(');
+    const cod = iCod >= 0 ? j03b.slice(iCod, j03b.indexOf('\n  }', iCod)) : '';
+    const iLee = j03b.indexOf('function leerPisos(');
+    const lee = iLee >= 0 ? j03b.slice(iLee, j03b.indexOf('\n  }', iLee)) : '';
+    const valCod = /subtipoValido\(/.test(cod), valLee = /subtipoValido\(/.test(lee);
+    comprobar('el subtipo se valida contra su uso al escribir Y al leer',
+      valCod && valLee,
+      (valCod && valLee) ? 'las dos puertas pasan por subtipoValido'
+        : 'sin validar al ' + (!valCod ? 'escribir: un «Panadería» quedaría bajo «Vivienda»'
+                                       : 'leer: un tipo retirado del catálogo seguiría contándose'));
+
+    /* Texto libre no: con él, «panaderia», «Panadería» y «panaderia esquina»
+       son tres valores y el recuento deja de contar. Es la decisión de la
+       v932 con el `sub` de las puertas de vacío. */
+    const iSub = j03b.indexOf('function htmlSubtipo(');
+    const ctrl = iSub >= 0 ? j03b.slice(iSub, j03b.indexOf('\n  }', iSub)) : '';
+    const cerrado = !!ctrl && /<select/.test(ctrl) && !/<input/.test(ctrl);
+    comprobar('el control del subtipo es una lista cerrada, no texto libre',
+      cerrado,
+      !ctrl ? 'no existe htmlSubtipo'
+            : cerrado ? 'un select con optgroups: solo entra lo que el catálogo tiene'
+                      : 'admite texto libre, y entonces el reparto no se puede contar');
+
+    /* Es OPCIONAL y su primera opción es vacía: un desplegable que arranque
+       en el primer tipo le pondría «Bar» a todo comercio que nadie detalló,
+       que es la falta de la v973 dicha al revés. */
+    const vacia = /<option value="">/.test(ctrl);
+    comprobar('el subtipo arranca sin detallar, no en el primer tipo de la lista',
+      vacia, vacia ? 'la primera opción es vacía' : 'nace con un tipo elegido que nadie eligió');
+
+    /* El subtipo se cuenta POR USO de piso y con su denominador al lado: una
+       panadería y una clínica veterinaria no son la misma población (v988), y
+       «el 50 % es panadería» sin decir sobre cuántas plantas detalladas se
+       lee como una cifra del sector (v943). */
+    const iAlt = j68b.indexOf('function alturasDeCampo(');
+    const alt = iAlt >= 0 ? j68b.slice(iAlt, j68b.indexOf('\n  }\n', iAlt)) : '';
+    const porUso = /subtipos:/.test(alt) && /uso:\s*k/.test(alt);
+    const conDen = /conSub/.test(alt);
+    comprobar('el subtipo se cuenta por uso de piso y con su denominador',
+      porUso && conDen,
+      !alt ? 'no se pudo leer alturasDeCampo'
+        : (porUso && conDen) ? 'un grupo por uso, cada uno con conSub de total'
+        : (!porUso ? 'una sola cifra para todos los usos: no describe ninguno'
+                   : 'sin denominador: el reparto se lee como del sector entero'));
+
+    /* Y que la cifra LLEGUE a la pantalla, que es la guarda de la guarda de
+       esta familia: sin esto el recuento es documentación. Las dos
+       superficies, porque son el mismo dato en dos documentos. */
+    const enPliego = /Qué clase de/.test(j68b);
+    const enInforme = j68b.indexOf('function alturasImpresas(') >= 0 &&
+      /subtipos/.test(j68b.slice(j68b.indexOf('function alturasImpresas('),
+        j68b.indexOf('function hitosImpresos(')));
+    comprobar('el reparto llega a la lámina Y al informe',
+      enPliego && enInforme,
+      (enPliego && enInforme) ? 'las dos superficies lo imprimen'
+        : 'falta en: ' + [!enPliego && 'la lámina', !enInforme && 'el informe'].filter(Boolean).join(' y '));
+
+    /* Y a la pantalla del punto, que es donde lo ve quien lo acaba de mapear.
+       Un dato guardado que ninguna superficie alcanza se ve igual que uno
+       ausente — la clase C, y el defecto exacto que la v985 encontró en este
+       mismo panel. */
+    const iFi = j20b.indexOf('function fichaDeProCity(');
+    const fi = iFi >= 0 ? j20b.slice(iFi, j20b.indexOf('\n  }', iFi)) : '';
+    const enPanel = !!fi && /usosPorPiso/.test(fi) && /\.sub/.test(fi);
+    comprobar('el panel del punto enseña el subtipo que la ficha guarda',
+      enPanel,
+      enPanel ? 'fichaDeProCity lo lee de usosPorPiso'
+              : 'se guarda y no se ve: desde afuera es idéntico a no haberlo anotado');
+
+    /* El desplegable nuevo está pintado en las DOS hojas de estilo —el
+       formulario vive en dos superficies— o queda corto al lado de un hueco
+       en la que falte (v895, v979: el color y el sitio se miden en SU
+       superficie, no se copian del de al lado). */
+    const css1 = /\.ins-sub-piso\s*\{/.test(c01), css5 = /\.ins-sub-piso\s*\{/.test(c52);
+    comprobar('el desplegable del subtipo está pintado en las dos superficies',
+      css1 && css5,
+      (css1 && css5) ? 'con su renglón entero en css/01 y css/52'
+        : 'sin regla en: ' + [!css1 && 'css/01', !css5 && 'css/52'].filter(Boolean).join(' y '));
+
+    /* Guarda de la guarda: si el formulario dejara de llamar a htmlSubtipo,
+       todo lo de arriba seguiría en verde sobre un control que nadie pinta. */
+    const iHt = j03b.indexOf('function htmlUsosPorPiso(');
+    const ht = iHt >= 0 ? j03b.slice(iHt, j03b.indexOf('\n  }', iHt)) : '';
+    const llama = /htmlSubtipo\(/.test(ht);
+    comprobar('y el formulario de pisos sigue llamando al control',
+      llama,
+      llama ? 'htmlUsosPorPiso lo monta en cada renglón'
+            : 'el control existe y no se monta: el campo no aparecería');
+  }
+}
+
 /* Las dos cuentas van APARTE porque piden cosas distintas: una fallada hay
    que arreglarla, una sin material hay que mirarla —o se quedó sin él porque
    el registro mejoró, o porque la función dejó de ver lo que medía—. Sumarlas

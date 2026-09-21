@@ -78,7 +78,10 @@
           // Piso por piso, y si el edificio es mixto. Como texto, por la
           // misma razón que los usos: el DBF no admite listas.
           if (fi.usosPorPiso && fi.usosPorPiso.length) {
-            reg.usos_por_piso = fi.usosPorPiso.map(x => 'piso ' + x.piso + ': ' + x.uso).join('; ');
+            /* Con su subtipo donde lo haya (v989): un export que se lleva el
+               «Comercio» y deja la panadería es media ficha. */
+            reg.usos_por_piso = fi.usosPorPiso.map(x => 'piso ' + x.piso + ': ' + x.uso +
+              (x.sub ? ' (' + x.sub + ')' : '')).join('; ');
             reg.mixto = fi.mezcla && fi.mezcla.mixto ? 'si' : 'no';
           }
           const marcados = EDIF.usosMarcados(p.descripcion);

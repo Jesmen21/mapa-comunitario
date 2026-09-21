@@ -965,6 +965,11 @@
   #urbis-mobile-app .u52-procity-edificio .edif-uso-extra{
     grid-column:1 / -1; display:grid; grid-template-columns:1fr auto; align-items:center; gap:4px;
   }
+  /* Ver el comentario de css/01: la rejilla es de dos columnas y el
+     subtipo necesita su propio renglón entero (v989). */
+  #urbis-mobile-app .u52-procity-edificio .ins-sub-piso{
+    grid-column:1 / -1; margin-left:14px; font-size:.78rem;
+  }
   #urbis-mobile-app .u52-procity-edificio .edif-quita{
     border:0; background:transparent; color:var(--pc-lav-deep);
     -webkit-text-fill-color:var(--pc-lav-deep);

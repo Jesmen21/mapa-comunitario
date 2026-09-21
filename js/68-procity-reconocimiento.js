@@ -3320,7 +3320,7 @@
     var lista = edificiosDeCampo();
     if (!lista.length) return null;
     var conPisos = 0, suma = 0, maximo = 0, mixtos = 0, sinPlantas = 0;
-    var porNivel = { '1': 0, '2': 0, '3': 0, '+3': 0 }, combos = {}, plantas = {};
+    var porNivel = { '1': 0, '2': 0, '3': 0, '+3': 0 }, combos = {}, plantas = {}, sub = {};
     lista.forEach(function (e) {
       if (e.pisos == null) return;
       conPisos++; suma += e.pisos; if (e.pisos > maximo) maximo = e.pisos;
@@ -3330,7 +3330,17 @@
          planta es media ficha, y es justo lo que ahora se puede terminar de
          levantar: se cuenta aparte para poder pedirlo. */
       if (!e.plantas) sinPlantas++;
-      e.usosPorPiso.forEach(function (x) { plantas[x.uso] = (plantas[x.uso] || 0) + 1; });
+      e.usosPorPiso.forEach(function (x) {
+        plantas[x.uso] = (plantas[x.uso] || 0) + 1;
+        /* Qué clase de comercio, no solo cuánto comercio (v989). Se cuenta
+           por USO de piso y no en una sola cifra: una panadería y una
+           clínica veterinaria no son la misma población, y «el 40 % es
+           panadería» sobre las dos juntas no describe ninguna. Es la misma
+           decisión que la v988 tomó con el material por uso. */
+        var g = sub[x.uso] || (sub[x.uso] = { total: 0, conSub: 0, tipos: {} });
+        g.total++;
+        if (x.sub) { g.conSub++; g.tipos[x.sub] = (g.tipos[x.sub] || 0) + 1; }
+      });
     });
     if (!conPisos) return null;
     var ETQ = { '1': 'Un piso', '2': 'Dos pisos', '3': 'Tres pisos', '+3': 'Cuatro o más' };
@@ -3343,7 +3353,18 @@
       combinaciones: Object.keys(combos).map(function (k) { return { resumen: k, n: combos[k] }; })
         .sort(function (a, b) { return b.n - a.n; }),
       plantas: Object.keys(plantas).map(function (k) { return { uso: k, n: plantas[k] }; })
-        .sort(function (a, b) { return b.n - a.n; })
+        .sort(function (a, b) { return b.n - a.n; }),
+      /* El denominador viaja PEGADO al reparto: «el 50 % es panadería» sobre
+         ocho plantas detalladas de doce es una frase distinta de «el 50 % del
+         comercio del sector», y sin `conSub` al lado se leen igual (v943). */
+      subtipos: Object.keys(sub).map(function (k) {
+        var g = sub[k];
+        return { uso: k, total: g.total, conSub: g.conSub,
+          tipos: Object.keys(g.tipos).map(function (t) {
+            return { sub: t, n: g.tipos[t], pct: Math.round(100 * g.tipos[t] / g.conSub) };
+          }).sort(function (a, b) { return b.n - a.n; }) };
+      }).filter(function (g) { return g.conSub > 0; })
+        .sort(function (a, b) { return b.conSub - a.conSub; })
     };
   }
 
@@ -5351,6 +5372,21 @@
                  usos a la vez, así que la suma de esta columna pasa del
                  número de plantas del edificio y llamarlas plantas mentiría. */
               return '<tr><td>' + esc(x.uso) + '</td><td class="n">en ' + x.n + ' piso' + (x.n === 1 ? '' : 's') + '</td></tr>';
+            }).join('')
+          : '') +
+        /* Y de qué clase (v989). El informe y la lámina son el mismo dato
+           dicho en dos documentos: una medición nueva entra en los dos o en
+           ninguno. Acá caben TODOS los usos con detalle, porque una hoja de
+           informe no se lee a dos metros y no paga el papel en milímetros
+           de mapa. */
+        ((c.subtipos && c.subtipos.length)
+          ? c.subtipos.map(function (g) {
+              return '<tr><td colspan="2"><b>Qu\u00e9 clase de ' + esc(String(g.uso).toLowerCase()) +
+                '</b> \u00b7 ' + g.conSub + ' de ' + g.total + ' plantas lo dicen</td></tr>' +
+                g.tipos.map(function (x) {
+                  return '<tr><td>' + esc(x.sub) + '</td><td class="n">en ' + x.n + ' piso' +
+                    (x.n === 1 ? '' : 's') + '</td></tr>';
+                }).join('');
             }).join('')
           : '') +
         '</table><p class="pie">' + fraseAlturasCampo(c) + '</p>'
@@ -7505,11 +7541,29 @@ function donaHTML(datos, colorDe, nombreDe) {
         function (x) { return Math.round(100 * x.n / c.plantas[0].n); },
         function () { return '#0A6F9E'; })
       : '';
+      /* Y QUÉ CLASE. «Hay comercio» y «hay ocho panaderías y ninguna
+         droguería» no son la misma frase: la primera describe una zona y la
+         segunda se puede discutir en una mesa. Se imprime el uso de piso con
+         más plantas detalladas —casi siempre el comercio— y se dice cuántos
+         otros traen detalle, en vez de repetir la tabla por cada uno: en esta
+         hoja la prosa se paga en milímetros de mapa (v936). */
+      var det = (c && c.subtipos && c.subtipos.length) ? c.subtipos[0] : null;
+      var subs = det
+      ? '<p class="lee-min">Qué clase de ' + String(det.uso).toLowerCase() + '</p>' +
+        barras(det.tipos.slice(0, 6), function (x) { return x.sub; },
+        function (x) { return 'en ' + x.n; },
+        function (x) { return Math.round(100 * x.n / det.tipos[0].n); },
+        function () { return '#5BB4E5'; }) +
+        '<p class="nota">' + det.conSub + ' de ' + det.total + ' plantas de ' +
+        String(det.uso).toLowerCase() + ' dicen de qué clase son' +
+        (c.subtipos.length > 1 ? '; otros ' + (c.subtipos.length - 1) + ' usos de piso traen detalle' : '') +
+        '. Llevar este reparto al sector entero ser\u00eda extrapolar: es lo que se levant\u00f3, no lo que hay.</p>'
+      : '';
       var deCampo = c
       ? (deOsm ? '<p class="lee-min">Contado en campo, piso por piso</p>' : '') +
         barras(c.niveles, function (x) { return x.etiqueta; },
         function (x) { return x.edificios; }, function (x) { return x.pct; }, tono) +
-        plantas +
+        plantas + subs +
         '<p class="lee campo">' + fraseAlturasCampo(c) + '</p>'
       : '';
       return deOsm + deCampo;

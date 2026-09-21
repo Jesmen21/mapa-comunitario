@@ -247,6 +247,12 @@
     .form-section-edificio .edif-piso label { font-size: 0.7rem; color: var(--cyan); padding-top: 8px; }
     .form-section-edificio .edif-usos { display: grid; grid-template-columns: 1fr auto; align-items: center; gap: 4px; }
     .form-section-edificio .edif-uso-extra { grid-column: 1 / -1; display: grid; grid-template-columns: 1fr auto; align-items: center; gap: 4px; }
+    /* El subtipo va en SU PROPIO renglón y ocupa las dos columnas (v989):
+       la rejilla es `1fr auto` —desplegable y botón—, así que un tercer
+       hijo cae en una fila implícita ocupando solo la primera columna y
+       queda corto al lado de un hueco. Va sangrado para que se lea como
+       lo que es: el detalle del uso de arriba, no otro uso. */
+    .form-section-edificio .ins-sub-piso { grid-column: 1 / -1; margin-left: 14px; font-size: 0.78rem; }
     .form-section-edificio .edif-quita { border: 0; background: transparent; color: #9fb3c8; font-size: 1rem; font-weight: 900; padding: 4px 8px; }
     .form-section-edificio .edif-mas { justify-self: start; border: 0; border-radius: 8px; background: #2a3b4d; color: var(--cyan); font-size: 0.66rem; font-weight: 800; padding: 5px 10px; }
     .form-section-edificio .edif-resumen { color: #c9d6ff; font-weight: 700; min-height: 1em; }

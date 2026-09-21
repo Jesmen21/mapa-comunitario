@@ -179,6 +179,104 @@
   };
   const PISOS_TOPE = 60;
 
+  /* ── Qué clase de comercio, qué clase de oficina (v989) ─────────────────
+     Pedido en la calle, con la ficha de una casa de dos pisos delante:
+     «cuando se escoge en el primer piso, que es comercio, me gustaría que
+     eso se desplegara debajo de comercio para que yo especifique qué clase
+     de comercio es… charcuterías, panaderías, papelerías, bares, peluquerías,
+     gimnasios, academias de baile… y que eso también se cuantifique».
+
+     El hueco es real y está medido: el comentario de arriba decía que «el
+     detalle fino —qué comercio, qué institución— ya lo dice el uso del
+     punto», y eso es FALSO en un edificio mixto, que es justo donde este
+     campo hace falta. El punto de una casa de dos pisos con tienda abajo se
+     mapea como «Residencial · Casa de dos pisos»: el uso del punto describe
+     la casa, no la tienda, y qué comercio es se perdía entero.
+
+     ── La lista NO se escribe: se DERIVA del catálogo ────────────────────
+     Los 584 tipos de la Matriz ya son exactamente eso —«Panadería /
+     repostería», «Bar», «Papelería / miscelánea», «Clínica veterinaria»—, así
+     que escribir una segunda lista de subtipos sería la clase B de este
+     proyecto en su forma más cara: dos inventarios del mismo hecho, y el que
+     se quedaría viejo sería el nuevo. Se invierte `USO_PISO_DE_MATRIZ`, que
+     ya dice qué uso de la Matriz corresponde a cada uso de piso, y los tipos
+     salen de ahí. Un tipo nuevo en el catálogo queda ofrecible sin que su
+     autor se acuerde.
+
+     ── Y por qué hay una tabla de EXTRAS ─────────────────────────────────
+     Porque las dos listas NO significan lo mismo, y la prueba de la clase B
+     —¿existe un cambio razonable que deba mover una y no la otra?— tiene su
+     respuesta medida: `USO_PISO_DE_MATRIZ` dice con qué se PRELLENA un piso
+     según el uso del punto, y `Deportivo` no está ahí porque una cancha no
+     tiene pisos. Pero un gimnasio en el piso 3 sí es un uso de piso, y sus
+     tipos tienen que poder ofrecerse. Sin los extras, «Deportivo o gimnasio»
+     se quedaba con CERO subtipos: medido, es el único de los nueve.
+
+     ── Es opcional, y por la razón de siempre ────────────────────────────
+     Un campo obligatorio que no se sabe contestar se contesta con relleno
+     (v973). Desde la acera casi nunca se ve qué hay en el piso 5. */
+  const SUBTIPO_EXTRA = {
+    /* Los tipos de cancha se ofrecen igual: el que mapea un piso elige el
+       gimnasio, y una «Cancha múltiple» en un piso 3 existe —un coliseo
+       cubierto tiene plantas—. Filtrar cuáles de los doce son «de interior»
+       sería un juicio nuestro sobre un edificio que no vimos. */
+    'Deportivo o gimnasio': ['Deportivo']
+  };
+  /* El catálogo vive en js/20 y este archivo no depende de nadie: se lee
+     tarde y desde `window`, igual que `voc()` en js/03d. Donde no esté —la
+     página de análisis, que carga este vocabulario y no el mapa— no hay
+     subtipo que ofrecer, y el formulario de pisos tampoco se monta ahí. */
+  function catalogoMatriz(){
+    const c = (typeof window !== 'undefined') && window.PROCITY_MATRIZ_USOS;
+    return Array.isArray(c) ? c : null;
+  }
+  let _famCache = null;
+  function familiasDeUsoPiso(){
+    if (_famCache) return _famCache;
+    const inv = {};
+    Object.keys(USO_PISO_DE_MATRIZ).forEach(u => {
+      const up = USO_PISO_DE_MATRIZ[u];
+      (inv[up] || (inv[up] = [])).push(u);
+    });
+    Object.keys(SUBTIPO_EXTRA).forEach(up => {
+      const arr = inv[up] || (inv[up] = []);
+      SUBTIPO_EXTRA[up].forEach(u => { if (arr.indexOf(u) === -1) arr.push(u); });
+    });
+    _famCache = inv;
+    return inv;
+  }
+  /* Los subtipos de un uso de piso, agrupados por la familia de la que
+     salen: [{ familia:'Comercial', icono:'🏬', tipos:[…] }]. Agrupados y no
+     en una lista plana porque son cuarenta y ocho para «Comercio» y noventa
+     para «Educación, salud o institucional»: sin los grupos, el desplegable
+     es un muro. */
+  function subtiposDeUsoPiso(usoPiso){
+    const cat = catalogoMatriz();
+    if (!cat) return [];
+    const fam = familiasDeUsoPiso()[String(usoPiso || '').trim()] || [];
+    const out = [];
+    fam.forEach(u => {
+      const x = cat.find(y => y.u === u);
+      if (x && x.t && x.t.length) out.push({ familia: u, icono: x.i || '', tipos: x.t.slice() });
+    });
+    return out;
+  }
+  // ¿Es este subtipo válido para este uso de piso? Lo que no lo sea no se
+  // guarda: un valor que nadie puede volver a contar no es un dato.
+  function subtipoValido(usoPiso, sub){
+    const t = String(sub || '').trim();
+    if (!t) return false;
+    const gs = subtiposDeUsoPiso(usoPiso);
+    for (let i = 0; i < gs.length; i++) if (gs[i].tipos.indexOf(t) !== -1) return true;
+    return false;
+  }
+  /* El separador entre el uso y su subtipo. Medido sobre las 631 cadenas del
+     catálogo —52 usos y 584 tipos— antes de elegirlo: «>» no aparece en
+     ninguna, igual que «~», «^» o «@»; «/» sí, en 169. Los otros tres del
+     formato («;» entre tramos, «:» entre piso y usos, «+» entre los usos de
+     un piso) tampoco aparecen, y «|» es el del registro y no se usa acá. */
+  const SEP_SUB = '>';
+
   /* "1:Comercio;3:Comercio+Oficinas o servicios;4-6:Vivienda"
        ⇄ [{piso:1, uso:'Comercio'}, {piso:3, uso:'Comercio'},
           {piso:3, uso:'Oficinas o servicios'}, {piso:4, uso:'Vivienda'}, …]
@@ -200,13 +298,24 @@
       const p = parseInt(x && x.piso, 10);
       const u = String((x && x.uso) || '').trim();
       if (!isFinite(p) || p < 1 || p > PISOS_TOPE || USOS_PISO.indexOf(u) === -1) return;
+      /* El subtipo solo entra si pertenece a ESE uso de piso. Uno que no
+         pertenezca —queda colgado al cambiar el uso del desplegable— se
+         descarta en vez de guardarse: un «Panadería» bajo «Vivienda» no lo
+         puede contar nadie. */
+      const sb = subtipoValido(u, x && x.sub) ? String(x.sub).trim() : '';
+      const clave = sb ? u + SEP_SUB + sb : u;
       const arr = porPiso[p] || (porPiso[p] = []);
-      if (arr.indexOf(u) === -1 && arr.length < USOS_TOPE_PISO) arr.push(u);
+      /* Se deduplica por el PAR y no por el uso: dos locales distintos en el
+         mismo piso —una panadería y una barbería— son dos hechos, y es
+         justamente el detalle que este campo vino a recoger. Lo que sigue
+         deduplicando por uso es `porPisoDe`, así que la mezcla del edificio
+         no cambia por repartir un comercio en dos. */
+      if (arr.indexOf(clave) === -1 && arr.length < USOS_TOPE_PISO) arr.push(clave);
     });
     /* Un piso que ya dice algo deja de decir «no se sabe»: las dos cosas
        juntas no son media observación, son una contradicción. */
     Object.keys(porPiso).forEach(p => {
-      const reales = porPiso[p].filter(u => u !== NO_SE_SABE);
+      const reales = porPiso[p].filter(u => usoDeClave(u) !== NO_SE_SABE);
       if (reales.length) porPiso[p] = reales;
     });
     const tramos = [];
@@ -224,7 +333,9 @@
       const m = tramo.trim().match(/^(\d{1,2})(?:-(\d{1,2}))?:(.+)$/);
       if (!m) return;
       const usos = m[3].split('+').map(u => u.trim())
-        .filter((u, i, a) => USOS_PISO.indexOf(u) !== -1 && a.indexOf(u) === i)
+        /* Un registro anterior a la v989 no trae «>» y se lee igual: el par
+           es entonces el uso pelado, sin subtipo. */
+        .filter((u, i, a) => USOS_PISO.indexOf(usoDeClave(u)) !== -1 && a.indexOf(u) === i)
         .slice(0, USOS_TOPE_PISO);
       if (!usos.length) return;
       const desde = parseInt(m[1], 10), hasta = m[2] ? parseInt(m[2], 10) : desde;
@@ -233,9 +344,36 @@
     });
     const out = [];
     Object.keys(porPiso).map(Number).sort((a, b) => a - b).forEach(p => {
-      porPiso[p].forEach(u => out.push({ piso: p, uso: u }));
+      porPiso[p].forEach(u => {
+        const sb = subDeClave(u);
+        const uso = usoDeClave(u);
+        /* El subtipo se valida TAMBIÉN al leer, no solo al escribir: un tipo
+           que el catálogo ya no tiene —renombrado, retirado— no se puede
+           pintar ni contar, así que se lee como piso sin detallar en vez de
+           como una cifra que nadie puede abrir (v932). */
+        out.push(sb && subtipoValido(uso, sb) ? { piso: p, uso: uso, sub: sb }
+                                              : { piso: p, uso: uso });
+      });
     });
     return out;
+  }
+  /* «Comercio>Panadería / repostería» ⇄ sus dos mitades. En un solo sitio:
+     dos maneras de partir la misma cadena se separan a la tanda siguiente. */
+  function usoDeClave(c){ const t = String(c || ''); const i = t.indexOf(SEP_SUB); return (i < 0 ? t : t.slice(0, i)).trim(); }
+  function subDeClave(c){ const t = String(c || ''); const i = t.indexOf(SEP_SUB); return i < 0 ? '' : t.slice(i + 1).trim(); }
+  /* Los PARES de cada piso, con su subtipo: { 1: [{uso, sub}, …] }. Es lo que
+     el formulario necesita para volver a pintar lo elegido; `porPisoDe` sigue
+     devolviendo solo los usos y nada de lo que ya lo leía cambia. */
+  function paresDe(lista){
+    const m = {};
+    (lista || []).forEach(x => {
+      const p = parseInt(x && x.piso, 10);
+      if (!isFinite(p)) return;
+      const arr = m[p] || (m[p] = []);
+      const sb = String((x && x.sub) || '');
+      if (!arr.some(y => y.uso === x.uso && y.sub === sb)) arr.push({ uso: x.uso, sub: sb });
+    });
+    return m;
   }
   // Los usos de cada piso, agrupados: { 3: ['Comercio', 'Oficinas o servicios'] }
   function porPisoDe(lista){
@@ -279,7 +417,12 @@
         resumen = abajo[0].uso + ' abajo, ' + minus(arriba[0].uso) + ' arriba';
       } else if (distintos.length <= 3) {
         resumen = 'Mixto: ' + distintos.map(u => {
-          const ps = utiles.filter(x => x.uso === u).map(x => x.piso);
+          /* Sin deduplicar, un piso con dos locales del mismo uso —una
+             panadería y una barbería en el 1— imprimía «comercio (pisos 1,
+             1)», que se lee como un descuido de quien firma la ficha y no
+             como dos comercios (v874). El piso sigue siendo uno. */
+          const ps = utiles.filter(x => x.uso === u).map(x => x.piso)
+            .filter((v, i, a) => a.indexOf(v) === i);
           return minus(u) + ' (piso' + (ps.length > 1 ? 's ' : ' ') + ps.join(', ') + ')';
         }).join(', ');
       } else {
@@ -382,15 +525,43 @@
     return USOS_PISO.map(u => '<option value="' + escHtml(u) + '"' +
       (u === val ? ' selected' : '') + '>' + escHtml(u) + '</option>').join('');
   }
+  /* El desplegable del subtipo. Es una lista CERRADA y no un campo de texto,
+     y esa es la mitad que hace que la cifra se pueda contar: con texto libre,
+     «panaderia», «Panadería» y «panaderia esquina» son tres valores distintos
+     y el recuento deja de contar. El buscador que se pidió es el del propio
+     teléfono —un `select` se filtra tecleando— y por eso los tipos van en
+     grupos: cuarenta y ocho opciones sueltas no se recorren, cuarenta y ocho
+     en cuatro familias sí.
+     La primera opción es vacía y dice «sin detallar»: el subtipo es opcional,
+     y un desplegable que arranca en el primer tipo de la lista le pondría
+     «Bar» a todo comercio que nadie detalló. */
+  function minusInicial(u){ const t = String(u || ''); return t.charAt(0).toLowerCase() + t.slice(1); }
+  function htmlSubtipo(piso, i, usoPiso, sub){
+    const grupos = subtiposDeUsoPiso(usoPiso);
+    if (!grupos.length) return '';
+    const val = String(sub || '');
+    const ops = grupos.map(g => '<optgroup label="' + escHtml((g.icono ? g.icono + ' ' : '') + g.familia) + '">' +
+      g.tipos.map(t => '<option value="' + escHtml(t) + '"' + (t === val ? ' selected' : '') + '>' +
+        escHtml(t) + '</option>').join('') + '</optgroup>').join('');
+    return '<select class="ins-sub-piso" data-piso="' + piso + '" data-i="' + i +
+      '" aria-label="Qué clase de ' + escHtml(String(usoPiso).toLowerCase()) + ' hay en el piso ' + piso + '">' +
+      /* La opción vacía NOMBRA el campo. Salió mirando el papel: un segundo
+         desplegable debajo del uso, diciendo «Sin detallar», es un renglón
+         del que no se sabe qué pregunta —no hay sitio para una etiqueta sin
+         gastar una fila por planta, y en una torre de doce eso son doce—.
+         Con la pregunta dentro se lee de un vistazo y dice que es opcional. */
+      '<option value="">\u00bfQu\u00e9 clase de ' + escHtml(minusInicial(usoPiso)) + '? (opcional)</option>' +
+      ops + '</select>';
+  }
   function htmlUsosPorPiso(pisos, actuales, defectoDe){
     const n = Math.max(0, Math.min(parseInt(pisos, 10) || 0, PISOS_TOPE));
     if (!n) return '';
-    const elegido = porPisoDe(actuales);
+    const elegido = paresDe(actuales);
     const filas = [];
     const tope = Math.min(n, FILAS_TOPE);
     for (let p = tope; p >= 1; p--) {
       const usos = (elegido[p] && elegido[p].length ? elegido[p]
-        : [(typeof defectoDe === 'function' ? defectoDe(p) : '') || NO_SE_SABE]).slice(0, USOS_TOPE_PISO);
+        : [{ uso: (typeof defectoDe === 'function' ? defectoDe(p) : '') || NO_SE_SABE, sub: '' }]).slice(0, USOS_TOPE_PISO);
       const rotulo = (p === FILAS_TOPE && n > FILAS_TOPE) ? 'Piso ' + p + ' al ' + n : (p === 1 ? 'Piso 1 (calle)' : 'Piso ' + p);
       /* El primer uso va suelto y los demás con su «×»: quitar el único uso
          de un piso dejaría una planta sin nada que decir, y para eso ya está
@@ -402,12 +573,14 @@
         ? '<button type="button" class="edif-mas" data-mas="' + p +
           '" aria-label="Agregar otro uso al piso ' + p + '">+ uso</button>'
         : '<span></span>';
-      const campos = usos.map((u, i) => i === 0
-        ? '<select id="ins-uso-piso-' + p + '" class="ins-uso-piso" data-piso="' + p + '">' + opcionesDe(u) + '</select>' + mas
+      const campos = usos.map((x, i) => i === 0
+        ? '<select id="ins-uso-piso-' + p + '" class="ins-uso-piso" data-piso="' + p + '" data-i="0">' + opcionesDe(x.uso) + '</select>' + mas +
+          htmlSubtipo(p, 0, x.uso, x.sub)
         : '<span class="edif-uso-extra">' +
-            '<select id="ins-uso-piso-' + p + '-' + i + '" class="ins-uso-piso" data-piso="' + p + '">' + opcionesDe(u) + '</select>' +
+            '<select id="ins-uso-piso-' + p + '-' + i + '" class="ins-uso-piso" data-piso="' + p + '" data-i="' + i + '">' + opcionesDe(x.uso) + '</select>' +
             '<button type="button" class="edif-quita" data-quita-piso="' + p + '" data-quita-i="' + i +
               '" aria-label="Quitar este uso del piso ' + p + '">×</button>' +
+            htmlSubtipo(p, i, x.uso, x.sub) +
           '</span>').join('');
       filas.push('<div class="edif-piso"><label for="ins-uso-piso-' + p + '">' + escHtml(rotulo) + '</label>' +
         '<div class="edif-usos">' + campos + '</div></div>');
@@ -422,8 +595,14 @@
     const sel = {};
     R.querySelectorAll('select.ins-uso-piso').forEach(s => {
       const p = parseInt(s.getAttribute('data-piso'), 10);
+      const i = s.getAttribute('data-i') || '0';
+      /* El subtipo se busca por el PAR piso+índice y no por el piso: con dos
+         usos en la misma planta, tomar «el primer subtipo del piso» le
+         pondría la panadería a la oficina de al lado. */
+      const sb = R.querySelector('select.ins-sub-piso[data-piso="' + p + '"][data-i="' + i + '"]');
+      const par = { uso: s.value, sub: (sb && subtipoValido(s.value, sb.value)) ? sb.value : '' };
       const arr = sel[p] || (sel[p] = []);
-      if (arr.indexOf(s.value) === -1 && arr.length < USOS_TOPE_PISO) arr.push(s.value);
+      if (!arr.some(y => y.uso === par.uso && y.sub === par.sub) && arr.length < USOS_TOPE_PISO) arr.push(par);
     });
     const out = [];
     let ultimo = null;
@@ -431,10 +610,10 @@
       let usos = sel[p] || ultimo;
       if (!usos || !usos.length) continue;
       // Con un uso real, el «no se sabe» del mismo piso sobra.
-      const reales = usos.filter(u => u !== NO_SE_SABE);
+      const reales = usos.filter(x => x.uso !== NO_SE_SABE);
       usos = reales.length ? reales : usos;
       ultimo = usos;
-      usos.forEach(u => out.push({ piso: p, uso: u }));
+      usos.forEach(x => out.push(x.sub ? { piso: p, uso: x.uso, sub: x.sub } : { piso: p, uso: x.uso }));
     }
     return out;
   }
@@ -471,7 +650,16 @@
     };
     insPisos.addEventListener('input', () => rearmar());
     insPisos.addEventListener('change', () => rearmar());
-    cont.addEventListener('change', decir);
+    /* Cambiar el USO de un piso rearma la lista, porque su desplegable de
+       subtipo ya no es el que le toca: dejarlo puesto ofrecería «Panadería»
+       debajo de «Vivienda». Cambiar el SUBTIPO no rearma nada —solo hay que
+       refrescar el resumen—, que es lo que evita que el desplegable se cierre
+       y se vuelva a abrir en la cara de quien está eligiendo. */
+    cont.addEventListener('change', ev => {
+      const t = ev.target;
+      if (t && t.classList && t.classList.contains('ins-uso-piso')) { rearmar(); return; }
+      decir();
+    });
     /* Agregar y quitar usos de una misma planta. Se rearma la lista entera y
        no solo el renglón tocado: así el «+ uso» desaparece al llegar al tope
        y vuelve al quitar uno, sin llevar la cuenta por otro lado. */
@@ -613,6 +801,12 @@
     esUsoDeEdificio: esUsoDeEdificio,
     usoPisoPorDefecto: usoPisoPorDefecto,
     usoPisoDeCategoria: usoPisoDeCategoria,
+    SUBTIPO_EXTRA: SUBTIPO_EXTRA,
+    SEP_SUB: SEP_SUB,
+    familiasDeUsoPiso: familiasDeUsoPiso,
+    subtiposDeUsoPiso: subtiposDeUsoPiso,
+    subtipoValido: subtipoValido,
+    paresDe: paresDe,
     // El horario del letrero, en el formato de OpenStreetMap.
     DIAS_HORARIO: DIAS_HORARIO,
     codificarHorario: codificarHorario,
