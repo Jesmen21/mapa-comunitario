@@ -200,9 +200,18 @@ console.log('\n  -- el modo sin conexión --');
   const listados = [...new Set([...sw.matchAll(
     /['"]([^'"\s]+\.(?:html|js|css|json|png|svg|webmanifest))(?:\?[^'"]*)?['"]/g)].map(m => m[1]))];
   const faltan = listados.filter(f => !fs.existsSync(R(f.replace(/^\.?\//, ''))));
+  /* `listados` ya contaba lo que hace falta —lo que el barrido ENCONTRÓ en el
+     service worker, no los archivos que abrió— y lo decía en el MENSAJE, que
+     es donde un cero sale con su palomita: «0 archivos» se lee igual de bien
+     que «175 archivos». El número pasa a la CONDICIÓN. Un service worker cuya
+     lista de precarga se quede vacía no es este: es el patrón que dejó de
+     reconocerla. */
   comprobar('todo lo que se precarga existe',
-    faltan.length === 0,
-    faltan.length ? 'FALTAN: ' + faltan.join(', ') : listados.length + ' archivos');
+    faltan.length === 0 && listados.length >= 20,
+    faltan.length ? 'FALTAN: ' + faltan.join(', ')
+      : listados.length < 20
+        ? 'NO PUDO CORRER: el barrido solo sacó ' + listados.length + ' archivos de la lista de precarga'
+        : listados.length + ' archivos');
 
   /* Y al revés, que es el fallo que de verdad ocurrió: nueve archivos que
      index.html carga —el módulo educativo entre ellos— no estaban en la
@@ -234,9 +243,11 @@ console.log('\n  -- el modo sin conexión --');
     });
   });
   comprobar('y todo lo que sus páginas cargan se precarga',
-    sinCache.length === 0,
+    sinCache.length === 0 && refs >= 20,
     sinCache.length ? 'SIN PRECACHE: ' + sinCache.join(' · ')
-                    : refs + ' referencias locales en ' + PAGINAS.length + ' páginas: ' + PAGINAS.join(', '));
+      : refs < 20
+        ? 'NO PUDO CORRER: el barrido solo vio ' + refs + ' referencias locales en ' + PAGINAS.length + ' páginas'
+        : refs + ' referencias locales en ' + PAGINAS.length + ' páginas: ' + PAGINAS.join(', '));
 
   /* La guarda de la guarda: lo de arriba se apoya en mirar TODAS las páginas
      que este service worker gobierna, no una. Si volviera a mirar solo
@@ -252,12 +263,14 @@ console.log('\n  -- el modo sin conexión --');
 console.log('\n  -- una sola puerta al servidor --');
 {
   const PUERTA = '67-analisis-cliente.js';
-  const cuelan = fs.readdirSync(R('js'))
-    .filter(f => f.endsWith('.js') && f !== PUERTA)
-    .filter(f => /AIA_REMOTO\s*\.\s*analizar/.test(leer('js/' + f)));
-  comprobar('solo js/' + PUERTA + ' llama al puente (js/66)',
-    cuelan.length === 0,
-    cuelan.length ? 'también: ' + cuelan.join(', ') : 'ningún otro archivo');
+  /* Pasa por `guardaDeFuga` (v1024) y no por un filtro suelto: es la misma
+     forma —una lista de archivos y un patrón— y lo que gana es la mitad que
+     le faltaba, su CASO CONOCIDO. Sin él, el día que el puente cambie de
+     nombre esta afirmación sale en verde diciendo «ningún otro archivo»
+     sobre un patrón que ya no reconoce a nadie. */
+  guardaDeFuga('solo js/' + PUERTA + ' llama al puente (js/66)',
+    fs.readdirSync(R('js')).filter(f => f.endsWith('.js') && f !== PUERTA).map(f => 'js/' + f),
+    /AIA_REMOTO\s*\.\s*analizar/, 'AIA_REMOTO.analizar(peticion);');
 }
 
 // ── 3. identificadores que se usan y no se declaran ──────────────────────
@@ -371,16 +384,22 @@ console.log('\n  -- identificadores sueltos --');
     for (const m of src.matchAll(/\bfor\s*\(\s*(?:var|let|const)?\s*([A-Za-z_$][\w$]*)\s+(?:of|in)\b/g)) add(m[1]);
 
     const vistos = new Map();
+    /* Cuántos nombres llegó a MIRAR el lector. Es el material, y no había
+       ninguno: la afirmación decía «ninguno» a secas, que es lo mismo que
+       dice el día que `despejar` devuelva la cadena vacía por un error de
+       lectura —entonces no hay tokens, no hay sueltos, y sale en verde—. */
+    let mirados = 0;
     src.split('\n').forEach((ln, i) => {
       const s = ln.replace(/\.\s*([A-Za-z_$][\w$]*)/g, ' ')     // .propiedad
                   .replace(/([A-Za-z_$][\w$]*)\s*:/g, ' ');     // {clave:
       for (const m of s.matchAll(/\b([A-Za-z_$][\w$]*)\b/g)) {
         const n = m[1];
+        mirados++;
         if (decl.has(n) || globales.has(n) || vistos.has(n)) continue;
         vistos.set(n, i + 1);
       }
     });
-    return [...vistos].map(([n, l]) => n + ' (línea ' + l + ')');
+    return { nombres: [...vistos].map(([n, l]) => n + ' (línea ' + l + ')'), mirados: mirados };
   }
 
   // Los archivos del análisis, que son los que se partieron en dos. El resto
@@ -403,7 +422,20 @@ console.log('\n  -- identificadores sueltos --');
       return;
     }
     const s = sueltos(cual);
-    comprobar(cual, s.length === 0, s.length ? s.join(', ') : 'ninguno');
+    /* El mínimo lo pone el miembro MÁS CHICO que es legítimo, no el más
+       grande. La primera versión pidió 50 y puso en rojo a
+       js/59-analisis-ia-catalogo.js, que tiene 29 y está perfectamente: es un
+       catálogo de datos, casi todo cadenas, y `despejar` se las quita. Un
+       mínimo que denuncia a un miembro sano es la trampa de la v895 —una
+       guarda con falsos positivos acaba siendo una lista de excepciones que
+       envejece— así que baja a 10. Con eso caza la rotura ENTERA, que es la
+       que deja el lector en cero, y no la parcial; y eso se dice, en vez de
+       dejarla pareciendo más de lo que es. */
+    comprobar(cual, s.nombres.length === 0 && s.mirados >= 10,
+      s.nombres.length ? s.nombres.join(', ')
+        : s.mirados < 10
+          ? 'NO PUDO CORRER: el lector solo sacó ' + s.mirados + ' nombres de este archivo'
+          : 'ninguno, de ' + s.mirados + ' nombres mirados');
   });
 }
 
@@ -429,21 +461,48 @@ console.log('\n  -- identificadores sueltos --');
    que nadie repita un nombre en treinta mil líneas. */
 console.log('\n  -- una función, un nombre --');
 {
-  const dobles = [];
-  fs.readdirSync(R('js')).filter(f => f.endsWith('.js')).sort().forEach(f => {
+  /* El barrido sale a una función con nombre para poder medirlo contra un
+     caso conocido, que es la mitad que le faltaba. La que tenía contaba los
+     ARCHIVOS QUE ABRIÓ —«105 archivos revisados»— y ese número no se mueve
+     el día que el repositorio cambie de sangría: el patrón dejaría de ver una
+     sola declaración y la afirmación saldría en verde igual. Lo que hay que
+     contar es lo que el barrido ENCONTRÓ, que es lo que sí baja a cero. */
+  const declaradasEn = (txt) => {
     const vistas = {};
-    leer('js/' + f).split('\n').forEach((l, i) => {
+    txt.split('\n').forEach((l, i) => {
       const m = /^  function\s+([A-Za-z_$][\w$]*)\s*\(/.exec(l);
       if (m) (vistas[m[1]] = vistas[m[1]] || []).push(i + 1);
     });
+    return vistas;
+  };
+  /* Las dos direcciones en un solo caso: ve las dos del primer nivel y calla
+     la de adentro, que es legítima y corriente —dos ayudantes que se llamen
+     igual en dos ámbitos distintos no son un defecto (v885)—. */
+  const CASO_FN = '  function pintar(a) {\n    function pintar(b) {}\n  }\n  function pintar(c) {}\n';
+  const vistoFN = declaradasEn(CASO_FN);
+  comprobar('el barrido ve las del primer nivel y calla las de adentro',
+    Object.keys(vistoFN).length === 1 && (vistoFN.pintar || []).length === 2,
+    'del caso conocido saca ' + JSON.stringify(vistoFN));
+
+  const dobles = [];
+  let declaraciones = 0;
+  fs.readdirSync(R('js')).filter(f => f.endsWith('.js')).sort().forEach(f => {
+    const vistas = declaradasEn(leer('js/' + f));
     Object.keys(vistas).forEach(k => {
+      declaraciones += vistas[k].length;
       if (vistas[k].length > 1) dobles.push('js/' + f + ' · ' + k + ' en ' + vistas[k].join(' y '));
     });
   });
+  /* El mínimo no es un número de gusto. Un extractor roto da CERO, así que
+     cualquier mínimo por encima de cero caza la rotura entera; se pone un
+     orden de magnitud por debajo de lo que hay hoy (2.742) para que cace
+     además una rotura PARCIAL sin ponerse rojo porque el repositorio encoja. */
   comprobar('ninguna función del primer nivel se declara dos veces en su archivo',
-    dobles.length === 0,
+    dobles.length === 0 && declaraciones >= 200,
     dobles.length ? dobles.slice(0, 5).join(' | ')
-                  : fs.readdirSync(R('js')).filter(f => f.endsWith('.js')).length + ' archivos revisados');
+      : declaraciones < 200
+        ? 'NO PUDO CORRER: el barrido solo vio ' + declaraciones + ' declaraciones de primer nivel'
+        : declaraciones + ' declaraciones de primer nivel revisadas');
 }
 
 // ── 3e. una clase que no viste ninguna hoja de estilo ────────────────────
@@ -503,21 +562,32 @@ console.log('\n  -- ningún elemento sin una sola clase pintada --');
   const pelados = [];
   const archivos = fs.readdirSync(R('js')).filter(f => f.endsWith('.js')).map(f => 'js/' + f)
     .concat(fs.readdirSync(RAIZ).filter(f => f.endsWith('.html')));
+  /* Los dos lados del barrido tienen que contarse, y solo uno se contaba: el
+     mensaje decía «3.549 clases con regla», que es el lado del CSS. El lado
+     de los ELEMENTOS no decía nada — y es el que se rompe callado, porque el
+     día que el marcado se escriba con `classList.add` en vez de con un
+     atributo `class="…"`, este barrido deja de encontrar un solo elemento y
+     la afirmación sale en verde sin haber mirado ninguno. */
+  let conClasePropia = 0;
   archivos.forEach(f => {
     const s = leer(f);
     let m; const re = /class\s*=\s*(?:\\?["'])([^"'<>]*?)(?:\\?["'])/g;
     while ((m = re.exec(s)) !== null) {
       const cs = m[1].split(/\s+/).filter(c => c && !/[^\w-]/.test(c));
       if (!cs.length || !cs.some(c => PROPIA.test(c))) continue;
+      conClasePropia++;
       if (cs.some(c => conRegla.has(c))) continue;
       if (cs.every(c => ASIDEROS[c])) continue;
       pelados.push(f + ':' + s.slice(0, m.index).split('\n').length + ' · ' + cs.join(' '));
     }
   });
   comprobar('todo elemento con clase propia tiene al menos una con regla',
-    pelados.length === 0,
+    pelados.length === 0 && conRegla.size >= 200 && conClasePropia >= 100,
     pelados.length ? pelados.slice(0, 6).join(' | ')
-                   : conRegla.size + ' clases con regla · ' +
+      : (conRegla.size < 200 || conClasePropia < 100)
+        ? 'NO PUDO CORRER: ' + conRegla.size + ' clases con regla y ' + conClasePropia +
+          ' elementos con clase propia'
+                   : conRegla.size + ' clases con regla · ' + conClasePropia + ' elementos · ' +
                      Object.keys(ASIDEROS).length + ' asideros declarados');
 }
 
@@ -550,28 +620,53 @@ console.log('\n  -- ningún glifo se dibuja dos veces --');
   const conHalo = [];
   const archivos = fs.readdirSync(R('js')).filter(f => f.endsWith('.js')).map(f => 'js/' + f)
     .concat(fs.readdirSync(RAIZ).filter(f => f.endsWith('.html')));
+  /* Cuántas aperturas `<text` llegó a MIRAR el barrido. Es lo que hay que
+     contar, y no los archivos que abrió: aquel número no se mueve el día que
+     los rótulos de un SVG se armen con `createElementNS` en vez de con
+     marcado, y entonces esta afirmación saldría en verde sin haber mirado un
+     solo glifo. Hoy son 76, así que el mínimo va un orden de magnitud por
+     debajo: un extractor roto da cero y eso es lo que tiene que cazar. */
+  let aperturas = 0;
+  /* La decisión sale del bucle para poder medirla contra casos de respuesta
+     conocida. Son tres y cada uno tapa algo distinto: que el trazo se vea,
+     que un rótulo limpio NO se denuncie —sin esa mitad, el arreglo podría ser
+     denunciarlos todos—, y que un `=>` de JavaScript dentro de un atributo no
+     cierre la etiqueta antes de tiempo, que es la razón por la que el corte
+     salta los `>` precedidos de `=`. */
+  const aperturaDeTexto = (txt, i) => {
+    const trozo = txt.slice(i, i + 700);
+    for (let k = 5; k < trozo.length; k++)
+      if (trozo[k] === '>' && trozo[k - 1] !== '=') return trozo.slice(0, k);
+    return trozo;
+  };
+  const llevaTrazo = (abre) => /\bstroke\s*=|\bstroke-width\s*=|\bpaint-order\s*=/.test(abre);
+  {
+    const conT = '<text x="1" y="2" stroke="#fff" paint-order="stroke">a</text>';
+    const sinT = '<text x="1" y="2" class="rot">a</text>';
+    const conFlecha = '<text x="' + "' + (n => n) + '" + '" stroke="#fff">a</text>';
+    comprobar('el barrido ve el trazo, calla el rótulo limpio y no se corta en un =>',
+      llevaTrazo(aperturaDeTexto(conT, 0)) && !llevaTrazo(aperturaDeTexto(sinT, 0)) &&
+      llevaTrazo(aperturaDeTexto(conFlecha, 0)),
+      've el trazo, calla el limpio y pasa de largo el => del atributo');
+  }
   archivos.forEach(f => {
     const s = leer(f);
     let m; const re = /<text\b/g;
     while ((m = re.exec(s)) !== null) {
+      aperturas++;
       /* Hasta donde la etiqueta de apertura se cierra. El `>` puede estar a
          varias concatenaciones de distancia, así que se mira una ventana y
          se corta en el primer `>` que no venga de un `=>` de JavaScript. */
-      const trozo = s.slice(m.index, m.index + 700);
-      const fin = (function () {
-        for (let i = 5; i < trozo.length; i++)
-          if (trozo[i] === '>' && trozo[i - 1] !== '=') return i;
-        return trozo.length;
-      })();
-      const abre = trozo.slice(0, fin);
-      if (/\bstroke\s*=|\bstroke-width\s*=|\bpaint-order\s*=/.test(abre))
+      if (llevaTrazo(aperturaDeTexto(s, m.index)))
         conHalo.push(f + ':' + s.slice(0, m.index).split('\n').length);
     }
   });
   comprobar('ningún <text> servido lleva trazo encima del glifo',
-    conHalo.length === 0,
+    conHalo.length === 0 && aperturas >= 8,
     conHalo.length ? conHalo.slice(0, 6).join(' | ')
-                   : archivos.length + ' archivos revisados');
+      : aperturas < 8
+        ? 'NO PUDO CORRER: el barrido solo vio ' + aperturas + ' aperturas <text'
+        : aperturas + ' aperturas <text revisadas en ' + archivos.length + ' archivos');
 }
 
 // ── 3c. los scripts sueltos de las páginas parsean ───────────────────────
@@ -608,8 +703,23 @@ console.log('\n  -- los scripts escritos dentro de las páginas --');
       finally { try { fs.unlinkSync(tmp); } catch (e) {} }
     }
   });
-  comprobar('todos parsean', rotos.length === 0,
-    rotos.length ? 'ROTOS: ' + rotos.join(', ') : cuantos + ' scripts en ' + paginas.length + ' páginas');
+  /* Y aquí el conteo NO se pone rojo, que es donde esta afirmación se aparta
+     de las tres de arriba. La frontera es la de la v1024: una guarda de fuga
+     va en rojo sin material porque el suyo es CÓDIGO SERVIDO, que no puede
+     quedarse legítimamente vacío. El material de esta es otra cosa —un
+     `<script>` escrito DENTRO del HTML—, y que no quede ninguno es
+     exactamente lo que pasaría si alguien los sacara todos a sus archivos,
+     que es mejor práctica y no un defecto. Ponerlo en rojo sería la guarda
+     que se pone roja cuando el repositorio MEJORA (v970): un rojo que empuja
+     a dejar un script suelto adentro para tener algo que revisar. */
+  if (!cuantos) {
+    anotarSinMaterial('todos parsean',
+      'ninguna página trae ya un <script> escrito adentro, así que no hay cuál parsear — ' +
+      'puede ser que se sacaran a sus archivos, y puede ser que el extractor dejara de verlos');
+  } else {
+    comprobar('todos parsean', rotos.length === 0,
+      rotos.length ? 'ROTOS: ' + rotos.join(', ') : cuantos + ' scripts en ' + paginas.length + ' páginas');
+  }
 }
 
 // ── 3b. las hojas de estilo no están rotas ───────────────────────────────
@@ -630,9 +740,14 @@ console.log('\n  -- las hojas de estilo --');
      `content:"}"` es perfectamente legal y no desbalancea nada. */
   const hojas = fs.readdirSync(R('css')).filter(f => f.endsWith('.css'));
   const rotas = [];
+  let llavesVistas = 0;
 
-  hojas.forEach(f => {
-    const css = leer('css/' + f);
+  /* El lector sale a una función con nombre para poder medirlo contra casos
+     de respuesta conocida, y de paso devuelve CUÁNTAS llaves llegó a contar.
+     Ese es el material: la afirmación decía «55 hojas revisadas», y ese
+     número no se mueve si el lector deja de leer —se queda en 55 aunque no
+     haya mirado un solo carácter—. Las llaves sí bajan a cero. */
+  const revisarHoja = (css) => {
     let limpio = '', i = 0, enComentario = false, comentarioAbiertoEn = 0, linea = 1;
     let comilla = '';
     while (i < css.length) {
@@ -652,7 +767,7 @@ console.log('\n  -- las hojas de estilo --');
       i++;
     }
 
-    if (enComentario) { rotas.push(f + ': comentario abierto en la línea ' + comentarioAbiertoEn + ' y nunca cerrado'); return; }
+    if (enComentario) return { mal: 'comentario abierto en la línea ' + comentarioAbiertoEn + ' y nunca cerrado', llaves: 0 };
     /* Un cierre de comentario suelto —sin su apertura delante— es tan grave
        como un comentario sin cerrar, y no se veía: el navegador se salta desde
        ahí hasta que logra reengancharse, y la regla que sigue desaparece sin
@@ -662,18 +777,50 @@ console.log('\n  -- las hojas de estilo --');
     const huerfano = limpio.indexOf('*' + '/');
     if (huerfano >= 0) {
       const lineaH = css.slice(0, css.indexOf('*' + '/', huerfano)).split('\n').length;
-      rotas.push(f + ': hay un cierre de comentario suelto cerca de la línea ' + lineaH +
-                 ' (la regla que le sigue no se aplica)');
-      return;
+      return { mal: 'hay un cierre de comentario suelto cerca de la línea ' + lineaH +
+                    ' (la regla que le sigue no se aplica)', llaves: 0 };
     }
-    if (comilla) { rotas.push(f + ': hay un texto sin cerrar'); return; }
+    if (comilla) return { mal: 'hay un texto sin cerrar', llaves: 0 };
     const abre = (limpio.match(/{/g) || []).length;
     const cierra = (limpio.match(/}/g) || []).length;
-    if (abre !== cierra) rotas.push(f + ': ' + abre + ' llaves abiertas y ' + cierra + ' cerradas');
+    return { mal: abre !== cierra ? abre + ' llaves abiertas y ' + cierra + ' cerradas' : '', llaves: abre };
+  };
+
+  /* Los cuatro defectos que el lector existe para ver, y —la mitad que de
+     verdad guarda— una hoja sana que NO se denuncia: sin ella, el arreglo
+     podría ser denunciarlas todas. La sana lleva adentro el `content:"}"`
+     que es legal y no desbalancea nada, que es justo por lo que las llaves se
+     cuentan después de quitar comentarios y textos. */
+  {
+    const SANA = 'a{color:#fff}\n.b::after{content:"}"}\n/* nota */\n.c{top:0}\n';
+    const sana = revisarHoja(SANA);
+    const pruebas = [
+      ['un comentario sin cerrar', revisarHoja('.a{top:0}\n/* y aquí se acaba\n.b{top:1}\n').mal],
+      ['un cierre de comentario suelto', revisarHoja('.a{top:0}\n*' + '/\n.b{top:1}\n').mal],
+      ['un texto sin cerrar', revisarHoja('.a{content:"sin cerrar}\n').mal],
+      ['una llave de más', revisarHoja('.a{top:0\n.b{top:1}\n').mal]
+    ];
+    const ciegas = pruebas.filter(x => !x[1]).map(x => x[0]);
+    comprobar('el lector ve los cuatro defectos y deja pasar una hoja sana',
+      ciegas.length === 0 && !sana.mal && sana.llaves === 3,
+      ciegas.length ? 'no ve: ' + ciegas.join(', ')
+        : sana.mal ? 'denuncia una hoja sana: ' + sana.mal
+        : 've los cuatro, y de la sana cuenta sus ' + sana.llaves + ' llaves');
+  }
+
+  hojas.forEach(f => {
+    const r = revisarHoja(leer('css/' + f));
+    llavesVistas += r.llaves;
+    if (r.mal) rotas.push(f + ': ' + r.mal);
   });
 
+  /* Hoy cuenta 8.367 llaves; el mínimo va un orden de magnitud por debajo. */
   comprobar('ninguna hoja tiene comentarios o llaves sin cerrar',
-    rotas.length === 0, rotas.length ? rotas.join(' · ') : hojas.length + ' hojas revisadas');
+    rotas.length === 0 && llavesVistas >= 800,
+    rotas.length ? rotas.join(' · ')
+      : llavesVistas < 800
+        ? 'NO PUDO CORRER: el lector solo contó ' + llavesVistas + ' llaves en ' + hojas.length + ' hojas'
+        : llavesVistas + ' llaves contadas en ' + hojas.length + ' hojas');
 }
 
 // ── 4. las reglas no volvieron al navegador ──────────────────────────────
@@ -780,7 +927,13 @@ console.log('\n  -- Visión Territorial, aparte --');
   const locales = scripts.filter(x => !/^https?:/.test(x)).concat([...pag.matchAll(/href="(css\/[^"?]+)/g)].map(m => m[1]));
   const sinCache = locales.filter(f => !sw.includes('./' + f));
   comprobar('todo lo que sw-vt.js precarga existe, y todo lo local que la página carga está precargado',
-    faltan.length === 0 && sinCache.length === 0, (faltan.length ? 'FALTAN: ' + faltan.join(', ') + ' ' : '') + (sinCache.length ? 'SIN PRECACHE: ' + sinCache.join(', ') : listados.length + ' archivos'));
+    faltan.length === 0 && sinCache.length === 0 && listados.length >= 3 && locales.length >= 2,
+    (faltan.length ? 'FALTAN: ' + faltan.join(', ') + ' ' : '') +
+    (sinCache.length ? 'SIN PRECACHE: ' + sinCache.join(', ')
+      : (listados.length < 3 || locales.length < 2)
+        ? 'NO PUDO CORRER: el barrido sacó ' + listados.length + ' archivos del service worker y ' +
+          locales.length + ' de la página'
+        : listados.length + ' archivos'));
   comprobar('se registra con su propio ámbito y no toca el del sitio',
     /register\(\s*'sw-vt\.js[^)]*scope:\s*'\/vision-territorial'/.test(vt)
     // Los ARCHIVOS, no la palabra: el token de versión puede llevarla.
@@ -2502,10 +2655,8 @@ console.log('\n  -- el informe --');
      justamente lo que evita que alguien lo reponga sin saber, y una regla
      que los prohibiera empujaría a borrar la explicación. */
   const RASTRO = /function\s+capturarChartsClaro|capturarChartsClaro\s*\(|chartsPNG\s*(=[^=]|\)|\.|\|\|)|,\s*chartsPNG/;
-  const conPNG = servidos.filter(f => RASTRO.test(leer('js/' + f)));
-  comprobar('el informe no fabrica imágenes de los gráficos que luego no lee',
-            conPNG.length === 0,
-            conPNG.length ? 'todavía lo hacen: ' + conPNG.join(', ') : servidos.length + ' archivos revisados');
+  guardaDeFuga('el informe no fabrica imágenes de los gráficos que luego no lee',
+    servidos.map(f => 'js/' + f), RASTRO, 'const chartsPNG = capturarChartsClaro();');
 }
 
 console.log('\n  -- la presencia --');
@@ -2598,10 +2749,8 @@ console.log('\n  -- una sola manera de nombrar la tabla del evento --');
             /window\.urbisJuegoIdDeEvento = urbisJuegoIdDeEvento;/.test(h05),
             'js/05-helpers-temporal-security.js');
   const servidos = fs.readdirSync(R('js')).filter(f => /\.js$/.test(f) && f !== '05-helpers-temporal-security.js');
-  const copias = servidos.filter(f => /'aurea_'\s*\+/.test(leer('js/' + f)));
-  comprobar('y ningún otro archivo se lo arma por su cuenta',
-            copias.length === 0,
-            copias.length ? 'se lo arman: ' + copias.join(', ') : servidos.length + ' archivos revisados');
+  guardaDeFuga('y ningún otro archivo se lo arma por su cuenta',
+    servidos.map(f => 'js/' + f), /'aurea_'\s*\+/, "const t = 'aurea_' + idEvento;");
   comprobar('la escala del puntaje va marcada en el nombre',
             /URBIS_ESCALA_JUEGO = '_r\d+';/.test(h05), 'js/05-helpers-temporal-security.js');
 }
@@ -2612,12 +2761,27 @@ console.log('\n  -- el calendario del evento premium --');
   /* Encargo explícito: el calendario va en el celeste del compositor premium.
      Se mide el color, no se confía en la palabra: verde es un hex donde el
      canal verde manda con holgura sobre los otros dos. */
-  const verdes = (cal.match(/#[0-9a-fA-F]{6}/g) || []).filter(h => {
+  const esVerde = (h) => {
     const r = parseInt(h.slice(1, 3), 16), g = parseInt(h.slice(3, 5), 16), b = parseInt(h.slice(5, 7), 16);
     return g > r + 25 && g > b + 25;
-  });
-  comprobar('el calendario no trae ni un color verde', verdes.length === 0,
-            verdes.length ? verdes.join(', ') : 'celeste URBIS');
+  };
+  comprobar('el barrido reconoce un verde y deja pasar el celeste',
+    esVerde('#22c55e') && !esVerde('#7FD8F5') && !esVerde('#0B5E86'),
+    'reconoce el verde y calla los dos celestes de la paleta');
+  /* Cuántos colores llegó a LEER, no «celeste URBIS» a secas. De las
+     afirmaciones de esta clase es la que se rompe más fácil: esta hoja está
+     escrita hoy en hexadecimal, y una reescritura corriente a `oklch()`, a
+     `color-mix()` o a variables de color deja el barrido con CERO colores que
+     mirar — y entonces «el calendario no trae ni un color verde» sale en
+     verde para siempre sin haber mirado ninguno. Hoy lee 45. */
+  const hexes = cal.match(/#[0-9a-fA-F]{6}/g) || [];
+  const verdes = hexes.filter(esVerde);
+  comprobar('el calendario no trae ni un color verde',
+            verdes.length === 0 && hexes.length >= 5,
+            verdes.length ? verdes.join(', ')
+              : hexes.length < 5
+                ? 'NO PUDO CORRER: el barrido solo leyó ' + hexes.length + ' colores en hexadecimal'
+                : hexes.length + ' colores leídos, ninguno verde (celeste URBIS)');
   comprobar('y usa la paleta del compositor premium, no una propia',
             ['#7FD8F5', '#0B5E86', '#0EA5E9'].every(c => cal.indexOf(c) !== -1),
             'css/82-calendario.css');
@@ -2657,8 +2821,15 @@ console.log('\n  -- el FODA del curso --');
         if (b.length > a.length && b.indexOf(a) !== -1) malas.push(a + ' antes que ' + b);
       });
     });
+    /* Sin el conteo en la condición, el día que el patrón deje de sacar las
+       reglas de la tabla esto sale en verde sobre CERO reglas comparadas: no
+       hay pares que mirar, luego no hay ninguno malo. */
     comprobar('y ninguna regla corta se come a una larga que viene después',
-              malas.length === 0, malas.length ? malas[0] : frases.length + ' reglas');
+              malas.length === 0 && frases.length >= 5,
+              malas.length ? malas[0]
+                : frases.length < 5
+                  ? 'NO PUDO CORRER: el barrido solo sacó ' + frases.length + ' reglas de la tabla'
+                  : frases.length + ' reglas');
   }
   /* Una idea de proyecto sin la medida que la sostiene es una ocurrencia
      impresa con el logo de URBIS. Las tres partes van juntas o no van. */
@@ -5253,10 +5424,16 @@ console.log('\n  -- las listas vivas --');
        la capacidad se daría por no medida en silencio y la lista podría
        volver a pedirla. Que se note acá y no dentro de dos tandas. */
     const perdidas = L.capacidades.filter(c => !c.prueba()).map(c => c.t);
+    /* Con la tabla vacía no hay nada que buscar y `perdidas` sale vacía: la
+       afirmación pasaría en verde sobre una lista viva sin una sola capacidad
+       vigilada, que es justo lo que la v868 escribió esta comprobación para
+       impedir. El conteo entra en la condición. */
     comprobar('las marcas de capacidad de ' + L.que + ' siguen en el código servido',
-      perdidas.length === 0,
+      perdidas.length === 0 && L.capacidades.length >= 1,
       perdidas.length ? 'sin marca: ' + perdidas.join(', ')
-                      : L.capacidades.length + ' capacidades con su marca');
+        : !L.capacidades.length
+          ? 'NO PUDO CORRER: la tabla de ' + L.que + ' se quedó sin una sola capacidad'
+          : L.capacidades.length + ' capacidades con su marca');
   });
 }
 

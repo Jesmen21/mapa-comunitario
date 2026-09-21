@@ -19727,6 +19727,163 @@ pasa de **«0.0» y «0.00» en el HUD del corredor** a ninguna cifra con punto.
 | las cifras pegadas a una unidad | v1022 |
 | **el marcado escrito dentro de un literal de JS** | **esta** |
 
+## Un «ninguno» que cuenta los archivos que abrió (v1026)
+
+La tanda que la v1024 dejó declarada con su número: *«**Diecinueve**
+afirmaciones de la misma forma —“no se encontró ninguno” sin contar el
+material— en quince bloques… Van con su número y sin arreglar, porque cada una
+necesita su propio caso de respuesta conocida —qué es “un positivo” para esa
+regla— y eso no se puede escribir en bloque sin inventar.»*
+
+Se hicieron las diecinueve. Y medirlas antes de tocarlas —la regla de la v863—
+partió el problema en dos mitades que no son la misma cosa:
+
+    v1025   2 con su mínimo en la condición · 14 contándolo en el mensaje · 3 sin contarlo
+    v1026   0 sin cubrir
+
+### El recuento vivía en el mensaje, donde un cero sale con su palomita
+
+Catorce decían cuántas cosas habían revisado **en el detalle** y no en la
+condición. Un detalle que dice «0 archivos» se imprime detrás de un ✓ igual que
+uno que dice «175». Demostrado, y es lo que más vale de la tanda: con un
+cambio de convención corriente, la v1025 imprime
+
+```
+✓ todo lo que se precarga existe  — 0 archivos
+✓ y todo lo que sus páginas cargan se precarga  — 0 referencias locales en 4 páginas
+✓ ninguna hoja tiene comentarios o llaves sin cerrar  — 0 hojas revisadas
+✓ y ninguna regla corta se come a una larga que viene después  — 0 reglas
+```
+
+Cuatro afirmaciones en verde **diciendo en voz alta que no miraron nada**.
+
+### Y siete de las catorce contaban lo que no se mueve
+
+La mitad más fina, y no se ve leyendo el mensaje: hay dos clases de recuento.
+
+| | Qué cuenta | Qué pasa si el barrido se rompe |
+|---|---|---|
+| `listados`, `refs`, `cuantos`, `frases` | lo que el barrido **encontró** | baja a cero, y se ve |
+| `archivos.length`, `hojas.length`, `servidos.length` | los archivos que **abrió** | **no se mueve** |
+
+`ningún <text> servido lleva trazo encima del glifo` decía «96 archivos
+revisados». Ese número es el mismo con `<text` en el marcado y sin él: el día
+que los rótulos de un SVG se armen con `createElementNS`, el barrido no mira
+un solo glifo y la afirmación sigue diciendo 96. Lo mismo `ninguna función del
+primer nivel se declara dos veces`, cuyo patrón depende de una sangría de dos
+espacios: un reformateo del repositorio la deja ciega y ella sigue contando
+sus 91 archivos.
+
+**Es la lección de la v1022 dicha en el mensaje en vez de en una guarda de
+MATERIAL: lo que hay que contar es lo que sobrevive al cero.** Ahora cuentan
+2.742 declaraciones, 76 aperturas `<text`, 8.351 llaves, 45 colores, 2.621
+elementos con clase propia — y el número entró en la CONDICIÓN.
+
+### Por qué `guardaDeFuga` ya estaba bien, y qué le faltaba a las diecinueve
+
+La v1024 también cierra su mensaje con «N archivos revisados», que es el número
+que no se mueve. No es un defecto suyo **porque además exige que el patrón siga
+reconociendo su caso conocido**, y eso es lo que ninguna de las diecinueve
+tenía. Esa es la mitad que caza la rotura SEMÁNTICA —un patrón que vigila un
+nombre que al otro lado ya no existe— mientras el recuento caza la rotura
+entera.
+
+Tres de las diecinueve eran exactamente su forma —una lista de archivos, un
+patrón, «ninguno»— así que pasan por ella y ganan el caso conocido sin
+máquinaria nueva: la puerta al servidor, el rastro del informe y el nombre de
+la tabla del evento. A las otras les salió el barrido a una función con nombre
+para poder medirlo:
+
+* **las declaraciones de primer nivel** ven las dos de afuera y callan la de
+  adentro —dos ayudantes con el mismo nombre en dos ámbitos distintos son
+  legítimos (v885)—;
+* **el trazo del glifo** se ve, un rótulo limpio NO se denuncia, y un `=>` de
+  JavaScript dentro de un atributo no corta la etiqueta antes de tiempo;
+* **el verde del calendario** se reconoce y los dos celestes de la paleta no;
+* **el lector de CSS** ve sus cuatro defectos y deja pasar una hoja sana con su
+  `content:"}"` adentro, que es legal y no desbalancea nada.
+
+En los cuatro, la mitad que de verdad guarda es la negativa: sin ella el
+arreglo podría ser denunciarlo todo.
+
+### El mínimo lo pone el miembro más CHICO que es legítimo
+
+No es un número de gusto y tampoco se saca del más grande. La derivación va
+escrita una vez: **un extractor roto da CERO**, así que cualquier mínimo por
+encima de cero caza la rotura entera; se pone un orden de magnitud por debajo
+de lo que hay hoy para que cace además una rotura PARCIAL sin ponerse rojo
+porque el repositorio encoja.
+
+Y eso se cobró en el acto. Puse 50 nombres de mínimo para el lector de
+identificadores sueltos y **js/59-analisis-ia-catalogo.js salió en rojo con
+29**, que es lo que tiene y está perfectamente: es un catálogo de datos, casi
+todo cadenas, y `despejar` se las quita. Un mínimo que denuncia a un miembro
+sano es la trampa de la v895 —una guarda con falsos positivos acaba siendo una
+lista de excepciones que envejece hasta no significar nada—. Bajó a 10, con lo
+que caza la rotura entera y no la parcial, **y eso se dice** en vez de dejarla
+pareciendo más de lo que es.
+
+### La que NO se pone roja, y la frontera de la v1024 afinada
+
+`todos parsean` —los `<script>` escritos dentro del HTML— se queda sin mínimo a
+propósito: cuando no hay ninguno imprime `?` SIN MATERIAL.
+
+La v1024 puso la frontera entre *guarda de fuga* y *guarda de defecto*, con el
+material de la primera siendo «código servido, que no puede quedarse
+legítimamente vacío». Medido acá, la frontera no es esa: **es si el material
+puede llegar a cero por una MEJORA.** Un `<script>` escrito dentro del HTML es
+código servido y aun así puede desaparecer del todo, porque sacarlos a sus
+archivos es mejor práctica. Un rojo ahí sería la guarda que se pone roja cuando
+el repositorio mejora (v970), con su misma salida barata: dejar un script
+suelto adentro para tener algo que revisar.
+
+Las otras trece sí van en rojo, y no por la clase a la que pertenecen sino
+porque su material —una lista de precarga, las llaves de las hojas, los
+nombres de un archivo de código— no puede vaciarse sin que algo se haya roto.
+
+### Las cinco que se quedan sin mínimo, y por qué cada una
+
+| | Por qué |
+|---|---|
+| `todos parsean` | el `?` de arriba |
+| `el lector ve los cuatro defectos…` | **es** un caso de respuesta conocida, no un «ninguno» |
+| `todas las apps declaradas tienen su huella real` | su bloque ya exige `filas.length > 0` un renglón antes |
+| `ningún voseo (§7)` · `ningún tuteo (§9)` | llevan **diez** casos de respuesta conocida entre las dos, de la v880, la v945, la v952 y la v985 |
+
+### Demostrado contra la v1025
+
+Catorce inyecciones, cada una un cambio de convención que podría pasar de
+verdad —otra sangría, un nombre cambiado al otro lado, una hoja que pasa a
+`oklch()`, el marcado poniendo sus clases con `classList.add`— aplicadas a los
+DOS archivos. El patrón es siempre el mismo:
+
+```
+══ los rótulos del SVG se arman ahora con createElementNS
+   v1025 → ✓ ningún <text> servido lleva trazo encima del glifo  — 96 archivos revisados
+   v1026 → ✗ ningún <text> servido lleva trazo  — NO PUDO CORRER: el barrido solo vio 0 aperturas <text
+
+══ el marcado pasó a poner sus clases con classList.add
+   v1025 → ✓ todo elemento con clase propia tiene al menos una con regla  — 3549 clases con regla
+   v1026 → ✗ NO PUDO CORRER: 3549 clases con regla y 0 elementos con clase propia
+```
+
+La segunda es la que mejor enseña el defecto: el mensaje contaba **el lado del
+CSS** y el que se había quedado ciego era el de los elementos, así que el número
+seguía siendo grande y creíble.
+
+Y una que no falla, a propósito: con el rastro del informe renombrado **a la
+vez** en el patrón y en su caso conocido, la afirmación sigue en verde. No es
+un hueco: es que renombrar las dos cosas es una decisión tomada a la vista, y
+lo que el caso conocido impide es la otra —cambiar el patrón y dejar el caso
+viejo—, que es la que sale roja.
+
+### No sube la versión, y no hay papel que mirar
+
+Solo cambia `pruebas/revisar.js`, que no se sirve al navegador: subir el token
+rompería la caché de todos los teléfonos sin cambiarles una línea de lo que
+ven. Es la misma decisión de la v1024. Y por lo mismo esta tanda **no tiene
+pantalla que mirar**: no toca una sola cadena de lo que se imprime.
+
 ## La lista viva: lo que al pliego educativo todavía le falta (v866)
 
 Esta lista se quedó vieja **cinco veces**. Cuatro dentro de la hoja —la
