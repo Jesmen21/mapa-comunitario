@@ -20827,6 +20827,103 @@ El **informe en hojas** es la tercera superficie que dibuja este corte y no se
 pudo medir: `htmlImprimible` no está expuesto, así que la sonda no lo puede
 componer. Lo que se comprueba es la geometría, que es la misma para las tres.
 
+## Los otros dos dibujos caben en su caja (v1034)
+
+La v1033 midió el corte de la calle y encontró dos rótulos que se pisaban y
+uno que se salía del `viewBox`. La pregunta que quedaba es si era un caso o
+una clase, y se contesta barriendo **todos** los dibujos de las dos hojas y la
+ficha con la misma medida.
+
+    v1033   13 dibujos · 81 rótulos · 2 con defecto
+    v1034   13 dibujos · 81 rótulos · 0
+
+### `getBBox` es PRE-transformada, y por eso daba 23 pares falsos
+
+La primera medida usó `getBBox`, que es lo que la v1033 usó para el corte y
+allá funcionó. Sobre el resto dio **23 pares pisados en la escalera de las
+cinco siluetas**, con ocho rótulos: o sea casi todos con casi todos, que es la
+forma de un artefacto y no de un defecto.
+
+`getBBox` devuelve la caja en el espacio del PROPIO elemento, **antes de su
+transformada**. La escalera coloca cada casilla con
+`<g transform="translate(dx,0)">` (v887), así que los rótulos de las cinco
+salían todos en el mismo sitio.
+
+Se mide en el espacio de la PANTALLA —`getBoundingClientRect`, que sí acumula
+las transformadas— y quedan dos defectos de verdad. Y la comprobación de «se
+sale de la caja» pasa a comparar contra el rectángulo del propio SVG, por lo
+mismo.
+
+**Es la clase A**: el discriminante —que el dibujo usa `transform`— estaba a
+la vista en el SVG, y la primera medida no lo miró.
+
+### Los dos que quedaron, con sus cifras
+
+| | Qué pasaba |
+|---|---|
+| **La escalera** (v887) | los tres renglones del pie de cada casilla —nombre, superficie y población— van a 4 y 3,2 unidades con una caja de 4,5: «1,8 km²» y «3.155 hab.» se pisaban |
+| **La carta solar** (v882) | la leyenda arranca en `cy + R + 38` = 258 y son cuatro renglones de 11, así que el último cierra en 296 sobre un `viewBox` de 292: **el equinoccio quedaba fuera del dibujo** |
+
+Y en la carta, además, la «N» de la rosa empezaba en la unidad 14 justo donde
+el título de arriba cerraba, y los dos van centrados en el mismo eje.
+
+Los arreglos son de espaciado: la casilla pasa de 40 a 44 unidades de alto
+—**con la banda de rótulos declarada aparte (`ESC_PIE`) para que la silueta
+siga midiendo lo mismo**: lo que crece es el pie, no el dibujo—, la carta de
+292 a 302, y la «N» baja dos unidades.
+
+### La guarda es aritmética, como la de la v1033
+
+Las cifras se **leen del código** y se comprueban contra las cajas de texto,
+que están **medidas** y no supuestas: 4,5 unidades para el pie de la escalera
+y 2 de trazo bajo la línea base para los 8,5 px de la leyenda.
+
+#### Y el extractor estaba midiendo otra figura
+
+Lo cazó la inyección, que es para lo que existe. `js/74` tiene **dos** figuras
+con las mismas constantes —la carta solar con `var R = 96, cx = 120, cy = 124`
+y la rosa de vientos con `var R = 78, cx = 100, cy = 100`—, y el extractor
+buscaba en el archivo entero. Con la carta rota a propósito seguía en verde,
+leyendo «leyenda desde 216»: las cifras de la rosa.
+
+Se busca **dentro de `cartaSolar`**, que es la lección de la v854 dicha para
+un extractor. Y la demostración de que el recorte hace falta es la inyección
+de al lado: con el extractor sin recortar pasa en verde, y con él recortado
+sale en rojo.
+
+### Demostrado contra la v1033
+
+Cuatro en rojo, cada una con su causa, contra una copia guardada en el
+directorio de trabajo (v973):
+
+```
+✗ los tres renglones del pie de la escalera no se pisan
+    — se pisan: 6.8 y 3 de holgura para una caja de 4.5
+✗ MATERIAL · las cifras de la escalera se pueden leer
+    — NO PUDO CORRER: cambió de forma
+✗ la leyenda de la carta solar cabe dentro del dibujo
+    — se sale: 296 sobre un viewBox de 292 — el equinoccio queda fuera
+✗ MATERIAL · las cifras de la carta solar se pueden leer
+    — NO PUDO CORRER: cambió de forma (centro false)
+```
+
+Y la misma trampa que la v1033: **los tres renglones se colocan con
+`ESC_H − n`**, así que bajar el alto los baja a todos y las holguras no
+cambian. La inyección fiel es el estado anterior entero —el alto viejo con sus
+tres desplazamientos—, no media.
+
+### Lo que NO se pudo correr
+
+**Ninguna suite de navegador**, por lo mismo que la v973 en adelante. Corrió
+`revisar.js` entero con sus cinco comprobaciones nuevas, y se midieron los
+**trece dibujos con sus ochenta y un rótulos** sobre las dos hojas compuestas
+y la ficha, en las dos corridas: cero fuera de caja y cero pisados en las
+cuatro. §21 de la hoja A, intacto.
+
+El **informe en hojas** sigue sin poderse componer desde la sonda
+—`htmlImprimible` no está expuesto—, así que de sus dibujos se comprueba la
+geometría, que es la misma, y no el papel.
+
 ## La lista viva: lo que al pliego educativo todavía le falta (v866)
 
 Esta lista se quedó vieja **cinco veces**. Cuatro dentro de la hoja —la

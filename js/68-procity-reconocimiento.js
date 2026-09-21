@@ -21723,7 +21723,15 @@ function donaHTML(datos, colorDe, nombreDe) {
      marcado dentro y dicen que es una ubicación y no un contorno. Localizar
      de verdad y decir que no se midió el borde es distinto de pintar un
      rectángulo a trazos. */
-  var ESC_W = 44, ESC_H = 40, ESC_GAP = 6;
+  /* ESC_H sube de 40 a 44 en la v1034: las tres lineas del pie de cada
+     casilla -nombre, superficie y poblacion- iban a 4 y 3,2 unidades de
+     distancia con una caja de 4,5, asi que «1,8 km²» y «3.155 hab.» se
+     PISABAN. Medido con las cajas en pantalla sobre la lamina compuesta.
+
+     Y el `13` de la banda de rotulos pasa a `17` en los tres sitios, para
+     que la silueta siga midiendo lo mismo: lo que crece es el pie, no el
+     dibujo. */
+  var ESC_W = 44, ESC_H = 44, ESC_GAP = 6, ESC_PIE = 17;
   /* El área de un anillo sobre la esfera. La fórmula plana se queda corta con
      Colombia entera —doce grados de latitud— y acá se imprime al lado del
      área del sector, que son unas hectáreas: dos cifras de la misma columna
@@ -21753,11 +21761,11 @@ function donaHTML(datos, colorDe, nombreDe) {
     if (x0 > x1) return null;
     var kx = Math.cos(((y0 + y1) / 2) * Math.PI / 180);
     var an = Math.max(1e-9, (x1 - x0) * kx), al = Math.max(1e-9, y1 - y0);
-    var k = Math.min((ESC_W - 8) / an, (ESC_H - 13) / al);
+    var k = Math.min((ESC_W - 8) / an, (ESC_H - ESC_PIE) / al);
     return {
       k: k, kx: kx, cx: (x0 + x1) / 2, cy: (y0 + y1) / 2,
       x: function (lng) { return ESC_W / 2 + (lng - this.cx) * this.kx * this.k; },
-      y: function (lat) { return (ESC_H - 13) / 2 + 1.5 - (lat - this.cy) * this.k; }
+      y: function (lat) { return (ESC_H - ESC_PIE) / 2 + 1.5 - (lat - this.cy) * this.k; }
     };
   }
   function trazoDe(anillos, enc) {
@@ -21857,7 +21865,7 @@ function donaHTML(datos, colorDe, nombreDe) {
           var e = encuadreDe([pts]);
           fig = '<path d="' + trazoDe([pts], e) + '" fill="#FFD166" stroke="#B8860B" stroke-width="1.2"/>';
         } else {
-          fig = '<circle cx="' + (ESC_W / 2) + '" cy="' + ((ESC_H - 13) / 2 + 1.5) + '" r="9"' +
+          fig = '<circle cx="' + (ESC_W / 2) + '" cy="' + ((ESC_H - ESC_PIE) / 2 + 1.5) + '" r="9"' +
                 ' fill="#FFD166" stroke="#B8860B" stroke-width="1.2"/>';
         }
       } else if (x.anillos && x.anillos.length) {
@@ -21891,12 +21899,12 @@ function donaHTML(datos, colorDe, nombreDe) {
           ' stroke="' + (ultimo ? '#0A6F9E' : '#C9D6E0') + '"' +
           ' stroke-width="' + (ultimo ? 1.6 : 0.8) + '"/>' +
         fig + dentro +
-        '<text x="' + (ESC_W / 2) + '" y="' + (ESC_H - 8.2) + '" text-anchor="middle"' +
+        '<text x="' + (ESC_W / 2) + '" y="' + (ESC_H - 11) + '" text-anchor="middle"' +
           ' font-size="3.4" fill="' + (ultimo ? '#075E88' : '#6B7A8A') + '"' +
           ' font-weight="' + (ultimo ? 700 : 500) + '">' + esc(x.t) + '</text>' +
-        '<text x="' + (ESC_W / 2) + '" y="' + (ESC_H - 4.2) + '" text-anchor="middle"' +
+        '<text x="' + (ESC_W / 2) + '" y="' + (ESC_H - 6) + '" text-anchor="middle"' +
           ' font-size="2.9" fill="#0A6F9E">' + esc(pie[0] || '') + '</text>' +
-        '<text x="' + (ESC_W / 2) + '" y="' + (ESC_H - 1) + '" text-anchor="middle"' +
+        '<text x="' + (ESC_W / 2) + '" y="' + (ESC_H - 1.2) + '" text-anchor="middle"' +
           ' font-size="2.9" fill="#6B7A8A">' + esc(pie[1] || '') + '</text>' +
         '</g>';
     }).join('');

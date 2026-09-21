@@ -8661,6 +8661,81 @@ console.log('\n  -- la baldosa de cifra, en todo lo servido (v1029) --');
       : NO_CONCUERDA.length + ' declarados, cada uno con por qué no concuerda');
 }
 
+console.log('\n  -- los otros dos dibujos caben en su caja (v1034) --');
+{
+  /* Misma aritmetica que la v1033, en los dos dibujos que el barrido de
+     rotulos encontro despues: la escalera de las cinco siluetas (v887) y la
+     carta solar (v882). Las cifras se LEEN del codigo; las cajas de texto
+     estan MEDIDAS con `getBoundingClientRect` sobre la lamina compuesta. */
+  const j68 = soloCodigo(leer('js/68-procity-reconocimiento.js'));
+  const j74 = soloCodigo(leer('js/74-dibujos-analisis.js'));
+
+  /* 1 · LA ESCALERA. Tres renglones en el pie de cada casilla: el nombre, la
+     superficie y la poblacion. Caja medida: 4,5 unidades; el trazo baja 0,7
+     por debajo de la linea base. */
+  const mEsc = /var ESC_W = \d+, ESC_H = (\d+), ESC_GAP = \d+, ESC_PIE = (\d+);/.exec(j68);
+  const mL = [/\(ESC_H - ([\d.]+)\)[\s\S]{0,120}?text-anchor="middle"/g]
+    .flatMap(() => [...j68.matchAll(/y="' \+ \(ESC_H - ([\d.]+)\) \+ '" text-anchor="middle"/g)])
+    .map((x) => +x[1]);
+
+  if (!mEsc || mL.length !== 3) {
+    comprobar('MATERIAL · las cifras de la escalera se pueden leer', false,
+      'NO PUDO CORRER: cambió de forma (ESC ' + !!mEsc + ' · ' + mL.length + ' renglones de 3)');
+  } else {
+    const H = +mEsc[1], lineas = mL.slice().sort((a, b) => b - a).map((d) => H - d);
+    const CAJA = 4.5, BAJO = 0.7;
+    comprobar('MATERIAL · las cifras de la escalera se pueden leer', true,
+      'ESC_H=' + H + ' · pie=' + mEsc[2] + ' · renglones en ' + lineas.join(', '));
+    const gaps = [lineas[1] - lineas[0], lineas[2] - lineas[1]];
+    const sueltos = gaps.every((g) => g >= CAJA);
+    comprobar('los tres renglones del pie de la escalera no se pisan',
+      sueltos,
+      sueltos ? 'holgura de ' + gaps.map((g) => Math.round(g * 10) / 10).join(' y ') +
+                ' unidades, sobre una caja de ' + CAJA
+        : 'se pisan: ' + gaps.map((g) => Math.round(g * 10) / 10).join(' y ') +
+          ' de holgura para una caja de ' + CAJA);
+    const cabe = lineas[2] + BAJO <= H;
+    comprobar('y el último renglón cabe dentro de la casilla',
+      cabe, cabe ? 'cierra en ' + (lineas[2] + BAJO) + ' de ' + H
+        : 'se sale: ' + (lineas[2] + BAJO) + ' sobre ' + H);
+  }
+
+  /* 2 · LA CARTA SOLAR. La leyenda son cuatro renglones al pie, DENTRO del
+     propio SVG (v882), y su ultima linea base tiene que caber. */
+  /* Se busca DENTRO de `cartaSolar` y no en el archivo entero: `js/74` tiene
+     otra figura con las MISMAS constantes -la rosa de vientos, `var R = 78,
+     cx = 100, cy = 100`- y con el archivo entero la guarda media esa. Lo
+     cazo la inyeccion: con la carta rota, seguia en verde leyendo «leyenda
+     desde 216». Es la leccion de la v854 dicha para un extractor. */
+  const iCS = j74.indexOf('function cartaSolar');
+  const fCS = iCS < 0 ? -1 : j74.indexOf('\n  function ', iCS + 20);
+  const carta = iCS < 0 ? '' : j74.slice(iCS, fCS < 0 ? j74.length : fCS);
+  const mVB = /viewBox="0 0 240 (\d+)"/.exec(carta);
+  const mC = /var R = (\d+), cx = \d+, cy = (\d+);/.exec(carta);
+  const mLey = /var yy = cy \+ R \+ (\d+) \+ i \* (\d+);/.exec(carta);
+  const mTxt = /'<text x="31" y="' \+ \(yy \+ (\d+)\)/.exec(carta);
+
+  if (!mVB || !mC || !mLey || !mTxt) {
+    comprobar('MATERIAL · las cifras de la carta solar se pueden leer', false,
+      'NO PUDO CORRER: cambió de forma (viewBox ' + !!mVB + ' · centro ' + !!mC +
+      ' · leyenda ' + !!mLey + ' · texto ' + !!mTxt + ')');
+  } else {
+    const H = +mVB[1], R = +mC[1], cy = +mC[2];
+    const ini = +mLey[1], paso = +mLey[2], base = +mTxt[1];
+    const BAJO = 2;                 // el trazo de un rotulo de 8,5px baja 2
+    const ULT = 3;                  // cuatro renglones: hoy, alto, bajo, equinoccio
+    comprobar('MATERIAL · las cifras de la carta solar se pueden leer', true,
+      'viewBox ' + H + ' · leyenda desde ' + (cy + R + ini) + ' cada ' + paso);
+    const ultima = cy + R + ini + ULT * paso + base;
+    const cabe = ultima + BAJO <= H;
+    comprobar('la leyenda de la carta solar cabe dentro del dibujo',
+      cabe,
+      cabe ? 'el último renglón cierra en ' + (ultima + BAJO) + ' de ' + H
+        : 'se sale: ' + (ultima + BAJO) + ' sobre un viewBox de ' + H +
+          ' — el equinoccio queda fuera y lo recorta el contenedor');
+  }
+}
+
 console.log('\n  -- el corte de la calle cabe en su caja (v1033) --');
 {
   const j68 = soloCodigo(leer('js/68-procity-reconocimiento.js'));

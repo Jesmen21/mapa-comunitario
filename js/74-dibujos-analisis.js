@@ -155,7 +155,11 @@
         'font-weight="700">' + esc(t) + '</text>';
     }
 
-    return '<svg class="pcr-carta" viewBox="0 0 240 292" width="240" height="292" ' +
+    /* 292 → 302 en la v1034: la leyenda arranca en `cy + R + 38` = 258 y son
+       cuatro renglones de 11, asi que la ultima linea base cae en 294 sobre
+       un viewBox de 292 — el equinoccio se salia del dibujo y lo recortaba
+       el contenedor. Medido con las cajas en pantalla, no supuesto. */
+    return '<svg class="pcr-carta" viewBox="0 0 240 302" width="240" height="302" ' +
       'role="img" aria-label="Carta solar del sector: recorrido del sol hoy, en los dos ' +
       'solsticios y en el equinoccio, con el occidente señalado y una leyenda de las cuatro ' +
       'curvas">' +
@@ -175,7 +179,10 @@
       '<circle cx="' + n1(pSal.x) + '" cy="' + n1(pSal.y) + '" r="4" fill="' + AMBAR + '" stroke="' + TINTA + '" stroke-width="1"/>' +
       '<circle cx="' + n1(pPue.x) + '" cy="' + n1(pPue.y) + '" r="4" fill="' + ALERTA + '" stroke="' + TINTA + '" stroke-width="1"/>' +
       '<circle cx="' + n1(pCen.x) + '" cy="' + n1(pCen.y) + '" r="3.4" fill="' + AMBAR + '"/>' +
-      rotulo(cx, cy - R - 6, 'N', 'middle', TINTA, 10) +
+      /* La «N» sube menos: con `- 6` su caja empezaba en 14 y el titulo de
+         arriba cerraba en 14, asi que se tocaban justo en el centro, que es
+         donde los dos van centrados. Con `- 4` quedan dos unidades. */
+      rotulo(cx, cy - R - 4, 'N', 'middle', TINTA, 10) +
       rotulo(cx + R + 8, cy + 3, 'E', 'middle', TINTA, 10) +
       rotulo(cx, cy + R + 13, 'S', 'middle', TINTA, 10) +
       rotulo(cx - R - 8, cy + 3, 'O', 'middle', ALERTA, 10) +
