@@ -7496,6 +7496,88 @@ console.log('\n  -- el pie de un dibujo es lo que el dibujo dice que es (v1011) 
   }
 }
 
+console.log('\n  -- un small dentro de algo ya chico se encoge dos veces (v1013) --');
+{
+  const HOJAS = ['css/68-procity-reconocimiento.css', 'css/72-edu-diseno.css'];
+  /* El tamaño que declara cada clase simple, para saber cual ya viene
+     reducida. Se lee de las hojas y no se escribe aca: una lista copiada
+     envejece a la tanda siguiente. */
+  const chicas = {};
+  const reglas = [];
+  HOJAS.forEach(function (h) {
+    let t2 = '';
+    try { t2 = leer(h); } catch (e) { return; }
+    t2 = t2.replace(/\/\*[\s\S]*?\*\//g, (m) => ' '.repeat(m.length));
+    const re = /([^{}]+)\{([^{}]*)\}/g; let m;
+    while ((m = re.exec(t2))) {
+      const sel = m[1].trim().replace(/\s+/g, ' ');
+      reglas.push({ h: h, sel: sel, cuerpo: m[2], linea: t2.slice(0, m.index).split('\n').length });
+      const g = m[2].match(/font-size:\s*([0-9.]+)rem/);
+      if (!g || Number(g[1]) >= 1) continue;
+      sel.split(',').forEach(function (s) {
+        const c = (s.trim().match(/\.([a-z0-9-]+)$/) || [])[1];
+        if (c) chicas[c] = Math.min(chicas[c] === undefined ? 9 : chicas[c], Number(g[1]));
+      });
+    }
+  });
+
+  /* Las reglas que REESTILIZAN un `small` —peso, caja, espaciado— dentro de
+     una clase que ya declara un tamaño reducido. Esa es la condicion exacta
+     del defecto: el `small{font-size:smaller}` del navegador se aplica encima
+     de algo que ya venia chico, y nadie eligio el resultado. Una regla que
+     solo cambia el color no entra, y una cuyo padre es de tamaño normal
+     tampoco: medido, la condicion deja UN candidato y es el que fallaba.
+
+     No se persigue «todo small sin font-size» —son trece en estas dos hojas y
+     casi todas son overrides de color legitimos—, que seria la lista de
+     excepciones que envejece de la v895. */
+  const sospechosas = reglas.filter(function (r) {
+    if (!/(^|[\s,>])small\s*(,|$)/.test(r.sel)) return false;
+    if (/font-size\s*:/.test(r.cuerpo)) return false;
+    if (!/font-weight|text-transform|letter-spacing|font-style/.test(r.cuerpo)) return false;
+    return r.sel.split(',').some(function (s) {
+      const c = (s.trim().match(/\.([a-z0-9-]+)\s+small$/) || [])[1];
+      return c && chicas[c] !== undefined;
+    });
+  });
+
+  const conSmall = reglas.filter((r) => /(^|[\s,>])small\s*(,|$)/.test(r.sel)).length;
+  if (!conSmall || !Object.keys(chicas).length) {
+    anotarSinMaterial('MATERIAL - las hojas del modulo declaran tamaños y estilan <small>',
+      conSmall + ' reglas sobre <small> y ' + Object.keys(chicas).length + ' clases con tamaño reducido');
+  } else {
+    comprobar('MATERIAL - las hojas del modulo declaran tamaños y estilan <small>',
+      true, conSmall + ' reglas sobre <small> y ' + Object.keys(chicas).length +
+      ' clases que ya declaran un tamaño reducido');
+
+    comprobar('ninguna regla reestiliza un <small> dentro de algo ya chico sin decir su tamaño',
+      sospechosas.length === 0,
+      sospechosas.length === 0
+        ? 'las que reestilizan un <small> dentro de una clase reducida declaran su font-size'
+        : sospechosas.map((r) => r.h + ':' + r.linea + ' «' + r.sel.slice(0, 60) + '»').join(' · ') +
+          ' — el encogimiento del navegador quedaria encima de lo que ya venia chico');
+
+    /* Y la guarda de la guarda: la de arriba solo mira las reglas de `X small`
+       cuyo padre ya viene reducido. Si no quedara ninguna —porque se retiro la
+       regla, o porque su padre dejo de declarar un tamaño chico— se quedaria
+       sin nada sobre que morder y seguiria en verde (v878). */
+    const padresChicos = [];
+    reglas.forEach(function (r) {
+      if (!/(^|[\s,>])small\s*(,|$)/.test(r.sel)) return;
+      r.sel.split(',').forEach(function (s) {
+        const c = (s.trim().match(/\.([a-z0-9-]+)\s+small$/) || [])[1];
+        if (c && chicas[c] !== undefined && padresChicos.indexOf(c) === -1) padresChicos.push(c);
+      });
+    });
+    comprobar('y sigue habiendo reglas de <small> dentro de una clase reducida que mirar',
+      padresChicos.length > 0,
+      padresChicos.length
+        ? padresChicos.length + ' clases reducidas llevan un <small> con regla propia: ' +
+          padresChicos.slice(0, 6).join(' · ')
+        : 'ninguna: la comprobacion de arriba no tendria nada sobre que morder');
+  }
+}
+
 /* Las dos cuentas van APARTE porque piden cosas distintas: una fallada hay
    que arreglarla, una sin material hay que mirarla —o se quedó sin él porque
    el registro mejoró, o porque la función dejó de ver lo que medía—. Sumarlas

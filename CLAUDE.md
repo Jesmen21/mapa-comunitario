@@ -18289,6 +18289,109 @@ de tú es idéntica a la de tercera persona y a veces a un sustantivo —«Marca
 punto» y «la app marca el punto» se escriben igual—. Esa mitad se caza
 leyendo, y así se cazó esta.
 
+## A la regla le faltaba justo la propiedad que el navegador toca (v1013)
+
+Salió del mismo sitio que la v1012 —la sonda que lee el papel de la ficha— y
+esta vez de barrer los **715 textos** que la ficha compone y ordenarlos por
+tamaño.
+
+    v1012   3 textos corridos a 8,8 px en la síntesis
+    v1013   los mismos a 10,56 px · 0 textos corridos por debajo de 9,9
+
+### Lo que la medición separó
+
+Seis textos salían por debajo de **9,9 px**, que es el tamaño más chico que
+alguna regla de este módulo declara. Y no eran un caso: eran dos, con
+consecuencias distintas.
+
+| | Qué es | Qué se hizo |
+|---|---|---|
+| los tres subtítulos de la FODA, a **8,8 px** | **texto corrido**: «· lo que el sector tiene en contra» | se arregla |
+| los tres rótulos de las tarjetas del sol, a 8,96 | **rótulos** de una o dos palabras, en versalitas | se deja, y se dice por qué |
+
+La vara para separarlos es del propio proyecto y está escrita desde la v791,
+en el comentario del piso de 13 px: *«etiquetas en mayúsculas y sellos aparte,
+que son otra cosa»*. Un rótulo de una palabra y una frase no se leen igual, y
+medirlos con la misma vara habría cambiado algo que está bien.
+
+### El defecto: la regla existe y le falta una propiedad
+
+`.pcr-lab small` **tiene su regla** —peso 500, opacidad .75, `text-transform`
+a ninguno, `letter-spacing` a cero—: alguien la escribió entera. Lo que no
+declara es el **tamaño**, así que ahí queda el `small{font-size:smaller}` del
+NAVEGADOR aplicado encima de un `.pcr-lab` que ya viene en 0,66rem:
+
+    0,66rem × 0,8 = 8,8 px de texto corrido, en la síntesis
+
+**Nadie eligió ese tamaño.** Y la propia regla dice cómo quería distinguir el
+subtítulo: por el peso y la opacidad. El tamaño lo puso el navegador.
+
+Se arregla con `font-size:1em`, que es la única cifra que la regla ya implica.
+
+### La condición del defecto se puede escribir, y deja UN candidato
+
+La guarda obvia —«todo `small` sin `font-size`»— da **trece** en las dos hojas
+del módulo y casi todas son legítimas: reglas que solo cambian el color, con
+una regla hermana que sí pone el tamaño. Sería la lista de excepciones que
+envejece hasta no significar nada (v895).
+
+La condición exacta del defecto tiene tres partes, y las tres se miden:
+
+1. la regla **reestiliza tipográficamente** el `small` —peso, caja, espaciado—
+   y no solo su color;
+2. **no declara** `font-size`;
+3. y su clase padre **ya declara un tamaño reducido**, o sea que el
+   encogimiento del navegador cae encima de algo que ya venía chico.
+
+Medido sobre las dos hojas: **un candidato, y es el que fallaba**. Los tamaños
+por clase se leen de las hojas y no se escriben en la guarda — una lista
+copiada envejece a la tanda siguiente.
+
+### La regla de las tarjetas del sol estaba escrita dos veces
+
+Salió al medir: `.pcr-sol-hito .pcr-lab` se declara en la línea 1019 con
+`.6rem` y otra vez veinticuatro renglones más abajo con `.56rem`. **La primera
+no pinta nada.** Se retiró, sin un solo cambio visible, y la que queda lleva
+escrito por qué son .56: medido, «MEDIODÍA SOLAR» ocupa 94 de los 98 px útiles
+de su tarjeta, y a .62rem se sale.
+
+### Y el guardián que NO se escribió, con su medición
+
+La tentación era perseguir la clase entera: **un mismo selector que declara la
+misma propiedad dos veces**, que es la v885 dicha para CSS. Medido en la
+aplicación completa, contando llaves y sin mirar dentro de los `@media` ni de
+los `@keyframes`: **247 casos en catorce archivos**.
+
+Y en las propias hojas de este módulo, de los tres que quedan **dos son
+deliberados y llevan su comentario**: `.pcr-cabe-c > span` se redefine a
+propósito en la sección de «qué cabe», con seis renglones explicando por qué.
+Una guarda que denuncia un patrón que el proyecto usa a propósito enseña a
+ignorarla, que es como muere una alarma (v886).
+
+Queda medido y **no perseguido**, que es distinto de no haberlo mirado.
+
+### Demostrado contra la v1012
+
+Dos inyecciones, contra una copia guardada en `/tmp` (v973):
+
+```
+✗ ninguna regla reestiliza un <small> dentro de algo ya chico sin decir su tamaño
+    — css/72-edu-diseno.css:940 «.pcr-hoja .pcr-lab small, …»
+✗ y sigue habiendo reglas de <small> dentro de una clase reducida que mirar
+    — ninguna: la comprobacion de arriba no tendria nada sobre que morder
+```
+
+La primera es el estado exacto de la v1012. La segunda es la guarda de la
+guarda: retirando la única regla que cumple la condición, la de arriba se
+quedaría en verde sin mirar nada.
+
+### Lo que NO se pudo correr
+
+**Ninguna suite de navegador**, por lo mismo que la v973 a la v1012. Corrió
+`revisar.js` entero con sus tres comprobaciones nuevas, y se midió el papel
+con la sonda —los 715 textos de las ocho pestañas de la ficha, con su tamaño,
+su caja y el de su padre—, que es lo que separó el rótulo del texto corrido.
+
 ## La lista viva: lo que al pliego educativo todavía le falta (v866)
 
 Esta lista se quedó vieja **cinco veces**. Cuatro dentro de la hoja —la

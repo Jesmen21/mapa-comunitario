@@ -1078,7 +1078,13 @@ html body.u52-real-map #urbis-mobile-app .u52-jac-mapcentric .u52-mapcentric-rou
 .pcr-hoja .pcr-sintesis li.pcr-sx-tarea, .pcr-pestana .pcr-sintesis li.pcr-sx-tarea{
   border-left-color:var(--edu-accent); border-left-style:dashed;
 }
-.pcr-hoja .pcr-lab small, .pcr-pestana .pcr-lab small{ font-weight:500; opacity:.75; text-transform:none; letter-spacing:0; }
+/* El `font-size` va aunque no lo parezca (v1013). Esta regla reestiliza el
+   subtítulo entero —peso, opacidad, caja, espaciado— y no tocaba el tamaño,
+   así que quedaba el `small{font-size:smaller}` del NAVEGADOR encima de un
+   `.pcr-lab` que ya viene reducido: 0,66rem × 0,8 = 8,8 px de texto corrido
+   en la síntesis. Nadie eligió ese tamaño. Lo que distingue al subtítulo es
+   el peso y la opacidad —lo dice esta misma regla—, no ser más chico. */
+.pcr-hoja .pcr-lab small, .pcr-pestana .pcr-lab small{ font-size:1em; font-weight:500; opacity:.75; text-transform:none; letter-spacing:0; }
 
 /* El rótulo de abajo en una fila de nivel: los minutos a pie del bloque de
    cobertura. Va en su propia línea porque «Servicio de salud» y «10 min ·
@@ -1162,9 +1168,6 @@ html body.u52-real-map #urbis-mobile-app .u52-jac-mapcentric .u52-mapcentric-rou
   display:block; font-size:.66rem !important; line-height:1.3; margin-top:3px;
   color:var(--edu-ink-3) !important; -webkit-text-fill-color:var(--edu-ink-3) !important;
 }
-.pcr-hoja .pcr-sol-hito .pcr-lab, .pcr-pestana .pcr-sol-hito .pcr-lab{
-  font-size:.6rem !important; letter-spacing:.07em;
-}
 /* El mediodía: fondo celeste suave y el dato en el acento, porque es la cifra
    que manda en la decisión de cubierta. */
 .pcr-hoja .pcr-sol-alto, .pcr-pestana .pcr-sol-alto{
@@ -1186,6 +1189,12 @@ html body.u52-real-map #urbis-mobile-app .u52-jac-mapcentric .u52-mapcentric-rou
 .pcr-hoja .pcr-sol-alto b em, .pcr-pestana .pcr-sol-alto b em{
   color:var(--edu-accent-ink) !important; -webkit-text-fill-color:var(--edu-accent-ink) !important; opacity:.8;
 }
+/* Un rótulo de una o dos palabras en versalitas, que es lo que la vara de
+   este proyecto deja aparte del texto corrido. Estaba declarado DOS veces
+   —.6rem veinticuatro renglones más arriba, y esta— y la primera no pintaba
+   nada: se retiró. Los .56rem son los que caben con «MEDIODÍA SOLAR» en una
+   sola línea dentro de una tarjeta de 114 px: medido, el rótulo ocupa 94 de
+   los 98 útiles, y a .62rem se sale. */
 .pcr-hoja .pcr-sol-hito .pcr-lab, .pcr-pestana .pcr-sol-hito .pcr-lab{
   font-size:.56rem !important; letter-spacing:.05em !important; white-space:nowrap;
 }
