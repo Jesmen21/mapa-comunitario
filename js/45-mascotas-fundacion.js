@@ -7,6 +7,9 @@
    ============================================================================ */
 (function(){
   'use strict';
+  /* La rama de singular de una baldosa: la cifra y su rótulo van en dos
+     elementos y el lector los lee juntos (v1028). */
+  const pl = (n, sing, plur) => (Number(n) === 1 ? sing : plur);
 
   var LS = {
     animales: 'urbis_mascotas_animales_v2',
@@ -77,7 +80,8 @@
           '<p>Una red para rescatar, cuidar y dar hogar a perritos y gaticos de Cúcuta. Su ayuda cambia una vida. 💛</p>' +
         '</div>' +
         '<div class="paw-stats">' +
-          '<div class="paw-stat" style="animation-delay:.05s"><b>' + m.peluditos + '</b><span>Peluditos activos</span></div>' +
+          '<div class="paw-stat" style="animation-delay:.05s"><b>' + m.peluditos + '</b><span>' +
+            pl(m.peluditos, 'Peludito activo', 'Peluditos activos') + '</span></div>' +
           '<div class="paw-stat" style="animation-delay:.12s"><b>' + (m.donado>0?pesos(m.donado):'$0') + '</b><span>Recaudado con usted</span></div>' +
           '<div class="paw-stat" style="animation-delay:.19s"><b>' + m.hogares + '</b><span>Buscan hogar</span></div>' +
         '</div>' +

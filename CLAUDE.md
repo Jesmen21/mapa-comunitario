@@ -20236,6 +20236,132 @@ Y el tuteo del resto de estos módulos: la mitad estructural la vigila la
 guarda del §9; los imperativos hay que leerlos, y en esta pantalla ya se
 leyeron.
 
+## La baldosa de cifra, en todo lo servido (v1029)
+
+La v1028 escribió la regla de la baldosa para **el panel del área** y la dejó
+medida: la concordancia se rompe en una forma que ninguna de las dos guardas
+del proyecto puede ver, porque el número y su rótulo viven en **dos elementos
+hermanos** —`<b>1</b><small>puntos mapeados</small>`— sin un espacio en medio.
+La regla del papel recorre nodo por nodo y ve dos nodos; la del código busca
+un «1» pegado a un plural en una misma cadena y ahí no hay ninguno. El lector
+lee «1 puntos mapeados».
+
+Esta tanda la aplica a lo que quedaba, empezando por la ficha del sector, que
+es la superficie más grande del módulo.
+
+    v1028   la regla vive en js/24 y vigila 16 baldosas del panel del área
+    v1029   48 baldosas de cinco archivos ramifican, y la guarda las vigila todas
+
+### El papel dijo cuáles, y el `--uno` dijo cuántas
+
+La sonda de la ficha recorre las ocho pestañas con el sector de prueba, y
+después **con todos los enteros colapsados a 1** (`--uno`): sin eso, una
+baldosa que dice «3 parques» se ve correcta y solo se rompe el día que el
+sector tenga uno. Es el material que la v1028 estrenó, y acá encontró
+**cuarenta y dos** baldosas de `js/68` más las de `js/26`, `js/25` y `js/45`.
+
+Y encontró un paso que faltaba en la propia sonda: la ficha de un sector
+guardado no se abre desde el mapa, se abre con **«Seguir donde quedó»**
+(`[data-pcr="reanudar"]`). Sin ese clic la sonda medía el panel de antes de
+analizar y leía cero baldosas en las ocho pestañas — que es la lectura vacía
+que este proyecto no acepta como verde.
+
+### Un rótulo que no concuerda no se «arregla»: se declara
+
+Diecinueve de los rótulos barridos llevan un plural que **no acompaña a una
+cuenta**, y ramificarlos sería peor que dejarlos. Son de cuatro clases, y cada
+uno lleva escrito de cuál:
+
+| | Ejemplo | Por qué |
+|---|---|---|
+| unidad | «m entre cruces», «dB(A) estimados» | el metro y el decibelio no se pluralizan con la cifra |
+| superlativo | «el más alto», «msnm, lo más alto» | el valor no es una cuenta |
+| atributo | «sin pisos», «los encontró el curso» | el plural es de lo que falta o de lo encontrado, no de la cifra |
+| periodo o rótulo fijo | «años de retorno», «Con pesos neutros» | la NSR-10 los da en 475, 975 y 2.475 |
+
+**Y las razones se comprueban.** La guarda exige que ninguna esté vacía y que
+diga algo —no «unidad» a secas—, y en su primera corrida me cazó **cinco**
+demasiado escuetas: las escribí enteras en vez de bajarle el umbral, que es
+la salida barata que este proyecto lleva veinte tandas deshaciendo.
+
+### El `pl` de js/68 era más débil que el de al lado
+
+Salió al conectarlo: `js/68` tenía su propio `pl` comparando `n === 1`, así
+que una cifra que llega como texto —`'1'`, que es como viaja media
+`localStorage`— caía en el plural. Es exactamente el defecto que la v1028
+encontró en `js/70` y que allá resultó ser mío, de la v1020. Pasa a
+`Number(n) === 1`, con la razón escrita al lado para que la próxima copia no
+nazca débil.
+
+### El método: una baldosa ramificada no tiene rótulo literal
+
+La primera versión del barrido miraba hacia atrás una ventana de caracteres
+para ver si había un `pl(` cerca. **Esconde baldosas**: un `pl(` de la
+baldosa vecina cae dentro de la ventana y calla la de al lado, que es la
+lección de la v935 —un ancla por distancia envejece; una por contenido no—
+dicha sobre un barrido.
+
+El discriminante exacto es más simple y no depende de ninguna distancia: una
+baldosa ramificada **no tiene rótulo literal**, porque su `<small>` es una
+expresión. Así que el patrón excluye la comilla del rótulo y con eso las
+cuarenta y ocho que ya ramifican quedan fuera solas.
+
+La otra mitad del filtro es el plural: un rótulo **sin una palabra en plural**
+—«del sector»— no concuerda con nadie, y denunciarlo sería dar rojo sobre lo
+que está bien.
+
+#### Y las dos mitades hacen falta, lo que costó una vuelta
+
+La primera demostración puso la segunda inyección sobre el filtro del plural
+y **la aserción se quedó verde**: sus dos casos conocidos eran una baldosa
+pelada y una ramificada, y ninguno de los dos lo toca. O sea que la guarda de
+la guarda vigilaba una mitad del barrido y no la otra.
+
+No se arregló la inyección: se arregló **la guarda**. Entra un tercer caso
+conocido —un rótulo sin plural, que el barrido tiene que callar— y con él las
+dos mitades quedan cubiertas y las dos inyecciones muerden. Es la regla de la
+v993 dicha al revés: cuando una inyección fiel no consigue poner algo en
+rojo, lo que falta no es la inyección, es lo que la aserción mide.
+
+### Demostrado contra la v1028
+
+Cinco en rojo, cada una con su causa, contra una copia guardada en el
+directorio de trabajo y no con `git checkout --` sobre trabajo sin confirmar
+(v973):
+
+```
+✗ toda baldosa con rótulo literal en plural está declarada
+    — 1 imprimirían «1 cosas» en dos elementos: js/68:8968 «parques»
+✗ el barrido ve la baldosa pelada y calla la que ya ramifica
+    — denuncia un rótulo sin plural: no hay nada que concordar ahí
+✗ el barrido ve la baldosa pelada y calla la que ya ramifica
+    — denuncia una que ya ramifica: daría rojo sobre lo que está bien
+✗ cada rótulo exento lleva su razón  — sin razón: años de retorno
+✗ MATERIAL · lo servido arma baldosas con su rama de singular
+    — NO PUDO CORRER: solo 0 baldosas con rama, así que el barrido no vigilaría casi nada
+```
+
+Y el MATERIAL es lo que sobrevive al cero (v1022): no cuenta **cuántas
+baldosas peladas quedan** —arreglarlas lo deja en cero y la guarda se pondría
+roja sobre un módulo que mejoró— sino que lo servido siga **armando baldosas
+con su rama**.
+
+### Lo que sigue medido y NO hecho
+
+La concordancia en prosa de `js/68` —276 sitios estáticos—, `js/78` «Qué cabe
+en el lote» (10), `js/64` (9) y `js/90` de Visión Territorial (9). La lámina
+ya la vigila `tdoslaminas` **sobre el papel** desde la v874, que es donde
+vive su lector; lo de la ficha entra a la guarda con su papel medido, no con
+una promesa.
+
+### Lo que NO se pudo correr
+
+**Ninguna suite de navegador**, por lo mismo que la v973 en adelante: este
+contenedor no tiene `../urbis-motor` ni el `node_modules` del banco de
+pruebas. Corrió `revisar.js` entero y se miró el papel con la sonda de la
+ficha, en sus dos corridas, que es lo que encontró las cuarenta y dos
+baldosas y el clic que faltaba.
+
 ## La lista viva: lo que al pliego educativo todavía le falta (v866)
 
 Esta lista se quedó vieja **cinco veces**. Cuatro dentro de la hoja —la

@@ -8553,6 +8553,114 @@ console.log('\n  -- una distancia no se escribe con punto (v1022) --');
    v1028: toda llamada cuyo rotulo traiga una palabra en plural pasa tambien
    su forma en singular. Las que no traen ninguna -«por hectarea», «de uso
    mixto»- no la necesitan y no se les pide. */
+/* LA BALDOSA, EN TODO LO SERVIDO (v1029).
+   La v1028 vigilo la baldosa de js/24, que se arma en un solo sitio. En el
+   resto del repositorio se escriben a mano, asi que se persigue la FORMA:
+   una cifra en un elemento y su rotulo en el hermano de al lado, sin nada en
+   medio. Ese es el caso que no ve ninguna otra regla -ni la del papel por
+   nodo de texto, porque son dos nodos, ni la del codigo, porque el rotulo es
+   una cadena aparte- y el lector si lo lee junto: «1 usos registrados».
+
+   Una baldosa YA RAMIFICADA no tiene rotulo literal: su `<small>` es una
+   expresion con `pl(`. Asi que basta mirar las que conservan el literal, y
+   eso hace la comprobacion exacta -sin ventanas de contexto, que es lo que
+   me escondio tres baldosas al medir: un `pl(` de la baldosa de al lado
+   caia dentro de la ventana y las daba por ramificadas-.
+
+   Lo que queda con rotulo literal tiene que estar declarado aqui, con su
+   razon. Falla CERRADO (v880): una baldosa nueva sale en rojo hasta que
+   alguien diga si su rotulo concuerda con la cifra o no. */
+console.log('\n  -- la baldosa de cifra, en todo lo servido (v1029) --');
+{
+  /* Rotulos que NO concuerdan con la cifra, con su razon. */
+  const NO_CONCUERDA = [
+    ['m entre cruces', 'unidad: el metro no se pluraliza con la cifra'],
+    ['m al más cercano', 'unidad: el metro no se pluraliza con la cifra'],
+    ['m construidos', 'unidad: el plural es de lo construido, no del metro'],
+    ['m² construibles', 'unidad: el plural es de lo construible, no del metro'],
+    ['m² verdes por hab.', 'unidad: el plural es del verde, no del metro'],
+    ['msnm, lo más alto', 'unidad y superlativo'],
+    ['msnm, lo más bajo', 'unidad y superlativo'],
+    ['dB(A) estimados', 'unidad: el decibelio no se pluraliza con la cifra'],
+    ['el más alto', 'superlativo: el valor no es una cuenta'],
+    ['el más alto, en pisos', 'superlativo'],
+    ['la altura que más se repite', 'el valor es un cajón de alturas, no una cuenta'],
+    ['lo que más se repite', 'el valor es una etiqueta, no una cuenta'],
+    ['parte el sector en dos', 'el valor es una etiqueta, no una cuenta'],
+    ['los encontró el curso', 'el plural es de lo encontrado, no de la cifra'],
+    ['sin pisos', 'el plural es del atributo que falta, no de la cifra'],
+    ['sin sus plantas', 'el plural es del atributo que falta, no de la cifra'],
+    ['años de retorno', 'periodo de retorno: la NSR-10 los da en 475, 975 y 2.475'],
+    ['en los últimos 7 días', 'el plural es de la ventana de tiempo, no de la cifra'],
+    ['Con pesos neutros (⅓ · ⅓ · ⅓)', 'rótulo fijo: no acompaña a una cuenta']
+  ];
+  const exentos = new Set(NO_CONCUERDA.map((x) => x[0]));
+  const RE_BALDOSA = /<(b|strong|span)[^>]*>\s*'\s*\+\s*([^<]{1,90}?)\s*\+\s*'\s*<\/\1>\s*<(small|span|em|i)[^>]*>([^<{']{2,60})<\/\3>/g;
+  const baldosas = (txt) => {
+    const out = []; const re = new RegExp(RE_BALDOSA.source, 'g'); let m;
+    while ((m = re.exec(txt))) {
+      const rot = m[4].trim();
+      if (!/\b[a-záéíóúñ]+s\b/.test(rot)) continue;
+      out.push({ rot: rot, en: m.index });
+    }
+    return out;
+  };
+
+  const servidos = fs.readdirSync(R('js')).filter((f) => /\.js$/.test(f));
+  let conRama = 0;
+  const pelados = [];
+  servidos.forEach((f) => {
+    const txt = soloCodigo(leer('js/' + f));
+    conRama += (txt.match(/<(?:small|span|em|i)[^>]*>'\s*\+\s*pl\(/g) || []).length;
+    baldosas(txt).forEach((b) => {
+      if (exentos.has(b.rot)) return;
+      pelados.push('js/' + f.slice(0, 2) + ':' + txt.slice(0, b.en).split('\n').length + ' «' + b.rot + '»');
+    });
+  });
+
+  /* El MATERIAL es lo que sobrevive al cero (v1022): no «cuantas baldosas
+     peladas quedan» -arreglarlas lo deja en cero- sino que lo servido siga
+     armando baldosas con su rama. */
+  if (conRama < 20) {
+    comprobar('MATERIAL · lo servido arma baldosas con su rama de singular', false,
+      'NO PUDO CORRER: solo ' + conRama + ' baldosas con rama, así que el barrido no vigilaría casi nada');
+  } else {
+    comprobar('MATERIAL · lo servido arma baldosas con su rama de singular', true,
+      conRama + ' baldosas eligen su rótulo con pl()');
+    comprobar('toda baldosa con rótulo literal en plural está declarada',
+      pelados.length === 0,
+      pelados.length
+        ? pelados.length + ' imprimirían «1 cosas» en dos elementos: ' + pelados.slice(0, 5).join(' · ')
+        : 'las ' + conRama + ' ramifican, y ' + NO_CONCUERDA.length + ' rótulos van declarados por no ser cuentas');
+  }
+
+  /* LA GUARDA DE LA GUARDA: el barrido ve una baldosa pelada y calla la
+     ramificada. Sin la segunda mitad denunciaría las que están bien. */
+  const PELADA = "'<div><b>' + x.n + '</b><small>parques</small></div>'";
+  const RAMIF  = "'<div><b>' + x.n + '</b><small>' + pl(x.n, 'parque', 'parques') + '</small></div>'";
+  /* Un rotulo SIN palabra en plural no concuerda con nadie: «1 del sector» y
+     «5 del sector» se escriben igual, asi que el barrido tiene que callarlo.
+     Sin este caso, quitarle el filtro del plural dejaria la guarda en verde
+     denunciando rotulos que estan bien. */
+  const SINPL  = "'<div><b>' + x.n + '</b><small>del sector</small></div>'";
+  const vePelada = baldosas(PELADA).length === 1;
+  const veRamif = baldosas(RAMIF).length === 0;
+  const veSinPl = baldosas(SINPL).length === 0;
+  comprobar('el barrido ve la baldosa pelada y calla la que ya ramifica',
+    vePelada && veRamif && veSinPl,
+    !vePelada ? 'no ve la pelada: no vigilaría nada'
+      : !veRamif ? 'denuncia una que ya ramifica: daría rojo sobre lo que está bien'
+        : !veSinPl ? 'denuncia un rótulo sin plural: no hay nada que concordar ahí'
+          : 've la pelada, calla la que elige su rótulo con pl() y la que no lleva plural');
+
+  /* Y que la lista de exentos siga diciendo por que (v895). */
+  const sinRazon = NO_CONCUERDA.filter((x) => !x[1] || x[1].length < 8).map((x) => x[0]);
+  comprobar('cada rótulo exento lleva su razón',
+    sinRazon.length === 0,
+    sinRazon.length ? 'sin razón: ' + sinRazon.join(', ')
+      : NO_CONCUERDA.length + ' declarados, cada uno con por qué no concuerda');
+}
+
 console.log('\n  -- la baldosa de cifra lleva su singular (v1028) --');
 {
   const j24 = soloCodigo(leer('js/24-procity-analisis.js'));

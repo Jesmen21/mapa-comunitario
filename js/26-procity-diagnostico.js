@@ -603,8 +603,10 @@
     const top = i.pob.porTipo.slice(0, 4);
     return '<div class="pcd-pob">' +
       '<div class="pcd-cifras">' +
-        '<div><b>' + num(i.pob.habitantes) + '</b><small>habitantes estimados</small></div>' +
-        '<div><b>' + num(i.pob.viviendas) + '</b><small>viviendas contadas</small></div>' +
+        '<div><b>' + num(i.pob.habitantes) + '</b><small>' +
+          pl(i.pob.habitantes, 'habitante estimado', 'habitantes estimados') + '</small></div>' +
+        '<div><b>' + num(i.pob.viviendas) + '</b><small>' +
+          pl(i.pob.viviendas, 'vivienda contada', 'viviendas contadas') + '</small></div>' +
         '<div><b>' + num(i.habPorHa) + '</b><small>hab. por hectárea</small></div>' +
         (i.verdePorHab !== null
           ? '<div><b>' + num(i.verdePorHab) + '</b><small>m² verdes por hab.</small></div>' : '') +
