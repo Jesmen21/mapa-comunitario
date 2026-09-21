@@ -30,6 +30,14 @@
   }
   const num = n => Number(n || 0).toLocaleString('es-CO');
   const pct1 = n => Math.round(n * 10) / 10;
+  /* Un sustantivo contado lleva su rama de singular, o la hoja imprime
+     «1 elementos» — la concordancia de la v874. En este módulo la frase más
+     expuesta es la de la muestra corta: existe PARA el sector con pocos
+     elementos, así que «1» no es su caso raro sino el más probable. `cn`
+     pasa la cifra por `num`, que es el único sitio de este archivo que sabe
+     escribir un número en castellano. */
+  const pl = (n, sing, plur) => (Number(n) === 1 ? sing : plur);
+  const cn = (n, sing, plur) => num(n) + ' ' + pl(n, sing, plur);
 
   // ── Umbrales ────────────────────────────────────────────────────────────
   // Se declaran juntos y con nombre para que se puedan mover en un solo sitio
@@ -261,8 +269,8 @@
       if (i.duroPct !== null && i.duroPct >= U.duroExcesivo) {
         v.push({
           id: 'impermeable', titulo: 'Suelo endurecido', nivel: 'mal',
-          dato: i.duroPct + '% del área',
-          texto: 'La superficie dura ocupa ' + i.duroPct + '% del área. Cuando el suelo no ' +
+          dato: num(i.duroPct) + '% del área',
+          texto: 'La superficie dura ocupa ' + num(i.duroPct) + '% del área. Cuando el suelo no ' +
                  'absorbe, el agua de lluvia va toda a la calle: es el origen más común de ' +
                  'los encharcamientos de barrio.'
         });
@@ -277,8 +285,8 @@
     if (i.coberturaGruesa) {
       v.push({
         id: 'escala', titulo: 'Escala de la lectura', nivel: 'medio',
-        dato: i.mPorPx + ' m por punto',
-        texto: 'El área es extensa, así que la cobertura se leyó a ' + i.mPorPx +
+        dato: num(i.mPorPx) + ' m por punto',
+        texto: 'El área es extensa, así que la cobertura se leyó a ' + num(i.mPorPx) +
                ' m por punto: sirve para ver masas —dónde hay monte y dónde ciudad— pero ' +
                'no distingue un patio arbolado de un techo. Para leer detalle, dibuja un ' +
                'área más pequeña.'
@@ -289,17 +297,17 @@
       id: 'mezcla',
       titulo: 'Mezcla de usos',
       nivel: mono ? 'mal' : i.mezcla >= U.mezclaBuena ? 'bien' : 'medio',
-      dato: i.mezcla + '/100',
+      dato: num(i.mezcla) + '/100',
       texto: mono
         ? 'Sector monofuncional' +
-          (i.dominante ? ': ' + i.pctDominante + '% de lo mapeado es ' + i.dominante.g.t.toLowerCase() : '') +
-          ' (reparto ' + i.mezcla + '/100). Esto obliga a salir del barrio para casi todo y ' +
+          (i.dominante ? ': ' + num(i.pctDominante) + '% de lo mapeado es ' + i.dominante.g.t.toLowerCase() : '') +
+          ' (reparto ' + num(i.mezcla) + '/100). Esto obliga a salir del barrio para casi todo y ' +
           'deja calles vacías fuera de horario.'
         : i.mezcla >= U.mezclaBuena
-        ? 'El sector reparte bien sus actividades (' + i.mezcla + '/100). Un tejido mixto ' +
+        ? 'El sector reparte bien sus actividades (' + num(i.mezcla) + '/100). Un tejido mixto ' +
           'sostiene vida en la calle a distintas horas y acorta los recorridos diarios.'
-        : 'Mezcla intermedia (' + i.mezcla + '/100)' +
-          (i.dominante ? ', con ' + i.dominante.g.t.toLowerCase() + ' por delante (' + i.pctDominante + '%)' : '') +
+        : 'Mezcla intermedia (' + num(i.mezcla) + '/100)' +
+          (i.dominante ? ', con ' + i.dominante.g.t.toLowerCase() + ' por delante (' + num(i.pctDominante) + '%)' : '') +
           '. Hay base para diversificar sin partir de cero.'
     });
 
@@ -308,10 +316,11 @@
         id: 'poblacion',
         titulo: 'Población estimada',
         nivel: i.habPorHa >= U.densidadPobAlta ? 'bien' : i.habPorHa >= U.densidadPobBaja ? 'medio' : 'mal',
-        dato: num(i.pob.habitantes) + ' hab · ' + i.habPorHa + '/ha',
-        texto: 'Del levantamiento salen ' + num(i.pob.viviendas) + ' viviendas en ' +
-               num(i.pob.elementos) + ' elementos residenciales, unos ' + num(i.pob.habitantes) +
-               ' habitantes en ' + i.areaHa + ' ha (' + i.habPorHa + ' por hectárea). ' +
+        dato: num(i.pob.habitantes) + ' hab · ' + num(i.habPorHa) + '/ha',
+        texto: 'Del levantamiento salen ' + cn(i.pob.viviendas, 'vivienda', 'viviendas') + ' en ' +
+               cn(i.pob.elementos, 'elemento residencial', 'elementos residenciales') + ', ' +
+               pl(i.pob.habitantes, 'un habitante', 'unos ' + num(i.pob.habitantes) + ' habitantes') +
+               ' en ' + num(i.areaHa) + ' ha (' + num(i.habPorHa) + ' por hectárea). ' +
                (i.habPorHa >= U.densidadPobAlta
                  ? 'Es densidad alta: hay masa crítica para sostener comercio y transporte de barrio.'
                  : i.habPorHa >= U.densidadPobBaja
@@ -328,9 +337,11 @@
         titulo: 'Verde por habitante',
         nivel: i.verdePorHab >= U.verdePorHabBueno ? 'bien'
              : i.verdePorHab >= U.verdePorHabMinimo ? 'medio' : 'mal',
-        dato: i.verdePorHab + ' m²/hab',
-        texto: 'A los ' + num(i.pob.habitantes) + ' habitantes estimados les corresponden ' +
-               i.verdePorHab + ' m² de vegetación cada uno. ' +
+        dato: num(i.verdePorHab) + ' m²/hab',
+        texto: pl(i.pob.habitantes, 'Al habitante estimado le corresponden ',
+                  'A los ' + num(i.pob.habitantes) + ' habitantes estimados les corresponden ') +
+               num(i.verdePorHab) + ' m² de vegetación' +
+               pl(i.pob.habitantes, '. ', ' cada uno. ') +
                (i.verdePorHab >= U.verdePorHabBueno
                  ? 'Es una dotación holgada para un sector urbano.'
                  : i.verdePorHab >= U.verdePorHabMinimo
@@ -343,12 +354,12 @@
       id: 'densidad',
       titulo: 'Intensidad de uso',
       nivel: i.densidad >= U.densidadAlta ? 'bien' : i.densidad >= U.densidadBaja ? 'medio' : 'mal',
-      dato: i.densidad + ' elem./ha',
+      dato: num(i.densidad) + ' elem./ha',
       texto: i.densidad >= U.densidadAlta
-        ? 'Territorio consolidado: ' + i.densidad + ' elementos por hectárea en ' + i.areaHa + ' ha.'
+        ? 'Territorio consolidado: ' + cn(i.densidad, 'elemento por hectárea', 'elementos por hectárea') + ' en ' + num(i.areaHa) + ' ha.'
         : i.densidad >= U.densidadBaja
-          ? 'Consolidación media: ' + i.densidad + ' elementos por hectárea. Quedan vacíos por ocupar.'
-          : 'Baja intensidad de uso: ' + i.densidad + ' elementos por hectárea. Puede ser un borde ' +
+          ? 'Consolidación media: ' + cn(i.densidad, 'elemento por hectárea', 'elementos por hectárea') + '. Quedan vacíos por ocupar.'
+          : 'Baja intensidad de uso: ' + cn(i.densidad, 'elemento por hectárea', 'elementos por hectárea') + '. Puede ser un borde ' +
             'urbano, una zona en formación — o que falte terreno por mapear.'
     });
 
@@ -356,8 +367,9 @@
       v.push({
         id: 'ausencias', titulo: 'Servicios ausentes',
         nivel: i.ausentes.length >= 3 ? 'mal' : 'medio',
-        dato: i.ausentes.length + ' de ' + BASICOS.length,
-        texto: 'No se registró ' + i.ausentes.map(a => a.que).join(', ') + ' dentro del área. ' +
+        dato: num(i.ausentes.length) + ' de ' + BASICOS.length,
+        texto: pl(i.ausentes.length, 'No se registró ', 'No se registraron ') +
+               i.ausentes.map(a => a.que).join(', ') + ' dentro del área. ' +
                'Para eso, quien vive aquí depende de otro sector.'
       });
     }
@@ -365,9 +377,9 @@
     if (i.pctRiesgo >= U.riesgoAlto || i.riesgoPorHa >= U.riesgoPorHa) {
       v.push({
         id: 'riesgo', titulo: 'Suelo en riesgo o deterioro', nivel: 'mal',
-        dato: i.pctRiesgo + '% · ' + i.riesgoPorHa + '/ha',
-        texto: i.pctRiesgo + '% de lo mapeado cayó en riesgo, baldío o deterioro (' +
-               num(i.porGrupo.riesgo) + ' elementos). Es la señal más directa de que el sector ' +
+        dato: num(i.pctRiesgo) + '% · ' + num(i.riesgoPorHa) + '/ha',
+        texto: num(i.pctRiesgo) + '% de lo mapeado cayó en riesgo, baldío o deterioro (' +
+               cn(i.porGrupo.riesgo, 'elemento', 'elementos') + '). Es la señal más directa de que el sector ' +
                'tiene suelo esperando decisión.'
       });
     }
@@ -379,54 +391,57 @@
   // justifica, para que en clase se pueda verificar.
   const REGLAS = [
     { t:'F', c:i => i.hayCobertura && i.verdePct >= U.verdeBueno,
-      f:i => 'Base ambiental consolidada: ' + i.verdePct + '% de vegetación viva (' + num(i.verdeM2) + ' m²).' },
+      f:i => 'Base ambiental consolidada: ' + num(i.verdePct) + '% de vegetación viva (' + num(i.verdeM2) + ' m²).' },
     { t:'F', c:i => i.mezcla >= U.mezclaBuena,
-      f:i => 'Tejido de usos variado (' + i.mezcla + '/100): el sector no depende de una sola actividad.' },
+      f:i => 'Tejido de usos variado (' + num(i.mezcla) + '/100): el sector no depende de una sola actividad.' },
     { t:'F', c:i => i.densidad >= U.densidadAlta,
-      f:i => 'Sector consolidado: ' + i.densidad + ' elementos por hectárea.' },
+      f:i => 'Sector consolidado: ' + cn(i.densidad, 'elemento por hectárea', 'elementos por hectárea') + '.' },
     { t:'F', c:i => (i.porGrupo.cultura || 0) >= 3,
-      f:i => 'Presencia educativa y cultural (' + i.porGrupo.cultura + ' elementos): ancla de vida de barrio.' },
+      f:i => 'Presencia educativa y cultural (' + cn(i.porGrupo.cultura, 'elemento', 'elementos') + '): ancla de vida de barrio.' },
     { t:'F', c:i => (i.porGrupo.salud || 0) >= 2,
-      f:i => 'Servicios de salud dentro del área (' + i.porGrupo.salud + '): atención de proximidad resuelta.' },
+      f:i => 'Servicios de salud dentro del área (' + num(i.porGrupo.salud) + '): atención de proximidad resuelta.' },
     { t:'F', c:i => i.hayCobertura && i.aguaPct >= 1,
-      f:i => 'El área incluye un cuerpo de agua (' + i.aguaPct + '%): un frente natural con valor paisajístico.' },
+      f:i => 'El área incluye un cuerpo de agua (' + num(i.aguaPct) + '%): un frente natural con valor paisajístico.' },
     { t:'F', c:i => (i.porGrupo.comercio || 0) >= 5,
-      f:i => 'Comercio activo (' + i.porGrupo.comercio + ' elementos): hay economía local funcionando.' },
+      f:i => 'Comercio activo (' + cn(i.porGrupo.comercio, 'elemento', 'elementos') + '): hay economía local funcionando.' },
 
     { t:'D', c:i => i.hayCobertura && i.verdePct < U.verdeAceptable,
-      f:i => 'Déficit de vegetación: ' + i.verdePct + '% del área. Poca sombra y poca absorción de lluvia.' },
+      f:i => 'Déficit de vegetación: ' + num(i.verdePct) + '% del área. Poca sombra y poca absorción de lluvia.' },
     { t:'D', c:i => i.hayCobertura && i.duroPct >= U.duroExcesivo,
-      f:i => 'Suelo mayoritariamente impermeable (' + i.duroPct + '%): escorrentía alta en aguaceros.' },
+      f:i => 'Suelo mayoritariamente impermeable (' + num(i.duroPct) + '%): escorrentía alta en aguaceros.' },
     { t:'D', c:i => i.mezcla < U.mezclaMedia && i.dominante,
-      f:i => 'Monofuncionalidad: ' + i.pctDominante + '% de lo mapeado es ' + i.dominante.g.t.toLowerCase() + '.' },
+      f:i => 'Monofuncionalidad: ' + num(i.pctDominante) + '% de lo mapeado es ' + i.dominante.g.t.toLowerCase() + '.' },
     { t:'D', c:i => !i.porGrupo.salud,
       f:i => 'Sin servicios de salud registrados dentro del área' +
-             (i.pob.habitantes ? ', para unos ' + num(i.pob.habitantes) + ' habitantes estimados.' : '.') },
+             (i.pob.habitantes ? ', para ' + pl(i.pob.habitantes, 'un habitante estimado',
+                'unos ' + num(i.pob.habitantes) + ' habitantes estimados') + '.' : '.') },
     { t:'D', c:i => i.verdePorHab !== null && i.verdePorHab < U.verdePorHabMinimo,
-      f:i => 'Apenas ' + i.verdePorHab + ' m² de verde por habitante: el arbolado no da abasto para la gente que vive aquí.' },
+      f:i => 'Apenas ' + num(i.verdePorHab) + ' m² de verde por habitante: el arbolado no da abasto para la gente que vive aquí.' },
     { t:'F', c:i => i.verdePorHab !== null && i.verdePorHab >= U.verdePorHabBueno,
-      f:i => 'Dotación verde holgada: ' + i.verdePorHab + ' m² por habitante estimado.' },
+      f:i => 'Dotación verde holgada: ' + num(i.verdePorHab) + ' m² por habitante estimado.' },
     { t:'O', c:i => i.habPorHa >= U.densidadPobAlta && (i.porGrupo.comercio || 0) <= 3,
-      f:i => num(i.pob.habitantes) + ' habitantes estimados a ' + i.habPorHa +
+      f:i => cn(i.pob.habitantes, 'habitante estimado', 'habitantes estimados') + ' a ' + num(i.habPorHa) +
              ' por hectárea con poco comercio: demanda concentrada sin atender.' },
     { t:'R', c:i => i.pob.elementos >= 10 && i.pob.precision < 40,
-      f:i => 'Solo ' + i.pob.precision + '% de lo residencial trae tipo de edificación definido: ' +
+      f:i => 'Solo ' + num(i.pob.precision) + '% de lo residencial trae tipo de edificación definido: ' +
              'la población estimada es de piso mínimo y probablemente se queda corta.' },
     { t:'D', c:i => !i.porGrupo.cultura,
       f:() => 'Sin equipamiento educativo ni cultural registrado dentro del área.' },
     { t:'D', c:i => i.pctRiesgo >= U.riesgoAlto || i.riesgoPorHa >= U.riesgoPorHa,
-      f:i => i.pctRiesgo + '% del mapeo corresponde a suelo en riesgo, baldío o deterioro.' },
+      f:i => num(i.pctRiesgo) + '% del mapeo corresponde a suelo en riesgo, baldío o deterioro.' },
     { t:'D', c:i => i.densidad < U.densidadBaja,
-      f:i => 'Baja intensidad de uso (' + i.densidad + ' elem./ha): mucho suelo sin actividad registrada.' },
+      f:i => 'Baja intensidad de uso (' + num(i.densidad) + ' elem./ha): mucho suelo sin actividad registrada.' },
 
     { t:'O', c:i => (i.porGrupo.riesgo || 0) >= 2,
-      f:i => num(i.porGrupo.riesgo) + ' predios baldíos o en deterioro: suelo disponible sin necesidad de demoler nada.' },
+      f:i => cn(i.porGrupo.riesgo, 'predio baldío o en deterioro', 'predios baldíos o en deterioro') +
+             ': suelo disponible sin necesidad de demoler nada.' },
     { t:'O', c:i => i.hayCobertura && i.verdePct >= U.verdeAceptable && i.verdePct < U.verdeBueno,
-      f:i => 'Con ' + i.verdePct + '% de verde ya existente, conectar los fragmentos cuesta menos que crear zonas nuevas.' },
+      f:i => 'Con ' + num(i.verdePct) + '% de verde ya existente, conectar los fragmentos cuesta menos que crear zonas nuevas.' },
     { t:'O', c:i => i.mezcla >= U.mezclaMedia && i.mezcla < U.mezclaBuena,
       f:() => 'La mezcla intermedia permite diversificar apoyándose en lo que ya funciona.' },
     { t:'O', c:i => (i.porGrupo.vivienda || 0) >= 8 && (i.porGrupo.comercio || 0) <= 2,
-      f:i => 'Concentración residencial (' + i.porGrupo.vivienda + ' elementos) con poco comercio: demanda de barrio sin atender.' },
+      f:i => 'Concentración residencial (' + cn(i.porGrupo.vivienda, 'elemento', 'elementos') +
+             ') con poco comercio: demanda de barrio sin atender.' },
     { t:'O', c:i => (i.porGrupo.cultura || 0) >= 2 && (i.porGrupo.vivienda || 0) >= 5,
       f:() => 'Población residente y equipamiento educativo juntos: base para actividades fuera del horario escolar.' },
     { t:'O', c:i => i.densidad >= U.densidadBaja && i.densidad < U.densidadAlta,
@@ -435,13 +450,14 @@
     { t:'R', c:i => i.hayCobertura && i.verdePct < U.verdeAceptable && i.duroPct >= U.duroExcesivo,
       f:() => 'Poca vegetación y mucho suelo duro a la vez: el sector acumula calor y drena mal.' },
     { t:'R', c:i => (i.porGrupo.industria || 0) >= 2 && (i.porGrupo.vivienda || 0) >= 5,
-      f:i => 'Industria (' + i.porGrupo.industria + ') junto a vivienda (' + i.porGrupo.vivienda + '): conflicto de usos por ruido, carga y horarios.' },
+      f:i => 'Industria (' + num(i.porGrupo.industria) + ') junto a vivienda (' + num(i.porGrupo.vivienda) + '): conflicto de usos por ruido, carga y horarios.' },
     { t:'R', c:i => i.pctRiesgo >= U.riesgoAlto || i.riesgoPorHa >= U.riesgoPorHa,
       f:() => 'El suelo en deterioro tiende a extenderse si no se interviene: un lote abandonado arrastra a los vecinos.' },
     { t:'R', c:i => i.muestraCorta,
-      f:i => 'La muestra es corta (' + i.total + ' elementos): las conclusiones son preliminares hasta ampliar el mapeo.' },
+      f:i => 'La muestra es corta (' + cn(i.total, 'elemento', 'elementos') +
+             '): las conclusiones son preliminares hasta ampliar el mapeo.' },
     { t:'R', c:i => i.coberturaGruesa,
-      f:i => 'La cobertura se midió a ' + i.mPorPx + ' m por punto: a esa escala la lectura ambiental es de masas, no de detalle.' },
+      f:i => 'La cobertura se midió a ' + num(i.mPorPx) + ' m por punto: a esa escala la lectura ambiental es de masas, no de detalle.' },
     { t:'R', c:i => !i.hayCobertura,
       f:() => 'Sin análisis de cobertura del suelo, la lectura ambiental de este informe queda incompleta.' }
   ];
@@ -470,18 +486,18 @@
              (i.verdePorHab !== null && i.verdePorHab < U.verdePorHabMinimo)),
       cuantos:i => Math.max(1, Math.round(i.areaHa / 3)),
       porque:i => i.verdePorHab !== null
-        ? 'a cada habitante estimado le tocan ' + i.verdePorHab + ' m² de verde'
-        : 'la vegetación cubre solo ' + i.verdePct + '% del área',
+        ? 'a cada habitante estimado le tocan ' + num(i.verdePorHab) + ' m² de verde'
+        : 'la vegetación cubre solo ' + num(i.verdePct) + '% del área',
       beneficio:'Da sombra, baja la temperatura de la calle y crea un lugar de encuentro a pie.' },
     { id:'arbolado', ico:'🌲', uso:'Arbolado de andén',
       c:i => i.hayCobertura && i.verdePct < U.verdeBueno,
       cuantos:i => Math.max(10, Math.round(i.areaHa * 12)),
-      porque:i => 'con ' + i.verdePct + '% de verde, las calles quedan sin sombra continua',
+      porque:i => 'con ' + num(i.verdePct) + '% de verde, las calles quedan sin sombra continua',
       beneficio:'Es la forma más barata de ganar sombra: no consume suelo, se planta sobre el andén existente.' },
     { id:'permeable', ico:'💧', uso:'Superficie permeable / jardín de lluvia',
       c:i => i.hayCobertura && i.duroPct >= U.duroExcesivo,
       cuantos:i => Math.max(1, Math.round(i.areaHa / 4)),
-      porque:i => 'el ' + i.duroPct + '% del suelo es impermeable',
+      porque:i => 'el ' + num(i.duroPct) + '% del suelo es impermeable',
       beneficio:'Deja que la lluvia se infiltre en vez de correr hacia la calle: menos encharcamiento.' },
     { id:'salud', ico:'🚑', uso:'Puesto de salud de proximidad',
       c:i => !i.porGrupo.salud,
@@ -490,7 +506,8 @@
       // muestre que dimensionar depende de a cuántos hay que atender.
       cuantos:i => Math.max(1, Math.round(i.pob.habitantes / 5000)),
       porque:i => 'no hay ningún servicio de salud dentro del área' +
-                  (i.pob.habitantes ? ' y viven aquí unos ' + num(i.pob.habitantes) + ' habitantes estimados' : ''),
+                  (i.pob.habitantes ? pl(i.pob.habitantes, ' y vive aquí un habitante estimado',
+                      ' y viven aquí unos ' + num(i.pob.habitantes) + ' habitantes estimados') : ''),
       beneficio:'Resuelve la atención básica sin salir del barrio, que es lo que más pesa en urgencias y control.' },
     { id:'educativo', ico:'📚', uso:'Equipamiento educativo o biblioteca de barrio',
       c:i => !i.porGrupo.cultura,
@@ -500,17 +517,19 @@
     { id:'comercio', ico:'🏬', uso:'Comercio de abastecimiento diario',
       c:i => (i.porGrupo.vivienda || 0) >= 5 && (i.porGrupo.comercio || 0) <= 2,
       cuantos:i => Math.max(2, Math.round((i.porGrupo.vivienda || 0) / 6)),
-      porque:i => 'hay ' + i.porGrupo.vivienda + ' elementos residenciales y solo ' + (i.porGrupo.comercio || 0) + ' comerciales',
+      porque:i => 'hay ' + cn(i.porGrupo.vivienda, 'elemento residencial', 'elementos residenciales') +
+                  ' y solo ' + cn(i.porGrupo.comercio || 0, 'comercial', 'comerciales'),
       beneficio:'Acorta el recorrido de la compra diaria y sostiene actividad en la calle.' },
     { id:'mixto', ico:'🧩', uso:'Edificación de uso mixto (vivienda + comercio)',
       c:i => i.mezcla < U.mezclaMedia && (i.porGrupo.riesgo || 0) >= 1,
       cuantos:i => Math.max(1, Math.min(i.porGrupo.riesgo || 1, 4)),
-      porque:i => 'la mezcla de usos está en ' + i.mezcla + '/100 y hay suelo disponible',
+      porque:i => 'la mezcla de usos está en ' + num(i.mezcla) + '/100 y hay suelo disponible',
       beneficio:'Rompe la monofuncionalidad sin ocupar suelo nuevo: aprovecha los predios vacíos.' },
     { id:'espacioPublico', ico:'🏛️', uso:'Plaza o espacio público de encuentro',
       c:i => (i.porGrupo.riesgo || 0) >= 2 && i.densidad >= U.densidadBaja,
       cuantos:() => 1,
-      porque:i => 'hay ' + i.porGrupo.riesgo + ' predios baldíos o en deterioro que arrastran a su entorno',
+      porque:i => 'hay ' + cn(i.porGrupo.riesgo, 'predio baldío o en deterioro', 'predios baldíos o en deterioro') +
+                  ' que ' + pl(i.porGrupo.riesgo, 'arrastra', 'arrastran') + ' a su entorno',
       beneficio:'Convierte el punto que deteriora la manzana en el que la ordena.' },
     { id:'transporte', ico:'🚏', uso:'Parada o punto de transporte',
       c:i => !(i.porGrupo.servicios || 0) && i.densidad >= U.densidadBaja,
@@ -534,7 +553,7 @@
                 'implantación prioritaria. Amplía el mapeo o analiza la cobertura del suelo ' +
                 'para afinar la lectura.';
     } else {
-      resumen = 'A partir de ' + num(i.total) + ' elementos mapeados en ' + i.areaHa +
+      resumen = 'A partir de ' + cn(i.total, 'elemento mapeado', 'elementos mapeados') + ' en ' + num(i.areaHa) +
                 ' ha, URBIS propone ' + props.length + ' línea' + (props.length === 1 ? '' : 's') +
                 ' de implantación. Cada una responde a una carencia medida en este mismo ' +
                 'levantamiento, y está pensada como ejercicio de proyecto: la cantidad es una ' +
@@ -565,18 +584,30 @@
       '<span><i style="background:' + x.color + '"></i>' + esc(x.etq) + ' ' + x.pct + '%</span>').join('');
 
     if (!i.pob.habitantes) {
+      /* Sin habitantes hay DOS causas y no una, y dicen cosas distintas a
+         quien está mapeando: que nadie registró una vivienda, o que sí hay
+         alguna y la cifra se fue a cero al redondear a la decena —con una
+         casa son 3,1 personas, que redondean a 0—. La frase única declaraba
+         la primera sobre la segunda, que es declarar mal la causa (v867): el
+         estudiante leía «no mapeaste vivienda» habiendo mapeado una. El
+         discriminante estaba al lado, en `i.pob.elementos`. */
+      const razon = i.pob.elementos
+        ? 'Hay ' + cn(i.pob.elementos, 'elemento residencial mapeado', 'elementos residenciales mapeados') +
+          ', pero la población se redondea a la decena y con tan poco la cifra queda por debajo de 10. ' +
+          'Amplíe el mapeo para estimarla.'
+        : 'Sin elementos residenciales mapeados no se puede estimar población.';
       return '<div class="pcd-pob"><div class="pcd-barra">' + barra + '</div>' +
              '<div class="pcd-leyenda">' + leyenda + '</div>' +
-             '<p class="pcd-nota">Sin elementos residenciales mapeados no se puede estimar población.</p></div>';
+             '<p class="pcd-nota">' + razon + '</p></div>';
     }
     const top = i.pob.porTipo.slice(0, 4);
     return '<div class="pcd-pob">' +
       '<div class="pcd-cifras">' +
         '<div><b>' + num(i.pob.habitantes) + '</b><small>habitantes estimados</small></div>' +
         '<div><b>' + num(i.pob.viviendas) + '</b><small>viviendas contadas</small></div>' +
-        '<div><b>' + i.habPorHa + '</b><small>hab. por hectárea</small></div>' +
+        '<div><b>' + num(i.habPorHa) + '</b><small>hab. por hectárea</small></div>' +
         (i.verdePorHab !== null
-          ? '<div><b>' + i.verdePorHab + '</b><small>m² verdes por hab.</small></div>' : '') +
+          ? '<div><b>' + num(i.verdePorHab) + '</b><small>m² verdes por hab.</small></div>' : '') +
       '</div>' +
       '<div class="pcd-barra">' + barra + '</div>' +
       '<div class="pcd-leyenda">' + leyenda + '</div>' +
@@ -587,7 +618,7 @@
       '<p class="pcd-nota">La población sale de contar viviendas por tipo de edificación, no del ' +
         'tamaño del área: una torre y una casa ocupan lo mismo en el mapa y no albergan a la misma gente. ' +
         (i.pob.precision < 60
-          ? 'Ojo: solo ' + i.pob.precision + '% de lo residencial trae tipo definido, así que la cifra es un piso mínimo.'
+          ? 'Ojo: solo ' + num(i.pob.precision) + '% de lo residencial trae tipo definido, así que la cifra es un piso mínimo.'
           : 'Es una estimación, no un censo.') + '</p>' +
     '</div>';
   }

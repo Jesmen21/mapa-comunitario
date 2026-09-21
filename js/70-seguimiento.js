@@ -3106,7 +3106,12 @@
       .filter(function (w) { return w.length > 2; }).slice(0, 2)
       .map(function (w) { return w[0].toUpperCase(); }).join('');
   }
-  function plural(n, uno, varios) { return n + ' ' + (n === 1 ? uno : varios); }
+  /* Aquí vivía un segundo ayudante, `plural`, que hacía exactamente lo mismo
+     que `cn` —y con la prueba más floja: `n === 1` da plural para el texto
+     «1», donde `cn` usa `Number(n)`—. Dos nombres para una función en el
+     mismo archivo son la clase B, y el segundo lo puse yo en la v1020 sin
+     ver que el primero ya estaba. Se queda `cn`, que es el de las 27
+     llamadas; la guarda de la v885 no lo veía porque los nombres diferían. */
 
   /* La línea de las tres cuentas que producen el veredicto. Va debajo del
      veredicto en la placa: se entiende de un vistazo por qué dice lo que dice.
@@ -3121,11 +3126,11 @@
        sin declarar, «N cambios de postura» al lado de «Sin nivel» se lee como
        un error de la ficha. La cifra se dice entera —cuántos hay y cuántos
        no se pueden usar todavía— en vez de callar la mitad. */
-    var pal = plural(f.palabra.contadas, 'cambio de postura', 'cambios de postura');
+    var pal = cn(f.palabra.contadas, 'cambio de postura', 'cambios de postura');
     if (f.techos && f.techos.palabra && f.techos.palabra.sinDeclarar) {
       pal += ', ' + f.techos.palabra.sinDeclarar + ' sin identidad de objeto declarada';
     }
-    return plural(f.casos.pesanConf, 'caso confirmado', 'casos confirmados') + ' · ' +
+    return cn(f.casos.pesanConf, 'caso confirmado', 'casos confirmados') + ' · ' +
            f.casos.pesanInv + ' en investigación · ' + pal + ' · ' +
            (f.claridad.pct == null ? 'sin verificación declarada' : f.claridad.pct + ' % verificado') +
            (f.casos.fueraPorNivel
@@ -3189,7 +3194,7 @@
     pt.appendChild(el('p', 'sp-fi-dias', (cerrado
         ? 'Mandato terminado el ' + fechaCorta(reg.entrega) + ' · '
         : 'Día ' + diasDesde(reg.posesion) + ' de gobierno · ') +
-      plural(f.ritmo.hechos, 'hecho registrado', 'hechos registrados')));
+      cn(f.ritmo.hechos, 'hecho registrado', 'hechos registrados')));
     cab.appendChild(pt);
     placa.appendChild(cab);
     placa.appendChild(el('p', 'sp-fi-vlabel', 'Fiabilidad'));
@@ -3983,9 +3988,9 @@
     });
     if (!hayCasos) {
       sc.appendChild(el('p', 'sp-fi-nada', 'Ningún caso de corrupción documentado en el registro' +
-        (f.casos.porDocumentar ? ' · ' + plural(f.casos.porDocumentar, 'caso nombrado por documentar', 'casos nombrados por documentar') + ', que no se muestran hasta tener hecho y fuente.' : '.')));
+        (f.casos.porDocumentar ? ' · ' + cn(f.casos.porDocumentar, 'caso nombrado por documentar', 'casos nombrados por documentar') + ', que no se muestran hasta tener hecho y fuente.' : '.')));
     } else if (f.casos.porDocumentar) {
-      sc.appendChild(el('p', 'sp-fi-nada', plural(f.casos.porDocumentar, 'caso más nombrado por documentar', 'casos más nombrados por documentar') +
+      sc.appendChild(el('p', 'sp-fi-nada', cn(f.casos.porDocumentar, 'caso más nombrado por documentar', 'casos más nombrados por documentar') +
         ': no se muestra ni pesa hasta tener hecho y fuente.'));
     }
     /* Lo que la cuenta del veredicto dejó fuera, y lo que todavía no declara

@@ -8224,7 +8224,15 @@ console.log('\n  -- una cifra de 1 no lleva un plural detras (v1019) --');
      valiendo 1 de verdad y se barrio el documento. Un archivo que entre aqui
      tiene que venir con su papel medido, no con una promesa. */
   const ARCHIVOS = ['js/62-analisis-ia-app.js', 'js/63-analisis-ia-informe.js',
-                    'js/65-analisis-edu-ui.js', 'js/70-seguimiento.js'];
+                    'js/65-analisis-edu-ui.js', 'js/70-seguimiento.js',
+                    /* js/26 entra con su PAPEL medido, que es el contrato de
+                       arriba: se dibujo un area en Pro City con UN solo
+                       elemento mapeado -el analisis de ese modulo es local y
+                       no sale a la red-, se compusieron las cuatro piezas del
+                       diagnostico y se barrio el documento. Salian «1
+                       elementos» dos veces, una de ellas en la frase que
+                       existe PARA el sector de pocos elementos. */
+                    'js/26-procity-diagnostico.js'];
 
   /* Palabras que acaban en «s» y no son plurales, con su razon al lado. Es la
      misma forma que la lista de invariables de `tdoslaminas` y que el `leeme`
@@ -8495,6 +8503,82 @@ console.log('\n  -- una distancia no se escribe con punto (v1022) --');
         : veEnvuelto ? 'denuncia un conComa que si esta'
           : veCamino ? 'toma un camino de SVG por un rotulo: daria rojo sobre geometria'
             : 've la pelada, y calla el .replace, el conComa y el camino de SVG');
+}
+
+/* UNA CIFRA DEL DIAGNOSTICO PASA POR SU UNICO FORMATEADOR (v1027).
+   La guarda de la v1022 caza un `toFixed` pegado a una unidad. En js/26 el
+   decimal no viene de un `toFixed` sino de un `Math.round(x * 10) / 10`
+   guardado en un campo -`densidad`, `areaHa`, `riesgoPorHa`- y despues
+   impreso, asi que aquella no lo ve. Medido sobre el PAPEL -el diagnostico
+   compuesto con un solo elemento mapeado- salian «0.1 elem./ha», «0.1
+   elementos por hectarea» y «7.07 ha»: el punto decimal de la v885, vivo en
+   un modulo que no vigilaba nadie.
+
+   Perseguir «variable + unidad» en todo el repositorio daria falsos
+   positivos a montones -la trampa de la v895-. Aqui se puede ser preciso por
+   una razon del modulo: js/26 tiene UN solo formateador, `num`, y un solo
+   contador, `cn`, que pasa por el. Asi que la regla es exacta: ningun campo
+   del objeto de indicadores se imprime sin pasar por uno de los dos.
+
+   Falla CERRADO (v880): un campo nuevo impreso en crudo sale en rojo en su
+   primera composicion. Si alguna vez hace falta imprimir un campo de TEXTO,
+   va en la lista de abajo con su razon; hoy no hay ninguno. */
+console.log('\n  -- una cifra del diagnóstico pasa por su formateador (v1027) --');
+{
+  const j26 = soloCodigo(leer('js/26-procity-diagnostico.js'));
+  /* Campos de TEXTO que se imprimen sin formatear, con su razon. Vacia hoy. */
+  const DE_TEXTO = [];
+  const crudos = (txt) => {
+    const re = /(?<!num\()(?<!cn\()(?<!pl\()\b(?:i|ind|d)\.([A-Za-z][\w.]*)\s*\+\s*'/g;
+    const out = []; let m;
+    while ((m = re.exec(txt))) {
+      if (DE_TEXTO.indexOf(m[1]) !== -1) continue;
+      out.push(m[1] + ' (línea ' + txt.slice(0, m.index).split('\n').length + ')');
+    }
+    return out;
+  };
+  /* El MATERIAL es lo que sobrevive al cero (v1022): no «cuantos crudos hay»
+     -arreglarlos lo deja en cero y la guarda se quedaria sin material por
+     haber MEJORADO el codigo- sino que el modulo siga imprimiendo cifras por
+     su formateador. */
+  const pasados = (j26.match(/\b(?:num|cn)\(\s*(?:i|ind|d)\./g) || []).length;
+  const declara = /const num = /.test(j26) && /const cn = /.test(j26);
+  if (pasados < 20 || !declara) {
+    comprobar('MATERIAL · el diagnóstico imprime cifras por num() y cn()', false,
+      !declara ? 'NO PUDO CORRER: el módulo ya no declara num o cn'
+        : 'NO PUDO CORRER: solo ' + pasados + ' campos pasan por el formateador');
+  } else {
+    comprobar('MATERIAL · el diagnóstico imprime cifras por num() y cn()', true,
+      pasados + ' campos pasan por num() o cn()');
+
+    const sueltos = crudos(j26);
+    comprobar('ninguna cifra del diagnóstico se imprime sin formatear',
+      sueltos.length === 0,
+      sueltos.length
+        ? sueltos.length + ' saldrían con punto decimal o sin separador de miles: ' + sueltos.slice(0, 5).join(' · ')
+        : 'los ' + pasados + ' pasan por num() o cn()' +
+          (DE_TEXTO.length ? ', y ' + DE_TEXTO.length + ' de texto van declarados aparte' : ', y no hay ninguno de texto declarado aparte'));
+  }
+
+  /* LA GUARDA DE LA GUARDA (v878), en sus dos mitades: que el barrido vea un
+     campo crudo y calle uno envuelto -sin la segunda, denunciaria los 33 que
+     estan bien-, y que `cn` siga pasando por `num`, porque si dejara de
+     hacerlo los contados volverian a salir sin separador y todo lo de arriba
+     seguiria en verde. */
+  const CRUDO = "texto: 'Densidad de ' + i.densidad + ' por hectárea'";
+  const ENVUELTO = "texto: 'Densidad de ' + num(i.densidad) + ' por hectárea'";
+  const CONTADO = "texto: 'Son ' + cn(i.total, 'elemento', 'elementos') + ' en total'";
+  comprobar('el barrido ve el campo crudo y calla el que pasa por el formateador',
+    crudos(CRUDO).length === 1 && crudos(ENVUELTO).length === 0 && crudos(CONTADO).length === 0,
+    !crudos(CRUDO).length ? 'no ve el crudo: no vigilaría nada'
+      : crudos(ENVUELTO).length ? 'denuncia un num() que sí está'
+        : crudos(CONTADO).length ? 'denuncia un cn() que sí está'
+          : 've el crudo, y calla el num() y el cn()');
+  const cnPorNum = /const cn = \([^)]*\) => num\(/.test(j26);
+  comprobar('y cn() sigue escribiendo su cifra con num()', cnPorNum,
+    cnPorNum ? 'cn pasa la cifra por num'
+      : 'cn dejó de pasar por num: los contados volverían a salir sin separador ' +
+        'de miles y todo lo de arriba seguiría en verde');
 }
 
 console.log('\n  -- el texto que la página trae escrito (v1023) --');

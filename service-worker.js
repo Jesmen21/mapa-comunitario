@@ -1,4 +1,4 @@
-const URBIS_CACHE = 'urbis-v1026-alertas-villa-de-leyva-chaparral';
+const URBIS_CACHE = 'urbis-v1027-el-diagnostico-del-area';
 const URBIS_ASSETS = [
   './',
   './index.html',

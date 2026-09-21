@@ -19884,6 +19884,200 @@ rompería la caché de todos los teléfonos sin cambiarles una línea de lo que
 ven. Es la misma decisión de la v1024. Y por lo mismo esta tanda **no tiene
 pantalla que mirar**: no toca una sola cadena de lo que se imprime.
 
+## El diagnóstico del área, medido sobre su papel (v1027)
+
+La guarda de concordancia de la v1019 tiene un contrato escrito: *«Un archivo
+que entre aquí tiene que venir con su PAPEL MEDIDO, no con una promesa.»* Esta
+tanda cumple ese contrato para el sexto archivo, y lo que la mudanza destapó
+vale más que la mudanza.
+
+    v1026   «La muestra es corta (1 elementos)» · «0.1 elem./ha» · «7.07 ha»
+    v1027   «La muestra es corta (1 elemento)» · «0,1 elem./ha» · «7,07 ha»
+
+### Cuál seguía, medido y no elegido
+
+Barridos los archivos servidos con el MISMO barrido de la guarda, el siguiente
+no era el más grande sino el que peor se porta:
+
+| | sitios | sin rama |
+|---|---|---|
+| js/68 (la lámina la vigila `tdoslaminas` sobre el papel) | 299 | 276 |
+| **js/26 · el diagnóstico del área** | **21** | **21** |
+| js/24 | 14 | 13 |
+| js/78 | 10 | 10 |
+
+**Veintiuno de veintiuno**: ese módulo no tenía una sola rama de singular. Y
+entre sus frases está la que decide la elección, porque su «1» no es un caso
+raro sino **el más probable**:
+
+> La muestra es corta (**1 elementos**): las conclusiones son preliminares.
+
+Esa frase existe PARA el sector con pocos elementos. Con uno solo —el primer
+punto que un estudiante mapea— es la que sale.
+
+### El papel se pudo componer entero, y por una razón medida
+
+`js/24-procity-analisis.js` no tiene **un solo `fetch`**: el análisis de Pro
+City es local de cabo a rabo. Así que no hizo falta fabricar nada ni suplantar
+el módulo de análisis —que habría sido medir mi propio doble—: se recorrió el
+camino de verdad con la sonda, con los métodos que el módulo expone.
+
+1. un punto mapeado, residencial, en `globalData`;
+2. el filtro de «solo lo mío» quitado por su acción de verdad;
+3. `iniciarDibujo` y cinco `agregarPunto` —el quinto sobre el primero, que es
+   como se cierra un área con el dedo—;
+4. `htmlPanel(ctx)`, que es quien calcula y deja `__pcaUltimo`;
+5. `diagnosticar(ctx)` y sus cuatro piezas, barridas por **nodos de texto**.
+
+Sale un sector de 7,07 ha con `total: 1` y `vivienda: 1`. Es el día uno de
+cualquier levantamiento.
+
+#### Tres vueltas del material, y ninguna se dedujo leyendo
+
+* **`globalData` guarda OBJETOS**, no filas: `{tipo, lat, lng, descripcion}`,
+  con la descripción partida por `' | '`. Sembrarlo como filas dio `total: 0`.
+* **El filtro de propiedad lo rechazaba**: de las cinco condiciones que el
+  módulo comprueba, cuatro salían bien y `visible` no. Se vio instrumentando
+  las cinco por separado, no leyendo el código.
+* **El tipo lleva emoji**: `'🗺️ Matriz de Usos'`. Con el nombre pelado el punto
+  no es de Pro City y no cuenta — la lección de la v988, otra vez.
+
+### Lo que el papel dijo, y por qué ninguna guarda lo veía
+
+**Concordancia: 2.** Las dos citadas arriba.
+
+**Punto decimal: 4.** «0.1 elem./ha», «0.1 elementos por hectárea», «7.07 ha».
+La guarda de la v1022 no podía verlas y el motivo es preciso: **aquella caza un
+`toFixed` pegado a una unidad**, y acá el decimal no nace de un `toFixed` sino
+de un `Math.round(x * 10) / 10` guardado en un campo —`densidad`, `areaHa`,
+`riesgoPorHa`— que se imprime doscientas líneas más abajo. Entre el redondeo y
+la unidad no hay nada que un barrido estático pueda atar.
+
+### Y leer el papel encontró dos que ninguna regla persigue
+
+Las cuatro reglas dan cero y la hoja sigue estando mal. Estas dos salieron de
+**leer lo compuesto**, que es el método que encontró los defectos de la v874,
+la v882, la v885, la v887, la v974 y la v978.
+
+#### «Sin elementos residenciales mapeados» sobre un sector con uno
+
+Con una casa: 1 vivienda × 3,1 personas = 3,1, y la población **se redondea a
+la decena** —a propósito, para no fingir precisión—, así que da **cero**. Y con
+cero habitantes el panel imprimía:
+
+> Sin elementos residenciales mapeados no se puede estimar población.
+
+**Que es falso.** Sí se mapeó uno; lo que pasó es que el redondeo se lo comió.
+Son dos situaciones que piden cosas distintas a quien está mapeando —«no
+registraste vivienda» contra «registraste una y hace falta más para dar una
+cifra»— dichas con la misma frase: es declarar mal la causa (v867), y el
+discriminante estaba al lado, en `i.pob.elementos`. Quinta vez de la clase A
+en este proyecto contando desde la v875.
+
+**No se tocó el modelo de población**, y eso va dicho: el redondeo a la decena
+tiene su razón escrita, y `habitantes` alimenta `habPorHa`, `verdePorHab` y
+varias reglas del FODA. Lo que se arregla es la causa declarada, que es lo que
+estaba mal.
+
+#### Un verbo en singular delante de una lista
+
+> **No se registró** servicios de salud, equipamiento educativo o cultural,
+> suelo protegido…, comercio de abastecimiento dentro del área.
+
+La concordancia de la v874 mira «1 + plural»; esta es la del VERBO con una
+lista, y no la caza ninguna guarda. Se vio leyendo.
+
+### Un solo formateador, que es lo que hace la guarda posible
+
+El módulo ya tenía `num`, que es `toLocaleString('es-CO')` y resuelve **las dos
+cosas** —la coma decimal y el separador de miles—. Los sitios simplemente no
+pasaban por él. Así que:
+
+* **33 cifras** van por `num()`;
+* **21 sustantivos contados** van por `cn(n, sing, plur)`, que es `num` más la
+  rama de singular. No se escribió un formateador nuevo: `cn` pasa por `num`,
+  y hay una comprobación dedicada a que lo siga haciendo.
+
+Con eso la guarda nueva puede ser **exacta**, y eso no se puede hacer en el
+repositorio entero: perseguir «variable + unidad» en todas partes daría falsos
+positivos a montones —la trampa de la v895—. Acá se puede porque el módulo
+tiene UN formateador y UN contador, así que la regla es *ningún campo del
+objeto de indicadores se imprime sin pasar por uno de los dos*, y falla
+CERRADO: un campo nuevo impreso en crudo sale en rojo en su primera
+composición. La lista de campos de TEXTO exentos **está vacía hoy**.
+
+### Lo que no se pudo componer, y se dice
+
+La rama de **cobertura del suelo** —`verdePct`, `duroPct`, `aguaPct`,
+`mPorPx`— necesita el ráster del satélite, que desde esta máquina el proxy
+bloquea. Esos campos se arreglaron **por la clase**, pasándolos por `num()`
+como los demás, y la guarda los vigila; pero **su texto no se vio impreso**.
+Queda dicho por lo que es y no se presenta como medido.
+
+### Un ayudante que puse yo al lado de otro igual (v1020)
+
+Al abrir js/70 para el mismo tema apareció que declara **dos** funciones que
+hacen lo mismo: `cn`, que agregué en la v1020, y `plural`, que ya estaba. La
+guarda de la v885 no las ve porque persigue **el mismo nombre** dos veces, y
+esto es la clase B —dos nombres para un hecho—, que a propósito no tiene
+guarda.
+
+Y no eran equivalentes: `plural` compara con `n === 1` y `cn` con
+`Number(n) === 1`, así que **`plural('1', …)` imprime «1 casos»**. Hoy ninguna
+de sus cinco llamadas pasa un texto, así que no estaba vivo; se retira igual,
+y se queda `cn`, que es el de las veintisiete llamadas y el de la prueba más
+estricta. Comprobado sobre el papel: con el registro recortado a un elemento
+la página presidencial compone exactamente igual —seis conteos en 1, los seis
+en singular—.
+
+### Demostrado contra la v1026
+
+Cinco inyecciones, cada una con su aserción (v993), contra copias guardadas en
+el borrador y no con `git checkout --` sobre trabajo sin confirmar (v973):
+
+```
+✗ MATERIAL · el diagnóstico imprime cifras por num() y cn()
+    — NO PUDO CORRER: el módulo ya no declara num o cn
+✗ ninguna cifra del diagnóstico se imprime sin formatear
+    — 1 saldrían con punto decimal o sin separador de miles: densidad (línea 433)
+✗ y cn() sigue escribiendo su cifra con num()
+    — cn dejó de pasar por num: los contados volverían a salir sin separador
+✗ todos llevan su rama de singular  — 1 imprimirian «1 cosas»: 26:457 «elementos»
+✗ el barrido ve el campo crudo y calla el que pasa por el formateador
+    — no ve el crudo: no vigilaría nada
+```
+
+Y dos correcciones de las mías, las dos de la misma familia y las dos vistas
+**al demostrar**, no al escribir:
+
+* una aserción imprimía **el texto del verde mientras estaba en rojo**. Es la
+  cuarta vez (v1019, v1021, v1025, y esta);
+* y mi primera inyección del caso conocido **no era fiel**: quitaba unas
+  miradas atrás que no son las que distinguen —lo que distingue es el `)` que
+  cierra `num(`—, así que la guarda seguía en verde con razón. La fiel es otra:
+  que el barrido deje de reconocer el nombre con el que el módulo llama a sus
+  indicadores.
+
+### Lo que queda medido de esta clase
+
+| | sin rama |
+|---|---|
+| js/68 (la lámina ya la vigila `tdoslaminas` sobre el papel) | 276 |
+| js/24 · el análisis de Pro City | 13 |
+| js/78 · «Qué cabe en el lote» | 10 |
+| js/64 · el análisis educativo | 9 |
+| js/90 · Visión Territorial | 9 |
+
+Cada uno entra cuando alguien le componga el papel, que es el contrato y la
+razón de que esta tanda mida uno solo.
+
+### Y una de numeración
+
+La otra sesión publicó `1026-alertas-villa-de-leyva-chaparral` mientras esto
+se escribía —mi v1026 no subió el token porque solo tocó `revisar.js` y la
+bitácora—, así que este es el **v1027**. Se sube por encima, nunca bajando la
+propia: la regla del 7 de septiembre.
+
 ## La lista viva: lo que al pliego educativo todavía le falta (v866)
 
 Esta lista se quedó vieja **cinco veces**. Cuatro dentro de la hoja —la
