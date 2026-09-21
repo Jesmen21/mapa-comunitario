@@ -38,7 +38,8 @@
       '<b>' + (pocos ? '⚠️ ' : '✅ ') + 'Este análisis se hizo con ' + miles(e.leidos) +
         (e.leidos === 1 ? ' punto' : ' puntos') + ' que ustedes mapearon.</b>' +
       '<p>' + (e.puntosDelCurso > e.leidos
-        ? 'Dentro del radio hay ' + miles(e.puntosDelCurso) + ' puntos en total; el análisis pudo ' +
+        ? 'Dentro del radio hay ' + miles(e.puntosDelCurso) +
+              (e.puntosDelCurso === 1 ? ' punto' : ' puntos') + ' en total; el análisis pudo ' +
           'leer ' + miles(e.leidos) + '. El resto son reportes de situaciones (un hueco, un retén) ' +
           'que no son un uso del suelo, así que no cuentan como actividad del sector.'
         : 'Todos los puntos del radio entraron al análisis.') +
@@ -163,7 +164,8 @@
     if (!s.poblacionProyectada || !(s.serieProyeccion || []).length) {
       return s.poblacionEsCensal
         ? '<p class="edu-nota">Censo DANE ' + s.censoAnio + ': ' + miles(s.poblacionCenso) +
-          ' habitantes. Sin proyección para este municipio, así que se usa el conteo tal cual.</p>'
+          (s.poblacionCenso === 1 ? ' habitante' : ' habitantes') +
+          '. Sin proyección para este municipio, así que se usa el conteo tal cual.</p>'
         : '';
     }
     const serie = s.serieProyeccion;
@@ -299,7 +301,7 @@
         '<p class="edu-nota">' + esc(h.lectura) + '</p>';
     }
     return '<h4 class="sep">🌙 Y según el letrero · <em>declarado en el mapa</em></h4>' +
-      '<p class="edu-cobertura"><b>' + h.conDato + ' de ' + h.total + '</b> usos declaran horario · ' +
+      '<p class="edu-cobertura"><b>' + h.conDato + ' de ' + h.total + '</b> ' + (h.total === 1 ? 'uso declara' : 'usos declaran') + ' horario · ' +
         h.cobertura + ' % de cobertura' + (h.suficiente ? '' : ' — muy poco para concluir') + '</p>' +
       '<ul class="edu-horarios">' +
         fila('Abren después de las 8 p.m.', h.deNoche, h.pct.deNoche) +
@@ -737,7 +739,9 @@
       '<header><img src="assets/brand/urbis-logo.png" onerror="this.style.display=\'none\'">' +
         '<div><h1>Hoja de campo · ' + esc(((r.edu || {}).ciudad) || m.direccionAprox || 'el sector') + '</h1>' +
         '<p>Radio de ' + radioTxt + ' alrededor de ' + (m.lat ? m.lat.toFixed(5) + ', ' + m.lng.toFixed(5) : 'el centro del mapa') +
-        ' · generada el ' + esc(fecha) + ' a partir de ' + ((r.edu || {}).leidos || 0) + ' puntos ya mapeados</p></div></header>' +
+        ' · generada el ' + esc(fecha) + ' a partir de ' + ((r.edu || {}).leidos || 0) +
+            (((r.edu || {}).leidos || 0) === 1 ? ' punto ya mapeado' : ' puntos ya mapeados') +
+            '</p></div></header>' +
       '<div class="datos"><div><b>Grupo</b><span></span></div><div><b>Fecha y hora de salida</b><span></span></div><div><b>Clima</b><span></span></div></div>' +
       mapa +
       (enCalle.length ? enCalle.map(tabla).join('')
@@ -977,7 +981,7 @@
     return '<div class="edu-forma-cabeza">' +
         '<span class="edu-forma-ico">' + (FORMA_ICONO[f.id] || '◇') + '</span>' +
         '<div><b>' + esc(f.nombre) + '</b>' +
-        '<small>' + nVias + ' calles' + (km ? ' · ' + km + ' km de vía' : '') + '</small></div>' +
+        '<small>' + nVias + (nVias === 1 ? ' calle' : ' calles') + (km ? ' · ' + km + ' km de vía' : '') + '</small></div>' +
       '</div>' +
       '<p class="edu-forma-que">' + esc(f.descripcion) + '</p>' +
       '<p class="edu-forma-porque"><b>Por qué: </b>' + esc(f.porque) + '</p>' +

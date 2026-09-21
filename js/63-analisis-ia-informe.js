@@ -602,7 +602,10 @@
     return '<div class="bloque"><h2>Movilidad y exposición vial</h2>' +
       '<div class="expo"><div class="expo-num" style="color:' + col + '">' + m.exposicion + '<small>/100</small></div>' +
       '<div class="expo-info"><b style="background:' + col + '">Exposición ' + esc(m.nivelExposicion) + '</b>' +
-      '<span>' + m.nViasArterias + ' corredores · ' + m.paradasBus + ' paradas · ' + m.ciclorrutas + ' ciclorrutas</span></div></div>' +
+      '<span>' + m.nViasArterias + (m.nViasArterias === 1 ? ' corredor' : ' corredores') +
+          ' · ' + m.paradasBus + (m.paradasBus === 1 ? ' parada' : ' paradas') +
+          ' · ' + m.ciclorrutas + (m.ciclorrutas === 1 ? ' ciclorruta' : ' ciclorrutas') +
+          '</span></div></div>' +
       (barras ? '<table class="tbl-vias">' + barras + '</table>' : '') +
       '<p class="expo-arg">' + esc(m.argumento) + '</p></div>';
   }
@@ -886,7 +889,7 @@
       '<div class="comp-barra"><i style="width:' + Math.round(100 * x.peso / max) +
         '%;background:' + T.acento + '"></i></div>' +
       '<b>' + x.peso + '%</b></div>' +
-      '<p class="anillo-ej">' + x.n + ' usos · ' + x.comercios + ' de comercio' +
+      '<p class="anillo-ej">' + x.n + (x.n === 1 ? ' uso' : ' usos') + ' · ' + x.comercios + ' de comercio' +
       (x.ejemplos.length ? ' — ' + esc(x.ejemplos.map(e => e.nombre + ' (' + e.distM + ' m)').join(', ')) : '') +
       '</p>').join('');
     const nuc = (s.nucleos || [])[0];
@@ -898,7 +901,7 @@
         'Lo de cerca pesa más: no es lo mismo un supermercado a 100 m que a 900 m.</p>' +
         filas +
         (nuc ? '<p class="nucleo">La concentración comercial que más interviene: <b>' + nuc.n +
-               ' locales a ~' + nuc.distM + ' m</b>, sobre todo de ' +
+               (nuc.n === 1 ? ' local' : ' locales') + ' a ~' + nuc.distM + ' m</b>, sobre todo de ' +
                esc(nuc.rubroDominante.toLowerCase()) + '.' +
                (nuc.nombres.length ? ' Por ejemplo: ' + esc(nuc.nombres.join(', ')) + '.' : '') + '</p>'
              : '') +
@@ -1041,7 +1044,8 @@
       '<div class="cl-lectura"><b>LECTURA CLAVE</b><p>' + esc(lectura) + '</p>' + consejo + '</div>' +
       '<div class="cl-minis">' +
         '<div><b>DEMANDA</b><small>' + s.poblacionEstimada.toLocaleString('es-CO') +
-          ' habitantes en el área de influencia.</small></div>' +
+          (s.poblacionEstimada === 1 ? ' habitante' : ' habitantes') +
+            ' en el área de influencia.</small></div>' +
         '<div><b>VISIBILIDAD</b><small>Exposición vial ' + esc((m.nivelExposicion || '').toLowerCase()) +
           (via ? '; ' + esc(via.nombre) + ' a ' + via.distM + ' m.' : '.') + '</small></div>' +
         '<div><b>DÓNDE PARAR</b><small>' + esc(textoParqueo(f)) + '</small></div>' +
@@ -1110,7 +1114,8 @@
           ' <em>&middot; ' + esc(pp.motivo) + '</em></span><b>&minus;' + pp.resta +
           ' (' + pp.n + ')</b></div>').join('') +
         '<p class="pie-nota">Descuenta ' + (f.restaPeaton || 0) + ' de ' + (f.sumaBruta || 0) +
-        ' puntos brutos de atracción peatonal.</p></div>'
+        ((f.sumaBruta || 0) === 1 ? ' punto bruto' : ' puntos brutos') +
+        ' de atracción peatonal.</p></div>'
       : '<div class="resta"><h3>Lo que rompe el recorrido a pie</h3>' +
         '<p class="pie-nota">No se detectaron frentes muertos (bodegas, lotes encerrados, ' +
         'locales desocupados o ruinas) en el radio: la continuidad del andén no tiene cortes visibles.</p></div>';
@@ -1184,7 +1189,8 @@
         ' igual en todos los cálculos de este informe.</p>'
       : '';
     return '<div class="tarjeta"><h2>Composición del entorno</h2>' +
-      '<p class="sub-nivel" style="color:' + T.ok + '">' + s.total.toLocaleString('es-CO') + ' usos identificados</p>' +
+      '<p class="sub-nivel" style="color:' + T.ok + '">' + s.total.toLocaleString('es-CO') +
+        (s.total === 1 ? ' uso identificado' : ' usos identificados') + '</p>' +
       filas + nota + '</div>';
   }
 
@@ -1231,8 +1237,8 @@
           filaBarra('Media', e.media, e.evaluables, T.warn) +
           filaBarra('Baja', e.baja, e.evaluables, T.ok) +
           '<p class="pie-nota"><b>No es un diagnóstico estructural.</b> Es el cruce de ' +
-          'material y época sobre las ' + e.evaluables + ' edificaciones que traen los dos ' +
-          'datos, y solo señala cuáles ameritan que las revise un ingeniero. El primer ' +
+          'material y época sobre las edificaciones que traen los dos datos (' + e.evaluables + '), ' +
+          'y solo señala cuáles ameritan que las revise un ingeniero. El primer ' +
           'código sismo resistente colombiano es el Decreto 1400 de 1984: aquí hay ' +
           e.anteriores1984 + ' ' + (e.anteriores1984 === 1 ? 'construcción' : 'construcciones') +
           ' anterior' + (e.anteriores1984 === 1 ? '' : 'es') + ' a esa fecha' +
@@ -1354,7 +1360,9 @@
         c.barrios.slice(0, 5).map(b => esc(b.nombre)).join(', ') + '.</p>' : '') +
       '<p class="ctx-sub">Busetas que paran en el radio</p>' +
       (rutas ? '<ul class="ctx-rutas">' + rutas + '</ul>' +
-               '<p class="nota-pie">' + c.rutas.length + ' rutas en ' + c.paradas + ' paradas mapeadas; es lo subido a OpenStreetMap, no la oferta completa.</p>'
+               '<p class="nota-pie">' + c.rutas.length + (c.rutas.length === 1 ? ' ruta' : ' rutas') +
+                   ' en ' + c.paradas + (c.paradas === 1 ? ' parada mapeada' : ' paradas mapeadas') +
+                   '; es lo subido a OpenStreetMap, no la oferta completa.</p>'
              : '<p class="nota-pie">Sin rutas de buseta mapeadas en el radio.</p>') +
       '<p class="ctx-sub">La frontera</p>' +
       '<p class="nota-pie">' + esc((c.binacional || {}).lectura || '') +
@@ -1392,7 +1400,7 @@
       '<td class="hor-n">' + n + '</td><td class="hor-p">' + (pct || 0) + ' %</td></tr>';
     return '<div class="tarjeta"><h3 class="tarj-t">Lo que dice el letrero ' +
         '<em>· declarado en el mapa, no estimado</em></h3>' +
-      '<p class="hor-cob"><b>' + h.conDato + ' de ' + h.total + '</b> usos declaran horario ' +
+      '<p class="hor-cob"><b>' + h.conDato + ' de ' + h.total + '</b> ' + (h.total === 1 ? 'uso declara' : 'usos declaran') + ' horario ' +
         '(' + h.cobertura + ' % de cobertura)' +
         (h.suficiente ? '. Los porcentajes son sobre esos ' + h.conDato + '.'
                       : ' — muy poco para describir el sector.') + '</p>' +
@@ -1547,7 +1555,7 @@
     }
     const n = r.formaEdu.nVias || 0;
     return '<div class="tarjeta"><h2>La forma de la traza</h2>' +
-      '<p class="forma-nombre">' + esc(f.nombre) + ' <em>· ' + n + ' calles</em></p>' +
+      '<p class="forma-nombre">' + esc(f.nombre) + ' <em>· ' + n + (n === 1 ? ' calle' : ' calles') + '</em></p>' +
       '<p class="nota-pie">' + esc(f.descripcion || '') + '</p>' +
       '<p class="nota-pie"><b>Por qué:</b> ' + esc(f.porque || '') + '</p>' +
       (f.advertencia ? '<p class="nota-pie forma-ojo">' + esc(f.advertencia) + '</p>' : '') +

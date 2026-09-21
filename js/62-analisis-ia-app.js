@@ -1393,9 +1393,9 @@
       '<i><b style="width:' + Math.round(100 * x.peso / max) + '%"></b></i>' +
       '<b>' + x.peso + '%</b></li>' +
       (x.ejemplos.length
-        ? '<p class="aia-anillo-ej">' + x.n + ' usos · ' + x.comercios + ' de comercio — ' +
+        ? '<p class="aia-anillo-ej">' + x.n + (x.n === 1 ? ' uso' : ' usos') + ' · ' + x.comercios + ' de comercio — ' +
           escHTML(x.ejemplos.map(e => e.nombre + ' (' + e.distM + ' m)').join(', ')) + '</p>'
-        : '<p class="aia-anillo-ej">' + x.n + ' usos · ' + x.comercios + ' de comercio</p>')
+        : '<p class="aia-anillo-ej">' + x.n + (x.n === 1 ? ' uso' : ' usos') + ' · ' + x.comercios + ' de comercio</p>')
     ).join('');
     const nuc = (s.nucleos || [])[0];
     return '<h4 class="aia-flujo-sub">Radio de importancia</h4>' +
@@ -1404,7 +1404,7 @@
       '<ul class="aia-anillos">' + filas + '</ul>' +
       (nuc
         ? '<div class="aia-nucleo">🏬 La concentración comercial que más interviene: ' +
-          '<b>' + nuc.n + ' locales a ~' + nuc.distM + ' m</b>, sobre todo de ' +
+          '<b>' + nuc.n + (nuc.n === 1 ? ' local' : ' locales') + ' a ~' + nuc.distM + ' m</b>, sobre todo de ' +
           escHTML(nuc.rubroDominante.toLowerCase()) + '.' +
           (nuc.nombres.length ? ' Por ejemplo: ' + escHTML(nuc.nombres.join(', ')) + '.' : '') +
           '</div>'
@@ -1434,7 +1434,7 @@
         '<p class="aia-flujo-nota">' + escHTML(h.lectura) + '</p>';
     }
     return '<h4 class="aia-flujo-sub">🌙 Lo que dice el letrero <em>· declarado en el mapa</em></h4>' +
-      '<p class="urb-cobertura"><b>' + h.conDato + ' de ' + h.total + '</b> usos declaran horario · ' +
+      '<p class="urb-cobertura"><b>' + h.conDato + ' de ' + h.total + '</b> ' + (h.total === 1 ? 'uso declara' : 'usos declaran') + ' horario · ' +
         h.cobertura + ' % de cobertura' + (h.suficiente ? '' : ' — muy poco para concluir') + '</p>' +
       '<ul class="urb-horarios">' +
         fila('Abren después de las 8 p.m.', h.deNoche, h.pct.deNoche) +
@@ -1499,7 +1499,8 @@
           '<li><span>' + escHTML(pp.nombre) + ' · ' + escHTML(pp.motivo) + '</span>' +
           '<small>×' + pp.n + '</small><b>−' + pp.resta + '</b></li>').join('') + '</ul>' +
         '<p class="aia-flujo-nota">Descuenta ' + (f.restaPeaton || 0) + ' de ' + (f.sumaBruta || 0) +
-        ' puntos brutos de atracción peatonal.</p>'
+        ((f.sumaBruta || 0) === 1 ? ' punto bruto' : ' puntos brutos') +
+            ' de atracción peatonal.</p>'
       : '';
 
     // Qué atrae VEHÍCULOS, que no es lo mismo que qué atrae peatones: a una

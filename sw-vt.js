@@ -13,7 +13,7 @@
 
    La versión va acá y en vision-territorial.html, idéntica, como en los
    otros siete archivos de versión del sitio: revisar.js lo comprueba. */
-const VT_CACHE = 'urbis-vt-v1018-un-plural-que-no-esta-escrito';
+const VT_CACHE = 'urbis-vt-v1019-una-cifra-de-1-no-lleva-plural';
 const VT_ASSETS = [
   './vision-territorial.html',
   './css/90-vt.css',

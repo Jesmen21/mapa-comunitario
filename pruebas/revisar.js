@@ -7986,6 +7986,109 @@ console.log('\n  -- un plural no se fabrica pegando «es» (v1018) --');
         : 've la falta en codigo y no la del comentario');
 }
 
+console.log('\n  -- una cifra de 1 no lleva un plural detras (v1019) --');
+{
+  /* La regla es la de la v874 -«1 piezas de servicios registradas» se lee
+     como un descuido de quien firma la hoja- y se persigue desde entonces
+     SOBRE EL PAPEL COMPUESTO, que es donde el defecto existe. La unica suite
+     que compone un documento compone la lamina, asi que el informe de
+     empresas y la hoja del curso se escapaban.
+
+     Esta es la version estatica de esa regla: todo sitio que pegue un plural
+     detras de una cifra tiene que tener su rama de singular.
+
+     POR QUE SOLO TRES ARCHIVOS, y no el repositorio entero: la clase esta en
+     todas partes -medido, 460 sitios sin rama en 33 archivos, con 108
+     palabras distintas- y arreglarla es varias tandas. Estos tres son los que
+     esta tanda MIDIO SOBRE EL PAPEL: se compuso el informe con las hojas
+     valiendo 1 de verdad y se barrio el documento. Un archivo que entre aqui
+     tiene que venir con su papel medido, no con una promesa. */
+  const ARCHIVOS = ['js/62-analisis-ia-app.js', 'js/63-analisis-ia-informe.js',
+                    'js/65-analisis-edu-ui.js'];
+
+  /* Palabras que acaban en «s» y no son plurales, con su razon al lado. Es la
+     misma forma que la lista de invariables de `tdoslaminas` y que el `leeme`
+     de la v897: se declara una por una y se ve por que. */
+  const NO_ES_PLURAL = [
+    ['ms', 'simbolo de milisegundo: un simbolo de unidad no se pluraliza'],
+  ];
+
+  /* El barrido, en una funcion, para que la guarda de la guarda corra EL
+     MISMO y no una copia (v879). */
+  function sinRama(txt) {
+    const re = /\+\s*'((?:<\/[a-z]+>)?[ ·]+([a-záéíóúñ]+s))\b/g;
+    const out = [];
+    let m;
+    while ((m = re.exec(txt))) {
+      const antes = txt.slice(Math.max(0, m.index - 160), m.index);
+      const tieneRama = /=== *1 *\?|!== *1 *\?|plural\(|\bpl\(/.test(antes);
+      out.push({ palabra: m[2], en: m.index, sinRama: !tieneRama });
+    }
+    return out;
+  }
+
+  /* El MATERIAL no puede ser «cuantos sitios usan la forma mala»: arreglarlos
+     lo deja en cero y la guarda se quedaria sin material por haber MEJORADO
+     el codigo, que es la trampa de la v970. Lo que sobrevive al cero es otra
+     cosa: que estos archivos sigan imprimiendo sustantivos contados. Se
+     cuentan los de las dos formas -con rama y sin ella-. */
+  const CON_RAMA = /\?\s*'[ ·]*[a-záéíóúñ]+'\s*:\s*'[ ·]*[a-záéíóúñ]+s'|\b(?:plural|pl)\(/g;
+  const exentas = new Set(NO_ES_PLURAL.map((x) => x[0]));
+  let sitios = 0;
+  const pelados = [];
+  ARCHIVOS.forEach((rel) => {
+    const txt = soloCodigo(leer(rel));
+    sitios += (txt.match(CON_RAMA) || []).length;
+    sinRama(txt).forEach((s) => {
+      sitios++;
+      if (!s.sinRama || exentas.has(s.palabra)) return;
+      pelados.push(rel.slice(3, 5) + ':' + txt.slice(0, s.en).split('\n').length + ' «' + s.palabra + '»');
+    });
+  });
+
+  /* MATERIAL primero (v920). */
+  if (sitios < 10) {
+    anotarSinMaterial('MATERIAL - los tres archivos imprimen sustantivos contados',
+      'solo ' + sitios + ' sitios: el barrido no tendria casi nada que mirar');
+  } else {
+    comprobar('MATERIAL - los tres archivos imprimen sustantivos contados',
+      true, sitios + ' sitios ponen un sustantivo detras de una cifra');
+
+    comprobar('todos llevan su rama de singular',
+      pelados.length === 0,
+      pelados.length
+        ? pelados.length + ' imprimirian «1 cosas» en el papel: ' + pelados.slice(0, 5).join(' · ')
+        : 'los ' + sitios + ' la llevan, salvo ' + NO_ES_PLURAL.length +
+          ' declarada aparte: ' + NO_ES_PLURAL.map((x) => '«' + x[0] + '» ' + x[1]).join(' · '));
+  }
+
+  /* LA GUARDA DE LA GUARDA (v878): el barrido reconoce la forma y la rama. */
+  /* El caso «con rama» tiene que SER UNO QUE EL BARRIDO ENCUENTRE, o la
+     comprobacion pasa por no casar el patron y no por reconocer el ternario
+     -asi estaba escrita la primera version, y una inyeccion lo destapo-. Este
+     sale de js/62: el patron casa en «+ ' usos de este analisis'» y el
+     ternario esta a la vista, unas palabras antes. */
+  const SIN = "'<p>' + n + ' usos identificados</p>'";
+  const CON = "(n === 1 ? 'Un uso' : n + ' usos de este analisis') + ' y no viene'";
+  const CON_PL = "plural(n, 'uso', 'usos') + ' de ' + m + ' usos totales'";
+  const veSin = sinRama(SIN).some((s) => s.sinRama);
+  const veCon = sinRama(CON).some((s) => s.sinRama);
+  const veConPl = sinRama(CON_PL).some((s) => s.sinRama);
+  comprobar('el barrido distingue el sitio con rama del que no la tiene',
+    veSin && !veCon && !veConPl,
+    !veSin ? 'no ve el que NO tiene rama: no vigilaria nada'
+      : veCon ? 'denuncia un ternario que si esta: daria rojo sobre lo que esta bien'
+        : veConPl ? 'no reconoce plural(): denunciaria los sitios de js/67 y js/68'
+          : 've el pelado, y calla el del ternario y el de plural()');
+
+  /* Y que la lista de exentas siga siendo lo que dice: una palabra sin su
+     razon escrita es una excepcion que envejece hasta no significar nada
+     (v895). */
+  comprobar('cada palabra exenta lleva su razon escrita',
+    NO_ES_PLURAL.every((x) => x[0] && x[1] && x[1].length > 20),
+    NO_ES_PLURAL.length + ' exenta(s), cada una con el motivo por el que no es un plural');
+}
+
 /* Las dos cuentas van APARTE porque piden cosas distintas: una fallada hay
    que arreglarla, una sin material hay que mirarla —o se quedó sin él porque
    el registro mejoró, o porque la función dejó de ver lo que medía—. Sumarlas

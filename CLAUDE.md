@@ -18961,6 +18961,159 @@ la **hoja del curso** de `js/65`: componerla pide el análisis educativo y con
 él el motor, así que sus cuatro sitios se arreglaron y se comprobaron
 estáticamente, no sobre el papel.
 
+## «1 usos identificados», firmado por quien entrega el informe (v1019)
+
+La otra mitad de lo que la v1018 dejó medido. El mismo barrido del informe
+compuesto dejaba trece «1 seguido de plural», y buena parte eran de verdad:
+**la concordancia de la v874, viva en el módulo de empresas y en la hoja del
+curso.**
+
+    v1018   «1 corredores · 1 paradas · 1 ciclorrutas» · «1 usos identificados»
+    v1019   «1 corredor · 1 parada · 1 ciclorruta» · «1 uso identificado»
+
+Es la misma forma de la v867 que esta serie lleva encontrando tanda tras
+tanda, y la v1018 ya la había nombrado para la ortografía: **la regla existe,
+se aplica en una superficie y las otras se le escapan.** `tdoslaminas` la
+persigue **sobre el papel ya compuesto** desde la v874 —que es lo correcto,
+porque el defecto no existe en las variables sino en el documento— y la única
+suite que compone un documento compone la lámina.
+
+Son **23 sitios** en `js/62`, `js/63` y `js/65`.
+
+### El fixture que aprende la forma, y las dos ramas
+
+Lo que costó y lo que más sirve. Componer el informe pide un resultado de
+análisis entero y el motor no está en este contenedor, así que la v1018
+compuso con un `Proxy` permisivo. Ese `Proxy` **no es `=== 1`**, de modo que
+todos los ternarios toman su rama de PLURAL: sirve para medir la ortografía y
+**no puede ver la rama del singular**, que es justo la que hay que mirar.
+
+La segunda pasada se saca de la primera: el `Proxy` **apunta qué campos le
+piden y cómo los usan** —si le llaman `.map` es una lista, si le llaman
+`.toLowerCase` es texto, si no, es una hoja— y con esa forma se arma un objeto
+**llano** donde cada hoja vale **1 de verdad**. Con él, los ternarios toman su
+rama de singular y el documento imprime lo que ve quien analiza un sector con
+una sola cosa de cada clase.
+
+Dos cosas que costaron una vuelta cada una y no se deducen leyendo:
+
+* **La segunda pasada toma ramas que la primera no recorrió** —los valores son
+  otros—, así que pide campos que nadie apuntó y revienta. Se cura sola: cada
+  vuelta lee del propio mensaje de error qué faltó (`X.slice is not a
+  function` → esa ruta es una lista) y lo agrega a la forma. Cierra en pocas
+  vueltas y el aviso dice cuántas.
+* **`toLocaleString` y `toFixed` son métodos de NÚMERO.** Tipar la hoja como
+  texto por ellos dejaba `'1' === 1` en falso, así que dos sitios **bien
+  arreglados** seguían saliendo denunciados. La sonda habría reportado un
+  defecto que no existe — y es la misma clase que el propio fixture vino a
+  cazar.
+
+Medido sobre el papel, con los archivos de la v1018 y con los de ahora:
+
+| | «1 seguido de plural» |
+|---|---|
+| rama plural | 13 · 13 (no cambia, y tiene que no cambiar) |
+| **rama singular, v1018** | **7** — «1 corredores · 1 paradas · 1 ciclorrutas», «1 locales a ~1 m», «sobre las 1 edificaciones» |
+| **rama singular, v1019** | **0** |
+
+### La misma frase, en tres archivos
+
+Al enumerarlos salió que **seis de las veintitrés son la misma oración escrita
+en dos o tres sitios**: «N de N usos declaran horario» está en `js/62`, `js/63`
+y `js/65`; «N usos · N de comercio», «N locales a ~N m» y «Descuenta N de N
+puntos brutos», en dos cada una.
+
+Es clase B en la redacción y no en el cálculo, y **no se unificó**: juntarlas
+pide un sitio común que estos tres archivos no tienen —`js/00-config.js` es lo
+único que comparten y es configuración, no una biblioteca—. Lo que sí se hizo
+es arreglarlas **igual en todas**, que es lo que impide que la próxima tanda
+encuentre dos redacciones y no sepa cuál manda. Queda anotado con su número.
+
+### Una frase en la que la concordancia se desarma en cascada
+
+«…sobre las N edificaciones que traen los dos datos, y solo señala cuáles
+ameritan que las revise un ingeniero.» Con N = 1 no basta cambiar el
+sustantivo: hay que mover el artículo, el verbo de la relativa y el pronombre,
+y «la 1 edificación» no es castellano en ningún caso.
+
+Ahí lo correcto no es un ternario más grande sino **sacar la cifra de gobernar
+la frase**: «…sobre las edificaciones que traen los dos datos (N), y solo
+señala…». Nada concuerda con el número, así que no hay nada que pueda
+desconcordar. Es el único sitio donde esta tanda cambió la redacción, y va
+dicho porque es una hoja que se imprime.
+
+### La guarda, y por qué mira tres archivos y no el repositorio
+
+Medida la clase repositorio adentro: **460 sitios sin rama de singular, en 33
+archivos, con 108 palabras distintas**. `js/68` solo tiene 299 y `js/70`, 51.
+Eso no es una tanda, son varias.
+
+Así que la guarda mira los **tres archivos que esta tanda midió sobre el
+papel**, y la razón va escrita dentro: un archivo que entre a esa lista tiene
+que venir con su documento compuesto y barrido, no con una promesa. Lo demás
+queda con su número, que es lo que la sesión siguiente necesita para no
+empezar por medirlo otra vez.
+
+Y con **una** palabra exenta, declarada con su razón como el `leeme` de la
+v897 y el `sp-count` de la v1015: **«ms»**, que es el símbolo de milisegundo y
+un símbolo de unidad no se pluraliza. Hay una comprobación aparte de que cada
+exenta lleve su motivo escrito — una lista de excepciones sin razones es la que
+envejece hasta no significar nada (v895).
+
+#### El MATERIAL medía la forma MALA, que es la trampa de la v970
+
+La primera versión contaba «cuántos sitios usan la forma sin rama». Arreglar
+los veintitrés la dejó en **4**, y la guarda se declaró sin material **por
+haber mejorado el código** — exactamente la presión que la v970 vino a quitar.
+
+Lo que sobrevive al cero es otra cosa: que estos archivos **sigan imprimiendo
+sustantivos contados**. Se cuentan los de las dos formas, con rama y sin ella,
+y da 36.
+
+#### Una inyección destapó que la guarda de la guarda no guardaba
+
+La comprobación de respuesta conocida tenía tres casos —uno que hay que
+denunciar y dos que hay que callar—. Al inyectar «el barrido deja de ver el
+ternario», **siguió en verde**: su caso «con rama» estaba escrito de una
+manera que **el patrón no casaba en absoluto**, así que pasaba por no
+encontrar nada y no por reconocer la rama.
+
+Los tres casos salen ahora de sitios reales de `js/62` y **los tres casan el
+patrón**, comprobado aparte. Con eso las dos inyecciones muerden: quitar el
+ternario y quitar `plural()` ponen cada una su renglón en rojo.
+
+Es la lección de siempre —una guarda que no puede fallar es un verde (v878)—
+encontrada por la única vía que la encuentra: **inyectar y mirar si se pone
+roja de verdad.**
+
+### Demostrado contra la v1018
+
+Cuatro inyecciones fieles contra una copia guardada, cada una con su aserción
+(v993):
+
+```
+✗ todos llevan su rama de singular
+    — 23 imprimirian «1 cosas» en el papel: 62:1396 «usos» · 62:1398 «usos» ·
+      62:1407 «locales» · 62:1437 «usos» · 62:1501 «puntos»
+✗ el barrido distingue el sitio con rama del que no la tiene
+    — denuncia un ternario que si esta: daria rojo sobre lo que esta bien
+✗ el barrido distingue el sitio con rama del que no la tiene
+    — no reconoce plural(): denunciaria los sitios de js/67 y js/68
+✗ cada palabra exenta lleva su razon escrita
+```
+
+Y la de MATERIAL se demostró sola por el camino: con la forma mala arreglada y
+el recuento viejo, salió `? SIN MATERIAL HOY: solo 4 sitios`.
+
+### Lo que NO se pudo correr
+
+**Ninguna suite de navegador**, por lo mismo que la v973 a la v1018. Corrió
+`revisar.js` entero y se compuso y barrió el informe de empresas con la sonda,
+en sus dos ramas. Lo que **no** se ejercitó sobre el papel es la **hoja del
+curso** de `js/65`: componerla pide el análisis educativo y con él el motor,
+así que sus cinco sitios se arreglaron y se comprobaron estáticamente. Tres de
+los cinco son la misma oración que sí se midió compuesta en `js/63`.
+
 ## La lista viva: lo que al pliego educativo todavía le falta (v866)
 
 Esta lista se quedó vieja **cinco veces**. Cuatro dentro de la hoja —la
