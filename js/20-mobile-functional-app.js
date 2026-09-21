@@ -5282,7 +5282,7 @@
     proCity.gpsAccuracy = (acc || acc === 0) ? Math.round(acc) : null;
     try{ window.urbisDisableReportMapClick = true; }catch(e){}
     setMapReportStatus('');
-    try{ if(window.map) map.setView([lat, lng], Math.max(map.getZoom ? map.getZoom() : 17, 17), { animate:true }); }catch(e){}
+    acercarParaColocar(lat, lng);
     renderCommunityPickMarker(lat, lng);
     // Si ya venía elegida la categoría (flujo "🏙️ Categoría" primero), se
     // muestran directo sus ítems; si no, se pregunta QUÉ ubicar en este punto.
@@ -6189,6 +6189,37 @@
      coordenadas viejas es peor que uno clavado —se ve corregido y no lo
      está—, que es la familia de fallos que este proyecto llama «una señal
      de éxito que no lo es». */
+  /* ── El zoom al que SE PUEDE colocar un punto con el dedo (v987) ────────
+     No es un número a ojo. Sale de dos cifras que el proyecto ya tiene: la
+     v978 fijó 12 m como lectura BUENA de GPS —«con eso se distingue una casa
+     de la de al lado»— y el alfiler que se le pone encima mide 58 px. El zoom
+     de trabajo es el primero en el que ese círculo de 12 m es MAYOR que el
+     alfiler, o sea en el que la imprecisión que hay que corregir se ve
+     ALREDEDOR de él y no debajo:
+
+         z19 → 0,295 m/px → 12 m son 40,7 px  ← caben DENTRO del alfiler
+         z20 → 0,148 m/px → 12 m son 81 px
+
+     Hasta la v986 este flujo caía en z17 (1,18 m/px), donde un andén de 1,5 m
+     mide 1,3 px: el alfiler se podía arrastrar desde la v978 y no había dónde
+     ponerlo. El tope del mapa nunca fue el límite —ya llega a 22, medido— el
+     límite era que el flujo no llevaba hasta él.
+
+     Lo que cuesta, dicho: viniendo de un zoom lejano el salto es grande. Es el
+     precio de poder corregir el punto, y el encuadre queda centrado justo en
+     donde se tocó. */
+  const ZOOM_TRABAJO = 20;
+  /* Una sola puerta para las dos que colocan un punto. Con dos números —17 en
+     Pro City y 16 en el ciudadano— eran dos codificaciones de un solo hecho, y
+     esas se separan a la tanda siguiente. */
+  function acercarParaColocar(lat, lng){
+    try{
+      if(!window.map) return;
+      const z = Math.max((map.getZoom ? map.getZoom() : 0), ZOOM_TRABAJO);
+      map.setView([lat, lng], z, { animate:true });
+    }catch(e){}
+  }
+
   function renderCommunityPickMarker(lat, lng){
     try{
       if(!window.map || !window.L) return;
@@ -6241,12 +6272,7 @@
     communityComposer.selected = { lat:Number(lat), lng:Number(lng), source };
     try{ window.urbisDisableReportMapClick = true; }catch(e){}
     setMapReportStatus('');
-    try{
-      if(window.map){
-        const zoom = Math.max((map.getZoom ? map.getZoom() : 16), 16);
-        map.setView([lat, lng], zoom, { animate:true });
-      }
-    }catch(e){}
+    acercarParaColocar(lat, lng);
     renderCommunityPickMarker(lat, lng);
     const overlay = ensureCommunityChooser();
     if(overlay){

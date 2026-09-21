@@ -14322,6 +14322,179 @@ el árbol con foto, abrir el mapa, tocar el punto, «Editar», y capturar la
 fusión REAL con el formulario REAL—, que es lo que produjo las tres tablas de
 arriba. Lo que no se ejercitó es publicar contra el servidor: eso pide backend.
 
+## El tope nunca fue el límite: el flujo no llegaba a él (v987)
+
+Pedido con el teléfono en la mano, y en su propio orden: *«antes de eso ayudame
+mejorar el zoom del mapa no importa que se vea mas borroso es para ser mas
+preciso en el mapeo manual»*. Va junto con el otro reclamo de esa misma
+conversación —el punto que «sale al otro lado del andén»—, que es el síntoma.
+
+Medida la premisa antes de escribir nada —la regla de la v863 y la v916—
+**resultó falsa**, y por eso la tanda es otra de la que parecía.
+
+    v986   el mapa llega a z22 · colocar un punto lleva a z17 · un andén son 1,3 px
+    v987   el mapa llega a z22 · colocar un punto lleva a z20 · un andén son 10,2 px
+
+### El mapa YA llegaba al fondo, y nadie lo decía
+
+La sonda, en el flujo de verdad de Pro City:
+
+| | Medido en la v986 |
+|---|---|
+| `maxZoom` del mapa | **22**, y se alcanza: siete pasos desde donde entra |
+| a z22 | **3,7 cm por píxel** — más fino que cualquier cosa del catálogo |
+| la capa activa | Google híbrido, `maxNativeZoom` 21: a z22 es un doble, apenas borroso |
+
+O sea que «no puedo acercarme más» era falso, y el arreglo obvio —subir el
+tope— habría sido un cambio que no cambia nada. Es la clase de la v973 y la
+v979: **lo que el usuario describe es el síntoma y acierta; la causa que se le
+supone al síntoma, casi nunca.**
+
+### Lo que sí era: el flujo aterriza donde la precisión no existe
+
+`pickProCityPoint` encuadraba con `Math.max(getZoom(), 17)`. Medidos los
+metros por píxel nivel a nivel sobre el sector de prueba:
+
+| z | m/px | un andén de 1,5 m | el dedo (10 px) |
+|---|---|---|---|
+| 16 | 2,363 | **0,6 px** | ±23,6 m |
+| **17** | **1,182** | **1,3 px** | **±11,8 m** |
+| 18 | 0,591 | 2,5 px | ±5,9 m |
+| 19 | 0,295 | 5,1 px | ±3,0 m |
+| **20** | **0,148** | **10,2 px** | ±1,5 m |
+| 21 | 0,074 | 20,3 px | ±0,7 m |
+| 22 | 0,037 | 40,6 px | ±0,4 m |
+
+**A z17 el andén entero mide un píxel y pico.** La v978 hizo el alfiler
+arrastrable —«arrástrelo en el mapa si no quedó donde usted está»— y el flujo
+lo dejaba caer en un zoom donde ese arrastre no puede acertar nada. Es una
+promesa impresa que no se puede cumplir, que es lo que la v892 dejó escrito que
+es peor que no hacerla.
+
+#### El número no se inventa: sale de dos cifras que ya estaban
+
+Poner «z20 porque se ve bien» sería repetir el error del techo de Overpass de
+la v869. El zoom de trabajo se deriva: la v978 fijó **12 m** como lectura buena
+de GPS —«con eso se distingue una casa de la de al lado»— y el alfiler que se
+le pone encima mide **58 px**. El zoom de trabajo es el primero en el que ese
+círculo de 12 m es MAYOR que el alfiler, o sea en el que la imprecisión que hay
+que corregir se ve **alrededor** de él y no debajo:
+
+```
+z19 → 12 m son 40,7 px   ← caben DENTRO del alfiler: no se ve
+z20 → 12 m son 81 px
+```
+
+Y la comprobación **lo recalcula** en vez de leer el comentario (v890): mide
+los dos niveles contra los 58 px del icono, así que el día que el alfiler
+cambie de tamaño el zoom de trabajo se pone rojo solo.
+
+#### Una puerta, no dos números
+
+`pickProCityPoint` decía 17 y `pickCommunityPoint` decía **16**. Dos
+codificaciones de un solo hecho —la clase B— esperando a separarse. Ahora las
+dos llaman a `acercarParaColocar`, y la guarda falla **cerrado**: **todo el que
+pone el alfiler encuadra por esa puerta**. Una puerta nueva que se quede en su
+propio zoom sale en rojo en su primera composición, no tres tandas después.
+
+**Lo que cuesta, dicho:** viniendo de un zoom lejano el salto es de cinco
+niveles. Es el precio de poder corregir el punto, y el encuadre queda centrado
+justo en donde se tocó.
+
+### El alfiler tapaba el punto que señala
+
+El segundo hallazgo, y es peor que el primero porque no lo arregla ningún
+zoom: el marcador es una cruz de 40 px **con un disco opaco de 20 px y 6 px de
+halo blanco en el centro**, anclado en `[29,29]` —o sea centrado exactamente
+sobre el punto—. Son 32 px opacos justo donde hay que mirar: a z22 eso es
+**1,2 m de terreno escondido, un andén entero**.
+
+Con el punto invisible, el zoom no sirve de nada. El núcleo pasa de disco a
+**anillo** y los brazos de la cruz dejan un **hueco** en el cruce, hecho con un
+degradado y no con cuatro elementos nuevos: se ve el suelo por el agujero, que
+es donde está el punto, y no se toca el HTML del marcador ni se inventa una
+clase que nadie pinte (v895).
+
+### La escala va donde se ve, y eso hubo que medirlo
+
+El mapa no decía a qué escala iba. Desde afuera, **«no puedo acercarme más» y
+«no sabía que se podía» se ven igual** — que es la clase C otra vez, con el
+dato del lado del programa.
+
+Entra una barra de escala estándar de Leaflet. Y **no abajo**: medida la
+esquina inferior izquierda del mapa, la ocupa entera la barra de navegación de
+Pro City (`u52-bottom-nav`, desde y≈800 en una pantalla de 880). Un control ahí
+es un control invisible, que es exactamente lo que la v980 encontró con la
+esquina de arriba a la derecha. Va debajo de los botones de zoom, en el rincón
+donde el ojo ya está cuando se acerca: medida después, sale en (16, 225) y dice
+**«10 m»** a z20, con el andén de 1,5 m a un séptimo de esa barra.
+
+### Y los botones con los que se acerca se pueden tocar
+
+Medidos: **28 × 29 px** cada uno —Leaflet los da de 30 y la hoja móvil los
+encogía con un `transform:scale(.92)`—, por debajo del objetivo táctil mínimo
+de 44. En un mapa donde el zoom es lo que decide si se acierta un andén, un
+botón al que se le falla con el dedo es parte del problema. A 44.
+
+### Lo que NO se hizo, con su medición
+
+Tres cosas que parecían el arreglo y se descartaron midiendo:
+
+* **Subir `maxZoom`.** Ya es 22 y se alcanza. A z22 un dedo de 10 px son
+  0,37 m: más fino que cualquier cosa que este catálogo pida distinguir.
+* **`zoomSnap` a 0 o 0,5**, para que el pinch se pueda quedar entre niveles.
+  Medido, en el mapa principal hay **trece llamadas a `fitBounds`** —rutas,
+  alertas, trazos, calor— y con `zoomSnap` fraccionario todas aterrizarían en
+  niveles partidos: los teselados quedarían escalados en encuadres que hoy
+  salen limpios. Es blur para todos a cambio de una comodidad de un flujo, y
+  el usuario aceptó el blur **del zoom profundo**, no el de la aplicación
+  entera. Queda medido para quien quiera tomarlo.
+* **Subir el `maxNativeZoom` de Esri**, que está en 19 y tira dos o tres
+  niveles de imagen real donde el servicio la tenga. **No se pudo comprobar**:
+  desde esta máquina el proxy bloquea `server.arcgisonline.com` —HTTP 000 en
+  los cuatro niveles probados sobre Cúcuta—. Y una suposición equivocada acá
+  no deja una imagen borrosa: deja **huecos grises**, que es peor. Es la regla
+  de la v967 sobre citar lo que no se pudo abrir.
+
+### Y una guarda mía que contaba la declaración de la función
+
+Salió al primer verde: «2 puertas» y la comprobación decía **3**. El patrón
+`renderCommunityPickMarker(lat, lng)` casa también con la **declaración** de la
+función — y como `acercarParaColocar` se define seiscientos caracteres antes,
+la guarda daba por buena una puerta que no existe. Una guarda que pasa por un
+llamador imaginario es un verde (v878). Se cierra con el punto y coma, que la
+declaración no tiene.
+
+### Demostrado contra la v986
+
+Seis en rojo de siete, contra una copia guardada en `/tmp` y no con
+`git checkout --` sobre trabajo sin confirmar (v973):
+
+```
+✗ todo el que pone el alfiler encuadra por la puerta del zoom de trabajo
+    — se queda en su propio zoom: el alfiler se puede arrastrar y no habría dónde ponerlo
+✗ y la puerta encuadra al MENOS en el zoom de trabajo  — la puerta no mira ZOOM_TRABAJO
+✗ el zoom de trabajo es el primero en el que los 12 m NO caben bajo el alfiler
+    — no se pudo leer ZOOM_TRABAJO
+✗ el alfiler deja ver el suelo que hay justo bajo el punto
+    — el núcleo sigue opaco; brazos con hueco: 0 de 2
+✗ el mapa dice a qué escala va  — sin barra de escala
+✗ los botones de zoom llegan al objetivo táctil de 44 px  — siguen encogidos con transform:scale()
+```
+
+La séptima es MATERIAL y va primero (v920): sin las dos puertas que colocan un
+punto, todo lo de abajo pasaría por no tener nada que mirar.
+
+### Lo que NO se pudo correr
+
+**Ninguna suite de navegador**, por lo mismo que la v973 a la v986: este
+contenedor no tiene `../urbis-motor` ni el `node_modules` del banco de pruebas.
+Corrió `revisar.js` entero y se midió el papel con la sonda —la tabla de metros
+por píxel, el zoom al colocar, los botones, la barra de escala y el alfiler
+abierto—, que es lo que encontró las tres cosas que no se veían leyendo: que el
+tope ya se alcanzaba, que el alfiler tapa el punto, y que la esquina de abajo
+la ocupa la barra de navegación.
+
 ## La lista viva: lo que al pliego educativo todavía le falta (v866)
 
 Esta lista se quedó vieja **cinco veces**. Cuatro dentro de la hoja —la

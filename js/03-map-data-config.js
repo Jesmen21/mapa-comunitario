@@ -16,6 +16,19 @@
   function _urbisActualizarDeepZoom(){ try{ document.body.classList.toggle('urbis-deep-zoom', map.getZoom() >= 19); }catch(e){} }
   map.on('zoomend', _urbisActualizarDeepZoom);
   map.whenReady(_urbisActualizarDeepZoom);
+  /* Barra de escala, debajo de los botones de zoom (v987). El mapa llega a
+     z22 —3,7 cm por píxel, medido— y nada lo decía: desde afuera, «no puedo
+     acercarme más» y «no sabía que se podía» se ven igual. Con la barra, quien
+     está afinando un punto ve si el andén que quiere acertar es más ancho o
+     más angosto que la referencia, que es justo lo que decide si se puede.
+     Va en el rincón de arriba a la izquierda y no abajo: la franja de abajo
+     del mapa la tapa entera la barra de navegación de Pro City (medido), y un
+     control invisible es peor que ninguno. */
+  try{
+    if(window.L && L.control && L.control.scale){
+      L.control.scale({ metric:true, imperial:false, maxWidth:96, position:'topleft' }).addTo(map);
+    }
+  }catch(e){}
   let tempMarker = null;
   let charts = {};
   let zonasLayer = L.layerGroup().addTo(map);

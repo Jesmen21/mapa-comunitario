@@ -1,4 +1,4 @@
-const URBIS_CACHE = 'urbis-v986-la-foto-que-ya-tenia-el-reporte-al-editarlo';
+const URBIS_CACHE = 'urbis-v987-el-zoom-con-el-que-se-coloca-un-punto-a-mano';
 const URBIS_ASSETS = [
   './',
   './index.html',

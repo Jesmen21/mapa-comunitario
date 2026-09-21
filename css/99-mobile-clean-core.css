@@ -819,11 +819,33 @@
   body.u52-real-map #map.leaflet-container{
     filter:saturate(.94) contrast(.98) brightness(1.04) !important;
   }
+  /* Los botones de zoom a 44 px (v987). Leaflet los da de 30 y acá iban
+     encogidos a .92 —medidos, 28 × 29—, por debajo del objetivo táctil mínimo
+     de 44 px. En un mapa donde el zoom es lo que decide si se puede acertar un
+     andén, un botón al que se le falla con el dedo es parte del problema. */
   body.u52-real-map .leaflet-control-zoom{
     margin-top:124px !important;
     margin-left:16px !important;
-    transform:scale(.92) !important;
-    transform-origin:top left !important;
+    transform:none !important;
+  }
+  body.u52-real-map .leaflet-control-zoom a{
+    width:44px !important;
+    height:44px !important;
+    line-height:44px !important;
+    font-size:1.25rem !important;
+  }
+  /* La barra de escala, debajo de ellos y en el mismo rincón. */
+  body.u52-real-map .leaflet-control-scale{
+    margin-left:16px !important;
+    margin-top:8px !important;
+  }
+  body.u52-real-map .leaflet-control-scale-line{
+    background:rgba(255,255,255,.88) !important;
+    border-color:#233957 !important;
+    color:#233957 !important;
+    font-size:.72rem !important;
+    font-weight:800 !important;
+    padding:2px 6px !important;
   }
   body.u52-real-map .leaflet-control-attribution{
     opacity:.72 !important;
@@ -1016,22 +1038,33 @@
     border-radius:999px !important;
     opacity:.98 !important;
   }
+  /* Los brazos de la cruz dejan un HUECO en el centro. Antes eran dos barras
+     enteras que se cruzaban justo sobre el punto, y con el núcleo opaco encima
+     el alfiler tapaba 32 px de terreno: a z22 son 1,2 m, un andén entero. El
+     punto no se puede poner donde no se ve. El hueco se hace con el degradado
+     y no con cuatro elementos, para no tocar el HTML del marcador. */
   .u52-community-pick-pin::before{
     width:40px !important;
     height:4px !important;
+    background:linear-gradient(to right,#0bb29a 0 13px,transparent 13px 27px,#0bb29a 27px 40px) !important;
   }
   .u52-community-pick-pin::after{
     width:4px !important;
     height:40px !important;
+    background:linear-gradient(to bottom,#0bb29a 0 13px,transparent 13px 27px,#0bb29a 27px 40px) !important;
   }
+  /* Y el núcleo pasa de disco a ANILLO: por el agujero se ve el suelo que hay
+     justo debajo del punto, que es lo que hay que mirar para afinarlo. */
   .u52-community-pick-core{
     position:relative !important;
     z-index:2 !important;
     width:20px !important;
     height:20px !important;
     border-radius:50% !important;
-    background:#10c5ad !important;
-    box-shadow:0 0 0 6px rgba(255,255,255,.96) !important;
+    background:transparent !important;
+    border:3px solid #10c5ad !important;
+    box-sizing:border-box !important;
+    box-shadow:0 0 0 2px rgba(255,255,255,.96), inset 0 0 0 2px rgba(255,255,255,.96) !important;
   }
 }
 @media (max-width:380px){

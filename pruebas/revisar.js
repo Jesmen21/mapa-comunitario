@@ -4615,6 +4615,112 @@ console.log('\n  -- la foto que ya tenía el reporte, al editarlo (v986) --');
   }
 }
 
+console.log('\n  -- el zoom con el que se coloca un punto a mano (v987) --');
+{
+  const j20 = soloCodigo(leer('js/20-mobile-functional-app.js'));
+  const j03 = soloCodigo(leer('js/03-map-data-config.js'));
+  const c99 = leer('css/99-mobile-clean-core.css');
+
+  /* MATERIAL primero (v920): las dos puertas que COLOCAN un punto para mapear
+     existen y ponen el alfiler. Sin ellas, todo lo de abajo pasaría por no
+     tener nada que mirar. */
+  const puertas = ['pickProCityPoint', 'pickCommunityPoint'].filter(f =>
+    new RegExp('function\\s+' + f + '\\s*\\(').test(j20));
+  /* Con el paréntesis a secas, el patrón contaba también la DECLARACIÓN de la
+     función —y como la puerta se define seiscientos caracteres antes, la
+     comprobación de abajo la daba por buena—: una guarda pasando por un
+     llamador que no existe. Se cierra con el punto y coma, que la declaración
+     no tiene. */
+  const LLAMADA = 'renderCommunityPickMarker(lat, lng);';
+  const ponenAlfiler = j20.split(LLAMADA).length - 1;
+  if (puertas.length !== 2 || ponenAlfiler < 2) {
+    anotarSinMaterial('MATERIAL · las dos puertas que colocan un punto ponen el alfiler',
+      'puertas: ' + puertas.join(', ') + ' · alfileres: ' + ponenAlfiler);
+  } else {
+    comprobar('MATERIAL · las dos puertas que colocan un punto ponen el alfiler',
+      true, puertas.join(' y ') + ', con ' + ponenAlfiler + ' alfileres');
+
+    /* ── El alfiler es la PROMESA de precisión, así que donde aparece el
+       zoom tiene que hacerla posible (v978 lo hizo arrastrable; la v986 lo
+       dejaba caer en z17, donde un andén mide 1,3 px). Falla CERRADO: una
+       puerta nueva que ponga el alfiler y se quede en su propio zoom sale en
+       rojo en su primera composición, no tres tandas después. */
+    const sinPuerta = [];
+    let k = -1;
+    while ((k = j20.indexOf(LLAMADA, k + 1)) >= 0) {
+      /* se mira el renglón de ANTES, que es donde el llamador encuadra */
+      const antes = j20.slice(Math.max(0, k - 600), k);
+      if (!/acercarParaColocar\s*\(/.test(antes)) {
+        sinPuerta.push('en el carácter ' + k);
+      }
+    }
+    comprobar('todo el que pone el alfiler encuadra por la puerta del zoom de trabajo',
+      sinPuerta.length === 0,
+      sinPuerta.length ? 'se queda en su propio zoom: ' + sinPuerta.join(', ') +
+                         ' — el alfiler se puede arrastrar y no habría dónde ponerlo'
+                       : ponenAlfiler + ' puertas por acercarParaColocar');
+
+    /* Guarda de la guarda: sin esto, las dos seguirían llamando a la puerta y
+       la puerta podría no mirar el zoom de trabajo (v878). */
+    const ip = j20.indexOf('function acercarParaColocar(');
+    const cuerpo = ip >= 0 ? j20.slice(ip, j20.indexOf('\n  }', ip)) : '';
+    const lee = /ZOOM_TRABAJO/.test(cuerpo) && /Math\.max/.test(cuerpo);
+    comprobar('y la puerta encuadra al MENOS en el zoom de trabajo, sin bajar el que ya haya',
+      lee,
+      lee ? 'Math.max(zoom actual, ZOOM_TRABAJO)'
+          : 'la puerta no mira ZOOM_TRABAJO: encuadraría donde le parezca');
+
+    /* ── El número no es a ojo, y esto lo MIDE en vez de leer su comentario
+       (v890). El zoom de trabajo tiene que ser aquel en el que el círculo de
+       una lectura BUENA de GPS —12 m, la cifra que la v978 derivó— sea MAYOR
+       que el alfiler que se le pone encima, o la imprecisión que hay que
+       corregir queda debajo del propio alfiler y no se ve. */
+    const mz = j20.match(/const\s+ZOOM_TRABAJO\s*=\s*(\d+)/);
+    const z = mz ? Number(mz[1]) : null;
+    const LAT = 7.9;                                   // Cúcuta
+    const mpp = zz => 156543.03392 * Math.cos(LAT * Math.PI / 180) / Math.pow(2, zz);
+    const pxDeLos12 = zz => 12 / mpp(zz);
+    const ALFILER = 58;                                 // iconSize del marcador
+    const ok = z !== null && pxDeLos12(z) > ALFILER && pxDeLos12(z - 1) <= ALFILER;
+    comprobar('el zoom de trabajo es el primero en el que los 12 m de una lectura buena NO caben bajo el alfiler',
+      ok,
+      z === null ? 'no se pudo leer ZOOM_TRABAJO'
+                 : 'z' + z + ' → ' + pxDeLos12(z).toFixed(1) + ' px, y z' + (z - 1) +
+                   ' → ' + pxDeLos12(z - 1).toFixed(1) + ' px contra un alfiler de ' + ALFILER);
+
+    /* ── Y el alfiler no puede tapar el punto que señala. Con el núcleo
+       opaco y los brazos cruzándose encima, a z22 quedaban 1,2 m de terreno
+       escondidos justo donde hay que mirar: un andén entero. */
+    const nucleo = /\.u52-community-pick-core\s*\{[^}]*background:\s*transparent/.test(c99);
+    const brazos = (c99.match(/\.u52-community-pick-pin::(before|after)\s*\{[^}]*linear-gradient[^}]*transparent/g) || []).length;
+    comprobar('el alfiler deja ver el suelo que hay justo bajo el punto',
+      nucleo && brazos === 2,
+      (nucleo ? '' : 'el núcleo sigue opaco; ') + (brazos === 2 ? 'núcleo en anillo y los dos brazos con hueco'
+        : 'brazos con hueco: ' + brazos + ' de 2 — la cruz vuelve a taparlo'));
+  }
+
+  /* ── La escala va donde se ve. La franja de abajo del mapa la tapa entera
+     la barra de navegación de Pro City (medido en la v987), así que un
+     control ahí es un control invisible — que es lo que la v980 encontró con
+     la esquina de arriba a la derecha. */
+  const hayEscala = /L\.control\.scale\s*\(/.test(j03);
+  const arriba = /L\.control\.scale\s*\(\s*\{[^}]*position\s*:\s*'top/.test(j03);
+  comprobar('el mapa dice a qué escala va, y no debajo de la barra de navegación',
+    hayEscala && arriba,
+    !hayEscala ? 'sin barra de escala: «no puedo acercarme más» y «no sabía que se podía» se ven igual'
+      : arriba ? 'escala en el rincón de arriba' : 'la escala va abajo, donde la tapa la barra de Pro City');
+
+  /* ── Y los botones con los que se acerca se pueden tocar. Medidos en la
+     v986 daban 28 × 29 px, por debajo del objetivo táctil mínimo de 44. */
+  const enc = /body\.u52-real-map \.leaflet-control-zoom\s*\{[^}]*transform\s*:\s*scale\(/.test(c99);
+  const mt = c99.match(/body\.u52-real-map \.leaflet-control-zoom a\s*\{[^}]*width\s*:\s*(\d+)px/);
+  const lado = mt ? Number(mt[1]) : 0;
+  comprobar('los botones de zoom llegan al objetivo táctil de 44 px',
+    lado >= 44 && !enc,
+    enc ? 'siguen encogidos con transform:scale()' :
+    lado >= 44 ? lado + ' px de lado' : 'miden ' + (lado || '?') + ' px: se les falla con el dedo');
+}
+
 console.log('\n  -- las listas vivas --');
 {
   const md = leer('CLAUDE.md');
