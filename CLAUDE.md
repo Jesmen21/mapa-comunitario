@@ -14927,6 +14927,148 @@ Once aserciones en rojo de doce, contra una copia guardada en `/tmp` y no con
 La duodécima es MATERIAL y va primero (v920): es la precondición, y pasa en las
 dos versiones porque la tabla que se invierte y el catálogo existían antes.
 
+## Dónde está sembrado el árbol (v993)
+
+Pedido en la calle y declarado pendiente desde la v981: **«que diga si el
+árbol tiene su propia jardinera o es un árbol normal»**.
+
+    v992   Arbolado Urbano · Palma  →  qué especie es, y nada más
+    v993   Arbolado Urbano · Palma  →  y de dónde sale el tronco
+
+### Por qué importa, y qué NO es
+
+Un árbol sembrado en el piso duro sin hueco es **el que levanta el andén y el
+que se seca primero**. Pero «Árbol que levanta el andén» ya es un TIPO del
+catálogo, así que la primera pregunta de la tanda fue si son un solo hecho.
+
+No lo son, y la prueba de la clase B lo separa: *¿existe un cambio razonable
+que deba mover uno y no el otro?* Sí — **un árbol con un alcorque demasiado
+chico también levanta el andén, y uno sin hueco puede no estar levantando nada
+todavía.** Son dos campos, y la distinción va impresa donde se lee la cifra y
+donde se contesta el formulario: no es prosa de adorno, es lo que impide que
+alguien los sume.
+
+### Vive con la especie, no en un archivo nuevo
+
+La v981 abrió un archivo propio para el material, y acá se hace lo contrario.
+El motivo es el mismo medido por el otro lado: aquel campo va en **cuatro usos
+que no son este**, y el sitio de siembra va en **el mismo uso que la especie**.
+Los usos no se escriben dos veces —`USOS_CON_SITIO` **es**
+`USOS_CON_ESPECIE`—: un uso que tenga árboles tiene dónde sembrarlos, y dos
+listas para eso se separarían a la tanda siguiente.
+
+### Esta lista SÍ lleva «Otro», y la de la v992 no
+
+Es la decisión que más cuesta justificar y va escrita en los dos sitios. La
+escala de estado no lleva salida porque **cuatro peldaños son exhaustivos por
+definición de escala**. Esto es otra cosa: es una **enumeración del mundo**, y
+una enumeración nunca está completa. Sin la salida, quien tiene delante un
+caso raro —un árbol en una llanta pintada— elige «el más parecido» para poder
+seguir, y eso mete un dato falso que después nadie distingue de uno bueno
+(v975).
+
+Por eso son **dos casillas** y no una, al revés que el estado. Hay una guarda
+que persigue justamente esa asimetría.
+
+### El mismo componente que la especie y el material
+
+No los chips de la v992. La frontera entre los dos controles es la forma del
+dato, no el gusto: **lista cerrada con «Otro» y texto libre** es lo que
+`LISTAS_CERRADAS` resuelve, y lo que los chips no. Seis opciones con su
+criterio como pie es exactamente su forma.
+
+Y va **junto a la especie** en el formulario: son del mismo uso y se contestan
+mirando lo mismo, el pie del árbol.
+
+### Los seis, con su criterio
+
+| | |
+|---|---|
+| Alcorque en andén | hueco abierto en el piso duro, con tierra a la vista |
+| Alcorque con rejilla o enchape | el mismo hueco, cubierto con rejilla, adoquín o enchape permeable |
+| Jardinera elevada | cajón de obra por encima del nivel del andén |
+| Zona verde o separador | tierra continua sin borde construido |
+| Antejardín | el jardín privado entre la fachada y el andén |
+| **Sin sitio de siembra** | el tronco sale directamente del piso duro, sin hueco |
+
+El criterio no es una ayuda de pantalla: sin él, «jardinera» y «alcorque» se
+eligen a ojo y el reparto deja de ser comparable entre dos personas. Tiene su
+guarda, como la escala de la v992.
+
+Y el caso que de verdad se lee —«sin hueco»— **se decide en el vocabulario**,
+no en cada pantalla: `SIN_SITIO` lo nombra una vez y el lector lo publica, o
+cada superficie lo contaría con su propio criterio (v879).
+
+### La guarda de los sinónimos se cazó a sí misma, y después a mí
+
+La primera versión perseguía «sinónimos muertos» —los que no casan con nada—.
+Su inyección pasó en verde, y al mirarla la razón es que **es imposible que
+uno apunte al vacío**: van pegados a su fila, así que un sinónimo siempre casa
+consigo mismo. La guarda era vacua, que es el defecto que este proyecto
+persigue desde la v878.
+
+Lo que sí se estropea en silencio es otra cosa: un sinónimo **que ya es
+subcadena de su propio nombre** no añade nada y se lee igual que uno que
+funciona. Es el defecto que la v983 encontró con trece de golpe. Reescrita
+así, **denunció ocho de los míos en su primera corrida** —`Alcorque en andén →
+alcorque`, `Jardinera elevada → jardinera`, `Antejardín → antejardin`…— y se
+reemplazaron por los que la calle sí dice de otra manera: «cajuela», «poceta»,
+«matera», «prado», «patio delantero», «sin alcorque».
+
+Que una guarda escrita en la misma tanda muerda a su autor es para lo que
+existe — es la tercera vez en esta serie (v981, v991, y esta).
+
+### Demostrado contra la v992
+
+Diez inyecciones fieles, una por guarda, contra copias guardadas (v973):
+
+```
+criterio   ✗ cada sitio lleva su criterio escrito  — Jardinera elevada
+sinonimo   ✗ ningún sinónimo repite lo que el nombre ya dice  — Antejardín → antejardin
+otro       ✗ la lista lleva «Otro» y la escala no  — sin salida
+doslistas  ✗ los usos son los mismos que los de especie  — dos listas para un hecho
+sinhueco   ✗ «sin hueco» se decide en el vocabulario  — falta en: el lector
+muda       ✗ las cuatro superficies lo leen  — no lo alcanza: el panel del punto
+guardado   ✗ el guardado no toca las casillas sin el bloque  — escribe siempre
+libre      ✗ el texto libre solo acompaña a «Otro»  — se queda pegado
+confunde   ✗ la hoja dice que no es el tipo  — se leerían como un solo hecho
+lector     ✗ y el lector sigue mirando sus dos casillas  — sería documentación
+```
+
+Y una del método: la inyección de `confunde` **no reemplazó nada la primera
+vez** —el literal tenía un salto de línea donde yo escribí uno solo— y como iba
+sin `assert`, no lo dijo: la guarda salió verde y por un momento pareció floja.
+Es exactamente «un parche por anclas o escribe entero o no escribe», cobrado en
+una inyección de demostración en vez de en el código. **Toda inyección lleva su
+aserción**, igual que todo parche.
+
+### Medido en el navegador, por el camino de verdad
+
+El flujo entero con clics hasta el formulario de una palma:
+
+```
+bloques: especie sí · sitio sí · material NO · estado NO
+«alcorque» → Alcorque en andén · Alcorque con rejilla · Sin sitio de siembra
+la lista entera → los 6 + «No se sabe» + «Otro»
+elegir «Sin sitio de siembra» → queda puesto y la lista se pliega
+```
+
+Que el material y el estado **no** salgan para un árbol es la mitad que
+guarda: el arbolado está fuera de los dos a propósito (v981, v992), y verlo en
+la misma corrida es lo que impide que un campo se cuele donde no toca.
+
+Y la ida y vuelta por las casillas de verdad, con las seis ramas: un sitio, el
+sin-hueco —que se marca—, «No se sabe» —que es una respuesta—, «Otro»
+nombrado, «Otro» sin nombrar, y la casilla vacía.
+
+### Lo que NO se pudo correr
+
+**Ninguna suite de navegador**, por lo mismo que la v973 a la v992. Y el
+**recuento pintado** tampoco: pide un análisis, y el análisis pide el motor.
+Queda cubierto por la comprobación estática —que exige que lo lea, que publique
+su denominador y que diga la distinción con el tipo— y por el precedente del
+panel de la v988 y la v992, que es el mismo sitio y la misma forma.
+
 ## En qué estado está lo que se mapea (v992)
 
 Pedido con estas palabras, mapeando: **«verde está buena, naranja medio

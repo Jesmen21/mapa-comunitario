@@ -891,7 +891,14 @@
        nueva. UNA y no dos: la escala no lleva «Otro» —cuatro peldaños con su
        criterio escrito no son una lista incompleta—, así que no hay texto
        libre que acompañar. El vocabulario vive en js/03e. */
-    estadoUrbano:           BASE_OFFSET + TIMELINE_EXTRA_OFFSET + 21
+    estadoUrbano:           BASE_OFFSET + TIMELINE_EXTRA_OFFSET + 21,
+    /* Dónde está sembrado el árbol (v993). Al final, como toda casilla
+       nueva. DOS y no una, al revés que el estado: esta lista es una
+       enumeración del mundo y lleva «Otro» con su texto libre, mientras que
+       una escala de cuatro peldaños no puede estar incompleta. El
+       vocabulario vive en js/03c, con la especie: es del mismo uso. */
+    arbolSitio:             BASE_OFFSET + TIMELINE_EXTRA_OFFSET + 22,
+    arbolSitioOtro:         BASE_OFFSET + TIMELINE_EXTRA_OFFSET + 23
   };
   // La casilla que las tres funciones se disputaban. Se conserva con nombre
   // propio porque hay registros viejos con validaciones o con código de carpeta
@@ -1024,6 +1031,38 @@
         texto: V ? V.texto(valor, otroTexto) : valor,
         idxMaterial: URBIS_SLOTS.mobiliarioMaterial,
         idxMaterialOtro: URBIS_SLOTS.mobiliarioMaterialOtro
+      };
+    }
+  });
+
+  /* Dónde está sembrado el árbol (v993). Mismo molde que la especie y el
+     material: lo que depende del ORDEN de las casillas se resuelve acá y en
+     ningún otro sitio. */
+  window.URBIS_SITIO = Object.assign(window.URBIS_SITIO || {}, {
+    leer: function (descripcion) {
+      const d = String(descripcion || '').split(' | ');
+      const V = window.URBIS_SITIO_VOC;
+      const crudo = String(d[URBIS_SLOTS.arbolSitio] || '').trim();
+      const otro = String(d[URBIS_SLOTS.arbolSitioOtro] || '').trim();
+      const valor = (!crudo || crudo === 'undefined') ? '' : crudo;
+      const otroTexto = (!otro || otro === 'undefined') ? '' : otro;
+      const noSeSabe = !!(V && valor === V.NO_SE_SABE());
+      const esOtro = !!(V && valor === V.OTRO());
+      return {
+        sitio: valor,
+        /* Utilizable para cualquier cuenta: '' en cuanto sea una de las dos
+           salidas. El valor crudo se conserva para poder informarlo. */
+        sitioUtil: (noSeSabe || esOtro) ? '' : valor,
+        /* La cifra que de verdad se lee: un árbol sin hueco es el que levanta
+           el andén y el que se seca primero. Sale de acá y no de cada
+           pantalla, o cada una la contaría con otro criterio. */
+        sinSitio: !!(V && valor === V.SIN_SITIO),
+        noSeSabe: noSeSabe,
+        esOtro: esOtro,
+        otroTexto: otroTexto,
+        texto: V ? V.texto(valor, otroTexto) : valor,
+        idxSitio: URBIS_SLOTS.arbolSitio,
+        idxSitioOtro: URBIS_SLOTS.arbolSitioOtro
       };
     }
   });

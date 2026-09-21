@@ -5231,6 +5231,155 @@ console.log('\n  -- el subtipo de cada piso (v989) --');
   }
 }
 
+/* ── Dónde está sembrado el árbol (v993) ───────────────────────────────────
+   Pedido en la calle: «que diga si el árbol tiene su propia jardinera o es un
+   árbol normal». Lo que se guarda acá es que no se confunda con el TIPO
+   «Árbol que levanta el andén» —que es otro hecho— y que el campo no quede
+   colgado en alguna de las puertas por las que tiene que pasar. */
+console.log('\n  -- dónde está sembrado el árbol (v993) --');
+{
+  const j03c = soloCodigo(leer('js/03c-arbol-especies.js'));
+  const j04s = soloCodigo(leer('js/04-marker-proximity.js'));
+  const j20s = soloCodigo(leer('js/20-mobile-functional-app.js'));
+  const j10s = soloCodigo(leer('js/10-visible-markers.js'));
+  const j12s = soloCodigo(leer('js/12-spa-ui.js'));
+  const j68s = soloCodigo(leer('js/68-procity-reconocimiento.js'));
+
+  const sacar = (txt, nom, ab, ce) => {
+    const i = txt.indexOf(nom); if (i < 0) return null;
+    const a = txt.indexOf(ab, i), c = txt.indexOf(ce, a);
+    if (a < 0 || c < 0) return null;
+    try { return eval('(' + txt.slice(a, c + ce.length) + ')'); } catch (e) { return null; }
+  };
+  const sitios = sacar(j03c, 'var SITIOS =', '[', '\n  ]');
+
+  if (!sitios) {
+    anotarSinMaterial('MATERIAL · la lista de sitios de siembra se deja leer',
+      'sin ella nada de lo de abajo comprueba un campo, solo que un objeto existe');
+  } else {
+    comprobar('MATERIAL · la lista tiene sitios que ofrecer',
+      sitios.length >= 4, sitios.length + ' sitios de siembra');
+
+    /* 1 · Cada opción con su criterio, por lo mismo que la escala de estado:
+       sin él, «jardinera» y «alcorque» se eligen a ojo y el reparto deja de
+       ser comparable entre dos personas. */
+    const sinD = sitios.filter(x => !x.d || String(x.d).trim().length < 25).map(x => x.n);
+    comprobar('cada sitio de siembra lleva su criterio escrito',
+      sinD.length === 0,
+      sinD.length ? 'sin criterio: ' + sinD.join(' · ') + ' — se elegiría a ojo'
+                  : 'los ' + sitios.length + ' dicen cómo se reconocen');
+
+    /* 2 · Ningún sinónimo es un NO-OP. Van pegados a su fila, así que uno
+       «muerto» es imposible por construcción y perseguirlo sería una guarda
+       vacua —la primera versión lo era, y su inyección pasó en verde—. Lo que
+       sí se estropea en silencio es un sinónimo que ya es subcadena del
+       propio nombre: no añade nada y se lee igual que uno que funciona. Es el
+       defecto que la v983 encontró con trece de golpe. */
+    const norm = x => String(x || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').trim();
+    const noOp = [];
+    sitios.forEach(x => (x.alt || []).forEach(a => {
+      if (norm(x.n).indexOf(norm(a)) >= 0) noOp.push(x.n + ' → ' + a);
+    }));
+    comprobar('ningún sinónimo repite lo que el nombre ya dice',
+      noOp.length === 0,
+      noOp.length ? 'no añaden nada, y se leen igual que uno que funciona: ' + noOp.join(' · ')
+                  : sitios.reduce((n, x) => n + (x.alt || []).length, 0) + ' sinónimos, todos con algo que aportar');
+
+    /* 3 · La lista LLEVA «Otro», al revés que la escala de estado, y la
+       razón importa: una enumeración del mundo nunca está completa, así que
+       sin la salida quien tiene delante un caso raro elige «el más parecido»
+       (v975). La escala de cuatro peldaños sí es exhaustiva y no lo lleva. */
+    const iV = j03c.indexOf('window.URBIS_SITIO_VOC');
+    const cV = iV >= 0 ? j03c.slice(iV, j03c.indexOf('\n  };', iV)) : '';
+    comprobar('la lista de sitios lleva «Otro», y la escala de estado no',
+      /OTRO:\s*OTRO/.test(cV) && !/OTRO/.test(soloCodigo(leer('js/03e-estado-urbano.js')).split('window.URBIS_ESTADO_VOC')[1] || ''),
+      /OTRO:\s*OTRO/.test(cV) ? 'la enumeración tiene salida y la escala no la necesita'
+        : 'sin salida: quien tenga un caso raro elegiría «el más parecido»');
+
+    /* 4 · Los usos salen de la MISMA lista que la especie. Dos listas para
+       «qué usos son de árbol» se separarían a la tanda siguiente. */
+    const mismos = /USOS_CON_SITIO:\s*USOS_CON_ESPECIE/.test(cV)
+                && /esUsoConSitio:\s*esUsoDeArbol/.test(cV);
+    comprobar('los usos con sitio de siembra son los mismos que los de especie',
+      mismos,
+      mismos ? 'una sola lista: un uso que tenga árboles tiene dónde sembrarlos'
+             : 'dos listas para el mismo hecho: se separarían a la tanda siguiente');
+
+    /* 5 · El caso que de verdad se lee —«sin hueco»— se decide en UN sitio.
+       Cada pantalla contándolo por su cuenta usaría su propio criterio (v879). */
+    const enVoc = /SIN_SITIO:/.test(cV);
+    const enLector = /sinSitio:\s*!!\(V && valor === V\.SIN_SITIO\)/.test(j04s);
+    comprobar('«sin hueco» se decide en el vocabulario y lo lee el lector',
+      enVoc && enLector,
+      (enVoc && enLector) ? 'una pantalla nueva lo hereda sin volver a definirlo'
+        : 'falta en: ' + [!enVoc && 'el vocabulario', !enLector && 'el lector'].filter(Boolean).join(' y '));
+
+    /* 6 · Las cuatro superficies lo alcanzan, y DENTRO de la función que
+       pinta cada una: js/20 lo lee dos veces —prellenar y panel— así que
+       buscarlo suelto daría por buena una superficie muda (v992). */
+    const dentro = (txt, nom, fin) => {
+      const i = txt.indexOf(nom); if (i < 0) return '';
+      const j = txt.indexOf(fin, i); return j < 0 ? txt.slice(i) : txt.slice(i, j);
+    };
+    const sup = [
+      [j10s, 'el globo y la ficha'],
+      [dentro(j20s, 'function fichaDeProCity(', '\n  }'), 'el panel del punto'],
+      [dentro(j68s, 'function levantadoDeCampo(', '\n  }'), 'el recuento']
+    ];
+    const mudos = sup.filter(([t]) => !/URBIS_SITIO\s*\.\s*leer|LS\.leer/.test(t));
+    comprobar('el globo, la ficha, el panel y el recuento leen el sitio de siembra',
+      mudos.length === 0,
+      mudos.length ? 'no lo alcanzan: ' + mudos.map(x => x[1]).join(' · ') +
+        ' — un dato que se guarda y que ninguna pantalla enseña se ve igual que uno que no existe'
+      : 'las ' + sup.length + ' pasan por URBIS_SITIO.leer');
+
+    /* 7 · El guardado condicionado al bloque, o editar por otro camino
+       borraría lo levantado (v986). */
+    const iG = j12s.indexOf('function guardarSitioArbol(');
+    const cG = iG >= 0 ? j12s.slice(iG, j12s.indexOf('})();', iG)) : '';
+    const cond = !!cG && /if \(!insSit\) return;/.test(cG);
+    comprobar('el guardado no toca las casillas si el bloque no está en pantalla',
+      cond,
+      cond ? 'editar por otro camino no borra el sitio levantado'
+        : !cG ? 'no hay guardado: lo que se elige no se guarda'
+              : 'escribe siempre: editar un punto por otro camino lo borraría');
+
+    /* 8 · El texto libre SOLO acompaña a «Otro»: dejarlo pegado convertiría
+       un descarte en un dato que nadie volvió a escribir. */
+    const limpia = /esOtroSit && insOtroSit/.test(cG) && /: ''/.test(cG);
+    comprobar('el texto libre solo acompaña a «Otro»',
+      limpia,
+      limpia ? 'con cualquier otro sitio elegido se limpia'
+             : 'se queda pegado: un descarte se publicaría como el sitio');
+
+    /* 9 · La distinción con el TIPO se DICE donde se lee la cifra. No es
+       prosa de adorno: es lo que impide que alguien sume dos hechos. */
+    /* Se busca DENTRO del sitio que la dice, no en el archivo: «Árbol que
+       levanta el andén» es además un TIPO del catálogo, así que en js/20 el
+       literal aparece igual aunque el formulario no lo explique. */
+    const iP = j68s.indexOf('Dónde están sembrados');
+    const cP = iP >= 0 ? j68s.slice(iP, iP + 3200) : '';
+    const iF = j20s.indexOf('ins-sitio-bloque');
+    const cF = iF >= 0 ? j20s.slice(iF, iF + 2400) : '';
+    const dicho = /No es lo mismo que el tipo/.test(cP) && /levanta el andén/.test(cF);
+    comprobar('la hoja dice que el sitio no es el tipo «Árbol que levanta el andén»',
+      dicho,
+      dicho ? 'el recuento y el formulario lo separan'
+            : 'no lo dice: se leerían como un solo hecho');
+
+    /* 10 · Guarda de la guarda: si el lector dejara de mirar su casilla,
+       todo lo de arriba seguiría en verde sobre un campo que nadie lee. */
+    const iL = j04s.indexOf('window.URBIS_SITIO = Object.assign');
+    const cL = iL >= 0 ? j04s.slice(iL, j04s.indexOf('\n  });', iL)) : '';
+    const mira = /crudo\s*=\s*String\(d\[URBIS_SLOTS\.arbolSitio\]/.test(cL)
+              && /otro\s*=\s*String\(d\[URBIS_SLOTS\.arbolSitioOtro\]/.test(cL);
+    comprobar('y el lector sigue mirando sus dos casillas',
+      mira,
+      mira ? 'las dos se resuelven en js/04 y en ningún otro sitio'
+           : 'dejó de mirarlas: el campo sería documentación');
+  }
+}
+
 /* ── En qué estado está lo que se mapea (v992) ─────────────────────────────
    Se puede mapear un hidrante, una tapa y una banca, y hasta la v991 no había
    manera de decir que están rotos —que es lo que un vecino quiere reportar—.

@@ -4820,7 +4820,7 @@
      criterios para un mismo hecho se separan a la tanda siguiente (v879), y
      acá el que se separaría publicaría la foto de alguien sin moderar. */
   function fichaDeProCity(p, d){
-    let foto = '', nota = '', especie = '', material = '', estado = '', pisos = '';
+    let foto = '', nota = '', especie = '', sitio = '', material = '', estado = '', pisos = '';
     try{
       const f = (typeof window.urbisFotoDeReporte === 'function') ? window.urbisFotoDeReporte(p) : null;
       if(f && f.hay && f.puedeVerla){
@@ -4847,6 +4847,13 @@
               && typeof window.esAutorDelReporte === 'function' && window.esAutorDelReporte(p)){
         especie = '<div class="u52-procity-selpanel-dato falta">\u{1F333} Sin especie anotada.'
           + ' Cuando sepa cuál es, toque «Editar» acá abajo y elíjala.</div>';
+      }
+    }catch(e){}
+    /* Dónde está sembrado (v993), junto a la especie: es del mismo árbol. */
+    try{
+      const s2 = window.URBIS_SITIO ? window.URBIS_SITIO.leer(p.descripcion) : null;
+      if(s2 && s2.texto){
+        sitio = `<div class="u52-procity-selpanel-dato${s2.sinSitio ? ' falta' : ''}">\u{1FAB4} Sembrado en: ${esc(s2.texto)}</div>`;
       }
     }catch(e){}
     try{
@@ -4880,7 +4887,7 @@
         }
       }
     }catch(e){}
-    return foto + nota + especie + material + estado + pisos;
+    return foto + nota + especie + sitio + material + estado + pisos;
   }
 
   // Panel compacto al tocar un punto: quién lo publicó + Editar (permite
@@ -5808,6 +5815,8 @@
     let materialPre = '';
     let materialOtroPre = '';
     let estadoPre = '';
+    let sitioPre = '';
+    let sitioOtroPre = '';
     let fotoPre = '';
     if(editando){
       const dp = (typeof globalData !== 'undefined' && Array.isArray(globalData)) ? globalData.find(x => String(x.lat) === String(proCity.editLat)) : null;
@@ -5842,6 +5851,11 @@
         try{
           const eb = window.URBIS_ESTADO ? window.URBIS_ESTADO.leer(dp.descripcion) : null;
           if(eb) estadoPre = eb.estado;
+        }catch(e){}
+        /* Y dónde está sembrado (v993). */
+        try{
+          const sb = window.URBIS_SITIO ? window.URBIS_SITIO.leer(dp.descripcion) : null;
+          if(sb){ sitioPre = sb.sitio; sitioOtroPre = sb.otroTexto; }
         }catch(e){}
         /* Y la foto, que es la que costó una (v986). Va por el portero y no
            leyendo la casilla en crudo: quien edita es su autor o un
@@ -5940,6 +5954,35 @@
           <small class="u52-procity-edificio-pista">El nombre científico va al lado porque «roble» o «acacia» son varios árboles distintos según la región. Si no lo sabe, déjelo sin marcar.</small>
         </div>`;
     }
+
+    /* Dónde está sembrado (v993). Va JUNTO a la especie y no en otra parte de
+       la hoja: son del mismo uso y se contestan mirando lo mismo, el pie del
+       árbol. Usa el MISMO componente de lista cerrada que la especie y el
+       material —no los chips del estado— porque comparte su forma: seis
+       opciones con «Otro» y texto libre, que es lo que ese componente
+       resuelve y lo que los chips no. */
+    const VOC_SITIO = window.URBIS_SITIO_VOC || null;
+    let htmlSitio = '';
+    if(proCity.dim === MATRIZ_USOS_KEY && VOC_SITIO && VOC_SITIO.esUsoConSitio(usoParteSel)){
+      htmlSitio = `
+        <div class="u52-procity-especie" id="ins-sitio-bloque">
+          <label for="ins-sitio-busca">¿Dónde está sembrado? <i>opcional</i></label>
+          <input type="hidden" id="ins-sitio" value="${esc(sitioPre)}">
+          <div id="ins-sitio-elegida" class="especie-elegida"${sitioPre ? '' : ' hidden'}>
+            ${sitioPre ? esc(VOC_SITIO.texto(sitioPre, sitioOtroPre)) : ''}
+            <button type="button" data-u52-lista-quitar="sitio" aria-label="Quitar sitio de siembra">×</button>
+          </div>
+          <input type="text" id="ins-sitio-busca" class="u52-matriz-search" autocomplete="off"
+                 placeholder="🔎 Buscar (alcorque, jardinera, zona verde…)"
+                 oninput="window.urbisSitioBuscar(this.value)">
+          <div id="ins-sitio-lista" class="especie-lista"></div>
+          <div id="ins-sitio-otro-caja" class="especie-otro"${sitioOtroPre ? '' : ' hidden'}>
+            <label for="ins-sitio-otro">¿Cómo es? Así entra en la lista de la próxima versión.</label>
+            <input type="text" id="ins-sitio-otro" maxlength="60" autocomplete="off" value="${esc(sitioOtroPre)}">
+          </div>
+          <small class="u52-procity-edificio-pista">Un árbol sin hueco en el piso es el que levanta el andén y el que se seca primero. Es otra cosa que el tipo «Árbol que levanta el andén»: ese ya lo está levantando, y esto dice dónde está sembrado.</small>
+        </div>`;
+    }
     /* ── De qué está hecho (v981) ──────────────────────────────────────
        Pedido con la foto de una caneca de varilla oxidada: «bancas,
        jardineras, canecas y postes… basura metálica». Sale solo en los usos
@@ -6019,6 +6062,7 @@
         <input id="ins-foto" type="hidden" value="">
         ${htmlEdificio}
         ${htmlEspecie}
+        ${htmlSitio}
         ${htmlMaterial}
         ${htmlEstado}
         ${avisoDePrecisionHTML()}
@@ -6116,6 +6160,18 @@
       pieNoSabe: 'Se miró y no se pudo determinar de qué es',
       pieOtro: 'Sí se sabe de qué es, y no está en esta lista',
       alElegir: null
+    },
+    /* Dónde está sembrado (v993). Comparte el componente con las dos de
+       arriba porque comparte la forma: lista cerrada con «Otro» y texto
+       libre. Un tercer control para lo mismo se separaría de estos dos. */
+    sitio: {
+      pfx: 'ins-sitio',
+      voc: () => window.URBIS_SITIO_VOC,
+      pie: x => x.d,
+      vacio: 'Ningún sitio de siembra de la lista se llama así.',
+      pieNoSabe: 'Se miró y no se pudo determinar desde la acera',
+      pieOtro: 'Sí se sabe cómo es, y no está en esta lista',
+      alElegir: null
     }
   };
 
@@ -6174,6 +6230,7 @@
   function pintarListaEspecies(q){ pintarLista('especie', q); }
   window.urbisEspecieBuscar = function(val){ try{ pintarLista('especie', val); }catch(e){} };
   window.urbisMaterialBuscar = function(val){ try{ pintarLista('material', val); }catch(e){} };
+  window.urbisSitioBuscar = function(val){ try{ pintarLista('sitio', val); }catch(e){} };
 
   /* El tipo y la especie son dos casillas correctas por separado que pueden
      contradecirse —«Palma» con un mango dentro—. Se dice acá, donde todavía

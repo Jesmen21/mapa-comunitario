@@ -169,6 +169,102 @@
     return '';
   }
 
+  /* ── DÓNDE ESTÁ SEMBRADO (v993) ─────────────────────────────────────────
+     Pedido en la calle: «que diga si el árbol tiene su propia jardinera o es
+     un árbol normal». Vive en ESTE archivo y no en uno nuevo porque es del
+     mismo uso que la especie —Arbolado Urbano— y el archivo ya deriva de
+     js/03b las dos salidas. La v981 abrió un archivo propio para el material
+     por lo contrario: aquel campo va en cuatro usos que no son este.
+
+     ── Por qué importa, y qué NO es ──────────────────────────────────────
+     Un árbol sembrado en el piso duro sin hueco es el que levanta el andén y
+     el que se seca primero. Pero «Árbol que levanta el andén» ya es un TIPO
+     del catálogo, y los dos NO son un solo hecho: un árbol con alcorque
+     demasiado chico también levanta el andén, y uno sin alcorque puede no
+     estar levantando nada todavía. La prueba de la clase B —¿existe un cambio
+     razonable que deba mover uno y no el otro?— responde que sí, así que son
+     dos campos.
+
+     ── Y por qué ESTA lista SÍ lleva «Otro» ──────────────────────────────
+     La escala de estado de la v992 no lo lleva, y la razón se sostiene allá:
+     cuatro peldaños son exhaustivos por definición de escala. Esto es otra
+     cosa: es una ENUMERACIÓN del mundo, y una enumeración nunca está
+     completa. Sin la salida, quien tiene delante un caso que la lista no trae
+     elige «el más parecido» para poder seguir, y eso mete un dato falso que
+     después nadie distingue de uno bueno (v975). */
+  var SITIOS = [
+    { n:'Alcorque en andén',
+      d:'Hueco abierto en el piso duro, cuadrado o redondo, con tierra a la vista.',
+      alt:['hueco','cajuela','poceta','tierra a la vista'] },
+    { n:'Alcorque con rejilla o enchape',
+      d:'El mismo hueco, cubierto con rejilla, adoquín suelto o enchape permeable.',
+      alt:['adoquin','cubierto','tapado','permeable'] },
+    { n:'Jardinera elevada',
+      d:'Cajón de obra por encima del nivel del andén, con borde construido.',
+      alt:['matera','cajon','borde de obra','levantada'] },
+    { n:'Zona verde o separador',
+      d:'Tierra continua sin borde construido: separador vial, franja verde, parque.',
+      alt:['franja','prado','parque','grama','tierra continua'] },
+    { n:'Antejardín',
+      d:'El jardín privado entre la fachada y el andén.',
+      alt:['jardin privado','frente de casa','patio delantero'] },
+    { n:'Sin sitio de siembra',
+      d:'El tronco sale directamente del piso duro, sin hueco ni tierra a la vista.',
+      alt:['sin alcorque','pavimento','concreto','sin hueco','directo'] }
+  ];
+  function normS(x){
+    return String(x || '').toLowerCase()
+      .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+      .replace(/\s+/g, ' ').trim();
+  }
+  function sitioPorNombre(n){
+    var k = normS(n);
+    for (var i = 0; i < SITIOS.length; i++) if (normS(SITIOS[i].n) === k) return SITIOS[i];
+    return null;
+  }
+  /* El buscador NO pesa por rareza, por lo mismo que el de especies y el de
+     materiales: la lista es de seis y lo que case es todo resultado bueno.
+     Los sinónimos van PEGADOS a su fila, así que ninguno puede apuntar al
+     vacío (v975). */
+  function buscarSitio(q){
+    var k = normS(q);
+    if (!k) return SITIOS.slice();
+    return SITIOS.filter(function (x) {
+      if (normS(x.n).indexOf(k) >= 0) return true;
+      for (var i = 0; i < (x.alt || []).length; i++) if (normS(x.alt[i]).indexOf(k) >= 0) return true;
+      return false;
+    });
+  }
+
+  window.URBIS_SITIO_VOC = {
+    SITIOS: SITIOS,
+    NO_SE_SABE: NO_SE_SABE,
+    OTRO: OTRO,
+    buscar: buscarSitio,
+    porNombre: sitioPorNombre,
+    /* Los MISMOS usos que la especie, y leídos de la misma lista: un uso que
+       tenga árboles tiene dónde estar sembrado, y no existe un cambio
+       razonable que deba mover una lista y no la otra. Dos listas se
+       separarían a la tanda siguiente. */
+    USOS_CON_SITIO: USOS_CON_ESPECIE,
+    esUsoConSitio: esUsoDeArbol,
+    /* Lo que hace que la cifra se pueda leer: cuántos NO tienen dónde estar
+       sembrados. Va acá y no en cada pantalla, o cada una lo sumaría con su
+       propio criterio (v879). */
+    SIN_SITIO: 'Sin sitio de siembra',
+    texto: function (valor, otroTexto){
+      var v = String(valor || '').trim();
+      if (!v || v === 'undefined') return '';
+      if (v === OTRO()) {
+        var t = String(otroTexto || '').trim();
+        return t ? t + ' (no está en la lista de URBIS)' : 'Un sitio que no está en la lista, sin nombrar';
+      }
+      if (v === NO_SE_SABE()) return 'No se pudo determinar desde la acera';
+      var x = sitioPorNombre(v);
+      return x ? x.n : v;
+    }
+  };
+
   window.URBIS_ARBOL_VOC = Object.assign(window.URBIS_ARBOL_VOC || {}, {
     ESPECIES: ESPECIES,
     NO_SE_SABE: NO_SE_SABE,

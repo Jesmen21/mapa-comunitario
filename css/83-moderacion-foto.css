@@ -223,6 +223,26 @@ body[data-role="gov"] .urbis-sello-aprobar{
   color:#cbd5e6 !important; -webkit-text-fill-color:#cbd5e6;
 }
 
+/* ── Dónde está sembrado (v993) ──────────────────────────────────────────
+   Verde apagado como la especie: son del mismo árbol y los dos dicen «esto
+   se determinó en la calle». Y el caso SIN hueco va en ámbar, porque no es
+   un dato más: es el que levanta el andén. Dos cosas distintas con el mismo
+   color se leen como una sola (v880). */
+.popup-sitio{ color:#4f9d69; font-weight:700; }
+.popup-sitio.popup-sitio-sin{ color:#8a4b06; }
+/* En la ficha, sobre fondo OSCURO y DESPUÉS de `.detalle-especie`: misma
+   especificidad, gana la de abajo (v979). El ámbar del globo no se lee acá,
+   así que se mide en su sitio y no se copia del otro. */
+.detalle-especie.detalle-sitio-sin{
+  border-color:rgba(217,119,6,.45);
+  background:rgba(217,119,6,.12);
+  color:#f0c38a !important; -webkit-text-fill-color:#f0c38a;
+}
+.detalle-especie.detalle-sitio-sin b{ color:#ffd9a8 !important; -webkit-text-fill-color:#ffd9a8; }
+.detalle-especie.detalle-sitio small{
+  display:block; margin-top:3px; font-size:.68rem; opacity:.8;
+}
+
 /* ── Pedir corrección (v835) ──────────────────────────────────────────────
    Ámbar, como todo lo que en URBIS dice «esto todavía no está confirmado».
    Va arriba de la tarjeta y del detalle: es lo único de esas pantallas que

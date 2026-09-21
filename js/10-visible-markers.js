@@ -450,6 +450,16 @@
       if (_mb && _mb.texto) materialPopup = `<div class="popup-desc popup-material">\ud83e\uddf1 ${limpiarHTML(_mb.texto)}</div>`;
     } catch(e){}
 
+    /* Dónde está sembrado (v993). Junto a la especie: son del mismo árbol. */
+    let sitioPopup = '';
+    try {
+      const _sb = window.URBIS_SITIO ? window.URBIS_SITIO.leer(p.descripcion) : null;
+      if (_sb && _sb.texto) {
+        sitioPopup = `<div class="popup-desc popup-sitio${_sb.sinSitio ? ' popup-sitio-sin' : ''}">`
+          + `\u{1FAB4} ${limpiarHTML(_sb.texto)}</div>`;
+      }
+    } catch(e){}
+
     /* En qué estado está (v992). El color sale del vocabulario y no de la
        hoja de estilo: escrito en cada pantalla serían tres verdes que se
        separan a la tanda siguiente. */
@@ -635,6 +645,7 @@
         <span class="popup-title">${construirBadgeIcono(p.tipo, d[0], 'popup-icon-badge')}${limpiarHTML(d[1] || d[0])} ${likeBadge}</span>
         ${sinDirPopup}
         ${especiePopup}
+        ${sitioPopup}
         ${materialPopup}
         ${estadoPopup}
         ${fotoMiniPopup}
@@ -953,6 +964,16 @@
           + ' — edite el mapeo para ponerla cuando la sepa.</div>';
       }
     } catch(e){}
+    let _sitioDet = '';
+    try {
+      const _sbD = (_visD.verDetalle && window.URBIS_SITIO) ? window.URBIS_SITIO.leer(p.descripcion) : null;
+      if (_sbD && _sbD.texto) {
+        _sitioDet = `<div class="detalle-especie detalle-sitio${_sbD.sinSitio ? ' detalle-sitio-sin' : ''}">`
+          + `\u{1FAB4} Sembrado en: <b>${limpiarHTML(_sbD.texto)}</b>`
+          + (_sbD.sinSitio ? '<small>Un árbol sin hueco en el piso es el que levanta el andén y el que se seca primero.</small>' : '')
+          + '</div>';
+      }
+    } catch(e){}
     let _materialDet = '';
     try {
       const _mbD = (_visD.verDetalle && window.URBIS_MOBILIARIO) ? window.URBIS_MOBILIARIO.leer(p.descripcion) : null;
@@ -1003,6 +1024,7 @@
       <div class="form-section">
         ${_sinDirDet}
         ${_especieDet}
+        ${_sitioDet}
         ${_materialDet}
         ${_estadoDet}
         ${_pedidoDet}

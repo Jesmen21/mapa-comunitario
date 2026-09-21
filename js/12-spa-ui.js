@@ -844,6 +844,31 @@
         }
         descripcionFinal = d.join(' | ');
     })();
+    /* Dónde está sembrado el árbol (v993). Mismo molde que la especie: sin
+       el bloque en pantalla, `insSit` es null y no se toca ninguna de las dos
+       casillas, así que editar un punto por otro camino no borra lo que
+       alguien determinó en la calle. */
+    (function guardarSitioArbol(){
+        const insSit = document.getElementById('ins-sitio');
+        if (!insSit) return;
+        const S = window.URBIS_SLOTS || {};
+        if (S.arbolSitio == null) return;
+        const d = String(descripcionFinal).split(' | ');
+        const tope = Math.max(S.arbolSitio, S.arbolSitioOtro || 0);
+        for (let k = 0; k < tope; k++) if (d[k] === undefined) d[k] = '';
+        const sit = String(insSit.value || '').replace(/\|/g, '-').trim();
+        d[S.arbolSitio] = sit; fichaSlotsEscritos.push(S.arbolSitio);
+        /* El texto libre SOLO acompaña a «Otro»: dejarlo pegado convertiría
+           un descarte en un dato que nadie volvió a escribir. */
+        const insOtroSit = document.getElementById('ins-sitio-otro');
+        const esOtroSit = !!(window.URBIS_SITIO_VOC && sit === window.URBIS_SITIO_VOC.OTRO());
+        if (S.arbolSitioOtro != null) {
+            d[S.arbolSitioOtro] = (esOtroSit && insOtroSit)
+                ? String(insOtroSit.value || '').replace(/\|/g, '-').slice(0, 60).trim() : '';
+            fichaSlotsEscritos.push(S.arbolSitioOtro);
+        }
+        descripcionFinal = d.join(' | ');
+    })();
     /* En qué estado está (v992). Mismo molde que el material y por la misma
        razón: sin el bloque en pantalla, `insEst` es null y no se toca la
        casilla, así que editar un punto por otro camino no borra el estado

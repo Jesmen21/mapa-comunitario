@@ -3390,6 +3390,7 @@
     var VA = window.URBIS_ARBOL_VOC, VM = window.URBIS_MOBILIARIO_VOC;
     var VE = window.URBIS_ESTADO_VOC;
     var LA = window.URBIS_ARBOL, LM = window.URBIS_MOBILIARIO, LE = window.URBIS_ESTADO;
+    var LS = window.URBIS_SITIO;
     if (!S.resultado) return null;
     var pts = puntosDelCurso();
     var llave = (S.tickPintado || 0) + '·' + pts.length + '·' + (S.fichaActualId || '');
@@ -3403,7 +3404,12 @@
        existe para impedir. */
     var arb = { arboles: 0, conEspecie: 0, sinAnotar: 0, noSeSabe: 0,
                 otroNombrado: 0, otroSinNombrar: 0, palmas: 0,
-                especies: {}, generos: {}, otros: {} };
+                especies: {}, generos: {}, otros: {},
+                /* Dónde están sembrados (v993). En el MISMO recorrido y en el
+                   mismo acumulador que la especie: son del mismo árbol, y dos
+                   paseos darían dos poblaciones parecidas y distintas (v860). */
+                conSitio: 0, sitioSinAnotar: 0, sitioNoSeSabe: 0,
+                sitioOtro: 0, sinSitio: 0, sitios: {} };
     var mob = {};
     /* Y el estado, también POR USO y por la misma razón: «el 40 % está malo»
        sobre canecas, tapas, murales, vallas y vías juntas no describe
@@ -3449,6 +3455,18 @@
             var g = String(e.c || '').trim().split(/\s+/)[0];
             if (g) arb.generos[g] = (arb.generos[g] || 0) + 1;
           }
+        }
+      }
+
+      if (esArbol && LS && typeof LS.leer === 'function') {
+        var st = LS.leer(p.descripcion);
+        if (!st.sitio) arb.sitioSinAnotar++;
+        else if (st.noSeSabe) arb.sitioNoSeSabe++;
+        else if (st.esOtro) arb.sitioOtro++;
+        else {
+          arb.conSitio++;
+          arb.sitios[st.sitio] = (arb.sitios[st.sitio] || 0) + 1;
+          if (st.sinSitio) arb.sinSitio++;
         }
       }
 
@@ -3564,6 +3582,15 @@
       palmas: a.palmas,
       otros: ordenarCuenta(a.otros, a.otroNombrado),
       especies: especies, generos: generos,
+      /* El sitio de siembra, con su propio denominador: «el 40 % no tiene
+         hueco» sobre doce de los que se anotó no es lo mismo que sobre los
+         treinta mapeados (v943). */
+      sitio: {
+        conSitio: a.conSitio, sinAnotar: a.sitioSinAnotar, noSeSabe: a.sitioNoSeSabe,
+        otro: a.sitioOtro, sinSitio: a.sinSitio,
+        reparto: ordenarCuenta(a.sitios, a.conSitio),
+        cobertura: a.arboles ? Math.round(100 * a.conSitio / a.arboles) : 0
+      },
       /* Cobertura: qué parte de lo mapeado trae una especie utilizable. Es el
          denominador que impide leer el reparto como si fuera el del sector
          (v943), y por eso viaja con el resumen y no se recalcula al pintar. */
@@ -23316,6 +23343,42 @@ function donaHTML(datos, colorDe, nombreDe) {
       if (A.cobertura < 60) {
         out += '<p class="pcr-pista">Ojo con leer ese reparto como si fuera el arbolado del sector: ' +
           'solo <b>' + A.conEspecie + ' de ' + A.arboles + '</b> árboles mapeados traen la especie.</p>';
+      }
+
+      /* Dónde están sembrados (v993). Va DESPUÉS de la especie y dentro del
+         mismo bloque: es del mismo árbol, y lo que se lee no es el reparto
+         sino cuántos no tienen hueco — que es lo que levanta el andén y lo
+         que seca al árbol. */
+      var SI = A.sitio;
+      if (SI && (SI.conSitio || SI.sinAnotar || SI.noSeSabe || SI.otro)) {
+        out += '<p class="pcr-lab">Dónde están sembrados</p>';
+        if (SI.reparto.length) {
+          var mayorS = SI.reparto[0].cuenta || 1;
+          out += '<div class="pcr-niveles">' + SI.reparto.map(function (x) {
+            return '<div class="pcr-nivel">' +
+              '<span class="pcr-nivel-nom">' + esc(x.n) + '</span>' +
+              '<span class="pcr-nivel-barra"><i style="width:' + Math.round(100 * x.cuenta / mayorS) + '%"></i></span>' +
+              '<span class="pcr-nivel-n">' + x.cuenta + '<em>' + x.pct + '%</em></span></div>';
+          }).join('') + '</div>';
+          out += SI.sinSitio
+            ? '<p class="pcr-conc"><b>' + SI.sinSitio + ' de ' + SI.conSitio + '</b> ' +
+              pl(SI.sinSitio, 'sale', 'salen') + ' directamente del piso duro, sin hueco ni tierra a ' +
+              'la vista: son los que levantan el andén y los que se secan primero.</p>'
+            : '<p class="pcr-conc">Ninguno de los <b>' + SI.conSitio + '</b> con el sitio anotado ' +
+              'sale del piso duro sin hueco.</p>';
+        }
+        var ps = [];
+        if (SI.sinAnotar) ps.push('<b>' + SI.sinAnotar + '</b> sin sitio anotado — tarea de campo');
+        if (SI.noSeSabe) ps.push('<b>' + SI.noSeSabe + '</b> ' + pl(SI.noSeSabe, 'mirado', 'mirados') + ' y no ' + pl(SI.noSeSabe, 'determinado', 'determinados') + ' — es una respuesta');
+        if (SI.otro) ps.push('<b>' + SI.otro + '</b> con un sitio que no está en la lista');
+        if (ps.length) out += '<p class="pcr-pista">' + ps.join(' · ') + '.</p>';
+        /* Y la distinción que cuesta: el TIPO «Árbol que levanta el andén» y
+           este campo no son el mismo hecho, y decirlo acá evita que alguien
+           los sume. */
+        out += '<p class="pcr-pista">No es lo mismo que el tipo «Árbol que levanta el andén»: ' +
+          'ese ya lo está levantando, y esto dice dónde está sembrado. Un árbol con un alcorque ' +
+          'demasiado chico también levanta el andén, y uno sin hueco puede no estar levantando ' +
+          'nada todavía.</p>';
       }
     }
 
