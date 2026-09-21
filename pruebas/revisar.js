@@ -7299,12 +7299,15 @@ console.log('\n  -- un dibujo no se queda mas chico que su pie (v1010) --');
        otra cosa: es la trampa de la v854, y la sonda la produjo de verdad
        -el corte de calle encontraba el pie de la carta solar dos niveles
        arriba-. */
-    const dentro = /closest\(\s*'[^']*pcr-dibujo[^']*'\s*\)/.test(cuenta) &&
-                   /caja\s*\?\s*caja\.querySelector\('\.pcr-dibujo-pie'\)/.test(cuenta);
-    comprobar('y se busca DENTRO de la caja del dibujo, no en el documento',
+    const dentro = /var caja = sv\.parentElement;/.test(cuenta) &&
+                   /caja\s*\?\s*caja\.querySelector\('\.pcr-dibujo-pie'\)/.test(cuenta) &&
+                   !/closest\(/.test(cuenta);
+    comprobar('y se busca en la caja que CONTIENE al dibujo, sin subir ni listar clases',
       dentro,
-      dentro ? 'sube con closest hasta la caja y busca el pie ahi dentro'
-             : 'busca el pie fuera de la caja: encontraria el de la figura de al lado');
+      dentro ? 'la caja es el elemento que lo contiene: una caja nueva la hereda sin que nadie la agregue'
+             : (/closest\(/.test(cuenta)
+                ? 'sube por el documento o lista clases de caja: encontraria el pie de la figura de al lado, y una caja nueva no la heredaria'
+                : 'no toma la caja del elemento que contiene al dibujo'));
 
     /* 3 - el rotulo mas chico se lee del atributo Y de la clase. js/74 los
        escribe como atributo y la seccion de calle como clase css: mirando
@@ -7368,6 +7371,78 @@ console.log('\n  -- un dibujo no se queda mas chico que su pie (v1010) --');
       /anchoQueLeeElDibujo\(sv\)/.test(pase)
         ? 'ajustarDibujos lo pide ahi, asi que lo de arriba vigila lo que corre'
         : 'dejo de pedirlo: la cuenta quedaria sin usar y las comprobaciones de arriba, en verde sobre nada');
+  }
+}
+
+console.log('\n  -- el pie de un dibujo es lo que el dibujo dice que es (v1011) --');
+{
+  const j68 = leer('js/68-procity-reconocimiento.js');
+  const trozo = (desde, hasta) => {
+    const i = j68.indexOf(desde);
+    if (i < 0) return '';
+    const j = j68.indexOf(hasta, i + desde.length);
+    return j < 0 ? j68.slice(i) : j68.slice(i, j);
+  };
+  const ayud = trozo('function cajaSeccion(', '\n  function seccionDibujada(');
+  const pase = trozo('function ajustarDibujos(', '\n  function pintar(');
+  const cuenta = trozo('function anchoQueLeeElDibujo(', '\n  /* Un dibujo con su ancho ESCRITO');
+  /* Cuantos dibujos de seccion hay de verdad: si un dia no queda ninguno, lo
+     de abajo no tendria nada que vigilar y hay que mirarlo, no arreglarlo. */
+  const usos = (j68.match(/cajaSeccion\(/g) || []).length - 1;
+
+  if (!ayud || usos < 2) {
+    anotarSinMaterial('MATERIAL - la ficha pinta dibujos de seccion por su ayudante',
+      'el ayudante no esta, o ya casi nadie lo usa: ' + usos + ' dibujo(s)');
+  } else {
+    comprobar('MATERIAL - la ficha pinta dibujos de seccion por su ayudante',
+      true, usos + ' dibujos de seccion salen de cajaSeccion');
+
+    /* 1 - ninguno se escribe a mano. Con el div y el aria-label sueltos, el
+       quinto dibujo nace otra vez sin pie, que es como estaban los cuatro. */
+    const aMano = (j68.match(/'<div class="pcr-seccion/g) || []).length;
+    comprobar('ningun dibujo de seccion se arma a mano',
+      aMano === 1,
+      aMano === 1 ? 'el unico que escribe el div es el propio ayudante'
+                  : (aMano - 1) + ' lo escriben por su cuenta: naceria sin pie, como los cuatro de antes');
+
+    /* 2 - el pie y el aria-label salen de la MISMA cadena. Dos copias de la
+       misma frase se separan a la tanda siguiente (clase B), y la que se
+       quedaria vieja seria la que nadie mira: la que oye la pagina. */
+    const unaSola = /aria-label="' \+\s*\n?\s*esc\(etiqueta\)/.test(ayud) &&
+                    /pcr-dibujo-pie">' \+ esc\(etiqueta\)/.test(ayud);
+    comprobar('y el pie y el aria-label salen de la misma cadena',
+      unaSola,
+      unaSola ? 'una sola etiqueta: el que oye la pagina y el que la mira leen lo mismo'
+              : 'son dos cadenas: se separarian, y la que envejece es la que nadie mira');
+
+    /* 3 - solo se estira lo que trae su ancho ESCRITO. Ponerle tope a un
+       dibujo que ya ocupa su caja lo haria MAS CHICO en una pantalla ancha, y
+       la regla de la v1010 es un piso, no una meta. */
+    const soloEscrito = /if \(anchoEscrito\(sv\)\)/.test(pase) &&
+                        /getAttribute\('width'\)/.test(j68.slice(j68.indexOf('function anchoEscrito(')));
+    comprobar('solo se estira el dibujo que trae su ancho escrito',
+      soloEscrito,
+      soloEscrito ? 'el que ya ocupa su caja se deja: un tope lo haria mas chico en una pantalla ancha'
+                  : 'estira todo: el corte de calle pasaria de 720 a 501 px en una tableta');
+
+    /* 4 - el que no alcanza se cuenta, y lo que no esta maquetado NO. Un
+       dibujo de una pestaña cerrada mide cero, y cero no es corto: contarlo
+       daria cinco cortos donde hay dos (la trampa de la v990). */
+    const cuentaCortos = /salio > 0 && salio < r\.ancho - 1/.test(pase) &&
+                         /S\.dibujosCortos\s*=/.test(pase) &&
+                         /dibujosCortos/.test(j68.slice(j68.indexOf('estado: function')));
+    comprobar('y el que no alcanza su pie se cuenta, pero no el que no esta maquetado',
+      cuentaCortos,
+      cuentaCortos ? 'se mide lo que el navegador maqueto, y un ancho cero no cuenta como corto'
+                   : 'no lo cuenta, o cuenta como corto lo que todavia no se maqueto');
+
+    /* La guarda de la guarda: si el pase dejara de preguntar por el ancho
+       escrito, volveria a estirarlo todo y lo de arriba seguiria en verde. */
+    comprobar('y el pase sigue preguntando por el ancho escrito',
+      /anchoEscrito\(sv\)/.test(pase) && /function anchoEscrito\(/.test(j68),
+      /anchoEscrito\(sv\)/.test(pase)
+        ? 'ajustarDibujos lo pregunta ahi, asi que lo de arriba vigila lo que corre'
+        : 'dejo de preguntarlo: la cuenta quedaria sin usar');
   }
 }
 

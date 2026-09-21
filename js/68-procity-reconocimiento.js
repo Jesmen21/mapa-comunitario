@@ -14516,10 +14516,15 @@ function donaHTML(datos, colorDe, nombreDe) {
     var vb = String(sv.getAttribute('viewBox') || '').split(/[\s,]+/);
     var unidades = parseFloat(vb[2]);
     if (!(unidades > 0)) return { ancho: 0, razon: 'sin-viewbox' };
-    /* El pie de ESTE dibujo, buscado dentro de su caja y sin salir de ella:
-       el de la caja de al lado explica otra figura, y medir el documento
-       entero es la trampa de la v854. */
-    var caja = sv.closest ? sv.closest('.pcr-dibujo, .pcr-corte-caja') : null;
+    /* La caja de un dibujo es el elemento que lo CONTIENE, sin subir más: el
+       pie de la caja de al lado explica otra figura, y eso no es teórico —la
+       primera sonda subía dos niveles y le daba al corte de calle el pie de
+       la carta solar—. Es la trampa de la v854, y por eso no se sube.
+
+       Y no hay lista de clases de caja: con una, la caja nueva de la tanda
+       siguiente no la heredaría, que es lo que pasó con `.pcr-seccion` entre
+       la v1010 y la v1011. */
+    var caja = sv.parentElement;
     var pie = caja ? caja.querySelector('.pcr-dibujo-pie') : null;
     if (!pie) return { ancho: 0, razon: 'sin-pie' };
     var cc = getComputedStyle(caja);
@@ -14540,8 +14545,23 @@ function donaHTML(datos, colorDe, nombreDe) {
     return { ancho: Math.round(unidades * piePx / menor), razon: 'ok' };
   }
 
+  /* Un dibujo con su ancho ESCRITO en el atributo no puede crecer solo: sale
+     a los 240 px que trae y `max-width:100%` únicamente lo deja encoger. Ese
+     es el que hay que estirar.
+
+     Uno SIN ancho escrito ya ocupa todo lo que su caja le da, y estirarlo no
+     le suma nada: ponerle un tope lo haría MÁS CHICO en una pantalla ancha
+     —el corte de calle pasaría de 720 a 501 px—, y la regla de la v1010 es un
+     PISO y no una meta. Se deja como está, y si aun así no alcanza el pie es
+     porque la pantalla no da para más: eso se cuenta aparte y no se disimula
+     (v966). */
+  function anchoEscrito(sv) {
+    var w = parseFloat(sv.getAttribute('width'));
+    return w > 0 ? w : 0;
+  }
+
   function ajustarDibujos(raiz) {
-    var n = 0, sinPie = 0, enFila = 0;
+    var n = 0, sinPie = 0, enFila = 0, cortos = 0;
     try {
       var svs = raiz ? raiz.querySelectorAll('svg[viewBox]') : [];
       for (var i = 0; i < svs.length; i++) {
@@ -14550,15 +14570,29 @@ function donaHTML(datos, colorDe, nombreDe) {
         var r = anchoQueLeeElDibujo(sv);
         if (r.razon === 'en-fila') { enFila++; continue; }
         if (!r.ancho) { sinPie++; continue; }
-        sv.style.width = '100%';
-        sv.style.height = 'auto';
-        sv.style.maxWidth = r.ancho + 'px';
-        n++;
+        if (anchoEscrito(sv)) {
+          sv.style.width = '100%';
+          sv.style.height = 'auto';
+          sv.style.maxWidth = r.ancho + 'px';
+          n++;
+        }
+        /* Y el tercer estado: con la caja puesta, ¿alcanzó? Se mide DESPUÉS
+           de escribir el estilo, sobre lo que el navegador maquetó de verdad
+           —deducirlo del cálculo sería medir lo que se le pidió y no lo que
+           hizo, que es la lección de la v854—.
+
+           Un dibujo de una pestaña cerrada mide CERO, y cero no es corto: es
+           que todavía no lo maquetaron. Contarlo daría cinco cortos donde hay
+           dos, que es la trampa que la v990 ya pagó con la portada. Se cuenta
+           en la pintada en la que su pestaña esté abierta. */
+        var salio = Math.round(sv.getBoundingClientRect().width);
+        if (salio > 0 && salio < r.ancho - 1) cortos++;
       }
     } catch (e) { /* un ajuste de dibujo no puede costar la ficha (v870) */ }
     S.dibujosAjustados = n;
     S.dibujosSinPie = sinPie;
     S.dibujosEnFila = enFila;
+    S.dibujosCortos = cortos;
   }
 
   function pintar() {
@@ -22975,6 +23009,26 @@ function donaHTML(datos, colorDe, nombreDe) {
      ancho van acotados con su valor, y debajo está la única cifra que
      importa explicada con una regla: la relación altura ÷ ancho, de calle
      abierta a cañón, con la aguja donde cae este sector. */
+  /* ── LA CAJA DE UNA SECCIÓN, CON SU PIE (v1011) ───────────────────────
+     Los cuatro dibujos de `.pcr-seccion` salían SIN pie, y la propia hoja de
+     estilo dice qué es eso: «un dibujo sin pie es un adorno». Sin él, además,
+     el ajuste de la v1010 no tiene contra qué medir el rótulo más chico y el
+     dibujo se queda fuera del reparto con la razón `sin-pie`.
+
+     El texto del pie NO se inventa: es el mismo `aria-label` que el dibujo ya
+     llevaba escrito, que es donde cada uno de los cuatro dice lo que es. Sale
+     de UNA variable, así que el que oye la página y el que la mira leen la
+     misma frase y no pueden separarse a la tanda siguiente (clase B).
+
+     Y va en un ayudante, no en cuatro `return` parecidos: con el `div` y el
+     `aria-label` escritos a mano, el quinto dibujo nace otra vez sin pie. */
+  function cajaSeccion(clase, etiqueta, dentro) {
+    return '<div class="pcr-seccion' + (clase ? ' ' + clase : '') + '">' +
+      '<svg viewBox="0 0 ' + dentro.W + ' ' + dentro.H + '" role="img" aria-label="' +
+      esc(etiqueta) + '">' + dentro.svg + '</svg>' +
+      '<p class="pcr-dibujo-pie">' + esc(etiqueta) + '</p></div>';
+  }
+
   function seccionDibujada(p) {
     if (!p || p.alturaMediaM == null || p.anchoMedioM == null) return '';
     var W = 360, H = 254, base = 118;
@@ -23056,8 +23110,8 @@ function donaHTML(datos, colorDe, nombreDe) {
       '<path d="M' + escalaRel(rel).toFixed(1) + ' ' + (ry - 4) + 'l-4 -7h8z" class="pcr-sec-aguja"/>' +
       '<text x="' + Math.max(rx0 + 30, Math.min(rx1 - 30, escalaRel(rel))).toFixed(1) + '" y="' + (ry - 14) +
         '" class="pcr-sec-t pcr-sec-t-fuerte" text-anchor="middle">esta calle: ' + f1(rel) + (rel > 3 ? ' (fuera de la regla)' : '') + '</text>';
-    return '<div class="pcr-seccion"><svg viewBox="0 0 ' + W + ' ' + H + '" role="img" ' +
-      'aria-label="Sección tipo de la calle: edificios, andenes y calzada, con una persona de escala">' +
+    return cajaSeccion('', 'Sección TIPO de la calle: los promedios del sector, no una calle ' +
+      'concreta. La persona mide 1,7 m.', { W: W, H: H, svg:
       '<path d="M' + x0 + ' ' + base + 'H' + x3.toFixed(1) + '" class="pcr-sec-suelo"/>' +
       edificio(x0, xe1 - x0) + edificio(xe2, x3 - xe2) + andenes + persona +
       // Los nombres, encima de cada cosa.
@@ -23075,8 +23129,7 @@ function donaHTML(datos, colorDe, nombreDe) {
               : ' · el andén va dibujado a ' + f1(ANDEN_SUPUESTO_M) + ' m de supuesto, sin medir')
           : '')) +
       '<text x="' + x0 + '" y="' + (ry - 32) + '" class="pcr-sec-t">Altura ÷ ancho: qué tan encajonada se siente la calle</text>' +
-      regla +
-      '</svg></div>';
+      regla });
   }
 
   function bloquePerfil() {
@@ -26007,13 +26060,12 @@ function donaHTML(datos, colorDe, nombreDe) {
         '<text x="' + X(e.s) + '" y="' + (y + h + 12) + '" class="pcr-sec-t" text-anchor="middle">' +
         esc(String(e.nombre || 'esquina').slice(0, 18)) + '</text>';
     }).join('');
-    return '<div class="pcr-seccion pcr-frente"><svg viewBox="0 0 ' + W + ' ' + H + '" role="img" ' +
-      'aria-label="El frente de la cuadra: fachada, huecos y lote">' +
+    return cajaSeccion('pcr-frente', 'El frente de la cuadra: fachada, huecos y lote.',
+      { W: W, H: H, svg:
       tira + lote + esquinas +
       '<text x="' + x0 + '" y="' + (H - 3) + '" class="pcr-sec-t">0 m</text>' +
       '<text x="' + x1 + '" y="' + (H - 3) + '" class="pcr-sec-t" text-anchor="end">' + cu.largoM + ' m · ' +
-        cu.pctLleno + '% con fachada</text>' +
-      '</svg></div>';
+        cu.pctLleno + '% con fachada</text>' });
   }
 
   /* ── Lo que cabe, dibujado ────────────────────────────────────────────
@@ -26037,8 +26089,8 @@ function donaHTML(datos, colorDe, nombreDe) {
       torre += '<rect x="' + tx + '" y="' + (tb - (i + 1) * ph + 1) + '" width="' + tw + '" height="' + (ph - 1.2) +
         '" class="pcr-cb-piso"/>';
     }
-    return '<div class="pcr-seccion pcr-cabe-dib"><svg viewBox="0 0 ' + W + ' ' + H + '" role="img" ' +
-      'aria-label="El lote, la huella permitida y la torre que sale">' +
+    return cajaSeccion('pcr-cabe-dib', 'El lote, la huella permitida y la torre que sale.',
+      { W: W, H: H, svg:
       '<rect x="' + x0 + '" y="' + y0 + '" width="' + L + '" height="' + L + '" rx="3" class="pcr-cb-lote"/>' +
       '<rect x="' + hx.toFixed(1) + '" y="' + hy.toFixed(1) + '" width="' + hs.toFixed(1) + '" height="' + hs.toFixed(1) +
         '" rx="2" class="pcr-cb-huella"/>' +
@@ -26050,8 +26102,7 @@ function donaHTML(datos, colorDe, nombreDe) {
       '<text x="' + (tx + tw + 10) + '" y="' + (tb - pisos * ph / 2 + 3) + '" class="pcr-sec-t">' +
         q.construibleM2.toLocaleString('es-CO') + ' m²</text>' +
       '<text x="' + (tx + tw + 10) + '" y="' + (tb - 14) + '" class="pcr-sec-t">' + fmtN(q.viviendas) + ' viviendas</text>' +
-      '<text x="' + (tx + tw + 10) + '" y="' + (tb - 3) + '" class="pcr-sec-t">' + fmtN(q.personas) + ' personas</text>' +
-      '</svg></div>';
+      '<text x="' + (tx + tw + 10) + '" y="' + (tb - 3) + '" class="pcr-sec-t">' + fmtN(q.personas) + ' personas</text>' });
   }
 
   /* ── La sombra que arroja, hora por hora ──────────────────────────────
@@ -26066,8 +26117,8 @@ function donaHTML(datos, colorDe, nombreDe) {
     var W = 320, H = 96, base = H - 20, top = 16;
     var max = Math.max.apply(null, horas.map(function (h) { return h.m2Fuera; })) || 1;
     var bw = 54, gap = (W - horas.length * bw) / (horas.length + 1);
-    return '<div class="pcr-seccion pcr-sombra-horas"><svg viewBox="0 0 ' + W + ' ' + H + '" role="img" ' +
-      'aria-label="Sombra fuera del lote por hora">' +
+    return cajaSeccion('pcr-sombra-horas', 'Sombra que se sale del lote, hora por hora.',
+      { W: W, H: H, svg:
       horas.map(function (h, i) {
         var x = gap + i * (bw + gap), alto = Math.max(2, (base - top) * h.m2Fuera / max);
         return '<rect x="' + x.toFixed(1) + '" y="' + (base - alto).toFixed(1) + '" width="' + bw + '" height="' + alto.toFixed(1) +
@@ -26076,8 +26127,7 @@ function donaHTML(datos, colorDe, nombreDe) {
             Number(h.m2Fuera).toLocaleString('es-CO') + ' m²' + (h.tocados.length ? ' · ' + h.tocados.length + ' vecino' + (h.tocados.length === 1 ? '' : 's') : '') + '</text>' +
           '<text x="' + (x + bw / 2).toFixed(1) + '" y="' + (base + 13) + '" class="pcr-sec-t" text-anchor="middle">' + h.hora + ':00</text>';
       }).join('') +
-      '<path d="M' + (gap / 2).toFixed(1) + ' ' + base + 'H' + (W - gap / 2).toFixed(1) + '" class="pcr-sec-suelo"/>' +
-      '</svg></div>';
+      '<path d="M' + (gap / 2).toFixed(1) + ' ' + base + 'H' + (W - gap / 2).toFixed(1) + '" class="pcr-sec-suelo"/>' });
   }
 
   /* ── El ruido del tránsito, modelado ──────────────────────────────────
@@ -32852,6 +32902,10 @@ function donaHTML(datos, colorDe, nombreDe) {
         dibujosAjustados: S.dibujosAjustados || 0,
         dibujosSinPie: S.dibujosSinPie || 0,
         dibujosEnFila: S.dibujosEnFila || 0,
+        /* Los que tienen su pie y aun así no llegan a él porque la pantalla
+           no da más ancho. No es un fallo del ajuste: es el límite de la
+           caja, y se cuenta para que no se lea como un ajuste logrado. */
+        dibujosCortos: S.dibujosCortos || 0,
         /* La llave del sector: lo que una prueba necesita para escribirle al
            almacén de campo se agrega acá (v871), en vez de reconstruirla
            afuera con su propia fórmula — que sería la segunda ruta de cálculo

@@ -18017,7 +18017,12 @@ ancho, así que **no hay a dónde crecer**. Lo que le falta es lo otro que la
 v990 describió —que la geometría del dibujo suponga otro tamaño de letra— y eso
 descuadra cotas e interlíneas, que es su propia tanda con su propia medición.
 Además **no tiene pie propio**: por la vara de esta versión, primero hay que
-escribirle uno. `pendiente`
+escribirle uno.
+
+**El pie lo escribió la v1011** —y no era uno, eran cuatro—, así que la mitad
+del renglón está cerrada y la otra no: los rótulos siguen a 8,6 px porque el
+dibujo ya ocupa su caja, y bajarle las unidades del `viewBox` toca la lámina,
+que este contenedor no puede medir. `pendiente`
 
 ### Demostrado contra la v1009
 
@@ -18056,6 +18061,143 @@ al lado se deja encontrar.
 Las aserciones que corresponderían a esto en una suite de navegador —que
 `dibujosAjustados` sea 2 y `dibujosSinPie` 1, y que ningún rótulo baje del pie
 cuando hay sitio— quedan pendientes de un contenedor con el banco de pruebas.
+
+## El pie de un dibujo es lo que el dibujo dice que es (v1011)
+
+La v1010 dejó dos cosas medidas y sin hacer: que **el corte de la calle no
+tiene pie propio**, y que por eso se queda fuera del reparto con la razón
+`sin-pie`. Medido de frente antes de escribir nada —la regla de la v863—,
+**no era uno: eran cuatro**, y todos de la misma familia.
+
+    v1010   4 dibujos de `.pcr-seccion` sin pie · 2 estirados · 1 sin pie en la ficha del sector
+    v1011   los 4 con su pie · 3 estirados · 0 sin pie · y el que no alcanza, contado
+
+### El texto del pie ya estaba escrito, en el `aria-label`
+
+Los cuatro llevan desde siempre una frase que dice exactamente lo que son:
+«Sección tipo de la calle: edificios, andenes y calzada, con una persona de
+escala», «El frente de la cuadra: fachada, huecos y lote», «El lote, la huella
+permitida y la torre que sale», «Sombra fuera del lote por hora».
+
+O sea que **no había que inventar prosa**: había que imprimir la que ya estaba
+para quien oye la página y no para quien la mira. Sale de **una sola variable**,
+así que las dos no pueden separarse a la tanda siguiente (clase B) — y la que
+se quedaría vieja sería justo la que nadie revisa, la del lector de pantalla.
+
+Y va en un ayudante, `cajaSeccion(clase, etiqueta, dentro)`, no en cuatro
+`return` parecidos: **con el `div` y el `aria-label` escritos a mano, el quinto
+dibujo nace otra vez sin pie**, que es como nacieron estos cuatro. La guarda
+falla cerrado: ningún `.pcr-seccion` puede armarse fuera del ayudante.
+
+De paso, el pie de la sección de calle dice una limitación que el dibujo
+**callaba**: es una sección **TIPO**, armada con los promedios del sector y no
+la de una calle concreta. Estaba en el comentario de la función y en ninguna
+pantalla — la clase C, con el dato del lado del programa.
+
+### La caja de un dibujo es el elemento que lo contiene, y nada más
+
+La v1010 la buscaba con `closest('.pcr-dibujo, .pcr-corte-caja')`, o sea con
+una **lista de clases**. Y ahí está la prueba de por qué una lista no sirve:
+`.pcr-seccion` no estaba en ella, así que los cuatro dibujos de esta tanda **no
+habrían heredado el ajuste** aunque tuvieran su pie. Una tanda después de
+escribirla, la lista ya estaba incompleta.
+
+Ahora la caja es `sv.parentElement`, sin subir y sin nombrar ninguna clase. Una
+caja nueva la hereda sin que su autor se acuerde (v867), y sigue sin poder
+encontrar el pie de la figura de al lado — que no es teórico: la primera sonda
+subía dos niveles y le daba al corte de calle **el pie de la carta solar**.
+
+### Solo se estira el dibujo que trae su ancho ESCRITO
+
+El material nuevo forzó una corrección de la regla de la v1010, y conviene
+decirla entera porque es la diferencia entre un piso y una meta.
+
+Un dibujo con `width="240"` en el atributo **no puede crecer solo**: sale a 240
+px y `max-width:100%` únicamente lo deja encoger. Ese es el que hay que
+estirar, y el tope lo pone la cuenta.
+
+Un dibujo **sin** ancho escrito ya ocupa todo lo que su caja le da. Ponerle el
+mismo tope lo haría **más chico** en una pantalla ancha: medido, el corte de
+calle pasaría de 720 a 501 px en una tableta, y sus rótulos de 18 a 11,8. Eso
+no es aplicar un piso, es imponer una meta. Se deja como está.
+
+| a 390 px | antes | ahora |
+|---|---|---|
+| `pcr-carta` | 240 px · 8 px | **336 px · 11,2 px** |
+| `pcr-rosa-rumbos` | 200 px · 10 px | **237 px · 11,8 px** |
+| `pcr-plano-lote` | 260 px · 7 px | **336 px · 9,0 px** |
+| el corte de calle | 342 px · 8,5 px | 342 px · 8,6 px |
+| el lote y su huella | 342 px · 9,6 px | 342 px · 9,6 px |
+
+A 768 px los tres estirados llegan a 11,8 —su pie— y los dos que ya ocupaban su
+caja suben a 18 y 20,3, por encima de él. Que es lo correcto: el pie es un
+piso.
+
+### Y el que no alcanza se cuenta
+
+Tres de los cinco siguen por debajo de su pie en un teléfono, y **no por el
+ajuste sino por el ancho que hay**. Un recuento que dijera solo «3 estirados»
+se leería como que los tres quedaron bien, que es la exención silenciosa de la
+v966. Son cuatro estados y se cuentan aparte, porque piden cosas distintas:
+
+| | Qué significa |
+|---|---|
+| `dibujosAjustados` | se estiró hasta su pie |
+| `dibujosCortos` | tiene pie y no llega: la pantalla no da más ancho |
+| `dibujosSinPie` | no hay de dónde sacar el piso — hay que escribirle un pie |
+| `dibujosEnFila` | el pie va al lado y la maquetación ya decidió el ancho |
+
+Medido a 390 px, pestaña por pestaña: ambiente 1 corto, movilidad 1, lote 2. A
+768 px, cero.
+
+#### Un dibujo de una pestaña cerrada mide CERO, y cero no es corto
+
+La primera versión del recuento daba **5 cortos donde hay 2**: la ficha compone
+las ocho pestañas a la vez y las que no están abiertas miden cero de ancho. Es
+exactamente la trampa que la v990 pagó con la portada —«la vista sale de la
+hoja con `display:none`, así que el contenedor mide cero en el momento de
+dibujar»— y salió del mismo sitio: de volver a correr la medición, no de leer
+el código.
+
+Se cuenta en la pintada en la que su pestaña está abierta, y cambiar de pestaña
+vuelve a pintar.
+
+### Demostrado contra la v1010
+
+Siete inyecciones fieles (v993), contra una copia guardada en `/tmp` y no con
+`git checkout --` sobre trabajo sin confirmar (v973):
+
+```
+? MATERIAL · el ayudante no existe (el estado de la v1010)
+✗ ningun dibujo de seccion se arma a mano
+✗ y el pie y el aria-label salen de la misma cadena
+✗ solo se estira el dibujo que trae su ancho escrito
+✗ y el que no alcanza su pie se cuenta, pero no el que no esta maquetado
+✗ y el pase sigue preguntando por el ancho escrito
+✗ y se busca en la caja que CONTIENE al dibujo, sin subir ni listar clases
+```
+
+Dos de ellas ponen **dos** en rojo, y es correcto: la que estira todo y la que
+deja de preguntar por el ancho escrito miden la misma línea desde dos lados.
+
+### Lo que sigue faltando, y sigue sin poderse arreglar desde acá
+
+**El corte de la calle saca sus rótulos a 8,6 px en un teléfono**, y ya ocupa
+los 342 px que la caja le da: **no hay a dónde crecer**. Lo que le falta es que
+su geometría suponga otro tamaño de letra —bajar las 360 unidades del `viewBox`
+a unas 260— y ahí está el impedimento medido: **el mismo `seccionDibujada`
+dibuja también en la lámina**, donde el conteo de unidades decide el tamaño
+relativo del texto dentro de la figura y §21 mide en milímetros de papel.
+Cambiarlo tocaría el pliego, y las suites que lo miden —`tdoslaminas`,
+`tlaminaedu`— **no corren en este contenedor**. `pendiente`
+
+### Lo que NO se pudo correr
+
+**Ninguna suite de navegador**, por lo mismo que la v973 a la v1010. Corrió
+`revisar.js` entero con sus seis comprobaciones nuevas, y se midió el papel con
+la sonda —reanudando una ficha guardada **con lote**, que es lo que destapó los
+dos dibujos que la v1010 no había visto, y leyendo pestaña por pestaña el ancho
+impreso, el rótulo más chico y el pie de cada dibujo a 390 y 768 px—.
 
 ## La lista viva: lo que al pliego educativo todavía le falta (v866)
 
