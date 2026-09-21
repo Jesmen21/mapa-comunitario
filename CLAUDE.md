@@ -20362,7 +20362,7 @@ pruebas. Corrió `revisar.js` entero y se miró el papel con la sonda de la
 ficha, en sus dos corridas, que es lo que encontró las cuarenta y dos
 baldosas y el clic que faltaba.
 
-## Una cifra sin medir no es cero, y no es «undefined» (v1030)
+## Una cifra sin medir no es cero, y no es «undefined» (v1031)
 
 Salió **mirando el papel** de la ficha —el método que encontró los defectos de
 la v874, la v882, la v885, la v887 y la v974— y lo primero que apareció fue una
@@ -20372,7 +20372,7 @@ frase impresa veinticuatro veces:
 > los pisos registrados en <b>**undefined**%</b> de los edificios.
 
     v1029   8 sitios imprimen «undefined%» · 3 imprimen un «0 %» que nadie midió
-    v1030   los 11 dicen la cifra, o dicen que nadie la midió
+    v1031   los 11 dicen la cifra, o dicen que nadie la midió
 
 ### La clase: media guarda
 
@@ -20475,6 +20475,16 @@ las dos corridas —la real y la de `--uno`—:
 | con la cobertura resuelta | 16 |
 | con el `pctVacio` dicho | 8 |
 | con la búsqueda arreglada | **0** |
+
+### Y una de numeración
+
+Esta tanda se escribió como v1030 y al ir a subir `origin/main` ya iba en
+**1030-seguimiento-presidencial-villa-de-leyva-jep-cpi-y-balance-de-seguridad**:
+las dos sesiones llamaron v1030 a lo suyo, y ninguna hizo nada mal —cada una
+miró el último commit de su rama y sumó uno—. Los nueve archivos de versión
+salieron en conflicto por una sola cosa, el token, comprobado con `git diff`
+antes de resolver. Se sube **por encima de las dos**: es la **v1031**, la regla
+del 7 de septiembre.
 
 ### Demostrado contra la v1029
 

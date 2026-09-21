@@ -1938,9 +1938,10 @@
 
      Y el discriminante de la ALTURA ya estaba al lado: cuando el perfil no
      trae `coberturaAltura`, el trazado la trae en `alturas.cobertura`. Lo
-     leía UN solo sitio —las tareas de campo, que la v1029 dejó intacta— y
-     los otros cuatro imprimían «undefined» teniendo la cifra en el mismo
-     objeto. Quinta vez que el discriminante estaba al lado y nadie lo leía.
+     leía UN solo sitio —las tareas de campo— y los otros cuatro imprimían
+     «undefined» teniendo la cifra en el mismo objeto. Quinta vez que el
+     discriminante estaba al lado y nadie lo leía; aquel sitio lee ahora de
+     acá, porque era la segunda ruta de cálculo a la misma cantidad (v879).
 
      El ancho no tiene segunda fuente, así que ahí `hay:false` es la verdad. */
   function cobDe(propia, respaldo) {
@@ -4015,7 +4016,7 @@
       /* Resuelta, no en crudo: `pf.coberturaAncho` puede no venir y este
          campo hoy no lo lee nadie —es un dato del registro sin consumidor,
          de los de la clase C—, así que cuando aparezca uno no heredará el
-         «undefined» que la v1030 acaba de quitar de las once pantallas. */
+         «undefined» que la v1031 acaba de quitar de las once pantallas. */
       anchoDe: pf ? pf.anchoDe : null,
       coberturaAncho: (pf && pf.cobAncho.hay) ? pf.cobAncho.pct : null,
       fecha: hoy
@@ -17581,7 +17582,7 @@ function donaHTML(datos, colorDe, nombreDe) {
        un uso— así que ahí los edificios ni aparecen. Los que valen son los
        que trajeron forma, que son los que se pueden contar desde la acera. */
     var edificiosTrz = ll.edificios || alt.edificios || 0;
-    /* La segunda ruta a la misma cantidad se retiró en la v1030: esta era la
+    /* La segunda ruta a la misma cantidad se retiró en la v1031: esta era la
        ÚNICA que leía el respaldo de `alturas.cobertura`, y los otros cuatro
        sitios imprimían «undefined». Ahora lo resuelve `perfilDeLaCalle` y
        acá se lee de ahí — sin perfil medido sigue quedando el respaldo. */

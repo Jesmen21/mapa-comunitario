@@ -757,7 +757,7 @@
 
     /* El `|| {}` evitaba el error y dejaba pasar el `undefined` al aria-label:
        sin el punto de 475 años, un lector de pantalla leía «A 475 años,
-       undefined gal». Es la misma mitad de guarda que la v1030 quitó de la
+       undefined gal». Es la misma mitad de guarda que la v1031 quitó de la
        ficha, y acá es peor: nadie la VE, así que nadie la reporta. */
     var p475 = pts.filter(function (p) { return p.tr === 475; })[0];
     return '<svg viewBox="0 0 ' + W + ' ' + H + '" width="100%" ' +
