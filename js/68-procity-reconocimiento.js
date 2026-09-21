@@ -29663,7 +29663,7 @@ function donaHTML(datos, colorDe, nombreDe) {
       (est.foto
         ? ' Está con el mapa de <b>satélite</b>: pesa casi el doble que el de dibujo y el ' +
           'navegador le reserva mucho más espacio del que ocupa, así que puede que no quepan ' +
-          'todas. Si solo necesita ubicarte, cambie a un mapa de dibujo antes de guardar.'
+          'todas. Si solo necesita ubicarse, cambie a un mapa de dibujo antes de guardar.'
         : '') + '</p>' +
       '<div class="pcr-llevar">' +
         '<button type="button" data-pcr="teselas" class="pcr-mini pcr-llevar-b">' +

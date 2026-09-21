@@ -3015,6 +3015,30 @@ console.log('\n  -- el FODA del curso --');
      verdad: en castellano casi nada acaba así. */
   const NO_ES_IMPERFECTO = ['sílabas', 'habas', 'trabas', 'bravas', 'octavas'];
 
+  /* Y la SEXTA familia estructural: el ENCLÍTICO `-te` pegado a un infinitivo
+     o a un gerundio (v1012). «darte», «ubicarte», «moviéndote» solo pueden ser
+     tú: hablando de usted son «darle», «ubicarse», «moviéndose». No hay una
+     tercera lectura, así que la regla es estructural como las de -ste, -ías y
+     -abas, y no un vocabulario que falla abierto (v880).
+
+     Lo que colisiona no son otras personas: son SUSTANTIVOS acabados en -arte
+     o -erte —arte, parte, fuerte, muerte— y los verbos en -artir y -ertir, que
+     en TERCERA persona acaban igual: reparte, comparte, convierte, advierte.
+     Esos se listan, que es la forma de siempre: se lista lo permitido y se
+     denuncia todo lo demás.
+
+     Medido antes de escribirla: 127 palabras del texto que ve el usuario caen
+     en el patrón y 125 son de esta lista; las dos que no lo eran estaban las
+     dos MEZCLADAS con usted en la misma frase —«Si solo necesita ubicarte,
+     CAMBIE a un mapa», «Es lo que URBIS no pudo darte… PREGUNTE también»—, que
+     es como se ven cuando alguien corrige medio aviso. */
+  const NO_ES_ENCLITICO = [
+    'arte', 'parte', 'aparte', 'reparte', 'comparte', 'imparte', 'departe',
+    'estandarte', 'baluarte', 'descarte', 'recorte',
+    'fuerte', 'muerte', 'suerte', 'inerte', 'vierte', 'convierte', 'advierte',
+    'divierte', 'invierte', 'revierte', 'concierte', 'pierte'
+  ];
+
   const arch = fs.readdirSync(R('js')).filter(f => /\.js$/.test(f)).map(f => 'js/' + f)
     .concat(fs.readdirSync(RAIZ).filter(f => /\.html$/.test(f)));
   const tuteos = [];
@@ -3060,6 +3084,17 @@ console.log('\n  -- el FODA del curso --');
          un `oninput`—, y esos no le hablan a nadie. Se descarta por la FORMA
          y no con un renglón de lista, que es lo que hace que un
          identificador nuevo no cueste una excepción. */
+      if (/[A-ZÁÉÍÓÚÜÑ]/.test(m[0].slice(1))) continue;
+      apunta(m.index, m[0].length);
+    }
+    /* Y el ENCLÍTICO -te (v1012). Un `-te` pegado a un infinitivo o a un
+       gerundio solo puede ser tú: de usted son `-le` y `-se`. Va con la misma
+       regla de forma que las de arriba —una mayúscula dentro de la palabra es
+       un identificador— y con su lista de sustantivos permitidos. */
+    const reENC = /(?<![A-Za-zÁÉÍÓÚÜÑáéíóúüñ])[A-Za-zÁÉÍÓÚÜÑáéíóúüñ]*(?:arte|erte|irte|ándote|éndote)(?![A-Za-zÁÉÍÓÚÜÑáéíóúüñ])/g;
+    while ((m = reENC.exec(txt))) {
+      if (!cad[m.index]) continue;
+      if (NO_ES_ENCLITICO.some(w => w.toLowerCase() === m[0].toLowerCase())) continue;
       if (/[A-ZÁÉÍÓÚÜÑ]/.test(m[0].slice(1))) continue;
       apunta(m.index, m[0].length);
     }
@@ -3162,13 +3197,28 @@ console.log('\n  -- el FODA del curso --');
       oA('estabas') && oA('mirabas') && !oA('sílabas') && !oA('habas'),
       'tuteo: estabas ' + oA('estabas') + ' · mirabas ' + oA('mirabas') +
       ' — no lo es: sílabas ' + oA('sílabas') + ' · habas ' + oA('habas'));
+
+    /* Y la del enclítico, que es la que más puede quedarse sin morder: su
+       lista lleva palabras muy corrientes en esta aplicación —`parte` sale 48
+       veces y `fuerte` 31—, así que un renglón de más ahí la callaría justo
+       donde existe para hablar. */
+    const oE = prueba(/(?<![A-Za-zÁÉÍÓÚÜÑáéíóúüñ])[A-Za-zÁÉÍÓÚÜÑáéíóúüñ]*(?:arte|erte|irte|ándote|éndote)(?![A-Za-zÁÉÍÓÚÜÑáéíóúüñ])/g,
+      NO_ES_ENCLITICO);
+    comprobar('la del enclítico -te caza el tuteo y deja pasar los sustantivos',
+      oE('darte') && oE('ubicarte') && oE('moverte') && oE('moviéndote') &&
+      !oE('arte') && !oE('parte') && !oE('fuerte') && !oE('convierte') && !oE('reparte'),
+      'tuteo: darte ' + oE('darte') + ' · ubicarte ' + oE('ubicarte') +
+      ' · moverte ' + oE('moverte') + ' · moviéndote ' + oE('moviéndote') +
+      ' — no lo es: arte ' + oE('arte') + ' · parte ' + oE('parte') +
+      ' · fuerte ' + oE('fuerte') + ' · convierte ' + oE('convierte') +
+      ' · reparte ' + oE('reparte'));
   })();
 
   comprobar('ningún tuteo en el texto que ve el usuario (§9)', tuteos.length === 0,
     tuteos.length ? tuteos.slice(0, 40).join(' · ') + (tuteos.length > 40 ? ' …y ' + (tuteos.length - 40) + ' más' : '')
                   : 'revisados ' + arch.length + ' archivos; los pronombres, el futuro en -ás, el pretérito ' +
-                    'en -ste, el condicional en -ías y el imperfecto en -abas son estructurales; el ' +
-                    'presente y los imperativos NO se pueden separar de la ' +
+                    'en -ste, el condicional en -ías, el imperfecto en -abas y el enclítico -te son ' +
+                    'estructurales; el presente y los imperativos NO se pueden separar de la ' +
                     'tercera persona y esa mitad no la cubre nadie');
 })();
 

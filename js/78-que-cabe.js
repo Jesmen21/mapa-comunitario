@@ -87,7 +87,7 @@
       con: 'Pida la versión VIGENTE con su número de acuerdo y el año.' },
     { que: 'El mapa de amenaza por inundación del POT',
       donde: 'Secretaría de Planeación Municipal · componente de gestión del riesgo',
-      trae: 'Es lo que URBIS no pudo darte: el IDEAM no modeló Cúcuta y su mapa nacional ' +
+      trae: 'Es lo que URBIS no pudo darle: el IDEAM no modeló Cúcuta y su mapa nacional ' +
             'no dibuja quebradas. Si el lote está en suelo de protección por amenaza, ' +
             'no hay cuenta de índices que valga.',
       con: 'Pregunte también si hay estudio de detalle para esa comuna.' },

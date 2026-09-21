@@ -18199,6 +18199,96 @@ la sonda —reanudando una ficha guardada **con lote**, que es lo que destapó l
 dos dibujos que la v1010 no había visto, y leyendo pestaña por pestaña el ancho
 impreso, el rótulo más chico y el pie de cada dibujo a 390 y 768 px—.
 
+## El enclítico que la guarda no podía ver (v1012)
+
+Salió **leyendo el papel** de la v1011 —la sonda imprime el texto de la ficha
+para medirlo— y en un renglón del panel de vacíos apareció esto:
+
+> Es lo que URBIS no pudo **darte**: el IDEAM no modeló Cúcuta… **Pregunte**
+> también si hay estudio de detalle para esa comuna.
+
+Tuteo y usted en la MISMA frase, que es como se ven las cosas cuando alguien
+corrige medio aviso — igual que los dos `imprimí` de la v914 y el «salí a un
+sitio abierto» de la v980. Y con `revisar.js` en verde desde la v952.
+
+    v1011   la guarda declara cinco familias estructurales · 2 tuteos impresos
+    v1012   seis familias · 0
+
+### Por qué ninguna de las cinco lo veía
+
+`darte` es `dar` + `te`. El pronombre va **pegado al verbo**, así que no hay
+límite de palabra donde ponerlo: `\bte\b` no casa dentro de «darte», y las
+otras cuatro familias miran terminaciones que tampoco aparecen.
+
+La v909 sí deriva enclíticos, pero **para el voseo** y sobre imperativos
+—«Ponle», «Búscalos»—. El enclítico sobre INFINITIVO y sobre GERUNDIO no lo
+miraba nadie.
+
+### Y es estructural, no un vocabulario
+
+Un `-te` pegado a un infinitivo o a un gerundio **solo puede ser tú**: hablando
+de usted son `-le` y `-se` —«darle», «ubicarse», «moviéndose»—. No hay una
+tercera lectura, así que entra como las de `-ste`, `-ías` y `-abas` y no como
+la mitad de vocabulario que falla abierto (v880).
+
+Lo que colisiona no son otras personas: son **sustantivos** acabados en -arte o
+-erte —arte, parte, fuerte, muerte— y los verbos en **-artir** y **-ertir**,
+que en tercera persona acaban igual: reparte, comparte, convierte, advierte.
+Esos se listan, que es la forma de siempre.
+
+Medido antes de escribirla, sobre el texto que ve el usuario: **127 palabras
+caen en el patrón y 125 son de esa lista** —`parte` sale 48 veces y `fuerte`
+31—. Las dos que no lo eran son las dos de arriba.
+
+Por eso la lista de permitidas de esta familia es la que más puede dejar la
+regla sin morder: un renglón de más ahí la callaría justo donde existe para
+hablar. Tiene su caso de respuesta conocida, como las otras cuatro.
+
+### Mi propio barrido se equivocó dos veces, y las dos las cazó comprobarlo
+
+* **El patrón pedía dos letras antes del sufijo** —`[…]{2,}(?:arte|…)`— y
+  «darte» tiene una. El primer inventario dio **cero** y estuve a punto de
+  leerlo como que el caso no existía… con el caso delante, impreso en la
+  sonda.
+* **Y el segundo inventario también dio cero**, por algo peor: copié
+  `revisar.js` a `/tmp` para instrumentarlo, y `RAIZ` sale de
+  `path.resolve(__dirname, '..')`. Desde `/tmp` eso es `/`, así que **no leyó
+  un solo archivo** y salió callado. Es literalmente «una salida vacía no es
+  una salida buena» (v880), y lo único que lo destapó fue no creerle al cero.
+
+La regla que queda: **una sonda que copia una guarda la corre desde donde la
+guarda vive**, y un cero se comprueba contra un caso que se sabe que existe.
+
+### Demostrado contra la v1011
+
+Cuatro inyecciones, contra copias guardadas en `/tmp` (v973). Las dos primeras
+devuelven cada tuteo a su sitio y salen con archivo y línea:
+
+```
+✗ ningún tuteo en el texto que ve el usuario (§9)  — js/78-que-cabe.js:90 «darte»
+✗ ningún tuteo en el texto que ve el usuario (§9)  — js/68-…:29666 «ubicarte»
+✗ la del enclítico -te caza el tuteo y deja pasar los sustantivos  — darte false
+```
+
+Y la tercera es la que vale, porque es el estado exacto de la v1011 —los dos
+tuteos puestos y la guarda sin la familia—:
+
+```
+✓ ningún tuteo en el texto que ve el usuario (§9)  — revisados 96 archivos; …
+```
+
+**La guarda en verde con «no pudo darte» impreso en pantalla.** Es el mismo
+verde que la v985 encontró en el recorrido de las plantillas y que la v880
+encontró en la lista del voseo: una guarda que declara cubrir una familia
+entera y cubre cinco sextas partes de ella.
+
+### Lo que sigue sin cubrirse, y se dice
+
+El **presente** y los **imperativos** de tú, por la razón de siempre: la forma
+de tú es idéntica a la de tercera persona y a veces a un sustantivo —«Marca el
+punto» y «la app marca el punto» se escriben igual—. Esa mitad se caza
+leyendo, y así se cazó esta.
+
 ## La lista viva: lo que al pliego educativo todavía le falta (v866)
 
 Esta lista se quedó vieja **cinco veces**. Cuatro dentro de la hoja —la
