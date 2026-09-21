@@ -14927,6 +14927,198 @@ Once aserciones en rojo de doce, contra una copia guardada en `/tmp` y no con
 La duodécima es MATERIAL y va primero (v920): es la precondición, y pasa en las
 dos versiones porque la tabla que se invierte y el catálogo existían antes.
 
+## El texto de un gráfico se lee a su tamaño (v990)
+
+Lo que la v972 dejó medido y declarado pendiente con su tabla: **el texto de
+los gráficos del módulo presidencial salía impreso a 5,7 px en un teléfono**,
+contra el piso de 13 px que este módulo tiene desde la v791.
+
+    v989   8 gráficos a 5,7 px · 5 series a 5,4 px · 13 de 13 por debajo del piso
+    v990   13 de 13 a 13,4 px exactos, en las cuatro anchuras medidas
+
+### Y la premisa de la v972 era falsa a medias
+
+Aquella tanda escribió, con esas palabras: *«son solo esos ocho, no todos…
+las cinco series temporales se dibujan con `.sp-lienzo`, que tiene su propio
+dimensionado, y se leen bien en el mismo teléfono»*. Medido de frente antes de
+tocar nada —la regla de la v916, que vale también para mis propias
+afirmaciones (v925)—:
+
+| | sp-g (8) | sp-lienzo (5) |
+|---|---|---|
+| 390 px | 5,7 | **5,4** |
+| 420 px | 6,4 | **5,9** |
+| 768 px | 12,5 | 11,6 |
+
+Las series están **peor**, no mejor: `.sp-lienzo` tiene su propio dimensionado,
+sí, y eso no la salva —dibuja 640 unidades en 312 px, que es la misma división
+con otro numerador—. La frase se escribió mirando de dónde sale cada clase en
+vez de midiendo el papel, que es el patrón de las cinco carencias falsas de la
+v861 a la v888.
+
+Así que son **trece** gráficos y no ocho, y eso cambia la tanda: con una sola
+causa y una sola cura, arreglar ocho y dejar cinco habría sido la familia con
+dos comportamientos que este proyecto lleva cuatro tandas declinando (v940,
+v951, v954).
+
+### La cura no es subir la letra: es que el `viewBox` valga lo que vale el sitio
+
+Un texto dentro de un SVG con `viewBox` **se escala con el dibujo**. El CSS
+dice `font-size:var(--t-8)` y está bien escrito: lo que pasa es que esos 13,4
+son unidades del dibujo, y con 720 unidades metidas en 312 px se imprimen a
+5,8. No se ve leyendo el CSS, y por eso llevaba dieciocho versiones ahí.
+
+Subir el tamaño de la letra —que es lo primero que uno piensa— **descuadra la
+geometría entera**: el pie pone sus dos renglones a 13 y 26 unidades, las cotas
+van a `y + 13` de una barra de 20, la leyenda de la torta va a 30 de paso. Todo
+eso supone un texto de unas 13 unidades.
+
+Lo que sí funciona es al revés: que el `viewBox` valga lo que vale el sitio. Con
+la escala en 1, una unidad es un píxel y los 13,4 se imprimen a 13,4 en
+cualquier pantalla, **sin tocar una sola constante de la geometría**.
+
+#### El ancho se MIDE, y la sonda tuvo que aprender a subir
+
+Suponerlo del ancho de la ventana sería un número a ojo (v869): entre la
+ventana y el dibujo hay el margen de la página, el de la tarjeta y su borde. Se
+mide con una sonda de las mismas clases, una vez por pintada.
+
+Y la primera versión **no funcionó, y el viewBox siguió saliendo en 760 sin que
+nada lo dijera**. La causa no se ve leyendo: la portada se PINTA antes de que su
+vista se encienda —`.sp-view` sale de la hoja con `display:none`— así que el
+contenedor mide cero en el momento de dibujar y la sonda caía al respaldo.
+Abierta a mano después, la misma sonda medía 312 perfectamente. Lo delató
+volver a correr la medición del papel, no leer el código.
+
+La sonda sube ahora al primer antepasado que sí esté maquetado. Entre los dos no
+hay más que la propia vista, sin relleno, así que el ancho es el mismo.
+
+#### Y las dos familias comparten tope
+
+`.sp-g` estaba topado en 760 px y `.sp-lienzo` no, así que en un escritorio de
+1200 una medía 760 y la otra 1026. Con una sola medida para las dos, eso
+imprimiría la misma letra a dos tamaños en el mismo bloque. El tope va en las
+dos, que además las alinea en una sola columna.
+
+### El rótulo no cabe al lado de su barra, y eso se decide por PROPÓSITO
+
+A 312 px y con la letra en su tamaño de verdad, «Municipal, distrital o
+departamental · NO entra» mide 340 px: no hay columna de rótulos que lo tenga al
+lado de su barra. Así que el reparto se decide, y la regla no es un corte a ojo:
+
+> **la columna de rótulos nunca es más ancha que la zona de barras.**
+
+Si lo fuera, el dibujo dejó de ser un dibujo y pasó a ser una tabla con una
+decoración a la derecha. Cuando no cabe, el rótulo se va ARRIBA de su barra y la
+barra se queda con el ancho entero —que en un teléfono es la lectura mejor de las
+dos: el organigrama pasa de tres rótulos ilegibles a tres barras completas—.
+
+Las tres medidas salen de `anchoRotulo`, que es **la misma con la que cada
+gráfico ya decide si una cota cabe afuera de su barra**: no entra un número
+nuevo en el módulo. Y una sola puerta, `repartoDeBarras`, para los cuatro
+gráficos con columna de rótulos: con dos maneras, la de la tanda siguiente
+volvería a escribir su `etq` a ojo.
+
+La torta hace lo mismo dicho para su dibujo —la leyenda va al lado mientras
+quepa y DEBAJO cuando no—, y el héroe para sus rótulos dentro de las barras.
+
+### Tres defectos que solo aparecieron con la letra en su tamaño
+
+Los tres son **latentes desde antes** y estaban tapados por el propio defecto:
+con el texto a 5,8 px, trece unidades de interlínea sobraban y cualquier cota
+cabía. Los tres salieron midiendo el papel.
+
+* **Los dos renglones del pie se pisaban en las tres anchuras.** Iban a 13 y 26
+  unidades, y 13 unidades de interlínea son MENOS que el alto de una línea de
+  13,4 px. Y «Fecha de corte: 14 sep 2026 · en trámite legislativo (trama
+  rayada)» pide 466 px, así que en un teléfono se salía del lienzo por la
+  derecha — un dato publicado que no se puede leer. Las dos cosas se arreglan
+  por el mismo sitio: el pie se **parte por ancho** con la misma regla de
+  `anchoRotulo`, y **devuelve el alto que de verdad ocupa** en vez del 34 fijo
+  que tenía. Nada se recorta: una fuente que no cabe pasa al renglón siguiente.
+* **Dos filas iguales con la cifra en dos sitios.** En el gráfico de intereses
+  contra inversión, la barra más larga se quedaba **4 px** por encima del corte y
+  su cota se iba adentro mientras la de la fila de al lado salía afuera. Se lee
+  como un error del dibujo y no como una regla. Los 8 de separación que el
+  reparto reservaba pasan a 12: son los 8 del dibujo más los 4 de holgura con
+  los que cada gráfico decide si la cota cabe. Los dos números ya estaban en el
+  código; lo que faltaba era sumarlos.
+* **La línea del cero tachaba los rótulos apilados.** Con el rótulo ocupando el
+  ancho entero, un eje de arriba abajo le pasa por la mitad. Se marca por
+  tramos, uno por barra, que es a lo que el eje sirve.
+
+Y un cuarto de la misma familia: el «1» de *En tensión* dejaba de salir dentro
+de su barra, porque el corte para meterlo eran **44 unidades** —21 px cuando el
+dibujo iba encogido, y 44 reales ahora—. Sale de lo que mide la cifra más su
+aire, que es la misma cuenta que el resto.
+
+**Ninguno de los cuatro se veía leyendo**, y los cuatro salieron del método que
+encontró los defectos de la v874, la v882, la v885, la v887 y la v974: mirar el
+papel.
+
+### De paso, dos tamaños de letra fuera de la escala
+
+Las series dibujaban sus fechas a `font-size: 11` y sus valores a `12`, escritos
+dentro de la función. Eran justamente los que se leían a 5,4 px, y venían de
+fuera de la escala tipográfica del módulo. Pasan a las clases `sp-g-pie-t` y
+`sp-g-val`, que son las mismas del resto de los gráficos: un tamaño escrito a
+mano al lado de una escala de tokens es la clase B esperando a la tanda que
+cambie el token.
+
+### Las guardas, y la que no mordía
+
+Ocho, y la primera es de MATERIAL (v920): si la familia dejara de dejarse medir,
+las siete de abajo pasarían por no tener nada que mirar. Las demás fallan
+**cerrado** —un gráfico nuevo que escriba su ancho a mano, o su tamaño de letra,
+sale en rojo en su primera composición— y la última es la guarda de la guarda:
+que `repartoDeBarras` siga midiendo con `anchoRotulo` y no con un corte a ojo.
+Sin ella, todo lo de arriba seguiría en verde sobre una regla que volvió a ser
+un número escrito a mano.
+
+Y una del detalle: la guarda del orden de la medida **imprimía su texto de
+verde al fallar**, que es el defecto que la v973 encontró y la v977 volvió a
+cometer. Dice ahora cuál de las dos mitades falló.
+
+### Demostrado contra la v989
+
+El `git stash` completo **no sirve** acá, y es el caso de la v929: contra la
+v989 lo que salta es la guarda de MATERIAL —«faltan medirLienzo,
+repartoDeBarras o altoDelPie»— y las ocho de abajo ni se corren. Para una
+capacidad que no existía no hay texto viejo que imprimir.
+
+Así que se demuestra con **inyecciones fieles**, una por guarda, contra una
+copia guardada (v973). Las ocho muerden:
+
+```
+ancho     ✗ ningún gráfico fija su ancho a mano  — anchos escritos a mano: 720
+orden     ✗ la medida se toma antes de dibujar nada  — mide DESPUÉS de dibujar el héroe
+sonda     ✗ la sonda sube al primer antepasado maquetado  — con la vista en display:none daría cero
+letra     ✗ ningún texto lleva su tamaño escrito a mano  — tamaños sueltos: 11
+reparto   ✗ todo gráfico reparte su ancho por la misma puerta  — con su propio reparto: grafOrganigrama
+pie       ✗ el pie mide su propio alto  — queda un alto de pie fijo
+rotulo    ✗ y el reparto sigue midiendo con anchoRotulo  — dejó de medir
+css       ✗ las dos familias tienen el mismo tope  — sin tope en: .sp-lienzo
+```
+
+Y la medición del papel, que es la que vale: **13 de 13 gráficos a 13,4 px** en
+390, 420, 768 y 1200, con **cero textos fuera del lienzo y cero que se pisen** en
+las tres anchuras medidas —contra 11 fuera y 8 pisándose antes de partir el
+pie—.
+
+### Lo que esta versión NO hace, y queda medido
+
+**La medida se toma una vez por pintada y no se rehace al girar el teléfono.**
+Una rotación cambia el ancho y los gráficos se quedan con el `viewBox` de antes:
+el texto no se vuelve ilegible —se escala proporcionalmente, que es lo que hacía
+siempre— pero el reparto apilado o al lado se queda como estaba. Repintar en
+cada `resize` es lo que la v870 llama un teléfono caliente, así que pide su
+propia medición: cuánto cuesta recomponer trece gráficos y con qué retardo.
+Queda dicho con su razón en vez de hecho a ojo de paso.
+
+Y **la identidad visual de la muestra** —Archivo + Source Serif 4, señal
+`#B8112E`, modo oscuro— sigue sin adoptarse, por lo que la v971 dejó escrito:
+la decide quien la escribió.
+
 ## La lista viva: lo que al pliego educativo todavía le falta (v866)
 
 Esta lista se quedó vieja **cinco veces**. Cuatro dentro de la hoja —la

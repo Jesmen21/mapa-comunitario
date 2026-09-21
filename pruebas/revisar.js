@@ -5231,6 +5231,122 @@ console.log('\n  -- el subtipo de cada piso (v989) --');
   }
 }
 
+/* ── El texto de un gráfico se lee a su tamaño (v990) ──────────────────────
+   El texto de un SVG con `viewBox` se escala con el dibujo. Con 720 unidades
+   metidas en los 312 px de un teléfono, los 13,4 px de `--t-8` salían
+   impresos a 5,8 en los ocho gráficos de barras y torta, y a 5,4 en las cinco
+   series —la v972 midió los primeros y dio por buenas las segundas; medirlas
+   otra vez desmintió esa mitad—. No se ve leyendo el CSS, donde el número
+   está bien escrito.
+
+   Todo lo de abajo persigue que ninguna de las dos maneras de recaer vuelva:
+   un ancho escrito a mano, o un tamaño de letra escrito a mano. */
+console.log('\n  -- el texto de un gráfico se lee a su tamaño (v990) --');
+{
+  const j70 = soloCodigo(leer('js/70-seguimiento.js'));
+  const c70 = leer('css/70-seguimiento.css');
+
+  const tieneMedida = /function medirLienzo\s*\(/.test(j70) &&
+                      /function repartoDeBarras\s*\(/.test(j70) &&
+                      /function altoDelPie\s*\(/.test(j70);
+  if (!tieneMedida) {
+    anotarSinMaterial('MATERIAL · la familia de gráficos se deja medir',
+      'faltan medirLienzo, repartoDeBarras o altoDelPie: nada de lo de abajo significa algo');
+  } else {
+    /* 1 · Ningún gráfico fija su propio ancho.
+       Falla CERRADO: un gráfico nuevo que escriba `var w = 720` sale en rojo
+       en su primera composición, no tres tandas después. */
+    const duros = [...j70.matchAll(/\bvar\s+[wW]\s*=\s*(\d{3})\b/g)].map(m => m[1]);
+    comprobar('ningún gráfico fija su ancho a mano: todos lo miden',
+      duros.length === 0,
+      duros.length ? 'anchos escritos a mano: ' + duros.join(', ') +
+        ' — su texto se encogería con el dibujo'
+      : 'los ' + (j70.match(/anchoG\(\)|anchoHeroe\(\)/g) || []).length +
+        ' sitios que dibujan leen el ancho medido');
+
+    /* 2 · Y la medida se toma ANTES de dibujar nada. */
+    const iB = j70.indexOf('function bloqueDeGraficos(');
+    const cab = iB >= 0 ? j70.slice(iB, iB + 900) : '';
+    const iMed = cab.indexOf('medirLienzo('), iPinta = cab.indexOf('pintarHeroe(');
+    const mideAntes = iMed > 0 && (iPinta < 0 || iMed < iPinta);
+    comprobar('la medida se toma antes de dibujar nada',
+      mideAntes,
+      mideAntes ? 'bloqueDeGraficos mide y después dibuja'
+        : iMed < 0 ? 'dibuja sin medir: los gráficos saldrían al ancho de respaldo'
+                   : 'mide DESPUÉS de dibujar el héroe: ese saldría al ancho de respaldo');
+
+    /* 3 · La sonda sube al primer antepasado maquetado.
+       Esto NO se ve leyendo, y por eso lleva su comprobación: la portada se
+       pinta con su vista todavía en `display:none`, así que el contenedor
+       mide cero y la sonda daría el tope. */
+    const iM = j70.indexOf('function medirLienzo(');
+    const cM = iM >= 0 ? j70.slice(iM, j70.indexOf('\n  }', iM)) : '';
+    const sube = /while\s*\([^)]*clientWidth[\s\S]{0,60}parentElement/.test(cM);
+    comprobar('la sonda sube al primer antepasado que sí esté maquetado',
+      sube,
+      sube ? 'no la engaña una vista todavía apagada'
+           : 'mide donde le dicen: con la vista en display:none daría cero y caería al tope');
+
+    /* 4 · Ningún texto del bloque lleva su tamaño escrito a mano.
+       Los dos que había —11 y 12 en las series— son justamente los que se
+       leían a 5,4 px, y venían de fuera de la escala tipográfica. */
+    const fs = [...j70.matchAll(/'font-size':\s*'(\d+)'/g)].map(m => m[1]);
+    comprobar('ningún texto de un gráfico lleva su tamaño escrito a mano',
+      fs.length === 0,
+      fs.length ? 'tamaños sueltos: ' + fs.join(', ') +
+        ' — quedan fuera de la escala tipográfica del módulo'
+      : 'todos salen de las clases sp-g-*, que son la misma escala del resto');
+
+    /* 5 · Todo gráfico de barras con columna de rótulos pasa por el mismo
+       reparto. Con dos maneras, la de la tanda siguiente volvería a escribir
+       su `etq` a ojo y a tacharse el rótulo en un teléfono. */
+    const conBarras = ['grafDivergentes', 'grafAgrupadas', 'grafBarras', 'grafOrganigrama'];
+    const sinReparto = conBarras.filter(n => {
+      const i = j70.indexOf('function ' + n + '(');
+      if (i < 0) return true;
+      const j = j70.indexOf('\n  }', i);
+      return !/repartoDeBarras\(/.test(j70.slice(i, j < 0 ? i + 4000 : j));
+    });
+    comprobar('todo gráfico de barras reparte su ancho por la misma puerta',
+      sinReparto.length === 0,
+      sinReparto.length ? 'con su propio reparto: ' + sinReparto.join(', ')
+                        : 'los ' + conBarras.length + ' llaman a repartoDeBarras');
+
+    /* 6 · El pie mide su propio alto. Iba con un alto fijo de 34 y dos
+       renglones a 13 de separación: con la letra en su tamaño de verdad los
+       dos renglones se pisaban y el más largo se salía del lienzo. */
+    const fijo = /\bPIE_ALTO\b/.test(j70);
+    const nAlto = (j70.match(/altoDelPie\(/g) || []).length;
+    comprobar('el pie de cada gráfico mide su propio alto',
+      !fijo && nAlto >= 6,
+      fijo ? 'queda un alto de pie fijo: el pie que no quepa se pisa con el dibujo'
+           : nAlto + ' gráficos reservan el alto que el pie de verdad ocupa');
+
+    /* 7 · Guarda de la guarda. Si `repartoDeBarras` dejara de medir con
+       `anchoRotulo`, todo lo de arriba seguiría en verde sobre una regla que
+       volvió a ser un número a ojo. */
+    const iR = j70.indexOf('function repartoDeBarras(');
+    const cR = iR >= 0 ? j70.slice(iR, j70.indexOf('\n  }', iR)) : '';
+    const mide = /anchoRotulo/.test(cR);
+    comprobar('y el reparto sigue midiendo con anchoRotulo, no con un corte a ojo',
+      mide,
+      mide ? 'la columna y la zona salen de lo que mide el texto'
+           : 'dejó de medir: la regla volvió a ser un número escrito a mano');
+
+    /* 8 · Las dos familias de gráfico comparten tope.
+       Con anchos distintos, la misma letra saldría a dos tamaños en el mismo
+       bloque: el dibujo se escala y el texto con él. */
+    const topeG = /\.sp-g\{[^}]*max-width:\s*760px/.test(c70.replace(/\s+/g, ' ').replace(/\. sp/g, '.sp'));
+    const topeL = /\.sp-graf \.sp-lienzo\{[^}]*max-width:\s*760px/.test(
+      c70.replace(/\s+/g, ' ').replace(/\{\s+/g, '{'));
+    comprobar('las dos familias de gráfico tienen el mismo tope de ancho',
+      topeG && topeL,
+      (topeG && topeL) ? 'sp-g y sp-lienzo caben en los mismos 760'
+        : 'sin tope en: ' + [!topeG && '.sp-g', !topeL && '.sp-lienzo'].filter(Boolean).join(' y ') +
+          ' — la misma letra saldría a dos tamaños en el mismo bloque');
+  }
+}
+
 /* Las dos cuentas van APARTE porque piden cosas distintas: una fallada hay
    que arreglarla, una sin material hay que mirarla —o se quedó sin él porque
    el registro mejoró, o porque la función dejó de ver lo que medía—. Sumarlas

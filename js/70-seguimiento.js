@@ -4291,7 +4291,9 @@
       return caja;
     }
 
-    var W = 640, H = compacta ? 120 : 210;
+    /* Mismo motivo que en la familia `sp-g`: el texto de un SVG con viewBox
+       se escala con el dibujo, así que el ancho vale lo que vale el sitio. */
+    var W = anchoG(), H = compacta ? 120 : 210;
     var mL = 8, mR = 8, mT = 14, mB = compacta ? 22 : 34;
     var vs = pts.map(function (p) { return p.v; });
     var min = Math.min.apply(null, vs), max = Math.max.apply(null, vs);
@@ -4338,16 +4340,18 @@
         fill: ultimo ? col : '#FFFFFF', stroke: col, 'stroke-width': 2 }));
 
       if (compacta) return;
+      /* El tamaño sale de la misma escala tipográfica que el resto de los
+         gráficos y no de un número escrito acá: dos tamaños para el texto de
+         un gráfico se separan a la tanda siguiente. */
       var t = svgEl('text', { x: X(i), y: H - mB + 15, 'text-anchor':
-        i === 0 ? 'start' : (ultimo ? 'end' : 'middle'),
-        fill: '#5F6B72', 'font-size': '11', 'font-weight': '600' });
+        i === 0 ? 'start' : (ultimo ? 'end' : 'middle'), class: 'sp-g-pie-t',
+        'font-weight': '600' });
       t.textContent = fechaCorta(p.f).replace(' 2026', '');
       svg.appendChild(t);
 
       if (i === 0 || ultimo || p.hito) {
         var v = svgEl('text', { x: X(i), y: Y(p.v) - 11, 'text-anchor':
-          i === 0 ? 'start' : (ultimo ? 'end' : 'middle'),
-          fill: '#152229', 'font-size': '12', 'font-weight': '700' });
+          i === 0 ? 'start' : (ultimo ? 'end' : 'middle'), class: 'sp-g-val' });
         v.textContent = valorSerie(p.v, d);
         svg.appendChild(v);
       }
@@ -4371,7 +4375,7 @@
     }).filter(function (x) { return x.n; });
 
     var cont = el('div');
-    var W = 640, H = 42, gap = 3;
+    var W = anchoG(), H = 42, gap = 3;
     var svg = svgEl('svg', { class: 'sp-lienzo', viewBox: '0 0 ' + W + ' ' + H, role: 'img',
       'aria-label': datos.map(function (x) { return x.n + ' ' + x.o.t.toLowerCase(); }).join(', ') });
     var x = 0;
@@ -4379,10 +4383,13 @@
       var w = (W - gap * (datos.length - 1)) * (x1.n / total);
       var r = svgEl('rect', { x: x, y: 0, width: Math.max(0, w), height: H, rx: 5, fill: x1.o.c });
       svg.appendChild(r);
-      // Etiqueta dentro cuando cabe: es el alivio de contraste exigido
-      if (w > 44) {
+      /* Etiqueta dentro cuando cabe: es el alivio de contraste exigido. El
+         corte sale de lo que mide la cifra más su aire a los dos lados, no de
+         un número fijo: los 44 de antes eran 21 px cuando el dibujo iba
+         encogido y pasaron a ser 44 reales, así que un «1» dejaba de salir. */
+      if (w > anchoRotulo(String(x1.n)) + 16) {
         var t = svgEl('text', { x: x + w / 2, y: H / 2 + 5, 'text-anchor': 'middle',
-          fill: '#FFFFFF', 'font-size': '15', 'font-weight': '700' });
+          class: 'sp-g-et-in' });
         t.textContent = x1.n;
         svg.appendChild(t);
       }
@@ -4772,20 +4779,45 @@
     svg.appendChild(d);
   }
 
-  /* El pie va DENTRO del SVG. Devuelve el alto que ocupa para que quien
-     dibuja reserve su sitio: un pie superpuesto al último dato es peor que
-     no ponerlo. */
-  var PIE_ALTO = 34;
+  /* El pie va DENTRO del SVG, para que una captura de un gráfico suelto siga
+     diciendo de dónde sale.
+
+     Sus dos renglones iban a 13 y 26 unidades, y el alto reservado era 34.
+     Con el dibujo encogido a 5,8 px de letra eso sobraba; con la letra en su
+     tamaño de verdad, 13 unidades de interlínea son MENOS que el alto de una
+     línea de 13,4 px: los dos renglones se pisaban en las tres anchuras
+     medidas. Y «Fecha de corte: 14 sep 2026 · en trámite legislativo (trama
+     rayada)» pide 466 px, así que en un teléfono se salía del lienzo por la
+     derecha, que es un dato que no se puede leer.
+
+     Las dos cosas se arreglan por el mismo sitio: el pie se PARTE por ancho
+     —con la misma regla de `anchoRotulo` que ya decide si una cota cabe— y
+     devuelve el alto que de verdad ocupa. Nada se recorta: una fuente que no
+     cabe se pasa al renglón siguiente, no se pierde. */
+  function partirEnLineas(txt, W) {
+    var max = Math.max(8, Math.floor(W / 7.4));
+    var lineas = [], cur = '';
+    String(txt).split(' ').forEach(function (pal) {
+      var t = cur ? cur + ' ' + pal : pal;
+      if (t.length <= max || !cur) cur = t; else { lineas.push(cur); cur = pal; }
+    });
+    if (cur) lineas.push(cur);
+    return lineas;
+  }
+  function pieLineas(W, fuenteTxt, corteTxt) {
+    return partirEnLineas('Fuente: ' + fuenteTxt, W).concat(partirEnLineas(corteTxt, W));
+  }
+  function altoDelPie(W, fuenteTxt, corteTxt) {
+    return 6 + pieLineas(W, fuenteTxt, corteTxt).length * ALTO_ROTULO;
+  }
   function pieDentro(svg, w, y, fuenteTxt, corteTxt) {
     var g = svgEl('g', { class: 'sp-g-pie' });
-    var l = svgEl('line', { x1: 0, y1: y, x2: w, y2: y, class: 'sp-g-rule' });
-    g.appendChild(l);
-    var t1 = svgEl('text', { x: 0, y: y + 13, class: 'sp-g-pie-t' });
-    t1.textContent = 'Fuente: ' + fuenteTxt;
-    g.appendChild(t1);
-    var t2 = svgEl('text', { x: 0, y: y + 26, class: 'sp-g-pie-t' });
-    t2.textContent = corteTxt;
-    g.appendChild(t2);
+    g.appendChild(svgEl('line', { x1: 0, y1: y, x2: w, y2: y, class: 'sp-g-rule' }));
+    pieLineas(w, fuenteTxt, corteTxt).forEach(function (t, i) {
+      var n = svgEl('text', { x: 0, y: y + 6 + (i + 1) * ALTO_ROTULO - 4, class: 'sp-g-pie-t' });
+      n.textContent = t;
+      g.appendChild(n);
+    });
     svg.appendChild(g);
   }
   function corteTexto(p) {
@@ -4816,6 +4848,84 @@
      lado de «$150,88» en una columna que se lee en vertical (v971)—. */
   function dos(v) { return Number(v).toFixed(2).replace('.', ','); }
   function anchoRotulo(t) { return String(t).length * 7.4; }
+
+  /* ── El ancho del dibujo se MIDE, no se fija (v990) ──────────────────────
+     Un texto dentro de un SVG con `viewBox` se escala con el dibujo. Con 720
+     unidades metidas en los 312 px de un teléfono, los 13,4 px de `--t-8`
+     salen impresos a 5,8 — menos de la mitad del piso de 13 px que este
+     módulo tiene desde la v791—. No se ve leyendo el CSS, donde el número
+     está bien escrito; se vio midiendo el papel.
+
+     La cura no es subir la letra: la geometría entera está escrita en esas
+     unidades —el pie pone sus dos renglones a 13 y 26, las cotas van a
+     `y + 13` de una barra de 20— y subirla las descuadra todas. La cura es
+     que el `viewBox` VALGA lo que vale el sitio: con la escala en 1, un texto
+     de 13 unidades se lee a 13 px en cualquier pantalla.
+
+     El ancho se mide con una sonda de las mismas clases metida en el propio
+     contenedor, una vez por pintada. Suponerlo del ancho de la ventana sería
+     un número a ojo (v869): entre la ventana y el dibujo hay el margen de la
+     página, el de la tarjeta y su borde. */
+  var ANCHO_TOPE = 760;   // el mismo max-width que la hoja ya le da a .sp-g
+  var _anchoG = ANCHO_TOPE, _anchoHeroe = ANCHO_TOPE;
+  function anchoG() { return _anchoG; }
+  function anchoHeroe() { return _anchoHeroe; }
+  function medirLienzo(cont, envoltura, tarjeta) {
+    try {
+      /* La portada se PINTA antes de que su vista se encienda —`.sp-view` sale
+         de la hoja con `display:none`— así que el contenedor mide cero en el
+         momento de dibujar y la sonda daría el tope. Se sube al primer
+         antepasado que sí esté maquetado: el ancho de un bloque es el de su
+         padre, y entre los dos no hay más que la propia vista, sin relleno.
+         Esto no se vio leyendo: la sonda medía bien al abrirla a mano y el
+         viewBox seguía saliendo en 760. */
+      var host = cont;
+      while (host && !host.clientWidth && host !== document.body) host = host.parentElement;
+      if (!host) return ANCHO_TOPE;
+      var g = el('div', envoltura), t = el('article', tarjeta);
+      var s = svgEl('svg', { class: 'sp-g', 'aria-hidden': 'true' });
+      t.appendChild(s); g.appendChild(t); host.appendChild(g);
+      var w = Math.round(s.getBoundingClientRect().width);
+      host.removeChild(g);
+      /* Una medida absurda —el contenedor todavía sin maquetar, o oculto— no
+         se usa: se cae al tope, que es el comportamiento de siempre. Medir
+         cero y dibujar cero sería peor que no medir. */
+      return w > 200 ? Math.min(w, ANCHO_TOPE) : ANCHO_TOPE;
+    } catch (e) { return ANCHO_TOPE; }
+  }
+
+  /* ── Dónde va el rótulo de cada barra ────────────────────────────────────
+     A 312 px y con la letra en su tamaño de verdad, «Municipal, distrital o
+     departamental · NO entra» mide 340 px: no hay columna de rótulos que lo
+     tenga al lado de su barra. Así que el reparto se decide, y la regla es de
+     PROPÓSITO y no un corte a ojo:
+
+       la columna de rótulos nunca es más ancha que la zona de barras.
+
+     Si lo fuera, el dibujo dejó de ser un dibujo y pasó a ser una tabla con
+     una decoración a la derecha. Cuando no cabe, el rótulo se va ARRIBA de su
+     barra y la barra se queda con el ancho entero, que en un teléfono es la
+     lectura mejor de las dos.
+
+     Las tres medidas salen de `anchoRotulo`, que es la misma con la que cada
+     gráfico ya decide si una cota cabe afuera de su barra: no entra un número
+     nuevo. */
+  function repartoDeBarras(W, rotulos, valores) {
+    var m = function (a) { return Math.max.apply(null, a.map(anchoRotulo).concat([0])); };
+    /* Los 12 no son un margen a ojo: son los 8 de separación que el dibujo le
+       deja a la cota más los 4 de holgura con los que cada gráfico decide si
+       la cota cabe afuera. Con 8, la barra más larga quedaba justo 4 px por
+       encima del corte y su cota se iba ADENTRO mientras la de la fila de al
+       lado salía afuera — dos filas iguales con la cifra en dos sitios, que
+       se lee como un error del dibujo y no como una regla. Se vio en el
+       papel. */
+    var etqNec = 10 + m(rotulos || []), valNec = 12 + m(valores || []);
+    var zona = W - etqNec - valNec;
+    if (etqNec <= zona) return { apilado: false, etq: etqNec, zona: zona, valNec: valNec };
+    return { apilado: true, etq: 0, zona: Math.max(20, W - valNec), valNec: valNec };
+  }
+  // Lo que un rótulo apilado le suma al alto de su fila: su propia línea.
+  var ALTO_ROTULO = 17;
 
   /* Un gráfico que no se puede dibujar NO se calla y NO se rellena: ocupa su
      sitio diciendo qué dato le falta y de dónde tendría que salir. Es el
@@ -4884,28 +4994,42 @@
       '$' + bn(Math.round((h.interesesBn - h.inversionBn) * 100) / 100) + ' billones de diferencia.'));
 
     // Las dos barras, a la misma escala y desde cero: es la comparación entera.
-    var w = 720, alto = 26, hh = 2 * alto + 26 + PIE_ALTO + 16;
+    var barras = [{ t: 'Intereses de la deuda', v: h.interesesBn, cls: 'sp-g-rojo' },
+                  { t: 'Inversión pública',     v: h.inversionBn, cls: 'sp-g-gris' }];
+    var vals = barras.map(function (b) { return '$' + bn(b.v) + ' bn'; });
+    var w = anchoHeroe(), alto = 26;
+    var max = Math.max(h.interesesBn, h.inversionBn);
+    /* El rótulo va DENTRO de la barra mientras quepa. Con la letra en su
+       tamaño de verdad y el dibujo a 312 px, «Intereses de la deuda» mide más
+       que la barra entera: entonces sube a su propia línea, que es la misma
+       decisión que `repartoDeBarras` toma para los demás. */
+    var valNec = 10 + Math.max.apply(null, vals.map(anchoRotulo));
+    var ancho = Math.max(20, w - valNec - 6);
+    var rotNec = 16 + Math.max.apply(null, barras.map(function (b) { return anchoRotulo(b.t); }));
+    var encima = rotNec > ancho * (Math.min(h.interesesBn, h.inversionBn) / max);
+    var paso = alto + 12 + (encima ? ALTO_ROTULO : 0);
+    var pieF = fuenteCorta(h.fuentes), pieC = corteTexto(p);
+    var hh = 2 * paso + 14 + altoDelPie(w, pieF, pieC) + 10;
     var svg = svgEl('svg', { viewBox: '0 0 ' + w + ' ' + hh, class: 'sp-g sp-g-heroe',
                              role: 'img', 'aria-label':
       'Intereses de la deuda ' + bn(h.interesesBn) + ' billones frente a inversión ' + bn(h.inversionBn) + ' billones' });
     defsTrama(svg);
-    var max = Math.max(h.interesesBn, h.inversionBn);
-    var x0 = 0, ancho = w - 150;
-    [{ t: 'Intereses de la deuda', v: h.interesesBn, cls: 'sp-g-rojo' },
-     { t: 'Inversión pública',     v: h.inversionBn, cls: 'sp-g-gris' }].forEach(function (b, i) {
-      var y = i * (alto + 12);
+    var x0 = 0;
+    barras.forEach(function (b, i) {
+      var y = i * paso + (encima ? ALTO_ROTULO : 0);
       var largo = Math.max(2, ancho * (b.v / max));
       svg.appendChild(svgEl('rect', { x: x0, y: y, width: largo, height: alto, class: b.cls + ' sp-g-barra' }));
       if (enTramite(p)) svg.appendChild(svgEl('rect', { x: x0, y: y, width: largo, height: alto,
                                                         class: b.cls + ' sp-g-trama' }));
-      var et = svgEl('text', { x: x0 + 8, y: y + alto - 8, class: 'sp-g-et-in' });
+      var et = svgEl('text', { x: x0 + (encima ? 0 : 8), y: encima ? y - 5 : y + alto - 8,
+                               class: encima ? 'sp-g-et' : 'sp-g-et-in' });
       et.textContent = b.t;
       svg.appendChild(et);
       var vt = svgEl('text', { x: x0 + largo + 10, y: y + alto - 8, class: 'sp-g-val' });
-      vt.textContent = '$' + bn(b.v) + ' bn';
+      vt.textContent = vals[i];
       svg.appendChild(vt);
     });
-    pieDentro(svg, w, 2 * (alto + 12) + 6, fuenteCorta(h.fuentes), corteTexto(p));
+    pieDentro(svg, w, 2 * paso + 4, pieF, pieC);
     caja.appendChild(svg);
 
     caja.appendChild(el('p', 'sp-graf-nota', h.nota));
@@ -4917,8 +5041,20 @@
 
   // ── Torta: composición del presupuesto ────────────────────────────────────
   function grafTorta(p) {
-    var c = p.composicion, w = 720, r = 92, cx = 120, cy = 110;
-    var hh = 2 * cy + PIE_ALTO + 10;
+    var c = p.composicion, w = anchoG(), r = 92, cx = 120, cy = 110;
+    /* La leyenda va al lado de la torta mientras quepa, y DEBAJO cuando no.
+       Es la misma regla de `repartoDeBarras` dicha para este dibujo: un
+       rótulo de 21 caracteres pide 155 px y a la derecha de la torta solo
+       quedan 74 en un teléfono. */
+    var legX = 268, legAncho = 22 + Math.max.apply(null,
+      c.partes.map(function (x) { return anchoRotulo(x.pct + ' % · ' + x.t); }).concat([anchoRotulo('Sobre un total de $' + bn(p.totalBn) + ' billones.')]));
+    var debajo = legX + legAncho > w;
+    if (debajo) { cx = Math.max(r + 2, w / 2); legX = 0; }
+    var legY0 = debajo ? 2 * cy + 6 : 42;
+    var legFin = legY0 + (debajo ? 0 : 0) + 3 * 30 + 6;
+    var pieF = fuenteCorta(c.fuentes), pieC = corteTexto(p);
+    var pieH = altoDelPie(w, pieF, pieC);
+    var hh = (debajo ? legFin + 12 : 2 * cy) + pieH + 10;
     var svg = svgEl('svg', { viewBox: '0 0 ' + w + ' ' + hh, class: 'sp-g',
       role: 'img', 'aria-label': c.partes.map(function (x) { return x.t + ' ' + x.pct + '%'; }).join(', ') });
     defsTrama(svg);
@@ -4932,19 +5068,19 @@
               ' A' + r + ' ' + r + ' 0 ' + (da > Math.PI ? 1 : 0) + ' 1 ' + svgN1(x2) + ' ' + svgN1(y2) + ' Z';
       svg.appendChild(svgEl('path', { d: d, class: (COL[x.k] || 'sp-g-c1') + ' sp-g-barra' }));
       if (enTramite(p)) svg.appendChild(svgEl('path', { d: d, class: (COL[x.k] || 'sp-g-c1') + ' sp-g-trama' }));
-      // Leyenda a la derecha: un rótulo dentro de una porción de 14 % no cabe.
-      var ly = 42 + i * 30;
-      svg.appendChild(svgEl('rect', { x: 268, y: ly - 11, width: 14, height: 14,
+      // La leyenda va aparte: un rótulo dentro de una porción de 14 % no cabe.
+      var ly = legY0 + i * 30;
+      svg.appendChild(svgEl('rect', { x: legX, y: ly - 11, width: 14, height: 14,
                                       class: (COL[x.k] || 'sp-g-c1') + ' sp-g-barra' }));
-      var t = svgEl('text', { x: 290, y: ly, class: 'sp-g-et' });
+      var t = svgEl('text', { x: legX + 22, y: ly, class: 'sp-g-et' });
       t.textContent = x.pct + ' % · ' + x.t;
       svg.appendChild(t);
       ang = fin;
     });
-    var tot = svgEl('text', { x: 268, y: 42 + 3 * 30 + 6, class: 'sp-g-pie-t' });
+    var tot = svgEl('text', { x: legX, y: legY0 + 3 * 30 + 6, class: 'sp-g-pie-t' });
     tot.textContent = 'Sobre un total de $' + bn(p.totalBn) + ' billones.';
     svg.appendChild(tot);
-    pieDentro(svg, w, 2 * cy - 6, fuenteCorta(c.fuentes), corteTexto(p));
+    pieDentro(svg, w, hh - pieH - 8, pieF, pieC);
     return tarjetaGrafica(c.titulo, 'Porcentaje del presupuesto total', svg, p.estadoTexto, c.fuentes);
   }
 
@@ -4952,22 +5088,37 @@
   function grafDivergentes(p) {
     var lista = p.sectores.lista.filter(function (x) { return x.realPct != null; })
                  .slice().sort(function (a, b) { return b.realPct - a.realPct; });
-    var w = 720, fila = 30, arriba = 18;
-    var hh = arriba + lista.length * fila + 24 + PIE_ALTO;
+    var w = anchoG();
+    var rep = repartoDeBarras(w, lista.map(function (x) { return x.t; }),
+      lista.map(function (x) { return (x.realPct > 0 ? '+' : '') + un(x.realPct) + ' %'; }));
+    var fila = 30 + (rep.apilado ? ALTO_ROTULO : 0), arriba = 18;
+    var pieF = fuenteCorta(p.sectores.fuentes), pieC = corteTexto(p);
+    var hh = arriba + lista.length * fila + 24 + altoDelPie(w, pieF, pieC);
     var svg = svgEl('svg', { viewBox: '0 0 ' + w + ' ' + hh, class: 'sp-g',
       role: 'img', 'aria-label': lista.map(function (x) { return x.t + ' ' + un(x.realPct) + ' por ciento'; }).join(', ') });
     defsTrama(svg);
-    var etq = 190, zona = w - etq - 90, cx = etq + zona / 2;
+    var etq = rep.etq, zona = rep.zona, cx = etq + zona / 2;
     var max = Math.max.apply(null, lista.map(function (x) { return Math.abs(x.realPct); }));
     // El cero va al centro y con su línea: sin ella una barra negativa se lee
     // como una positiva más corta.
-    svg.appendChild(svgEl('line', { x1: cx, y1: arriba - 12, x2: cx, y2: arriba + lista.length * fila,
-                                    class: 'sp-g-cero' }));
+    /* Con los rótulos apilados, una línea del cero de arriba abajo tacha cada
+       rótulo por la mitad: el rótulo ocupa el ancho entero y el eje pasa por
+       en medio. Entonces el cero se marca por tramos, uno por barra, que es
+       a lo que el eje sirve. Se vio en el papel. */
+    if (rep.apilado) {
+      lista.forEach(function (x, i) {
+        var yb = arriba + i * fila + ALTO_ROTULO;
+        svg.appendChild(svgEl('line', { x1: cx, y1: yb - 4, x2: cx, y2: yb + 22, class: 'sp-g-cero' }));
+      });
+    } else {
+      svg.appendChild(svgEl('line', { x1: cx, y1: arriba - 12, x2: cx, y2: arriba + lista.length * fila,
+                                      class: 'sp-g-cero' }));
+    }
     var z = svgEl('text', { x: cx, y: arriba - 16, class: 'sp-g-et', 'text-anchor': 'middle' });
     z.textContent = '0 %';
     svg.appendChild(z);
     lista.forEach(function (x, i) {
-      var y = arriba + i * fila, alto = 18;
+      var y = arriba + i * fila + (rep.apilado ? ALTO_ROTULO : 0), alto = 18;
       var largo = Math.max(2, (Math.abs(x.realPct) / max) * (zona / 2 - 6));
       var neg = x.realPct < 0;
       var bx = neg ? cx - largo : cx;
@@ -4975,7 +5126,9 @@
                                       class: (neg ? 'sp-g-baja' : 'sp-g-sube') + ' sp-g-barra' }));
       if (enTramite(p)) svg.appendChild(svgEl('rect', { x: bx, y: y, width: largo, height: alto,
                                                         class: (neg ? 'sp-g-baja' : 'sp-g-sube') + ' sp-g-trama' }));
-      var t = svgEl('text', { x: etq - 10, y: y + 13, class: 'sp-g-et', 'text-anchor': 'end' });
+      var t = rep.apilado
+        ? svgEl('text', { x: 0, y: y - 5, class: 'sp-g-et' })
+        : svgEl('text', { x: etq - 10, y: y + 13, class: 'sp-g-et', 'text-anchor': 'end' });
       t.textContent = x.t;
       svg.appendChild(t);
       /* El rótulo de valor va afuera de la barra mientras quepa, y DENTRO
@@ -4986,7 +5139,7 @@
          v882, la v885 y la v887. */
       var txt = (x.realPct > 0 ? '+' : '') + un(x.realPct) + ' %';
       var aw = anchoRotulo(txt);
-      var cabe = neg ? (bx - 8 - aw >= etq - 4) : (bx + largo + 8 + aw <= w - 4);
+      var cabe = neg ? (bx - 8 - aw >= etq) : (bx + largo + 8 + aw <= w - 4);
       var dentro = !cabe && largo >= aw + 14;
       var vx = dentro ? (neg ? bx + 8 : bx + largo - 8)
                       : (neg ? bx - 8 : bx + largo + 8);
@@ -4996,7 +5149,7 @@
       v.textContent = txt;
       svg.appendChild(v);
     });
-    pieDentro(svg, w, arriba + lista.length * fila + 18, fuenteCorta(p.sectores.fuentes), corteTexto(p));
+    pieDentro(svg, w, arriba + lista.length * fila + 18, pieF, pieC);
     return tarjetaGrafica('Variación real por sector, 2026 → ' + p.anio,
       'Descontada la inflación (' + r0(p.deflactorPct) + ' %). El cero está al centro.',
       svg, p.deflactorNota, p.sectores.fuentes);
@@ -5015,28 +5168,34 @@
     filas.push({ t: suma.t, v: vsuma, agr: true });
     filas.sort(function (a, b) { return b.v - a.v; });
 
-    var w = 720, fila = 30, arriba = 10;
-    var hh = arriba + filas.length * fila + 14 + PIE_ALTO;
+    var w = anchoG();
+    var rep = repartoDeBarras(w, filas.map(function (x) { return x.t; }),
+      filas.map(function (x) { return '$' + un(x.v); }));
+    var fila = 30 + (rep.apilado ? ALTO_ROTULO : 0), arriba = 10;
+    var pieF = fuenteCorta(p.agregacion.fuentes), pieC = corteTexto(p);
+    var hh = arriba + filas.length * fila + 14 + altoDelPie(w, pieF, pieC);
     var svg = svgEl('svg', { viewBox: '0 0 ' + w + ' ' + hh, class: 'sp-g',
       role: 'img', 'aria-label': filas.map(function (x) { return x.t + ' ' + un(x.v) + ' billones'; }).join(', ') });
     defsTrama(svg);
-    var etq = 210, zona = w - etq - 100;
+    var etq = rep.etq, zona = rep.zona;
     var max = Math.max.apply(null, filas.map(function (x) { return x.v; }));
     filas.forEach(function (x, i) {
-      var y = arriba + i * fila, alto = 18;
+      var y = arriba + i * fila + (rep.apilado ? ALTO_ROTULO : 0), alto = 18;
       var largo = Math.max(2, (x.v / max) * zona);   // desde cero
       svg.appendChild(svgEl('rect', { x: etq, y: y, width: largo, height: alto,
                                       class: (x.agr ? 'sp-g-agr' : 'sp-g-c1') + ' sp-g-barra' }));
       if (enTramite(p)) svg.appendChild(svgEl('rect', { x: etq, y: y, width: largo, height: alto,
                                                         class: (x.agr ? 'sp-g-agr' : 'sp-g-c1') + ' sp-g-trama' }));
-      var t = svgEl('text', { x: etq - 10, y: y + 13, class: 'sp-g-et', 'text-anchor': 'end' });
+      var t = rep.apilado
+        ? svgEl('text', { x: 0, y: y - 5, class: 'sp-g-et' })
+        : svgEl('text', { x: etq - 10, y: y + 13, class: 'sp-g-et', 'text-anchor': 'end' });
       t.textContent = x.t;
       svg.appendChild(t);
       var v = svgEl('text', { x: etq + largo + 8, y: y + 13, class: 'sp-g-val' });
       v.textContent = '$' + un(x.v);
       svg.appendChild(v);
     });
-    pieDentro(svg, w, arriba + filas.length * fila + 8, fuenteCorta(p.agregacion.fuentes), corteTexto(p));
+    pieDentro(svg, w, arriba + filas.length * fila + 8, pieF, pieC);
     return tarjetaGrafica(p.agregacion.titulo, 'Billones de pesos. Eje desde cero.',
       svg, p.agregacion.nota, p.agregacion.fuentes);
   }
@@ -5054,17 +5213,21 @@
     var filas = cfg.barras || [];
     if (!filas.length) return null;
     var fmt = cfg.fmt || function (v) { return '$' + un(v); };
-    var w = 720, fila = 34, arriba = 10;
-    var hh = arriba + filas.length * fila + 14 + PIE_ALTO;
+    var w = anchoG();
+    var rep = repartoDeBarras(w, filas.map(function (x) { return x.t; }),
+      filas.map(function (x) { return fmt(x.v); }));
+    var fila = 34 + (rep.apilado ? ALTO_ROTULO : 0), arriba = 10;
+    var pieF = fuenteCorta(cfg.fuentes);
+    var hh = arriba + filas.length * fila + 14 + altoDelPie(w, pieF, cfg.corte);
     var svg = svgEl('svg', { viewBox: '0 0 ' + w + ' ' + hh, class: 'sp-g', role: 'img',
       'aria-label': filas.map(function (x) { return x.t + ' ' + fmt(x.v); }).join(', ') });
     defsTrama(svg);
-    var etq = cfg.etq || 240, zona = w - etq - 110;
+    var etq = rep.etq, zona = rep.zona;
     /* Eje desde CERO, que es la regla de los siete: el máximo es el mayor
        valor y no un recorte que exagere la diferencia. */
     var max = Math.max.apply(null, filas.map(function (x) { return x.v; })) || 1;
     filas.forEach(function (x, i) {
-      var y = arriba + i * fila, alto = 20;
+      var y = arriba + i * fila + (rep.apilado ? ALTO_ROTULO : 0), alto = 20;
       var largo = Math.max(2, (x.v / max) * zona);
       /* `sp-g-rojo` y no una clase nueva: una clase que ninguna regla pinta es
          HTML válido y no lo dice nadie (v895), y el rojo ya significa en este
@@ -5075,7 +5238,9 @@
                                       class: cls + ' sp-g-barra' }));
       if (cfg.trama) svg.appendChild(svgEl('rect', { x: etq, y: y, width: largo, height: alto,
                                                      class: cls + ' sp-g-trama' }));
-      var t = svgEl('text', { x: etq - 10, y: y + 14, class: 'sp-g-et', 'text-anchor': 'end' });
+      var t = rep.apilado
+        ? svgEl('text', { x: 0, y: y - 5, class: 'sp-g-et' })
+        : svgEl('text', { x: etq - 10, y: y + 14, class: 'sp-g-et', 'text-anchor': 'end' });
       t.textContent = x.t;
       svg.appendChild(t);
       /* El valor va afuera mientras quepa y adentro cuando no: una cota que
@@ -5088,7 +5253,7 @@
       v.textContent = txt;
       svg.appendChild(v);
     });
-    pieDentro(svg, w, arriba + filas.length * fila + 8, fuenteCorta(cfg.fuentes), cfg.corte);
+    pieDentro(svg, w, arriba + filas.length * fila + 8, pieF, cfg.corte);
     return tarjetaGrafica(cfg.titulo, cfg.unidad, svg, cfg.nota, cfg.fuentes);
   }
 
@@ -5187,26 +5352,32 @@
       { t: 'Municipal, distrital o departamental · NO entra', n: z.entradas.otro, cls: 'sp-g-baja' },
       { t: 'Sin nivel declarado', n: z.entradas.sinDeclarar, cls: 'sp-g-gris' }
     ];
-    var w = 720, fila = 32, arriba = 10;
-    var hh = arriba + filas.length * fila + 14 + PIE_ALTO;
+    var w = anchoG();
+    var rep = repartoDeBarras(w, filas.map(function (x) { return x.t; }),
+      filas.map(function (x) { return String(x.n); }));
+    var fila = 32 + (rep.apilado ? ALTO_ROTULO : 0), arriba = 10;
+    var pieF = 'El propio registro de este seguimiento';
+    var pieC = 'Fecha de corte: ' + fechaCorta((dd || D).actualizado) +
+      ' · ' + z.nEntradas + ' hechos y ' + z.nCasos + ' casos';
+    var hh = arriba + filas.length * fila + 14 + altoDelPie(w, pieF, pieC);
     var svg = svgEl('svg', { viewBox: '0 0 ' + w + ' ' + hh, class: 'sp-g',
       role: 'img', 'aria-label': filas.map(function (x) { return x.t + ': ' + x.n; }).join('. ') });
-    var etq = 330, zona = w - etq - 80;
+    var etq = rep.etq, zona = rep.zona;
     var max = Math.max.apply(null, filas.map(function (x) { return x.n; })) || 1;
     filas.forEach(function (x, i) {
-      var y = arriba + i * fila, alto = 20;
+      var y = arriba + i * fila + (rep.apilado ? ALTO_ROTULO : 0), alto = 20;
       var largo = Math.max(2, (x.n / max) * zona);
       svg.appendChild(svgEl('rect', { x: etq, y: y, width: largo, height: alto, class: x.cls + ' sp-g-barra' }));
-      var t = svgEl('text', { x: etq - 10, y: y + 15, class: 'sp-g-et', 'text-anchor': 'end' });
+      var t = rep.apilado
+        ? svgEl('text', { x: 0, y: y - 5, class: 'sp-g-et' })
+        : svgEl('text', { x: etq - 10, y: y + 15, class: 'sp-g-et', 'text-anchor': 'end' });
       t.textContent = x.t;
       svg.appendChild(t);
       var v = svgEl('text', { x: etq + largo + 8, y: y + 15, class: 'sp-g-val' });
       v.textContent = String(x.n);
       svg.appendChild(v);
     });
-    pieDentro(svg, w, arriba + filas.length * fila + 8,
-      'El propio registro de este seguimiento', 'Fecha de corte: ' + fechaCorta((dd || D).actualizado) +
-      ' · ' + z.nEntradas + ' hechos y ' + z.nCasos + ' casos');
+    pieDentro(svg, w, arriba + filas.length * fila + 8, pieF, pieC);
     var nota = 'De los ' + z.nCasos + ' casos de corrupción, ' + z.casos.pesan + ' pesan en el veredicto y ' +
       z.casos.fuera + ' quedan fuera por su nivel. ' +
       (z.entradas.otro === 0
@@ -5235,6 +5406,10 @@
      la fuente que le falta: un hueco callado se lee igual que un gráfico que
      nunca se pensó (v849). */
   function bloqueDeGraficos(cont) {
+    /* Se mide ANTES de dibujar nada, y las dos superficies por separado: el
+       héroe vive en su propia tarjeta, con otro relleno que las gráficas. */
+    _anchoG = medirLienzo(cont, 'sp-graficas', 'sp-graf');
+    _anchoHeroe = medirLienzo(cont, '', 'sp-heroe');
     var p = presupuestoDe(D);
     var f = fiscalDe(D);
     var ind = D.indicadores || {};

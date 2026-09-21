@@ -728,7 +728,10 @@ a.sp-fuente:hover svg{ color:var(--verde-hi); }
   font-size:var(--t-9); color:var(--ink-2); text-transform:uppercase;
   letter-spacing:.07em; font-weight:600; margin-bottom:14px;
 }
-.sp-graf .sp-lienzo{ width:100%; height:auto; display:block; stroke:none; }
+/* El mismo tope que .sp-g: los dos son gráficos del mismo bloque y con
+   anchos distintos se dibujarían a dos escalas de letra (v990). */
+.sp-graf .sp-lienzo{ width:100%; max-width:760px; height:auto; display:block;
+                     margin-inline:auto; stroke:none; }
 .sp-graf-nota{
   margin-top:13px; padding-top:12px; border-top:1px solid var(--linea-2);
   font-size:var(--t-8); color:var(--ink-2); line-height:1.5;
