@@ -1,4 +1,4 @@
-const URBIS_CACHE = 'urbis-v1001-un-comodin-dejo-un-sw-muerto';
+const URBIS_CACHE = 'urbis-v1002-una-via-es-un-tramo';
 const URBIS_ASSETS = [
   './',
   './index.html',
@@ -80,6 +80,7 @@ const URBIS_ASSETS = [
   './js/03d-mobiliario-material.js',
   './js/03e-estado-urbano.js',
   './js/03f-superficie-via.js',
+  './js/03g-tramo-via.js',
   './js/03c-reportes-rapidos.js',
   './js/04-marker-proximity.js',
   './js/05-helpers-temporal-security.js',

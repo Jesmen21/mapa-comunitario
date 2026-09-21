@@ -469,6 +469,13 @@
       if (_pb && _pb.texto) superficiePopup = `<div class="popup-desc popup-superficie">\ud83d\udee3\ufe0f ${limpiarHTML(_pb.texto)}</div>`;
     } catch(e){}
 
+    /* Lo que mide el tramo (v1002). */
+    let tramoPopup = '';
+    try {
+      const _tr = window.URBIS_TRAMO_PUNTO ? window.URBIS_TRAMO_PUNTO.leer(p.descripcion) : null;
+      if (_tr && _tr.hay) tramoPopup = `<div class="popup-desc popup-tramo">\ud83d\udccf ${limpiarHTML(_tr.largoTexto)} de tramo marcado</div>`;
+    } catch(e){}
+
     /* En qué estado está (v992). El color sale del vocabulario y no de la
        hoja de estilo: escrito en cada pantalla serían tres verdes que se
        separan a la tanda siguiente. */
@@ -656,6 +663,7 @@
         ${especiePopup}
         ${sitioPopup}
         ${superficiePopup}
+        ${tramoPopup}
         ${materialPopup}
         ${estadoPopup}
         ${fotoMiniPopup}
@@ -989,6 +997,11 @@
       const _pbD = (_visD.verDetalle && window.URBIS_SUPERFICIE) ? window.URBIS_SUPERFICIE.leer(p.descripcion) : null;
       if (_pbD && _pbD.texto) _superficieDet = `<div class="detalle-especie detalle-superficie">\ud83d\udee3\ufe0f Superficie: <b>${limpiarHTML(_pbD.texto)}</b></div>`;
     } catch(e){}
+    let _tramoDet = '';
+    try {
+      const _trD = (_visD.verDetalle && window.URBIS_TRAMO_PUNTO) ? window.URBIS_TRAMO_PUNTO.leer(p.descripcion) : null;
+      if (_trD && _trD.hay) _tramoDet = `<div class="detalle-especie detalle-tramo">\ud83d\udccf Tramo marcado: <b>${limpiarHTML(_trD.largoTexto)}</b></div>`;
+    } catch(e){}
     let _materialDet = '';
     try {
       const _mbD = (_visD.verDetalle && window.URBIS_MOBILIARIO) ? window.URBIS_MOBILIARIO.leer(p.descripcion) : null;
@@ -1041,6 +1054,7 @@
         ${_especieDet}
         ${_sitioDet}
         ${_superficieDet}
+        ${_tramoDet}
         ${_materialDet}
         ${_estadoDet}
         ${_pedidoDet}

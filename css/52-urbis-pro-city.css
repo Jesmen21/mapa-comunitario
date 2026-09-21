@@ -1418,3 +1418,39 @@
   display:block; font-size:.68rem; color:#8a94a0; font-style:normal;
   margin-top:1px;
 }
+
+/* ── Marcar el tramo de una vía (v1002) ────────────────────────────────
+   El bloque del formulario, con la misma caja que los de lista cerrada. */
+.u52-procity-tramo{
+  margin:8px 0; padding:10px 12px; border-radius:12px;
+  border:1px solid rgba(15,126,168,.28); background:rgba(15,126,168,.06);
+}
+.u52-procity-tramo > label{ display:block; font-size:.82rem; font-weight:700; margin-bottom:6px; }
+.u52-procity-tramo > label i{ font-style:normal; font-weight:500; opacity:.72; }
+.u52-tramo-fila{ display:flex; align-items:center; gap:8px; }
+.u52-tramo-btn{
+  flex:0 0 auto; min-height:38px; padding:0 14px; border-radius:10px; cursor:pointer;
+  border:1px solid rgba(15,126,168,.45); background:#0f7ea8; color:#fff; font-weight:700;
+}
+.u52-tramo-res{ flex:1 1 auto; font-size:.82rem; opacity:.85; }
+.u52-tramo-quitar{
+  flex:0 0 auto; width:30px; height:30px; border-radius:50%; cursor:pointer;
+  border:1px solid rgba(0,0,0,.18); background:#fff; font-size:1rem; line-height:1;
+}
+/* La barra de dibujo va sobre el mapa y por encima de todo lo de Pro City:
+   mientras se marca, el panel está escondido y esto es lo único que se toca. */
+.u52-tramo-barra{
+  position:fixed; left:0; right:0; bottom:0; z-index:2147483000;
+  display:flex; align-items:center; gap:10px; flex-wrap:wrap;
+  padding:12px 14px calc(12px + env(safe-area-inset-bottom,0px));
+  background:#0b2733; color:#eaf6fb; box-shadow:0 -6px 22px rgba(0,0,0,.35);
+}
+.u52-tramo-barra-txt{ flex:1 1 180px; min-width:150px; }
+.u52-tramo-barra-txt b{ display:block; font-size:.95rem; }
+.u52-tramo-barra-txt small{ display:block; font-size:.72rem; opacity:.8; margin-top:2px; }
+.u52-tramo-barra-btns{ display:flex; gap:8px; flex:0 0 auto; }
+.u52-tramo-barra-btns button{
+  min-height:44px; padding:0 14px; border-radius:10px; cursor:pointer; font-weight:700;
+  border:1px solid rgba(255,255,255,.28); background:rgba(255,255,255,.1); color:#eaf6fb;
+}
+.u52-tramo-barra-btns button.ok{ background:#12a0cc; border-color:#12a0cc; color:#04222e; }

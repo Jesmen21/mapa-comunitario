@@ -904,7 +904,11 @@
        nombre, y meterlo en la misma casilla obligaría a inventar un
        separador dentro de un valor de lista cerrada. */
     viaSuperficie:          BASE_OFFSET + TIMELINE_EXTRA_OFFSET + 24,
-    viaSuperficieOtro:      BASE_OFFSET + TIMELINE_EXTRA_OFFSET + 25
+    viaSuperficieOtro:      BASE_OFFSET + TIMELINE_EXTRA_OFFSET + 25,
+    /* El TRAMO de la vía (v1002): `lat,lng;lat,lng;…`. Una sola casilla,
+       porque una geometría es un solo hecho; la codificación y su vuelta
+       viven en js/03g y no acá. */
+    viaTramo:               BASE_OFFSET + TIMELINE_EXTRA_OFFSET + 26
   };
   // La casilla que las tres funciones se disputaban. Se conserva con nombre
   // propio porque hay registros viejos con validaciones o con código de carpeta
@@ -1047,6 +1051,29 @@
   /* Dónde está sembrado el árbol (v993). Mismo molde que la especie y el
      material: lo que depende del ORDEN de las casillas se resuelve acá y en
      ningún otro sitio. */
+  /* ── EL TRAMO DE LA VÍA (v1002) ──────────────────────────────────────────
+     Mismo molde que los demás: quien pregunta no tiene por qué saber en qué
+     casilla vive nada. Lo que este lector NO hace es decodificar: eso lo sabe
+     js/03g, que es donde vive la codificación, y tenerlo en dos sitios daría
+     dos maneras de leer la misma cadena (v879). */
+  window.URBIS_TRAMO_PUNTO = {
+    leer: function (descripcion) {
+      const d = String(descripcion || '').split(' | ');
+      const T = window.URBIS_TRAMO || null;
+      const crudo = String(d[URBIS_SLOTS.viaTramo] || '').trim();
+      const txt = (!crudo || crudo === 'undefined') ? '' : crudo;
+      const pts = T ? T.decodificar(txt) : [];
+      return {
+        crudo: txt,
+        puntos: pts,
+        hay: pts.length >= 2,
+        largoM: T ? T.largoM(pts) : 0,
+        largoTexto: T ? T.largoTexto(pts) : '',
+        idxTramo: URBIS_SLOTS.viaTramo
+      };
+    }
+  };
+
   /* ── DE QUÉ ESTÁ HECHA LA VÍA (v1000) ────────────────────────────────────
      Mismo molde que `URBIS_ARBOL`, `URBIS_MOBILIARIO` y `URBIS_SITIO`: quien
      pregunta no tiene por qué saber en qué casilla vive nada, y el orden de

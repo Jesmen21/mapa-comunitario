@@ -16685,6 +16685,167 @@ Tres en rojo, cada una con su inyección fiel:
 La primera es el estado real de la v1000 y de las diecinueve versiones
 anteriores.
 
+## Una vía es un TRAMO, no un punto (v1002)
+
+Pedido con estas palabras: **«una línea o polilínea para las vías»**. Es lo que
+la v1000 dejó medido en su nota de cierre: *«hoy una vía se mapea como un
+punto, y una vía es una LÍNEA… es lo que falta para que el estado y la
+superficie describan un tramo en vez de un sitio.»*
+
+    v1001   «asfalto · malo» sobre un punto, sin decir de qué cuadra se habla
+    v1002   «asfalto · malo» sobre 3 puntos · 392 m, con sus dos extremos
+
+«Regular» sobre un punto no se puede arreglar: quien tiene que ir a
+repavimentar necesita saber dónde empieza y dónde termina.
+
+### El punto se queda, y el tramo es un ATRIBUTO suyo
+
+Es la decisión que sostiene todo lo demás, y la tentación era la contraria:
+mover la fila al centro de la línea. El `lat`/`lng` del reporte es **su
+identidad** —lo dibuja en el mapa, lo encuentra una búsqueda por cercanía, y
+`proCity.editLat` lo usa para volver a abrirlo al editar—, así que moverlo
+habría roto la edición para ganar un detalle de dibujo. Hay una guarda contra
+pasarse dedicada solo a eso.
+
+Y el tramo es **opcional**: sin dibujarlo, mapear una vía funciona exactamente
+como hasta la v1001. Un campo obligatorio que cuesta seis toques se contesta
+con relleno (v973).
+
+### La codificación cabe en una casilla del reparto
+
+`lat,lng;lat,lng;…` con **seis decimales**, que es lo que `guardarTrazo` ya usa
+en js/68: once centímetros, más fino de lo que da un dedo en una pantalla.
+Guardar quince decimales solo abulta.
+
+Los separadores no se eligieron a ojo: **la v989 midió que `;`, `:`, `+` y `>`
+no aparecen en ninguna de las 631 cadenas del catálogo**, y la descripción se
+parte por ` | `, así que un separador de adentro no colisiona con nada.
+
+`decodificar` **nunca revienta**: descarta el par que no sea un número o que se
+salga de los rangos y devuelve lo que sobreviva. Una casilla corrupta no puede
+tumbar el globo de un punto — y al guardar se **reescribe desde lo decodificado**,
+así que una fila sucia sale limpia en vez de arrastrarse.
+
+### El modo de dibujo vive en el módulo, no en la pantalla
+
+La capa, los toques y el estado están en `js/03g`, y `js/20` solo llama. Es la
+forma que `URBIS_PC_ANALISIS` ya tiene para el polígono de análisis, y el motivo
+es el mismo: **un modo que intercepta los toques del mapa tiene que poder
+apagarse desde un solo sitio.** Si se filtrara, mapear un punto dejaría de
+funcionar — y eso es lo que se hace todos los días.
+
+De ahí salen dos de las guardas, y las dos fallan cerrado:
+
+* **el modo gana el toque ANTES que el flujo del punto** —la misma precedencia
+  que el área de análisis ya tenía—, o el primer vértice abriría además el
+  formulario;
+* **toda función que reinicia el flujo de ubicar apaga el modo.** Son siete, y
+  cuando la guarda se escribió **tres lo soltaban**: `beginProCityGroupSelection`,
+  `beginProCityDimension`, `beginProCityEdit` y `pickProCityPoint` no. Con
+  cualquiera de esas cuatro, el modo sobrevivía a un cambio de categoría y cada
+  toque del mapa seguía siendo un vértice.
+
+#### La guarda se midió por FUNCIÓN, y la primera versión medía una razón
+
+La primera versión contaba apariciones: `soltarTramo();` contra las asignaciones
+a `pickMode`, y daba por buena la diferencia de uno. Eso es medir la línea y no
+la propiedad (v890) — con un `soltarTramo()` de más en cualquier sitio, cuatro
+funciones sin soltarlo habrían pasado.
+
+Se mide troceando `js/20` por sus funciones de primer nivel: **el cuerpo que
+escribe `pickMode` contiene la llamada**, y el fallo **nombra las que no la
+tienen** en vez de imprimir una razón. Con eso la demostración en rojo dice
+«no lo sueltan: beginProCityEdit», que es dónde hay que ir.
+
+### El panel no se recompone al marcar
+
+Lo que costaría no decirlo: `marcarTramo()` **esconde** el panel
+(`panel.hidden = true`) y no lo vuelve a componer. Recomponerlo habría borrado
+la dirección y la nota que la persona ya escribió, que es la decisión de la
+barra de espera de la v870 y la del selector de especie de la v975.
+
+Medido con la sonda, y por eso la frase entra en el informe de la prueba: al
+volver de marcar el tramo, **«Calle 5 entre 3 y 4» y «huecos en el carril
+derecho» siguen escritos**.
+
+#### La barra vive en `document.body`, así que el despacho también
+
+La barra de «Deshacer · Listo · Cancelar» se monta en el cuerpo del documento
+—tiene que quedar por encima del mapa y de la hoja— y el despachador de acciones
+de Pro City escucha sobre `app`. Con la acción registrada ahí, **los dos botones
+no hacían nada** y no había ningún error que lo dijera.
+
+Se despacha sobre `document`, **en un solo sitio**. Con dos manejadores, cada
+toque dentro de `app` dispararía la acción **dos veces** —y «Deshacer» quitaría
+dos vértices—, así que hay una guarda que cuenta los manejadores y exige uno.
+
+### El tramo se dibuja sobre la MISMA capa que los puntos
+
+Una capa aparte se quedaría con las líneas de puntos que ya no están: la de los
+puntos es la que se limpia en cada repintado. Y el color **sale de
+`URBIS_ESTADO`**, que es donde vive la escala desde la v992: escrito acá serían
+dos escalas de color que se separan a la tanda siguiente (clase B).
+
+Va con un halo blanco debajo, porque una línea de color sobre una foto satelital
+se pierde contra la mitad de los suelos.
+
+### Lo que la sonda midió, de punta a punta
+
+| | |
+|---|---|
+| cuatro toques | «4 puntos · 33 m» en la barra |
+| deshacer | 3 puntos · «3 puntos · 23 m» |
+| Listo | `7.889154,-72.4968;7.889101,-72.496719;7.889034,-72.496625`, modo apagado, barra quitada, panel visible |
+| la dirección y la nota | **sobreviven** |
+| la ida y vuelta por el reparto | `hay: true · 3 puntos · 392 m` |
+| conviviendo con las otras dos | estado «Malo» `#C2410C` · superficie «Asfalto» |
+| en el mapa | polilíneas **0 → 2**, colores `#fff` y `#C2410C` |
+
+Y una del material, que costó una vuelta: `renderProCityPoints` se sale temprano
+si Pro City no está abierto, y `proCityPuntoVisible` rechaza una fila que no sea
+del autor —`onlyMine` viene puesto—. Sembrar la fila sin abrir Pro City y sin
+autor daba **cero marcadores**, que se lee igual que «el dibujo no funciona». La
+casilla del autor **se deduce** preguntándole a `URBIS_AUTOR.de` en vez de
+escribirla a mano, que es la lección de la v979.
+
+### Demostrado contra la v1001
+
+Once aserciones, **once inyecciones fieles** (v993), contra una copia guardada
+en `/tmp` y no con `git checkout --` sobre trabajo sin confirmar (v973):
+
+```
+? MATERIAL · el módulo del tramo se deja leer  — SIN MATERIAL HOY
+✗ el modo de dibujo gana el toque del mapa antes que el punto
+    — se ataja DESPUÉS: el primer toque abriría el formulario
+✗ toda función que reinicia el flujo de ubicar apaga el modo de dibujo
+    — no lo sueltan: beginProCityEdit
+✗ y las tres salidas del módulo apagan el modo
+✗ el tramo guardado se dibuja sobre la capa de los puntos
+    — en otra capa: se quedaría con líneas de puntos borrados
+✗ y el color del tramo sale del estado, no de la pantalla
+✗ y el punto del reporte no se mueve al centro del tramo
+    — lo mueve: se rompería editLat y la fila dejaría de encontrarse
+✗ el tramo se guarda y se pinta donde el punto se ve  — falta: alguna pantalla
+✗ las acciones del tramo se despachan en un solo sitio  — 2 manejadores
+✗ el archivo del tramo está en index.html y en el service worker
+✗ la casilla está repartida y el lector delega la decodificación
+```
+
+La del MATERIAL se inyecta **renombrando el módulo, no borrando el archivo**:
+un archivo que falta ya lo grita, con su nombre, la guarda de precarga —y de
+paso tumba la corrida entera, porque `leer()` revienta—. La forma fiel es el
+archivo presente y el módulo sin exponer.
+
+### Lo que esta versión NO hace, y queda medido
+
+**El análisis sigue viendo un punto.** `puntoAElemento` emite un nodo, y una vía
+con su tramo tendría que entrar al motor como un `way` con su `highway` —que es
+lo que la v984 dejó cableado para el TIPO, no para la geometría—. Eso toca el
+motor, que vive en el otro repositorio, y pide su propia medición: cuántos
+metros de vía suma el sector, y qué pasa con la jerarquía cuando la misma calle
+entra mapeada dos veces. Queda dicho con su nombre en vez de hecho a ojo de
+paso, que es lo que este proyecto lleva cinco tandas deshaciendo.
+
 ## La lista viva: lo que al pliego educativo todavía le falta (v866)
 
 Esta lista se quedó vieja **cinco veces**. Cuatro dentro de la hoja —la

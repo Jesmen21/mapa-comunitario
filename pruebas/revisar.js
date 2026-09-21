@@ -6222,6 +6222,159 @@ console.log('\n  -- un error de GPS dice cuál de los tres es (v996) --');
   }
 }
 
+/* ── Una vía es un TRAMO, no un punto (v1002) ──────────────────────────────
+   «Una línea o polilínea para las vías». Es lo que le faltaba al estado
+   (v992) y a la superficie (v1000) para describir algo: «asfalto, regular»
+   sobre un punto no dice de qué cuadra se habla.
+
+   El punto SE QUEDA, y eso es la mitad del diseño: es lo que dibuja el
+   reporte, lo que lo encuentra una búsqueda por cercanía y lo que
+   `proCity.editLat` usa para volver a abrirlo. Mover el punto al centro de la
+   línea habría cambiado la identidad de la fila para ganar un detalle de
+   dibujo.
+
+   Y lo que de verdad hay que guardar es el MODO: intercepta los toques del
+   mapa, así que si se filtrara, cada toque marcaría un vértice en vez de
+   abrir el formulario de mapear — y eso es lo que se hace todos los días. */
+console.log('\n  -- una vía es un tramo, no un punto (v1002) --');
+{
+  const j03t = soloCodigo(leer('js/03g-tramo-via.js'));
+  const j04t = soloCodigo(leer('js/04-marker-proximity.js'));
+  const j20t = soloCodigo(leer('js/20-mobile-functional-app.js'));
+  const j12t = soloCodigo(leer('js/12-spa-ui.js'));
+  const j10t = soloCodigo(leer('js/10-visible-markers.js'));
+
+  const tieneModulo = /window\.URBIS_TRAMO = \{/.test(j03t) &&
+    /codificar:/.test(j03t) && /decodificar:/.test(j03t) && /largoM:/.test(j03t);
+
+  /* MATERIAL primero (v920): sin módulo, todo lo de abajo pasaría por no
+     tener nada delante. */
+  if (!tieneModulo) {
+    anotarSinMaterial('MATERIAL · el módulo del tramo se deja leer',
+      'sin él no hay nada que comprobar');
+  } else {
+    comprobar('MATERIAL · el módulo del tramo se deja leer',
+      true, 'codifica, decodifica y mide');
+
+    /* 1 · El modo gana el toque del mapa ANTES del flujo del punto. Sin esto,
+       cada toque para marcar un vértice abriría además el formulario. Es la
+       misma precedencia que el área de análisis ya tiene. */
+    const iC = j20t.indexOf("map.on('click', function(ev){");
+    const cC = iC >= 0 ? j20t.slice(iC, j20t.indexOf('});', j20t.indexOf("pickCommunityPoint", iC))) : '';
+    const iTramo = cC.indexOf('URBIS_TRAMO');
+    const iPick = cC.indexOf("proCity.pickMode === 'manual'");
+    comprobar('el modo de dibujo gana el toque del mapa antes que el punto',
+      cC && iTramo >= 0 && iPick >= 0 && iTramo < iPick,
+      !cC ? 'no se pudo leer el manejador del toque'
+        : (iTramo < 0 ? 'el manejador no mira el modo: cada vértice abriría el formulario'
+          : (iTramo < iPick ? 'el tramo se ataja antes de abrir el formulario'
+            : 'se ataja DESPUÉS: el primer toque abriría el formulario')));
+
+    /* 2 · TODA función que reinicia el flujo de ubicar apaga el modo. Se mide
+       POR FUNCIÓN y no contando apariciones (v890): lo que tiene que seguir
+       siendo cierto es que el cuerpo que toca `pickMode` suelte el dibujo, no
+       que dos recuentos cuadren. Falla cerrado (v880): un modo que sobreviva
+       convierte cada toque del mapa en un vértice y el punto no se puede poner. */
+    const reFn = /\n  function ([A-Za-z0-9_$]+)\(/g;
+    const arranques = [];
+    let mFn;
+    while ((mFn = reFn.exec(j20t))) arranques.push({ i: mFn.index, n: mFn[1] });
+    const sinSoltar = [];
+    let tocanModo = 0;
+    arranques.forEach(function (a, k) {
+      const cuerpo = j20t.slice(a.i, k + 1 < arranques.length ? arranques[k + 1].i : j20t.length);
+      if (!/proCity\.pickMode = '/.test(cuerpo)) return;
+      tocanModo++;
+      if (!/soltarTramo\(\)/.test(cuerpo)) sinSoltar.push(a.n);
+    });
+    comprobar('toda función que reinicia el flujo de ubicar apaga el modo de dibujo',
+      tocanModo > 0 && sinSoltar.length === 0,
+      tocanModo === 0
+        ? 'no se encontró una sola función que toque pickMode: la medición no mira nada'
+        : (sinSoltar.length === 0
+          ? 'las ' + tocanModo + ' que escriben pickMode sueltan el dibujo'
+          : 'no lo sueltan: ' + sinSoltar.join(' · ') + ' — el modo sobreviviría y cada toque del mapa sería un vértice'));
+
+    /* 3 · Y las tres salidas apagan el modo de verdad, en el propio módulo:
+       si `terminar` no llamara a `apagar`, lo de arriba seguiría en verde. */
+    const iT = j03t.indexOf('function terminar()');
+    const cT = iT >= 0 ? j03t.slice(iT, j03t.indexOf('function apagar', iT)) : '';
+    const apaga = /apagar\(\);/.test(cT) && /function cancelar\(\)\{ apagar\(\); \}/.test(j03t.replace(/\s+/g, ' ').replace(/\{ /g, '{ '));
+    comprobar('y las tres salidas del módulo apagan el modo',
+      /apagar\(\)/.test(cT) && /cancelar[\s\S]{0,40}apagar\(\)/.test(j03t),
+      (/apagar\(\)/.test(cT) && /cancelar[\s\S]{0,40}apagar\(\)/.test(j03t))
+        ? 'terminar y cancelar apagan; iniciar es la única que enciende'
+        : 'alguna salida no apaga: el modo se quedaría encendido sin que nada lo diga');
+
+    /* 4 · Se dibuja sobre la MISMA capa que los puntos. Una capa aparte se
+       quedaría con líneas de puntos que ya no están, porque esa es la que se
+       limpia en cada repintado. */
+    const iR = j20t.indexOf('function renderProCityPoints');
+    const cR = iR >= 0 ? j20t.slice(iR, j20t.indexOf('window.urbisRenderProCityPoints', iR)) : '';
+    const mismaCapa = /pintarGuardado\(layer,/.test(cR);
+    comprobar('el tramo guardado se dibuja sobre la capa de los puntos',
+      mismaCapa,
+      mismaCapa ? 'la misma capa que se limpia en cada repintado'
+                : 'en otra capa: se quedaría con líneas de puntos borrados');
+
+    /* 5 · Y el color sale del vocabulario del estado, no de esta pantalla.
+       Escrito acá serían dos verdes que se separan a la tanda siguiente. */
+    const delEstado = /URBIS_ESTADO[\s\S]{0,200}pintarGuardado/.test(cR);
+    comprobar('y el color del tramo sale del estado, no de la pantalla',
+      delEstado,
+      delEstado ? 'lo lee de URBIS_ESTADO, que es donde vive la escala'
+                : 'lo escribe acá: dos escalas de color que se separan');
+
+    /* 6 · Guarda contra pasarse: el punto NO se mueve. Cambiar `lat`/`lng` al
+       centro de la línea rompería `proCity.editLat` y la identidad de la fila. */
+    const mueve = /lat:\s*String\(centro|proCity\.selected\s*=\s*\{[^}]*centroTramo/.test(j20t);
+    comprobar('y el punto del reporte no se mueve al centro del tramo',
+      !mueve,
+      !mueve ? 'la fila conserva su lat/lng: es su identidad y lo que la vuelve a abrir al editar'
+             : 'lo mueve: se rompería editLat y la fila dejaría de encontrarse');
+
+    /* 7 · Se guarda y se PINTA (clase C): un dato que ninguna pantalla alcanza
+       se ve, desde afuera, igual que uno que no existe. Se buscan los HUECOS
+       de la plantilla y no los identificadores, que es la lección de la v976
+       cobrada en la v1000. */
+    const guarda = /guardarTramoVia/.test(j12t) && /S\.viaTramo\b/.test(j12t);
+    const pinta = /\$\{tramoPopup\}/.test(j10t) && /\$\{_tramoDet\}/.test(j10t) &&
+                  /\+ tramo \+/.test(j20t);
+    comprobar('el tramo se guarda y se pinta donde el punto se ve',
+      guarda && pinta,
+      (guarda && pinta) ? 'se guarda por el reparto y sale en el globo, la ficha y el panel del punto'
+        : 'falta: ' + [!guarda && 'el guardado', !pinta && 'alguna pantalla'].filter(Boolean).join(' y '));
+
+    /* 8 · Las acciones se despachan en UN solo sitio. Con dos, cada toque
+       dentro de `app` dispararía la acción dos veces —y «deshacer» quitaría
+       dos vértices—. */
+    const despachos = (j20t.match(/data-u52-call\^="tramo-"/g) || []).length;
+    comprobar('las acciones del tramo se despachan en un solo sitio',
+      despachos === 1,
+      despachos === 1 ? 'un solo manejador, sobre document, que es donde la barra vive'
+        : despachos + ' manejadores: cada toque dentro de app dispararía la acción dos veces');
+
+    /* 9 · El archivo entra por las DOS puertas (v981). */
+    const enIndex = leer('index.html').indexOf('js/03g-tramo-via.js') >= 0;
+    const enSW = leer('service-worker.js').indexOf('js/03g-tramo-via.js') >= 0;
+    comprobar('el archivo del tramo está en index.html y en el service worker',
+      enIndex && enSW,
+      (enIndex && enSW) ? 'entra por las dos puertas'
+        : 'falta en: ' + [!enIndex && 'index.html', !enSW && 'el service worker'].filter(Boolean).join(' y '));
+
+    /* 10 · Guarda de la guarda (v878): la casilla está repartida y el lector
+       delega la decodificación en el módulo. Con la decodificación escrita en
+       js/04 habría dos maneras de leer la misma cadena. */
+    const casilla = /viaTramo:\s*BASE_OFFSET/.test(j04t);
+    const delega = /window\.URBIS_TRAMO_PUNTO/.test(j04t) && /T\.decodificar\(txt\)/.test(j04t);
+    comprobar('la casilla está repartida y el lector delega la decodificación',
+      casilla && delega,
+      (casilla && delega) ? 'viaTramo sale del reparto y la cadena la lee js/03g'
+        : 'falta: ' + [!casilla && 'la casilla', !delega && 'la delegación'].filter(Boolean).join(' y ') +
+          ' — dos maneras de leer la misma cadena se separan (v879)');
+  }
+}
+
 /* ── Nada de la raíz se copia dentro de js/ (v1001) ────────────────────────
    `js/service-worker.js` existió veinte versiones y no lo cargaba NADIE: ni
    `serviceWorker.register`, ni una página, ni el propio service worker, ni

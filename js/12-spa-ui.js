@@ -894,6 +894,29 @@
         }
         descripcionFinal = d.join(' | ');
     })();
+    /* El tramo de la vía (v1002). Mismo molde: sin el bloque en pantalla,
+       `insTr` es null y no se toca la casilla, así que editar una vía por
+       otro camino no borra la línea que alguien marcó. */
+    (function guardarTramoVia(){
+        const insTr = document.getElementById('ins-tramo');
+        if (!insTr) return;
+        const S = window.URBIS_SLOTS || {};
+        if (S.viaTramo == null) return;
+        const d = String(descripcionFinal).split(' | ');
+        for (let k = 0; k < S.viaTramo; k++) if (d[k] === undefined) d[k] = '';
+        /* Se vuelve a CODIFICAR desde los puntos decodificados en vez de
+           copiar la cadena: así una casilla con un par corrupto —escrita a
+           mano o por una versión anterior— se guarda limpia, y nunca entra un
+           `|` que partiría el reparto. */
+        let txt = '';
+        try{
+            const T = window.URBIS_TRAMO;
+            const pts = T ? T.decodificar(insTr.value || '') : [];
+            txt = (T && pts.length >= 2) ? T.codificar(pts) : '';
+        }catch(e){ txt = ''; }
+        d[S.viaTramo] = txt; fichaSlotsEscritos.push(S.viaTramo);
+        descripcionFinal = d.join(' | ');
+    })();
     /* En qué estado está (v992). Mismo molde que el material y por la misma
        razón: sin el bloque en pantalla, `insEst` es null y no se toca la
        casilla, así que editar un punto por otro camino no borra el estado

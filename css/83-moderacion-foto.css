@@ -345,3 +345,9 @@ body[data-role="gov"] .urbis-sello-aprobar{
 .popup-superficie{ color:#55606b; font-weight:700; }
 .detalle-especie.detalle-superficie{ color:#cbd5e1 !important; -webkit-text-fill-color:#cbd5e1; }
 .detalle-especie.detalle-superficie b{ color:#f1f5f9 !important; -webkit-text-fill-color:#f1f5f9; }
+
+/* El tramo de la vía (v1002). Mismo tratamiento que la superficie: es un dato
+   del mismo objeto y no una alarma. */
+.popup-tramo{ color:#55606b; font-weight:700; }
+.detalle-especie.detalle-tramo{ color:#cbd5e1 !important; -webkit-text-fill-color:#cbd5e1; }
+.detalle-especie.detalle-tramo b{ color:#f1f5f9 !important; -webkit-text-fill-color:#f1f5f9; }

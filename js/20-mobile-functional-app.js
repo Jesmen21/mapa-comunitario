@@ -2504,6 +2504,7 @@
 
   function closeProCityPanel(){
     hideQuickReportPanel();
+    soltarTramo();
     proCity.pickMode = ''; proCity.selected = null; proCity.dim = ''; proCity.editLat = '';
     try{ if(typeof tempMarker !== 'undefined' && tempMarker && window.map){ map.removeLayer(tempMarker); tempMarker = null; } }catch(e){}
     resetMapForCommunityReport();
@@ -2804,6 +2805,7 @@
   // mapa satelital, no menús". Se abre el mapa de inmediato y las categorías
   // viven en un panel flotante (FAB + hoja), no en una pantalla previa.
   function openProCityMap(){
+    soltarTramo();
     proCity.active = true; proCity.pickMode = ''; proCity.selected = null; proCity.dim = ''; proCity.editLat = '';
     resetMapForCommunityReport();
     show('map');
@@ -2824,6 +2826,7 @@
   // mapa), pero llevando a la hoja de categorías de Pro City en vez del panel
   // de reportes.
   function beginProCityLocationManual(){
+    soltarTramo();
     proCity.dim = ''; proCity.pickMode = 'manual'; proCity.selected = null; proCity.editLat = '';
     resetMapForCommunityReport();
     ensureCommunityMapPicker();
@@ -3160,6 +3163,7 @@
     proCity.matrizGroup = groupId;
     hideProCityCategorySheet();
     if(proCity.selected){ renderProCityItems(); return; }
+    soltarTramo();
     proCity.pickMode = 'manual'; proCity.selected = null;
     resetMapForCommunityReport();
     ensureCommunityMapPicker();
@@ -4795,6 +4799,20 @@
         iconHtml = proCityShapeHtml(shape, d.color || '#6b70e0');
         iconSize = [22,22]; iconAnchor = [11,11];
       }
+      /* El tramo de una vía (v1002), sobre la MISMA capa que el punto. El
+         color sale del estado (v992) y no de esta pantalla: escrito acá
+         serían dos verdes que se separan a la tanda siguiente. */
+      try{
+        const _tr = window.URBIS_TRAMO_PUNTO ? window.URBIS_TRAMO_PUNTO.leer(p.descripcion) : null;
+        if(_tr && _tr.hay && window.URBIS_TRAMO){
+          let _col = '';
+          try{
+            const _e = window.URBIS_ESTADO ? window.URBIS_ESTADO.leer(p.descripcion) : null;
+            _col = (_e && _e.color) || '';
+          }catch(e){}
+          window.URBIS_TRAMO.pintarGuardado(layer, _tr.puntos, _col || '#0f7ea8');
+        }
+      }catch(e){}
       const m = L.marker([lat,lng], { icon: L.divIcon({ className:'u52-procity-shape', html: iconHtml, iconSize, iconAnchor }), zIndexOffset:1500 });
       m.on('click', ev=>{ try{ L.DomEvent.stopPropagation(ev); }catch(e){} if(window.__urbisMovingReport) return; showProCitySelectedPanel(p); });
       m.addTo(layer);
@@ -4836,7 +4854,7 @@
      criterios para un mismo hecho se separan a la tanda siguiente (v879), y
      acá el que se separaría publicaría la foto de alguien sin moderar. */
   function fichaDeProCity(p, d){
-    let foto = '', nota = '', especie = '', sitio = '', material = '', superficie = '', estado = '', pisos = '';
+    let foto = '', nota = '', especie = '', sitio = '', material = '', superficie = '', tramo = '', estado = '', pisos = '';
     try{
       const f = (typeof window.urbisFotoDeReporte === 'function') ? window.urbisFotoDeReporte(p) : null;
       if(f && f.hay && f.puedeVerla){
@@ -4878,6 +4896,11 @@
       const su = window.URBIS_SUPERFICIE ? window.URBIS_SUPERFICIE.leer(p.descripcion) : null;
       if(su && su.texto) superficie = `<div class="u52-procity-selpanel-dato">\u{1F6E3}\uFE0F ${esc(su.texto)}</div>`;
     }catch(e){}
+    /* El tramo (v1002): lo que la línea mide, donde el punto se ve. */
+    try{
+      const t2 = window.URBIS_TRAMO_PUNTO ? window.URBIS_TRAMO_PUNTO.leer(p.descripcion) : null;
+      if(t2 && t2.hay) tramo = `<div class="u52-procity-selpanel-dato">\u{1F4CF} Tramo marcado: ${esc(t2.largoTexto)}</div>`;
+    }catch(e){}
     try{
       const m = window.URBIS_MOBILIARIO ? window.URBIS_MOBILIARIO.leer(p.descripcion) : null;
       if(m && m.texto) material = `<div class="u52-procity-selpanel-dato">\u{1F9F1} ${esc(m.texto)}</div>`;
@@ -4909,7 +4932,7 @@
         }
       }
     }catch(e){}
-    return foto + nota + especie + sitio + material + superficie + estado + pisos;
+    return foto + nota + especie + sitio + material + superficie + tramo + estado + pisos;
   }
 
   // Panel compacto al tocar un punto: quién lo publicó + Editar (permite
@@ -5011,6 +5034,7 @@
     proCity.selected = { lat:Number(String(p.lat).replace(',','.')), lng:Number(String(p.lng).replace(',','.')) };
     proCity.editLat = String(p.lat);
     proCity.dim = dim;
+    soltarTramo();
     proCity.pickMode = '';
     proCity.matrizGroup = '';
     proCity.matrizUse = '';
@@ -5324,6 +5348,7 @@
     // mi ubicación" / "En el mapa"), se salta directo a elegir el ítem —
     // no hay que tocar el mapa otra vez.
     if(proCity.selected){ renderProCityItems(); return; }
+    soltarTramo();
     proCity.pickMode = 'manual'; proCity.selected = null;
     resetMapForCommunityReport();
     ensureCommunityMapPicker();
@@ -5339,6 +5364,7 @@
      salía vacía: medido con la sonda, «(sin banda)» sobre un punto de ±7 m.
      Es una propiedad del punto, así que va donde se pone el punto. */
   function pickProCityPoint(lat, lng, acc){
+    soltarTramo();
     proCity.pickMode = '';
     proCity.selected = { lat:Number(lat), lng:Number(lng) };
     // Punto nuevo: lo del anterior no se hereda. Sin esto, el siguiente
@@ -5848,6 +5874,7 @@
     let sitioOtroPre = '';
     let superficiePre = '';
     let superficieOtroPre = '';
+    let tramoPre = '';
     let fotoPre = '';
     if(editando){
       const dp = (typeof globalData !== 'undefined' && Array.isArray(globalData)) ? globalData.find(x => String(x.lat) === String(proCity.editLat)) : null;
@@ -5892,6 +5919,12 @@
         try{
           const pb = window.URBIS_SUPERFICIE ? window.URBIS_SUPERFICIE.leer(dp.descripcion) : null;
           if(pb){ superficiePre = pb.superficie; superficieOtroPre = pb.otroTexto; }
+        }catch(e){}
+        /* Y el tramo dibujado (v1002): editar una vía para corregirle la
+           dirección no puede borrar la línea que alguien caminó marcando. */
+        try{
+          const tb = window.URBIS_TRAMO_PUNTO ? window.URBIS_TRAMO_PUNTO.leer(dp.descripcion) : null;
+          if(tb) tramoPre = tb.crudo;
         }catch(e){}
         /* Y la foto, que es la que costó una (v986). Va por el portero y no
            leyendo la casilla en crudo: quien edita es su autor o un
@@ -6047,6 +6080,30 @@
           <small class="u52-procity-edificio-pista">Es lo que se ve, no cómo está: el estado va en la escala de arriba. Una vía puede ser de asfalto y estar mala, o de afirmado y estar bien mantenida.</small>
         </div>`;
     }
+    /* ── El tramo (v1002) ──────────────────────────────────────────────
+       «Una línea o polilínea para las vías». El punto se queda —es lo que
+       dibuja el reporte y lo que lo encuentra una búsqueda por cercanía— y
+       el tramo es un atributo suyo: sin dibujarlo, mapear una vía funciona
+       como siempre. */
+    let htmlTramo = '';
+    if(proCity.dim === MATRIZ_USOS_KEY && window.URBIS_TRAMO && VOC_SUP &&
+       VOC_SUP.esUsoConSuperficie(usoParteSel)){
+      const _tp = window.URBIS_TRAMO.decodificar(tramoPre);
+      const _res = _tp.length >= 2
+        ? `${_tp.length} puntos · ${esc(window.URBIS_TRAMO.largoTexto(_tp))}`
+        : 'sin marcar';
+      htmlTramo = `
+        <div class="u52-procity-tramo" id="ins-tramo-bloque">
+          <label>¿Hasta dónde llega el tramo? <i>opcional</i></label>
+          <input type="hidden" id="ins-tramo" value="${esc(tramoPre)}">
+          <div class="u52-tramo-fila">
+            <button type="button" class="u52-tramo-btn" data-u52-call="tramo-marcar">📏 Marcar en el mapa</button>
+            <span id="ins-tramo-resumen" class="u52-tramo-res">${_res}</span>
+            <button type="button" class="u52-tramo-quitar" data-u52-call="tramo-quitar"${_tp.length >= 2 ? '' : ' hidden'} aria-label="Quitar el tramo">×</button>
+          </div>
+          <small class="u52-procity-edificio-pista">El punto se queda donde está; la línea dice de qué cuadra se habla. «Asfalto, regular» sobre un punto no dice dónde empieza ni dónde termina.</small>
+        </div>`;
+    }
     /* ── De qué está hecho (v981) ──────────────────────────────────────
        Pedido con la foto de una caneca de varilla oxidada: «bancas,
        jardineras, canecas y postes… basura metálica». Sale solo en los usos
@@ -6128,6 +6185,7 @@
         ${htmlEspecie}
         ${htmlSitio}
         ${htmlSuperficie}
+        ${htmlTramo}
         ${htmlMaterial}
         ${htmlEstado}
         ${avisoDePrecisionHTML()}
@@ -6275,6 +6333,94 @@
     elegirEstado(b.getAttribute('data-u52-estado') || '');
   });
 
+  /* ── MARCAR EL TRAMO DE UNA VÍA (v1002) ───────────────────────────────
+     El panel se ESCONDE, no se rehace. Con un repintado se perderían la
+     dirección y la nota que la persona ya escribió —es lo que la v954
+     arregló con el borrador— y acá no hace falta ningún borrador: el DOM se
+     queda entero detrás. */
+  function marcarTramo(){
+    const T = window.URBIS_TRAMO;
+    const panel = (typeof ensureQuickReportPanel === 'function') ? ensureQuickReportPanel() : null;
+    const hid = document.getElementById('ins-tramo');
+    if(!T || !panel || !hid) return;
+    panel.hidden = true;
+    const barra = document.createElement('div');
+    barra.id = 'u52-tramo-barra';
+    barra.className = 'u52-tramo-barra';
+    barra.innerHTML = `
+      <div class="u52-tramo-barra-txt"><b id="u52-tramo-cuenta">0 puntos</b>
+        <small>Toque el mapa para marcar por dónde va la vía. Dos puntos bastan.</small></div>
+      <div class="u52-tramo-barra-btns">
+        <button type="button" data-u52-call="tramo-deshacer">↶ Deshacer</button>
+        <button type="button" data-u52-call="tramo-cancelar">Cancelar</button>
+        <button type="button" class="ok" data-u52-call="tramo-listo">Listo</button>
+      </div>`;
+    document.body.appendChild(barra);
+    T.iniciar({
+      pts: T.decodificar(hid.value || ''),
+      alCambiar: function(n, largo){
+        const e = document.getElementById('u52-tramo-cuenta');
+        if(e) e.textContent = n + (n === 1 ? ' punto' : ' puntos') + (largo ? ' \u00b7 ' + largo : '');
+      }
+    });
+  }
+  /* Las tres salidas pasan por acá, y por eso el modo no se puede quedar
+     encendido: si se filtrara, cada toque del mapa marcaría un vértice en vez
+     de abrir el formulario, y eso es lo que se hace todos los días. */
+  function cerrarTramo(guardar){
+    const T = window.URBIS_TRAMO;
+    const panel = (typeof ensureQuickReportPanel === 'function') ? ensureQuickReportPanel() : null;
+    const hid = document.getElementById('ins-tramo');
+    if(T){
+      const txt = guardar ? T.terminar() : (T.cancelar(), null);
+      if(guardar && hid) hid.value = txt || '';
+    }
+    try{ const b = document.getElementById('u52-tramo-barra'); if(b) b.remove(); }catch(e){}
+    if(panel) panel.hidden = false;
+    pintarResumenTramo();
+  }
+  /* Todo reinicio de Pro City apaga el modo. Es la puerta de seguridad: si se
+     filtrara, cada toque del mapa marcaría un vértice en vez de abrir el
+     formulario de mapear, y eso es lo que se hace todos los días. Llamarlo de
+     más no cuesta nada —apagar lo ya apagado es un no-op—; olvidarlo una vez
+     rompe el flujo principal. */
+  function soltarTramo(){
+    try{ if(window.URBIS_TRAMO && window.URBIS_TRAMO.estaDibujando()) window.URBIS_TRAMO.cancelar(); }catch(e){}
+    try{ const b = document.getElementById('u52-tramo-barra'); if(b) b.remove(); }catch(e){}
+  }
+
+  function pintarResumenTramo(){
+    const T = window.URBIS_TRAMO;
+    const hid = document.getElementById('ins-tramo');
+    const res = document.getElementById('ins-tramo-resumen');
+    const quitar = document.querySelector('[data-u52-call="tramo-quitar"]');
+    if(!T || !hid || !res) return;
+    const pts = T.decodificar(hid.value || '');
+    const hay = pts.length >= 2;
+    res.textContent = hay ? (pts.length + ' puntos \u00b7 ' + T.largoTexto(pts)) : 'sin marcar';
+    if(quitar) quitar.hidden = !hay;
+  }
+
+  /* Las acciones del tramo van sobre DOCUMENT y no sobre `app`: la barra de
+     dibujo se monta en el body —mientras se marca tiene que quedar por encima
+     de todo— y el despacho de `app` no la alcanza. Es lo mismo que hacen los
+     chips del estado (v992). Y va en UN solo sitio: con los dos, cada toque
+     dentro de `app` dispararía la acción dos veces. */
+  document.addEventListener('click', ev => {
+    const t = ev.target && ev.target.closest ? ev.target.closest('[data-u52-call^="tramo-"]') : null;
+    if(!t) return;
+    ev.preventDefault();
+    const q = t.getAttribute('data-u52-call');
+    if(q === 'tramo-marcar') marcarTramo();
+    else if(q === 'tramo-listo') cerrarTramo(true);
+    else if(q === 'tramo-cancelar') cerrarTramo(false);
+    else if(q === 'tramo-deshacer'){ try{ window.URBIS_TRAMO.deshacer(); }catch(e){} }
+    else if(q === 'tramo-quitar'){
+      const h = document.getElementById('ins-tramo');
+      if(h){ h.value = ''; pintarResumenTramo(); }
+    }
+  });
+
   function pintarLista(clave, q){
     const cfg = LISTAS_CERRADAS[clave];
     if(!cfg) return;
@@ -6404,6 +6550,13 @@
       // arrancar el flujo de mapear un punto nuevo: el usuario está mirando el
       // área que acaba de cerrar y perdía la burbuja sin querer.
       if(window.URBIS_PC_ANALISIS && window.URBIS_PC_ANALISIS.burbujaAbierta && window.URBIS_PC_ANALISIS.burbujaAbierta()){
+        return;
+      }
+      /* Marcar el tramo de una vía (v1002) manda igual que el área: sin
+         atajarlo acá, cada toque para poner un vértice abriría además el
+         formulario de mapear un punto nuevo. */
+      if(window.URBIS_TRAMO && window.URBIS_TRAMO.estaDibujando()){
+        window.URBIS_TRAMO.agregarPunto(ev.latlng.lat, ev.latlng.lng);
         return;
       }
       if(proCity.pickMode === 'manual'){ pickProCityPoint(ev.latlng.lat, ev.latlng.lng); return; }
