@@ -19,27 +19,23 @@ prioridades también se queda vieja (v997)»**, más abajo.
 Medido el 21 de septiembre de 2026 sobre los dos registros —180 entradas del
 gobierno actual y 32 de Petro—:
 
-1. **Documentar las 19 entradas del 4 al 17 de agosto**, que se escribieron sin
-   citar fuente. No están «sin clasificar»: están SIN DOCUMENTAR, y su lista
-   —con qué le falta a cada una— ya está escrita dentro del propio registro,
-   en `_pendientesFuente`. `hecho cuando: sin-documentar-cero`
-2. **Conseguir la fuente del ACTO de las seis entradas `sin-acto`.** La v998
+1. **Conseguir la fuente del ACTO de las seis entradas `sin-acto`.** La v998
    declaró el rol de las 562 fuentes y seis entradas quedaron sin ninguna que
    documente su acto: la del Decreto 1012 y las emisoras de paz en el registro
    actual, y cinco de Petro —la entrega de la Presidencia, las dos sanciones de
    reforma, la posesión de 2022 y la denuncia de la exfiscal Laborde—. No es un
    fallo y por eso no está en rojo: es el hallazgo que la guarda vino a
    producir. `hecho cuando: sin-acto-cero`
-3. **Decidir la identidad de objeto de las 8 contradicciones documentadas.**
+2. **Decidir la identidad de objeto de las 8 contradicciones documentadas.**
    Es lo único que bloquea el veredicto de fiabilidad (v972), y **no es de esta
    sesión**: leer si lo prometido y lo hecho son el mismo objeto cambia en
    público el juicio sobre una persona real, y lo decide quien firma el módulo.
    Declarada cualquiera, el peldaño se calcula solo.
    `hecho cuando: identidad-declarada`
 
-Una precisión sobre la primera, que la lista vieja traía y sigue valiendo: si
-al declarar el rol aparece una entrada cuyas fuentes **ninguna documenta el
-acto**, no se inventa y no se deja pasar. Se queda en `sin-acto` —que desde la
+Una precisión que la lista vieja traía y sigue valiendo: si al declarar el rol
+aparece una entrada cuyas fuentes **ninguna documenta el acto**, no se inventa
+y no se deja pasar. Se queda en `sin-acto` —que desde la
 v970 es un estado que se cuenta y se nombra, no un fallo— y se sigue. **Es
 hallazgo, no obstáculo.**
 
@@ -53,7 +49,11 @@ acababa de escribir, en la primera tanda que la puso a prueba. Y el
 **`nivelGobierno`**, que era el renglón siguiente, lo declaró la v999 sobre las
 120 entradas que registran un acto de gobierno — que es el denominador honesto:
 a una cifra del país o a un hecho de otro actor no se le puede declarar un
-nivel sin mentir, y el renglón pedía las 212.
+nivel sin mentir, y el renglón pedía las 212. Y **documentar las diecinueve
+entradas del 4 al 17 de agosto**, que era el renglón 1 de esta misma lista, lo
+hizo la v1003: diecisiete verificadas y dos disputadas, con el canal declarado
+—la búsqueda, que es el único que este contenedor tiene— y el techo de
+`TECHO_SIN_TIPO` en cero.
 
 Lo demás del módulo presidencial —los cuatro criterios sin validar, la media
 histórica del eje B, la fuente del eje C— pide archivo y fuente, no código, y
@@ -16845,6 +16845,212 @@ motor, que vive en el otro repositorio, y pide su propia medición: cuántos
 metros de vía suma el sector, y qué pasa con la jerarquía cuando la misma calle
 entra mapeada dos veces. Queda dicho con su nombre en vez de hecho a ojo de
 paso, que es lo que este proyecto lleva cinco tandas deshaciendo.
+
+## Las diecinueve del 4 al 17 de agosto, documentadas (v1003)
+
+El renglón 1 de la `LISTA-QUE-SIGUE`, y la primera tanda de esta serie que no
+escribe una línea de `js/`: **el registro es el cuello de botella, no el
+código**, y esto es trabajo de registro.
+
+    v1002   19 entradas sin naturaleza de fuente · 116 de 180 se publican
+    v1003   0 sin naturaleza · 131 de 180 se publican
+
+### La premisa de la lista era falsa, y medirla cambió el trabajo
+
+La lista decía que esas diecinueve «se escribieron **sin citar fuente**».
+Medido antes de buscar nada —la regla de la v916—, **las diecinueve traen al
+menos una fuente con su dirección**; una de ellas, cuatro. Lo que les faltaba
+es otra cosa: **la naturaleza de esa fuente**, que es una de las cuatro cuentas
+que mueven el veredicto.
+
+De haber creído el enunciado, la tanda habría empezado buscando desde cero lo
+que ya estaba, y el trabajo de verdad —corroborar y clasificar— habría quedado
+sin hacer.
+
+### La regla, escrita para que se pueda discutir
+
+Sale del propio vocabulario del módulo y no de un criterio inventado acá:
+
+| | Cuándo |
+|---|---|
+| **verificado** | dos o más medios independientes cuentan el mismo hecho |
+| **disputado** | hay versiones enfrentadas y ningún tercero las ha dirimido |
+| **declaración** | lo dice una sola parte y nadie la corrobora |
+
+Resultado: **17 verificadas, 2 disputadas**, y 39 fuentes nuevas con su rol
+declarado (v965) — 690 en total sobre los dos registros.
+
+#### Y el canal va dicho, porque es la mitad que limita lo que se puede afirmar
+
+**Desde esta máquina el proxy niega TODOS los dominios.** Se comprobó uno por
+uno: `curl` da `000` en catorce, y el estado del proxy lo dice con todas las
+letras —«gateway answered 403 to CONNECT»—; también el normograma de la
+Alcaldía de Bogotá, también el Servicio Geológico, también la Presidencia. El
+único canal es la búsqueda, como la v967 dejó escrito.
+
+Así que lo que se afirma es exactamente esto: **el índice devuelve esas
+direcciones con títulos que cuentan el hecho.** No que se leyó cada una. Va
+escrito en el `_nota` del propio registro y no solo acá, porque quien mañana
+audite una de estas entradas tiene que saber con qué fue verificada.
+
+### Lo que la búsqueda destapó, entrada por entrada
+
+Seis hallazgos que no eran el encargo y valen más que la clasificación:
+
+* **El epicentro SÍ fue Chocó.** La entrada arrastraba una discrepancia
+  declarada con el dossier, que sostenía lo contrario. El Servicio Geológico lo
+  situó a unos 12 km de San José del Palmar, a 103 km de profundidad, a las
+  07:34. **La discrepancia se resuelve a favor del registro.** Lo que sí varía
+  mucho entre fuentes es la cifra de víctimas según el día del corte —de 111 a
+  132 en los primeros reportes, 285 o 289 después—, así que un número de
+  muertos sin su fecha de corte no se puede citar.
+* **El Decreto 1012 no es lo que la entrada dejaba leer.** ColombiaCheck —un
+  verificador— aporta dos cosas: lo firmó el DAPRE del gobierno **saliente**, y
+  es una medida que la administración de salida expide **cada cuatrienio**
+  (Santos en 2018, Duque en 2022 para el empalme con Petro). Leerla como una
+  excepción de este gobierno invierte su sentido. Este registro ya lo dejaba
+  fuera de las cuentas del mandato por su fecha, así que la cifra no se mueve;
+  lo que cambia es lo que el lector entiende.
+* **«Nos vamos a endeudar» no lo dijo el Gobierno.** La frase es de Juan
+  Alberto Londoño, **ex**viceministro de Hacienda. La entrada la presentaba
+  como una confirmación oficial. Es la única de las diecinueve que queda en
+  `declaracion`, y por eso.
+* **La fuente del BID era de otro tema.** La única que traía esa entrada es una
+  nota sobre empresas españolas en la reconstrucción, que no documenta el
+  desembolso — el mismo desajuste que la v967 encontró en el Decreto 1171, en
+  otra entrada y sin que nadie lo hubiera vuelto a mirar.
+* **El caso Hegseth es el `disputado` de manual**, y trae con él **el
+  contrargumento oficial**: el secretario de Defensa afirma que el presidente
+  «ya solicitó» autorizar operaciones conjuntas, y el Gobierno colombiano
+  publicó después un comunicado sosteniendo que no existe ningún acuerdo que
+  autorice operaciones militares extranjeras en territorio nacional. Es el
+  segundo contrargumento sustantivo del registro.
+* **Tres entradas están fechadas después del hecho**: el reconocimiento del
+  Golán lo publica la Cancillería el 10 de agosto y la entrada lo registra el
+  16; el paquete de seguridad de EE. UU. se anuncia el 8 y se registra el 15;
+  las denuncias del empalme se radicaron entre el 1 y el 3 y se registran el 5.
+  **No se corrigieron las fechas** —cambiar la fecha de un hecho mueve la línea
+  de tiempo y las tasas por 100 días, y la evidencia es de búsqueda— y **se
+  dicen en el contrapunto**, que es donde el lector las puede ver.
+
+Cuatro de las diecinueve ya traían contrapunto. **Se AÑADE, nunca se pisa**: la
+aserción del parche lo exige, y la del contrargumento también.
+
+### Lo que la lista se predijo a sí misma, y lo que salió medido
+
+El `_nota` calculaba que con las diecinueve cerradas el registro verificado
+llegaría al 76 %. Medido sobre el papel, con la página compuesta:
+
+| | v1002 | v1003 |
+|---|---|---|
+| Registro verificado por terceros | **74 %** · 116 de 156 · *15 fuera de la cuenta* | **75 %** · 129 de 171 · *0 fuera* |
+| Techo que pone esa cuenta | como mucho «Fiable» | **el mismo** |
+| Veredicto | Sin nivel | **el mismo** |
+| Hechos que se publican | **116** de 180 | **131** de 180 |
+| Retenidos por no verificados | 56 | 41 |
+
+**El porcentaje casi no se mueve, y eso es lo honesto de decir**: la ganancia no
+está ahí. Está en que el denominador pasó de 156 a 171 —quince hechos que
+estaban fuera de la cuenta ahora están dentro— y en que **quince hechos más
+pasan la puerta de publicación** de la v971.
+
+Y el veredicto **no cambia**, que era la pregunta que había que contestar antes
+de tocar nada: sigue bloqueado en las ocho declaraciones de identidad de objeto,
+que son del usuario (v972).
+
+### El techo baja a CERO, que es el que falla cerrado
+
+`TECHO_SIN_TIPO` pasa de 19 a 0. Un techo en cero es el que de verdad guarda:
+la primera entrada que llegue sin naturaleza declarada salta en el acto, en vez
+de esconderse dentro de un cupo que nadie vuelve a mirar.
+
+Y `_pendientesFuente` **se vacía y no se borra**: es donde va la próxima, con el
+organismo o el documento que la cerraría. Su `_nota` dice ahora la regla, el
+canal y qué hacer al abrir y al cerrar una.
+
+### Dos reglas que el registro se escribió a sí mismo y nadie medía
+
+Las dos están en su `_comentario` desde que existe: **«cada entrada DEBE tener
+fuente verificable»** y **«si un dato es disputado, se incluye la crítica en
+contrapunto»**. Medidas sobre los dos registros: **cero violaciones en las dos**.
+
+Así que entran como guardas que fallan cerrado y arrancan limpias, no como
+trinquetes sobre una deuda. Van en los dos registros por el principio 1 del
+pliego: toda regla que se aplica a un gobierno se aplica a todos.
+
+#### Lo que se midió y NO se guarda, con su número
+
+**Dieciocho entradas `verificado` se apoyan en una sola fuente** —8 en el
+registro actual y 10 en el de Petro—, y el vocabulario dice «confirmado por
+varios medios». No entra como guarda, y el motivo es que la regla literal sería
+falsa: **una sola fuente PRIMARIA verifica mejor que tres reportes de prensa**,
+y entre las dieciocho hay cifras del DANE citadas del DANE. El campo que las
+separaría es `tipoEvidencia`, y hoy cubre 14 de 212 entradas.
+
+Queda medido con su número para quien lo tome —y la tarea que lo desbloquea es
+declarar `tipoEvidencia` en el resto del registro—, en vez de una guarda que
+empuje a rellenar entradas con fuentes de más.
+
+### El hueco que la propia tanda destapó: la versión no vigilaba los datos
+
+El hallazgo caro, y salió al final. `revisar.js` exigía subir el token cuando
+hubiera cambios sin comprometer en **`js css index.html`** — y
+`assets/data/seguimiento-presidencial.json` **está precacheado por el service
+worker desde que existe**.
+
+O sea: **un cambio de registro sin salto de versión pasaba en verde, y un
+teléfono con la aplicación instalada seguía leyendo el registro anterior.** La
+otra sesión, que escribe ahí varias veces al día, sube la versión —esa práctica
+es la correcta— pero nada lo comprobaba. Es la forma de la v885 y la v926: una
+comprobación que afirma vigilar el código y vigila tres carpetas de las diez que
+el service worker sirve.
+
+**Lo vigilado se LEE ahora del service worker**, no de una lista escrita a mano:
+un archivo precacheado nuevo queda vigilado sin que su autor se acuerde (v867).
+Y lleva su guarda de la guarda —que la derivación siga saliendo de ahí y que
+cubra `assets/data` y `css`—, porque sin ella devolver la lista a mano dejaría
+todo en verde.
+
+#### Y esa guarda pasó en verde sobre su propia inyección
+
+La primera versión buscaba `leer('service-worker.js')` seguido de `matchAll`
+**en el archivo entero**, y `leer('service-worker.js')` sale en once sitios más
+de `revisar.js`: con la derivación retirada, la guarda seguía encontrando el
+par y contestaba por la otra mitad. Es la lección de la v854 —se busca DENTRO
+del trozo— cobrada en una guarda escrita esa misma noche. Se mide en los 700
+caracteres anteriores a la asignación de `vigiladas`.
+
+### Demostrado contra la v1002
+
+Seis inyecciones, una por aserción (v993), contra copias guardadas en `/tmp` y
+no con `git checkout --` sobre trabajo sin confirmar (v973):
+
+```
+✗ ninguna entrada se publica sin una sola fuente que la sostenga
+    — 1 sin ninguna fuente: presidencial/2026-09-18
+✗ y toda entrada DISPUTADA lleva escrita la crítica
+    — 1 disputadas sin contrapunto: presidencial/2026-09-16
+? MATERIAL · los dos registros traen entradas, y alguna disputada
+    — SIN MATERIAL HOY: 212 entradas · 0 disputadas
+✗ la lista de entradas por documentar cuadra con las que de verdad están en blanco
+    — lista 0 · dice 0 · en blanco 1 · techo 19
+✗ y lo que vigila sale del service worker, no de una lista escrita a mano
+    — la lista volvió a estar escrita a mano
+✗ y lo que vigila sale del service worker, no de una lista escrita a mano
+    — no vigila: assets/data
+```
+
+La cuarta es la que más enseña: **con el techo devuelto a 19, la comprobación
+del techo pasa en silencio** —una entrada sin tipo cabe dentro del cupo— y lo
+que la caza es la otra, la que exige que la lista, lo que la lista dice tener y
+lo que de verdad está en blanco sean el mismo número. Sin esa segunda, bajar el
+techo habría sido documentación.
+
+Y el renglón 1 de la lista lo denunció, al terminar, **la guarda que la v997
+escribió para eso**: «ya está hecho y la lista lo sigue pidiendo:
+sin-documentar-cero». Su medición se retiró de la tabla con el renglón —lo que
+queda no es un pendiente sino un invariante, y vive en su propia comprobación—,
+que es exactamente lo que la v999 hizo con el nivel de gobierno.
 
 ## La lista viva: lo que al pliego educativo todavía le falta (v866)
 

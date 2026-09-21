@@ -744,14 +744,60 @@ console.log('\n  -- la versión --');
     const cp = require('child_process');
     const enGit = (orden) => cp.execSync(orden, { cwd: RAIZ, stdio: ['ignore', 'pipe', 'ignore'] })
       .toString().trim();
-    const sucio = enGit('git status --porcelain -- js css index.html');
+    /* Lo que hay que vigilar NO es «js css index.html»: es TODO lo que el
+       service worker precachea, porque eso es exactamente lo que un teléfono
+       se queda sirviendo de su copia vieja mientras el token no suba.
+
+       Salió midiendo en la v1003, al documentar las diecinueve entradas del
+       registro presidencial: `assets/data/seguimiento-presidencial.json` está
+       precacheado desde que existe y NO estaba en esta lista, así que un
+       cambio de registro sin salto de versión pasaba en verde y un teléfono
+       con la aplicación instalada seguía leyendo el registro anterior. La
+       otra sesión sube la versión cuando escribe ahí —esa práctica es la
+       correcta—, pero nada lo comprobaba.
+
+       La lista se LEE del service worker y no se escribe acá: un archivo
+       nuevo precacheado queda vigilado sin que su autor se acuerde, que es la
+       regla del aviso de origen (v867). Y las carpetas se deducen de las
+       rutas para que `git status` no reciba ciento setenta y cinco
+       argumentos; la raíz se vigila entera con los archivos sueltos. */
+    const pre = [...leer('service-worker.js').matchAll(/'\.\/([^']+)'/g)].map((m) => m[1]);
+    const carpetas = new Set();
+    pre.forEach((ruta) => {
+      const i = ruta.lastIndexOf('/');
+      carpetas.add(i < 0 ? ruta : ruta.slice(0, i));
+    });
+    const vigiladas = [...carpetas].filter(Boolean).sort();
+    const sucio = enGit('git status --porcelain -- ' + vigiladas.map((x) => JSON.stringify(x)).join(' '));
     if (sucio) {
       const anterior = (enGit('git show HEAD:index.html').match(/URBIS_APP_VERSION\s*=\s*'([\w-]+)'/) || [])[1];
       comprobar('la versión sube cuando cambia el código',
         !anterior || anterior !== decl,
-        anterior === decl ? 'sigue en ' + decl + ' y hay cambios sin subir'
-                          : (anterior || '(sin anterior)') + ' → ' + decl);
+        anterior === decl ? 'sigue en ' + decl + ' y hay cambios sin subir en ' +
+                              sucio.split('\n').length + ' archivo(s) que el service worker precachea'
+                          : (anterior || '(sin anterior)') + ' → ' + decl +
+                              ', con ' + vigiladas.length + ' carpetas precacheadas vigiladas');
     }
+    /* La guarda de la guarda: si lo vigilado volviera a escribirse a mano,
+       todo lo de arriba seguiría en verde sin mirar el registro —que es
+       justo el hueco que la v1003 encontró—. Se exige que la lista salga del
+       service worker y que traiga las dos carpetas que se pueden cambiar sin
+       tocar una línea de código: los datos y las hojas de estilo. */
+    /* Se mide DENTRO del trozo que arma `vigiladas` y no sobre el archivo
+       entero (v854): `leer('service-worker.js')` sale en once sitios más de
+       esta misma comprobación, así que buscarlo suelto da por buena una
+       derivación que ya no existe — pasó al demostrar esta guarda en rojo. */
+    const yo = leer('pruebas/revisar.js');
+    const iV = yo.indexOf('const vigiladas = [...carpetas]');
+    const trozo = iV > 0 ? yo.slice(Math.max(0, iV - 700), iV) : '';
+    const leeDelSw = /const pre = \[\.\.\.leer\('service-worker\.js'\)/.test(trozo) &&
+                     /carpetas[\s\S]{0,200}pre\.forEach/.test(trozo);
+    const cubre = ['assets/data', 'css'].filter((x) => vigiladas.indexOf(x) < 0);
+    comprobar('y lo que vigila sale del service worker, no de una lista escrita a mano',
+      leeDelSw && cubre.length === 0,
+      !leeDelSw ? 'la lista volvió a estar escrita a mano: un archivo precacheado nuevo quedaría sin vigilar'
+        : (cubre.length ? 'no vigila: ' + cubre.join(' · ') + ' — se podrían cambiar sin subir la versión'
+          : 'sale de las ' + vigiladas.length + ' carpetas que el service worker precachea'));
   } catch (e) { /* sin git, no se puede comparar: no es motivo para fallar */ }
 
   /* Y que la versión no CHOQUE con la que ya está publicada.
@@ -950,7 +996,11 @@ console.log('\n  -- la ficha del gobernante --');
      puede, el techo absoluto está mal y hay que medir lo hecho; si no puede,
      el techo es lo correcto y cambiarlo a un piso lo DEBILITARÍA —una
      entrada nueva sin tipo dejaría de saltar—. */
-  const TECHO_SIN_TIPO = 19;
+  /* Bajó a CERO en la v1003, con las diecinueve del 4 al 17 de agosto
+     documentadas. Un techo en cero es el que de verdad falla cerrado: la
+     primera entrada que llegue sin naturaleza declarada salta en el acto,
+     en vez de esconderse dentro de un cupo que nadie vuelve a mirar. */
+  const TECHO_SIN_TIPO = 0;
   const sinTipo = [];
   REGISTROS.forEach((ruta) => {
     const quien = ruta.split('-').pop().replace('.json', '');
@@ -981,6 +1031,59 @@ console.log('\n  -- la ficha del gobernante --');
     const sinQue = ((pend.lista) || []).filter((x) => !String(x.queFalta || '').trim()).length;
     comprobar('y cada pendiente dice QUÉ documento u organismo lo cerraría',
       sinQue === 0, sinQue ? sinQue + ' sin decir qué falta' : 'las ' + enLista + ' dicen qué falta');
+  }
+
+  /* ── dos reglas que el registro se escribió a sí mismo y nadie medía (v1003) ──
+     Las dos están en su `_comentario` desde que existe: «Cada entrada DEBE
+     tener fuente verificable» y «si un dato es disputado, se incluye la
+     crítica en contrapunto». Medidas al documentar las diecinueve del 4 al 17
+     de agosto: las dos se cumplen en los DOS registros, cero violaciones. Así
+     que entran como guardas que fallan CERRADO y arrancan limpias, no como
+     trinquetes sobre una deuda: lo que impiden es que la primera entrada que
+     las rompa pase sin que nadie se entere.
+
+     Y van en los dos registros por el principio 1 del pliego: toda regla que
+     se aplica a un gobierno se aplica a todos, y aflojarla en uno sería la
+     manera silenciosa de inclinar la comparación. */
+  {
+    const sinFuente = [];
+    const disSinCp = [];
+    let nEnt = 0, nDis = 0;
+    REGISTROS.forEach((ruta) => {
+      const quien = ruta.split('-').pop().replace('.json', '');
+      ((JSON.parse(leer(ruta)).entradas) || []).forEach((e) => {
+        nEnt++;
+        if (!((e.fuentes || []).length)) sinFuente.push(quien + '/' + (e.fecha || '?'));
+        if (String(e.tipoFuente || '') === 'disputado') {
+          nDis++;
+          if (!String(e.contrapunto || '').trim()) disSinCp.push(quien + '/' + (e.fecha || '?'));
+        }
+      });
+    });
+
+    /* MATERIAL primero (v920): sin entradas y sin disputadas, las dos de
+       abajo pasarían por no tener nada delante. */
+    if (!nEnt || !nDis) {
+      anotarSinMaterial('MATERIAL · los dos registros traen entradas, y alguna disputada',
+        nEnt + ' entradas · ' + nDis + ' disputadas');
+    } else {
+      comprobar('MATERIAL · los dos registros traen entradas, y alguna disputada',
+        true, nEnt + ' entradas · ' + nDis + ' disputadas, que es contra lo que muerde la de abajo');
+
+      comprobar('ninguna entrada se publica sin una sola fuente que la sostenga',
+        sinFuente.length === 0,
+        sinFuente.length === 0
+          ? 'las ' + nEnt + ' traen al menos una'
+          : sinFuente.length + ' sin ninguna fuente: ' + sinFuente.slice(0, 4).join(' · ') +
+            ' — un hecho sobre una persona real sin con qué comprobarlo');
+
+      comprobar('y toda entrada DISPUTADA lleva escrita la crítica, que es lo que la hace disputada',
+        disSinCp.length === 0,
+        disSinCp.length === 0
+          ? 'las ' + nDis + ' dicen en su contrapunto cuáles son las versiones enfrentadas'
+          : disSinCp.length + ' disputadas sin contrapunto: ' + disSinCp.slice(0, 4).join(' · ') +
+            ' — se marca el conflicto y no se dice cuál es, que es peor que no marcarlo');
+    }
   }
 
   /* ═══ CAPA 1 DEL PLIEGO PRESIDENCIAL ═══════════════════════════════════
@@ -6756,9 +6859,11 @@ console.log('\n  -- una lista de prioridades también se queda vieja (v997) --')
        comprobación, más arriba. Una medición de esta tabla mide algo que
        todavía falta; una que mide algo que ya no falta es la que esta misma
        guarda denuncia dos renglones más abajo. */
-    'sin-documentar-cero': (m) => {
-      return { hecho: m.pend.length === 0, cuanto: m.pend.length + ' sin documentar' };
-    },
+    /* Documentar las diecinueve del 4 al 17 de agosto salió de esta lista en
+       la v1003, y su medición con él, por la misma razón que el nivel de
+       gobierno en la v999: lo que queda no es un pendiente sino un INVARIANTE
+       —ninguna entrada se queda sin naturaleza de fuente declarada— y vive en
+       su propia comprobación, arriba, con TECHO_SIN_TIPO en cero. */
     'identidad-declarada': (m) => {
       const sin = m.contr.filter(c => !('mismoObjetoVerificado' in c));
       return { hecho: sin.length === 0, cuanto: sin.length + ' de ' + m.contr.length + ' documentadas sin identidad' };
