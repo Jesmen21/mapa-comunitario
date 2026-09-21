@@ -418,7 +418,7 @@
     if(mobileGps.watchId !== null || !navigator.geolocation) return;
     mobileGps.watchId = navigator.geolocation.watchPosition(onMobileGpsPoint, err=>{
       console.warn('GPS móvil no disponible', err);
-      setMobilityStatus('Active permisos de ubicación.');
+      setMobilityStatus(window.urbisRazonDeErrorGps(err).texto);
     }, {enableHighAccuracy:true, maximumAge:500, timeout:12000});
   }
   /* Volver a pedir el seguimiento desde cero.
@@ -866,7 +866,7 @@
         navigator.geolocation.getCurrentPosition(pos=>{
           onMobileGpsPoint(pos);
           centerOnMobileGps(true);
-        },()=>setMobilityStatus('Active permisos de ubicación.'),{enableHighAccuracy:true,maximumAge:1000,timeout:12000});
+        },err=>setMobilityStatus(window.urbisRazonDeErrorGps(err).texto),{enableHighAccuracy:true,maximumAge:1000,timeout:12000});
       }
     }
   }
@@ -1984,9 +1984,25 @@
       if(!best || acc < (best.coords.accuracy||999)) best=pos;
       updateGpsWarmup(acc, fixes, ()=>begin(best||pos));
       if(acc<=GOOD && fixes>=2) begin(pos); // auto-arranca con señal buena y estable
-    }, err=>{ if(!done){ cleanupWarm(); hideGpsWarmup(); alert('No pudimos activar su GPS. Revise los permisos de ubicación y vuelva a intentar. 📡'); } },
+    }, err=>{
+      /* UN ERROR TRANSITORIO NO CIERRA EL CALENTAMIENTO. Es la regla que la
+         v978 midió con la sonda para el botón de ubicar y que acá seguía sin
+         aplicarse: el chip se cae un segundo bajo un alero, vuelve MEJOR, y
+         cerrar en el error congela la peor lectura —o, como acá, aborta un
+         arranque que estaba a punto de conseguir señal—.
+
+         La única excepción es el permiso NEGADO, porque no puede resolverse
+         solo: esperar los dieciséis segundos por un permiso que nadie va a
+         dar es no hacer nada. Los códigos 2 y 3 se dejan correr, y quien
+         cierra es el reloj de abajo, que ya sabe arrancar con la mejor
+         lectura que llegó. */
+      if(!window.urbisRazonDeErrorGps(err).esPermiso) return;
+      if(!done){ cleanupWarm(); hideGpsWarmup();
+        const r = window.urbisRazonDeErrorGps(err);
+        alert('No pudimos activar su GPS. ' + r.que + '\n\n' + r.remedio + ' 📡'); }
+    },
        {enableHighAccuracy:true, maximumAge:0, timeout:16000});
-    warmTimer = setTimeout(()=>{ if(!done){ if(best) begin(best); else { cleanupWarm(); hideGpsWarmup(); alert('GPS sin señal suficiente. Salga a cielo abierto e intenta de nuevo. 📡'); } } }, 16000);
+    warmTimer = setTimeout(()=>{ if(!done){ if(best) begin(best); else { cleanupWarm(); hideGpsWarmup(); alert('GPS sin señal suficiente. Salga a cielo abierto e inténtelo de nuevo. 📡'); } } }, 16000);
   }
   function pauseRunner(btn){
     if(!runner.active && !runner.paused) return;

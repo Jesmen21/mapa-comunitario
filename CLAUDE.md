@@ -13183,6 +13183,29 @@ calentamiento del corredor y su propia suite, y **ninguna suite de navegador
 corre en este contenedor**. Queda declarado con su nombre para la tanda que lo
 tome, en vez de hecho a ojo de paso.
 
+#### Corrección de la v996: los CORTES no son clase B, la POLÍTICA DE ERROR sí
+
+Auditado de frente, el renglón de arriba junta dos cosas y se equivoca en la
+primera. Aplicada la prueba de la clase B —*¿existe un cambio razonable que
+deba mover una y no la otra?*— a los cortes, la respuesta es **sí**, y por eso
+no son dos codificaciones de un hecho sino dos requisitos:
+
+* los **12 m** de `mejorLecturaGps` salen de distinguir una casa de la de al
+  lado, que es lo que un punto mapeado necesita;
+* los **22 m** de `startRunner` salen de arrancar un recorrido con un arreglo
+  estable, que es otra cosa: un corredor se mueve y la traza se corrige sola;
+* y `maximumAge` es **0** allá con razón —quien corre necesita la lectura de
+  ahora— mientras acá tiene que valer lo guardado, porque quien está parado
+  puede no producir ninguna nueva dentro de la ventana (v978).
+
+Unificarlos habría sido la derivación mala que la clase B describe: dos listas
+que significan cosas distintas y coinciden por accidente.
+
+**Lo que sí era una sola cosa es la política de error**, y ahí el renglón tenía
+razón sin saberlo: la regla de que un error transitorio no cierra la ventana
+vale para los dos, y en el deportivo seguía sin aplicarse. Se arregló en la
+v996, con su medición en el navegador.
+
 ### Lo que NO se pudo correr
 
 **Ninguna suite de navegador** —`tpisos` incluida—, por lo mismo que la v973,
@@ -15823,6 +15846,187 @@ Queda dicho con su razón en vez de hecho a ojo de paso.
 Y **la identidad visual de la muestra** —Archivo + Source Serif 4, señal
 `#B8112E`, modo oscuro— sigue sin adoptarse, por lo que la v971 dejó escrito:
 la decide quien la escribió.
+
+## Un error de GPS dice cuál de los tres es (v996)
+
+Salió de auditar lo que la v978 dejó declarado del módulo deportivo, y la
+auditoría cambió la tanda: la premisa de aquel renglón era falsa a medias y lo
+que sí estaba vivo era otra cosa, más grande y en nueve sitios.
+
+    v995   nueve sitios reportan cualquier fallo del GPS como un problema de permisos
+    v996   cada uno dice cuál de los tres es, y qué hacer con ese
+
+### El navegador contesta un CÓDIGO, y son tres cosas distintas
+
+`1` permiso negado, `2` sin señal, `3` corte por tiempo. Medido sobre los diez
+sitios que leen el GPS, **uno solo miraba el código** —`mejorLecturaGps`, que
+la v978 escribió— y los demás decían «revise los permisos de ubicación» pasara
+lo que pasara.
+
+La v978 ya lo había dejado escrito con todas las letras: *«un corte por tiempo
+bajo techo NO es un problema de permisos, y mandar a alguien a la pantalla de
+ajustes nombra un remedio que no puede funcionar»*. Y lo arregló **solo en su
+botón**. Es la falta de la v867 —declarar mal la causa— con el agravante que
+aquella misma sección nombra: **el remedio es falso**. Quien va a los ajustes
+encuentra el permiso concedido y se queda sin saber qué hacer.
+
+Los nueve, medidos y corregidos uno por uno:
+
+| Dónde | Qué decía |
+|---|---|
+| js/05 · el seguimiento general | «Revise permisos de ubicación del navegador» |
+| js/05 · el GPS como origen de ruta | lo mismo |
+| js/05 · falta la salida de la ruta | «Active permisos de GPS» |
+| js/05 · usar la ubicación como salida | «Active permisos de GPS» |
+| js/20 · el seguimiento móvil | «Active permisos de ubicación» |
+| js/20 · el centrado de movilidad | «Active permisos de ubicación» |
+| js/20 · el calentamiento del deportivo | «Revise los permisos… y vuelva a intentar» |
+| js/21 · el destino desde GPS | «Active permisos de ubicación» |
+| js/36 · el botón de centrar | «Active permisos de GPS» |
+
+### Devuelve un objeto, nunca una cadena suelta
+
+`urbisRazonDeErrorGps(err)` vive en `js/05`, que carga antes que js/12, js/20,
+js/21 y js/36 —los demás sitios—, y devuelve `{ codigo, esPermiso, que,
+remedio, texto }`. No una cadena: quien pinta una barra de estado tiene una
+línea, quien pinta una alerta tiene dos, y quien decide si abortar tiene el
+código. Con un solo texto cada llamador volvería a recortarlo por su cuenta, y
+las nueve redacciones que esto vino a unificar volverían por la puerta de
+atrás.
+
+Y **cada rama dice qué pasó Y qué hacer**, que son dos cosas: un vacío que no
+dice cómo se llena es la mitad del trabajo (v880). Medido en el navegador
+contra los cuatro casos:
+
+```
+código 1 (permiso) → El navegador no dio permiso para leer la ubicación.
+                     Conceda el permiso de ubicación a este sitio en los ajustes del navegador.
+código 2           → El dispositivo no pudo fijar la posición.
+                     Encienda la ubicación del teléfono y salga a un sitio con cielo abierto.
+código 3           → El GPS no alcanzó a responder.
+                     Bajo techo tarda más: salga a cielo abierto y vuelva a intentarlo.
+código 0           → No se pudo leer el GPS.
+                     Vuelva a intentarlo; si no mejora, revise que la ubicación esté encendida.
+```
+
+#### Sin código no se inventa uno
+
+El cuarto caso no es de adorno. El `catch` de js/21 recoge el fallo de la
+función de js/05 **entera**, así que ahí el error puede no venir del GPS; y
+`obtenerGPSUnaVezParaRuta` rechaza con un `Error` corriente cuando el navegador
+no tiene geolocalización. Clasificar eso como «permiso negado» sería la misma
+mentira por otra puerta. Se dice lo que consta.
+
+### El calentamiento del deportivo cerraba con cualquier error
+
+La otra mitad de la tanda, y es el defecto de comportamiento. La v978 midió con
+la sonda esta secuencia, que es lo que hace un teléfono al pasar bajo un alero:
+
+```
+GEO fix acc=420
+GEO error code=2            ← el chip se cae un segundo
+GEO error code=2
+GEO fix acc=95
+GEO fix acc=7               ← y vuelve MEJOR
+```
+
+y dejó escrita la regla: **quien cierra es el reloj, o una lectura ya
+suficientemente buena; la única excepción es el permiso negado, porque no puede
+resolverse solo**. En `startRunner` eso seguía sin aplicarse: `err=>{ …
+cleanupWarm(); hideGpsWarmup(); alert(…) }` abortaba el arranque con cualquier
+error, justo por el bache que lo iba a mejorar.
+
+Medido en el navegador con esa misma secuencia, sirviéndole el guion al
+`watchPosition` del calentamiento:
+
+| | Tras los dos errores | Alertas |
+|---|---|---|
+| v995 | **el panel se cae** | **dos**, encadenadas |
+| v996 | el panel sigue en pie, en ±420 m | ninguna, y el ±7 arranca el recorrido |
+
+Y la rama del permiso negado **sí** cierra, con la causa y el remedio escritos:
+«No pudimos activar su GPS. El navegador no dio permiso para leer la ubicación.
+Conceda el permiso de ubicación a este sitio en los ajustes del navegador.»
+
+Las dos ramas se miden en la misma corrida. Sin la segunda, un «no cierres
+nunca» puesto en todas partes pasaría igual y el calentamiento se quedaría
+dieciséis segundos esperando un permiso que nadie va a dar.
+
+### La guarda persigue la FRASE, no la palabra
+
+Falla **cerrado** (v880): un sitio nuevo que escriba «revise los permisos» sale
+en rojo en su primera composición, no tres tandas después.
+
+Lo que no puede hacer es perseguir «permiso» a secas. Medido, esta aplicación
+tiene decenas de permisos de **rol** —dar permiso a un usuario, permisos
+temporales de JAC, «no tiene permiso para editar este reporte»— y una guarda
+con esa clase de falso positivo termina en una lista de excepciones que
+envejece hasta no significar nada (v895). Persigue `permisos? de (ubicación|
+GPS)`, que discrimina sin un solo falso positivo.
+
+**Y lleva su guarda contra pasarse** (v879, v882, v890): en el código 1 el
+permiso SÍ es el remedio y tiene que seguir nombrándose. Sin ella, el arreglo
+podría ser dejar de hablar de permisos en ninguna parte, y quien de verdad lo
+tiene negado se quedaría sin saber qué hacer — la mentira contraria.
+
+Más la guarda de la guarda: que `esPermiso` siga saliendo de `c === 1`. Con una
+bandera fija, todo lo de arriba seguiría en verde y el calentamiento volvería a
+cerrarse con cualquier error (v878).
+
+### Lo que la v978 declaró y esta versión corrige
+
+Aquella sección dice que el corte de 22 m del deportivo es «la misma idea en
+dos sitios, o sea la clase B». **Los cortes no lo son** —la prueba de la clase
+contesta que sí existe un cambio razonable que deba mover uno y no el otro— y
+la corrección va en su propio renglón, que es la práctica de esta casa. Lo que
+sí era una sola cosa, y estaba sin aplicar, es la política de error.
+
+### Y una del idioma, otra vez por abrir el archivo
+
+Al abrir el panel de navegación de `js/05` para el primer sitio salieron cinco
+cadenas que ve el usuario con los dos defectos que ninguna guarda puede ver:
+
+* **«Ahora toca el mapa»**, cuatro veces, y **«hasta que limpies el mapa o
+  recargues»**. Es el imperativo de tú, idéntico en forma a la tercera persona,
+  que es la mitad que la v909 y la v945 dejaron declarada como no cubierta. Se
+  caza leyendo, y así se cazó.
+* **«Salida seleccionado»**, tres veces. Es la concordancia de la v874, y la
+  guarda que la persigue corre sobre la lámina y no sobre estas pantallas.
+
+Corregidas una por una, que es la lección de la v878: cambiar la persona no
+conjuga los verbos de alrededor. Y de paso, dentro del propio bloque que esta
+tanda reescribe, **«Salga a cielo abierto e intenta de nuevo»** — usted y tú en
+la misma frase, que es como se ven las cosas cuando alguien corrigió medio
+aviso (v914, v980).
+
+### Demostrado contra la v995
+
+Siete en rojo de ocho, contra una copia guardada en `/tmp` y **con una
+inyección fiel por aserción**, que es la regla que la v993 dejó escrita:
+
+```
+✗ el clasificador separa los tres códigos del navegador  — no los separa: 3
+✗ cada rama dice qué pasó Y qué hacer  — 4 causas contra 3 remedios
+✗ sin código no se inventa uno  — lo deduce: un error que no es del GPS saldría clasificado
+✗ ningún sitio nombra el permiso de ubicación sin mirar el código
+    — lo nombra pase lo que pase: js/05:1453 · js/20:421
+✗ y con el permiso negado el remedio SIGUE siendo el permiso  — dejó de nombrarlo
+✗ el calentamiento del deportivo solo aborta con el permiso negado
+    — cierra con cualquier error: congela un arranque que iba a conseguir señal
+✗ y esPermiso sigue saliendo del código, no de una bandera  — dejó de calcularse
+```
+
+La octava es MATERIAL y va primero (v920): pasa en las dos versiones, que es lo
+que tiene que hacer.
+
+### Lo que NO se pudo correr
+
+**Ninguna suite de navegador**, por lo mismo que la v973 a la v995: este
+contenedor no tiene `../urbis-motor` ni el `node_modules` del banco de pruebas.
+Corrió `revisar.js` entero con sus ocho comprobaciones nuevas, y se midió el
+papel con la sonda —los cuatro casos del clasificador, y el calentamiento con
+el chip cayéndose, contra las dos versiones—, que es lo que produjo las dos
+tablas de arriba.
 
 ## La lista viva: lo que al pliego educativo todavía le falta (v866)
 

@@ -1,4 +1,4 @@
-const URBIS_CACHE = 'urbis-v995-el-informe-archivado-mide-su-sector';
+const URBIS_CACHE = 'urbis-v996-un-error-de-gps-dice-cual-de-los-tres';
 const URBIS_ASSETS = [
   './',
   './index.html',

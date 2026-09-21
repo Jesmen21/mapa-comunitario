@@ -639,7 +639,7 @@ function urbisLocate() {
     var m = urbisGetMap();
     if (m) m.setView([pos.coords.latitude, pos.coords.longitude], Math.max(m.getZoom() || 16, 16), { animate: true });
     urbisToast('Ubicaci\u00f3n centrada.');
-  }, function() { urbisToast('Active permisos de GPS.'); }, { enableHighAccuracy: true, timeout: 10000 });
+  }, function(err) { urbisToast(window.urbisRazonDeErrorGps(err).que); }, { enableHighAccuracy: true, timeout: 10000 });
 }
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────

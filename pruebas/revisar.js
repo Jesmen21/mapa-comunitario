@@ -6023,6 +6023,140 @@ console.log('\n  -- el texto de un gráfico se lee a su tamaño (v990) --');
   }
 }
 
+/* ── Un error de GPS dice CUÁL de los tres es (v996) ───────────────────────
+   El navegador contesta un error de geolocalización con un código —1 permiso
+   negado, 2 sin señal, 3 corte por tiempo— y son tres cosas con tres remedios
+   distintos. Medido antes de escribir: de los diez sitios que leen el GPS,
+   NUEVE reportaban cualquiera de los tres como un problema de permisos y uno
+   solo miraba el código.
+
+   La v978 ya lo había escrito para el botón de ubicar —«un corte por tiempo
+   bajo techo NO es un problema de permisos, y mandar a alguien a la pantalla
+   de ajustes nombra un remedio que no puede funcionar»— y lo arregló solo
+   ahí. Es la falta de la v867 con el agravante de que el remedio es falso:
+   quien va a los ajustes encuentra el permiso concedido y se queda igual. */
+console.log('\n  -- un error de GPS dice cuál de los tres es (v996) --');
+{
+  const jsGps = ['js/05-helpers-temporal-security.js', 'js/12-spa-ui.js',
+    'js/13i-vitrina.js', 'js/17-sport.js', 'js/20-mobile-functional-app.js',
+    'js/21-mobile-mobility-pro.js', 'js/36-mobility-static-search.js',
+    'js/37-mobility-state-controller.js', 'js/78-presencia.js'];
+  const j05g = soloCodigo(leer('js/05-helpers-temporal-security.js'));
+
+  /* El clasificador, cortado por sus dos extremos y no por un número de
+     líneas: un corte por distancia envejece (v935). */
+  const iC = j05g.indexOf('window.urbisRazonDeErrorGps = function');
+  const cC = iC >= 0 ? j05g.slice(iC, j05g.indexOf('\n  };', iC)) : '';
+
+  /* MATERIAL primero (v920): sin sitios que lean el GPS de verdad, todo lo
+     de abajo pasaría por no tener nada que mirar. */
+  const lectores = jsGps.filter(f => /geolocation\.(getCurrentPosition|watchPosition)/
+    .test(soloCodigo(leer(f))));
+  if (lectores.length < 5 || !cC) {
+    anotarSinMaterial('MATERIAL · hay sitios que leen el GPS y un clasificador que leer',
+      'lectores: ' + lectores.length + ' · clasificador: ' + (cC ? 'sí' : 'no'));
+  } else {
+    comprobar('MATERIAL · hay sitios que leen el GPS y un clasificador que leer',
+      true, lectores.length + ' archivos leen el GPS, y el clasificador se deja cortar');
+
+    /* 1 · El clasificador separa los TRES códigos. Con dos ramas, una de las
+       tres situaciones se reportaría como otra, que es el defecto entero. */
+    const tres = /=== 1/.test(cC) && /=== 2/.test(cC) && /=== 3/.test(cC);
+    comprobar('el clasificador separa los tres códigos del navegador',
+      tres,
+      tres ? 'permiso negado, sin señal y corte por tiempo salen cada uno por su rama'
+           : 'no los separa: ' + [!/=== 1/.test(cC) && '1', !/=== 2/.test(cC) && '2',
+             !/=== 3/.test(cC) && '3'].filter(Boolean).join(' · ') +
+             ' — una situación se reportaría como otra');
+
+    /* 2 · Y cada rama dice QUÉ pasó y QUÉ hacer, que son dos cosas: un vacío
+       que no dice cómo se llena es la mitad del trabajo (v880). */
+    const ques = (cC.match(/\bque = /g) || []).length;
+    const rems = (cC.match(/\bremedio = /g) || []).length;
+    comprobar('cada rama dice qué pasó Y qué hacer',
+      ques >= 4 && rems === ques,
+      (ques >= 4 && rems === ques)
+        ? ques + ' ramas, y cada una con su remedio'
+        : ques + ' causas contra ' + rems + ' remedios: alguna rama nombraría un problema sin salida');
+
+    /* 3 · Sin código NO se inventa uno. Un error que no viene del GPS
+       —el catch de js/21 es de la función entera— clasificado como «permiso
+       negado» sería la misma mentira por otra puerta. */
+    const conCero = /codigo: c/.test(cC) && /c = err && typeof err\.code === 'number' \? err\.code : 0/.test(cC);
+    comprobar('sin código no se inventa uno',
+      conCero,
+      conCero ? 'lo que no trae código sale con 0 y con la frase de lo que consta'
+              : 'lo deduce: un error que no es del GPS saldría clasificado como uno de los tres');
+
+    /* 4 · Ningún sitio servido nombra el permiso de ubicación fuera del
+       clasificador. Falla CERRADO (v880): un sitio nuevo que escriba «revise
+       los permisos» sale en rojo en su primera composición, no tres tandas
+       después.
+
+       Se persigue la FRASE del permiso de GPS y no la palabra «permiso» a
+       secas: esta aplicación tiene decenas de permisos de ROL —dar permiso a
+       un usuario, permisos de JAC— y una guarda con esa clase de falso
+       positivo termina en una lista de excepciones que envejece hasta no
+       significar nada (v895). */
+    const frase = /permisos? de (ubicaci[oó]n|GPS|gps)/;
+    const culpan = [];
+    fs.readdirSync(R('js')).filter(f => f.endsWith('.js')).map(f => 'js/' + f)
+      .concat(fs.readdirSync(RAIZ).filter(f => f.endsWith('.html'))).forEach(f => {
+      const txt = leer(f); if (!txt) return;
+      soloCodigo(txt).split('\n').forEach((ln, i) => {
+        if (!frase.test(ln)) return;
+        if (f === 'js/05-helpers-temporal-security.js' && /remedio = /.test(ln)) return;
+        culpan.push(f + ':' + (i + 1));
+      });
+    });
+    comprobar('ningún sitio nombra el permiso de ubicación sin mirar el código',
+      culpan.length === 0,
+      culpan.length === 0
+        ? 'el permiso solo se nombra donde el código dice que es el permiso'
+        : 'lo nombra pase lo que pase: ' + culpan.join(' · ') +
+          ' — un corte por tiempo mandaría a una pantalla de ajustes que no lo arregla');
+
+    /* 5 · Guarda contra pasarse (v879, v882, v890): en el caso 1 el permiso
+       SÍ es el remedio, y tiene que seguir nombrándose. Sin esta, el arreglo
+       podría ser dejar de hablar de permisos en ninguna parte, y quien de
+       verdad lo tiene negado se quedaría sin saber qué hacer. */
+    const i1 = cC.indexOf('=== 1');
+    const rama1 = i1 >= 0 ? cC.slice(i1, cC.indexOf('} else', i1)) : '';
+    const nombra = /ajustes del navegador/.test(rama1) && /permiso de ubicaci/.test(rama1);
+    comprobar('y con el permiso negado el remedio SIGUE siendo el permiso',
+      nombra,
+      nombra ? 'la rama del código 1 manda a los ajustes del navegador, que es donde se arregla'
+             : 'dejó de nombrarlo: quien tiene el permiso negado se queda sin remedio');
+
+    /* 6 · El calentamiento del módulo deportivo no cierra en un error
+       transitorio. Es la regla que la v978 midió con la sonda —el chip se cae
+       un segundo bajo un alero y vuelve MEJOR— y que acá seguía sin
+       aplicarse: cualquier error abortaba un arranque que estaba a punto de
+       conseguir señal. */
+    const j20g6 = soloCodigo(leer('js/20-mobile-functional-app.js'));
+    const iW = j20g6.indexOf('warmWatch = navigator.geolocation.watchPosition');
+    const cW = iW >= 0 ? j20g6.slice(iW, j20g6.indexOf('warmTimer =', iW)) : '';
+    const iE = cW.indexOf('}, err=>{');
+    const cE = iE >= 0 ? cW.slice(iE) : '';
+    const sale = /esPermiso\)\s*return;/.test(cE);
+    comprobar('el calentamiento del deportivo solo aborta con el permiso negado',
+      cE && sale,
+      (cE && sale)
+        ? 'un corte por tiempo o una caída de señal lo dejan seguir, y cierra el reloj con la mejor lectura'
+        : (cE ? 'cierra con cualquier error: congela un arranque que iba a conseguir señal'
+              : 'no se pudo leer su manejador de error'));
+
+    /* 7 · Guarda de la guarda (v878): si `esPermiso` dejara de salir del
+       código, lo de arriba seguiría en verde sobre una bandera constante y el
+       calentamiento volvería a cerrarse con cualquier error. */
+    const deriva = /esPermiso: c === 1/.test(cC);
+    comprobar('y esPermiso sigue saliendo del código, no de una bandera',
+      deriva,
+      deriva ? 'se calcula del código que contestó el navegador'
+             : 'dejó de calcularse: con una bandera fija, el calentamiento cerraría con cualquier error');
+  }
+}
+
 /* Las dos cuentas van APARTE porque piden cosas distintas: una fallada hay
    que arreglarla, una sin material hay que mirarla —o se quedó sin él porque
    el registro mejoró, o porque la función dejó de ver lo que medía—. Sumarlas

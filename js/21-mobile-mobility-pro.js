@@ -257,7 +257,11 @@
       if(typeof originalPrepare === 'function') return await originalPrepare();
     }catch(e){
       console.warn('Destino GPS móvil', e);
-      status('Active permisos de ubicación.');
+      /* Acá lo que falla puede no ser el GPS —es un catch de la función de
+         js/05 entera—, y por eso se pasa por el clasificador: sin código
+         contesta lo que consta («no se pudo leer el GPS») en vez de nombrar
+         un permiso que puede estar perfectamente concedido. */
+      status(window.urbisRazonDeErrorGps(e).texto);
     } finally {
       enableMapGestures();
     }

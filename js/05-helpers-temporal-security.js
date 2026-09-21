@@ -1230,7 +1230,7 @@
           simRoutePath = [];
           pintarPuntosSimuladorGPS(false);
           actualizarSimuladorGPS();
-          mostrarPanelNavegacion('✅ Salida seleccionado. Ahora toca el mapa para elegir <b>Destino</b>.');
+          mostrarPanelNavegacion('✅ Salida seleccionada. Ahora toque el mapa para elegir <b>Destino</b>.');
           return;
       }
 
@@ -1352,7 +1352,7 @@
           rutaManualOrigen = { lat: latlng.lat, lng: latlng.lng };
           rutaLayer.clearLayers();
           L.circleMarker([latlng.lat, latlng.lng], { radius: 8, color: '#fff', fillColor: '#2ed573', fillOpacity: 1, weight: 2 }).addTo(rutaLayer).bindPopup('Origen').openPopup();
-          mostrarPanelNavegacion('✅ Origen seleccionado. Ahora toca el <b>destino</b>.');
+          mostrarPanelNavegacion('✅ Origen seleccionado. Ahora toque el <b>destino</b>.');
           return;
       }
       const destino = { lat: latlng.lat, lng: latlng.lng };
@@ -1360,6 +1360,57 @@
       modoRutaManual = false;
       document.getElementById('btn-route-mode').classList.remove('active');
   }
+
+  /* ─── POR QUÉ NO SE PUDO LEER EL GPS (v996) ──────────────────────────
+     El navegador contesta un error de geolocalización con un CÓDIGO, y son
+     tres cosas distintas que piden tres remedios distintos:
+
+       1 · el permiso está negado  → se arregla en los ajustes del navegador
+       2 · no hay señal            → se arregla saliendo a cielo abierto o
+                                     encendiendo la ubicación del teléfono
+       3 · se acabó el tiempo      → se vuelve a intentar, normalmente bajo
+                                     techo o con el chip todavía frío
+
+     Hasta la v995, NUEVE sitios reportaban cualquiera de los tres como un
+     problema de permisos. La v978 ya lo dejó escrito para el botón de
+     ubicar —«un corte por tiempo bajo techo NO es un problema de permisos, y
+     mandar a alguien a la pantalla de ajustes nombra un remedio que no puede
+     funcionar»— y lo arregló solo ahí. Es la falta de la v867 (declarar mal
+     la causa) con el agravante de que el remedio es falso: quien va a los
+     ajustes encuentra el permiso concedido y se queda sin saber qué hacer.
+
+     Vive en js/05 porque carga antes que js/12, js/20, js/21 y js/36, que es
+     donde están los demás sitios. Devuelve SIEMPRE un objeto y nunca un
+     booleano ni una cadena suelta: quien pinta una barra de estado tiene una
+     línea, quien pinta una alerta tiene dos, y quien decide si abortar
+     —el calentamiento del módulo deportivo— tiene el código. Con un solo
+     texto, cada llamador volvería a recortarlo por su cuenta. */
+  window.urbisRazonDeErrorGps = function(err) {
+      var c = err && typeof err.code === 'number' ? err.code : 0;
+      var que, remedio;
+      if (c === 1) {
+          que = 'El navegador no dio permiso para leer la ubicación.';
+          remedio = 'Conceda el permiso de ubicación a este sitio en los ajustes del navegador.';
+      } else if (c === 2) {
+          que = 'El dispositivo no pudo fijar la posición.';
+          remedio = 'Encienda la ubicación del teléfono y salga a un sitio con cielo abierto.';
+      } else if (c === 3) {
+          que = 'El GPS no alcanzó a responder.';
+          remedio = 'Bajo techo tarda más: salga a cielo abierto y vuelva a intentarlo.';
+      } else {
+          /* Sin código no se sabe cuál de los tres es, y decir uno sería
+             inventarlo. Se dice lo que consta. */
+          que = 'No se pudo leer el GPS.';
+          remedio = 'Vuelva a intentarlo; si no mejora, revise que la ubicación esté encendida.';
+      }
+      return {
+          codigo: c,
+          esPermiso: c === 1,
+          que: que,
+          remedio: remedio,
+          texto: que + ' ' + remedio
+      };
+  };
 
   window.iniciarRastreoGPS = function() {
       if(!navigator.geolocation) { alert('Su navegador no soporta geolocalización.'); return; }
@@ -1399,7 +1450,8 @@
       }, error => {
           const btnGps = document.getElementById('btn-gps');
           if(btnGps) btnGps.classList.remove('active');
-          alert('No se pudo activar el GPS. Revise permisos de ubicación del navegador.');
+          var r = window.urbisRazonDeErrorGps(error);
+          alert('No se pudo activar el GPS. ' + r.que + '\n\n' + r.remedio);
           console.error(error);
       }, { enableHighAccuracy: true, maximumAge: 500, timeout: 10000 });
   };
@@ -1407,7 +1459,7 @@
   window.detenerRastreoGPS = function() {
       if(userWatchId !== null) { navigator.geolocation.clearWatch(userWatchId); userWatchId = null; }
       document.getElementById('btn-gps').classList.remove('active');
-      mostrarPanelNavegacion('⏹️ GPS detenido. La ruta dibujada permanece hasta que limpies el mapa o recargues.');
+      mostrarPanelNavegacion('⏹️ GPS detenido. La ruta dibujada permanece hasta que limpie el mapa o recargue.');
   };
 
 
@@ -2975,7 +3027,8 @@
               routeRealPointA = { lat: gps.lat, lng: gps.lng };
               actualizarUIRutaReal();
           } catch(error) {
-              renderResultadoRutaReal('⚠️ Falta el Salida. Active permisos de GPS o use Usar mi ubicación.');
+              var rr = window.urbisRazonDeErrorGps(error);
+              renderResultadoRutaReal('⚠️ Falta la Salida. ' + limpiarHTML(rr.que) + ' ' + limpiarHTML(rr.remedio) + ' O pulse <b>Usar mi ubicación</b>.');
               return;
           }
       }
@@ -3038,7 +3091,8 @@
           mostrarPanelNavegacion('📍 GPS usado como origen de ruta. Ahora elige el destino en el mapa.');
       } catch(error) {
           console.error(error);
-          renderResultadoRutaReal('⚠️ No pude obtener su GPS. Revise permisos de ubicación del navegador.');
+          var r = window.urbisRazonDeErrorGps(error);
+          renderResultadoRutaReal('⚠️ No pude obtener su GPS. ' + limpiarHTML(r.que) + ' ' + limpiarHTML(r.remedio));
           mostrarPanelNavegacion('⚠️ No se pudo usar el GPS como origen.');
       }
   };
@@ -3062,7 +3116,8 @@
           mostrarPanelNavegacion('🎯 Toque el mapa para elegir el destino de su ruta.');
       } catch(error) {
           console.error(error);
-          renderResultadoRutaReal('⚠️ Active permisos de GPS para usar su ubicación como Salida.');
+          var rg = window.urbisRazonDeErrorGps(error);
+          renderResultadoRutaReal('⚠️ No se pudo usar su ubicación como Salida. ' + limpiarHTML(rg.que) + ' ' + limpiarHTML(rg.remedio));
           mostrarPanelNavegacion('⚠️ No se pudo activar el GPS para crear la ruta.');
       }
   };
@@ -3144,8 +3199,8 @@
           // V56: ocultar marcador A en móvil; se conserva el punto GPS real.
           try { if(!window.__urbisMobileMapFreeMode) map.setView([routeRealPointA.lat, routeRealPointA.lng], Math.max(map.getZoom() || 16, 16)); } catch(e) {}
           actualizarUIRutaReal();
-          renderResultadoRutaReal('✅ Salida seleccionado. Ahora toca el mapa para seleccionar <b>Destino</b>.');
-          mostrarPanelNavegacion('✅ Salida seleccionado. Ahora toca el <b>Destino</b>.');
+          renderResultadoRutaReal('✅ Salida seleccionada. Ahora toque el mapa para seleccionar <b>Destino</b>.');
+          mostrarPanelNavegacion('✅ Salida seleccionada. Ahora toque el <b>Destino</b>.');
           return;
       }
       routeRealPointB = punto;
