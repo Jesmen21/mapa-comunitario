@@ -20362,6 +20362,171 @@ pruebas. Corrió `revisar.js` entero y se miró el papel con la sonda de la
 ficha, en sus dos corridas, que es lo que encontró las cuarenta y dos
 baldosas y el clic que faltaba.
 
+## Una cifra sin medir no es cero, y no es «undefined» (v1030)
+
+Salió **mirando el papel** de la ficha —el método que encontró los defectos de
+la v874, la v882, la v885, la v887 y la v974— y lo primero que apareció fue una
+frase impresa veinticuatro veces:
+
+> Sale de <b>los carriles</b>, a 3 m cada uno en <b>63 %</b> de la vía, y de
+> los pisos registrados en <b>**undefined**%</b> de los edificios.
+
+    v1029   8 sitios imprimen «undefined%» · 3 imprimen un «0 %» que nadie midió
+    v1030   los 11 dicen la cifra, o dicen que nadie la midió
+
+### La clase: media guarda
+
+Las tres formas son la misma decisión tomada a medias, y las tres están
+escritas para que el programa no reviente:
+
+| Forma | Qué sale sin dato | Quién la ve |
+|---|---|---|
+| en crudo · `+ p.coberturaAltura + '%'` | **`undefined%`** | se ve, y alguien lo reporta |
+| `\|\| 0` · `+ (pf.coberturaAncho \|\| 0) + ' %'` | **`0 %`** | **no se ve**: parece una medición |
+| `\|\| {}` · `(TAX.filter(…)[0] \|\| {}).nombre` | **`undefined`** | se ve |
+
+**La segunda es la peor**, y por eso no se arregló poniéndola en todas partes:
+un cero se lee como una cifra medida, y «nadie lo midió» y «lo medimos y dio
+cero» son cosas distintas. Es la clase de la v875 —cero mapeado contra cero
+existente— en una cifra de cobertura, con la vuelta de que acá la salida
+barata sería justamente la que oculta el problema.
+
+### El discriminante estaba al lado, y solo lo leía un sitio
+
+Quinta vez (v875, v899, v903, v936, v984, y esta). Cuando el perfil no trae
+`coberturaAltura`, **el trazado la trae en `alturas.cobertura`** — y el módulo
+ya lo sabía: las tareas de campo lo leen desde que existen.
+
+```js
+var pctAltura = (perf && perf.coberturaAltura != null) ? perf.coberturaAltura
+              : (alt.cobertura != null ? alt.cobertura : null);
+```
+
+Ese renglón es el único de los doce que resuelve el respaldo. Los otros cuatro
+imprimían `undefined` teniendo la cifra en el mismo objeto: **la clase A y la
+clase C a la vez**, porque el dato existe, está al lado, y ninguna pantalla lo
+alcanzaba.
+
+No hizo falta tocar el motor. Solo dejar de leerlo en crudo.
+
+### Se resuelve en el punto único que la v939 creó
+
+`perfilDeLaCalle` existe desde la v939 justamente para esto —«un consumidor
+nuevo lo hereda sin que su autor se acuerde» (v867)— y los once sitios que
+imprimen la cobertura reciben su perfil de ahí. Así que la resolución va en sus
+dos `return`, y con eso quedan cubiertos los once sin una sola lista.
+
+Y el sitio que sí leía el respaldo pasa a leerlo del punto único: era la
+**segunda ruta de cálculo** para la misma cantidad, que es lo que la v879 dice
+que no diverge el día que se escribe sino la tanda siguiente.
+
+#### Tres redacciones, que no son tres codificaciones
+
+`cobFrase` da la cláusula con su sustantivo —«63 % de la vía»—, `pctDicho` el
+valor pelado —«9,2 %» o «sin medir»— y `pctAncho` el número que un `width:` de
+CSS necesita. Son tres ranuras gramaticales distintas y las tres leen el
+**mismo** `{hay, pct}`: ninguna decide por su cuenta.
+
+La del CSS es la que hay que explicar. Con `undefined` el navegador ignora la
+regla y la barra sale del largo que le quede, **que parece una medición**; una
+barra de largo cero es la única manera honesta de dibujar «no se midió», y el
+rótulo de al lado lo dice con letras, que es donde se lee.
+
+### El `|| {}` del `aria-label`, que nadie puede ver
+
+Barridos los 207 usos del respaldo vacío en todo lo servido, **uno solo**
+mandaba su propiedad directo a una cadena sin respaldo, y está en el peor
+sitio posible: el `aria-label` de la curva sísmica.
+
+> aria-label="Aceleración pico en roca según el periodo de retorno. A 475
+> años, **undefined** gal."
+
+Un lector de pantalla lo lee en voz alta y **nadie lo ve**, así que nadie lo
+reporta. Ahora la cláusula solo se escribe cuando el punto de 475 años existe,
+y cuando no, la etiqueta dice que la curva no lo trae.
+
+Los otros 206 están bien y por eso la guarda **no persigue «todo `|| {}`»**:
+casi todos llevan su `||` detrás o son una llamada a método, y denunciarlos
+sería la lista de excepciones que envejece hasta no significar nada (v895). Se
+persigue el que **concatena**.
+
+### Y la búsqueda rota era una de cinco copias
+
+«Tome una muestra de <b>undefined</b> y compruebe que sigan abiertos.»
+
+`(TAX.filter(…)[0] || {}).nombre`, escrito en línea. La función que hace eso
+bien —`nombreDeSub`, que cae al identificador cuando el catálogo no trae el
+nombre— existe desde antes, y **las otras cuatro copias de la misma búsqueda
+también caen bien**. Era la única rota de las cinco, y era la única escrita con
+`|| {}` en vez de con un ternario.
+
+De paso salió un `var t` que se calculaba y no se usaba en una sexta, que es
+lo que la v885 enseñó a no dejar.
+
+### Lo que el papel enseñó, y cómo
+
+Cada arreglo destapó el siguiente, y eso es lo que el barrido por nodo de texto
+hace bien: **no se para en el primero**. Medido sobre la ficha compuesta, en
+las dos corridas —la real y la de `--uno`—:
+
+| | marcadores en el papel |
+|---|---|
+| v1029 | 24 |
+| con la cobertura resuelta | 16 |
+| con el `pctVacio` dicho | 8 |
+| con la búsqueda arreglada | **0** |
+
+### Demostrado contra la v1029
+
+Seis en rojo, cada una con su causa, contra una copia guardada en el
+directorio de trabajo y no con `git checkout --` sobre trabajo sin confirmar
+(v973):
+
+```
+✗ ningún `|| {}` manda su propiedad al texto sin respaldo
+    — 1 imprimirían «undefined»: js/74:766 .gal
+✗ el barrido ve el `|| {}` que concatena y calla al que se respalda
+    — denuncia uno que lleva su `||`: daría rojo sobre lo que está bien
+✗ la cobertura del perfil se lee por el punto único, no en crudo
+    — 1 la leen por su cuenta: js/68:5445 coberturaAltura
+✗ y ninguna cobertura se imprime con `|| 0`
+    — vuelve el «0 %»: un cero inventado se lee como una medición (v875)
+✗ el formateador escribe «sin medir», no un cero
+    — pctDicho dejó de distinguir: un cero volvería a leerse como una medición
+? lo servido usa el `|| {}` defensivo
+    — SIN MATERIAL HOY: solo 0 usos, así que el barrido no vigilaría casi nada
+```
+
+La última sale con `?` y no en rojo, que es la frontera que la v1026 dejó
+escrita: que lo servido deje de usar el respaldo vacío sería una MEJORA, así
+que la guarda se queda sin material en vez de ponerse roja sobre un módulo que
+mejoró.
+
+### Y una del arnés que se cobró dos veces
+
+Dos anclas de la demostración «no aplicaban», y las dos por el escapado de un
+`heredoc` del intérprete de órdenes: una expresión regular con barras
+invertidas no sobrevive a tres capas de comillas. Se arreglaron **derivando el
+ancla del propio archivo** —`linea(BUENO.rv, 'const RE_MEDIO =')`— en vez de
+volver a teclearla. Es la misma regla de siempre dicha para una demostración:
+un ancla por contenido no envejece, y una copiada a mano sí.
+
+### Lo que sigue medido y NO hecho
+
+Los 302 sitios de prosa donde una cifra concatenada va delante de un plural, en
+25 archivos: **218 en `js/68`**, 14 en `js/70`, 10 en `js/78`, 9 en `js/64` y 8
+en `js/90`. La ficha ya sale limpia en sus dos corridas, así que lo que queda
+ahí no lo produce este material; entra a la guarda con su papel medido, no con
+una promesa.
+
+### Lo que NO se pudo correr
+
+**Ninguna suite de navegador**, por lo mismo que la v973 en adelante: este
+contenedor no tiene `../urbis-motor` ni el `node_modules` del banco de pruebas.
+Corrió `revisar.js` entero con sus seis comprobaciones nuevas, y se miró el
+papel de la ficha en sus dos corridas, que es lo que encontró los tres defectos
+—ninguno se veía leyendo.
+
 ## La lista viva: lo que al pliego educativo todavía le falta (v866)
 
 Esta lista se quedó vieja **cinco veces**. Cuatro dentro de la hoja —la

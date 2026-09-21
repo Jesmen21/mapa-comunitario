@@ -13,7 +13,7 @@
 
    La versión va acá y en vision-territorial.html, idéntica, como en los
    otros siete archivos de versión del sitio: revisar.js lo comprueba. */
-const VT_CACHE = 'urbis-vt-v1029-la-baldosa-de-cifra-concuerda';
+const VT_CACHE = 'urbis-vt-v1030-una-cifra-sin-medir-no-es-cero';
 const VT_ASSETS = [
   './vision-territorial.html',
   './css/90-vt.css',

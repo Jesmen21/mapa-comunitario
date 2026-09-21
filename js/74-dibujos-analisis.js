@@ -755,11 +755,16 @@
           : '');
     }).join('');
 
+    /* El `|| {}` evitaba el error y dejaba pasar el `undefined` al aria-label:
+       sin el punto de 475 años, un lector de pantalla leía «A 475 años,
+       undefined gal». Es la misma mitad de guarda que la v1030 quitó de la
+       ficha, y acá es peor: nadie la VE, así que nadie la reporta. */
+    var p475 = pts.filter(function (p) { return p.tr === 475; })[0];
     return '<svg viewBox="0 0 ' + W + ' ' + H + '" width="100%" ' +
         'preserveAspectRatio="xMidYMid meet" role="img" ' +
-        'aria-label="Aceleración pico en roca según el periodo de retorno. ' +
-        'A 475 años, ' + (pts.filter(function (p) { return p.tr === 475; })[0] || {}).gal +
-        ' gal.">' +
+        'aria-label="Aceleración pico en roca según el periodo de retorno.' +
+        (p475 ? ' A 475 años, ' + p475.gal + ' gal.' : ' La curva no trae el punto de 475 años.') +
+        '">' +
       rejilla +
       '<path d="' + area + '" fill="' + AZUL + '" fill-opacity=".1"/>' +
       '<path d="' + linea + '" fill="none" stroke="' + AZUL + '" stroke-width="1.8" ' +

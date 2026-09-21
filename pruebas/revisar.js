@@ -8661,6 +8661,104 @@ console.log('\n  -- la baldosa de cifra, en todo lo servido (v1029) --');
       : NO_CONCUERDA.length + ' declarados, cada uno con por qué no concuerda');
 }
 
+console.log('\n  -- una cifra sin medir no se imprime en crudo (v1030) --');
+{
+  /* LA CLASE: un `|| {}` o un `|| 0` puesto para que no reviente, y la otra
+     mitad abierta. El primero deja pasar el `undefined` al papel -«Tome una
+     muestra de undefined», «undefined%»- y el segundo es PEOR, porque un
+     «0 %» se lee como una medicion: cero medido y cero sabido son cosas
+     distintas, que es la clase de la v875.
+
+     Se persiguen las dos formas por separado porque piden cosas distintas:
+     la primera se ve y alguien la reporta; la segunda no se ve nunca. */
+  const servidos = fs.readdirSync(R('js')).filter((f) => /\.js$/.test(f));
+
+  /* 1 · el `|| {}` cuya propiedad va DIRECTO a una cadena, sin respaldo.
+     No se persigue «todo `|| {}`» -hay 177 y casi todos llevan su `||` o
+     son un metodo-, que seria la lista de excepciones que envejece de la
+     v895. Se persigue el que concatena. */
+  const RE_MEDIO = /\|\|\s*\{\s*\}\s*\)\s*(?:\.\s*([A-Za-z_$][\w$]*)|\[[^\]]+\])\s*\+\s*'/g;
+  const mediosEn = (txt) => {
+    const out = []; const re = new RegExp(RE_MEDIO.source, 'g'); let m;
+    while ((m = re.exec(txt))) out.push({ prop: m[1] || '[..]', en: m.index });
+    return out;
+  };
+
+  const medios = [];
+  let conGuarda = 0;
+  servidos.forEach((f) => {
+    const txt = soloCodigo(leer('js/' + f));
+    conGuarda += (txt.match(/\|\|\s*\{\s*\}\s*\)/g) || []).length;
+    mediosEn(txt).forEach((x) => {
+      medios.push('js/' + f.slice(0, 2) + ':' + txt.slice(0, x.en).split('\n').length + ' .' + x.prop);
+    });
+  });
+
+  /* El MATERIAL es lo que sobrevive al cero (v1022): no «cuantos medios
+     quedan» -arreglarlos lo deja en cero- sino que lo servido siga usando
+     el `|| {}`, que es lo que el barrido mira. */
+  if (conGuarda < 50) {
+    anotarSinMaterial('lo servido usa el `|| {}` defensivo',
+      'solo ' + conGuarda + ' usos, así que el barrido no vigilaría casi nada');
+  } else {
+    comprobar('MATERIAL · lo servido usa el `|| {}` defensivo', true,
+      conGuarda + ' usos del respaldo vacío, de los que ' + medios.length + ' concatenan');
+    comprobar('ningún `|| {}` manda su propiedad al texto sin respaldo',
+      medios.length === 0,
+      medios.length
+        ? medios.length + ' imprimirían «undefined»: ' + medios.slice(0, 5).join(' · ')
+        : 'los ' + conGuarda + ' llevan su `||`, o son un método, o se comprueban antes');
+  }
+
+  /* 2 · la cobertura del perfil, que es donde la clase salio impresa. Las
+     dos cifras se resuelven en `perfilDeLaCalle` -el punto unico que la
+     v939 creo- y ningun consumidor las lee en crudo. */
+  const j68 = soloCodigo(leer('js/68-procity-reconocimiento.js'));
+  const crudas = [];
+  const reC = /\.\s*cobertura(Ancho|Altura)\b/g;
+  let mc;
+  while ((mc = reC.exec(j68))) {
+    /* El UNICO sitio legitimo es el punto unico: `cobDe(pf.coberturaX, ...)`
+       es quien la lee del motor. Cualquier otro la leeria por su cuenta. */
+    const antes = j68.slice(Math.max(0, mc.index - 30), mc.index);
+    if (/cobDe\(\s*[A-Za-z_$][\w$]*$/.test(antes)) continue;
+    crudas.push('js/68:' + j68.slice(0, mc.index).split('\n').length + ' cobertura' + mc[1]);
+  }
+  comprobar('la cobertura del perfil se lee por el punto único, no en crudo',
+    crudas.length === 0,
+    crudas.length
+      ? crudas.length + ' la leen por su cuenta: ' + crudas.slice(0, 4).join(' · ')
+      : 'solo la lee `perfilDeLaCalle`, y los once sitios que la imprimen la reciben resuelta');
+
+  comprobar('y ninguna cobertura se imprime con `|| 0`',
+    !/cobertura(Ancho|Altura)\s*\|\|\s*0/.test(j68),
+    /cobertura(Ancho|Altura)\s*\|\|\s*0/.test(j68)
+      ? 'vuelve el «0 %»: un cero inventado se lee como una medición (v875)'
+      : 'sin dato dice que no se midió, que no es lo mismo que cero');
+
+  /* LA GUARDA DE LA GUARDA: el barrido ve el `|| {}` que concatena y calla
+     el que lleva su respaldo. Sin la segunda mitad denunciaria los 177. */
+  const MALO = "'x ' + (a.b() || {}).nombre + ' y'";
+  const CON_OR = "'x ' + ((a.b() || {}).nombre || 'sin nombre') + ' y'";
+  const METODO = "(a.b || {}).forEach(function (k) { return k; })";
+  const veMalo = mediosEn(MALO).length === 1;
+  const veOr = mediosEn(CON_OR).length === 0;
+  const veMet = mediosEn(METODO).length === 0;
+  comprobar('el barrido ve el `|| {}` que concatena y calla al que se respalda',
+    veMalo && veOr && veMet,
+    !veMalo ? 'no ve el que concatena: no vigilaría nada'
+      : !veOr ? 'denuncia uno que lleva su `||`: daría rojo sobre lo que está bien'
+        : !veMet ? 'denuncia una llamada a método, que no imprime nada'
+          : 've el que concatena, y calla el que se respalda y el método');
+
+  /* Y que el formateador siga diciendo «sin medir» en vez de un cero. */
+  comprobar('el formateador escribe «sin medir», no un cero',
+    /function pctDicho\(v\)[\s\S]{0,200}'sin medir'/.test(j68),
+    /function pctDicho\(v\)[\s\S]{0,200}'sin medir'/.test(j68)
+      ? 'pctDicho dice que no se midió cuando no hay cifra'
+      : 'pctDicho dejó de distinguir: un cero volvería a leerse como una medición');
+}
+
 console.log('\n  -- la baldosa de cifra lleva su singular (v1028) --');
 {
   const j24 = soloCodigo(leer('js/24-procity-analisis.js'));

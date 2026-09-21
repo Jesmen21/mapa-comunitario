@@ -1925,9 +1925,64 @@
      Es la regla del aviso de origen (v867): un consumidor nuevo lo hereda sin
      que su autor se acuerde, que es lo único que impide que esto se pierda
      otra vez. */
+  /* LA COBERTURA DE UNA MEDIDA DEL PERFIL: en qué parte de la red hay dato.
+     Se resuelve acá, en el punto único, porque hasta la v1029 se imprimía de
+     TRES maneras distintas en once sitios y dos eran falsas:
+
+     · en crudo —«' + p.coberturaAltura + '%»— sale «undefined%» cuando el
+       motor no la trae. Salió impreso en la ficha, en el pie de la sección
+       tipo, y es un marcador sin reemplazar de los que la v889 persigue.
+     · con `|| 0` sale «0 %», que es PEOR: un cero se lee como una medición,
+       y «nadie lo midió» y «lo medimos y dio cero» son cosas distintas. Es
+       la clase de la v875 en una cifra de cobertura.
+
+     Y el discriminante de la ALTURA ya estaba al lado: cuando el perfil no
+     trae `coberturaAltura`, el trazado la trae en `alturas.cobertura`. Lo
+     leía UN solo sitio —las tareas de campo, que la v1029 dejó intacta— y
+     los otros cuatro imprimían «undefined» teniendo la cifra en el mismo
+     objeto. Quinta vez que el discriminante estaba al lado y nadie lo leía.
+
+     El ancho no tiene segunda fuente, así que ahí `hay:false` es la verdad. */
+  function cobDe(propia, respaldo) {
+    var v = (propia != null) ? propia : (respaldo != null ? respaldo : null);
+    return { hay: v != null, pct: v };
+  }
+
+  /* «63 % de la vía», o la frase que dice que nadie la midió. Una sola
+     redacción para los once sitios: dos se separan a la tanda siguiente. */
+  function cobFrase(c, de) {
+    return (c && c.hay)
+      ? conComa(c.pct) + ' % de ' + de
+      : 'una parte de ' + de + ' que nadie ha medido';
+  }
+
+  /* El mismo hecho en la otra ranura gramatical: donde va un valor pelado
+     —«vacío X %»— y no una cláusula con su sustantivo. Son dos redacciones
+     porque son dos frases distintas, no dos codificaciones de un hecho: las
+     dos leen el MISMO `{hay,pct}` y ninguna decide por su cuenta. */
+  function pctDicho(v) {
+    var c = cobDe(v, null);
+    return c.hay ? conComa(c.pct) + ' %' : 'sin medir';
+  }
+
+  /* Y para un `width:` de CSS, donde hace falta un número. Una barra de
+     largo cero es la única manera honesta de dibujar «no se midió» —con
+     `undefined` el navegador ignora la regla y la barra sale del largo que
+     le quede, que es peor: parece una medición—. El rótulo de al lado lo
+     dice con letras, que es donde se lee. */
+  function pctAncho(v) {
+    var c = cobDe(v, null);
+    return c.hay ? c.pct : 0;
+  }
+
   function perfilDeLaCalle(trz) {
     var pf = trz && trz.perfil;
     if (!pf) return null;
+    var al = (trz && trz.alturas) || {};
+    var COB = {
+      cobAncho: cobDe(pf.coberturaAncho, null),
+      cobAltura: cobDe(pf.coberturaAltura, al.cobertura)
+    };
     /* La llave sale de la META del resultado, como en los otros catorce
        sitios: `llaveDeSector()` sin argumento devuelve cadena vacía —lo
        comprobó la suite con `sin-sector` sobre un sector analizado— y eso
@@ -1943,7 +1998,7 @@
       return cam.hay ? Object.assign({}, a, { caminado: cam }) : a;
     };
     if (!campo.hay) {
-      return Object.assign({}, pf, {
+      return Object.assign({}, pf, COB, {
         anden: conAnden(pf.anden || {}),
         origen: cam.hay ? 'mapa+andenes' : 'mapa', campo: campo, andenes: cam });
     }
@@ -1954,7 +2009,7 @@
     var calz = campo.calzadaM;
     var rel = (pf.alturaMediaM != null && calz > 0)
       ? Math.round(100 * pf.alturaMediaM / calz) / 100 : pf.relacion;
-    return Object.assign({}, pf, {
+    return Object.assign({}, pf, COB, {
       anchoMedioM: calz,
       /* La del mapa se CONSERVA al lado: las dos existen y son distintas, y
          tirar una sería perder con qué contrastar (v934). */
@@ -3957,7 +4012,12 @@
       alturaM: h, porPiso: ALTO_POR_PISO_M, horas: horas,
       pctDelSector: rep.moda.pct,
       anchoCalleM: pf && pf.anchoMedioM != null ? pf.anchoMedioM : null,
-      anchoDe: pf ? pf.anchoDe : null, coberturaAncho: pf ? pf.coberturaAncho : null,
+      /* Resuelta, no en crudo: `pf.coberturaAncho` puede no venir y este
+         campo hoy no lo lee nadie —es un dato del registro sin consumidor,
+         de los de la clase C—, así que cuando aparezca uno no heredará el
+         «undefined» que la v1030 acaba de quitar de las once pantallas. */
+      anchoDe: pf ? pf.anchoDe : null,
+      coberturaAncho: (pf && pf.cobAncho.hay) ? pf.cobAncho.pct : null,
       fecha: hoy
     };
   }
@@ -4994,8 +5054,8 @@
     return '<h2>El trazado del sector</h2>' +
       (tr ? '<div class="dib dib-chico">' + tr + '</div>' : '') +
       '<div class="cob"><i style="width:' + ll.pctLleno + '%;background:#3B4A5A"></i>' +
-      '<i style="width:' + ll.pctVacio + '%;background:#E6F7FE"></i></div>' +
-      '<p class="pie">Lleno ' + conComa(ll.pctLleno) + ' % · vacío ' + conComa(ll.pctVacio) + ' % · ' +
+      '<i style="width:' + pctAncho(ll.pctVacio) + '%;background:#E6F7FE"></i></div>' +
+      '<p class="pie">Lleno ' + pctDicho(ll.pctLleno) + ' · vacío ' + pctDicho(ll.pctVacio) + ' · ' +
       (ll.edificios || 0) + ' edificios' +
       (ll.sinGeometria ? ' (' + ll.sinGeometria + ' mapeados solo como punto, sin área)' : '') + '</p>' +
       '<table>' +
@@ -5381,8 +5441,8 @@
           'pesada por metros de vía, da ' + conComa(p.anchoMedioMapaM) + ' m.</p>'
         : '') +
       '<p class="pie">' + esc(p.lectura || '') + ' El ancho es el de la calzada, no de fachada a fachada. ' +
-      'Hay dato de ancho en ' + p.coberturaAncho + '% de la vía y de pisos en ' + p.coberturaAltura +
-      '% de los edificios.</p>';
+      'Hay dato de ancho en ' + cobFrase(p.cobAncho, 'la vía') + ' y de pisos en ' +
+      cobFrase(p.cobAltura, 'los edificios') + '.</p>';
   }
 
   function espacioImpreso(t, st) {
@@ -7837,7 +7897,7 @@ function donaHTML(datos, colorDe, nombreDe) {
       (tr ? '<div class="dib dib-chico">' + tr + '</div>' : '') +
       '<div class="kpis">' +
       '<div class="k"><b>' + conComa(ll.pctLleno) + ' %</b><small>construido</small></div>' +
-      '<div class="k"><b>' + conComa(ll.pctVacio) + ' %</b><small>libre</small></div>' +
+      '<div class="k"><b>' + pctDicho(ll.pctVacio) + '</b><small>libre</small></div>' +
       '<div class="k"><b>' + (mo.intersecciones || 0) + '</b><small>' + pl((mo.intersecciones || 0), 'intersección', 'intersecciones') + '</small></div>' +
       '</div>' +
       '</div>' +
@@ -8526,8 +8586,7 @@ function donaHTML(datos, colorDe, nombreDe) {
               '—, y eso es lo que la sección dibuja. Lo que la plantilla no levanta es la ' +
               '<b>arborización</b>, que no tiene columna: se anota aparte, con el porte y la ' +
               'especie. Y son ' + ac.tramos + ' de toda la red: el resto sigue con el ancho de ' +
-              'OpenStreetMap, que cubre el <b>' + (pf.coberturaAncho || 0) + ' %</b> de los ' +
-              'metros de vía.' +
+              'OpenStreetMap, que cubre <b>' + cobFrase(pf.cobAncho, 'los metros de vía') + '</b>.' +
               /* Acá es donde MÁS importa decirlo: con las dos plantillas
                  levantadas conviven dos medidas del mismo andén —la pieza de
                  la sección y lo que queda para caminar— y las dos se imprimen
@@ -8544,7 +8603,7 @@ function donaHTML(datos, colorDe, nombreDe) {
           return '<p class="vacio-falta"><b>El perfil acotado, medido en campo.</b> El ancho de ' +
             'acá sale de <b>' + (pf.anchoDe === 'width' ? 'la etiqueta de ancho de OpenStreetMap'
                                                         : 'contar carriles, a 3 m cada uno') +
-            '</b> y cubre el <b>' + (pf.coberturaAncho || 0) + ' %</b> de los metros de vía: del ' +
+            '</b> y cubre <b>' + cobFrase(pf.cobAncho, 'los metros de vía') + '</b>: del ' +
             'resto no hay dato. Y es ancho de CALZADA, no de fachada a fachada' +
             (pf.anden && pf.anden.sinDatoPct != null
               ? ' —del andén no se sabe en el ' + conComa(pf.anden.sinDatoPct) + ' % de la red—'
@@ -9097,18 +9156,18 @@ function donaHTML(datos, colorDe, nombreDe) {
           ' por ' + esc(pf.acotado.quienTexto) + esc(pf.acotado.cuando) + '. Es una media ' +
           '<b>simple</b> de esos tramos, no de la red entera, y por eso va al lado la del mapa: ' +
           conComa(pf.anchoMedioMapaM) + ' m de calzada pesados por metros de vía, con dato en ' +
-          pf.coberturaAncho + '% de la vía. La sección de fachada a fachada mide ' +
+          cobFrase(pf.cobAncho, 'la vía') + '. La sección de fachada a fachada mide ' +
           conComa(pf.acotado.totalM) + ' m' +
           (pf.acotado.sinMedir.length
             ? ' sin ' + esc(pf.acotado.sinMedir.join(', ')) + ', que no se anotó en ningún tramo ' +
               '—no existe, o no se midió— y por eso no suma cero'
             : '') +
-          '. Los pisos siguen siendo del mapa, con dato en ' + pf.coberturaAltura +
-          '% de los edificios.</p>'
+          '. Los pisos siguen siendo del mapa, con dato en ' +
+          cobFrase(pf.cobAltura, 'los edificios') + '.</p>'
         : '<p class="nota">Sección tipo, armada con los promedios del sector: no es la de una ' +
           'calle concreta. El ancho es el de la calzada, no de fachada a fachada. Hay dato de ' +
-          'ancho en ' + pf.coberturaAncho + '% de la vía y de pisos en ' + pf.coberturaAltura +
-          '% de los edificios.</p>');
+          'ancho en ' + cobFrase(pf.cobAncho, 'la vía') + ' y de pisos en ' +
+          cobFrase(pf.cobAltura, 'los edificios') + '.</p>');
       })(), 'g3') +
       
       caja('A distancia de caminar',
@@ -15584,7 +15643,8 @@ function donaHTML(datos, colorDe, nombreDe) {
     } else if (trz) {
       var tll = trz.llenos || {}, tvi = trz.vias || {}, tmo = trz.morfologia || {};
       L.push('EL TRAZADO DEL SECTOR');
-      L.push('  Lleno: ' + tll.pctLleno + '% · vacío: ' + tll.pctVacio + '% (' + (tll.edificios || 0) + ' edificios)');
+      L.push('  Lleno: ' + pctDicho(tll.pctLleno) + ' · vacío: ' + pctDicho(tll.pctVacio) +
+        ' (' + (tll.edificios || 0) + ' ' + pl(tll.edificios || 0, 'edificio', 'edificios') + ')');
       (tvi.porMalla || []).forEach(function (m) { L.push('  ' + m.etiqueta + ': ' + m.km + ' km'); });
       L.push('  Total de vías: ' + tvi.kmTotal + ' km · en un sentido: ' + tvi.unSentidoPct + '%');
       L.push('  Intersecciones: ' + tmo.intersecciones + ' · tramo medio: ' + tmo.tramoMedioM + ' m · sin salida: ' + tmo.sinSalida);
@@ -16008,7 +16068,6 @@ function donaHTML(datos, colorDe, nombreDe) {
       (subs.length
         ? '<p class="pcr-pista">Por uso concreto:</p><div class="pcr-calor-chips">' +
           subs.map(function (x) {
-            var t = TAX.filter(function (u) { return u.sub === x.id; })[0];
             return chip('s:' + x.id, nombreDeSub(x.id),
                         x.n, colorDeSub(x.id));
           }).join('') + '</div>'
@@ -17234,15 +17293,15 @@ function donaHTML(datos, colorDe, nombreDe) {
       '<div class="pcr-llenos">' +
         '<div class="pcr-llenos-barra">' +
           '<i class="pcr-lleno" style="width:' + ll.pctLleno + '%"></i>' +
-          '<i class="pcr-vacio" style="width:' + ll.pctVacio + '%"></i>' +
+          '<i class="pcr-vacio" style="width:' + pctAncho(ll.pctVacio) + '%"></i>' +
         '</div>' +
         '<div class="pcr-llenos-cifras">' +
           /* El MISMO valor con dos destinos opuestos: dos renglones más
              arriba va en un `width:` de CSS, donde el punto es obligatorio,
              y aquí es un rótulo, donde va la coma. Es la lección de `n1` en
              la v891, en la ficha en vez de en la carta solar. */
-          '<span><b>' + conComa(ll.pctLleno) + '%</b> lleno</span>' +
-          '<span><b>' + conComa(ll.pctVacio) + '%</b> vacío</span>' +
+          '<span><b>' + pctDicho(ll.pctLleno) + '</b> lleno</span>' +
+          '<span><b>' + pctDicho(ll.pctVacio) + '</b> vacío</span>' +
         '</div>' +
       '</div>' +
       ((S.trzHuellas && S.trzHuellas.length)
@@ -17522,7 +17581,11 @@ function donaHTML(datos, colorDe, nombreDe) {
        un uso— así que ahí los edificios ni aparecen. Los que valen son los
        que trajeron forma, que son los que se pueden contar desde la acera. */
     var edificiosTrz = ll.edificios || alt.edificios || 0;
-    var pctAltura = (perf && perf.coberturaAltura != null) ? perf.coberturaAltura
+    /* La segunda ruta a la misma cantidad se retiró en la v1030: esta era la
+       ÚNICA que leía el respaldo de `alturas.cobertura`, y los otros cuatro
+       sitios imprimían «undefined». Ahora lo resuelve `perfilDeLaCalle` y
+       acá se lee de ahí — sin perfil medido sigue quedando el respaldo. */
+    var pctAltura = (perf && perf.cobAltura && perf.cobAltura.hay) ? perf.cobAltura.pct
                   : (alt.cobertura != null ? alt.cobertura : null);
     if (edificiosTrz && pctAltura != null && pctAltura < 100) {
       var sin = Math.max(1, Math.round(edificiosTrz * (100 - pctAltura) / 100));
@@ -17547,11 +17610,11 @@ function donaHTML(datos, colorDe, nombreDe) {
     }
 
     // ── El ancho de la calzada.
-    if (perf && (perf.coberturaAncho == null || perf.coberturaAncho < 60)) {
+    if (perf && (!perf.cobAncho.hay || perf.cobAncho.pct < 60)) {
       item({
         id: 'ancho', etiqueta: 'width / lanes',
         titulo: 'Medir el ancho de la calzada',
-        cuantos: (perf.coberturaAncho || 0) + '% de las vías lo trae' +
+        cuantos: cobFrase(perf.cobAncho, 'las vías') + ' lo trae' +
                  (perf.viasConWidth || perf.viasConLanes
                    ? ' (' + (perf.viasConWidth || 0) + ' con ancho, ' + (perf.viasConLanes || 0) + ' con carriles)'
                    : ''),
@@ -23157,7 +23220,7 @@ function donaHTML(datos, colorDe, nombreDe) {
         (p.acotado.tramos === 1 ? ' tramo levantado' : ' tramos levantados') + ' por ' +
         esc(p.acotado.quienTexto) + esc(p.acotado.cuando) + '. Es una media <b>simple</b> de ' +
         'esos tramos, no de la red: la del mapa —' + conComa(p.anchoMedioMapaM) + ' m, ' +
-        '<b>pesada por metros de vía</b> y con dato en ' + p.coberturaAncho + '% de la red— ' +
+        '<b>pesada por metros de vía</b> y con dato en ' + cobFrase(p.cobAncho, 'la red') + '— ' +
         'queda al lado para contrastar. Los pisos siguen siendo del mapa.</p>'
       : '';
     return h4('via', 'El perfil de la calle') + proc +
@@ -23220,8 +23283,8 @@ function donaHTML(datos, colorDe, nombreDe) {
       'OpenStreetMap eso es lo que guarda la etiqueta, así que la relación sale más alta que la de un ' +
       'manual y los umbrales están corridos para eso. Sale de ' +
       (p.anchoDe === 'width' ? '<b>el ancho registrado</b>' : '<b>los carriles</b>, a 3 m cada uno') +
-      ' en <b>' + p.coberturaAncho + '%</b> de la vía, y de los pisos registrados en <b>' +
-      p.coberturaAltura + '%</b> de los edificios. Con cobertura baja el promedio es de esos pocos y ' +
+      ' en <b>' + cobFrase(p.cobAncho, 'la vía') + '</b>, y de los pisos registrados en <b>' +
+      cobFrase(p.cobAltura, 'los edificios') + '</b>. Con cobertura baja el promedio es de esos pocos y ' +
       'no del sector.</p>';
   }
 
@@ -30760,7 +30823,12 @@ function donaHTML(datos, colorDe, nombreDe) {
               ' sin categoría: mire qué son de verdad. Suelen ser usos que la clasificación no conoce todavía.</li>'
             : '') +
           (subs.length
-            ? '<li>Tome una muestra de <b>' + (TAX.filter(function (u) { return u.sub === subs[0].id; })[0] || {}).nombre +
+            /* `|| {}` evitaba el error y dejaba pasar el `undefined` al papel:
+               salió impreso «Tome una muestra de undefined». `nombreDeSub`
+               existía ya y cae al identificador cuando el catálogo no trae
+               el nombre, que es lo que las otras cuatro copias de esta misma
+               búsqueda hacen bien. Era la única rota de las cinco. */
+            ? '<li>Tome una muestra de <b>' + esc(nombreDeSub(subs[0].id)) +
               '</b> y compruebe que sigan abiertos. Los datos los pone gente voluntaria y envejecen.</li>'
             : '') +
           '<li>Anote lo que <b>existe y no aparece acá</b>: eso es lo que el curso aporta al mapa.</li>' +
