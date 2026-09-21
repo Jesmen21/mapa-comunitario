@@ -13840,9 +13840,13 @@ Siete de ocho en rojo, contra una copia guardada:
   `cerrado en v993` — como campo propio, con seis sitios de siembra y la
   jardinera elevada entre ellos.
 * **Arbustos, flores y cactus**, que siguen pendientes de la v975.
-  `pendiente` — el TIPO «Jardinera o arbusto ornamental» existe desde la
-  v975 y lo que falta es su lista de especies, que js/03c excluye a
-  propósito con su razón escrita.
+  `cerrado en v994` — y NO como especies del árbol, que es lo que este
+  renglón daba por supuesto: como un uso propio, `Vegetación no arbórea`,
+  con diez tipos. Meterlos en «Arbolado Urbano» habría hecho que un césped
+  heredara la pregunta de la especie sobre una lista de 48 árboles y palmas,
+  que es el defecto que a la v974 le costó una guarda entera. **La marca de
+  este renglón decía `pendiente` cuando se escribió, en la v1007, y estaba
+  mal**: ver «La marca puede mentir, y la mía mintió» (v1008).
 
 ### Lo que NO se pudo correr
 
@@ -15098,7 +15102,7 @@ sonda. Queda cubierto por la comprobación estática —que exige que
 `fichaDeProCity` lo lea de `usosPorPiso`— y por el patrón que la v985 dejó
 medido en ese mismo panel. Se dice por lo que es y no se presenta como más.
 
-### Un hueco del catálogo que quedó medido y NO tocado
+### Lo que esta versión NO hace: un hueco del catálogo, medido
 
 `Deportivo` está en `USOS_MATRIZ_SIN_PISOS`, así que un punto de esa familia no
 pregunta pisos. Eso es correcto para una cancha y **falso para un gimnasio o
@@ -15109,6 +15113,12 @@ Arreglarlo pide partir el uso en dos, y el tipo se guarda como texto dentro del
 registro: partirlo dejaría las entradas viejas apuntando a un uso que ya no
 existe. Queda medido, con su razón, para la tanda que lo tome — en vez de hecho
 a ojo de paso, que es lo que este proyecto lleva cinco tandas deshaciendo.
+`cerrado en v991` — y **no partiendo el uso**, que es la salida que este
+renglón daba por única: la excepción va por TIPO, así que la cancha sigue sin
+preguntar pisos y el coliseo que la cubre sí, sin tocar una sola entrada ya
+mapeada. El encabezado de esta sección decía «Un hueco del catálogo que quedó
+medido y NO tocado» y se cambió a la forma canónica en la v1008, para que la
+comprobación lo vea.
 
 ### Demostrado contra la v988
 
@@ -17518,6 +17528,23 @@ Tiene su convención desde la v866 —la cláusula `ya:`— y dos convenciones s
 la misma lista serían dos maneras de decir lo mismo, que es la clase B. La
 guarda corta el texto ahí.
 
+#### Los encabezados que la comprobación mira · `ENCABEZADOS-APLAZADOS`
+
+Una sección que declare trabajo aplazado se titula con una de estas cinco
+formas, o la comprobación no la mira y sus renglones se quedan sin estado. Y
+`revisar.js` comprueba que esta lista y la suya sean la misma, que es lo que
+impide que el convenio escrito y el aplicado se separen (v926):
+
+* `NO hace`
+* `NO cierra`
+* `sigue pendiente`
+* `NO se hace`
+* `sigue faltando`
+
+Y una que NO cuenta: `NO se pudo`. Eso es una limitación de medición del
+contenedor —«ninguna suite de navegador»— y no trabajo que alguien decidió
+aplazar; pedirle un estado mandaría a cerrar lo que no depende de nadie acá.
+
 #### Y detectar y leer no se hacen sobre el mismo texto
 
 La vuelta que costó dos corridas, y vale escribirla porque el error se ve
@@ -17655,6 +17682,110 @@ renglones sería el verde que este proyecto lleva veintiocho tandas persiguiendo
   tienen forma. Una escrita en mitad de un párrafo, sin ninguna de las dos, se
   sigue cazando leyendo, y eso va dicho acá y en el comentario de la guarda en
   vez de presentarla como completa. `pendiente`
+
+## La marca puede mentir, y la mía mintió (v1008)
+
+La v1007 le puso estado a 52 renglones de trabajo aplazado y cerró diecinueve
+que estaban hechos. Al repasar el hilo del catálogo de mapeo al día siguiente
+aparecieron dos cosas, y la primera es mía.
+
+    v1007   52 renglones con marca · una de ellas dice «pendiente» sobre algo hecho
+    v1008   la marca corregida, el convenio escrito y atado, y un piso que lo sostiene
+
+### La marca decía `pendiente` sobre algo que la v994 cerró
+
+El renglón era **«Arbustos, flores y cactus»**, declarado por la v981. Le puse
+`pendiente` razonando —sin medir— que lo que faltaba era una lista de ESPECIES
+para el tipo «Jardinera o arbusto ornamental», que `js/03c` excluye a propósito.
+
+**Está cerrado desde la v994**, y por un camino distinto del que yo supuse: no
+como especies del árbol sino como un uso propio, `Vegetación no arbórea`, con
+diez tipos —arbusto o seto, jardín de flores, cactus o suculentas, césped,
+enredadera, huerta, jardín vertical, vegetación espontánea, cobertura en talud,
+bambú—. Y la razón por la que va aparte la dejó escrita aquella tanda: meterlos
+en «Arbolado Urbano» habría hecho que un césped heredara la pregunta de la
+especie sobre una lista de 48 árboles y palmas, que es el defecto que a la v974
+le costó una guarda entera.
+
+**Lo que hay que sacar de esto no es la corrección: es que la guarda de la v1007
+no puede cazar esto.** Comprueba que la marca ESTÉ, no que sea cierta. Un
+`pendiente` sobre algo hecho se lee exactamente igual que uno sobre algo abierto
+— y es peor que no tener marca, porque la marca invita a no volver a mirar.
+
+Lo cazó medir el código, que es la regla de la v863 y la v916: el renglón se
+escribió razonando desde el texto de la v981, y el catálogo decía otra cosa.
+**Una marca se pone midiendo, no leyendo el renglón que la pide.**
+
+### Y una sección entera que la guarda no miraba
+
+La segunda, y es del molde que la v1007 vino a cerrar: una sección titulada
+**«Un hueco del catálogo que quedó medido y NO tocado»** declaraba que un punto
+`Deportivo` no pregunta pisos —correcto para una cancha, falso para un gimnasio—
+y decía que arreglarlo pedía partir el uso en dos.
+
+**Lo cerró la v991**, y no partiendo el uso: la excepción va por TIPO, así que
+la cancha sigue sin preguntar pisos y el coliseo que la cubre sí, sin tocar una
+sola entrada ya mapeada. La salida que el renglón daba por única no era la que
+se tomó, que es lo normal cuando alguien mide en vez de estimar.
+
+La guarda no lo veía porque su encabezado no es ninguna de las cinco formas
+canónicas. **Se renombró a la canónica en vez de aflojar la expresión**, que es
+la decisión de la v895: una guarda que acepta cualquier título vuelve a ser una
+que adivina.
+
+### El convenio se escribe y se ATA al código
+
+Si las cinco formas viven solo dentro de una expresión regular, el que escribe
+una sección nueva no sabe cuáles son. Y si viven en los dos sitios, se separan —
+y el que se quedaría viejo es el escrito, porque nadie lo relee. Es el defecto
+de la v926 con la marca de capacidad.
+
+El bloque `ENCABEZADOS-APLAZADOS` las lista, y `revisar.js` comprueba que la
+lista escrita y las alternativas de su propia expresión sean **la misma, en las
+dos direcciones**. Demostrado por los dos lados: quitándole dos formas a la
+expresión salen como «escrito y no aplicado»; quitándole una a la bitácora, como
+«aplicado y no escrito».
+
+### El piso, que es lo único que caza renombrar un encabezado
+
+Queda un fallo que nada de lo anterior caza, y hay que decirlo porque es el
+mismo que esta tanda encontró: **sacar una sección del convenio la vuelve
+invisible y todo sigue en verde**. Medido con el encabezado viejo devuelto: el
+recuento baja de 54 a 53 y la comprobación de los estados pasa igual.
+
+Lo caza un **piso** sobre cuántos renglones se vigilan. Es un piso y no un techo
+con la vara de la v965: la cantidad solo debe subir —cada tanda que declare
+trabajo aplazado agrega renglones— y baja cuando alguien saca una sección del
+convenio, que es el fallo. Con el piso puesto, la misma inyección sale en rojo:
+
+```
+✗ y ninguna sección se sale del convenio y deja de vigilarse
+    — 53 vigilados, 1 por debajo del piso: algún encabezado dejó de ser una
+      de las cinco formas y su sección ya no se mira
+```
+
+### Demostrado contra la v1007
+
+Cuatro inyecciones, contra copias guardadas en `/tmp`:
+
+```
+✗ y ninguna sección se sale del convenio y deja de vigilarse      (encabezado viejo)
+✗ y el convenio de encabezados escrito es el mismo que se aplica  (la regex pierde dos formas)
+✗ y el convenio de encabezados escrito es el mismo que se aplica  (la bitácora pierde una)
+✓ y todo renglón … dice su estado                                 (verde con la sección invisible)
+```
+
+La cuarta es la que vale: **pasa en verde**, y por eso hizo falta el piso. Una
+inyección que deja todo verde es una medición, no un fallo de la prueba — y
+enseña dónde estaba el hueco mejor que cualquiera de las tres rojas.
+
+### Lo que esta versión NO hace, y queda medido
+
+* **Que la marca sea CIERTA sigue sin poderse comprobar.** `pendiente` sobre
+  algo hecho y `pendiente` sobre algo abierto se leen igual desde `revisar.js`,
+  y distinguirlos pide medir el código contra la prosa de cada renglón, que es
+  justo lo que no se puede mecanizar. Lo que sí queda es la práctica, escrita
+  arriba: una marca se pone midiendo. `pendiente`
 
 ## La lista viva: lo que al pliego educativo todavía le falta (v866)
 

@@ -6466,6 +6466,35 @@ console.log('\n  -- una declaración de «otra tanda» lleva su estado (v1006) -
         }
       });
     }
+    /* La guarda de la guarda, y es de la clase de la v926: el convenio está
+       ESCRITO en la bitácora —qué encabezados cuentan— y aplicado acá en una
+       expresión regular. Dos sitios para un hecho se separan, y el que se
+       quedaría viejo sería el escrito: nadie lo relee. Se comprueba que la
+       lista del bloque `ENCABEZADOS-APLAZADOS` y las alternativas de HSEC sean
+       la misma, en las dos direcciones.
+
+       Lo destapó la v1008: una sección titulada «Un hueco del catálogo que
+       quedó medido y NO tocado» declaraba trabajo aplazado —y lo tenía cerrado
+       desde la v991— sin que la comprobación la mirara, porque su encabezado no
+       era ninguna de las cinco formas. Se renombró a la canónica en vez de
+       aflojar la expresión, que es la decisión de la v895. */
+    {
+      const iC = md.indexOf('`ENCABEZADOS-APLAZADOS`');
+      const bloque = iC > 0 ? md.slice(iC, md.indexOf('\n#', iC + 10)) : '';
+      const escritas = [...bloque.matchAll(/^\* `([^`]+)`$/gm)].map((x) => x[1]);
+      const enRegex = (String(HSEC).match(/\(([^)]+)\)/) || ['', ''])[1].split('|');
+      const faltan = escritas.filter((x) => enRegex.indexOf(x) < 0);
+      const sobran = enRegex.filter((x) => escritas.indexOf(x) < 0);
+      comprobar('y el convenio de encabezados escrito es el mismo que se aplica',
+        escritas.length >= 4 && !faltan.length && !sobran.length,
+        escritas.length < 4
+          ? 'no se pudo leer el bloque ENCABEZADOS-APLAZADOS: ' + escritas.length + ' formas'
+          : (faltan.length || sobran.length
+            ? 'se separaron — escrito y no aplicado: ' + (faltan.join(' · ') || '(nada)') +
+              ' · aplicado y no escrito: ' + (sobran.join(' · ') || '(nada)')
+            : 'las ' + escritas.length + ' formas coinciden en la bitácora y en la comprobación'));
+    }
+
     comprobar('y todo renglón de una sección «Lo que NO hace» dice su estado',
       renglones.length > 10 && sinEstado.length === 0,
       renglones.length <= 10
@@ -6474,6 +6503,26 @@ console.log('\n  -- una declaración de «otra tanda» lleva su estado (v1006) -
           ? 'los ' + renglones.length + ' renglones de las secciones de trabajo aplazado llevan su estado'
           : sinEstado.length + ' sin estado: ' + sinEstado.slice(0, 4).join(' · ') +
             ' — siete de estos ya estaban hechos y ninguno lo decía'));
+
+    /* Y un PISO sobre cuántos se vigilan, que es lo único que caza el fallo
+       que la v1008 no podía cazar de otra manera: renombrar un encabezado
+       fuera del convenio hace que su sección deje de mirarse **y todo lo demás
+       siga en verde**. Medido: con el encabezado viejo devuelto, el recuento
+       baja de 54 a 53 y la comprobación de arriba pasa igual.
+
+       Es un piso y no un techo porque la cantidad solo debe subir: cada tanda
+       que declare trabajo aplazado agrega renglones. Baja cuando alguien saca
+       una sección del convenio —que es el fallo— o cuando una se reescribe
+       entera, que es raro y también vale mirarlo. Al bajarlo a propósito se
+       baja también este número, y eso se ve en el diff. */
+    const PISO_APLAZADOS = 54;
+    comprobar('y ninguna sección se sale del convenio y deja de vigilarse',
+      renglones.length >= PISO_APLAZADOS,
+      renglones.length >= PISO_APLAZADOS
+        ? renglones.length + ' renglones vigilados, sobre un piso de ' + PISO_APLAZADOS + ' — solo puede subir'
+        : renglones.length + ' vigilados, ' + (PISO_APLAZADOS - renglones.length) +
+          ' por debajo del piso: algún encabezado dejó de ser una de las cinco formas ' +
+          'y su sección ya no se mira');
 
     /* Una marca que nombre una versión que todavía no existe sería una
        promesa, no un estado. Se compara con el token que este mismo archivo
