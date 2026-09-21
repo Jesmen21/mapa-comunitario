@@ -3296,9 +3296,11 @@
       if (!isFinite(lat) || !isFinite(lng)) return;
       var cabeza = String(p.descripcion || '').split(' | ')[0] || '';
       var uso = (cabeza.split('·')[0] || '').trim();
+      /* El TIPO va con el uso: «tiene pisos» se decide con los dos (v991). */
+      var tipoU = (cabeza.split('·')[1] || '').trim();
       var esEdif = (typeof EDIF.esCategoriaEdificio === 'function' && EDIF.esCategoriaEdificio(p.tipo)) ||
                    (/Matriz de Usos/.test(String(p.tipo || '')) &&
-                    typeof EDIF.esUsoDeEdificio === 'function' && EDIF.esUsoDeEdificio(uso));
+                    typeof EDIF.tienePisos === 'function' && EDIF.tienePisos(uso, tipoU));
       if (!esEdif) return;
       try { if (!puntoDentroDelSector({ lat: lat, lng: lng })) return; } catch (e) { return; }
       var f = EDIF.leer(p.descripcion);

@@ -14927,6 +14927,152 @@ Once aserciones en rojo de doce, contra una copia guardada en `/tmp` y no con
 La duodécima es MATERIAL y va primero (v920): es la precondición, y pasa en las
 dos versiones porque la tabla que se invierte y el catálogo existían antes.
 
+## «Tiene pisos» es del TIPO, no del USO (v991)
+
+Lo que la v989 dejó medido y declarado pendiente: **un gimnasio o una academia
+no podían declarar sus pisos**, porque `Deportivo` está entero en la lista de
+usos sin plantas.
+
+    v990   Deportivo · Gimnasio / CrossFit  →  la ficha no pregunta pisos
+    v991   Deportivo · Gimnasio / CrossFit  →  3 pisos, prellenados «Deportivo o gimnasio»
+
+### El módulo se contradecía consigo mismo desde la v989
+
+No es una opinión sobre qué es un edificio: es que las dos mitades no podían
+ser ciertas a la vez. La v989 hizo de **«Deportivo o gimnasio» un uso de PISO
+válido** —un gimnasio en el piso 3 de un edificio se puede declarar desde
+entonces— y al mismo tiempo un punto Deportivo no podía declarar planta
+ninguna. Una cancha no tiene plantas y el coliseo que la cubre sí, **y son
+tipos del mismo uso**.
+
+Medido sobre los 19 usos sin plantas y sus 246 tipos, los heterogéneos son
+tres y suman ocho tipos:
+
+| Uso | Tipos que sí se ocupan por plantas |
+|---|---|
+| Deportivo | Coliseo cubierto · Estadio · Gimnasio / CrossFit · Academia de artes marciales |
+| Espacio Ferial / Eventos Masivos | Centro de convenciones · Coliseo de exposiciones · Sala de banquetes |
+| Comunicaciones / Antenas | Data center |
+
+Los otros dieciséis son homogéneos de verdad —ninguna manzana de una Zona
+Baldía tiene plantas, ninguna ronda de quebrada, ningún hidrante— así que la
+aproximación por uso no era mala: era incompleta en uno de cada seis.
+
+### Por TIPO y no partiendo el uso en dos
+
+La v989 escribió que arreglarlo «pide partir el uso en dos», y eso es
+justamente lo que NO se hace: **el tipo se guarda como texto dentro del
+registro**, así que partir `Deportivo` dejaría las entradas ya mapeadas
+apuntando a un uso que el catálogo ya no tiene. Es la razón por la que la v982
+tampoco renombró `Servicios personales`.
+
+La excepción es una tabla de tipo → **con qué uso de piso se prellena**, y el
+valor no es un adorno: un tipo que gana plantas también necesita saber qué
+poner en ellas. Sin él, el coliseo preguntaría los pisos y los prellenaría
+todos con «No se sabe» — la mitad del defecto con otra ropa. Y su uso **no**
+entra en `USO_PISO_DE_MATRIZ`, porque eso rompería la partición que la v974
+guarda: lo que gana plantas es el tipo, no el uso.
+
+#### Y lo que se dejó fuera va escrito
+
+El kiosco, la caseta, el baño público y el bebedero del mobiliario; el galpón,
+el establo y el invernadero de lo agropecuario; la planta de trituración. Son
+estructuras de un solo nivel **por construcción**, así que preguntarles cuántos
+pisos tienen no añade nada. Y «Finca / predio rural» es un PREDIO y no la casa
+que haya dentro.
+
+Va escrito para que la próxima tanda no lo vuelva a medir, que es lo que esta
+acaba de hacer con la nota de la v989.
+
+### El nombre mentía, así que se cambió
+
+`esUsoDeEdificio(uso)` pasa a `tienePisos(uso, tipo)`. El nombre viejo afirma
+que la decisión es del uso, y desde esta versión no lo es — un nombre que se
+queda a medias se llama por error desde el sitio equivocado, que es lo que la
+v886 aprendió con `laminaQueQuepa`. No se deja un alias: dos nombres para una
+decisión son la clase B.
+
+**Los cuatro lectores pasan ahora el tipo**, y el tipo se saca donde cada uno ya
+lo tiene: el formulario lo tiene seleccionado, `partirEtiqueta` ya lo devuelve,
+y los otros dos parten la misma cabeza «Uso · Tipo» de la que ya sacaban el
+uso. El análisis por área lo recibe por `ctx.tipoDe`, al lado de `usoDe`, para
+no repetir el parseo.
+
+**La puerta acepta que le pasen solo el uso**, y devuelve la respuesta de antes.
+No es un descuido: es lo que impide romper un llamador que no sepa el tipo. Lo
+que impide que se OLVIDE es la guarda, que exige que los cuatro lo pasen —fallar
+cerrado donde se puede, y no donde rompería algo.
+
+### Medido en el navegador, contra el vocabulario de verdad
+
+Trece casos por su función real, incluida la rama que tiene que seguir diciendo
+que no:
+
+```
+Deportivo · Cancha sintética        no · —
+Deportivo · Coliseo cubierto        SÍ · Deportivo o gimnasio
+Deportivo · Gimnasio / CrossFit     SÍ · Deportivo o gimnasio
+Deportivo · Piscina pública         no · —
+Espacio Ferial · Centro de conv.    SÍ · Comercio
+Espacio Ferial · Lote de circo      no · —
+Comunicaciones · Data center        SÍ · Industria, taller o bodega
+Comunicaciones · Torre de com.      no · —
+Residencial · Casa de dos pisos     SÍ · Vivienda
+Arbolado · Palma                    no · —
+Mobiliario · Banca                  no · —
+Redes en Vía · Hidrante             no · —
+```
+
+Y el formulario de verdad para un gimnasio de tres plantas: **tres renglones,
+los tres prellenados «Deportivo o gimnasio»**. Las dos ramas en la misma
+corrida — sin la segunda, un «sí tiene pisos» puesto en todas partes pasaría
+igual y la ficha de una palma volvería a preguntar los pisos (v974).
+
+### Las guardas, y la que se cazó a sí misma
+
+Seis, con MATERIAL primero (v920). Las dos primeras persiguen el **no-op
+silencioso**, que es la forma en que una excepción se estropea sin que nadie se
+entere: un tipo mal escrito, o un tipo cuyo uso ya tenía plantas. Las dos se
+leen igual que una excepción que funciona — es la lección de la v973 con los
+sinónimos y la de la v975 con los de especie.
+
+La tercera exige que lo que prellena sea un uso de piso del vocabulario; la
+cuarta, que los cuatro lectores pasen el tipo; y la última es la guarda de la
+guarda: que `tienePisos` **y** el prellenado sigan mirando la tabla. Sin ella,
+las cinco de arriba seguirían en verde sobre una tabla que es documentación.
+
+Y una del propio arnés: el lector de tablas cortaba en el primer carácter del
+terminador, así que el objeto se quedaba sin cerrar y el `eval` reventaba con
+«Unexpected token». **Desde la guarda de MATERIAL eso se ve exactamente igual
+que una tabla que no existe**, y el mensaje decía las cuatro juntas. Ahora dice
+cuál falló, que es lo que lo resolvió en una corrida.
+
+### Demostrado contra la v990
+
+Seis inyecciones fieles, una por guarda, contra copias guardadas (v973):
+
+```
+fantasma   ✗ todo tipo de la excepción existe en el catálogo  — Coliseo Cubierto
+sobra      ✗ y su uso es de los que NO tienen pisos  — no-op: Casa de dos pisos
+prellena   ✗ lo que prellena es un uso de piso del vocabulario  — Estadio
+lector     ✗ los cuatro lectores deciden con el uso Y el tipo  — la cadena al motor
+puerta     ✗ y tienePisos sigue mirando la tabla  — dejó de mirarla: tienePisos
+prepuerta  ✗ …y el prellenado también  — dejó de mirarla: usoPisoPorDefecto
+```
+
+### Lo que NO se pudo ejercitar, y se dice
+
+**El flujo entero de mapear un gimnasio en el navegador.** Los selectores de
+grupo, uso y tipo de Pro City no se dejaron accionar desde la sonda —es la
+misma limitación que la v989 encontró y declaró—, así que lo que se midió es el
+vocabulario de verdad y `htmlUsosPorPiso` de verdad, llamados directamente, más
+la comprobación estática de que el formulario pasa el tipo. Se dice por lo que
+es y no se presenta como más.
+
+Y **ninguna suite de navegador**, por lo mismo que la v973 a la v990: este
+contenedor no tiene `../urbis-motor` ni el `node_modules` del banco de pruebas.
+`tpisos` gana su aserción de las dos ramas y queda pendiente de correrse.
+
 ## El texto de un gráfico se lee a su tamaño (v990)
 
 Lo que la v972 dejó medido y declarado pendiente con su tabla: **el texto de

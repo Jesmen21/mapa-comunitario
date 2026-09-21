@@ -882,9 +882,11 @@
       const porUso = {};
       pc.forEach(p => {
         const uso = ctx.usoDe(p);
+        /* El TIPO va con el uso: «tiene pisos» se decide con los dos (v991). */
+        const tipoU = typeof ctx.tipoDe === 'function' ? ctx.tipoDe(p) : '';
         const esEdif = (typeof EDIF.esCategoriaEdificio === 'function' && EDIF.esCategoriaEdificio(p.tipo)) ||
                        (String(p.tipo || '') === ctx.matrizKey &&
-                        typeof EDIF.esUsoDeEdificio === 'function' && EDIF.esUsoDeEdificio(uso));
+                        typeof EDIF.tienePisos === 'function' && EDIF.tienePisos(uso, tipoU));
         if (!esEdif) return;
         edificios++;
         const f = EDIF.leer(p.descripcion);

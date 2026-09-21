@@ -3409,6 +3409,9 @@
       colorGrupo: MATRIZ_GRUPO_COLOR,
       matrizKey: MATRIZ_USOS_KEY,
       usoDe: _procityPuntoUso,
+      /* El tipo va al lado del uso porque «tiene pisos» se decide con los dos
+         desde la v991: la cancha no tiene plantas y el coliseo sí. */
+      tipoDe: _procityPuntoTipo,
       esProCity: tipo => PRO_CITY_DIMS.includes(String(tipo || '')),
       esPropio: esPropioProCity,
       // Lo que js/24 necesita para no tejer geometría sobre puntos ocultos.
@@ -4387,7 +4390,13 @@
     // puro, sin la dirección — es la fuente correcta.
     const puro = (d[0] || '').trim();
     return puro.split(' · ')[0] || 'Otro';
+  }  /* El hermano del de arriba, y por el mismo motivo: d[0] es el «Uso · Tipo»
+     puro y d[1] trae la dirección pegada delante. */
+  function _procityPuntoTipo(p){
+    const d = String(p.descripcion||'').split(' | ');
+    return ((d[0] || '').trim().split(' · ')[1] || '').trim();
   }
+
   // Rellena SOLO el contenedor de resultados (chips de autor + lista) para
   // que el buscador no pierda el foco entre teclas — mismo patrón que el
   // buscador de la Matriz de Usos.
@@ -5858,8 +5867,8 @@
     const EDIF_PC = window.URBIS_EDIFICIO || null;
     let htmlEdificio = '';
     let defectoPiso = null;
-    if(proCity.dim === MATRIZ_USOS_KEY && EDIF_PC && typeof EDIF_PC.htmlUsosPorPiso === 'function' && EDIF_PC.esUsoDeEdificio(usoParteSel)){
-      defectoPiso = function(p){ return EDIF_PC.usoPisoPorDefecto(usoParteSel, p); };
+    if(proCity.dim === MATRIZ_USOS_KEY && EDIF_PC && typeof EDIF_PC.htmlUsosPorPiso === 'function' && EDIF_PC.tienePisos(usoParteSel, tipoParteSel)){
+      defectoPiso = function(p){ return EDIF_PC.usoPisoPorDefecto(usoParteSel, p, tipoParteSel); };
       let pisosPre = EDIF_PC.pisosDelNombre(tipoParteSel) || 1;
       let usosPre = [];
       if(editando){

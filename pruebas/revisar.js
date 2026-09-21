@@ -3489,7 +3489,7 @@ console.log('\n  -- el mapeo de Pro City --');
   /* ── El CUARTO inventario, que la v973 rompió sin que nada lo dijera ─────
      Un uso nuevo se escribe en tres sitios —el catálogo, su grupo y la
      casilla del análisis— y las tres las vigila lo de arriba. El cuarto es
-     el vocabulario del edificio, y ahí `esUsoDeEdificio` falla ABIERTO: lo
+     el vocabulario del edificio, y ahí `tienePisos` falla ABIERTO: lo
      que no esté en la lista de «sin pisos» cuenta como edificio. Así que
      «Arbolado Urbano» entró en la v973 y la ficha de una palma preguntaba
      «¿cuántos pisos tiene?», prellenando un piso con «No se sabe». No lo vio
@@ -3792,15 +3792,15 @@ console.log('\n  -- lo mapeado llega al análisis como lo que es (v984) --');
     return i < 0 ? '' : j64.slice(i, j64.indexOf('\n  }\n', i));
   })();
   const condicionado = !!cuerpo
-    && cuerpo.indexOf('esUsoDeEdificio(') >= 0
+    && cuerpo.indexOf('tienePisos(') >= 0
     && /if\s*\(esEdificio\)\s*t\['building:levels'\]/.test(cuerpo)
     && !/'building:levels'\s*:/.test(cuerpo);
   comprobar('solo un edificio entra al análisis con pisos',
     condicionado,
     !cuerpo ? 'no se pudo leer puntoAElemento'
       : /'building:levels'\s*:/.test(cuerpo) ? 'los pisos se emiten siempre: un árbol y un hidrante cuentan como construcciones'
-      : cuerpo.indexOf('esUsoDeEdificio(') < 0 ? 'no usa el mismo discriminante que la ficha: la decisión queda en dos sitios'
-      : 'los pisos van condicionados a esUsoDeEdificio');
+      : cuerpo.indexOf('tienePisos(') < 0 ? 'no usa el mismo discriminante que la ficha: la decisión queda en dos sitios'
+      : 'los pisos van condicionados a tienePisos');
 
   /* Y la guarda contra pasarse: los pisos tienen que SEGUIR emitiéndose.
      Quitarlos del todo dejaría al motor sin alturas de lo levantado en
@@ -5228,6 +5228,114 @@ console.log('\n  -- el subtipo de cada piso (v989) --');
       llama,
       llama ? 'htmlUsosPorPiso lo monta en cada renglón'
             : 'el control existe y no se monta: el campo no aparecería');
+  }
+}
+
+/* ── «Tiene pisos» es del TIPO y no del USO (v991) ─────────────────────────
+   Hasta la v990 lo decidía el uso, y `Deportivo` estaba en la lista de «sin
+   pisos» entera: una cancha no tiene plantas y un coliseo sí, y son tipos del
+   mismo uso. El módulo se contradecía consigo mismo desde la v989, que hizo de
+   «Deportivo o gimnasio» un uso de PISO válido.
+
+   La excepción va por TIPO y no partiendo el uso, porque el tipo se guarda como
+   texto dentro del registro (v982). Lo que se guarda acá es que la excepción no
+   se vuelva un no-op silencioso ni se olvide en uno de sus cuatro lectores. */
+console.log('\n  -- «tiene pisos» es del tipo y no del uso (v991) --');
+{
+  const j03b = soloCodigo(leer('js/03b-edificio-vocabulario.js'));
+  const j20b = soloCodigo(leer('js/20-mobile-functional-app.js'));
+
+  /* El terminador se INCLUYE: cortando en su primer carácter el objeto se
+     queda sin cerrar y el eval revienta con «Unexpected token» — que desde la
+     guarda de MATERIAL se ve igual que una tabla que no existe. */
+  const NO_SE_SABE = 'No se sabe';
+  const leerTabla = (txt, nom, ab, ce) => {
+    const i = txt.indexOf(nom);
+    if (i < 0) return null;
+    const a = txt.indexOf(ab, i), c = txt.indexOf(ce, a);
+    if (a < 0 || c < 0) return null;
+    try { return eval('(' + txt.slice(a, c + ce.length) + ')'); } catch (e) { return null; }
+  };
+  const conPisos = leerTabla(j03b, 'const TIPOS_CON_PISOS', '{', '\n  }');
+  const sinPisos = leerTabla(j03b, 'const USOS_MATRIZ_SIN_PISOS', '[', ']');
+  const usosPiso = leerTabla(j03b, 'const USOS_PISO', '[', '\n  ]');
+  const cat = (() => {
+    const i = j20b.indexOf('const PROCITY_MATRIZ_USOS = [');
+    if (i < 0) return null;
+    const a = j20b.indexOf('[', i), c = j20b.indexOf('\n  ];', a);
+    try { return eval(j20b.slice(a, c + 4)); } catch (e) { return null; }
+  })();
+
+  if (!conPisos || !sinPisos || !usosPiso || !cat) {
+    anotarSinMaterial('MATERIAL · las cuatro listas de la excepción se dejan leer',
+      'no se pudo leer: ' + [!conPisos && 'TIPOS_CON_PISOS', !sinPisos && 'USOS_MATRIZ_SIN_PISOS',
+        !usosPiso && 'USOS_PISO', !cat && 'el catálogo'].filter(Boolean).join(', ') +
+      ' — sin ellas nada de lo de abajo comprueba una excepción');
+  } else {
+    const tipos = Object.keys(conPisos);
+    comprobar('MATERIAL · la excepción por tipo tiene contenido',
+      tipos.length >= 1, tipos.length + ' tipos ganan plantas por su cuenta');
+
+    /* 1 · Un tipo mal escrito es un no-op que se lee igual que uno que
+       funciona. Es la lección de la v973 con los sinónimos y la de la v975
+       con los de especie. */
+    const fantasma = tipos.filter(t => !cat.some(u => (u.t || []).indexOf(t) >= 0));
+    comprobar('todo tipo de la excepción existe en el catálogo',
+      fantasma.length === 0,
+      fantasma.length ? 'no está en ningún uso: ' + fantasma.join(' · ') +
+        ' — la excepción no haría nada y se leería igual que si funcionara'
+      : 'los ' + tipos.length + ' están en el catálogo');
+
+    /* 2 · Y su uso tiene que ser de los que NO tienen pisos: si su uso ya los
+       tiene, la excepción tampoco hace nada. */
+    const sobra = tipos.filter(t => {
+      const u = cat.find(x => (x.t || []).indexOf(t) >= 0);
+      return u && sinPisos.indexOf(u.u) < 0;
+    });
+    comprobar('y su uso es de los que NO tienen pisos, o la excepción sobra',
+      sobra.length === 0,
+      sobra.length ? 'su uso ya tiene plantas, así que la excepción es un no-op: ' + sobra.join(' · ')
+                   : 'los ' + tipos.length + ' son la excepción de un uso sin plantas');
+
+    /* 3 · Con qué se prellena cada planta tiene que ser un uso de piso de
+       verdad: un valor inventado dejaría el desplegable en blanco. */
+    const malPre = tipos.filter(t => usosPiso.indexOf(conPisos[t]) < 0);
+    comprobar('lo que prellena cada planta es un uso de piso del vocabulario',
+      malPre.length === 0,
+      malPre.length ? 'prellenan con algo que no está en USOS_PISO: ' + malPre.join(' · ')
+                    : 'los ' + tipos.length + ' prellenan con un uso de piso real');
+
+    /* 4 · Los cuatro lectores pasan el TIPO. Falla CERRADO: uno que solo pase
+       el uso sigue compilando y vuelve a la respuesta de antes en silencio,
+       que es exactamente como se perdió el discriminante hasta la v984. */
+    const lectores = [
+      ['js/20-mobile-functional-app.js', 'el formulario'],
+      ['js/24-procity-analisis.js', 'el análisis por área'],
+      ['js/64-analisis-edu.js', 'la cadena al motor'],
+      ['js/68-procity-reconocimiento.js', 'el conteo de campo']
+    ];
+    const cojos = lectores.filter(([f]) =>
+      !/\.tienePisos\(\s*[^,)]+,\s*[^)]+\)/.test(soloCodigo(leer(f))));
+    comprobar('los cuatro lectores deciden con el uso Y el tipo',
+      cojos.length === 0,
+      cojos.length ? 'deciden solo con el uso: ' + cojos.map(x => x[1]).join(' · ') +
+        ' — un coliseo volvería a no tener plantas ahí'
+      : 'los ' + lectores.length + ' pasan los dos');
+
+    /* 5 · Guarda de la guarda: si `tienePisos` dejara de mirar la tabla, todo
+       lo de arriba seguiría en verde sobre una excepción que no se aplica. */
+    const iT = j03b.indexOf('function tienePisos(');
+    const cT = iT >= 0 ? j03b.slice(iT, j03b.indexOf('\n  }', iT)) : '';
+    const mira = /TIPOS_CON_PISOS/.test(cT);
+    const miraPre = /TIPOS_CON_PISOS/.test((() => {
+      const i = j03b.indexOf('function usoPisoPorDefecto(');
+      return i < 0 ? '' : j03b.slice(i, j03b.indexOf('\n  }', i));
+    })());
+    comprobar('y tienePisos y el prellenado siguen mirando la tabla',
+      mira && miraPre,
+      (mira && miraPre) ? 'la excepción se aplica en las dos puertas'
+        : 'dejó de mirarla: ' + [!mira && 'tienePisos', !miraPre && 'usoPisoPorDefecto']
+            .filter(Boolean).join(' y ') + ' — la tabla sería documentación');
   }
 }
 

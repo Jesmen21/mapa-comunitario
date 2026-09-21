@@ -339,12 +339,13 @@
              fantasma a la huella y al reparto de alturas (v880).
 
              El discriminante ya existía y nadie lo miraba acá: es el MISMO
-             `esUsoDeEdificio` con el que la ficha decide si preguntar los
-             pisos, y la v974 le escribió una guarda entera. Que lo use el
-             formulario y no el análisis es la clase B —una decisión tomada
-             en dos sitios— y se vio midiendo la cadena, no leyendo. */
-          const esEdificio = !!(EDIF && typeof EDIF.esUsoDeEdificio === 'function'
-            && EDIF.esUsoDeEdificio(et.uso));
+             `tienePisos` con el que la ficha decide si preguntar los pisos, y
+             la v974 le escribió una guarda entera. Que lo use el formulario y
+             no el análisis es la clase B —una decisión tomada en dos sitios— y
+             se vio midiendo la cadena, no leyendo. Desde la v991 va con el
+             TIPO además del uso: un coliseo sí tiene plantas. */
+          const esEdificio = !!(EDIF && typeof EDIF.tienePisos === 'function'
+            && EDIF.tienePisos(et.uso, et.tipo));
           const t = {
             'urbis:sub': sub,
             'urbis:intensidad': String(intensidadDe(sub)),

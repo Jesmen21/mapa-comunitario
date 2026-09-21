@@ -470,7 +470,59 @@
     'Espacio Residual', 'Zona de Expansión Urbana', 'Extractivo (Minería/Canteras)',
     'Comunicaciones / Antenas', 'Espacio Ferial / Eventos Masivos'
   ]);
-  function esUsoDeEdificio(usoMatriz){
+  /* ── «Tiene pisos» es del TIPO, no del USO (v991) ────────────────────────
+     Hasta la v990 se decidía por el USO, y para 51 de los 52 eso es correcto
+     porque son homogéneos: ninguna manzana de una Zona Baldía tiene plantas y
+     todas las casas de Residencial las tienen.
+
+     El que no lo es lo destapó una contradicción del propio módulo: desde la
+     v989, «Deportivo o gimnasio» es un uso de PISO válido —un gimnasio en el
+     piso 3 de un edificio se puede declarar— y al mismo tiempo un punto
+     Deportivo no podía declarar pisos ninguno. Las dos cosas no pueden ser
+     ciertas: una cancha no tiene plantas y el coliseo que la cubre sí, y son
+     tipos del mismo uso.
+
+     Así que la excepción va por TIPO y no partiendo el uso en dos: el tipo se
+     guarda como texto dentro del registro, y partirlo dejaría las entradas ya
+     mapeadas apuntando a un uso que el catálogo ya no tiene (v982).
+
+     El valor es con qué uso de piso se prellena, porque un tipo que gana
+     plantas también necesita saber qué poner en ellas: sin eso, el coliseo
+     preguntaría los pisos y los prellenaría todos con «No se sabe», que es la
+     mitad del defecto con otra ropa. Y su uso NO entra en `USO_PISO_DE_MATRIZ`
+     —eso rompería la partición que la v974 guarda—, porque lo que gana pisos
+     es el tipo y no el uso. */
+  const TIPOS_CON_PISOS = {
+    /* Deportivo · la cancha no tiene plantas y la edificación que la cubre
+       sí. Son los cuatro que se ocupan por pisos: el resto son superficies
+       —canchas, pistas, piscinas— o mobiliario al aire libre. */
+    'Coliseo cubierto': 'Deportivo o gimnasio',
+    'Estadio': 'Deportivo o gimnasio',
+    'Gimnasio / CrossFit': 'Deportivo o gimnasio',
+    'Academia de artes marciales (taekwondo, karate)': 'Deportivo o gimnasio',
+    /* Espacio Ferial · el recinto es una edificación con plantas; el lote de
+       circo, el parque de eventos y el autódromo no. */
+    'Centro de convenciones': 'Comercio',
+    'Coliseo de exposiciones': 'Comercio',
+    'Sala de banquetes': 'Comercio',
+    /* Comunicaciones · una torre no se ocupa por plantas; un centro de datos
+       es un edificio. */
+    'Data center': 'Industria, taller o bodega'
+  };
+  /* Lo que se dejó FUERA a propósito, para que la próxima tanda no lo vuelva
+     a medir: el kiosco, la caseta, el baño público y el bebedero del
+     mobiliario; el galpón, el establo y el invernadero de lo agropecuario; la
+     planta de trituración. Son estructuras de un solo nivel por construcción,
+     así que preguntarles cuántos pisos tienen no añade nada — y «Finca /
+     predio rural» es un PREDIO y no la casa que haya dentro. */
+
+  /* Toma el uso Y el tipo. Un llamador que solo pase el uso sigue teniendo la
+     respuesta de siempre, así que la puerta no se rompe; lo que impide que se
+     olvide el tipo es la guarda, que exige que los cuatro sitios que la usan
+     lo pasen. */
+  function tienePisos(usoMatriz, tipo){
+    const t = String(tipo || '').trim();
+    if (t && Object.prototype.hasOwnProperty.call(TIPOS_CON_PISOS, t)) return true;
     const u = String(usoMatriz || '').trim();
     return !!u && !USOS_MATRIZ_SIN_PISOS.has(u);
   }
@@ -498,7 +550,11 @@
     'Mixto (Residencial-Industrial)': { abajo: 'Industria, taller o bodega', arriba: 'Vivienda' },
     'Uso Múltiple / Mixto General': { abajo: 'Comercio', arriba: 'Oficinas o servicios' }
   };
-  function usoPisoPorDefecto(usoMatriz, piso){
+  function usoPisoPorDefecto(usoMatriz, piso, tipo){
+    const t = String(tipo || '').trim();
+    /* El tipo manda sobre el uso cuando es de los que ganan plantas por su
+       cuenta: su uso no está en la tabla de arriba a propósito. */
+    if (t && Object.prototype.hasOwnProperty.call(TIPOS_CON_PISOS, t)) return TIPOS_CON_PISOS[t];
     const u = String(usoMatriz || '').trim();
     const mx = MIXTOS_DECLARADOS[u];
     if (mx) return piso <= 1 ? mx.abajo : mx.arriba;
@@ -798,7 +854,8 @@
     mezclaDe: mezclaDe,
     subDeUsoPiso: function (u){ return SUB_DE_USO_PISO[String(u || '').trim()] || ''; },
     pisosDelNombre: pisosDelNombre,
-    esUsoDeEdificio: esUsoDeEdificio,
+    tienePisos: tienePisos,
+    TIPOS_CON_PISOS: TIPOS_CON_PISOS,
     usoPisoPorDefecto: usoPisoPorDefecto,
     usoPisoDeCategoria: usoPisoDeCategoria,
     SUBTIPO_EXTRA: SUBTIPO_EXTRA,

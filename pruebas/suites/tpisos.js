@@ -89,7 +89,10 @@ let mal = 0; const T = (n, c, d) => { if (!ok(n, c, d)) mal++; };
                                          { piso: 2, uso: 'Comercio' }]);
     o.pisosNombre = [E2.pisosDelNombre('Casa de dos pisos'), E2.pisosDelNombre('Torre residencial (4–10 pisos)'), E2.pisosDelNombre('Bar')];
     o.defectoMixto = [E2.usoPisoPorDefecto('Mixto (Residencial-Comercial)', 1), E2.usoPisoPorDefecto('Mixto (Residencial-Comercial)', 2)];
-    o.esEdificio = [E2.esUsoDeEdificio('Residencial'), E2.esUsoDeEdificio('Esp. Público'), E2.esUsoDeEdificio('Vías e Infraestructura Vial')];
+    o.esEdificio = [E2.tienePisos('Residencial'), E2.tienePisos('Esp. Público'), E2.tienePisos('Vías e Infraestructura Vial')];
+    /* Y la excepción por TIPO de la v991: la cancha no tiene plantas y el
+       coliseo del mismo uso sí. */
+    o.porTipo = [E2.tienePisos('Deportivo', 'Cancha sintética'), E2.tienePisos('Deportivo', 'Coliseo cubierto')];
 
     // El registro: la casilla al final, y un punto viejo que no la trae.
     const usosMat = E2.todosLosUsos().map(() => 'NO');
