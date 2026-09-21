@@ -7997,20 +7997,22 @@ console.log('\n  -- una cifra de 1 no lleva un plural detras (v1019) --');
      Esta es la version estatica de esa regla: todo sitio que pegue un plural
      detras de una cifra tiene que tener su rama de singular.
 
-     POR QUE SOLO TRES ARCHIVOS, y no el repositorio entero: la clase esta en
+     POR QUE SOLO ESTOS ARCHIVOS, y no el repositorio entero: la clase esta en
      todas partes -medido, 460 sitios sin rama en 33 archivos, con 108
      palabras distintas- y arreglarla es varias tandas. Estos tres son los que
      esta tanda MIDIO SOBRE EL PAPEL: se compuso el informe con las hojas
      valiendo 1 de verdad y se barrio el documento. Un archivo que entre aqui
      tiene que venir con su papel medido, no con una promesa. */
   const ARCHIVOS = ['js/62-analisis-ia-app.js', 'js/63-analisis-ia-informe.js',
-                    'js/65-analisis-edu-ui.js'];
+                    'js/65-analisis-edu-ui.js', 'js/70-seguimiento.js'];
 
   /* Palabras que acaban en «s» y no son plurales, con su razon al lado. Es la
      misma forma que la lista de invariables de `tdoslaminas` y que el `leeme`
      de la v897: se declara una por una y se ve por que. */
   const NO_ES_PLURAL = [
     ['ms', 'simbolo de milisegundo: un simbolo de unidad no se pluraliza'],
+    ['billones', 'magnitud del presupuesto en decenas o centenas, no una cardinalidad'],
+    ['más', 'comparativo: «1 más» es correcto y no lleva plural detras'],
   ];
 
   /* El barrido, en una funcion, para que la guarda de la guarda corra EL
@@ -8021,8 +8023,14 @@ console.log('\n  -- una cifra de 1 no lleva un plural detras (v1019) --');
     let m;
     while ((m = re.exec(txt))) {
       const antes = txt.slice(Math.max(0, m.index - 160), m.index);
-      const tieneRama = /=== *1 *\?|!== *1 *\?|plural\(|\bpl\(/.test(antes);
-      out.push({ palabra: m[2], en: m.index, sinRama: !tieneRama });
+      /* `\s*` y no ` *`: el ternario parte de linea a menudo -`n === 1\n ? …`-
+         y con el espacio simple la guarda daba por pelado un sitio que si
+         tiene su rama. Lo destapo js/70, donde esa forma es la corriente. */
+      const tieneRama = /===\s*1\s*\?|!==\s*1\s*\?|plural\(|\bpl\(|\bcn\(/.test(antes);
+      /* Una cifra que es una CONSTANTE del modulo no puede valer 1 sin que
+         alguien edite la constante, asi que no hay rama que escribir. */
+      const deConstante = /\b([A-Z][A-Z0-9_]{3,})\s*$/.test(antes);
+      out.push({ palabra: m[2], en: m.index, sinRama: !tieneRama && !deConstante });
     }
     return out;
   }
@@ -8048,10 +8056,10 @@ console.log('\n  -- una cifra de 1 no lleva un plural detras (v1019) --');
 
   /* MATERIAL primero (v920). */
   if (sitios < 10) {
-    anotarSinMaterial('MATERIAL - los tres archivos imprimen sustantivos contados',
+    anotarSinMaterial('MATERIAL - los ' + ARCHIVOS.length + ' archivos imprimen sustantivos contados',
       'solo ' + sitios + ' sitios: el barrido no tendria casi nada que mirar');
   } else {
-    comprobar('MATERIAL - los tres archivos imprimen sustantivos contados',
+    comprobar('MATERIAL - los ' + ARCHIVOS.length + ' archivos imprimen sustantivos contados',
       true, sitios + ' sitios ponen un sustantivo detras de una cifra');
 
     comprobar('todos llevan su rama de singular',
@@ -8059,7 +8067,7 @@ console.log('\n  -- una cifra de 1 no lleva un plural detras (v1019) --');
       pelados.length
         ? pelados.length + ' imprimirian «1 cosas» en el papel: ' + pelados.slice(0, 5).join(' · ')
         : 'los ' + sitios + ' la llevan, salvo ' + NO_ES_PLURAL.length +
-          ' declarada aparte: ' + NO_ES_PLURAL.map((x) => '«' + x[0] + '» ' + x[1]).join(' · '));
+          (NO_ES_PLURAL.length === 1 ? ' declarada aparte: ' : ' declaradas aparte: ') + NO_ES_PLURAL.map((x) => '«' + x[0] + '» ' + x[1]).join(' · '));
   }
 
   /* LA GUARDA DE LA GUARDA (v878): el barrido reconoce la forma y la rama. */
@@ -8071,15 +8079,21 @@ console.log('\n  -- una cifra de 1 no lleva un plural detras (v1019) --');
   const SIN = "'<p>' + n + ' usos identificados</p>'";
   const CON = "(n === 1 ? 'Un uso' : n + ' usos de este analisis') + ' y no viene'";
   const CON_PL = "plural(n, 'uso', 'usos') + ' de ' + m + ' usos totales'";
+  const CON_SALTO = "x.n === 1\n      ? 'un uso' : x.n + ' usos del sector'";
+  const DE_CONSTANTE = "'faltan ' + FICHA_MIN_CASOS + ' casos de postura'";
   const veSin = sinRama(SIN).some((s) => s.sinRama);
   const veCon = sinRama(CON).some((s) => s.sinRama);
   const veConPl = sinRama(CON_PL).some((s) => s.sinRama);
+  const veSalto = sinRama(CON_SALTO).some((s) => s.sinRama);
+  const veCte = sinRama(DE_CONSTANTE).some((s) => s.sinRama);
   comprobar('el barrido distingue el sitio con rama del que no la tiene',
-    veSin && !veCon && !veConPl,
+    veSin && !veCon && !veConPl && !veSalto && !veCte,
     !veSin ? 'no ve el que NO tiene rama: no vigilaria nada'
       : veCon ? 'denuncia un ternario que si esta: daria rojo sobre lo que esta bien'
         : veConPl ? 'no reconoce plural(): denunciaria los sitios de js/67 y js/68'
-          : 've el pelado, y calla el del ternario y el de plural()');
+          : veSalto ? 'no reconoce el ternario partido de linea: es la forma corriente en js/70'
+            : veCte ? 'denuncia una cifra que es una constante del modulo'
+              : 've el pelado, y calla el del ternario -en una linea y partido-, el de plural() y el de una constante');
 
   /* Y que la lista de exentas siga siendo lo que dice: una palabra sin su
      razon escrita es una excepcion que envejece hasta no significar nada

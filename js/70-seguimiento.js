@@ -53,6 +53,14 @@
     if (p.length !== 3) return String(iso || '');
     return parseInt(p[2], 10) + ' de ' + (MESES[+p[1] - 1] || '') + ' de ' + p[0];
   }
+  /* «1 piezas de servicios registradas» se lee como un descuido de quien
+     firma la hoja, no de quien la programó (v874) — y aquí la hoja dictamina
+     sobre una persona en el cargo. Estos dos ponen la cifra y su sustantivo
+     de una vez, para que no haya que acordarse en cada frase: `cn` cuando la
+     cifra va delante, `pl` cuando ya está puesta o cuando lo que concuerda es
+     el verbo y no el sustantivo. */
+  function pl(n, sing, plur) { return Number(n) === 1 ? sing : plur; }
+  function cn(n, sing, plur) { return n + ' ' + pl(n, sing, plur); }
   function fechaCorta(iso) {
     var p = String(iso || '').split('-');
     if (p.length !== 3) return String(iso || '');
@@ -463,7 +471,7 @@
 
     $('sp-nextup').textContent =
       'Actualizado el ' + fechaLarga(D.actualizado) + ' · ' + CADENCIA_REVISION +
-      ' · ' + diasDesde(D.posesion) + ' días de gobierno.';
+      ' · ' + cn(diasDesde(D.posesion), 'día', 'días') + ' de gobierno.';
 
     $('sp-upd-txt').textContent = fechaCorta(D.actualizado);
     $('sp-upd').title = 'Actualizado el ' + fechaLarga(D.actualizado) +
@@ -632,7 +640,7 @@
     var d = diasDesde(iso);
     if (d === 0) return 'Hoy';
     if (d === 1) return 'Ayer';
-    if (d < 7) return 'Hace ' + d + ' días';
+    if (d < 7) return 'Hace ' + cn(d, 'día', 'días');
     return fechaLarga(iso);
   }
 
@@ -803,7 +811,7 @@
     cab.appendChild(el('h3', null, b.titulo || ''));
     cab.appendChild(el('p', 'sp-bal-rango',
       'Del ' + fechaCorta(b.desde) + ' al ' + fechaCorta(b.corte) +
-      ' · ' + diasDesde(b.desde) + ' días de gobierno'));
+      ' · ' + cn(diasDesde(b.desde), 'día', 'días') + ' de gobierno'));
     cont.appendChild(cab);
 
     if (b.resumen) cont.appendChild(el('p', 'sp-bal-resumen', b.resumen));
@@ -2256,7 +2264,8 @@
          Capa 1, dicha en la cuenta. */
       if (k === 'I-06' && c1.contra.sinRevisar) {
         f.sinCalcular = true;
-        f.razon = c1.contra.sinRevisar + ' de ' + c1.n + ' hechos están sin revisar, así que un cero acá ' +
+        f.razon = c1.contra.sinRevisar + ' de ' + cn(c1.n, 'hecho', 'hechos') +
+        pl(c1.contra.sinRevisar, ' está', ' están') + ' sin revisar, así que un cero acá ' +
                   'diría que el Gobierno respondió a todo y lo que pasa es que nadie lo ha mirado.';
       }
       return f;
@@ -2309,12 +2318,14 @@
          copias de una advertencia se separan (v867). */
       texto: razones.length === 0 ? '' :
         'Las dos tasas NO se pueden poner una al lado de la otra. Se recortó el registro del otro gobierno a ' +
-        'sus primeros ' + ia.dias + ' días, que es la mitad fácil; lo que no se arregla recortando es que los ' +
+        (ia.dias === 1 ? 'su primer día' : 'sus primeros ' + ia.dias + ' días') +
+        ', que es la mitad fácil; lo que no se arregla recortando es que los ' +
         'dos registros no son la misma clase de objeto. ' +
         (ia.exhaustivo ? '' : 'El actual declara su propia cobertura. ') +
         (ib.exhaustivo ? '' : 'El del gobierno anterior es una selección de hechos de todo un cuatrienio, no una ' +
           'bitácora diaria, y así lo dice el propio registro. ') +
-        'En esa ventana el actual trae ' + ia.hechos + ' hechos y el anterior ' + ib.hechos + ': la diferencia ' +
+        'En esa ventana el actual trae ' + cn(ia.hechos, 'hecho', 'hechos') +
+        ' y el anterior ' + ib.hechos + ': la diferencia ' +
         'es de los registros, no de los gobiernos.'
     };
   }
@@ -2429,7 +2440,8 @@
               pendientes: pendientes,
               nivel: null, publicable: false, falta: '' };
     if (sinDeclarar) {
-      r.falta = sinDeclarar + ' de ' + doc.length + ' contradicciones documentadas no declaran si las dos ' +
+      r.falta = sinDeclarar + ' de ' + cn(doc.length, 'contradicción documentada', 'contradicciones documentadas') +
+      pl(sinDeclarar, ' no declara', ' no declaran') + ' si las dos ' +
         'frases hablan del MISMO objeto verificado. Sin eso no se puede separar un incumplimiento de una ' +
         'tensión retórica, y el pliego prohíbe contarlas juntas: una acusación floja al lado de varias ' +
         'sólidas no suma, resta.';
@@ -2652,18 +2664,21 @@
       return est && est.pesa && !entraAlVeredicto(c).nivel.declarado;
     }).length;
     caja('Ningún registro de otro nivel de gobierno alimenta el score', pesanSinNivel ? 'falla' : 'pasa',
-         pesanSinNivel ? pesanSinNivel + ' casos que pesan sin declarar su nivel'
+         pesanSinNivel ? cn(pesanSinNivel, 'caso que pesa sin declarar su nivel',
+                                     'casos que pesan sin declarar su nivel')
                        : 'todo caso que pesa declara que es nacional');
 
     var acusaSinDoc = casos.filter(function (c) {
       return c.estado === 'confirmado' && !((c.fuentes || []).length);
     }).length;
     caja('Ninguna acusación sin documento cuenta como hecho probado', acusaSinDoc ? 'falla' : 'pasa',
-         acusaSinDoc ? acusaSinDoc + ' confirmados sin fuente' : 'los confirmados traen su fuente');
+         acusaSinDoc ? cn(acusaSinDoc, 'confirmado sin fuente', 'confirmados sin fuente')
+      : 'los confirmados traen su fuente');
 
     caja('Cada registro tiene contrargumento oficial, lleno o marcado ausente',
          c1.contra.sinRevisar ? 'falla' : 'pasa',
-         c1.contra.sinRevisar ? c1.contra.sinRevisar + ' de ' + c1.n + ' sin revisar' : 'los ' + c1.n + ' declarados');
+         c1.contra.sinRevisar ? c1.contra.sinRevisar + ' de ' + c1.n + ' sin revisar'
+      : pl(c1.n, 'el declarado', 'los ' + c1.n + ' declarados'));
 
     caja('El editorial está separado y rotulado', ed.hay ? (ed.firmado ? 'pasa' : 'falla') : 'pasa',
          ed.hay ? (ed.firmado ? 'firmado por ' + ed.autor : 'hay editorial SIN autor o SIN fecha')
@@ -2913,7 +2928,7 @@
       palabra:  { i: palMin, iMax: palMax, indeterminado: palMax !== palMin,
                   n: palabra.contadas, conIdentidad: ea.conIdentidad,
                   sinDeclarar: ea.sinDeclarar, t: TECHOS.palabra.t,
-                  detalle: palabra.contadas + ' documentadas · ' + ea.conIdentidad +
+                  detalle: cn(palabra.contadas, 'documentada', 'documentadas') + ' · ' + ea.conIdentidad +
                     ' con identidad de objeto' +
                     (ea.sinDeclarar ? ' · ' + ea.sinDeclarar + ' sin declarar' : '') },
       claridad: { i: TECHOS.claridad.f(claridad.pct),    n: claridad.pct,      t: TECHOS.claridad.t }
@@ -2947,7 +2962,8 @@
       v = { id: 'sin-nivel', t: 'Sin nivel',
             d: 'No se publica peldaño de fiabilidad. Un cambio de postura baja el peldaño solo cuando ' +
                'las dos frases hablan del MISMO objeto verificado, y eso está sin declarar en ' +
-               ea.sinDeclarar + ' de ' + ea.documentadas + ' contradicciones documentadas. Según cómo se ' +
+               ea.sinDeclarar + ' de ' + cn(ea.documentadas, 'contradicción documentada', 'contradicciones documentadas') +
+        '. Según cómo se ' +
                'resuelvan, el veredicto queda entre «' + ESCALERA[peorMin].t + '» y «' +
                ESCALERA[peorMax].t + '»: publicar uno de los dos ahora sería publicar un nivel sin sus insumos.' };
     } else {
@@ -3184,8 +3200,9 @@
        pasa es que hay una lectura pendiente y se sabe exactamente cuál. */
     if (f.veredicto.id === 'sin-nivel' && f.ejeA) {
       placa.appendChild(el('p', 'sp-fi-vfalta',
-        'Falta declarar, en ' + f.ejeA.sinDeclarar + ' de ' + f.ejeA.documentadas +
-        ' contradicciones documentadas, si las dos frases hablan del mismo objeto verificado.'));
+        'Falta declarar, en ' + f.ejeA.sinDeclarar + ' de ' +
+        cn(f.ejeA.documentadas, 'contradicción documentada', 'contradicciones documentadas') +
+        ', si las dos frases hablan del mismo objeto verificado.'));
     }
     placa.appendChild(el('p', 'sp-fi-cuentas', cuentasDe(f)));
     return placa;
@@ -3540,7 +3557,8 @@
 
          La misma vara para uno mismo que para lo que se mide. */
       if (k === 'claridad' && f.claridad && f.claridad.conTipo) {
-        var det = f.claridad.verificado + ' de ' + f.claridad.conTipo + ' hechos con naturaleza declarada';
+        var det = f.claridad.verificado + ' de ' +
+      cn(f.claridad.conTipo, 'hecho con naturaleza declarada', 'hechos con naturaleza declarada');
         if (f.claridad.sinTipo) det += ' · ' + f.claridad.sinTipo + ' sin declarar, fuera de la cuenta';
         li.appendChild(el('span', 'sp-fi-techo-den', det));
       }
@@ -3771,7 +3789,9 @@
        lo que consta es que seis están declarados y 161 sin revisar. */
     if (ind.sinDeclarar) {
       s2.appendChild(el('p', 'sp-c2-pend',
-        ind.sinDeclarar + ' de ' + ind.hechos + ' hechos no declaran qué indicador alimentan. Los tres de arriba ' +
+        ind.sinDeclarar + ' de ' + cn(ind.hechos, 'hecho', 'hechos') +
+        pl(ind.sinDeclarar, ' no declara qué indicador alimenta', ' no declaran qué indicador alimentan') +
+        '. Los tres de arriba ' +
         'que se declaran —mecanismos excepcionales, choques con órganos autónomos e información obtenida por ' +
         'tutela— cuentan solo lo declarado: decidir que un hecho es un choque con un órgano autónomo es una ' +
         'lectura sobre un gobierno real, y este módulo no la deduce del texto.'));
@@ -3818,7 +3838,8 @@
 
       if (ej.eje === 'A' && ej.documentadas !== undefined) {
         li.appendChild(el('p', 'sp-c3-dato',
-          ej.documentadas + ' contradicciones documentadas · ' + ej.conIdentidad + ' con identidad de objeto · ' +
+          cn(ej.documentadas, 'contradicción documentada', 'contradicciones documentadas') +
+      ' · ' + ej.conIdentidad + ' con identidad de objeto · ' +
           ej.sinIdentidad + ' como tensión retórica · ' + ej.sinDeclarar + ' sin declarar'));
       }
       if (ej.eje === 'B' && ej.filas) {
@@ -4045,7 +4066,7 @@
       var g = el('div', 'sp-fi-graf');
       serie.forEach(function (p) {
         var col = el('div', 'sp-fi-col' + (p.parcial ? ' parcial' : ''));
-        col.title = fechaCorta(p.corte) + ' · ' + p.nuevos + ' hechos nuevos · ' +
+        col.title = fechaCorta(p.corte) + ' · ' + cn(p.nuevos, 'hecho nuevo', 'hechos nuevos') + ' · ' +
                     (p.pct == null ? 'sin verificación declarada' : p.pct + ' % verificado') +
                     (p.parcial ? ' · semana todavía en curso' : '');
         var bar = el('span', 'sp-fi-bar');
@@ -4109,7 +4130,8 @@
       nombre: 'Ritmo',
       cifra: String(f.ritmo.porSemana).replace('.', ',') + ' / semana',
       mide: 'Hechos registrados por semana desde la posesión. Mide actividad que llega a los medios, no aciertos.',
-      tramos: [{ c: 'act', n: f.ritmo.hechos, t: 'hechos en ' + f.ritmo.dias + ' días', t1: 'hecho en ' + f.ritmo.dias + ' días' }],
+      tramos: [{ c: 'act', n: f.ritmo.hechos, t: 'hechos en ' + cn(f.ritmo.dias, 'día', 'días'),
+        t1: 'hecho en ' + cn(f.ritmo.dias, 'día', 'días') }],
       ir: { v: 'timeline' }, irTxt: 'Ver por temas'
     }));
     meds.appendChild(medida({
@@ -4579,7 +4601,7 @@
     var c1 = capaUnoDe_conjunto((d0.entradas || []));
     if (c1.contra.sinRevisar) out.push({
       t: 'Contrargumento oficial sin revisar',
-      n: c1.contra.sinRevisar + ' de ' + (d0.entradas || []).length + ' hechos',
+      n: c1.contra.sinRevisar + ' de ' + cn((d0.entradas || []).length, 'hecho', 'hechos'),
       d: 'Nadie ha buscado todavía si el Gobierno respondió. NO significa que no respondiera: mientras no se ' +
          'busque, el indicador I-06 no se puede calcular y así se publica.' });
 
@@ -4589,14 +4611,14 @@
     });
     if (sinVal.length) out.push({
       t: 'Criterios de indicador sin contrastar',
-      n: sinVal.length + ' criterios (' + sinVal.join(', ') + ')',
+      n: cn(sinVal.length, 'criterio', 'criterios') + ' (' + sinVal.join(', ') + ')',
       d: 'Sus listas de qué incluye y qué excluye se escribieron mirando ESTE registro. Hasta que corran contra ' +
          'un gobierno anterior con material suficiente, no están validados.' });
 
     var cob = coberturaDeRol((d0.entradas || []).filter(function (e) { return (e.indicadores || []).length; }));
     if (cob.sinCorrer) out.push({
       t: 'Procedencia de fuentes sin comprobar',
-      n: cob.sinCorrer + ' de ' + cob.n + ' entradas que declaran indicador',
+      n: cob.sinCorrer + ' de ' + cn(cob.n, 'entrada que declara indicador', 'entradas que declaran indicador'),
       d: 'La comprobación de «al menos una fuente documenta el acto» no pudo correr sobre ellas.' });
 
     var sinNivel = (d0.entradas || []).filter(function (e) { return !e.nivelGobierno; }).length;
@@ -4624,7 +4646,8 @@
 
     var cen = censoDePublicacion(dd);
     var q = el('div', 'sp-pend-q');
-    q.appendChild(el('b', null, 'Qué publica esta pantalla: ' + cen.publica + ' de ' + cen.n + ' hechos del registro.'));
+    q.appendChild(el('b', null, 'Qué publica esta pantalla: ' + cen.publica + ' de ' +
+      cn(cen.n, 'hecho del registro', 'hechos del registro') + '.'));
     var ul = el('ul', 'sp-pend-lista');
     Object.keys(cen.por).forEach(function (k) {
       if (!cen.por[k]) return;
@@ -4731,7 +4754,8 @@
              '&body=' + encodeURIComponent(cuerpo);
     s.appendChild(a);
     s.appendChild(el('p', 'sp-h-meta',
-      'Se responde en ' + (r.plazoDias || 15) + ' días. Si la corrección procede, se aplica y se publica en el ' +
+      'Se responde en ' + cn((r.plazoDias || 15), 'día', 'días') +
+      '. Si la corrección procede, se aplica y se publica en el ' +
       'registro de correcciones; si no procede, se contesta por qué.'));
 
     var lista = (r.lista || []);
@@ -5383,7 +5407,7 @@
     var fila = 32 + (rep.apilado ? ALTO_ROTULO : 0), arriba = 10;
     var pieF = 'El propio registro de este seguimiento';
     var pieC = 'Fecha de corte: ' + fechaCorta((dd || D).actualizado) +
-      ' · ' + z.nEntradas + ' hechos y ' + z.nCasos + ' casos';
+      ' · ' + cn(z.nEntradas, 'hecho', 'hechos') + ' y ' + cn(z.nCasos, 'caso', 'casos');
     var hh = arriba + filas.length * fila + 14 + altoDelPie(w, pieF, pieC);
     var svg = svgEl('svg', { viewBox: '0 0 ' + w + ' ' + hh, class: 'sp-g',
       role: 'img', 'aria-label': filas.map(function (x) { return x.t + ': ' + x.n; }).join('. ') });
@@ -5403,14 +5427,18 @@
       svg.appendChild(v);
     });
     pieDentro(svg, w, arriba + filas.length * fila + 8, pieF, pieC);
-    var nota = 'De los ' + z.nCasos + ' casos de corrupción, ' + z.casos.pesan + ' pesan en el veredicto y ' +
+    var nota = pl(z.nCasos, 'Del caso de corrupción, ', 'De los ' + z.nCasos + ' casos de corrupción, ') +
+      z.casos.pesan + pl(z.casos.pesan, ' pesa', ' pesan') + ' en el veredicto y ' +
       z.casos.fuera + ' quedan fuera por su nivel. ' +
       (z.entradas.otro === 0
         ? 'HOY EL FILTRO NO RECHAZA NINGUNA ENTRADA: ninguna declara un nivel distinto del nacional. Eso no ' +
           'significa que no haya hechos de otro nivel en el registro — significa que ' + z.entradas.sinDeclarar +
-          ' entradas no declaran su nivel, así que el filtro no las puede separar todavía. Un filtro sin nada ' +
+          pl(z.entradas.sinDeclarar, ' entrada no declara su nivel, así que el filtro no la puede separar todavía',
+            ' entradas no declaran su nivel, así que el filtro no las puede separar todavía') +
+          '. Un filtro sin nada ' +
           'que rechazar se ve igual que uno que funciona, y por eso el número va impreso.'
-        : 'El filtro rechaza hoy ' + z.entradas.otro + ' entradas por ser de otro nivel de gobierno.');
+        : 'El filtro rechaza hoy ' + cn(z.entradas.otro, 'entrada', 'entradas') +
+          ' por ser de otro nivel de gobierno.');
     return tarjetaGrafica('Qué entra al score presidencial y qué no',
       'Hechos del registro, clasificados por el nivel de gobierno que declaran.', svg, nota, null);
   }
@@ -5488,7 +5516,7 @@
     var gc = grafContradicciones();
     if (gc) {
       poner(tarjetaGrafica('Cómo se reparten las contradicciones',
-        ((D.contradicciones || {}).casos || []).length + ' casos registrados', gc,
+        cn(((D.contradicciones || {}).casos || []).length, 'caso registrado', 'casos registrados'), gc,
         'Una contradicción documentada no es lo mismo que una acusación: las desmentidas se publican ' +
         'precisamente para señalar que circulan y son falsas.', null));
     }
@@ -5714,7 +5742,7 @@
     var g = grafContradicciones();
     if (g) {
       cont.appendChild(tarjetaGrafica('Cómo se reparten las contradicciones',
-        ((D.contradicciones || {}).casos || []).length + ' casos registrados', g,
+        cn(((D.contradicciones || {}).casos || []).length, 'caso registrado', 'casos registrados'), g,
         'Una contradicción documentada no es lo mismo que una acusación: las desmentidas se publican precisamente para señalar que circulan y son falsas.',
         null));
     }

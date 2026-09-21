@@ -1,4 +1,4 @@
-const URBIS_CACHE = 'urbis-v1019-una-cifra-de-1-no-lleva-plural';
+const URBIS_CACHE = 'urbis-v1020-un-caso-registrado-no-son-casos';
 const URBIS_ASSETS = [
   './',
   './index.html',

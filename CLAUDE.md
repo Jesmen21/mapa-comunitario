@@ -19114,6 +19114,143 @@ curso** de `js/65`: componerla pide el análisis educativo y con él el motor,
 así que sus cinco sitios se arreglaron y se comprobaron estáticamente. Tres de
 los cinco son la misma oración que sí se midió compuesta en `js/63`.
 
+## «1 casos registrados», sobre una persona en el cargo (v1020)
+
+La v1019 dejó medido que la concordancia de la v874 está en todo el
+repositorio —460 sitios en 33 archivos— y que la guarda solo cubría los tres
+del módulo de empresas. El siguiente es `js/70`, el módulo presidencial, por
+una razón que no es el tamaño: **es la pantalla que publica un juicio sobre
+una persona en el cargo**, y ahí un texto que no concuerda se lee como un
+descuido de quien firma.
+
+    v1019   «1 casos registrados» · «1 hechos y 1 casos»
+    v1020   «1 caso registrado» · «1 hecho y 1 caso»
+
+### El verde estaba vacío, y lo dijo el MATERIAL
+
+Compuesta la página con el registro de verdad, el barrido dio **cero**. No
+porque estuviera bien: porque **el registro real no imprime ni un solo conteo
+en 1**. Medido, la página entera trae un «1» delante de una palabra **una
+vez**, y es «1 más».
+
+Es la trampa de la v874 en su forma pura —la comprobación pasa por no tener
+nada que rechazar— y se vio porque el barrido cuenta su propio material antes
+de dar el verde. Sin ese renglón, esta tanda no habría existido.
+
+#### El fixture es el registro real, cortado a uno
+
+Nada inventado: se sirve el **mismo archivo** con cada lista recortada a su
+primer elemento. Es el gobierno con un caso, un hecho, una contradicción — el
+día uno del registro, y el día en que alguien lo estrena para otro municipio.
+
+Con él aparecen **siete** conteos en 1, de los cuales cinco ya concordaban
+—«1 hecho», «1 cambio», «1 registro»— y **dos no**: «1 casos registrados» y
+«1 hechos y 1 casos». O sea que el módulo sabe hacerlo y esos dos se le
+escaparon; el de al lado, en `js/70:853`, lo hace bien desde siempre.
+
+### En el código eran 31, no 2
+
+El barrido estático sobre `js/70` da **31 sitios** sin rama de singular, de
+los cuales la página compuesta alcanza dos: los demás viven en paneles que el
+registro de hoy no enciende —hechos sin revisar, casos fuera por nivel,
+criterios sin validar—. Se arreglaron los 31: un panel que hoy no se ve es un
+panel que se ve el día que el dato aparezca, y ese es justo el día en que
+nadie está mirando la redacción.
+
+Lo que **no** entró, con su razón escrita en la guarda:
+
+* **`billones`** — es una magnitud del presupuesto en decenas o centenas, no
+  una cardinalidad;
+* **`más`** — «1 más» es correcto;
+* y las cifras que son **constantes del módulo** (`FICHA_MIN_CASOS` es 3,
+  `FICHA_MIN_HECHOS` es 20): no pueden valer 1 sin que alguien edite la
+  constante, así que no hay rama que escribir.
+
+### Dos ayudantes, porque 31 ternarios en línea no se leen
+
+`pl(n, sing, plur)` y `cn(n, sing, plur)` —este último pone la cifra y el
+sustantivo de una vez—. Es el patrón de la casa: `js/67` tiene su `plural` y
+`js/68` su `pl` desde antes, y la prueba de la clase B dice que no son dos
+codificaciones de un hecho sino una primitiva repetida — *¿existe un cambio
+razonable que deba mover una y no la otra?* No: `n === 1 ? a : b` no tiene
+decisión adentro.
+
+#### Cuando el sustantivo y el verbo no concuerdan con la misma cifra
+
+Es lo que hace que esto no sea mecánico. «N de M hechos están sin revisar»:
+el **sustantivo** concuerda con M y el **verbo** con N, así que hacen falta
+las dos ramas y cada una con su cifra:
+
+```js
+c1.contra.sinRevisar + ' de ' + cn(c1.n, 'hecho', 'hechos') +
+  pl(c1.contra.sinRevisar, ' está', ' están') + ' sin revisar'
+```
+
+Y donde la cascada se desarma del todo, la cifra sale de gobernar la frase,
+como en la v1019: «sus primeros N días» no tiene singular —«su primer 1 día»
+no es castellano— así que con N = 1 la frase pasa a ser **«su primer día»**,
+sin cifra. Son dos sitios y van dichos porque cambian la redacción de una hoja
+que se publica.
+
+### La guarda de la v1019 tenía un fallo, y pasaba por falta de material
+
+El hallazgo que más vale de la tanda, y es sobre mi propia guarda de ayer.
+
+`tieneRama` buscaba `=== *1 *\?`, con **espacio simple**. En `js/70` el
+ternario parte de línea constantemente:
+
+```js
+$('sp-hoy-count').textContent = todas.length === 1
+  ? '1 publicación' : todas.length + ' publicaciones';
+```
+
+Con ` *` eso no casa, así que la guarda habría dado por pelados **cinco sitios
+que sí tienen su rama**. No se vio en la v1019 porque **ninguno de sus tres
+archivos escribe el ternario así**: la guarda pasó en verde por falta de
+material, no por funcionar.
+
+Es exactamente el patrón de la v879 con la regex de `js/68` —«pasó en verde
+con ese error dentro, no porque funcionara: porque la paridad… dejaba de
+casualidad»— y se vio de la única manera que se ve: **al meter un archivo
+nuevo bajo la misma guarda.**
+
+Ahora usa `\s*`, y el caso de respuesta conocida incluye **un ternario partido
+de línea**, que es lo que impide que vuelva.
+
+### Demostrado contra la v1019
+
+Tres inyecciones fieles contra una copia guardada, cada una con su aserción
+(v993):
+
+```
+✗ todos llevan su rama de singular
+    — 31 imprimirian «1 cosas» en el papel: 70:466 «días» · 70:635 «días» ·
+      70:806 «días» · 70:2259 «hechos» · 70:2312 «días»
+✗ el barrido distingue el sitio con rama del que no la tiene
+    — no reconoce el ternario partido de linea: es la forma corriente en js/70
+      (y de paso, 5 sitios buenos salen denunciados)
+✗ el barrido distingue el sitio con rama del que no la tiene
+    — denuncia una cifra que es una constante del modulo
+```
+
+Y sobre el papel: la página compuesta con el registro cortado a uno pasa de
+**«1 casos registrados · 1 hechos»** a cero, con el material a la vista —«1
+hecho · 1 cambio · 1 caso · 1 pesa · 1 registro»—. Con el registro real la
+página no cambia ni un carácter, que es lo que tenía que pasar.
+
+### Lo que queda, medido
+
+La clase sigue viva en el resto del repositorio: **quitando los cuatro
+archivos ya cubiertos, quedan unos 400 sitios candidatos**. El grande es
+`js/68` con 299, y ahí hay que decir algo que no vale para los demás: **la
+lámina que compone ya tiene su comprobación sobre el papel** en
+`tdoslaminas` desde la v874, así que lo que de verdad falta en `js/68` son
+sus pantallas, no su pliego.
+
+Y la regla para entrar a la guarda sigue siendo la de la v1019, que esta
+tanda cumplió: **un archivo entra con su documento compuesto y barrido, no
+con una promesa.**
+
 ## La lista viva: lo que al pliego educativo todavía le falta (v866)
 
 Esta lista se quedó vieja **cinco veces**. Cuatro dentro de la hoja —la
