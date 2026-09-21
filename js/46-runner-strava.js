@@ -167,7 +167,7 @@
         '<div class="rush-sat-top"><span class="rush-ov-kicker">⚡ URBIS RUSH</span>' +
         '<button class="rush-ov-x" id="rush-sat-close">✕</button></div>' +
         '<div class="rush-replay-hud">' +
-          '<div class="rush-hud-big"><b id="rush-rep-dist">0.00</b><span>km</span></div>' +
+          '<div class="rush-hud-big"><b id="rush-rep-dist">0,00</b><span>km</span></div>' +
           '<div class="rush-hud-row"><div><b id="rush-rep-time">00:00</b><span>tiempo</span></div>' +
           '<div><b id="rush-rep-pace">--</b><span>ritmo /km</span></div></div></div>' +
         '<div class="rush-replay-bar"><i id="rush-rep-fill"></i></div>' +
@@ -220,7 +220,7 @@
         punto(ctx,px[0],RUSH.start,9);
         punto(ctx,px[px.length-1],'#ffffff',20);
         var idx=Math.min(P.length-1,n-1), ratio=totalCum?cum[idx]/totalCum:prog;
-        setT('rush-rep-dist',(distTotal*ratio).toFixed(2));
+        setT('rush-rep-dist',(distTotal*ratio).toFixed(2).replace('.', ','));
         setT('rush-rep-time',fmtTime(timeTotal*prog));
         var pace=(distTotal*ratio)>0?(timeTotal*prog)/(distTotal*ratio):0;
         setT('rush-rep-pace',fmtPace(pace));
@@ -237,7 +237,7 @@
           frame(e);
           if(prog<1) requestAnimationFrame(step);
           else{
-            setT('rush-rep-dist',distTotal.toFixed(2)); setT('rush-rep-time',fmtTime(timeTotal));
+            setT('rush-rep-dist',distTotal.toFixed(2).replace('.', ',')); setT('rush-rep-time',fmtTime(timeTotal));
             // zoom out suave para ver TODO el recorrido
             try{ lmap.fitBounds(L.latLngBounds(P.map(function(pt){ return [pt.lat,pt.lng]; })),{padding:[60,80],animate:true}); }catch(e){}
           }
@@ -263,7 +263,7 @@
     ov.innerHTML =
       '<div class="rush-ov-top"><span class="rush-ov-kicker">⚡ URBIS RUSH</span><button class="rush-ov-x" onclick="this.closest(\'.rush-overlay\').remove()">✕</button></div>' +
       '<div class="rush-replay-stage"><canvas id="rush-replay-cv" width="720" height="940"></canvas>' +
-        '<div class="rush-replay-hud"><div class="rush-hud-big"><b id="rush-rep-dist">0.00</b><span>km</span></div>' +
+        '<div class="rush-replay-hud"><div class="rush-hud-big"><b id="rush-rep-dist">0,00</b><span>km</span></div>' +
         '<div class="rush-hud-row"><div><b id="rush-rep-time">00:00</b><span>tiempo</span></div><div><b id="rush-rep-pace">--</b><span>ritmo /km</span></div></div></div>' +
         '<div class="rush-replay-bar"><i id="rush-rep-fill"></i></div>' +
       '</div>' +
@@ -276,9 +276,9 @@
     var cam=boundsDe(P,2);
     function easeCam(t){ var pl=(t.maxLat-t.minLat)*.2,pg=(t.maxLng-t.minLng)*.2; cam.minLat+=((t.minLat-pl)-cam.minLat)*.16; cam.maxLat+=((t.maxLat+pl)-cam.maxLat)*.16; cam.minLng+=((t.minLng-pg)-cam.minLng)*.16; cam.maxLng+=((t.maxLng+pg)-cam.maxLng)*.16; }
     function pintar(n){ var px=proyectarBounds(P,n,cam,W,H,84); fondoOscuro(ctx,W,H); ctx.save(); ctx.lineJoin='round'; ctx.lineCap='round'; ctx.strokeStyle=gradiente(ctx,W,H); ctx.shadowColor='rgba(255,45,120,.55)'; ctx.shadowBlur=18; ctx.lineWidth=9; ctx.beginPath(); for(var i=0;i<n;i++){ i?ctx.lineTo(px[i].x,px[i].y):ctx.moveTo(px[i].x,px[i].y); } ctx.stroke(); ctx.restore(); punto(ctx,px[0],RUSH.start,9); punto(ctx,px[n-1],'#ffffff',20); }
-    function frame(prog){ var n=Math.max(2,Math.round(prog*(P.length-1))+1); easeCam(boundsDe(P,n)); pintar(n); var idx=Math.min(P.length-1,n-1),ratio=totalCum?cum[idx]/totalCum:prog; setT('rush-rep-dist',(distTotal*ratio).toFixed(2)); setT('rush-rep-time',fmtTime(timeTotal*prog)); var pace=(distTotal*ratio)>0?(timeTotal*prog)/(distTotal*ratio):0; setT('rush-rep-pace',fmtPace(pace)); var fill=ov.querySelector('#rush-rep-fill'); if(fill) fill.style.width=(prog*100)+'%'; }
+    function frame(prog){ var n=Math.max(2,Math.round(prog*(P.length-1))+1); easeCam(boundsDe(P,n)); pintar(n); var idx=Math.min(P.length-1,n-1),ratio=totalCum?cum[idx]/totalCum:prog; setT('rush-rep-dist',(distTotal*ratio).toFixed(2).replace('.', ',')); setT('rush-rep-time',fmtTime(timeTotal*prog)); var pace=(distTotal*ratio)>0?(timeTotal*prog)/(distTotal*ratio):0; setT('rush-rep-pace',fmtPace(pace)); var fill=ov.querySelector('#rush-rep-fill'); if(fill) fill.style.width=(prog*100)+'%'; }
     function colaZoomOut(c){ if(!document.body.contains(ov)||c>40) return; easeCam(boundsDe(P,P.length)); pintar(P.length); requestAnimationFrame(function(){ colaZoomOut(c+1); }); }
-    function animar(){ var dur=Math.min(8000,Math.max(4200,P.length*70)); var t0=null; cam=boundsDe(P,2); function step(ts){ if(!document.body.contains(ov)) return; if(t0==null) t0=ts; var prog=Math.min(1,(ts-t0)/dur); var e=prog<.5?2*prog*prog:1-Math.pow(-2*prog+2,2)/2; frame(e); if(prog<1) requestAnimationFrame(step); else{ setT('rush-rep-dist',distTotal.toFixed(2)); setT('rush-rep-time',fmtTime(timeTotal)); colaZoomOut(0); } } requestAnimationFrame(step); }
+    function animar(){ var dur=Math.min(8000,Math.max(4200,P.length*70)); var t0=null; cam=boundsDe(P,2); function step(ts){ if(!document.body.contains(ov)) return; if(t0==null) t0=ts; var prog=Math.min(1,(ts-t0)/dur); var e=prog<.5?2*prog*prog:1-Math.pow(-2*prog+2,2)/2; frame(e); if(prog<1) requestAnimationFrame(step); else{ setT('rush-rep-dist',distTotal.toFixed(2).replace('.', ',')); setT('rush-rep-time',fmtTime(timeTotal)); colaZoomOut(0); } } requestAnimationFrame(step); }
     ov.querySelector('#rush-rep-again').onclick=animar;
     animar();
   }
@@ -318,7 +318,7 @@
     var by=H-300;
     ctx.fillStyle='#fff'; ctx.textAlign='left';
     ctx.font='900 150px Segoe UI, system-ui, sans-serif';
-    ctx.fillText((Number(s.distanceKm)||0).toFixed(2), 56, by+120);
+    ctx.fillText((Number(s.distanceKm)||0).toFixed(2).replace('.', ','), 56, by+120);
     ctx.font='700 44px Segoe UI, system-ui, sans-serif'; ctx.fillStyle='rgba(255,255,255,.8)';
     ctx.fillText('km recorridos', 60, by+170);
     // fila tiempo / ritmo
@@ -408,7 +408,7 @@
       ov.remove();
       try{ if(typeof window.urbisRunnerPintarResumen==='function') window.urbisRunnerPintarResumen(); }catch(e){}
       var ss=window.urbisRunnerSesionActual, setEl=function(id,v){ var e=document.getElementById(id); if(e) e.textContent=v; };
-      setEl('u52-summary-distance', ss.distanceKm.toFixed(2)); setEl('u52-summary-time', fmtTime(ss.elapsed)); setEl('u52-summary-pace', fmtPace(ss.paceSecKm));
+      setEl('u52-summary-distance', ss.distanceKm.toFixed(2).replace('.', ',')); setEl('u52-summary-time', fmtTime(ss.elapsed)); setEl('u52-summary-pace', fmtPace(ss.paceSecKm));
     };
     pintar();
   };
@@ -448,7 +448,7 @@
       '<div class="rush-detail-date">' + fecha + '</div>' +
       '<canvas id="rush-detail-cv" width="660" height="320" class="rush-route-canvas rush-detail-cv"></canvas>' +
       '<div class="rush-stat-grid rush-detail-stats">' +
-        '<div class="rush-stat"><b>' + (Number(s.distanceKm)||0).toFixed(2) + '</b><span>km</span></div>' +
+        '<div class="rush-stat"><b>' + (Number(s.distanceKm)||0).toFixed(2).replace('.', ',') + '</b><span>km</span></div>' +
         '<div class="rush-stat"><b>' + fmtTime(s.elapsed) + '</b><span>tiempo</span></div>' +
         '<div class="rush-stat"><b>' + fmtPace(s.paceSecKm) + '</b><span>ritmo /km</span></div>' +
       '</div>' +

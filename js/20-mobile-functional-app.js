@@ -625,7 +625,7 @@
         </div>
         <div class="rush-home-stats" id="rush-home-stats">
           <div class="rush-home-stat"><b>0</b><span>actividades</span></div>
-          <div class="rush-home-stat"><b>0.0</b><span>km totales</span></div>
+          <div class="rush-home-stat"><b>0,0</b><span>km totales</span></div>
           <div class="rush-home-stat"><b>--</b><span>mejor /km</span></div>
         </div>
         <div class="rush-home-label">Elija su actividad</div>
@@ -647,9 +647,9 @@
         <span class="rush-live-gps" id="u52-gps-status">● GPS</span>
       </div>
       <div class="rush-live-hud">
-        <div class="rush-live-metric main"><b id="u52-distance">0.00</b><span>km</span></div>
+        <div class="rush-live-metric main"><b id="u52-distance">0,00</b><span>km</span></div>
         <div class="rush-live-metric"><b id="u52-pace">--</b><span>/km</span></div>
-        <div class="rush-live-metric"><b id="u52-speed">0.0</b><span>km/h</span></div>
+        <div class="rush-live-metric"><b id="u52-speed">0,0</b><span>km/h</span></div>
         <div class="rush-live-metric"><b id="u52-points">0</b><span>gps</span></div>
       </div>
       <div class="rush-live-controls">
@@ -666,7 +666,7 @@
           <canvas id="u52-route-preview" class="rush-route-canvas" width="660" height="420"></canvas>
           <div class="rush-summary-head"><span class="rush-kicker" id="u52-summary-type">URBIS Rush</span><h1>¡Actividad lista! 🔥</h1></div>
           <div class="rush-stat-grid">
-            <div class="rush-stat"><b id="u52-summary-distance">0.00</b><span>km</span></div>
+            <div class="rush-stat"><b id="u52-summary-distance">0,00</b><span>km</span></div>
             <div class="rush-stat"><b id="u52-summary-time">00:00</b><span>tiempo</span></div>
             <div class="rush-stat"><b id="u52-summary-pace">--</b><span>ritmo /km</span></div>
           </div>
@@ -1787,7 +1787,7 @@
     const rushStats = app.querySelector('#rush-home-stats');
     if(rushStats) rushStats.innerHTML =
       `<div class="rush-home-stat"><b>${stats.count}</b><span>actividades</span></div>` +
-      `<div class="rush-home-stat"><b>${stats.totalKm.toFixed(1)}</b><span>km totales</span></div>` +
+      `<div class="rush-home-stat"><b>${stats.totalKm.toFixed(1).replace('.', ',')}</b><span>km totales</span></div>` +
       `<div class="rush-home-stat"><b>${fmtPace(stats.bestPace)}</b><span>mejor /km</span></div>`;
     const progress = app.querySelector('#u52-progress-content');
     if(progress) {
@@ -1796,7 +1796,7 @@
       progress.innerHTML = stats.count ? `
         <div class="u52-stat-grid" style="padding:14px 14px 0">
           <div class="u52-stat"><b>${stats.count}</b><span>actividades</span></div>
-          <div class="u52-stat"><b>${stats.totalKm.toFixed(1)}</b><span>km totales</span></div>
+          <div class="u52-stat"><b>${stats.totalKm.toFixed(1).replace('.', ',')}</b><span>km totales</span></div>
           <div class="u52-stat"><b>${fmtPace(stats.bestPace)}</b><span>mejor ritmo</span></div>
         </div>
         <div style="padding:0 14px">${rushCalendarHTML(hist)}</div>
@@ -1811,7 +1811,7 @@
                 <small>${fecha}</small>
               </div>
               <div class="rush-hist-stats">
-                <span><b>${(item.distanceKm||0).toFixed(2)}</b> km</span>
+                <span><b>${(item.distanceKm||0).toFixed(2).replace('.', ',')}</b> km</span>
                 <span><b>${fmtTime(item.elapsed)}</b></span>
                 <span><b>${fmtPace(item.paceSecKm)}</b> /km</span>
               </div>
@@ -1862,7 +1862,7 @@
       else if(demoDias && demoDias.has(dia)){ nivel = demoNivel[dia]; esDemo = true; }
       const titulo = km ? km.toFixed(1).replace('.', ',') + ' km' : (esDemo ? 'Ejemplo' : 'Sin actividad');
       celdas += `<span class="rush-cal-day${nivel ? ' on lvl' + nivel : ''}${esDemo ? ' demo' : ''}${esHoy ? ' today' : ''}" title="${titulo}">
-        <b>${dia}</b>${km ? `<small>${km.toFixed(1)}</small>` : ''}
+        <b>${dia}</b>${km ? `<small>${km.toFixed(1).replace('.', ',')}</small>` : ''}
       </span>`;
     }
     return `<div class="rush-calendar-card${preview ? ' preview' : ''}">
@@ -1921,8 +1921,8 @@
     const elapsed = runner.active ? Math.floor((Date.now()-runner.startAt)/1000) + runner.elapsed : runner.elapsed;
     const km = runner.totalM/1000, paceSecKm = km>0 ? elapsed/km : 0, speed = elapsed>0 ? km/(elapsed/3600) : 0;
     const set=(id,v)=>{ const el=app.querySelector('#'+id); if(el) el.textContent=v; };
-    set('u52-time',fmtTime(elapsed)); set('u52-distance',km.toFixed(2)); set('u52-speed',speed.toFixed(1)); set('u52-points',String(runner.points.length)); set('u52-pace',fmtPace(paceSecKm));
-    set('u52-summary-distance',km.toFixed(2)); set('u52-summary-time',fmtTime(elapsed)); set('u52-summary-pace',fmtPace(paceSecKm)); set('u52-summary-type',`⚡ URBIS RUSH`);
+    set('u52-time',fmtTime(elapsed)); set('u52-distance',km.toFixed(2).replace('.', ',')); set('u52-speed',speed.toFixed(1).replace('.', ',')); set('u52-points',String(runner.points.length)); set('u52-pace',fmtPace(paceSecKm));
+    set('u52-summary-distance',km.toFixed(2).replace('.', ',')); set('u52-summary-time',fmtTime(elapsed)); set('u52-summary-pace',fmtPace(paceSecKm)); set('u52-summary-type',`⚡ URBIS RUSH`);
   }
   // ---- Overlay de calentamiento/estabilización de GPS ----
   function showGpsWarmup(onCancel){
@@ -2160,7 +2160,7 @@
         <div class="rush-social-card">
           <div class="rush-social-head"><span class="rush-social-av">${x.usuario.toLowerCase()===yo?'⭐':'🏃'}</span><div><b>@${esc(x.usuario)}</b><small>${esc(_labelTipo(x.type))} · ${new Date(x.createdAt).toLocaleDateString('es-CO',{day:'2-digit',month:'short'})}</small></div></div>
           <canvas class="rush-social-mini" data-rush-poly="${esc(x.poly)}" width="280" height="90"></canvas>
-          <div class="rush-social-stats"><span><b>${x.km.toFixed(2)}</b> km</span><span><b>${fmtTime(x.elapsed)}</b> tiempo</span><span><b>${fmtPace(x.pace)}</b> /km</span></div>
+          <div class="rush-social-stats"><span><b>${x.km.toFixed(2).replace('.', ',')}</b> km</span><span><b>${fmtTime(x.elapsed)}</b> tiempo</span><span><b>${fmtPace(x.pace)}</b> /km</span></div>
         </div>`).join('') + '</div>';
     }
     cont.innerHTML = html;

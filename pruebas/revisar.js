@@ -8410,6 +8410,119 @@ console.log('\n  -- el texto que la página trae escrito (v1023) --');
             : 'deja la prosa, quita script, estilo y atributos, y conserva las posiciones');
 }
 
+console.log('\n  -- el marcado que vive dentro del JavaScript (v1025) --');
+{
+  /* Tercera forma de escribir lo mismo, y la que no veia nadie. Las cuatro
+     reglas del papel se persiguen sobre lo que el JavaScript GENERA (la
+     lamina, en `tdoslaminas`), sobre lo que la pagina trae escrito (v1023) y
+     sobre las cifras pegadas a una unidad (v1022). Falta el marcado que se
+     escribe DENTRO de un literal de JavaScript, con el numero en un `<b>` y
+     su unidad en el `<span>` de al lado:
+
+       '<div class="rush-live-metric"><b id="u52-speed">0.0</b><span>km/h</span></div>'
+
+     Ni la guarda de las paginas lo alcanza -no esta en un .html- ni la de la
+     unidad -el `0.0` no toca la palabra «km/h»-. */
+  const arch = fs.readdirSync(R('js')).filter((f) => /\.js$/.test(f)).map((f) => 'js/' + f);
+
+  /* El cierre tiene que ser un elemento de HTML de verdad. Dos motivos, los
+     dos medidos: sin exigir `</tag>`, un `h >= 6.4 && h < 12` del codigo
+     entra como si fuera texto -ocho falsos positivos-; y sin acotar a
+     elementos conocidos entra el `<scale>1.0</scale>` de un KML, que es un
+     valor de maquina donde el punto es obligatorio. */
+  const MARCADO = /(?<=[A-Za-z0-9"'/])>([^<>{}`'"\n]{1,80})<\/(b|strong|span|em|small|div|p|td|th|li|a|h[1-6])>/g;
+
+  /* La lista de invariables se LEE de la suite que ya la tiene (v879). */
+  const suite = leer('pruebas/suites/tdoslaminas.js');
+  const iL = suite.indexOf('const INVARIABLES = /^(');
+  const crudo = iL < 0 ? '' : suite.slice(suite.indexOf('/^(', iL), suite.indexOf('/;', iL) + 1).slice(1, -1);
+  const INV = crudo ? new RegExp(crudo) : null;
+
+  const REGLAS = [
+    ['punto decimal', /(?<![\d.,:/])(\d+)\.(\d{1,2})(?![\d.])/g],
+    ['miles sin separar', /(?<![\d.,:/-])(\d{5,})(?![\d.,])/g],
+    ['marcador sin reemplazar', /(@@[A-Z_]+@@|\{\{[^}]+\}\}|\bundefined\b|\bNaN\b|\[object Object\])/g],
+    ['«1» con plural', /(?<![\d.,])1 ([a-záéíóúüñ]+)\b/g],
+  ];
+
+  /* Lo declarado, con su razon. `@@TAM@@` es la marca que la v886 deja en el
+     pie para sustituirla en la CADENA, sin volver a maquetar: nunca llega al
+     papel, y sobre el papel ya la vigila `tdoslaminas`. */
+  const DECLARADOS = [
+    ['@@TAM@@', 'la marca de la v886: se sustituye en la cadena antes de emitir la hoja'],
+  ];
+  const exento = (q) => DECLARADOS.some((d) => d[0] === q);
+
+  function hallazgosEn(txt) {
+    const out = [];
+    MARCADO.lastIndex = 0;
+    let m;
+    while ((m = MARCADO.exec(txt))) {
+      const dentro = m[1];
+      REGLAS.forEach(([nombre, re]) => {
+        re.lastIndex = 0;
+        let d;
+        while ((d = re.exec(dentro))) {
+          if (nombre === '«1» con plural' && (!/s$/.test(d[1]) || !INV || INV.test(d[1]))) return;
+          if (exento(d[0].trim())) continue;
+          out.push({ en: m.index, nombre: nombre, q: d[0].trim() });
+        }
+      });
+    }
+    return out;
+  }
+
+  let trozos = 0;
+  const hallazgos = [];
+  arch.forEach((rel) => {
+    const txt = leer(rel);
+    MARCADO.lastIndex = 0;
+    while (MARCADO.exec(txt)) trozos++;
+    hallazgosEn(txt).forEach((h) => {
+      hallazgos.push(rel.slice(3, 5) + ':' + txt.slice(0, h.en).split('\n').length + ' ' + h.nombre + ' «' + h.q + '»');
+    });
+  });
+
+  if (!INV || trozos < 100) {
+    anotarSinMaterial('MATERIAL - js/ escribe marcado con texto dentro',
+      !INV ? 'no se encontro INVARIABLES en tdoslaminas: la regla de concordancia no correria'
+           : 'solo ' + trozos + ' trozos de marcado: no habria casi nada que mirar');
+  } else {
+    comprobar('MATERIAL - js/ escribe marcado con texto dentro',
+      true, trozos + ' trozos de texto entre etiquetas, en ' + arch.length + ' archivos');
+
+    comprobar('el marcado escrito en js/ cumple las cuatro reglas del papel',
+      hallazgos.length === 0,
+      hallazgos.length
+        ? hallazgos.length + ' hallazgo(s): ' + hallazgos.slice(0, 5).join(' · ')
+        : 'ninguno, salvo ' + DECLARADOS.length + ' declarado(s): ' +
+          DECLARADOS.map((d) => '«' + d[0] + '» ' + d[1]).join(' · '));
+  }
+
+  /* LA GUARDA DE LA GUARDA (v878): los tres casos de respuesta conocida que
+     decidieron la forma del patron. */
+  const ROTULO = "'<b id=\"x\">0.00</b>'";
+  const KML = "'<scale>1.0</scale>'";
+  const COMPARACION = "if (h >= 6.4 && h < 12) { }";
+  const veRotulo = hallazgosEn(ROTULO).length > 0;
+  const veKml = hallazgosEn(KML).length > 0;
+  const veComparacion = hallazgosEn(COMPARACION).length > 0;
+  comprobar('el patron ve el rotulo y calla el KML y la comparacion',
+    veRotulo && !veKml && !veComparacion,
+    !veRotulo ? 'no ve el rotulo: no vigilaria nada'
+      : veKml ? 'toma un <scale> de KML por un rotulo: ahi el punto es obligatorio'
+        : veComparacion ? 'toma un «h >= 6.4 && h <» del codigo por texto'
+          : 've el rotulo, y calla el valor de KML y la comparacion del codigo');
+
+  /* Y que lo declarado lleve su razon escrita (v895). */
+  const sinRazon = DECLARADOS.filter((d) => !d[0] || !d[1] || d[1].length <= 20);
+  comprobar('cada marcador declarado lleva su razon',
+    sinRazon.length === 0,
+    sinRazon.length
+      ? sinRazon.length + ' sin motivo escrito: «' + sinRazon[0][0] + '» — una excepcion sin razon envejece hasta no significar nada'
+      : DECLARADOS.length + ' declarado(s), cada uno con el motivo por el que no llega al papel');
+}
+
 /* Las dos cuentas van APARTE porque piden cosas distintas: una fallada hay
    que arreglarla, una sin material hay que mirarla —o se quedó sin él porque
    el registro mejoró, o porque la función dejó de ver lo que medía—. Sumarlas

@@ -19635,6 +19635,98 @@ escribir en bloque sin inventar. Las dos del idioma, §7 y §9, **ya se
 defienden solas** desde la v878 y la v880: su lista tiene su propia
 comprobación.
 
+## El marcado que vive dentro del JavaScript (v1025)
+
+Tercera forma de escribir lo mismo, y la que no veía nadie. Las cuatro reglas
+del papel se persiguen ya sobre lo que el JavaScript **genera** (la lámina,
+en `tdoslaminas`), sobre lo que la página **trae escrito** (v1023) y sobre las
+cifras **pegadas a una unidad** (v1022). Faltaba el marcado escrito dentro de
+un literal de JavaScript:
+
+```js
+'<div class="rush-live-metric"><b id="u52-speed">0.0</b><span>km/h</span></div>'
+```
+
+Ni la guarda de las páginas lo alcanza —no está en un `.html`— ni la de la
+unidad, porque **el número está en un `<b>` y su unidad en el `<span>` de al
+lado**, así que no se tocan.
+
+### Y el que escribe encima tampoco estaba arreglado
+
+Lo que lo vuelve un defecto de verdad y no un detalle del arranque: la v1022
+arregló los `toFixed` pegados a una unidad, y el HUD del corredor **no los
+tiene pegados**. `set('u52-distance', km.toFixed(2))` escribe en el `<b>` y
+la unidad vive fuera, así que la lectura salía con punto **en el marcador de
+posición y también después de cada actualización**.
+
+Son **23 sitios**: seis marcadores de posición escritos en el marcado y
+diecisiete `toFixed` de los módulos de deporte y del corredor.
+
+#### Uno no se tocó, y es el que importa decir
+
+`js/20:2112` arma la fila que se publica al servidor:
+
+```js
+const desc = [usuario, s.type || 'correr', (Number(s.distanceKm) || 0).toFixed(2), …].join(…)
+```
+
+Eso **no es un rótulo**: es un valor que viaja, se guarda y después se lee.
+Cambiarle el separador cambia lo que queda escrito en la hoja de datos y lo
+que cualquier lector posterior parsea. Es la lección de la v909 —una cadena
+que no es texto— y el único de los 18 que se saltó, por su nombre.
+
+### Lo que decidió la forma del patrón, medido
+
+El patrón busca el texto entre un `>` y un `</tag>`. Las dos restricciones
+salieron de contar falsos positivos, no de suponerlos:
+
+| Patrón | Hallazgos | De ellos, falsos |
+|---|---|---|
+| `>…<` a secas | 17 | **8** — `if (h >= 6.4 && h < 12)`, que son operadores |
+| exigiendo `</…>` | 8 | **2** — `<scale>1.0</scale>` de un KML |
+| exigiendo un elemento de **HTML** | **6** | **0** |
+
+La segunda fila es la interesante: un KML es un formato de máquina y ahí el
+punto **es obligatorio**, así que convertirlo habría roto la exportación a
+Google Earth. Las tres están en la guarda como casos de respuesta conocida
+—un rótulo que tiene que denunciar, un KML y una comparación que tiene que
+callar— y una inyección que quita la exigencia del cierre las devuelve:
+«toma un `<scale>` de KML por un rótulo».
+
+### Lo declarado
+
+**`@@TAM@@`**, la marca que la v886 deja en el pie para sustituirla en la
+cadena sin volver a maquetar. No llega al papel, y sobre el papel ya la
+vigila `tdoslaminas`. Va con su razón escrita, y hay una comprobación aparte
+de que la lleve: una excepción sin motivo envejece hasta no significar nada
+(v895).
+
+### Demostrado contra la v1024
+
+Tres inyecciones fieles contra una copia guardada, cada una con su aserción
+(v993):
+
+```
+✗ el marcado escrito en js/ cumple las cuatro reglas del papel
+    — 6 hallazgo(s): 20:628 punto decimal «0.0» · 20:650 «0.00» · … · 46:170 «0.00»
+✗ el patron ve el rotulo y calla el KML y la comparacion
+    — toma un <scale> de KML por un rotulo: ahi el punto es obligatorio
+✗ cada marcador declarado lleva su razon
+    — 1 sin motivo escrito: «@@TAM@@»
+```
+
+Y sobre la pantalla: la ficha compuesta y recorrida por sus ocho pestañas
+pasa de **«0.0» y «0.00» en el HUD del corredor** a ninguna cifra con punto.
+
+### Con esto, las tres formas de escribir texto están cubiertas
+
+| Dónde vive el texto | Quién lo vigila |
+|---|---|
+| lo que el JavaScript compone en la lámina | `tdoslaminas`, sobre el papel |
+| lo que la página trae escrito en su HTML | v1023 |
+| las cifras pegadas a una unidad | v1022 |
+| **el marcado escrito dentro de un literal de JS** | **esta** |
+
 ## La lista viva: lo que al pliego educativo todavía le falta (v866)
 
 Esta lista se quedó vieja **cinco veces**. Cuatro dentro de la hoja —la

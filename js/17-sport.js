@@ -115,7 +115,7 @@
       <b>Perfil listo.</b><br>
       Edad: ${profile.edad || '—'} · Peso: ${profile.peso || '—'} kg · Estatura: ${profile.estatura || '—'} cm<br>
       Objetivo: <b>${etiquetaObjetivo(profile.objetivo)}</b> · Nivel: <b>${profile.nivel}</b><br>
-      IMC referencial: <b>${imc ? imc.toFixed(1) : '—'}</b> · Prioridad del plan: <b>${prioridad}</b><br>
+      IMC referencial: <b>${imc ? imc.toFixed(1).replace('.', ',') : '—'}</b> · Prioridad del plan: <b>${prioridad}</b><br>
       <small>Este módulo es orientativo y no reemplaza acompañamiento profesional.</small>
     `);
     setHTML('sport-status-pill', prioridad.charAt(0).toUpperCase() + prioridad.slice(1));
@@ -443,7 +443,7 @@
         <b>${etiquetaObjetivo(profile.objetivo)}</b><br>
         Nivel: <b>${profile.nivel}</b> · Edad: <b>${profile.edad || '—'}</b><br>
         Peso: <b>${profile.peso || '—'} kg</b> · Estatura: <b>${profile.estatura || '—'} cm</b><br>
-        IMC referencial: <b>${calcularIMC(profile.peso, profile.estatura).toFixed(1)}</b>
+        IMC referencial: <b>${calcularIMC(profile.peso, profile.estatura).toFixed(1).replace('.', ',')}</b>
       `;
     }
     const streak = weeklyStreakInfo(getRunnerHistory());
