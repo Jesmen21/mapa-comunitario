@@ -378,7 +378,7 @@
       const n = s.porGrupo[g], pct = (100 * n / Math.max(s.total, 1));
       return '<tr><td><i class="dot" style="background:' + C[g] + '"></i>' + esc(G[g].t) + '</td>' +
         '<td class="num">' + n.toLocaleString('es-CO') + '</td>' +
-        '<td class="num">' + pct.toFixed(1) + '%</td>' +
+        '<td class="num">' + pct.toFixed(1).replace('.', ',') + '%</td>' +
         '<td class="barra"><i style="width:' + (100 * n / max).toFixed(1) + '%;background:' + C[g] + '"></i></td></tr>';
     }).join('');
     return '<div class="bloque"><h2>Composición del entorno <em>(por número de usos)</em></h2>' +
@@ -1174,7 +1174,7 @@
       const n = s.porGrupo[g], pct = (100 * n / Math.max(s.total, 1));
       return '<div class="comp-fila"><span>' + esc(G[g].t) + '</span>' +
         '<div class="comp-barra"><i style="width:' + (100 * n / max).toFixed(1) + '%;background:' + C[g] + '"></i></div>' +
-        '<b>' + n.toLocaleString('es-CO') + '</b><em>' + pct.toFixed(1) + '%</em></div>';
+        '<b>' + n.toLocaleString('es-CO') + '</b><em>' + pct.toFixed(1).replace('.', ',') + '%</em></div>';
     }).join('');
     // Se declara cuántos usos no vienen del mapa abierto sino de un
     // levantamiento del propio analista. Callarlo haría el informe

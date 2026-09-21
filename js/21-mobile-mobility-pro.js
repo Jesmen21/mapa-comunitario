@@ -328,7 +328,7 @@
           if(Date.now() - lastMatchedAt > 1700){
             lastMatchedAt = Date.now();
             const left = Math.max(0, urbisNavRouteState.total - urbisNavRouteState.currentDistance);
-            const km = left > 1000 ? `${(left/1000).toFixed(1)} km` : `${Math.round(left)} m`;
+            const km = left > 1000 ? `${(left/1000).toFixed(1).replace('.', ',')} km` : `${Math.round(left)} m`;
             status(deviation > 70 ? `Fuera de ruta · ${Math.round(deviation)} m` : `Ruta activa · faltan ${km}`);
           }
         }

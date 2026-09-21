@@ -8189,6 +8189,94 @@ console.log('\n  -- un grado impreso lleva coma, no punto (v1021) --');
         : 've el grado pelado en codigo y no el del comentario');
 }
 
+console.log('\n  -- una distancia no se escribe con punto (v1022) --');
+{
+  /* La misma regla de la v885 y la v891 que la v1021 llevo a los grados: en
+     castellano el punto es el separador de MILES, asi que «5.00 km» se lee
+     como cinco mil. Lo que la hace guardable aqui es la UNIDAD: un `toFixed`
+     pegado a «km», «km/h», «min/km», «ha» o «%» no puede ser geometria -no
+     hay CSS ni camino de SVG que lleve esas letras detras-, asi que es
+     siempre un rotulo.
+
+     POR QUE NO TODO `toFixed`. Medido: 307 en lo servido, y separando a ojo
+     los que van a un `style=` o a un camino de SVG quedan 123 candidatos con
+     una precision mala -la mitad siguen siendo geometria que el patron no
+     supo ver-. Eso es la lista de excepciones que envejece (v895). Con la
+     unidad pegada, los falsos positivos medidos son CERO.
+
+     Y por que no el metro a secas: «m» es tambien el comando `moveto` de un
+     camino de SVG, y el patron no los distingue. Queda fuera, dicho. */
+  const UNIDAD = /^\s*(?:\}|\+)?\s*['"`]?\s*(km\/h|min\/km|km|ha|m²|m2|°C|%<|\s%)/;
+  const YA_CONVIERTE = /^\s*\.replace\(/;
+  const ENVUELTO = /conComa\(\s*$|\bgr\(\s*$|num\(\s*$/;
+
+  function unidadesPeladas(txt) {
+    const re = /\.toFixed\(\s*([12])\s*\)/g;
+    const out = [];
+    let m;
+    while ((m = re.exec(txt))) {
+      const fin = m.index + m[0].length;
+      const desp = txt.slice(fin, fin + 40);
+      /* La unidad se busca PASADO el convertidor: si se mirara solo lo que
+         sigue al `toFixed`, un sitio ya arreglado dejaria de contar y el
+         MATERIAL se iria a cero por haber mejorado el codigo, que es la
+         trampa de la v970 -y la que la v1019 ya pago una vez-. */
+      const yaVa = YA_CONVIERTE.test(desp);
+      const trasConv = yaVa ? desp.replace(/^\s*\.replace\([^)]*\)/, '') : desp;
+      if (!UNIDAD.test(trasConv)) continue;
+      const antes = txt.slice(Math.max(0, m.index - 40), m.index);
+      out.push({ en: m.index, pelado: !yaVa && !ENVUELTO.test(antes) });
+    }
+    return out;
+  }
+
+  const archivos = fs.readdirSync(R('js')).filter((f) => /\.js$/.test(f)).map((f) => 'js/' + f)
+    .concat(fs.readdirSync(RAIZ).filter((f) => /\.html$/.test(f)));
+  let total = 0;
+  const pelados = [];
+  archivos.forEach((rel) => {
+    const txt = /\.js$/.test(rel) ? soloCodigo(leer(rel)) : leer(rel);
+    unidadesPeladas(txt).forEach((u) => {
+      total++;
+      if (u.pelado) pelados.push(rel.slice(3, 5) + ':' + txt.slice(0, u.en).split('\n').length);
+    });
+  });
+
+  if (total < 20) {
+    anotarSinMaterial('MATERIAL - lo servido imprime cifras con unidad',
+      'solo ' + total + ' sitios: el barrido no tendria casi nada que mirar');
+  } else {
+    comprobar('MATERIAL - lo servido imprime cifras con unidad',
+      true, total + ' sitios pegan un toFixed a km, km/h, min/km, ha o %');
+
+    /* Falla CERRADO (v880): un rotulo nuevo con unidad sale en rojo en su
+       primera corrida, no cuando alguien mire la pantalla. */
+    comprobar('toda cifra con unidad pasa por la coma',
+      pelados.length === 0,
+      pelados.length
+        ? pelados.length + ' saldrian con punto, que en castellano es el separador de MILES: ' +
+          pelados.slice(0, 6).join(' · ')
+        : 'los ' + total + ' llevan su .replace o su envoltorio');
+  }
+
+  /* LA GUARDA DE LA GUARDA (v878), contra casos de respuesta conocida. */
+  const PELADO = "`${d.toFixed(2)} km`";
+  const CONVERTIDO = "`${d.toFixed(2).replace('.', ',')} km`";
+  const ENVUELTO_OK = "'a ' + conComa(d.toFixed(2)) + ' km'";
+  const CAMINO_SVG = "'M' + x.toFixed(2) + ' ' + y.toFixed(2) + 'Z'";
+  const vePelado = unidadesPeladas(PELADO).some((u) => u.pelado);
+  const veConvertido = unidadesPeladas(CONVERTIDO).some((u) => u.pelado);
+  const veEnvuelto = unidadesPeladas(ENVUELTO_OK).some((u) => u.pelado);
+  const veCamino = unidadesPeladas(CAMINO_SVG).length > 0;
+  comprobar('el barrido ve la unidad pelada y calla la geometria',
+    vePelado && !veConvertido && !veEnvuelto && !veCamino,
+    !vePelado ? 'no ve la pelada: no vigilaria nada'
+      : veConvertido ? 'denuncia un .replace que si esta'
+        : veEnvuelto ? 'denuncia un conComa que si esta'
+          : veCamino ? 'toma un camino de SVG por un rotulo: daria rojo sobre geometria'
+            : 've la pelada, y calla el .replace, el conComa y el camino de SVG');
+}
+
 /* Las dos cuentas van APARTE porque piden cosas distintas: una fallada hay
    que arreglarla, una sin material hay que mirarla —o se quedó sin él porque
    el registro mejoró, o porque la función dejó de ver lo que medía—. Sumarlas

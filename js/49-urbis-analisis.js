@@ -475,7 +475,7 @@
     var r = W.resultado;
     if (!r.total) return '<div class="ua-empty">📭 No hay registros comunitarios dentro del polígono.<br><small>La matriz se alimenta del mapeo hecho por los usuarios en la app móvil.</small></div>';
     var max = r.capas[0] ? r.capas[0].count : 1;
-    return '<div class="ua-h">Matriz de usos del sector <small>' + r.total + ' registros · ' + r.areaHa.toFixed(2) + ' ha</small></div>' +
+    return '<div class="ua-h">Matriz de usos del sector <small>' + r.total + ' registros · ' + r.areaHa.toFixed(2).replace('.', ',') + ' ha</small></div>' +
       r.capas.map(function (c) {
         var w = Math.max(6, c.count / max * 100);
         var subt = c.subtipos.slice(0, 6).map(function (s) {
@@ -498,14 +498,14 @@
       s.pctVerde >= 15 ? '🌱 Cobertura vegetal media: hay espacio para arborizar.' :
       '🏜️ Déficit de cobertura vegetal: sector dominado por suelo duro.';
     return '<div class="ua-h">Capa verde (píxeles del satelital) <small>zoom ' + W.verde.zoom + ' · ' + W.verde.tiles + ' teselas</small></div>' +
-      '<div class="ua-verde-big"><b>' + s.pctVerde.toFixed(1) + '%</b><span>cobertura verde detectada<br>≈ ' + fmtArea(verdeM2) + '</span></div>' +
+      '<div class="ua-verde-big"><b>' + s.pctVerde.toFixed(1).replace('.', ',') + '%</b><span>cobertura verde detectada<br>≈ ' + fmtArea(verdeM2) + '</span></div>' +
       barra('🌳 Vegetación', s.pctVerde, '#22c55e') +
       barra('🏗️ Construido / suelo duro', s.pctConstruido, '#94a3b8') +
       barra('◻️ Otros (sombras, agua, vías)', s.pctOtros, '#475569') +
       '<div class="ua-nota">' + lectura + '<br><small>Método: índice de exceso de verde (ExG) sobre ' + s.total.toLocaleString('es-CO') + ' píxeles dentro del polígono. La capa verde se pinta sobre el mapa.</small></div>';
   }
   function barra(label, pct, color) {
-    return '<div class="ua-barrow"><span>' + label + '</span><div class="ua-barbg"><i style="width:' + Math.min(100, pct).toFixed(1) + '%;background:' + color + '"></i></div><b>' + pct.toFixed(1) + '%</b></div>';
+    return '<div class="ua-barrow"><span>' + label + '</span><div class="ua-barbg"><i style="width:' + Math.min(100, pct).toFixed(1) + '%;background:' + color + '"></i></div><b>' + pct.toFixed(1).replace('.', ',') + '%</b></div>';
   }
 
   function htmlReportes() {
@@ -531,8 +531,8 @@
     var out = '<div class="ua-h">Balance urbano del sector</div>';
     if (v) {
       out += '<div class="ua-comp-duo">' +
-        '<div class="ua-comp-box verde"><b>' + v.pctVerde.toFixed(1) + '%</b><span>🌳 verde</span></div>' +
-        '<div class="ua-comp-box gris"><b>' + v.pctConstruido.toFixed(1) + '%</b><span>🏗️ construido</span></div></div>' +
+        '<div class="ua-comp-box verde"><b>' + v.pctVerde.toFixed(1).replace('.', ',') + '%</b><span>🌳 verde</span></div>' +
+        '<div class="ua-comp-box gris"><b>' + v.pctConstruido.toFixed(1).replace('.', ',') + '%</b><span>🏗️ construido</span></div></div>' +
         '<div class="ua-nota">' + (v.pctConstruido > 0 ? ('Por cada m² de verde hay <b>' + (v.pctVerde > 0 ? (v.pctConstruido / v.pctVerde).toFixed(1) : '∞') + ' m²</b> de suelo duro.') : '') + '</div>';
     } else { out += '<div class="ua-empty">🛰️ La comparativa físico-espacial aparece al terminar el análisis satelital…</div>'; }
     out += barra('🤝 Espacio social (verde+deporte+eventos)', r.total ? social / r.total * 100 : 0, '#22c55e') +
@@ -609,7 +609,7 @@
       '.meta{display:flex;gap:22px;margin-top:10px;font-weight:700}.kv b{font-size:1.5rem;color:#00795e}</style></head><body>' +
       '<h1>🛰️ URBIS ANÁLISIS</h1><div>Informe de sector · ' + new Date().toLocaleString('es-CO') + '</div>' +
       '<div class="meta"><div class="kv"><b>' + fmtArea(r.areaM2) + '</b><br>área</div><div class="kv"><b>' + Math.round(r.perimetroM).toLocaleString('es-CO') + ' m</b><br>perímetro</div><div class="kv"><b>' + r.total + '</b><br>registros</div>' +
-      (v ? '<div class="kv"><b>' + v.pctVerde.toFixed(1) + '%</b><br>cobertura verde</div><div class="kv"><b>' + v.pctConstruido.toFixed(1) + '%</b><br>construido</div>' : '') + '</div>' +
+      (v ? '<div class="kv"><b>' + v.pctVerde.toFixed(1).replace('.', ',') + '%</b><br>cobertura verde</div><div class="kv"><b>' + v.pctConstruido.toFixed(1).replace('.', ',') + '%</b><br>construido</div>' : '') + '</div>' +
       '<h2>Matriz de usos</h2><table><tr><th>Capa urbana</th><th>Registros</th><th>Densidad (por ha)</th></tr>' + filas + '</table>' +
       (reps ? '<h2>Reportes de riesgo y tránsito</h2><table><tr><th>Reporte</th><th>Fecha</th></tr>' + reps + '</table>' : '') +
       '<p style="margin-top:26px;font-size:12px;color:#475569">Generado por URBIS Análisis · datos comunitarios URBIS + clasificación de píxeles del satelital (índice ExG). Documento de diagnóstico para estudios y propuestas urbanas.</p>' +

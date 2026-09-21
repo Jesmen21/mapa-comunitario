@@ -1303,7 +1303,7 @@
 
   function formatoDistancia(metros) {
       if(!isFinite(metros)) return 'N/A';
-      return metros >= 1000 ? `${(metros/1000).toFixed(2)} km` : `${Math.round(metros)} m`;
+      return metros >= 1000 ? `${(metros/1000).toFixed(2).replace('.', ',')} km` : `${Math.round(metros)} m`;
   }
 
   function mostrarPanelNavegacion(html) {

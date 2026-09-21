@@ -213,7 +213,7 @@
       var rel = (slowest > fastest) ? (s.paceSecKm - fastest) / (slowest - fastest) : 0;
       var barW = 28 + (1 - rel) * 72; // más rápido => barra más larga
       return '<div class="rush-split-row' + (isFast ? ' fast' : '') + '">' +
-        '<span class="rush-split-km">' + (s.partial ? s.dist.toFixed(2) + ' km' : 'KM ' + s.km) + '</span>' +
+        '<span class="rush-split-km">' + (s.partial ? s.dist.toFixed(2).replace('.', ',') + ' km' : 'KM ' + s.km) + '</span>' +
         '<span class="rush-split-bar"><i style="width:' + barW.toFixed(0) + '%"></i></span>' +
         '<span class="rush-split-pace">' + fmtPace(s.paceSecKm) + (isFast ? ' ⚡' : '') + '</span>' +
         '</div>';
@@ -297,16 +297,16 @@
       '<div class="rush-pro-section"><div class="rush-pro-h">🏆 Récords personales</div>' +
         '<div class="rush-pro-grid">' +
           recCard('⚡', 'Mejor ritmo', r.mejorPaceSecKm !== null ? fmtPace(r.mejorPaceSecKm) + ' /km' : '--') +
-          recCard('📏', 'Más larga', r.carreraMasLargaKm.toFixed(2) + ' km') +
+          recCard('📏', 'Más larga', r.carreraMasLargaKm.toFixed(2).replace('.', ',') + ' km') +
           recCard('🏅', 'Mejor 5K', b5 ? fmtTime(b5.sec) : '--') +
           recCard('🚀', 'Mejor 1K', b1 ? fmtTime(b1.sec) : '--') +
         '</div></div>' +
       '<div class="rush-pro-section"><div class="rush-pro-h">🎯 Reto de ' + meses[now.getMonth()] +
         ' <button class="rush-goal-edit" onclick="window.urbisRunnerEditarReto&&window.urbisRunnerEditarReto()">editar meta</button></div>' +
         '<div class="rush-reto-card">' +
-          '<div class="rush-reto-top"><b>' + mes.km.toFixed(1) + ' km</b><span>de ' + goal + ' km</span></div>' +
+          '<div class="rush-reto-top"><b>' + mes.km.toFixed(1).replace('.', ',') + ' km</b><span>de ' + goal + ' km</span></div>' +
           '<div class="rush-reto-bar"><i style="width:' + pct.toFixed(0) + '%"></i></div>' +
-          '<div class="rush-reto-foot">' + (mes.km >= goal ? '¡Meta cumplida! 🎉' : (mes.count + ' actividad(es) este mes · faltan ' + Math.max(0, goal - mes.km).toFixed(1) + ' km')) + '</div>' +
+          '<div class="rush-reto-foot">' + (mes.km >= goal ? '¡Meta cumplida! 🎉' : (mes.count + ' actividad(es) este mes · faltan ' + Math.max(0, goal - mes.km).toFixed(1).replace('.', ',') + ' km')) + '</div>' +
         '</div></div>' +
       '<div class="rush-pro-section"><div class="rush-streak-card"><span class="rush-streak-fire">🔥</span>' +
         '<div><b>' + st + ' día' + (st === 1 ? '' : 's') + ' de racha</b><small>' + (st > 0 ? '¡Siga así, no rompa la cadena!' : 'Salga hoy y empiece su racha') + '</small></div></div></div>' +

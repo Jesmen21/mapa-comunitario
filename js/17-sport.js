@@ -155,7 +155,7 @@
     const distance = items.reduce((a,b)=>a + (Number(b.distancia)||0),0);
     const volume = items.reduce((a,b)=>a + (Number(b.volumen)||0),0);
     setHTML('sport-metric-sessions', String(sessions));
-    setHTML('sport-metric-distance', `${distance.toFixed(1)} km`);
+    setHTML('sport-metric-distance', `${distance.toFixed(1).replace('.', ',')} km`);
     setHTML('sport-metric-volume', `${Math.round(volume)} kg`);
 
     const unlock = (id, ok) => {
@@ -234,7 +234,7 @@
     const typeLabel = type === 'correr' ? 'Correr / caminar' : type === 'gym' ? 'Gym / fuerza' : 'Crossfit / funcional';
     setHTML('sport-activity-output', `
       <b>Actividad guardada:</b> ${typeLabel}<br>
-      Tiempo: ${tiempo || '—'} min ${distancia ? `· Distancia: ${distancia.toFixed(2)} km` : ''} ${volumen ? `· Volumen: ${Math.round(volumen)} kg` : ''}<br>
+      Tiempo: ${tiempo || '—'} min ${distancia ? `· Distancia: ${distancia.toFixed(2).replace('.', ',')} km` : ''} ${volumen ? `· Volumen: ${Math.round(volumen)} kg` : ''}<br>
       Estado: <b>${evalRes.estado}</b> · ${evalRes.texto}
     `);
     setHTML('sport-adaptation-output', `
@@ -383,9 +383,9 @@
     const pace = dist > 0 ? (time / 60) / dist : 0;
     const speed = time > 0 ? dist / (time / 3600) : 0;
     setHTML('runner-live-time', fmtTime(time));
-    setHTML('runner-live-distance', `${dist.toFixed(2)} km`);
+    setHTML('runner-live-distance', `${dist.toFixed(2).replace('.', ',')} km`);
     setHTML('runner-live-pace', dist > 0 ? `${Math.floor(pace)}:${String(Math.round((pace % 1) * 60)).padStart(2,'0')} min/km` : '--');
-    setHTML('runner-live-speed', `${speed.toFixed(1)} km/h`);
+    setHTML('runner-live-speed', `${speed.toFixed(1).replace('.', ',')} km/h`);
   }
   function weeklyStreakInfo(history) {
     if(!history.length) return { weeks: 0 };
@@ -467,8 +467,8 @@
     const bestDuration = items.reduce((m, i) => Math.max(m, Number(i.elapsedSec)||0), 0);
     out.innerHTML = `
       <div class="sport-progress-grid">
-        <div class="sport-metric"><span>Mejor distancia</span><strong>${bestDistance.toFixed(2)} km</strong></div>
-        <div class="sport-metric"><span>Mejor velocidad</span><strong>${bestSpeed.toFixed(1)} km/h</strong></div>
+        <div class="sport-metric"><span>Mejor distancia</span><strong>${bestDistance.toFixed(2).replace('.', ',')} km</strong></div>
+        <div class="sport-metric"><span>Mejor velocidad</span><strong>${bestSpeed.toFixed(1).replace('.', ',')} km/h</strong></div>
         <div class="sport-metric"><span>Mayor duración</span><strong>${fmtTime(bestDuration)}</strong></div>
       </div>
     `;
@@ -495,7 +495,7 @@
         <h5>${h.title || 'Actividad runner'}</h5>
         <small>${h.kindLabel || h.kind || 'correr'} · ${new Date(h.createdAt || Date.now()).toLocaleString()}</small>
         <div style="margin-top:8px;line-height:1.5;">
-          <b>${(Number(h.distanceKm)||0).toFixed(2)} km</b> · ${fmtTime(h.elapsedSec||0)} · ${(Number(h.speedAvg)||0).toFixed(1)} km/h<br>
+          <b>${(Number(h.distanceKm)||0).toFixed(2).replace('.', ',')} km</b> · ${fmtTime(h.elapsedSec||0)} · ${(Number(h.speedAvg)||0).toFixed(1).replace('.', ',')} km/h<br>
           <span>Ubicación aprox.: ${h.locationLabel || 'Trayecto urbano guardado'}</span>
         </div>
         <div class="runner-history-badges">${badges.map(b => `<span>${b}</span>`).join('')}</div>
@@ -514,10 +514,10 @@
         ${session.photo ? `<img src="${session.photo}" alt="Portada ${session.title || 'recorrido'}" style="width:100%;height:140px;object-fit:cover;border-radius:14px;margin-bottom:10px;">` : (session.photoName ? `<div class="runner-photo-name">📷 ${session.photoName}</div>` : '')}
         <h5>${session.title || 'Mi recorrido URBIS'}</h5>
         <div style="font-size:.95rem;line-height:1.6;">
-          <b>${session.kindLabel}</b> · ${session.distanceKm.toFixed(2)} km · ${fmtTime(session.elapsedSec)}<br>
-          Ritmo medio: ${(session.paceMinKm || 0).toFixed(2)} min/km · Velocidad media: ${(session.speedAvg || 0).toFixed(1)} km/h<br>
+          <b>${session.kindLabel}</b> · ${session.distanceKm.toFixed(2).replace('.', ',')} km · ${fmtTime(session.elapsedSec)}<br>
+          Ritmo medio: ${(session.paceMinKm || 0).toFixed(2).replace('.', ',')} min/km · Velocidad media: ${(session.speedAvg || 0).toFixed(1).replace('.', ',')} km/h<br>
           ${session.notes ? `Nota: ${session.notes}<br>` : ''}
-          Mensaje sugerido: “Completé ${session.distanceKm.toFixed(2)} km con URBIS en ${session.locationLabel || 'mi ciudad'}”.
+          Mensaje sugerido: “Completé ${session.distanceKm.toFixed(2).replace('.', ',')} km con URBIS en ${session.locationLabel || 'mi ciudad'}”.
         </div>
       </div>`;
   }
@@ -659,11 +659,11 @@
       createdAt: new Date().toISOString()
     };
     const out = document.getElementById('runner-session-status');
-    if(out) out.innerHTML = `<b>Actividad finalizada.</b> ${dist.toFixed(2)} km · ${fmtTime(elapsed)} · ${speed.toFixed(1)} km/h.`;
+    if(out) out.innerHTML = `<b>Actividad finalizada.</b> ${dist.toFixed(2).replace('.', ',')} km · ${fmtTime(elapsed)} · ${speed.toFixed(1).replace('.', ',')} km/h.`;
     const saveCard = document.getElementById('runner-save-card');
     if(saveCard) saveCard.style.display = 'block';
     const saveSummary = document.getElementById('runner-save-summary');
-    if(saveSummary) saveSummary.innerHTML = `<b>${runnerState.pendingSession.kindLabel}</b> · ${dist.toFixed(2)} km · ${fmtTime(elapsed)} · ${(pace || 0).toFixed(2)} min/km`;
+    if(saveSummary) saveSummary.innerHTML = `<b>${runnerState.pendingSession.kindLabel}</b> · ${dist.toFixed(2).replace('.', ',')} km · ${fmtTime(elapsed)} · ${(pace || 0).toFixed(2).replace('.', ',')} min/km`;
     const stopBtn = document.getElementById('runner-stop-btn');
     if(stopBtn) stopBtn.disabled = true;
     renderRunnerShareCard(runnerState.pendingSession);

@@ -19370,6 +19370,93 @@ de **nueve** cifras con punto decimal a **cero**.
 * **Los marcadores sin reemplazar en la ficha**, que piden un análisis de
   verdad para poder medirse.
 
+## «5.00 km» son cinco mil kilómetros (v1022)
+
+La v1021 llevó a la ficha la regla del punto decimal y la acotó a los grados,
+porque era la única unidad que se podía exigir entera sin una lista de
+excepciones. Midiendo esa acotación apareció la otra mitad: **la UNIDAD es lo
+que vuelve guardable el resto.**
+
+    v1021   5.00 km · 12.4 km/h · 6.32 min/km · 4.75 ha · 37.4%
+    v1022   5,00 km · 12,4 km/h · 6,32 min/km · 4,75 ha · 37,4%
+
+Un `toFixed` pegado a «km», «km/h», «min/km», «ha» o «%» **no puede ser
+geometría**: no hay regla de CSS ni camino de SVG que lleve esas letras
+detrás. Así que es siempre un rótulo, y un rótulo en castellano lleva coma
+—el punto es el separador de miles, de modo que «5.00 km» se lee como cinco
+mil—.
+
+Son **36 sitios en nueve archivos**, y el grueso está donde más se mira: los
+módulos de deporte y del corredor imprimen la distancia, la velocidad y el
+ritmo con punto en dieciséis, cuatro y tres sitios; el análisis urbano sus
+hectáreas y sus porcentajes en siete; y el informe de empresas dos por ciento
+más, en el papel que se le entrega a un cliente.
+
+### Por qué la unidad, medido y no supuesto
+
+| | Sitios | Falsos positivos |
+|---|---|---|
+| todo `toFixed(1\|2)` | 307 | — |
+| descontando a ojo el `style=` y los caminos de SVG | 123 | **la mitad siguen siendo geometría** |
+| **con la unidad pegada** | **41** | **cero** |
+
+La fila del medio es la lista de excepciones que envejece hasta no significar
+nada (v895). Y lo que cuesta aflojar está medido, porque salió de una
+inyección: **añadirle un simple espacio a la lista de unidades sube de 0 a 207
+denuncias**, y las primeras son los caminos de SVG de `js/24`. La guarda tiene
+su caso de respuesta conocida para eso —un `'M' + x.toFixed(2) + ' ' + …`— y
+se pone roja si algún día los toma por rótulos.
+
+**El metro a secas queda fuera, y va dicho**: «m» es también el comando
+`moveto` de un camino de SVG y el patrón no los distingue.
+
+### El MATERIAL volvió a medir la forma mala
+
+Segunda vez en cuatro tandas, así que vale nombrarlo como patrón y no como
+anécdota. La primera versión contaba «cuántos `toFixed` van pegados a una
+unidad **sin convertir**», y al arreglar los 36 se quedó en **0**: la guarda
+se declaró sin material por haber mejorado el código, que es la presión que la
+v970 vino a quitar.
+
+La cuenta mira ahora **pasado el convertidor** —salta un `.replace(…)` antes
+de buscar la unidad— así que un sitio arreglado sigue contando como material.
+Con eso da 41: los 36 de esta tanda y cinco que ya venían bien.
+
+> **Una guarda cuya cuenta de MATERIAL describe el defecto se queda sin
+> material el día que el defecto se arregla.** El material tiene que ser lo que
+> sobrevive al cero: aquí, que estos archivos sigan imprimiendo cifras con
+> unidad.
+
+### Lo que se midió sobre el papel y lo que no
+
+Hay que separarlo, porque no todo se pudo ver:
+
+* **El informe de empresas sí**: compuesto con la sonda, pasa de **22
+  hallazgos de punto decimal a cero**;
+* **los módulos de deporte y del corredor no**. Su pantalla vive dentro de
+  `index.html`, que sin sesión no compone nada —medido: **191 caracteres de
+  texto visible**, o sea la portada de entrada—. Sus veinticuatro sitios se
+  comprobaron estáticamente y quedan cubiertos por la guarda, no por el papel.
+
+Es la quinta tanda seguida con la misma forma —una regla que solo la lámina
+tenía— y la primera en la que una parte del arreglo no se pudo ver impresa.
+Decirlo es lo que separa esto de darlo por medido.
+
+### Demostrado contra la v1021
+
+Tres inyecciones fieles contra una copia guardada, cada una con su aserción
+(v993):
+
+```
+✗ toda cifra con unidad pasa por la coma
+    — 36 saldrian con punto, que en castellano es el separador de MILES:
+      05:1306 · 17:158 · 17:237 · 17:386 · 17:388 · 17:470
+? MATERIAL - lo servido imprime cifras con unidad
+    — SIN MATERIAL HOY: solo 0 sitios  (sin mirar pasado el convertidor)
+✗ el barrido ve la unidad pelada y calla la geometria
+    — toma un camino de SVG por un rotulo: daria rojo sobre geometria
+```
+
 ## La lista viva: lo que al pliego educativo todavía le falta (v866)
 
 Esta lista se quedó vieja **cinco veces**. Cuatro dentro de la hoja —la

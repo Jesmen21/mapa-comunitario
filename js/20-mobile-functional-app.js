@@ -1778,11 +1778,11 @@
     const stats = historyStats();
     const home = app.querySelector('#u52-home-runner-state');
     if(home) home.innerHTML = stats.count
-      ? `<span>🔥</span><div><b>${stats.count} actividad(es)</b><small>${stats.totalKm.toFixed(2)} km registrados.</small></div><button data-u52-go="progress">Ver</button>`
+      ? `<span>🔥</span><div><b>${stats.count} actividad(es)</b><small>${stats.totalKm.toFixed(2).replace('.', ',')} km registrados.</small></div><button data-u52-go="progress">Ver</button>`
       : `<span>🔥</span><div><b>Aún no tiene actividades</b><small>Inicie su primer recorrido.</small></div><button data-u52-go="sport">Iniciar</button>`;
     const sport = app.querySelector('#u52-sport-state');
     if(sport) sport.innerHTML = stats.count
-      ? `<span>📊</span><div><b>Última actividad guardada</b><small>${esc(stats.latest?.type || 'Runner')} · ${(stats.latest?.distanceKm||0).toFixed(2)} km</small></div><button data-u52-go="progress">Ver</button>`
+      ? `<span>📊</span><div><b>Última actividad guardada</b><small>${esc(stats.latest?.type || 'Runner')} · ${(stats.latest?.distanceKm||0).toFixed(2).replace('.', ',')} km</small></div><button data-u52-go="progress">Ver</button>`
       : `<img class="rush-pin-ico" src="assets/brand/llegada.png" alt=""><div><b>Todavía no has iniciado actividades</b><small>Su recorrido aparecerá aquí.</small></div>`;
     const rushStats = app.querySelector('#rush-home-stats');
     if(rushStats) rushStats.innerHTML =
@@ -1860,7 +1860,7 @@
       let nivel = 0, esDemo = false;
       if(km > 0) nivel = km >= 8 ? 4 : km >= 5 ? 3 : km >= 2 ? 2 : 1;
       else if(demoDias && demoDias.has(dia)){ nivel = demoNivel[dia]; esDemo = true; }
-      const titulo = km ? km.toFixed(1) + ' km' : (esDemo ? 'Ejemplo' : 'Sin actividad');
+      const titulo = km ? km.toFixed(1).replace('.', ',') + ' km' : (esDemo ? 'Ejemplo' : 'Sin actividad');
       celdas += `<span class="rush-cal-day${nivel ? ' on lvl' + nivel : ''}${esDemo ? ' demo' : ''}${esHoy ? ' today' : ''}" title="${titulo}">
         <b>${dia}</b>${km ? `<small>${km.toFixed(1)}</small>` : ''}
       </span>`;

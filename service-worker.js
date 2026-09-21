@@ -1,4 +1,4 @@
-const URBIS_CACHE = 'urbis-v1021-el-punto-decimal-en-la-ficha';
+const URBIS_CACHE = 'urbis-v1022-una-distancia-no-lleva-punto';
 const URBIS_ASSETS = [
   './',
   './index.html',

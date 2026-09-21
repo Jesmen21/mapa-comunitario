@@ -153,7 +153,7 @@
     return '<div class="urb-pres-pop"><b>@' + esc(a.usuario) + '</b>' +
       '<span class="f-' + a.frescura + '">' + (a.frescura === 'vivo' ? '🟢 en línea · ' : '') + esc(haceCuanto(r.ms)) + '</span>' +
       (r.acc ? '<small>precisión ±' + r.acc + ' m</small>' : '<small>precisión no reportada</small>') +
-      (dist != null ? '<small>a ' + (dist >= 1000 ? (dist / 1000).toFixed(1) + ' km' : Math.round(dist) + ' m') + ' de usted</small>' : '') +
+      (dist != null ? '<small>a ' + (dist >= 1000 ? (dist / 1000).toFixed(1).replace('.', ',') + ' km' : Math.round(dist) + ' m') + ' de usted</small>' : '') +
       '<a href="https://www.google.com/maps/dir/?api=1&destination=' + r.lat.toFixed(6) + ',' + r.lng.toFixed(6) + '" target="_blank" rel="noopener">Cómo llegar</a>' +
       '</div>';
   }

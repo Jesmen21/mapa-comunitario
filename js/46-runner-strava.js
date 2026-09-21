@@ -397,7 +397,7 @@
       ctx.beginPath(); for(var j=r.a;j<=r.b;j++){ (j===r.a)?ctx.moveTo(px[j].x,px[j].y):ctx.lineTo(px[j].x,px[j].y); } ctx.stroke(); ctx.restore();
       punto(ctx, px[r.a], RUSH.start, 8); punto(ctx, px[r.b], '#fff', 10);
       var ses=sesionDe(trab.slice(r.a, r.b+1), base);
-      var info=ov.querySelector('#rush-trim-info'); if(info) info.textContent = ses.distanceKm.toFixed(2)+' km · '+fmtTime(ses.elapsed)+' · '+fmtPace(ses.paceSecKm)+' /km';
+      var info=ov.querySelector('#rush-trim-info'); if(info) info.textContent = ses.distanceKm.toFixed(2).replace('.', ',')+' km · '+fmtTime(ses.elapsed)+' · '+fmtPace(ses.paceSecKm)+' /km';
     }
     ini.oninput=pintar; fin.oninput=pintar;
     ov.querySelector('#rush-trim-auto').onclick=function(){ var antes=trab.length; trab=quitarVehiculo(trab, base.type); ini.value=0; fin.value=100; pintar(); var info=ov.querySelector('#rush-trim-info'); if(info && trab.length<antes) info.textContent += '  ·  quitados '+(antes-trab.length)+' pts rápidos'; };
