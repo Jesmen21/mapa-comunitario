@@ -150,6 +150,39 @@
     return USOS_CON_ESPECIE.indexOf(String(uso || '').trim()) !== -1;
   }
 
+  /* ── Hay tipos del arbolado que no tienen especie (v994) ─────────────────
+     Medido en el navegador antes de tocar nada: un «Alcorque vacío (sitio de
+     siembra sin árbol)» se pregunta «¿Qué árbol es?» y la v979 lo marca «Sin
+     especie anotada. Cuando sepa cuál es, toque Editar» — sobre un hueco en
+     el que no hay ningún árbol. Es la clase de la v974 con la palma, viva en
+     el mismo archivo que la arregló.
+
+     La excepción va por TIPO y no partiendo el uso, que es la decisión de la
+     v991: el tipo se guarda como texto dentro del registro, y partirlo
+     dejaría las entradas ya mapeadas apuntando a un uso que ya no existe.
+
+     El valor es POR QUÉ, y no un booleano: son dos razones distintas —no hay
+     planta, o sí la hay y la lista no la tiene— y juntarlas mandaría a
+     ampliar la lista para un caso que nunca la va a necesitar. */
+  var TIPOS_SIN_ESPECIE = {
+    'Alcorque vacío (sitio de siembra sin árbol)':
+      'no hay ninguna planta que identificar: es el sitio de siembra vacío',
+    'Jardinera o arbusto ornamental':
+      'la lista de URBIS son árboles y palmas, y esto es un arbusto'
+  };
+  /* La puerta. Un llamador que solo pase el uso sigue teniendo la respuesta de
+     siempre, así que no se rompe ninguno; lo que impide que se OLVIDE el tipo
+     es la guarda, que exige que los tres sitios que deciden lo pasen. */
+  function tieneEspecie(uso, tipo){
+    if (!esUsoDeArbol(uso)) return false;
+    var t = String(tipo || '').trim();
+    return !(t && Object.prototype.hasOwnProperty.call(TIPOS_SIN_ESPECIE, t));
+  }
+  function porQueSinEspecie(tipo){
+    var t = String(tipo || '').trim();
+    return Object.prototype.hasOwnProperty.call(TIPOS_SIN_ESPECIE, t) ? TIPOS_SIN_ESPECIE[t] : '';
+  }
+
   /* Un tipo «Palma» con una especie que no es palma es una contradicción que
      ninguna cuenta vería: las dos casillas son correctas por separado. Se
      DICE en el formulario —donde todavía se puede corregir— y no se bloquea,
@@ -273,6 +306,9 @@
     porNombre: especiePorNombre,
     USOS_CON_ESPECIE: USOS_CON_ESPECIE,
     esUsoDeArbol: esUsoDeArbol,
+    TIPOS_SIN_ESPECIE: TIPOS_SIN_ESPECIE,
+    tieneEspecie: tieneEspecie,
+    porQueSinEspecie: porQueSinEspecie,
     contradiceAlTipo: contradiceAlTipo,
     /* Cómo se imprime. Un solo sitio para las tres superficies que lo
        enseñan —el globo, la ficha y el propio formulario—: tres redacciones

@@ -983,10 +983,13 @@
        js/03c. */
     pendiente: function (descripcion) {
       const V = window.URBIS_ARBOL_VOC;
-      if (!V || typeof V.esUsoDeArbol !== 'function') return false;
+      if (!V || typeof V.tieneEspecie !== 'function') return false;
       const d = String(descripcion || '').split(' | ');
-      const uso = String(d[0] || '').split(' \u00b7 ')[0].trim();
-      if (!V.esUsoDeArbol(uso)) return false;
+      const cab = String(d[0] || '').split(' \u00b7 ');
+      const uso = String(cab[0] || '').trim(), tipo = String(cab[1] || '').trim();
+      /* Con el TIPO además del uso (v994): un «Alcorque vacío» se marcaba
+         «Sin especie anotada» sobre un hueco en el que no hay ningún árbol. */
+      if (!V.tieneEspecie(uso, tipo)) return false;
       const a = window.URBIS_ARBOL.leer(descripcion);
       if (!a.especie) return true;                 // a nadie se le preguntó
       if (a.esOtro && !a.otroTexto) return true;   // eligió la salida y no la llenó

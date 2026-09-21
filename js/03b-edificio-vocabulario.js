@@ -465,6 +465,8 @@
        declaró acá, así que la ficha de una palma preguntaba «¿cuántos pisos
        tiene?» y prellenaba «1 piso · No se sabe». Se vio mirando el papel. */
     'Arbolado Urbano',
+    /* Un arbusto, un césped ni una enredadera tienen plantas (v994). */
+    'Vegetación no arbórea',
     'Protección Ambiental', 'Forestal', 'Agropecuario / Rural',
     'Ronda Hídrica / Protección de Cuerpos de Agua', 'Zona Baldía', 'Zona de Riesgo',
     'Espacio Residual', 'Zona de Expansión Urbana', 'Extractivo (Minería/Canteras)',

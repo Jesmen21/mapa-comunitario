@@ -3409,7 +3409,8 @@
                    mismo acumulador que la especie: son del mismo árbol, y dos
                    paseos darían dos poblaciones parecidas y distintas (v860). */
                 conSitio: 0, sitioSinAnotar: 0, sitioNoSeSabe: 0,
-                sitioOtro: 0, sinSitio: 0, sitios: {} };
+                sitioOtro: 0, sinSitio: 0, sitios: {},
+                noAplica: 0, noAplicaTipos: {} };
     var mob = {};
     /* Y el estado, también POR USO y por la misma razón: «el 40 % está malo»
        sobre canecas, tapas, murales, vallas y vías juntas no describe
@@ -3434,7 +3435,14 @@
       if (!esArbol && !esMat && !esEst) return;
       try { if (!puntoDentroDelSector({ lat: lat, lng: lng })) return; } catch (e) { return; }
 
-      if (esArbol && LA && typeof LA.leer === 'function') {
+      /* Un «Alcorque vacío» y una «Jardinera o arbusto ornamental» son puntos
+         del arbolado y NO son árboles con especie: contarlos entre los
+         «árboles mapeados» inflaría el denominador del reparto con cosas que
+         nunca van a traer una. Se cuentan aparte y se nombran (v994). */
+      if (esArbol && !(VA && typeof VA.tieneEspecie === 'function' && VA.tieneEspecie(uso, tipo))) {
+        arb.noAplica++;
+        arb.noAplicaTipos[tipo] = (arb.noAplicaTipos[tipo] || 0) + 1;
+      } else if (esArbol && LA && typeof LA.leer === 'function') {
         var a = LA.leer(p.descripcion);
         arb.arboles++;
         if (!a.especie) arb.sinAnotar++;
@@ -3568,7 +3576,7 @@
   }
 
   function resumenArbolado(a) {
-    if (!a.arboles) return null;
+    if (!a.arboles && !a.noAplica) return null;
     var especies = ordenarCuenta(a.especies, a.conEspecie);
     var generos = ordenarCuenta(a.generos, a.conEspecie);
     var VA = window.URBIS_ARBOL_VOC;
@@ -3594,7 +3602,11 @@
       /* Cobertura: qué parte de lo mapeado trae una especie utilizable. Es el
          denominador que impide leer el reparto como si fuera el del sector
          (v943), y por eso viaja con el resumen y no se recalcula al pintar. */
-      cobertura: Math.round(100 * a.conEspecie / a.arboles),
+      cobertura: a.arboles ? Math.round(100 * a.conEspecie / a.arboles) : 0,
+      /* Los que no pueden traer especie, aparte y con su nombre: sin eso, un
+         sector de alcorques vacíos se leería como un arbolado sin identificar. */
+      noAplica: a.noAplica,
+      noAplicaTipos: ordenarCuenta(a.noAplicaTipos, a.noAplica),
       /* La regla, con sus dos mitades: si se puede correr y qué dio. La
          familia NO se puede: el vocabulario trae nombre y binomio, no
          familia botánica, y suponerla sería inventar. */
@@ -23268,7 +23280,21 @@ function donaHTML(datos, colorDe, nombreDe) {
       'sector: contar treinta árboles no dice cuántos hay, dice de qué son los treinta que se ' +
       'contaron. Llevarlas al sector entero sería extrapolar.</p>';
 
-    if (A) {
+    /* Lo que no puede traer especie va FUERA del bloque de especies y antes
+       que él: si un sector tiene ocho alcorques vacíos y cuatro árboles, leer
+       «4 árboles mapeados» sin decir lo otro esconde justo el dato que más
+       importa —cuántos sitios de siembra están sin sembrar—. */
+    if (A && A.noAplica) {
+      out += '<p class="pcr-pista">Se ' + pl(A.noAplica, 'mapeó', 'mapearon') + ' <b>' +
+        A.noAplica + '</b> ' + pl(A.noAplica, 'punto', 'puntos') + ' del arbolado que no ' +
+        pl(A.noAplica, 'tiene', 'tienen') + ' especie que identificar: ' +
+        A.noAplicaTipos.map(function (x) {
+          return esc(x.n) + (x.cuenta > 1 ? ' (' + x.cuenta + ')' : '');
+        }).join(', ') + '. No entran en el reparto de abajo, y un alcorque vacío es un sitio ' +
+        'de siembra esperando árbol.</p>';
+    }
+
+    if (A && A.arboles) {
       out += '<p class="pcr-lab">El arbolado, por especie</p>' +
         '<div class="pcr-kpis">' +
           '<div class="pcr-kpi"><b>' + A.arboles + '</b><small>árbol' + (A.arboles === 1 ? '' : 'es') + ' mapeado' + (A.arboles === 1 ? '' : 's') + '</small></div>' +

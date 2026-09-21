@@ -4270,14 +4270,18 @@ console.log('\n  -- el árbol al que le falta la especie (v979) --');
   /* Guarda de la guarda: si `pendiente` dejara de mirar el uso, marcaría una
      banca; si dejara de leer el registro, marcaría todo o nada. Las dos
      seguirían con todo lo de arriba en verde (v878). */
-  comprobar('y la función sigue mirando el uso y lo guardado',
-    !!cuerpo && cuerpo.indexOf('esUsoDeArbol(') >= 0 && cuerpo.indexOf('.leer(') >= 0,
-    (!!cuerpo && cuerpo.indexOf('esUsoDeArbol(') >= 0 && cuerpo.indexOf('.leer(') >= 0)
-      ? 'filtra por uso de árbol y lee la especie guardada'
-      : !cuerpo ? 'no se pudo leer la función'
-      : cuerpo.indexOf('esUsoDeArbol(') < 0
-      ? 'dejó de mirar el uso: marcaría una banca como árbol sin especie'
-      : 'dejó de leer lo guardado');
+  /* Y desde la v994 mira el TIPO además del uso: un «Alcorque vacío» se
+     marcaba «Sin especie anotada» sobre un hueco en el que no hay ningún
+     árbol. La comprobación se aprieta, no se afloja: ahora exige los dos. */
+  const cuerpoPend = trozo(j04, 'pendiente: function (descripcion) {', '\n    },');
+  const miraUso = !!cuerpoPend && /tieneEspecie\(\s*uso\s*,\s*tipo\s*\)/.test(cuerpoPend);
+  const miraReg = !!cuerpoPend && cuerpoPend.indexOf('.leer(') >= 0;
+  comprobar('y la función sigue mirando el uso, el TIPO y lo guardado',
+    miraUso && miraReg,
+    (miraUso && miraReg) ? 'decide con los dos y lee el registro'
+      : !cuerpoPend ? 'no se pudo leer pendiente'
+      : !miraUso ? 'no decide con el uso y el tipo: marcaría una banca, o un alcorque vacío'
+      : 'no lee el registro: marcaría todo o nada')
 
   /* El aviso de la FICHA va sobre fondo oscuro y con la misma especificidad
      que `.detalle-especie`: escrito antes, esa regla —más abajo en el
@@ -5228,6 +5232,121 @@ console.log('\n  -- el subtipo de cada piso (v989) --');
       llama,
       llama ? 'htmlUsosPorPiso lo monta en cada renglón'
             : 'el control existe y no se monta: el campo no aparecería');
+  }
+}
+
+/* ── Hay tipos del arbolado que no tienen especie (v994) ───────────────────
+   Medido en el navegador antes de tocar nada: un «Alcorque vacío (sitio de
+   siembra sin árbol)» se preguntaba «¿Qué árbol es?» y la v979 lo marcaba
+   «Sin especie anotada. Cuando sepa cuál es, toque Editar» — sobre un hueco
+   en el que no hay ningún árbol. Es la clase de la v974 con la palma, viva
+   dentro del archivo que la arregló.
+
+   La excepción va por TIPO, que es la decisión de la v991, y lo que se guarda
+   acá es que no se vuelva un no-op silencioso ni se olvide en uno de sus
+   tres lectores. */
+console.log('\n  -- hay tipos del arbolado que no tienen especie (v994) --');
+{
+  const j03g = soloCodigo(leer('js/03c-arbol-especies.js'));
+  const j04g = soloCodigo(leer('js/04-marker-proximity.js'));
+  const j20g = soloCodigo(leer('js/20-mobile-functional-app.js'));
+  const j68g = soloCodigo(leer('js/68-procity-reconocimiento.js'));
+
+  const tabla = (() => {
+    const i = j03g.indexOf('var TIPOS_SIN_ESPECIE'); if (i < 0) return null;
+    const a = j03g.indexOf('{', i), c = j03g.indexOf('\n  }', a);
+    if (a < 0 || c < 0) return null;
+    try { return eval('(' + j03g.slice(a, c + 4) + ')'); } catch (e) { return null; }
+  })();
+  const catG = (() => {
+    const i = j20g.indexOf('const PROCITY_MATRIZ_USOS = [');
+    if (i < 0) return null;
+    const a = j20g.indexOf('[', i), c = j20g.indexOf('\n  ];', a);
+    try { return eval(j20g.slice(a, c + 4)); } catch (e) { return null; }
+  })();
+
+  if (!tabla || !catG) {
+    anotarSinMaterial('MATERIAL · la excepción por tipo y el catálogo se dejan leer',
+      'no se pudo leer: ' + [!tabla && 'TIPOS_SIN_ESPECIE', !catG && 'el catálogo'].filter(Boolean).join(', '));
+  } else {
+    const tipos = Object.keys(tabla);
+    comprobar('MATERIAL · la excepción tiene tipos que excluir',
+      tipos.length >= 1, tipos.length + ' tipos del arbolado sin especie posible');
+
+    /* 1 · Un tipo mal escrito es un no-op que se lee igual que uno que
+       funciona (v973, v975, v991). */
+    const fantasma = tipos.filter(t => !catG.some(u => (u.t || []).indexOf(t) >= 0));
+    comprobar('todo tipo excluido existe en el catálogo',
+      fantasma.length === 0,
+      fantasma.length ? 'no está en ningún uso: ' + fantasma.join(' · ') +
+        ' — la excepción no haría nada y se leería igual que si funcionara'
+      : 'los ' + tipos.length + ' están');
+
+    /* 2 · Y su uso tiene que ser uno de los que SÍ preguntan especie, o la
+       excepción sobra: excluir de una pregunta que nadie hace es un no-op. */
+    const conEspecie = (() => {
+      const i = j03g.indexOf('var USOS_CON_ESPECIE'); if (i < 0) return [];
+      const a = j03g.indexOf('[', i), c = j03g.indexOf(']', a);
+      try { return eval(j03g.slice(a, c + 1)); } catch (e) { return []; }
+    })();
+    const sobra = tipos.filter(t => {
+      const u = catG.find(x => (x.t || []).indexOf(t) >= 0);
+      return u && conEspecie.indexOf(u.u) < 0;
+    });
+    comprobar('y su uso es de los que SÍ preguntan especie, o la excepción sobra',
+      sobra.length === 0 && conEspecie.length > 0,
+      sobra.length ? 'su uso no pregunta especie, así que excluirlo no hace nada: ' + sobra.join(' · ')
+                   : 'los ' + tipos.length + ' excluyen de una pregunta que sí se hace');
+
+    /* 3 · El valor es la RAZÓN y no un booleano: «no hay planta» y «sí la hay
+       y la lista no la tiene» piden cosas distintas —la segunda es candidata a
+       ampliar la lista y la primera no lo será nunca— y juntarlas mandaría a
+       ampliarla para un caso que no la necesita. */
+    const sinRazon = tipos.filter(t => typeof tabla[t] !== 'string' || tabla[t].trim().length < 20);
+    comprobar('cada exclusión dice POR QUÉ, y no solo que sí',
+      sinRazon.length === 0,
+      sinRazon.length ? 'sin razón escrita: ' + sinRazon.join(' · ')
+                      : 'las ' + tipos.length + ' distinguen «no hay planta» de «la lista no la tiene»');
+
+    /* 4 · Los tres que deciden pasan el TIPO. Falla CERRADO: uno que solo
+       pase el uso sigue compilando y vuelve a la respuesta de antes en
+       silencio, que es como este defecto sobrevivió quince versiones. */
+    const dentro = (txt, nom, fin) => {
+      const i = txt.indexOf(nom); if (i < 0) return '';
+      const j = txt.indexOf(fin, i); return j < 0 ? txt.slice(i) : txt.slice(i, j);
+    };
+    const lectores = [
+      [dentro(j20g, 'let htmlEspecie', '</div>`;'), 'el formulario'],
+      [dentro(j04g, 'pendiente: function (descripcion) {', '\n    },'), 'la marca de «sin especie»'],
+      [dentro(j68g, 'function levantadoDeCampo(', '\n  }'), 'el recuento']
+    ];
+    const cojos = lectores.filter(([t]) => !/tieneEspecie\(\s*[^,)]+,\s*[^)]+\)/.test(t));
+    comprobar('los tres que deciden lo hacen con el uso Y el tipo',
+      cojos.length === 0,
+      cojos.length ? 'deciden solo con el uso: ' + cojos.map(x => x[1]).join(' · ') +
+        ' — un alcorque vacío volvería a que le preguntaran qué árbol es'
+      : 'los ' + lectores.length + ' pasan los dos');
+
+    /* 5 · Y el recuento los cuenta APARTE. Meterlos entre los «árboles
+       mapeados» infla el denominador del reparto con cosas que nunca van a
+       traer especie, que es la falta de denominador de la v943 al revés. */
+    const cR = dentro(j68g, 'function resumenArbolado(', '\n  }');
+    const aparte = /noAplica:\s*a\.noAplica/.test(cR) && /noAplicaTipos/.test(cR);
+    comprobar('el recuento los cuenta aparte y los nombra',
+      aparte && /noAplicaTipos\.map/.test(j68g),
+      aparte ? 'no inflan el denominador del reparto y salen por su nombre'
+             : 'entran entre los árboles mapeados: el reparto se leería sobre un denominador falso');
+
+    /* 6 · Guarda de la guarda: si `tieneEspecie` dejara de mirar la tabla,
+       todo lo de arriba seguiría en verde sobre una excepción que no se
+       aplica (v878). */
+    const cT = dentro(j03g, 'function tieneEspecie(', '\n  }');
+    const mira = /TIPOS_SIN_ESPECIE/.test(cT) && /esUsoDeArbol\(/.test(cT);
+    comprobar('y tieneEspecie sigue mirando la tabla y el uso',
+      mira,
+      mira ? 'la excepción se aplica, y solo dentro de los usos que preguntan'
+           : 'dejó de mirar: ' + [!/TIPOS_SIN_ESPECIE/.test(cT) && 'la tabla',
+           !/esUsoDeArbol\(/.test(cT) && 'el uso'].filter(Boolean).join(' y '));
   }
 }
 

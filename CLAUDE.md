@@ -14927,6 +14927,125 @@ Once aserciones en rojo de doce, contra una copia guardada en `/tmp` y no con
 La duodécima es MATERIAL y va primero (v920): es la precondición, y pasa en las
 dos versiones porque la tabla que se invierte y el catálogo existían antes.
 
+## Lo que el catálogo no tenía, y un hueco al que le preguntaban qué árbol era (v994)
+
+Dos gaps medidos en cero —la vegetación que no es un árbol y cuatro piezas de
+mobiliario— y, midiéndolos, **un defecto vivo** que ninguno de los dos habría
+destapado por su cuenta.
+
+    v993   52 usos · 584 tipos · «cactus», «césped», «buzón» y «parquímetro» dan CERO
+    v994   53 usos · 598 tipos · y a un alcorque vacío ya no le preguntan qué árbol es
+
+### El defecto: un hueco sin árbol marcado «Sin especie anotada»
+
+Medido en el navegador antes de escribir nada, sobre los cinco tipos del
+arbolado:
+
+```
+Alcorque vacío (sitio de siembra sin árbol)  pregunta especie: SÍ · marcado pendiente: SÍ
+Jardinera o arbusto ornamental               pregunta especie: SÍ · marcado pendiente: SÍ
+```
+
+O sea: la ficha de un **hueco en el que no hay ningún árbol** abría con «¿Qué
+árbol es?», y la marca de la v979 le decía a su autor *«Sin especie anotada.
+Cuando sepa cuál es, toque Editar»*. Es la clase de la v974 con la palma,
+**viva dentro del archivo que la arregló** — porque aquella la resolvió por
+USO y esto es una diferencia de TIPO.
+
+La cura es la de la v991: la excepción va por tipo y no partiendo el uso,
+porque el tipo se guarda como texto dentro del registro. Y el valor de la
+tabla es **la razón** y no un booleano, porque son dos razones distintas:
+
+| Tipo | Por qué no tiene especie |
+|---|---|
+| Alcorque vacío | no hay ninguna planta que identificar |
+| Jardinera o arbusto ornamental | la lista de URBIS son árboles y palmas, y esto es un arbusto |
+
+Juntarlas bajo un «no» mandaría a ampliar la lista de especies para un caso
+—el hueco vacío— que no la va a necesitar nunca.
+
+#### Y el recuento los cuenta APARTE
+
+Contarlos entre los «árboles mapeados» infla el denominador del reparto de
+especies con cosas que nunca van a traer una: un sector con ocho alcorques
+vacíos y cuatro árboles leería «12 árboles mapeados, 4 con especie» y la
+conclusión sería falsa. Salen por su nombre y **antes** del reparto, porque
+cuántos sitios de siembra están sin sembrar es de lo más útil que ese panel
+puede decir.
+
+### La vegetación no es arbolado, así que es un uso propio
+
+La otra salida era meter diez tipos más en «Arbolado Urbano», y **eso es
+exactamente cómo se produjo el defecto de arriba**: un césped ahí dentro
+heredaría la pregunta de la especie, y la lista son 48 árboles y palmas. La
+v974 costó una guarda entera por lo mismo.
+
+`Vegetación no arbórea` (🌿), diez tipos, en los **cuatro** inventarios que un
+uso nuevo toca (v991): el catálogo, su grupo, la casilla del análisis y el
+vocabulario del edificio. Las guardas que ya existían los exigieron los cuatro
+sin que hiciera falta escribir nada nuevo — que es para lo que se escribieron.
+
+Los diez: arbusto o seto, jardín de flores, cactus o suculentas, césped o
+grama, enredadera, huerta urbana, jardín vertical, vegetación espontánea,
+cobertura en talud, bambú o guadua.
+
+**No lleva sitio de siembra**, y va dicho: esa pregunta es sobre de dónde sale
+el tronco de un árbol y qué le hace al andén, y un macizo de flores no la
+contesta.
+
+### Y las cuatro piezas de mobiliario que la v982 dejó medidas en cero
+
+Teléfono público, buzón de correo, cajero automático en vía y parquímetro.
+Heredan el material (v981) y el estado (v992) por ser Mobiliario Urbano, sin
+una línea nueva — que es lo que un campo por uso da gratis.
+
+### La guarda de la v979 se apretó, no se aflojó
+
+Citaba `esUsoDeArbol(` literalmente dentro de `pendiente`, así que se puso roja
+con el cambio. Se reescribió para exigir **el uso Y el tipo**, que es más de lo
+que pedía antes: una prueba que falla por un cambio legítimo se hace más
+precisa (v878).
+
+### Demostrado contra la v993
+
+Siete inyecciones fieles, una por guarda, contra copias guardadas (v973):
+
+```
+fantasma  ✗ todo tipo excluido existe en el catálogo  — Alcorque Vacio
+sobra     ✗ y su uso es de los que SÍ preguntan especie  — no-op: Banca
+razon     ✗ cada exclusión dice POR QUÉ  — sin razón: Alcorque vacío
+form      ✗ los tres deciden con el uso Y el tipo  — el formulario
+pend      ✗ los tres deciden con el uso Y el tipo  — la marca de «sin especie»
+rec       ✗ el recuento los cuenta aparte  — el reparto sobre un denominador falso
+puerta    ✗ y tieneEspecie sigue mirando la tabla  — dejó de mirarla
+```
+
+### Medido en el navegador, ocho tipos por el camino de verdad
+
+Qué campos pide cada uno, que es lo único que prueba que las puertas están
+donde deben:
+
+```
+Alcorque vacío        especie NO · sitio SÍ  · material NO · estado NO
+Cactus o suculentas   especie NO · sitio NO  · material NO · estado NO
+Césped o grama        especie NO · sitio NO  · material NO · estado NO
+Huerta urbana         especie NO · sitio NO  · material NO · estado NO
+Teléfono público      especie NO · sitio NO  · material SÍ · estado SÍ
+Parquímetro           especie NO · sitio NO  · material SÍ · estado SÍ
+Buzón de correo       especie NO · sitio NO  · material SÍ · estado SÍ
+Palma                 especie SÍ · sitio SÍ  · material NO · estado NO
+```
+
+La primera y la última son las que guardan: el alcorque conserva el sitio de
+siembra —qué clase de hueco vacío es, que sí es un dato— y la palma conserva
+las dos. Sin las dos ramas, una exclusión puesta en todas partes pasaría igual.
+
+### Lo que NO se pudo correr
+
+**Ninguna suite de navegador**, por lo mismo que la v973 a la v993. Y el
+**recuento pintado** tampoco —pide el motor—, así que lo que se midió del
+panel es la comprobación estática de que cuenta aparte y nombra los tipos.
+
 ## Dónde está sembrado el árbol (v993)
 
 Pedido en la calle y declarado pendiente desde la v981: **«que diga si el

@@ -5399,7 +5399,7 @@
     { u:'Educativo (Básico/Superior)', i:'📚', t:['Jardín infantil / preescolar','Colegio (básica/media)','Universidad','Instituto técnico / tecnológico','Centro de capacitación (SENA)','Escuela rural','Educación para adultos','Biblioteca escolar','Internado','Escuela de idiomas','Academia (música, danza…)','Centro de investigación'] },
     { u:'Religioso / Culto', i:'⛪', t:['Iglesia católica','Templo cristiano no católico','Culto de otra religión','Capilla','Catedral / basílica','Salón del reino','Mezquita','Sinagoga','Convento / monasterio','Seminario','Cementerio parroquial','Casa de retiro espiritual'] },
     { u:'Espacio Ferial / Eventos Masivos', i:'🎪', t:['Centro de convenciones','Recinto ferial','Coliseo de exposiciones','Plaza de toros / coso','Concha acústica','Parque de eventos / conciertos','Lote de circo','Parque de diversiones itinerante','Sala de banquetes','Autódromo / kartódromo'] },
-    { u:'Mobiliario Urbano', i:'🪑', t:['Banca','Luminaria pública','Poste de alumbrado público','Poste de energía sin luminaria','Poste con transformador','Poste de telecomunicaciones','Poste inclinado o en riesgo','Señalización vial','Parada de bus / paradero','Caneca / punto ecológico','Jardinera o matera','Bolardo / protección peatonal','Kiosco / caseta','Baño público','Bebedero / fuente','Punto digital / WiFi','Reductor de velocidad','Semáforo peatonal','Tótem informativo'] },
+    { u:'Mobiliario Urbano', i:'🪑', t:['Banca','Luminaria pública','Poste de alumbrado público','Poste de energía sin luminaria','Poste con transformador','Poste de telecomunicaciones','Poste inclinado o en riesgo','Señalización vial','Parada de bus / paradero','Caneca / punto ecológico','Jardinera o matera','Bolardo / protección peatonal','Kiosco / caseta','Baño público','Bebedero / fuente','Punto digital / WiFi','Reductor de velocidad','Semáforo peatonal','Tótem informativo','Teléfono público','Buzón de correo','Cajero automático en vía','Parquímetro'] },
     { u:'Gestión de Residuos / Reciclaje', i:'♻️', t:['Punto de acopio de reciclaje','Planta de tratamiento de residuos','Relleno sanitario','Estación de transferencia','Escombrera','Punto limpio','Bodega de reciclador','Planta de compostaje','Incinerador (peligrosos/hospitalarios)','Botadero a cielo abierto (ilegal)'] },
     { u:'Transporte (Terminales/Estaciones)', i:'🚏', t:['Terminal intermunicipal','Terminal satélite','Estación de bus / metro','Parada techada','Estación de transporte masivo (BRT)','Patio-taller de buses','Terminal de carga','Aeropuerto','Aeródromo / pista','Puerto fluvial','Estación de taxis / piquete','Ciclo-estación (bicis públicas)'] },
     /* Lo que la red deja EN LA VÍA, que es lo que se ve mirando al suelo y
@@ -5438,6 +5438,13 @@
        desde siempre— y no toca la cobertura vegetal de la lámina, que sale
        del raster satelital y no de contar puntos. */
     { u:'Arbolado Urbano', i:'🌳', t:['Árbol grande (más de 3 m)','Árbol pequeño o recién sembrado','Palma','Árbol patrimonial o notable','Árbol en riesgo (inclinado, seco o ahuecado)','Árbol que levanta el andén','Arbolado de andén (varios seguidos)','Árbol en separador o zona verde vial','Árbol en antejardín','Jardinera o arbusto ornamental','Alcorque vacío (sitio de siembra sin árbol)','Tocón (árbol talado)'] },
+    /* La vegetación que NO es un árbol (v994). Uso propio y no doce tipos más
+       en «Arbolado Urbano»: un césped no es arbolado, y metido ahí la ficha le
+       preguntaría qué árbol es —la lista de especies son 48 árboles y palmas—.
+       Es la lección de la v974 con la palma, evitada antes de cometerla.
+       Medido antes de escribirlo: «cactus», «césped», «enredadera», «huerta»,
+       «seto» y «muro verde» daban CERO en los 584 tipos del catálogo. */
+    { u:'Vegetación no arbórea', i:'🌿', t:['Arbusto o seto','Jardín de flores o macizo ornamental','Cactus o suculentas','Césped o grama','Enredadera o planta trepadora','Huerta urbana o cultivo comunitario','Jardín vertical o muro verde','Vegetación espontánea o maleza','Cobertura vegetal en talud','Bambú o guadua en mata'] },
     { u:'Forestal', i:'🌲', t:['Bosque nativo','Zona de reforestación','Plantación forestal (comercial)','Bosque protector','Área quemada / en recuperación','Vivero forestal','Cerca viva / arborización urbana','Bosque de galería (ronda de río)','Zona de tala controlada','Reserva forestal'] },
     { u:'Agropecuario / Rural', i:'🌾', t:['Cultivo transitorio','Cultivo permanente (frutales, café)','Zona ganadera / potrero','Finca / predio rural','Invernadero / cultivo bajo cubierta','Galpón avícola / porcícola','Establo / lechería','Parcela de pancoger','Distrito de riego','Centro de acopio rural','Agroindustria (trapiche, beneficiadero)'] },
     { u:'Ronda Hídrica / Protección de Cuerpos de Agua', i:'🌊', t:['Ronda de río','Ronda de quebrada','Nacimiento / manantial','Laguna / lago','Humedal','Canal / caño','Jarillón / dique','Zona de inundación periódica','Reservorio / jagüey','Playa / ribera'] },
@@ -5464,7 +5471,7 @@
     { id:'salud', i:'🚑', t:'Salud y emergencias', usos:['Salud (Clínicas/Hospitales)','Emergencias (Bomberos/Rescate)','Cuidado Animal (Veterinaria)','Hogar de Cuidado'] },
     { id:'cultura', i:'🎭', t:'Cultura, educación y culto', usos:['Cultural / Patrimonio','Arte Urbano','Educativo (Básico/Superior)','Religioso / Culto','Espacio Ferial / Eventos Masivos'] },
     { id:'servicios', i:'🚛', t:'Servicios e infraestructura', usos:['Mobiliario Urbano','Redes en Vía (tapas y registros)','Gestión de Residuos / Reciclaje','Transporte (Terminales/Estaciones)','Infra. Servicios (Plantas)','Comunicaciones / Antenas','Servicios Funerarios','Vías e Infraestructura Vial'] },
-    { id:'ambiente', i:'🌳', t:'Ambiente y zona rural', usos:['Protección Ambiental','Arbolado Urbano','Forestal','Agropecuario / Rural','Ronda Hídrica / Protección de Cuerpos de Agua'] },
+    { id:'ambiente', i:'🌳', t:'Ambiente y zona rural', usos:['Protección Ambiental','Arbolado Urbano','Vegetación no arbórea','Forestal','Agropecuario / Rural','Ronda Hídrica / Protección de Cuerpos de Agua'] },
     { id:'riesgo', i:'⚠️', t:'Riesgo, deterioro y suelo sin definir', usos:['Zona Baldía','Zona de Riesgo','En Obra / Construcción','Abandono / Ruina','Espacio Residual','Asentamiento Informal','Zona de Expansión Urbana'] },
     { id:'mixtos', i:'🧩', t:'Usos combinados', usos:['Mixto (Residencial-Comercial)','Mixto (Residencial-Industrial)','Uso Múltiple / Mixto General'] },
   ];
@@ -5933,7 +5940,7 @@
        respuesta distinta de no haber contestado. */
     const VOC_ARBOL = window.URBIS_ARBOL_VOC || null;
     let htmlEspecie = '';
-    if(proCity.dim === MATRIZ_USOS_KEY && VOC_ARBOL && VOC_ARBOL.esUsoDeArbol(usoParteSel)){
+    if(proCity.dim === MATRIZ_USOS_KEY && VOC_ARBOL && VOC_ARBOL.tieneEspecie(usoParteSel, tipoParteSel)){
       htmlEspecie = `
         <div class="u52-procity-especie" id="ins-especie-bloque" data-tipo="${esc(tipoParteSel)}">
           <label for="ins-especie-busca">¿Qué árbol es? <i>opcional</i></label>

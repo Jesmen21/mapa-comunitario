@@ -78,6 +78,7 @@
     // El árbol suelto, que se pudo mapear desde la v973. Entra como verde y
     // no como mobiliario: una banca es mobiliario y un árbol no lo es.
     'Arbolado Urbano': 'verde_natural',
+    'Vegetación no arbórea': 'verde_natural',
     'Forestal': 'verde_natural',
     'Agropecuario / Rural': 'verde_natural',
     'Ronda Hídrica / Protección de Cuerpos de Agua': 'agua',

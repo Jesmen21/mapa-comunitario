@@ -1,4 +1,4 @@
-const URBIS_CACHE = 'urbis-v993-donde-esta-sembrado';
+const URBIS_CACHE = 'urbis-v994-lo-que-el-catalogo-no-tenia';
 const URBIS_ASSETS = [
   './',
   './index.html',
