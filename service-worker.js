@@ -1,4 +1,4 @@
-const URBIS_CACHE = 'urbis-v1032-la-lamina-barrida-sobre-el-papel';
+const URBIS_CACHE = 'urbis-v1033-el-corte-de-la-calle-cabe-en-su-caja';
 const URBIS_ASSETS = [
   './',
   './index.html',

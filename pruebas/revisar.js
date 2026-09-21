@@ -8661,6 +8661,56 @@ console.log('\n  -- la baldosa de cifra, en todo lo servido (v1029) --');
       : NO_CONCUERDA.length + ' declarados, cada uno con por qué no concuerda');
 }
 
+console.log('\n  -- el corte de la calle cabe en su caja (v1033) --');
+{
+  const j68 = soloCodigo(leer('js/68-procity-reconocimiento.js'));
+  const i = j68.indexOf('function seccionDibujada');
+  /* El tramo va hasta la siguiente funcion de primer nivel y no a N
+     caracteres: con un corte fijo, un comentario nuevo empuja las cifras
+     fuera de la ventana y la guarda se queda «sin material» sobre un
+     dibujo que no cambio. Es la leccion de la v935 otra vez. */
+  const fin = i < 0 ? -1 : j68.indexOf('\n  function ', i + 20);
+  const tramo = i < 0 ? '' : j68.slice(i, fin < 0 ? i + 12000 : fin);
+
+  /* Las tres cifras que deciden si los rotulos caben. Se LEEN del codigo:
+     escribirlas acá seria comprobar que la guarda es igual a si misma. */
+  const mWH = /var W = (\d+), H = (\d+), base/.exec(tramo);
+  const mRy = /var ry = H - (\d+),/.exec(tramo);
+  const mL1 = /\(ry \+ (\d+)\)[\s\S]{0,60}?m\[0\]/.exec(tramo);
+  const mL2 = /\(ry \+ \(i % 2 \? (\d+) : (\d+)\)\)/.exec(tramo);
+
+  if (!mWH || !mRy || !mL1 || !mL2) {
+    comprobar('MATERIAL · las cifras del corte se pueden leer', false,
+      'NO PUDO CORRER: el dibujo cambió de forma (W/H ' + !!mWH + ' · ry ' + !!mRy +
+      ' · línea 1 ' + !!mL1 + ' · línea 2 ' + !!mL2 + '), así que la aritmética de abajo no vigila nada');
+  } else {
+    const H = +mWH[2], ry = H - +mRy[1];
+    const l1 = +mL1[1], l2a = +mL2[2], l2b = +mL2[1];
+    comprobar('MATERIAL · las cifras del corte se pueden leer', true,
+      'H=' + H + ' · ry=' + ry + ' · líneas a +' + l1 + ', +' + l2a + ' y +' + l2b);
+
+    /* ALTO DE UN ROTULO: 10 unidades, MEDIDO con getBBox sobre la lámina
+       compuesta -no supuesto-, para los 9px en negrita de `.pcr-sec-t`. La
+       caja va de la línea base menos 8 a la línea base más 2. */
+    const CAJA = 10, BAJO = 2;
+
+    const cabe = ry + l2b + BAJO <= H;
+    comprobar('el rótulo más bajo del corte cabe dentro del viewBox',
+      cabe,
+      cabe ? 'el más bajo cierra en ' + (ry + l2b + BAJO) + ' de ' + H
+        : 'se sale: ' + (ry + l2b + BAJO) + ' sobre un viewBox de ' + H +
+          ' — el contenedor lo recorta y nadie se entera');
+
+    const entreLineas = l2a - l1 >= CAJA;
+    const entreMarcas = l2b - l2a >= CAJA;
+    comprobar('ningún rótulo de la regla se pisa con el de al lado',
+      entreLineas && entreMarcas,
+      !entreLineas ? 'la primera línea toca la segunda: ' + (l2a - l1) + ' de holgura para una caja de ' + CAJA
+        : !entreMarcas ? 'dos marcas vecinas se pisan: ' + (l2b - l2a) + ' de escalonado para una caja de ' + CAJA
+          : 'holgura de ' + (l2a - l1) + ' y ' + (l2b - l2a) + ' unidades, sobre una caja de ' + CAJA);
+  }
+}
+
 console.log('\n  -- la cifra en PROSA y su plural: el trinquete (v1032) --');
 {
   /* La baldosa la vigila la v1029; esto es la otra mitad, la prosa:

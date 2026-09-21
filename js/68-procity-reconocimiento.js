@@ -23148,7 +23148,11 @@ function donaHTML(datos, colorDe, nombreDe) {
 
   function seccionDibujada(p) {
     if (!p || p.alturaMediaM == null || p.anchoMedioM == null) return '';
-    var W = 360, H = 254, base = 118;
+    /* H sube de 254 a 266 en la v1033: la segunda linea de la regla de
+       relacion caia en 255 con una caja de 10 unidades, o sea 257 sobre un
+       viewBox de 254. El dibujo se salia de su propia caja y lo tapaba el
+       contenedor. Medido con `getBBox` sobre la lamina compuesta. */
+    var W = 360, H = 266, base = 118;
     var an = p.anden || {};
     /* ── EL ANDÉN DIBUJADO: MEDIDO O SUPUESTO, Y SE DICE CUÁL ───────────
        El motor NO publica ancho de andén —`anden` trae los tres porcentajes
@@ -23214,7 +23218,9 @@ function donaHTML(datos, colorDe, nombreDe) {
       : '';
     // La regla de la relación altura ÷ ancho, con la aguja.
     var rel = Number(p.relacion) || 0;
-    var ry = H - 30, rx0 = 34, rx1 = W - 34;
+    /* `H - 42` y no `H - 30`: al subir H, la regla tiene que quedarse donde
+       estaba —si no, los rotulos bajan con ella y vuelven a salirse—. */
+    var ry = H - 42, rx0 = 34, rx1 = W - 34;
     var escalaRel = function (v) { return rx0 + (rx1 - rx0) * Math.max(0, Math.min(1, v / 3)); };
     var marcas = [[0.25, 'abierta'], [0.5, 'amable'], [1, 'contenida'], [2, 'cañón']];
     var regla = '<path d="M' + rx0 + ' ' + ry + 'H' + rx1 + '" class="pcr-sec-regla"/>' +
@@ -23222,7 +23228,12 @@ function donaHTML(datos, colorDe, nombreDe) {
         var x = escalaRel(m[0]);
         return '<path d="M' + x.toFixed(1) + ' ' + (ry - 3) + 'v6" class="pcr-sec-regla"/>' +
           '<text x="' + x.toFixed(1) + '" y="' + (ry + 12) + '" class="pcr-sec-t" text-anchor="middle">' + m[0].toString().replace('.', ',') + '</text>' +
-          '<text x="' + x.toFixed(1) + '" y="' + (ry + (i % 2 ? 31 : 22)) + '" class="pcr-sec-t" text-anchor="middle">' + m[1] + '</text>';
+          /* El escalonado pasa de 22/31 a 23/35. Con 9 unidades de diferencia
+             y una caja de 10, «abierta» y «amable» se PISABAN una unidad
+             donde sus anchos se cruzan —medido, no supuesto—. Con 12 quedan
+             dos unidades de holgura, y con 23 en vez de 22 la primera linea
+             deja de tocar la segunda. */
+          '<text x="' + x.toFixed(1) + '" y="' + (ry + (i % 2 ? 35 : 23)) + '" class="pcr-sec-t" text-anchor="middle">' + m[1] + '</text>';
       }).join('') +
       '<path d="M' + escalaRel(rel).toFixed(1) + ' ' + (ry - 4) + 'l-4 -7h8z" class="pcr-sec-aguja"/>' +
       '<text x="' + Math.max(rx0 + 30, Math.min(rx1 - 30, escalaRel(rel))).toFixed(1) + '" y="' + (ry - 14) +

@@ -18191,6 +18191,13 @@ relativo del texto dentro de la figura y §21 mide en milímetros de papel.
 Cambiarlo tocaría el pliego, y las suites que lo miden —`tdoslaminas`,
 `tlaminaedu`— **no corren en este contenedor**. `pendiente`
 
+**Lo tomó la v1033, y con la premisa corregida**: las tres superficies NO
+comparten el tamaño del rótulo —son tres reglas de `.pcr-sec-t` en tres
+sitios—, así que el impedimento no era ese. Lo que sí hay es un impedimento
+GEOMÉTRICO, medido allá: a 13,7 unidades las etiquetas de la regla se pisarían
+en X. Y de paso apareció lo que era peor que el tamaño: dos rótulos que se
+pisaban y uno que se salía del `viewBox`.
+
 ### Lo que NO se pudo correr
 
 **Ninguna suite de navegador**, por lo mismo que la v973 a la v1010. Corrió
@@ -20702,6 +20709,123 @@ Y una del método que vale para la sonda: el clima de la lámina se **lee de
 `tdoslaminas`**, que es donde vive su forma de verdad. Copiarlo a mano fue lo
 primero que hice y puse un número donde va un objeto: la lámina reventaba
 entera y el error se lo tragaba el `catch` de arriba, que es como se encontró.
+
+## El corte de la calle cabe en su caja (v1033)
+
+La v1011 dejó este renglón como pendiente, con su impedimento escrito:
+
+> **El corte de la calle saca sus rótulos a 8,6 px en un teléfono** […] el
+> mismo `seccionDibujada` dibuja también en la lámina […] Cambiarlo tocaría el
+> pliego, y las suites que lo miden —`tdoslaminas`, `tlaminaedu`— **no corren
+> en este contenedor**. `pendiente`
+
+**El impedimento ya no es ese**, y la premisa además era falsa a medias. La
+v1032 enseñó a componer la lámina dentro de la sonda, así que lo que faltaba
+—medirla— ya se puede. Y midiendo apareció otra cosa: el tamaño no era el peor
+defecto del dibujo.
+
+    v1032   «abierta» y «amable» se pisan 1 unidad · el rótulo más bajo cierra en 257 sobre 254
+    v1033   11 y 12 unidades de holgura · el más bajo cierra en 261 de 266
+
+### Dos rótulos que se pisan, y uno que se sale de su propia caja
+
+Medido con `getBBox` sobre la lámina compuesta, los dieciséis rótulos del
+corte, en unidades del `viewBox`:
+
+| | línea base | caja |
+|---|---|---|
+| «0,25» · «0,5» · «1» · «2» | ry + 12 | 228 → 238 |
+| «abierta» · «contenida» | ry + 22 | 238 → 248 |
+| «amable» · «cañón» | ry + 31 | 247 → 257 |
+
+Tres cosas a la vez:
+
+* **el escalonado es de 9 unidades para una caja de 10**, así que «abierta» y
+  «amable» se pisan una unidad justo donde sus anchos se cruzan;
+* **la primera línea toca la segunda** sin holgura: 238 contra 238;
+* y **el rótulo más bajo cierra en 257 sobre un `viewBox` de 254**, o sea que
+  el dibujo se sale de su propia caja y lo recorta el contenedor.
+
+Las tres se arreglan con dos números: el escalonado pasa a 23/35 y el alto de
+la caja a 266 —con `ry = H − 42` para que la regla no baje con ella—. Queda
+holgura de 11 y 12 unidades, y cinco de margen por debajo.
+
+**La caja de 10 unidades no se supuso: se midió.** Es lo que `getBBox`
+devuelve para los 9 px en negrita de `.pcr-sec-t`, en los dieciséis rótulos.
+
+### La premisa del impedimento era falsa
+
+La v1011 dio por hecho que el tamaño de letra del corte es el mismo en las tres
+superficies. **No lo es**: hay tres reglas de `.pcr-sec-t` y viven en tres
+sitios distintos —la pantalla en `css/72-edu-diseno.css`, la lámina y el
+informe en sus propias hojas dentro de `js/68`—. Lo compartido es el DIBUJO, no
+el tamaño del rótulo.
+
+Es la regla de la v916 cobrándose otra vez: **medir la premisa antes de actuar,
+también cuando el que la escribió fui yo.**
+
+### Y el tamaño sigue pendiente, ahora con su razón de verdad
+
+Los 9 px del rótulo son 9 unidades de un `viewBox` de 360 metido en una caja de
+342 px: **8,55 px impresos**, por debajo del piso de 13 px que este módulo
+exige para texto corrido desde la v791.
+
+Subirlo a 13 pide 13,7 unidades, y ahí está el impedimento MEDIDO, que no es el
+de la v1011:
+
+* en vertical, el escalonado tendría que pasar de 12 a unas 19 unidades y el
+  alto de 266 a unas 290;
+* en horizontal, «contenida» mide 44 unidades a 9 px y mediría 67 a 13,7,
+  sobre marcas separadas unas 50 unidades: **se pisarían en X**, que es lo que
+  el escalonado no puede resolver.
+
+O sea que no es un ajuste sino un rediseño de la regla de relación —menos
+marcas, o las etiquetas fuera del eje—. Queda declarado con eso, que es más
+útil para quien lo tome que «las suites no corren».
+
+### La guarda es aritmética, y por eso corre sin navegador
+
+Las tres cifras —el alto, dónde va la regla y el escalonado— se **leen del
+código** y se comprueban contra la caja medida: que el rótulo más bajo quepa, y
+que ni las dos líneas ni dos marcas vecinas se pisen. Escribirlas en la guarda
+sería comprobar que es igual a sí misma.
+
+Y el tramo que se lee va **hasta la siguiente función de primer nivel**, no a N
+caracteres: con un corte fijo, mi propio comentario empujó las cifras fuera de
+la ventana y la guarda salió «sin material» sobre un dibujo que no había
+cambiado. Es la lección de la v935 —un ancla por distancia envejece— cobrada
+dentro de la misma tanda que la cita.
+
+### Demostrado contra la v1032
+
+Tres en rojo, cada una con su causa, contra una copia guardada en el
+directorio de trabajo (v973):
+
+```
+✗ el rótulo más bajo del corte cabe dentro del viewBox
+    — se sale: 273 sobre un viewBox de 266 — el contenedor lo recorta y nadie se entera
+✗ ningún rótulo de la regla se pisa con el de al lado
+    — dos marcas vecinas se pisan: 9 de escalonado para una caja de 10
+✗ MATERIAL · las cifras del corte se pueden leer
+    — NO PUDO CORRER: el dibujo cambió de forma, así que la aritmética no vigila nada
+```
+
+Y una de la demostración: **la caja y la regla se mueven juntas**. Con
+`ry = H − 42`, bajar el alto sube la regla y todo sigue cabiendo, así que
+devolver solo el 254 pasa en verde. La inyección fiel es el estado de la v1032
+entero —el alto viejo **con** su `ry = H − 30`—, no media.
+
+### Lo que NO se pudo correr
+
+**Ninguna suite de navegador**, por lo mismo que la v973 en adelante. Corrió
+`revisar.js` entero con sus tres comprobaciones nuevas, y se midió el papel:
+los dieciséis rótulos con su caja, el veredicto de §21 de la hoja A —intacto:
+«1 mapa medido … mide 16 cm»— y las cuatro reglas del papel sobre las dos
+hojas y la ficha, en las dos corridas.
+
+El **informe en hojas** es la tercera superficie que dibuja este corte y no se
+pudo medir: `htmlImprimible` no está expuesto, así que la sonda no lo puede
+componer. Lo que se comprueba es la geometría, que es la misma para las tres.
 
 ## La lista viva: lo que al pliego educativo todavía le falta (v866)
 
