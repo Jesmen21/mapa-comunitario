@@ -19522,6 +19522,119 @@ Tres inyecciones fieles contra una copia guardada, cada una con su aserción
     — no se encontro INVARIABLES en tdoslaminas: la regla de concordancia no correria
 ```
 
+## Una guarda de fuga falla en verde (v1024)
+
+Cinco tandas seguidas encontrando reglas que solo una superficie tenía, y en
+tres de ellas el hallazgo caro fue **de la guarda y no del código**: el
+MATERIAL de la v1019 medía la forma mala, su caso «con rama» no casaba el
+patrón, y la v1021 tenía una aserción verdadera siempre. Así que esta tanda
+mira las guardas mismas.
+
+Medido sobre `revisar.js`: **60 bloques, 464 comprobaciones**, y **23 de la
+forma «no se encontró ninguno» en bloques que no cuentan su material.** Esa
+forma tiene un modo de fallo propio:
+
+> `encontrados.length === 0` pasa igual si la lista de archivos salió vacía
+> por un error de ruta, o si el patrón dejó de reconocer lo que busca porque
+> al otro lado le cambiaron el nombre. La guarda queda **verde vigilando
+> nada**, y nadie se entera.
+
+De las 23, **cuatro son guardas de FUGA** —las que vigilan que algo no se
+haya colado a lo servido— y son las que más caro salen:
+
+| | Qué impide que se publique |
+|---|---|
+| el clasificador del motor | las reglas de clasificación, que es lo que se vende |
+| la llave de la base de Visión Territorial | `service_role` salta la RLS y la vuelve decorativa |
+| los umbrales y los pesos | ninguna respuesta del motor los trae, a propósito |
+| compartir la ubicación en silencio | la de una persona, sin que lo pida |
+
+### Las cuatro pasan ahora por un solo sitio
+
+`guardaDeFuga(nombre, archivos, patrón, ejemplo)` hace las tres cosas de una
+vez: busca, **comprueba que miró algo**, y **comprueba que el patrón todavía
+reconoce un caso de respuesta conocida**. Una guarda de fuga nueva la hereda
+sin que su autor se acuerde, que es la regla del aviso de origen (v867).
+
+Y el detalle del verde dice sobre cuántos archivos corrió —«160 archivos
+revisados, y el patrón sigue reconociendo su caso»—, porque un verde que no
+dice cuánto miró es la mitad de un verde.
+
+#### El caso conocido es un NOMBRE, nunca un valor
+
+`'const u = process.env.VT_DATABASE_URL;'`, `'{ "peso_poblacion": 0.4 }'`,
+`'function clasificarPOI(p) { return 1; }'`. Son identificadores —una
+variable de entorno, una clave de configuración, un nombre de función—, no
+credenciales: **un secreto no se escribe en el repositorio ni para probar la
+guarda que lo vigila.**
+
+### Dónde esta guarda se aparta de la v970, y por qué
+
+La v970 dejó escrito que una comprobación sin material **no se pone roja**:
+se queda sin él cuando los DATOS mejoran, y un rojo ahí presiona a dejar el
+registro torcido para que la guarda siga teniendo algo que rechazar.
+
+Aquí no hay ese incentivo, y por eso una guarda de fuga que no puede correr
+**falla**:
+
+* su material es el **código servido**, que no puede quedarse legítimamente
+  vacío —si la lista sale en cero es un error de ruta, no una mejora—;
+* y su caso conocido es una **cadena escrita en la propia guarda**, que no
+  puede dejar de reconocerse sola.
+
+Que no pueda correr es un defecto, siempre — el mismo razonamiento con el que
+la v963 hace fallar la corrida por una suite muda. La regla general queda
+así: **el `?` es para la guarda cuyo material lo ponen los datos; la roja es
+para la que se mide contra sí misma.**
+
+#### La bandera `g`, demostrada contra un caso fabricado
+
+Un patrón con `g` guarda su posición entre llamadas, así que `test` sobre una
+lista de archivos **se salta los que vienen después de un acierto**:
+
+```
+con g (dos archivos que SÍ la traen):  true · false   ← el segundo se pierde
+desarmada:                             true · true
+```
+
+O sea que una fuga en dos archivos se reportaría como una sola. El ayudante
+desarma la bandera antes de buscar. Ninguno de los cuatro patrones de hoy la
+lleva, así que esto es **defensivo y está medido contra un caso fabricado**,
+no contra el repositorio — que es lo que la v970 prescribe para una rama sin
+material propio.
+
+### Demostrado contra la v1023
+
+Tres inyecciones fieles contra una copia guardada, cada una con su aserción
+(v993), y las tres sobre la guarda de la llave:
+
+```
+✗ ningún archivo servido trae la llave de la base ni sus roles
+    — NO PUDO CORRER: la lista trae 0 archivo(s), asi que no vigilaria nada
+✗ ningún archivo servido trae la llave de la base ni sus roles
+    — NO PUDO CORRER: el patron ya no reconoce su caso conocido, asi que
+      vigila un nombre que al otro lado ya no existe
+✗ ningún archivo servido trae la llave de la base ni sus roles
+    — lo traen: js/57-referencia.js        (una fuga de verdad, plantada)
+```
+
+La tercera es la que confirma que el arreglo no rompió lo que la guarda hacía
+bien: sigue nombrando el archivo que filtra.
+
+### Lo que queda, medido
+
+**Diecinueve** afirmaciones de la misma forma —«no se encontró ninguno» sin
+contar el material— en quince bloques. No son fugas: son defectos de código
+—una función declarada dos veces, una hoja de estilo con una llave sin
+cerrar, un elemento sin una sola clase pintada— así que un verde falso ahí
+cuesta un defecto que vuelve, no una publicación.
+
+Van con su número y sin arreglar, porque cada una necesita su propio caso de
+respuesta conocida —qué es «un positivo» para esa regla— y eso no se puede
+escribir en bloque sin inventar. Las dos del idioma, §7 y §9, **ya se
+defienden solas** desde la v878 y la v880: su lista tiene su propia
+comprobación.
+
 ## La lista viva: lo que al pliego educativo todavía le falta (v866)
 
 Esta lista se quedó vieja **cinco veces**. Cuatro dentro de la hoja —la

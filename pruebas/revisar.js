@@ -151,6 +151,48 @@ function anotarSinMaterial(nombre, detalle) {
   sinMaterial++;
 }
 
+/* UNA GUARDA DE FUGA FALLA EN VERDE (v1024).
+   Las que vigilan que algo NO se haya colado a lo servido -la propiedad del
+   motor, la llave de la base, la ubicacion de alguien- comparten una forma
+   peligrosa: afirman `encontrados.length === 0`. Si la lista de archivos sale
+   vacia por un error de ruta, o si el patron deja de reconocer lo que busca
+   porque al otro lado le cambiaron el nombre, `[].length === 0` pasa IGUAL y
+   nadie se entera de que ya no se vigila nada. Es el verde que este proyecto
+   persigue desde la v878, en las cuatro comprobaciones donde mas caro sale.
+
+   Por eso las cuatro pasan por aqui, que hace las tres cosas de una vez:
+   busca, comprueba que MIRO algo, y comprueba que el patron TODAVIA reconoce
+   un caso de respuesta conocida. El caso es un IDENTIFICADOR -un nombre de
+   variable, una clave de configuracion-, nunca un valor: un secreto no se
+   escribe en el repositorio ni para probar una guarda. */
+function guardaDeFuga(nombre, archivos, patron, ejemplo, minimo) {
+  /* Sin la bandera `g`: un patron global guarda su posicion entre llamadas y
+     `test` empieza a devolver false una vez de cada dos. */
+  const p = new RegExp(patron.source, patron.flags.replace('g', ''));
+  const bastantes = archivos.length >= (minimo || 20);
+  const reconoce = p.test(ejemplo);
+  /* Y aqui va la ROJA, no un `?` SIN MATERIAL, que es donde esta guarda se
+     aparta de la regla de la v970. Aquella dice que una guarda sin material
+     no se pone roja porque se queda sin el cuando los DATOS mejoran, y un
+     rojo ahi presiona a dejar el registro torcido. Una guarda de fuga no
+     tiene ese incentivo: su material es el CODIGO SERVIDO, que no puede
+     quedarse legitimamente vacio, y su caso conocido es una cadena escrita
+     aqui mismo, que no puede dejar de reconocerse por si sola. Que no pueda
+     correr es un defecto, siempre — como la suite muda de la v963. */
+  if (!bastantes || !reconoce) {
+    comprobar(nombre, false,
+      !bastantes
+        ? 'NO PUDO CORRER: la lista trae ' + archivos.length + ' archivo(s), asi que no vigilaria nada'
+        : 'NO PUDO CORRER: el patron ya no reconoce su caso conocido, asi que vigila un nombre que al otro lado ya no existe');
+    return;
+  }
+  const encontrados = archivos.filter((f) => p.test(leer(f)));
+  comprobar(nombre, encontrados.length === 0,
+    encontrados.length
+      ? 'lo traen: ' + encontrados.join(', ')
+      : archivos.length + ' archivos revisados, y el patron sigue reconociendo su caso');
+}
+
 // ── 1. la lista de precarga apunta a archivos que existen ────────────────
 console.log('\n  -- el modo sin conexión --');
 {
@@ -647,10 +689,9 @@ console.log('\n  -- las reglas siguen del lado del servidor --');
     });
   })('');
 
-  const conClasificador = servidos.filter(f => /\bclasificarPOI\b|\bpuntajePOI\b/.test(leer(f)));
-  comprobar('ningún archivo servido trae el clasificador',
-    conClasificador.length === 0,
-    conClasificador.length ? conClasificador.join(', ') : servidos.length + ' archivos revisados');
+  guardaDeFuga('ningún archivo servido trae el clasificador', servidos,
+    /\bclasificarPOI\b|\bpuntajePOI\b/,
+    'function clasificarPOI(p) { return 1; }');
 
   const cat = leer('js/59-analisis-ia-catalogo.js');
   comprobar('el catálogo público no trae reglas de reconocimiento',
@@ -722,12 +763,13 @@ console.log('\n  -- Visión Territorial, aparte --');
   })('');
   const LLAVES = /service_role|SUPABASE_SERVICE|VT_DATABASE_URL|vt_app:|vt_migrador/;
   const UMBRALES = /peso_poblacion|peso_urgencia|peso_costo|urgencia_seguridad|costo_m2|m2_referencia|edad_verificacion_dias|cobertura_malla_min/;
-  const conLlave = servidos.filter(f => LLAVES.test(leer(f)));
-  const conUmbral = servidos.filter(f => UMBRALES.test(leer(f)));
-  comprobar('ningún archivo servido trae la llave de la base ni sus roles',
-    conLlave.length === 0, conLlave.length ? conLlave.join(', ') : servidos.length + ' archivos revisados');
-  comprobar('ningún archivo servido trae las claves de umbrales ni de pesos',
-    conUmbral.length === 0, conUmbral.length ? conUmbral.join(', ') : servidos.length + ' archivos revisados');
+  /* Los dos casos conocidos son NOMBRES —una variable de entorno, una clave
+     de configuración—, no valores: un secreto no se escribe acá ni para
+     probar la guarda que lo vigila. */
+  guardaDeFuga('ningún archivo servido trae la llave de la base ni sus roles', servidos,
+    LLAVES, 'const u = process.env.VT_DATABASE_URL;');
+  guardaDeFuga('ningún archivo servido trae las claves de umbrales ni de pesos', servidos,
+    UMBRALES, '{ "peso_poblacion": 0.4 }');
   comprobar('el esquema y el motor de Visión Territorial no están en el repositorio público',
     !fs.existsSync(R('vt')) && servidos.every(f => !/CREATE POLICY|ST_ClusterDBSCAN|enTerritorio\(/.test(leer(f))), 'carpeta vt/ ausente');
 
@@ -2469,9 +2511,10 @@ console.log('\n  -- el informe --');
 console.log('\n  -- la presencia --');
 {
   const servidos = fs.readdirSync(R('js')).filter(f => /\.js$/.test(f));
-  const silenciosos = servidos.filter(f => /urbisCompartirUbicacion\(\s*true\s*\)|_urbisActualizarRadar\s*\(/.test(leer('js/' + f)));
-  comprobar('ningún archivo servido comparte la ubicación en silencio', silenciosos.length === 0,
-            silenciosos.length ? 'lo hacen: ' + silenciosos.join(', ') : servidos.length + ' archivos revisados');
+  guardaDeFuga('ningún archivo servido comparte la ubicación en silencio',
+    servidos.map((f) => 'js/' + f),
+    /urbisCompartirUbicacion\(\s*true\s*\)|_urbisActualizarRadar\s*\(/,
+    'urbisCompartirUbicacion(true);');
   const idx = leer('index.html'), sw = leer('service-worker.js');
   comprobar('el módulo de presencia (js/78) está enlazado y en la precaché',
             /js\/78-presencia\.js\?v=/.test(idx) && /'\.\/js\/78-presencia\.js'/.test(sw) && /'\.\/css\/78-presencia\.css'/.test(sw),
