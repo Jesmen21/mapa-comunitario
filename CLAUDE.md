@@ -20537,6 +20537,172 @@ Corrió `revisar.js` entero con sus seis comprobaciones nuevas, y se miró el
 papel de la ficha en sus dos corridas, que es lo que encontró los tres defectos
 —ninguno se veía leyendo.
 
+## La lámina, barrida sobre el papel (v1032)
+
+`tdoslaminas` recorre la lámina compuesta con las cuatro reglas del papel
+desde la v874 — y **no puede correr en este contenedor** desde la v973, que
+son sesenta versiones. Así que se compuso con la API de verdad
+(`R.laminaDoble`) dentro de la sonda y se barrió nodo por nodo, igual que la
+ficha.
+
+    v1031   el pie de §21 imprime «1 mapas medidos», y la hoja vacía no dice por qué
+    v1032   las dos hojas limpias en las dos corridas, y una hoja que revienta deja rastro
+
+### El pie de §21 tenía cinco frases que varían y una sola ramificaba
+
+Impreso, sobre una hoja con un mapa:
+
+> **Tamaños de impresión comprobados.** 1 **mapas medidos** por su lado menor
+> sobre el papel ya compuesto; **el más chico** mide 16 cm.
+
+`tdoslaminas` no puede verlo: su sector tiene veinte mapas y nunca uno. Es la
+lección de siempre —el material tiene que poder producir el defecto— y esta
+vez el material que lo produce es una hoja normal a la que le cedieron los
+demás.
+
+Y «el más chico» con un solo mapa es la otra mitad: invita a leer que hay
+varios. Es la clase de la v874, una cifra correcta dicha de una manera que no
+se puede leer.
+
+Salieron cuatro frases sin ramificar en ese mismo pie —el recuento, «No
+alcanzan», «Se imprimen igual» y «los de arriba por debajo del piso»— **junto
+a una que sí ramificaba** desde la v901: «1 mapa no se imprimió». El autor
+branchó la suya y no las de al lado, que es exactamente el patrón que esta
+serie de tandas lleva encontrando.
+
+### Y tres más en el cuerpo, y una cifra sin separar
+
+Con la corrida de `--uno`, que colapsa las cuentas a uno:
+
+| Salía | Dónde |
+|---|---|
+| «Radio de 1 m con **1 usos registrados**» | cierre de la banda de ubicación |
+| «unas **1 personas**» | cierre de la banda demográfica |
+| «**1 usos** de esta clase entre **1 clasificados**» | las cinco propuestas |
+| «1 usos registrados · consultado el …» | el alcance y fecha de corte |
+
+El último llevaba además la cifra **sin separador de miles**: `(st.total || 0)`
+a pelo, y el total de un sector grande pasa de cuatro dígitos —2.526 en el
+pliego real, y una corrida de 19 km² pasa de diez mil—. Es la regla de la
+v885 en un sitio que nadie había mirado.
+
+### `--uno` no colapsa la geometría, y eso era un falso positivo mío
+
+El barrido denunciaba **«10000»** sin separar en la cifra grande de la hoja B.
+No era un defecto: `--uno` colapsaba **todos** los enteros, incluida el área,
+así que el sector medía 1 m² y la densidad daba diez mil habitantes por
+hectárea — una cifra que el motor no puede producir.
+
+La bandera existe para alcanzar la rama del singular de una **cuenta**; un
+sector de un metro no es un sector, y lo que se deriva de él no son cifras. El
+colapsador deja la geometría en paz, y con eso el falso positivo desaparece
+sin tocar el código. Es la lección de la v1021 puesta en el material en vez de
+descubierta otra vez leyendo.
+
+Lo que sí queda medido y **no hecho**: `conComa` no sabe escribir un separador
+de miles —solo cambia el punto por la coma— y lo usan **180 sitios** de
+`js/68`, de los que once reciben una magnitud que en teoría podría pasar de
+9.999. Ninguna lo hace con datos reales: la más grande es la densidad en
+hab/ha, y el barrio más denso del mundo no llega a 3.000. Se declara con su
+número en vez de arreglarse sobre una premisa falsa.
+
+### Una hoja que no se compone deja rastro
+
+El hallazgo que costó la media hora, y es el de la v888 repetido:
+
+```js
+try { html = laminaImprimible(res, o); } catch (e) { return ''; }
+```
+
+`laminaDoble` devolvía cadena vacía y hubo que llamar a `laminaA` por separado
+para ver qué pasaba: `Cannot read properties of undefined (reading 'kwh')` —mi
+fixture ponía un número donde va el objeto de radiación—. Desde fuera, **«la
+hoja reventó» y «no hay resultado en pantalla» se leen igual**.
+
+Los otros cuarenta `catch` de `laminaImprimible` son por PANEL y están bien: un
+adorno no puede tumbar una hoja (v870). Este envuelve la composición entera, así
+que cuando muerde no hay hoja. Se sigue tragando —eso también es correcto— y
+deja el motivo en `S.laminaError` y en la consola, y la API lo expone para que
+una prueba pueda distinguir las dos cosas (v871).
+
+**De qué NO responde, dicho:** la guarda vigila ese `catch` y no los otros
+358. Perseguirlos todos sería pedir que ningún `catch` calle, que es lo
+contrario de la regla de la v870.
+
+### El trinquete de la prosa, y por qué es un techo y no un cero
+
+La baldosa la vigila la v1029; la prosa —`+ n + ' usos'`, donde la cifra y el
+plural van en la misma cadena y el «1» no es literal— no la ve nadie: ni la
+regla del papel (v1023/v1025) ni la del código.
+
+Medidos, son **307 sitios en 25 archivos**, 202 de ellos en `js/68`. Hacerlos
+de una tanda sería un reemplazo masivo sobre treinta mil líneas, que es como
+la v909 rompió dos pantallas en silencio. Así que entra de **trinquete**: lo
+que hay se declara con su número y un sitio NUEVO sale en rojo.
+
+Y el trinquete es de los legítimos por la vara que la v965 dejó escrita:
+**este pendiente no crece solo**. Sube únicamente si alguien escribe una cifra
+nueva sin su rama, que es justo lo prohibido — así que un techo absoluto es lo
+correcto y no hay que convertirlo en un piso sobre lo hecho.
+
+#### La mirada hacia atrás se recorta en el punto y coma
+
+La primera versión miraba 160 caracteres hacia atrás para ver si había una
+rama cerca, y **escondía un sitio**: «Cada una de las N paradas del área»,
+detrás de un `e.n === 1 ?` de la fila anterior. Es la lección de la v935 —un
+ancla por distancia envejece— dicha para un barrido, y la misma que la v1029
+ya había escrito para la baldosa.
+
+Recortando en el último `;`, `{` o `}` aparece, y con él arreglado el techo
+queda en 307 con el barrido bueno. **Eso se demostró midiendo —307 contra
+308— y no con una inyección**, y hay que decirlo así: una vez arreglado el
+sitio que escondía, desactivar el recorte ya no cambia nada, porque no queda
+nada que esconder. Es la situación de la v1022 vista desde el otro lado.
+
+### Demostrado contra la v1031
+
+Cuatro en rojo con su causa propia y dos en `?`, contra una copia guardada en
+el directorio de trabajo (v973):
+
+```
+✗ el `catch` que se come la hoja entera deja rastro
+    — vuelve a tragárselo a secas: una hoja vacía y «no hay resultado» se leen igual
+✗ y el rastro se puede leer desde fuera
+    — el rastro se guarda y ninguna prueba lo alcanza
+✗ ninguna cifra en prosa NUEVA sin su plural
+    — subió de 307 a 308: una cifra nueva imprimiría «1 cosas»
+✗ el barrido ve la prosa pelada, y calla la ramificada y la invariable
+    — denuncia una que ya ramifica: el techo no podría bajar nunca
+? lo servido ramifica sus cifras en prosa        — SIN MATERIAL HOY
+? la hoja se compone dentro de un `catch`        — SIN MATERIAL HOY
+```
+
+Las dos últimas salen con `?` y no en rojo por la frontera de la v1026: que
+lo servido dejara de usar `pl()` o de tener `catch` sería otra cosa, no una
+regresión que esta guarda deba llamar fallo.
+
+#### Y un caso conocido que pasaba con el filtro puesto y quitado
+
+La primera versión de la guarda del barrido usaba
+`pl(n, 'uso', 'usos')` como ejemplo de «prosa ya ramificada». **Ahí el plural
+va detrás de una coma, así que el barrido no lo ve nunca**, y el caso pasaba
+igual con el filtro y sin él. Se sustituyó por la forma que el código usa de
+verdad —el ternario cuya rama larga concatena el plural— y entonces sí muerde.
+Es la trampa de la v1019, otra vez, en la guarda de la guarda.
+
+### Lo que NO se pudo correr
+
+**Ninguna suite de navegador**, por lo mismo que la v973 en adelante: este
+contenedor no tiene `../urbis-motor` ni el `node_modules` del banco de
+pruebas. Corrió `revisar.js` entero con sus siete comprobaciones nuevas, y se
+barrió el papel de las dos hojas compuestas más la ficha, en las dos corridas
+—la real y la de `--uno`—: **cero en las cuatro**.
+
+Y una del método que vale para la sonda: el clima de la lámina se **lee de
+`tdoslaminas`**, que es donde vive su forma de verdad. Copiarlo a mano fue lo
+primero que hice y puse un número donde va un objeto: la lámina reventaba
+entera y el error se lo tragaba el `catch` de arriba, que es como se encontró.
+
 ## La lista viva: lo que al pliego educativo todavía le falta (v866)
 
 Esta lista se quedó vieja **cinco veces**. Cuatro dentro de la hoja —la

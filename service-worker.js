@@ -1,4 +1,4 @@
-const URBIS_CACHE = 'urbis-v1031-una-cifra-sin-medir-no-es-cero';
+const URBIS_CACHE = 'urbis-v1032-la-lamina-barrida-sobre-el-papel';
 const URBIS_ASSETS = [
   './',
   './index.html',

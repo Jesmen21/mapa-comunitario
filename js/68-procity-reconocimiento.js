@@ -5492,7 +5492,8 @@
         return '<tr><td>' + esc(e.nombre) + '</td><td class="n">' + e.n + ' parada' +
           (e.n === 1 ? '' : 's') + '</td></tr>';
       }).join('') + '</table>' +
-      '<p class="pie">Cada una de las ' + pd.total + ' paradas del área se asignó a la vía con ' +
+      '<p class="pie">' + pl(pd.total, 'La parada del área se asignó', 'Cada una de las ' +
+        pd.total + ' paradas del área se asignó') + ' a la vía con ' +
       'nombre más cercana, hasta 60 m: un paradero se pone en el andén, y más lejos de eso ya es ' +
       'otra calle.' +
       (pd.sueltas ? ' ' + pd.sueltas + ' no ' + (pd.sueltas === 1 ? 'cae' : 'caen') +
@@ -9844,7 +9845,8 @@ function donaHTML(datos, colorDe, nombreDe) {
         switch (id) {
           case 'ubicacion':
             return (esPol ? 'Área dibujada de ' + (formatearArea(meta.areaM2) || '') : 'Radio de ' + meta.radioM + ' m') +
-              ' con ' + fmt(st.total || 0) + ' usos registrados' +
+              ' con ' + fmt(st.total || 0) + ' ' +
+              pl(st.total || 0, 'uso registrado', 'usos registrados') +
               (st.densidadPorHa != null ? ', ' + num(st.densidadPorHa) + ' por hectárea' : '') +
               '. El plano es la referencia de todo lo que sigue: cada mapa recorta este mismo sector.';
           case 'ambiental':
@@ -9910,7 +9912,8 @@ function donaHTML(datos, colorDe, nombreDe) {
               : 'La red se ve en el mapa; sin coberturas ni vía principal medidas no hay conclusión que sostener.';
           case 'demografico':
             var hab = Number(st.poblacionEstimada || 0);
-            if (hab > 0) partes.push('unas ' + fmt(hab) + ' personas');
+            if (hab > 0) partes.push(pl(hab, 'una ', 'unas ') + fmt(hab) + ' ' +
+              pl(hab, 'persona', 'personas'));
             var up = st.usoPredominante || {};
             var k0 = Object.keys(up).sort(function (x, y) { return up[y] - up[x]; })[0];
             if (k0 && up[k0] > 0) {
@@ -12325,7 +12328,13 @@ function donaHTML(datos, colorDe, nombreDe) {
             (esPol ? 'Área dibujada de ' + esc(formatearArea(meta.areaM2) || '')
                    : 'Radio de análisis de ' + meta.radioM + ' m, definido por quien analiza') +
             (meta.perimetroM ? ' · perímetro ' + esc(formatearLargo(meta.perimetroM)) : '') +
-            ' · ' + (st.total || 0) + ' usos registrados · consultado el ' + esc(hoyTxt) + '.' +
+            /* Con separador de miles: el total de usos de un sector grande
+               pasa de cuatro cifras —2.526 en el pliego real, y una corrida
+               de 19 km² pasa de diez mil— y sin él se cuenta con el dedo
+               (v885). Y con su singular, que acá no lo tenía. */
+            ' · ' + Number(st.total || 0).toLocaleString('es-CO') + ' ' +
+            pl(st.total || 0, 'uso registrado', 'usos registrados') +
+            ' · consultado el ' + esc(hoyTxt) + '.' +
             (cadena ? ' ' + esc(cadena) + '.' : '') + '</div>' +
         '</div>' +
         /* §21 · el veredicto de tamaños, medido sobre ESTA hoja ya compuesta.
@@ -20250,7 +20259,29 @@ function donaHTML(datos, colorDe, nombreDe) {
   function laminaAjustada(res, opts) {
     var o = Object.assign({}, opts || {}, { _memo: {} });
     var html;
-    try { html = laminaImprimible(res, o); } catch (e) { return ''; }
+    /* Los cuarenta `catch` de dentro son por PANEL y están bien: un adorno
+       no puede tumbar una hoja (v870). Este es otro: envuelve la composición
+       ENTERA, así que cuando muerde no hay hoja, y devolver '' a secas deja
+       al llamador sin poder distinguir «reventó» de «no hay resultado».
+
+       Costó media hora en la v1032: `laminaDoble` devolvía cadena vacía y
+       hubo que llamar a `laminaA` por separado para ver el error de verdad
+       —«Cannot read properties of undefined (reading 'kwh')»—. Es lo que la
+       v888 dejó escrito: «un `catch` que no deja rastro convierte media hora
+       en una tarde.»
+
+       Se sigue tragando —eso es lo correcto— y deja el rastro: en `S`, para
+       que `estado()` lo exponga a una prueba (v871), y en la consola, que es
+       donde mira quien tiene la hoja en blanco delante. */
+    try {
+      html = laminaImprimible(res, o);
+      S.laminaError = null;
+    } catch (e) {
+      S.laminaError = 'la hoja ' + (o.hoja || 'A') + ' no se pudo componer: ' +
+        String((e && e.message) || e);
+      try { console.error('[URBIS] ' + S.laminaError, e); } catch (e2) {}
+      return '';
+    }
     if (typeof document === 'undefined' || !document.body) return html;
     var marco = null;
     try {
@@ -20610,8 +20641,15 @@ function donaHTML(datos, colorDe, nombreDe) {
     }
     if (!v) return '<b>Tamaños de impresión.</b> No se pudieron medir en este navegador.';
     var cm = function (mm) { return conComa(Math.round(mm) / 10) + ' cm'; };
-    var t = '<b>Tamaños de impresión comprobados.</b> ' + v.n + ' mapas medidos por su lado menor ' +
-      'sobre el papel ya compuesto; el más chico mide ' + cm(v.menor) + '. ';
+    /* La concordancia de este pie no se ejercita con el material de
+       `tdoslaminas` —veinte mapas, nunca uno— así que salió impreso «1 mapas
+       medidos» en una hoja con un solo mapa. Y con uno, «el más chico» invita
+       a leer que hay varios: es la clase de la v874, una cifra correcta dicha
+       de una manera que no se puede leer. Las dos ramas van escritas. */
+    var t = '<b>Tamaños de impresión comprobados.</b> ' + v.n + ' ' +
+      pl(v.n, 'mapa medido', 'mapas medidos') + ' por su lado menor ' +
+      'sobre el papel ya compuesto; ' +
+      (v.n === 1 ? 'mide ' : 'el más chico mide ') + cm(v.menor) + '. ';
     /* §4 (v901) · lo que se apagó por no llegar al piso, con su medida.
        Un mapa que no está y no se nombra es una promesa rota; nombrado con
        el tamaño al que habría salido, es una decisión que se puede
@@ -20653,7 +20691,8 @@ function donaHTML(datos, colorDe, nombreDe) {
        nada que suene a que cumplió. Es la misma regla de la v879 con las
        contradicciones entre láminas, dicha dentro de un renglón. */
     if (v.bajoObjetivo.length) {
-      t += 'No alcanzan el objetivo del pliego —12 cm el principal de cada banda, 10 los de ' +
+      t += pl(v.bajoObjetivo.length, 'No alcanza', 'No alcanzan') +
+        ' el objetivo del pliego —12 cm el principal de cada banda, 10 los de ' +
         'categoría—: ' + v.bajoObjetivo.slice(0, 5).map(function (c) {
           /* El objetivo también en centímetros y con COMA: con un piso de
              92 mm salía «8,7 cm de 9.2», un punto decimal en una hoja en
@@ -20661,8 +20700,10 @@ function donaHTML(datos, colorDe, nombreDe) {
              un sitio nuevo. */
           return esc(nm(c.t)) + ' ' + cm(c.mm) + ' de ' + cm(c.piso); }).join(' · ') +
         (v.bajoObjetivo.length > 5 ? ' y ' + (v.bajoObjetivo.length - 5) + ' más' : '') +
-        '. Se imprimen igual y con su medida escrita: para que crezcan hay que apagar paneles ' +
-        'desde la ficha, y esa es una decisión de quien arma la lámina, no del programa.';
+        '. ' + pl(v.bajoObjetivo.length, 'Se imprime igual y con su medida escrita: para que crezca',
+                     'Se imprimen igual y con su medida escrita: para que crezcan') +
+        ' hay que apagar paneles desde la ficha, y esa es una decisión de quien arma la ' +
+        'lámina, no del programa.';
     } else if (!v.bajoPiso.length && !(quitados && quitados.length)) {
       t += 'Todos alcanzan el objetivo del pliego.';
     } else {
@@ -20677,7 +20718,9 @@ function donaHTML(datos, colorDe, nombreDe) {
          construcción, por debajo de su objetivo, así que cuenta. */
       t += 'Ningún otro se queda corto del objetivo —12 cm el principal de cada banda, 10 los ' +
         'de categoría—, pero con ' + ((quitados && quitados.length && !v.bajoPiso.length)
-          ? 'el mapa que no llegó al piso' : 'los de arriba por debajo del piso') +
+          ? 'el mapa que no llegó al piso'
+          : pl(v.bajoPiso.length, 'el de arriba por debajo del piso',
+                                  'los de arriba por debajo del piso')) +
         ' la hoja NO cumple el pliego.';
     }
     return t;
@@ -22506,8 +22549,9 @@ function donaHTML(datos, colorDe, nombreDe) {
            «226 clasificados» a un palmo del «229 usos» del encabezado se lee
            como dos cuentas que no cuadran, y son la misma con y sin los que
            el motor no pudo clasificar. */
-        return { texto: fmt(pg[g] || 0) + ' usos de esta clase entre ' + fmt(clasificados) +
-                        ' clasificados' + (cUsos.sinClasificar
+        return { texto: fmt(pg[g] || 0) + ' ' + pl(pg[g] || 0, 'uso', 'usos') +
+                        ' de esta clase entre ' + fmt(clasificados) + ' ' +
+                        pl(clasificados, 'clasificado', 'clasificados') + (cUsos.sinClasificar
                           ? ' de los ' + fmt(cUsos.total) + ' del sector' : '') +
                         porHa(pg[g] || 0),
                  razon: 'lo que hay mapeado de este uso no señala una carencia; la comparación de cinco lo incluye para que se vea' };
@@ -32832,6 +32876,9 @@ function donaHTML(datos, colorDe, nombreDe) {
     /* La lámina compuesta a una escala dada, sin la búsqueda: para medir
        qué pasa a cada escala sin montar la ficha. */
     laminaA: function (o) { return S.resultado ? laminaImprimible(S.resultado, o || {}) : ''; },
+    /* Por qué la lámina salió vacía. Sin esto, «reventó al componer» y «no
+       hay resultado en pantalla» se leen igual desde fuera (v1032). */
+    laminaError: function () { return S.laminaError || null; },
     // Las dos láminas del pliego educativo, ya ajustadas al papel (v853).
     laminaDoble: function (o) { return S.resultado ? laminaDoble(S.resultado, o || {}) : ''; },
     categoriasQueCambian: function (tope) {

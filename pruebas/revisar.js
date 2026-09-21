@@ -8661,6 +8661,134 @@ console.log('\n  -- la baldosa de cifra, en todo lo servido (v1029) --');
       : NO_CONCUERDA.length + ' declarados, cada uno con por qué no concuerda');
 }
 
+console.log('\n  -- la cifra en PROSA y su plural: el trinquete (v1032) --');
+{
+  /* La baldosa la vigila la v1029; esto es la otra mitad, la prosa:
+     `+ n + ' usos'`, donde el numero y el plural van en la MISMA cadena y
+     el «1» no es literal, asi que ni la regla del papel (v1023/v1025) ni la
+     del codigo lo ven.
+
+     Son 307 sitios en 25 archivos, y arreglarlos de una tanda seria un
+     reemplazo masivo sobre treinta mil lineas, que es como la v909 rompio
+     dos pantallas en silencio. Asi que va de TRINQUETE y no de cero: lo que
+     hay se declara con su numero, y un sitio NUEVO sale en rojo.
+
+     El trinquete es legitimo acá por la vara de la v965: este pendiente NO
+     crece solo -solo sube si alguien escribe una cifra nueva sin su rama,
+     que es justo lo prohibido-, asi que un techo absoluto es lo correcto y
+     no hay que convertirlo en un piso sobre lo hecho. */
+  const CON_RAMA = /\?\s*'[ ·]*(?:1 )?[a-záéíóúñ]+'\s*:\s*'[ ·]*[a-záéíóúñ]+s'|===\s*1\s*\?|!==\s*1\s*\?|\b(?:plural|pl|cn)\(/;
+  /* Palabras que en castellano acaban en -s en singular: no concuerdan. Es
+     la misma lista que la guarda de la concordancia lleva desde la v874. */
+  const INVAR = /^(an[aá]lisis|m[aá]s|es|lejos|lunes|martes|mi[eé]rcoles|jueves|viernes|paraguas|crisis|dosis|atlas|bus|pa[ií]s|mes|virus)$/;
+  const RE_PROSA = /\+\s*'([ ·(]{0,3})([a-záéíóúñ]+s)\b/g;
+  const prosaEn = (txt) => {
+    const out = []; const re = new RegExp(RE_PROSA.source, 'g'); let m;
+    while ((m = re.exec(txt))) {
+      /* La mirada hacia atras se RECORTA en el ultimo `;`, `{` o `}`: con
+         una ventana de caracteres a secas, la rama de la caja de al lado cae
+         dentro y esconde el sitio de esta. Medido: escondia uno -«Cada una
+         de las N paradas», detras de un `e.n === 1 ?` de la fila anterior-.
+         Es la leccion de la v935 -un ancla por distancia envejece- dicha
+         para un barrido, y la misma que la v1029 ya escribio para la
+         baldosa. */
+      let antes = txt.slice(Math.max(0, m.index - 160), m.index);
+      const corte = Math.max(antes.lastIndexOf(';'), antes.lastIndexOf('{'), antes.lastIndexOf('}'));
+      if (corte >= 0) antes = antes.slice(corte + 1);
+      if (CON_RAMA.test(antes)) continue;
+      if (/'\s*$/.test(antes)) continue;     // dos literales pegados, no una cifra
+      if (INVAR.test(m[2])) continue;
+      out.push({ n: m[2], en: m.index });
+    }
+    return out;
+  };
+
+  const TECHO = 307;   // v1032 · medido. Solo puede BAJAR.
+  const servidos = fs.readdirSync(R('js')).filter((f) => /\.js$/.test(f));
+  let sinRama = 0, conRama = 0;
+  const peores = {};
+  servidos.forEach((f) => {
+    const txt = soloCodigo(leer('js/' + f));
+    conRama += (txt.match(/\b(?:pl|cn|plural)\(/g) || []).length;
+    const n = prosaEn(txt).length;
+    if (n) { sinRama += n; peores[f] = n; }
+  });
+
+  if (conRama < 30) {
+    anotarSinMaterial('lo servido ramifica sus cifras en prosa',
+      'solo ' + conRama + ' llamadas a pl()/cn(): el barrido no distinguiría nada');
+  } else {
+    comprobar('MATERIAL · lo servido ramifica sus cifras en prosa', true,
+      conRama + ' llamadas a pl()/cn(), y ' + sinRama + ' sitios todavía sin rama');
+    const top = Object.entries(peores).sort((a, b) => b[1] - a[1]).slice(0, 3)
+      .map((x) => x[0].slice(0, 2) + ':' + x[1]).join(' · ');
+    comprobar('ninguna cifra en prosa NUEVA sin su plural',
+      sinRama <= TECHO,
+      sinRama > TECHO
+        ? 'subió de ' + TECHO + ' a ' + sinRama + ': una cifra nueva imprimiría «1 cosas» (' + top + ')'
+        : sinRama + ' de un techo de ' + TECHO + ' — el trinquete solo baja (' + top + ')');
+  }
+
+  /* LA GUARDA DE LA GUARDA: el barrido ve la prosa pelada y calla la que ya
+     ramifica y la invariable. Sin las tres mitades el techo no dice nada. */
+  const PELADA = "'hay ' + n + ' usos'";
+  /* La ramificada se toma con la FORMA que el codigo usa de verdad -el
+     ternario cuya rama larga concatena el plural-, no con una inventada:
+     mi primera version puso `pl(n,'uso','usos')`, donde el plural va detras
+     de una coma y el barrido no lo ve NUNCA, asi que el caso pasaba con el
+     filtro puesto y quitado. Es la trampa de la v1019 otra vez. */
+  const RAMIF  = "x === 1 ? 'un uso' : n + ' usos'";
+  const INVARC = "'hay ' + n + ' análisis'";
+  const vePelada = prosaEn(PELADA).length === 1;
+  const veRamif = prosaEn(RAMIF).length === 0;
+  const veInvar = prosaEn(INVARC).length === 0;
+  comprobar('el barrido ve la prosa pelada, y calla la ramificada y la invariable',
+    vePelada && veRamif && veInvar,
+    !vePelada ? 'no ve la pelada: el techo no vigilaría nada'
+      : !veRamif ? 'denuncia una que ya ramifica: el techo no podría bajar nunca'
+        : !veInvar ? 'denuncia «análisis», que no concuerda con nadie'
+          : 've la pelada, y calla la que ramifica y la que acaba en -s en singular');
+}
+
+console.log('\n  -- una hoja que no se compone deja rastro (v1032) --');
+{
+  const j68 = soloCodigo(leer('js/68-procity-reconocimiento.js'));
+
+  /* EL MATERIAL: el `catch` por PANEL es lo correcto -un adorno no puede
+     tumbar una hoja (v870)- y hay decenas. Lo que esta guarda vigila es el
+     UNICO que envuelve la composicion entera, y si no hubiera ninguno no
+     habria nada que vigilar. */
+  const porPanel = (j68.match(/catch\s*\(\s*\w*\s*\)\s*\{[^{}]{0,80}\}/g) || []).length;
+  if (porPanel < 50) {
+    anotarSinMaterial('la hoja se compone dentro de un `catch`',
+      'solo ' + porPanel + ' catch en js/68: la guarda no tendría de dónde distinguir');
+  } else {
+    comprobar('MATERIAL · la hoja se compone dentro de un `catch`', true,
+      porPanel + ' catch en js/68, de los que uno envuelve la composición entera');
+
+    /* El cuerpo de `laminaAjustada` hasta su primer `if`: ahi vive el catch
+       que decide si hay hoja o no. */
+    const i = j68.indexOf('function laminaAjustada');
+    const tramo = i < 0 ? '' : j68.slice(i, i + 1400);
+    const traga = /catch\s*\([^)]*\)\s*\{\s*return\s*''\s*;\s*\}/.test(tramo);
+    const rastro = /S\.laminaError\s*=/.test(tramo) && /console\.error/.test(tramo);
+    comprobar('el `catch` que se come la hoja entera deja rastro',
+      !!tramo && !traga && rastro,
+      !tramo ? 'no se encontró `laminaAjustada`: la guarda no está mirando nada'
+        : traga ? 'vuelve a tragárselo a secas: una hoja vacía y «no hay resultado» se leen igual'
+          : !rastro ? 'no deja rastro ni en S ni en la consola: media hora cada vez (v888)'
+            : 'deja el motivo en S.laminaError y en la consola, y sigue sin tumbar la aplicación');
+
+    /* LA GUARDA DE LA GUARDA: el rastro no sirve si nadie puede leerlo. Una
+       prueba lo lee por `estado()`/la API, que es la regla de la v871. */
+    comprobar('y el rastro se puede leer desde fuera',
+      /laminaError:\s*function/.test(j68),
+      /laminaError:\s*function/.test(j68)
+        ? 'la API lo expone, así que una prueba distingue «reventó» de «no hay resultado»'
+        : 'el rastro se guarda y ninguna prueba lo alcanza: vuelve a ser un dato que no llega a nadie');
+  }
+}
+
 console.log('\n  -- una cifra sin medir no se imprime en crudo (v1030) --');
 {
   /* LA CLASE: un `|| {}` o un `|| 0` puesto para que no reviente, y la otra
