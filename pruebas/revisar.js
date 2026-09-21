@@ -5235,6 +5235,107 @@ console.log('\n  -- el subtipo de cada piso (v989) --');
   }
 }
 
+/* ── El informe archivado mide SU sector (v995) ────────────────────────────
+   La v988 lo dejó medido y declarado: el informe de un sector guardado presta
+   `S.trazado` y `S.terreno` pero NO el resultado, así que
+   `puntoDentroDelSector` no tenía contra qué medir y lo levantado en campo
+   salía vacío. Y la llave con la que ese recuento se memoiza era la de la
+   ficha VIVA, así que al componer el informe de OTRO sector el memo servía las
+   cifras del que estuviera en pantalla — una cifra correcta de otro sector,
+   que es la clase que este proyecto persigue desde la v879. */
+console.log('\n  -- el informe archivado mide SU sector (v995) --');
+{
+  const j68h = soloCodigo(leer('js/68-procity-reconocimiento.js'));
+  const dentro = (txt, nom, fin) => {
+    const i = txt.indexOf(nom); if (i < 0) return '';
+    const j = txt.indexOf(fin, i); return j < 0 ? txt.slice(i) : txt.slice(i, j);
+  };
+  /* El bloque que presta: de donde guarda el estado anterior hasta donde lo
+     devuelve. Se corta por sus dos extremos y no por un número de líneas: un
+     corte por distancia envejece (v935). */
+  const iPresta = j68h.indexOf('var trzAntes = S.trazado');
+  const iVuelve = j68h.indexOf('S.trazado = trzAntes;', iPresta);
+  const cPresta = (iPresta >= 0 && iVuelve >= 0) ? j68h.slice(iPresta, j68h.indexOf('return html;', iVuelve)) : '';
+
+  if (!cPresta) {
+    anotarSinMaterial('MATERIAL · el bloque que presta el sector archivado se deja leer',
+      'sin él no se puede comprobar ni que preste ni que devuelva');
+  } else {
+    comprobar('MATERIAL · el informe archivado presta y devuelve estado',
+      /S\.\w+ = \w+Antes;/.test(cPresta), 'el bloque de préstamo se deja leer entero');
+
+    /* 1 · La llave del sector se calcula en UN sitio. Con la expresión
+       repetida en veintisiete, arreglar de qué sector se habla se arregla en
+       veintisiete o no se arregla. */
+    const iF = j68h.indexOf('function llaveDelSectorActual()');
+    const cF = iF >= 0 ? j68h.slice(iF, j68h.indexOf('\n  }', iF)) : '';
+    /* Se cuenta FUERA del propio ayudante: dentro tiene que estar, y contarlo
+       con los demás hacía que la cifra buena fuera 1 y la mala 0, que es un
+       mensaje al revés. */
+    const fuera = (j68h.slice(0, iF < 0 ? 0 : iF) + j68h.slice(iF < 0 ? 0 : iF + cF.length))
+      .match(/llaveDeSector\(S\.resultado/g) || [];
+    comprobar('la llave del sector se calcula en un solo sitio',
+      fuera.length === 0 && !!cF,
+      !cF ? 'no existe llaveDelSectorActual: la expresión vuelve a estar repetida'
+      : fuera.length === 0 ? 'los ' + (j68h.match(/llaveDelSectorActual\(\)/g) || []).length +
+        ' lectores pasan por la misma función'
+      : fuera.length + ' sitios la vuelven a calcular por su cuenta: se separarían a la tanda siguiente');
+
+    /* 2 · Y las dos memos de campo llavean por SECTOR, no por la ficha viva:
+       es lo que impide que el informe de un sector archivado sirva las cifras
+       del que está en pantalla. */
+    const memos = ['function edificiosDeCampo(', 'function levantadoDeCampo('];
+    const porFicha = memos.filter(n => {
+      const c = dentro(j68h, n, 'memo');
+      return /fichaActualId/.test(c) || !/llaveDelSectorActual\(\)/.test(c);
+    });
+    comprobar('las dos memos de campo llavean por el sector, no por la ficha viva',
+      porFicha.length === 0,
+      porFicha.length ? 'llavean por la ficha viva: ' + porFicha.join(' · ') +
+        ' — el informe de un sector archivado serviría las cifras del que esté en pantalla'
+      : 'las ' + memos.length + ' llavean por llaveDelSectorActual()');
+
+    /* 3 · El informe archivado presta el resultado y su geometría. Sin ellas,
+       `puntoDentroDelSector` cae a «todo dentro» o a un radio de otro sector. */
+    const presta = ['S.resultado = comoResultado(f)', 'S.radioM = f.radioM',
+                    'S.forma = f.forma', 'S.poligono = f.poligono'];
+    const faltan = presta.filter(x => cPresta.indexOf(x) < 0);
+    comprobar('el informe archivado presta el resultado y su geometría',
+      faltan.length === 0,
+      faltan.length ? 'no presta: ' + faltan.join(' · ') +
+        ' — lo levantado en campo se filtraría contra el sector equivocado'
+      : 'los ' + presta.length + ' se prestan por comoResultado, la misma función que el resto del informe');
+
+    /* 4 · Y TODO lo que presta lo devuelve. Prestar sin devolver deja el
+       estado vivo con el sector archivado dentro, que es peor que no prestar:
+       el siguiente que mire la ficha viva vería las cifras de la guardada. */
+    const prestadas = [...cPresta.matchAll(/\n\s*S\.(\w+) = (?:f\.|comoResultado)/g)].map(m => m[1]);
+    const devueltas = [...cPresta.matchAll(/S\.(\w+) = \w+Antes/g)].map(m => m[1]);
+    const sinDevolver = [...new Set(prestadas)].filter(k => devueltas.indexOf(k) < 0);
+    comprobar('todo lo que el informe archivado presta lo devuelve',
+      sinDevolver.length === 0 && prestadas.length > 0,
+      sinDevolver.length ? 'se queda prestado: ' + sinDevolver.join(' · ') +
+        ' — la ficha viva quedaría con el sector archivado dentro'
+      : [...new Set(prestadas)].length + ' prestadas y todas devueltas');
+
+    /* 5 · Y con el sector prestado, el informe archivado SÍ imprime lo
+       levantado. Sin esta, todo lo de arriba sería una costura que no se usa. */
+    const llama = cPresta.indexOf('bloqueLevantado()') >= 0;
+    comprobar('el informe archivado imprime lo levantado en campo',
+      llama,
+      llama ? 'el detalle de especies, sitio, material y estado sale también del archivo'
+            : 'no lo llama: el préstamo no serviría de nada');
+
+    /* 6 · Guarda de la guarda: si la función dejara de leer el resultado,
+       todo lo de arriba seguiría en verde sobre una llave constante (v878). */
+    const mira = /S\.resultado && S\.resultado\.meta/.test(cF);
+    comprobar('y la llave sigue saliendo del resultado que se esté mirando',
+      mira,
+      mira ? 'con el sector prestado, devuelve el del archivo'
+           : 'dejó de leerlo: todos los sectores compartirían una llave');
+  }
+}
+
 /* ── Hay tipos del arbolado que no tienen especie (v994) ───────────────────
    Medido en el navegador antes de tocar nada: un «Alcorque vacío (sitio de
    siembra sin árbol)» se preguntaba «¿Qué árbol es?» y la v979 lo marcaba

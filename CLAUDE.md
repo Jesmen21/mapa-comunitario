@@ -8302,7 +8302,10 @@ puerta guarda, la entrada queda escrita y el perfil sigue saliendo del mapa.
 Lo cazó la suite con `sin-sector` sobre un sector analizado. Los otros catorce
 sitios del módulo escriben `llaveDeSector(S.resultado && S.resultado.meta)`, y
 los dos míos no; es catorce veces la misma expresión, que es su propia clase B
-y no se tocó en esta tanda.
+y no se tocó en esta tanda. **La tomó la v995**, y al medirla no eran catorce
+sino veintisiete —cinco de ellas sin la guarda—: pasan todas por
+`llaveDelSectorActual()`, y lo que la cerró no fue el ahorro sino que el
+informe de un sector archivado tenía que medir SU sector.
 
 ### Acá la media sí es legítima, y por qué
 
@@ -14656,7 +14659,9 @@ leyendo, y así se cazó.
   la v754: hacer que el panel de especies se comporte distinto del de pisos en
   el mismo informe serían dos comportamientos para una familia. Prestarle el
   área al informe archivado los arregla a los dos y es su propia tanda, con su
-  propia medición.
+  propia medición. **Hecho en la v995**, y al hacerlo apareció que la llave con
+  la que el recuento se memoiza era la de la ficha VIVA: sin arreglar eso, el
+  préstamo habría servido las cifras del sector que estuviera en pantalla.
 * **La lámina no lo imprime.** La v935 dejó la forma —la pantalla primero, el
   papel después— y la v936 midió lo que cuesta una caja más en el pliego. Va
   con su medición o no va.
@@ -14926,6 +14931,106 @@ Once aserciones en rojo de doce, contra una copia guardada en `/tmp` y no con
 
 La duodécima es MATERIAL y va primero (v920): es la precondición, y pasa en las
 dos versiones porque la tabla que se invierte y el catálogo existían antes.
+
+## El informe archivado mide SU sector (v995)
+
+Lo que la v988 dejó medido y declarado: *«ese camino presta `S.trazado` y
+`S.terreno`, pero NO `S.resultado` ni el área, así que `puntoDentroDelSector`
+no tiene contra qué medir… prestarle el área al informe archivado los arregla
+a los dos y es su propia tanda»*.
+
+    v994   el informe de un sector archivado sale sin lo levantado en la calle
+    v995   sale con ello, y medido contra SU geometría
+
+### Y la llave del sector era la misma cosa
+
+Al abrirlo apareció que el defecto tenía una segunda mitad **peor que la
+primera**. Las dos memos de campo llaveaban así:
+
+```js
+var llave = (S.tickPintado || 0) + '·' + pts.length + '·' + (S.fichaActualId || '');
+```
+
+`S.fichaActualId` es el id de la ficha **VIVA**, y componer el informe de un
+sector archivado no lo cambia. Así que en cuanto el préstamo hiciera que el
+recuento se pudiera calcular, el memo habría servido **las cifras del sector
+que estuviera en pantalla** — una cifra correcta de otro sector, que es la
+clase que este proyecto persigue desde la v879. La llave sale ahora del
+SECTOR, con `llaveDelSectorActual()`.
+
+#### Lo que cerró de paso: la clase B de la v939
+
+`llaveDeSector(S.resultado && S.resultado.meta)` estaba escrita **veintisiete
+veces** —y cinco de ellas sin la guarda, que revientan si no hay análisis—. La
+v939 la dejó declarada como clase B, y lo que la cierra no es el ahorro: es
+que **de qué sector se habla se arregla en un sitio o se arregla en
+veintisiete**. Los treinta lectores pasan ahora por una función.
+
+Y el parche de unificación se cobró la lección de siempre: el reemplazo global
+alcanzó al **cuerpo de la propia función**, que quedó llamándose a sí misma.
+No lo dijo ningún error —`node --check` pasa con una recursión infinita— y se
+vio leyendo el resultado del parche, que es lo que «todo parche imprime su
+confirmación y se comprueba» existe para forzar.
+
+### La guarda nueva encontró un defecto anterior
+
+La más útil de las seis no comprueba lo que esta tanda hizo: comprueba que
+**todo lo que el informe archivado presta lo devuelva**, comparando las dos
+listas en vez de fiarse de una escrita a mano.
+
+En su primera corrida denunció dos: **`S.inundacion` y `S.caminata` se
+prestaban y no se devolvían**. Después de mirar el informe de un sector
+guardado, la ficha viva se quedaba con la mancha de inundación y el recorrido
+a pie del archivado. Es anterior a esta tanda y no lo veía nadie — prestar sin
+devolver es peor que no prestar, porque el siguiente que mire la ficha viva ve
+las cifras de la guardada.
+
+Son 18 prestadas y ahora las 18 se devuelven.
+
+### Lo que se presta, y por la misma función que el resto
+
+`S.resultado = comoResultado(f)` más `radioM`, `forma`, `poligono` y `centro`,
+que son las cuatro por las que `puntoDentroDelSector` y `centroDeAnalisis`
+deciden. Va por `comoResultado`, que es **la misma función con la que el resto
+del informe lo reconstruye**: una segunda manera de armarlo se separaría a la
+tanda siguiente (v879).
+
+Y con eso el informe archivado llama a `bloqueLevantado()`, igual que la ficha
+viva: qué especie es cada árbol, dónde está sembrado, de qué está hecho cada
+elemento y en qué estado está.
+
+### Demostrado contra la v994
+
+Seis inyecciones fieles, una por guarda, contra una copia guardada (v973):
+
+```
+repetida  ✗ la llave se calcula en un solo sitio  — 1 sitio la vuelve a calcular
+memo      ✗ las memos llavean por el sector  — levantadoDeCampo por la ficha viva
+presta    ✗ presta el resultado y su geometría  — no presta: S.resultado
+devuelve  ✗ todo lo que presta lo devuelve  — se queda prestado: inundacion · caminata
+llama     ✗ imprime lo levantado en campo  — no lo llama: el préstamo no serviría
+puerta    ✗ y la llave sale del resultado que se mira  — todos compartirían una llave
+```
+
+La cuarta es la que enseña el defecto anterior: **falla igual contra la v994**,
+porque el leak ya estaba.
+
+#### Y una guarda que daba su mensaje al revés
+
+La de «un solo sitio» contaba la expresión **incluida la del propio ayudante**,
+así que la cifra buena era 1 y la mala 0 — y vaciar la función salía con «0
+sitios la vuelven a calcular», que se lee como el verde. Se cuenta ahora fuera
+del ayudante. Es el defecto que la v973 y la v977 encontraron en sus propias
+guardas, por tercera vez.
+
+### Lo que NO se pudo correr
+
+**Ninguna suite de navegador**, por lo mismo que la v973 a la v994. Y **el
+informe archivado compuesto** tampoco: pide una ficha guardada de un análisis
+real, y el análisis pide el motor. Lo que se midió es que la aplicación sigue
+cargando y mapeando por el camino de verdad, más las seis guardas estáticas,
+que es donde vive la protección de esta tanda — el préstamo y su devolución no
+se ven en pantalla ni cuando funcionan ni cuando no.
 
 ## Lo que el catálogo no tenía, y un hueco al que le preguntaban qué árbol era (v994)
 

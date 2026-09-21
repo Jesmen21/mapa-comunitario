@@ -650,6 +650,16 @@
     if (Number(m.areaM2) > 0) return p + '|a' + Math.round(Number(m.areaM2) / 10000);
     return p;
   }
+  /* ── La llave del sector que se está mirando (v995) ──────────────────────
+     Estaba escrita VEINTISIETE veces como `llaveDeSector(S.resultado &&
+     S.resultado.meta)` —y cinco de ellas sin la guarda, que revientan si no
+     hay análisis—. La v939 la dejó declarada como clase B, y lo que la cierra
+     no es el ahorro: es que el informe de un sector ARCHIVADO tiene que medir
+     SU sector, y con la expresión repetida en veintisiete sitios eso se
+     arregla en veintisiete o no se arregla. */
+  function llaveDelSectorActual() {
+    return llaveDeSector(S.resultado && S.resultado.meta);
+  }
   function leerConteos() {
     try { var c = JSON.parse(localStorage.getItem(CONTEOS_KEY) || '{}');
           return (c && typeof c === 'object' && !Array.isArray(c)) ? c : {}; }
@@ -1765,7 +1775,7 @@
      dos copias de una advertencia se separan a la tanda siguiente (v867). */
   function cupoDicho(st) {
     var cp;
-    try { cp = cupoDeCampo(llaveDeSector(S.resultado && S.resultado.meta)); }
+    try { cp = cupoDeCampo(llaveDelSectorActual()); }
     catch (e) { return ''; }
     if (!cp.hay) return '';
     var mapeados = equipamientosMapeados(st);
@@ -1922,7 +1932,7 @@
        sitios: `llaveDeSector()` sin argumento devuelve cadena vacía —lo
        comprobó la suite con `sin-sector` sobre un sector analizado— y eso
        no es un fallo visible, es un almacén que nunca encuentra nada. */
-    var llave = llaveDeSector(S.resultado && S.resultado.meta);
+    var llave = llaveDelSectorActual();
     var campo = perfilDeCampo(llave);
     /* Lo caminado entra por el MISMO punto único que la v939 creó, y no por
        uno propio: los siete sitios que imprimen algo del andén ya pasan por
@@ -2093,7 +2103,7 @@
     var base = ((st && st.movilidad && st.movilidad.rutas) || []).map(function (r) {
       return Object.assign({}, r, { origen: 'mapa' });
     });
-    var campo = rutasDeCampo(llaveDeSector(S.resultado && S.resultado.meta));
+    var campo = rutasDeCampo(llaveDelSectorActual());
     if (!campo.hay) { base.campo = campo; return base; }
     var porRef = {};
     base.forEach(function (r) {
@@ -3286,7 +3296,12 @@
     /* La llave lleva el repintado Y cuántos puntos hay: la lámina y el
        informe se arman fuera de `pintar`, así que sin lo segundo un punto
        publicado entre medias no se vería en el papel. */
-    var llave = (S.tickPintado || 0) + '·' + pts.length + '·' + (S.fichaActualId || '');
+    /* Llavea por el SECTOR y no por `S.fichaActualId`, que es la ficha VIVA:
+       al componer el informe de un sector ARCHIVADO ese id no cambia, así que
+       el memo servía las cifras del sector que estuviera en pantalla. Una
+       cifra correcta de otro sector es la clase de error que este proyecto
+       persigue desde la v879 (v995). */
+    var llave = (S.tickPintado || 0) + '·' + pts.length + '·' + llaveDelSectorActual();
     if (memoCampo.llave === llave && memoCampo.valor) return memoCampo.valor;
     if (!pts.length) { memoCampo = { llave: llave, valor: [] }; return []; }
     var salida = [];
@@ -3393,7 +3408,12 @@
     var LS = window.URBIS_SITIO;
     if (!S.resultado) return null;
     var pts = puntosDelCurso();
-    var llave = (S.tickPintado || 0) + '·' + pts.length + '·' + (S.fichaActualId || '');
+    /* Llavea por el SECTOR y no por `S.fichaActualId`, que es la ficha VIVA:
+       al componer el informe de un sector ARCHIVADO ese id no cambia, así que
+       el memo servía las cifras del sector que estuviera en pantalla. Una
+       cifra correcta de otro sector es la clase de error que este proyecto
+       persigue desde la v879 (v995). */
+    var llave = (S.tickPintado || 0) + '·' + pts.length + '·' + llaveDelSectorActual();
     if (memoLevantado.llave === llave) return memoLevantado.valor;
 
     /* El arbolado y el mobiliario se acumulan aparte, y el mobiliario POR
@@ -4081,7 +4101,7 @@
          plantilla mide unos pocos tramos, y multiplicar su ancho por los
          metros de vía del sector entero es extrapolar, no medir. El día que
          se decida hacerlo, se decide con su precio medido y no de paso. */
-      var pvCas = perfilDeCampo(llaveDeSector(S.resultado && S.resultado.meta));
+      var pvCas = perfilDeCampo(llaveDelSectorActual());
       faltan.push(pvCas.hay
         ? '<b>La superficie de vía.</b> Ninguna vía del sector trae ancho ni carriles en ' +
           'OpenStreetMap. En campo se midieron ' + pvCas.tramos +
@@ -4287,7 +4307,7 @@
      quería ver el sector. Se corre cuando alguien pide verlo, y se guarda —
      volver a pedirlo no vuelve a costar. */
   async function correrPostSector() {
-    var tc = tieneCampo(llaveDeSector(S.resultado && S.resultado.meta));
+    var tc = tieneCampo(llaveDelSectorActual());
     if (!tc.hay) return { ok: false, error: tc.razon };
     if (!S.peticionSector) {
       return { ok: false, error: 'Este análisis se abrió desde una ficha guardada, así que ' +
@@ -13626,7 +13646,7 @@ function donaHTML(datos, colorDe, nombreDe) {
          validación acá sería la segunda ruta de la v879. */
       if (acc === 'vacio-guardar' || acc === 'vacio-borrar') {
         var hV = b.getAttribute('data-h') || '', sV = b.getAttribute('data-s') || '';
-        var llV = llaveDeSector(S.resultado && S.resultado.meta);
+        var llV = llaveDelSectorActual();
         if (acc === 'vacio-borrar') {
           var yaV = confirmadasDeCampo(llV).filter(function (x) {
             return x.hueco === hV && (x.sub || '') === sV; })[0];
@@ -13664,7 +13684,7 @@ function donaHTML(datos, colorDe, nombreDe) {
            rechazo, `pintar()` lo repone y la persona corrige el renglón que
            falla en vez de escribir las ocho filas otra vez (v954). */
         ponerBorrador('act', tomarBorrador('act'));
-        var llA = llaveDeSector(S.resultado && S.resultado.meta);
+        var llA = llaveDelSectorActual();
         var soltarPost = function () {
           /* La corrida post vieja se suelta: se calculó sin este dato, y
              servirla ahora sería presentar como post-sector una cuenta que no
@@ -13742,7 +13762,7 @@ function donaHTML(datos, colorDe, nombreDe) {
            rechazo, `pintar()` lo repone y la persona corrige el renglón que
            falla en vez de escribir las ocho filas otra vez (v954). */
         ponerBorrador('pvl', tomarBorrador('pvl'));
-        var llP = llaveDeSector(S.resultado && S.resultado.meta);
+        var llP = llaveDelSectorActual();
         var soltarPostP = function () {
           /* La corrida post vieja se suelta: se calculó sin este dato (v897). */
           if (S.corridas) { S.corridas.post = null;
@@ -13818,7 +13838,7 @@ function donaHTML(datos, colorDe, nombreDe) {
            rechazo, `pintar()` lo repone y la persona corrige el renglón que
            falla en vez de escribir las ocho filas otra vez (v954). */
         ponerBorrador('rut', tomarBorrador('rut'));
-        var llR = llaveDeSector(S.resultado && S.resultado.meta);
+        var llR = llaveDelSectorActual();
         var soltarPostR = function () {
           /* La corrida post vieja se suelta: se calculó sin este dato (v897). */
           if (S.corridas) { S.corridas.post = null;
@@ -13890,7 +13910,7 @@ function donaHTML(datos, colorDe, nombreDe) {
            rechazo, `pintar()` lo repone y la persona corrige el renglón que
            falla en vez de escribir las ocho filas otra vez (v954). */
         ponerBorrador('and', tomarBorrador('and'));
-        var llAn = llaveDeSector(S.resultado && S.resultado.meta);
+        var llAn = llaveDelSectorActual();
         var soltarPostAn = function () {
           /* La corrida post vieja se suelta: se calculó sin este dato (v897). */
           if (S.corridas) { S.corridas.post = null;
@@ -13959,7 +13979,7 @@ function donaHTML(datos, colorDe, nombreDe) {
       }
       if (acc === 'perc-guardar' || acc === 'perc-borrar') {
         var hPe = el.getAttribute('data-h') || '';
-        var llPe = llaveDeSector(S.resultado && S.resultado.meta);
+        var llPe = llaveDelSectorActual();
         if (acc === 'perc-borrar') {
           var yaPe = confirmadasDeCampo(llPe).filter(function (x) { return x.hueco === hPe; })[0];
           if (yaPe) borrarEntradaCampo(llPe, yaPe.id);
@@ -13997,7 +14017,7 @@ function donaHTML(datos, colorDe, nombreDe) {
            rechazo, `pintar()` lo repone y la persona corrige el renglón que
            falla en vez de escribir las ocho filas otra vez (v954). */
         ponerBorrador('cup', tomarBorrador('cup'));
-        var llCu = llaveDeSector(S.resultado && S.resultado.meta);
+        var llCu = llaveDelSectorActual();
         var soltarPostCu = function () {
           if (S.corridas) { S.corridas.post = null;
             if (S.corrida === 'post') { S.corrida = 'sector'; S.resultado = S.corridas.sector; } }
@@ -14062,7 +14082,7 @@ function donaHTML(datos, colorDe, nombreDe) {
           S.avisoPestana = 'Todavía falta ' + ((mn && mn.falta) || ['la procedencia']).join(' · ') + '.';
           pintar(); return;
         }
-        var rn = guardarEntradaCampo(llaveDeSector(S.resultado && S.resultado.meta),
+        var rn = guardarEntradaCampo(llaveDelSectorActual(),
           Object.assign({}, mn.entrada, { estado: 'confirmado' }));
         S.avisoPestana = rn.ok
           ? 'La norma quedó guardada como dato de trámite. Este sector ya tiene análisis post-sector.'
@@ -25828,7 +25848,7 @@ function donaHTML(datos, colorDe, nombreDe) {
        procedencia VIAJA con la cifra, no con la pantalla: un post-sector
        archivado se vuelve a componer con este código. */
     var actC = null;
-    try { actC = actividadDeCampo(llaveDeSector(S.resultado && S.resultado.meta)); } catch (eA) {}
+    try { actC = actividadDeCampo(llaveDelSectorActual()); } catch (eA) {}
     var campoOk = !!(actC && actC.estado === 'ok' && actC.pctLleno != null);
     return {
       frenteTipicoM: frenteTipico,
@@ -27479,7 +27499,7 @@ function donaHTML(datos, colorDe, nombreDe) {
   var PUERTAS_DE_VACIO = ['riesgo-oficial', 'movilidad-real', 'informacion-legal-del-predio'];
   function bloqueVacios() {
     if (!S.resultado) return '';
-    var llave = llaveDeSector(S.resultado.meta);
+    var llave = llaveDelSectorActual();
     return h4('ok', 'Los papeles que hay que ir a pedir') +
       '<p class="pcr-pista">La lámina declara estos vacíos con su trámite —qué se pide, ante quién y ' +
       'cuánto tarda—. Acá se anota lo que ya trajo. <b>Cada parte la expide una entidad distinta en ' +
@@ -28064,7 +28084,7 @@ function donaHTML(datos, colorDe, nombreDe) {
 
   function bloquePlantillas() {
     if (!S.resultado) return '';
-    var llave = llaveDeSector(S.resultado.meta);
+    var llave = llaveDelSectorActual();
     /* El conteo de puertas SE CALCULA y no se teclea: escrito a mano dentro
        de la frase es una cifra que envejece sola, que es lo que la v903
        corrigió en la conclusión de banda. */
@@ -28122,7 +28142,7 @@ function donaHTML(datos, colorDe, nombreDe) {
     var m;
     try { m = normaDesdeIndices(); } catch (e) { return ''; }
     if (!m || !m.entrada) return '';
-    var llave = llaveDeSector(S.resultado.meta);
+    var llave = llaveDelSectorActual();
     var ya = confirmadasDeCampo(llave).filter(function (x) { return x.hueco === 'norma-urbana'; })[0];
     if (ya) {
       var fl = fuenteLeida(ya.fuente);
@@ -30096,7 +30116,7 @@ function donaHTML(datos, colorDe, nombreDe) {
      calle. */
   function htmlCorrida() {
     if (!S.resultado) return '';
-    var tc = tieneCampo(llaveDeSector(S.resultado.meta));
+    var tc = tieneCampo(llaveDelSectorActual());
     var enPost = S.corrida === 'post';
     var pro = (S.resultado.campoProcedencia) || null;
 
@@ -30316,7 +30336,7 @@ function donaHTML(datos, colorDe, nombreDe) {
         /* v946 · y los tres de percepción, aparte de las seis plantillas:
            una plantilla levanta una cifra y estos levantan lo que ninguna
            fuente trae. Es la misma separación que la v883 hizo en la lámina. */
-        (S.resultado ? htmlPuertaPercepcion(llaveDeSector(S.resultado.meta)) : '') +
+        (S.resultado ? htmlPuertaPercepcion(llaveDelSectorActual()) : '') +
         // Las capas ordenan el mapa; esto ordena el papel.
         bloquePliego(res) +
         /* Entre los controles y la exportación: «esto es lo que hay», «esto
@@ -31938,6 +31958,20 @@ function donaHTML(datos, colorDe, nombreDe) {
     var loteAntes = S.lote, rejAntes = S.terRejilla;
     var curAntes = S.intCurso, uniAntes = S.intUnion, intAntes = S.intangible;
     var idxAntes = S.indices, pusAntes = S.indicesPuestos, fteAntes = S.indicesFuente;
+    /* Y el RESULTADO con su geometría, que es lo que la v988 dejó medido y
+       declarado pendiente: sin él, `puntoDentroDelSector` no tiene contra qué
+       medir, así que `edificiosDeCampo` y el recuento de especies, materiales
+       y estado devolvían vacío y el informe de un sector archivado salía sin
+       lo levantado en la calle. Se presta igual que el trazado y se devuelve
+       igual, y con él las tres variables por las que el filtro decide. */
+    var resAntes = S.resultado, radAntes = S.radioM, forAntes = S.forma;
+    var polAntes = S.poligono, cenAntes = S.centro;
+    /* Y estas dos, que se prestaban y NO se devolvían: después de mirar el
+       informe de un sector archivado, la ficha viva se quedaba con la mancha
+       de inundación y el recorrido a pie del archivado. Es un defecto
+       anterior a esta tanda y lo encontró la guarda nueva, que compara lo
+       prestado contra lo devuelto en vez de fiarse de una lista. */
+    var inuAntes = S.inundacion, camAntes2 = S.caminata;
     if (!st) {
       return '<p class="pcr-pista">Esta ficha se guardó con una versión anterior y solo tiene los ' +
         'totales. Vuelva a analizar el sector para tener el informe completo.</p>';
@@ -32028,6 +32062,16 @@ function donaHTML(datos, colorDe, nombreDe) {
         S.indices = f.indices || null;
         S.indicesPuestos = f.indicesPuestos || null;
         S.indicesFuente = f.indicesFuente || null;
+        /* El sector de ESTA ficha, para que lo levantado en campo se filtre
+           contra su geometría y no contra la del análisis que esté en
+           pantalla. Va por `comoResultado`, que es la misma función con la
+           que el resto del informe lo reconstruye: una segunda forma de
+           armarlo se separaría a la tanda siguiente (v879). */
+        S.resultado = comoResultado(f);
+        S.radioM = f.radioM || S.radioM;
+        S.forma = f.forma || S.forma;
+        S.poligono = f.poligono || null;
+        S.centro = (f.centro && isFinite(f.centro.lat)) ? f.centro : S.centro;
         /* Por la misma función que lo arma en vivo —`rehacerUnion`— y no por
            una cuenta paralela: dos caminos calculando el mismo acuerdo es
            cómo se llega a que la ficha guardada diga un número y la viva
@@ -32048,12 +32092,20 @@ function donaHTML(datos, colorDe, nombreDe) {
                          areaSectorM2: f.areaM2 || 0, lote: f.lote,
                          pois: f.pois || [], hayCaminata: !!f.caminata }) : '') +
                    (f.campo ? bloqueCampo() : '') +
+                   /* El detalle de lo levantado, con el sector prestado
+                      arriba: qué especie es cada árbol, dónde está sembrado,
+                      de qué está hecho cada elemento y en qué estado está. Va
+                      pegado al bloque de campo, igual que en la ficha viva. */
+                   bloqueLevantado() +
                    bloqueSintesis(comoResultado(f));
         S.trazado = trzAntes; S.terreno = terAntes; S.clima = cliAntes; S.campo = cmpAntes;
         S.amenaza = amAntes;
         S.lote = loteAntes; S.terRejilla = rejAntes;
         S.intCurso = curAntes; S.intUnion = uniAntes; S.intangible = intAntes;
         S.indices = idxAntes; S.indicesPuestos = pusAntes; S.indicesFuente = fteAntes;
+        S.resultado = resAntes; S.radioM = radAntes; S.forma = forAntes;
+        S.poligono = polAntes; S.centro = cenAntes;
+        S.inundacion = inuAntes; S.caminata = camAntes2;
         return html;
       })() +
       bloqueSol(comoResultado(f).meta) +
@@ -32694,7 +32746,7 @@ function donaHTML(datos, colorDe, nombreDe) {
            de la v879, y ya se cobró en la v939 con un `llaveDeSector()` sin
            argumento que devolvía cadena vacía y no lo decía. */
         llaveSector: (function () {
-          try { return llaveDeSector(S.resultado && S.resultado.meta); } catch (e) { return ''; }
+          try { return llaveDelSectorActual(); } catch (e) { return ''; }
         })(),
         // Si está consultando. Sin esto, una prueba que ve «no pasó nada» no
         // puede distinguir un análisis que falló de otro que ni empezó.
@@ -32755,7 +32807,7 @@ function donaHTML(datos, colorDe, nombreDe) {
         })(),
         cupo: (function () {
           var cp;
-          try { cp = cupoDeCampo(llaveDeSector(S.resultado && S.resultado.meta)); }
+          try { cp = cupoDeCampo(llaveDelSectorActual()); }
           catch (e) { return null; }
           var st0 = (S.resultado && S.resultado.stats) || null;
           var base = { estadoCampo: cp.estado, hay: false,
@@ -32805,7 +32857,7 @@ function donaHTML(datos, colorDe, nombreDe) {
            tanda futura puede romper sin que se vea. */
         percepcion: (function () {
           try {
-            var ll = llaveDeSector(S.resultado && S.resultado.meta);
+            var ll = llaveDelSectorActual();
             var tc = tieneCampo(ll);
             return { huecos: PANELES_DE_PERCEPCION.slice(),
                      anotadas: (tc.percepcion || []).map(function (x) {
@@ -32841,17 +32893,17 @@ function donaHTML(datos, colorDe, nombreDe) {
            a calcular la llave por su cuenta — dos maneras de armar la misma
            cadena no divergen el día que se escriben (v879). */
         campoLlave: (function () {
-          try { return llaveDeSector(S.resultado && S.resultado.meta); }
+          try { return llaveDelSectorActual(); }
           catch (e) { return ''; }
         })(),
         corridaPost: !!(S.corridas && S.corridas.post),
         corridaAviso: S.corridaAviso || '',
         campoHay: (function () {
-          try { return tieneCampo(llaveDeSector(S.resultado && S.resultado.meta)).hay; }
+          try { return tieneCampo(llaveDelSectorActual()).hay; }
           catch (e) { return false; }
         })(),
         campoRazon: (function () {
-          try { return tieneCampo(llaveDeSector(S.resultado && S.resultado.meta)).razon; }
+          try { return tieneCampo(llaveDelSectorActual()).razon; }
           catch (e) { return ''; }
         })(),
         campoProcedencia: (S.resultado && S.resultado.campoProcedencia) || null,
@@ -32875,7 +32927,7 @@ function donaHTML(datos, colorDe, nombreDe) {
                    repartida: !!((c.campo && c.campo.quienes) || {}).repartida };
         })(),
         actividad: (function () {
-          try { return actividadDeCampo(llaveDeSector(S.resultado && S.resultado.meta)); }
+          try { return actividadDeCampo(llaveDelSectorActual()); }
           catch (e) { return null; }
         })(),
         /* La llave del sector y el último aviso de la pestaña. Los dos por la
@@ -32884,7 +32936,7 @@ function donaHTML(datos, colorDe, nombreDe) {
            un rechazo necesita leer lo que el rechazo dijo. Alcanzarlos por un
            lado sería reimplementar cómo se arman, que es la clase B. */
         llaveCampo: (function () {
-          try { return llaveDeSector(S.resultado && S.resultado.meta); } catch (e) { return ''; }
+          try { return llaveDelSectorActual(); } catch (e) { return ''; }
         })(),
         aviso: S.avisoPestana || '',
         pliegoNombresDobles: (function () {

@@ -1,4 +1,4 @@
-const URBIS_CACHE = 'urbis-v994-lo-que-el-catalogo-no-tenia';
+const URBIS_CACHE = 'urbis-v995-el-informe-archivado-mide-su-sector';
 const URBIS_ASSETS = [
   './',
   './index.html',
