@@ -6222,6 +6222,111 @@ console.log('\n  -- un error de GPS dice cuál de los tres es (v996) --');
   }
 }
 
+/* ── Un ACTO de gobierno declara su nivel (v999) ───────────────────────────
+   `hechosDelMandato` deja fuera del score lo que no es del gobierno nacional,
+   y eso solo puede funcionar si el nivel está escrito. La v941 lo decidió para
+   los casos de corrupción y la v971 lo aplicó a las entradas; lo que faltaba
+   era declararlo, y 197 de 212 no lo traían.
+
+   LA MEDICIÓN QUE CAMBIÓ EL ALCANCE, y por eso no se declararon las 197: el
+   campo solo tiene sentido en las entradas que registran un ACTO DE GOBIERNO,
+   que son las de `tipoMedicion: actividad`. Una cifra del país —la inflación,
+   la pobreza— o un hecho de otro actor —un juez, la JEP, Human Rights Watch,
+   un terremoto— no tiene nivel de gobierno, y escribirle `nacional` sería
+   declarar algo falso sobre 91 entradas para que un recuento llegara a cero.
+
+   Así que la exigencia va sobre las de `actividad` y falla CERRADO (v880): una
+   entrada nueva que registre un acto sin decir de qué nivel sale en rojo en su
+   primera composición. Sobre las demás no se exige nada —y tampoco se
+   prohíbe: el Decreto 1012 es un acto de gobierno de OTRO gobierno y lleva su
+   nivel con razón. */
+console.log('\n  -- un acto de gobierno declara su nivel (v999) --');
+{
+  /* Los dos registros, por la misma vara: toda regla que se aplica a un
+     gobierno se aplica a todos (principio 1 del pliego). */
+  const REGISTROS = ['assets/data/seguimiento-presidencial.json', 'assets/data/seguimiento-petro.json'];
+  const NIVELES = ['nacional', 'departamental', 'distrital', 'municipal'];
+  const actos = [], sinNivel = [], malNivel = [];
+  REGISTROS.forEach((ruta) => {
+    const d = JSON.parse(leer(ruta));
+    const quien = ruta.split('-').pop().replace('.json', '');
+    (d.entradas || []).forEach((e) => {
+      const n = String(e.nivelGobierno || '').trim();
+      if (n && NIVELES.indexOf(n) < 0) malNivel.push(quien + '/' + (e.fecha || '?') + ' «' + n + '»');
+      if (e.tipoMedicion !== 'actividad') return;
+      actos.push(e);
+      if (!n) sinNivel.push(quien + '/' + (e.fecha || '?'));
+    });
+  });
+
+  /* MATERIAL primero (v920): sin entradas que registren un acto, todo lo de
+     abajo pasaría por no tener nada que mirar. */
+  if (actos.length < 10) {
+    anotarSinMaterial('MATERIAL · hay entradas que registran un acto de gobierno',
+      actos.length + ' de tipoMedicion «actividad»');
+  } else {
+    comprobar('MATERIAL · hay entradas que registran un acto de gobierno',
+      true, actos.length + ' entradas de «actividad» en los dos registros');
+
+    comprobar('toda entrada que registra un acto de gobierno declara su nivel',
+      sinNivel.length === 0,
+      sinNivel.length === 0
+        ? 'las ' + actos.length + ' lo declaran: la puerta del score puede decidir sobre todas'
+        : sinNivel.length + ' sin nivel, las primeras: ' + sinNivel.slice(0, 4).join(' · ') +
+          ' — la puerta no puede dejar fuera un acto que no sea del gobierno nacional');
+
+    comprobar('y ningún nivel sale de la lista conocida',
+      malNivel.length === 0,
+      malNivel.length ? malNivel.slice(0, 4).join(' · ') : NIVELES.join(' | '));
+
+    /* Guarda contra pasarse (v879, v882, v890): a una cifra del país o a un
+       hecho de otro actor NO se le inventa un nivel. Sin esta, el arreglo
+       podría ser escribir `nacional` en las 212 y el recuento llegaría a cero
+       declarando algo falso sobre 91 de ellas. */
+    const noActos = [];
+    REGISTROS.forEach((ruta) => {
+      const d = JSON.parse(leer(ruta));
+      (d.entradas || []).forEach((e) => {
+        if (e.tipoMedicion === 'actividad') return;
+        if (String(e.nivelGobierno || '').trim()) noActos.push((e.fecha || '?') + ' · ' + e.tipoMedicion);
+      });
+    });
+    /* Uno se acepta y va con su nombre: el Decreto 1012 es un acto de gobierno
+       del gobierno ANTERIOR, declarado en la v958 para la simetría que el
+       pliego pide. Lo que la guarda impide es que se vuelva la costumbre. */
+    comprobar('y a lo que no es un acto de gobierno no se le inventa un nivel',
+      noActos.length <= 1,
+      noActos.length <= 1
+        ? (noActos.length ? 'uno solo, y es un acto de otro gobierno: ' + noActos[0]
+                          : 'ninguna cifra del país lleva nivel de gobierno')
+        : noActos.length + ' lo llevan sin ser actos: ' + noActos.slice(0, 4).join(' · ') +
+          ' — una cifra del país no tiene nivel de gobierno');
+
+    /* Y la nota del registro tiene que decirlo, que es la causa que la v998
+       encontró para el rol: el campo existe, la guarda existe, y la
+       instrucción que lee quien escribe una entrada no lo menciona. */
+    const sinNota = REGISTROS.filter((ruta) =>
+      String(JSON.parse(leer(ruta))._comentario || '').indexOf('EL NIVEL DE UN ACTO DE GOBIERNO') < 0);
+    comprobar('y la nota del registro dice cuándo se declara y cuándo no',
+      sinNota.length === 0,
+      sinNota.length === 0
+        ? 'los ' + REGISTROS.length + ' explican la regla a quien escribe'
+        : 'sin explicarlo: ' + sinNota.join(' · ') + ' — una entrada nueva nace sin nivel');
+
+    /* Guarda de la guarda (v878): si la puerta del score dejara de leer el
+       campo, todo lo de arriba seguiría en verde sobre un dato que ya no
+       decide nada. */
+    const j70n = soloCodigo(leer('js/70-seguimiento.js'));
+    const iH = j70n.indexOf('function hechosDelMandato');
+    const cH = iH >= 0 ? j70n.slice(iH, j70n.indexOf('\n  }', iH)) : '';
+    const lee = /e\.nivelGobierno && e\.nivelGobierno !== 'nacional'/.test(cH);
+    comprobar('y la puerta del score sigue leyendo el nivel',
+      lee,
+      lee ? 'hechosDelMandato deja fuera lo que no es nacional'
+          : 'dejó de leerlo: el campo estaría declarado y no decidiría nada');
+  }
+}
+
 /* ── Una lista de prioridades también se queda vieja (v997) ────────────────
    La lista del principio de CLAUDE.md es lo PRIMERO que lee cualquier sesión y
    decide qué se hace, así que una que envejece manda a rehacer trabajo hecho.
@@ -6268,10 +6373,12 @@ console.log('\n  -- una lista de prioridades también se queda vieja (v997) --')
       });
       return { hecho: sin.length === 0, cuanto: sin.length + ' sin fuente del acto' };
     },
-    'nivel-declarado': (m) => {
-      const sin = m.ents.filter(e => !e.nivelGobierno);
-      return { hecho: sin.length === 0, cuanto: sin.length + ' de ' + m.ents.length + ' sin nivel' };
-    },
+    /* El nivel de gobierno salió de esta lista en la v999, y su medición con
+       él: lo que queda de aquel renglón no es un pendiente sino un INVARIANTE
+       —toda entrada que registra un acto declara su nivel— y vive en su propia
+       comprobación, más arriba. Una medición de esta tabla mide algo que
+       todavía falta; una que mide algo que ya no falta es la que esta misma
+       guarda denuncia dos renglones más abajo. */
     'sin-documentar-cero': (m) => {
       return { hecho: m.pend.length === 0, cuanto: m.pend.length + ' sin documentar' };
     },

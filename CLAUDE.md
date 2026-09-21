@@ -19,22 +19,18 @@ prioridades también se queda vieja (v997)»**, más abajo.
 Medido el 21 de septiembre de 2026 sobre los dos registros —180 entradas del
 gobierno actual y 32 de Petro—:
 
-1. **Declarar el `nivelGobierno` de las entradas.** 197 de 212 no lo traen, y
-   sin él la puerta del score (v941, v971) no puede dejar fuera un acto que no
-   es del gobierno nacional. Los 13 **casos** sí lo tienen todos.
-   `hecho cuando: nivel-declarado`
-2. **Documentar las 19 entradas del 4 al 17 de agosto**, que se escribieron sin
+1. **Documentar las 19 entradas del 4 al 17 de agosto**, que se escribieron sin
    citar fuente. No están «sin clasificar»: están SIN DOCUMENTAR, y su lista
    —con qué le falta a cada una— ya está escrita dentro del propio registro,
    en `_pendientesFuente`. `hecho cuando: sin-documentar-cero`
-3. **Conseguir la fuente del ACTO de las seis entradas `sin-acto`.** La v998
+2. **Conseguir la fuente del ACTO de las seis entradas `sin-acto`.** La v998
    declaró el rol de las 562 fuentes y seis entradas quedaron sin ninguna que
    documente su acto: la del Decreto 1012 y las emisoras de paz en el registro
    actual, y cinco de Petro —la entrega de la Presidencia, las dos sanciones de
    reforma, la posesión de 2022 y la denuncia de la exfiscal Laborde—. No es un
    fallo y por eso no está en rojo: es el hallazgo que la guarda vino a
    producir. `hecho cuando: sin-acto-cero`
-4. **Decidir la identidad de objeto de las 8 contradicciones documentadas.**
+3. **Decidir la identidad de objeto de las 8 contradicciones documentadas.**
    Es lo único que bloquea el veredicto de fiabilidad (v972), y **no es de esta
    sesión**: leer si lo prometido y lo hecho son el mismo objeto cambia en
    público el juicio sobre una persona real, y lo decide quien firma el módulo.
@@ -53,7 +49,11 @@ registros— y la pantalla del módulo presidencial la implementó la v971, con 
 diecisiete gráficos. Las dos seguían pedidas acá hasta la v996. Y el **rol de
 las fuentes**, que era el renglón 1 de esta misma lista, lo declaró la v998
 sobre las 212 entradas y las 562 fuentes: lo denunció la guarda que la v997
-acababa de escribir, en la primera tanda que la puso a prueba.
+acababa de escribir, en la primera tanda que la puso a prueba. Y el
+**`nivelGobierno`**, que era el renglón siguiente, lo declaró la v999 sobre las
+120 entradas que registran un acto de gobierno — que es el denominador honesto:
+a una cifra del país o a un hecho de otro actor no se le puede declarar un
+nivel sin mentir, y el renglón pedía las 212.
 
 Lo demás del módulo presidencial —los cuatro criterios sin validar, la media
 histórica del eje B, la fuente del eje C— pide archivo y fuente, no código, y
@@ -16314,6 +16314,112 @@ La ficha completa, en la sección de indicadores:
 > fuente que documenta el acto.
 
 Contra la v997, que decía 5 de 6 y nombraba al Decreto 1171.
+
+## Un acto de gobierno declara su nivel (v999)
+
+El renglón siguiente de la lista, y la medición le cambió el alcance antes de
+escribir una sola declaración — que es la regla de la v916 cobrándose sobre un
+renglón que yo mismo había escrito dos tandas antes.
+
+    v998   197 de 212 entradas sin nivel · la puerta del score no puede decidir
+    v999   las 120 que registran un ACTO lo declaran · las otras 92 no, y eso es lo correcto
+
+### El campo no se le puede declarar a todo, y el renglón pedía las 212
+
+`hechosDelMandato` deja fuera del score lo que no es del gobierno nacional.
+Para que eso funcione el nivel tiene que estar escrito, y 197 de 212 no lo
+traían: eso es lo que decía el renglón.
+
+Al ir a declararlas apareció que **el campo solo tiene sentido en las entradas
+que registran un ACTO DE GOBIERNO.** La inflación de agosto, la pobreza
+multidimensional, un terremoto, un fallo de un juzgado, un informe de Human
+Rights Watch: nada de eso es una decisión de un gobierno a ningún nivel, y
+escribirle `nacional` sería declarar algo falso sobre 92 entradas **para que un
+recuento llegara a cero**.
+
+Y el discriminante ya estaba declarado en las 212: **`tipoMedicion`**, de la
+v961. `actividad` son los actos del Gobierno; `resultado` son magnitudes del
+país; `contexto-estructural` son los hechos cuyo sujeto no es el Gobierno
+nacional. Son 120, 32 y 60.
+
+Es la clase A otra vez —el discriminante al lado y sin leer— con la vuelta de
+que esta vez no se leyó mal una cifra: se habría escrito una.
+
+### Las 120, leídas una por una
+
+Todas resultaron **nacionales**, y varias son exactamente el caso que la v941
+dejó advertido: el Consejo de Seguridad en Cartagena, la sinagoga de
+Barranquilla, los empresarios en Quibdó, la posesión de los magistrados del CNE
+en Barranquilla. **El nivel es el del ACTO, no el del sitio donde ocurrió**, y
+deducirlo del título habría sacado del score una veintena de actos nacionales.
+
+Dos que pedían mirar dos veces y quedaron `nacional` con su razón: la junta de
+**Ecopetrol** eligiendo presidente —una sociedad de economía mixta con control
+estatal, y el acto lo hace un órgano que el Gobierno controla— y **«Colombia
+declara calamidad pública en el Tolima»**, donde el sujeto es el Gobierno
+nacional aunque el territorio sea un departamento.
+
+#### Y las cifras publicadas no se movieron
+
+Medido con la sonda antes y después: **171 hechos, 380 por 100 días**, idéntico.
+Tenía que ser así y conviene decir por qué: sin declarar, la entrada SIGUE
+pesando (v941, y es deliberado — un valor por omisión sería una afirmación que
+nadie escribió). Lo que cambia no es ninguna cifra: es que **la puerta ahora
+puede decidir**, y que una entrada nueva que registre un acto municipal sale en
+rojo en vez de contar en silencio.
+
+### La guarda, y la que impide el atajo
+
+Falla **cerrado** sobre las de `actividad` (v880), y al lado va la que de
+verdad cuesta: **a lo que no es un acto de gobierno no se le inventa un nivel.**
+Sin ella, el arreglo barato sería escribir `nacional` en las 212 y el recuento
+llegaría a cero declarando algo falso sobre 92 — que es exactamente lo que esta
+tanda se negó a hacer.
+
+Tiene **una excepción, con su nombre**: el Decreto 1012 es un acto de gobierno
+del gobierno ANTERIOR, declarado en la v958 para la simetría que el pliego
+pide. Lo que la guarda impide es que eso se vuelva la costumbre.
+
+Más la nota en los dos registros —la causa que la v998 encontró para el rol: el
+campo existe, la guarda existe, y la instrucción que lee quien escribe una
+entrada no lo menciona— y la guarda de la guarda: que `hechosDelMandato` siga
+leyendo el campo. Sin ella, el nivel estaría declarado y no decidiría nada.
+
+### La lista se corrigió en vez de cumplirse a medias
+
+El renglón pedía «197 de 212», que es un objetivo inalcanzable sin mentir. Sale
+de la lista con su párrafo de por qué, y su medición sale con él —**y eso lo
+denunció la propia guarda de la v997**, que tiene una comprobación para una
+medición que se queda sin renglón:
+
+```
+✗ y ninguna medición se quedó sin su renglón
+    — sin renglón: nivel-de-actos — el renglón se sacó y la medición se quedó
+```
+
+La distinción que quedó escrita al retirarla: **una medición de esa tabla mide
+algo que todavía FALTA; lo que queda cuando ya no falta es un INVARIANTE**, y
+un invariante vive en su propia comprobación, no en la lista de prioridades.
+
+### Demostrado contra la v998
+
+Cinco en rojo, contra una copia guardada en `/tmp` y con una inyección fiel por
+aserción (v993). La primera es el estado real de la v998:
+
+```
+✗ toda entrada que registra un acto de gobierno declara su nivel  — 101 sin nivel
+✗ y a lo que no es un acto de gobierno no se le inventa un nivel
+    — 23 lo llevan sin ser actos — una cifra del país no tiene nivel de gobierno
+✗ y ningún nivel sale de la lista conocida  — «Nacional»
+✗ y la nota del registro dice cuándo se declara y cuándo no  — sin explicarlo
+✗ y la puerta del score sigue leyendo el nivel  — dejó de leerlo
+```
+
+### Lo que queda de la lista, y son tres
+
+Documentar las 19 entradas sin fuente, conseguir la fuente del acto de las seis
+`sin-acto`, y decidir la identidad de objeto de las ocho contradicciones — esta
+última, explícitamente de quien firma el módulo.
 
 ## La lista viva: lo que al pliego educativo todavía le falta (v866)
 
