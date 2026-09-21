@@ -7256,6 +7256,121 @@ console.log('\n  -- una lista de prioridades también se queda vieja (v997) --')
   }
 }
 
+console.log('\n  -- un dibujo no se queda mas chico que su pie (v1010) --');
+{
+  const j68 = leer('js/68-procity-reconocimiento.js');
+  const c72 = leer('css/72-edu-diseno.css');
+
+  /* El trozo de cada funcion, para medir DENTRO y no en el archivo entero
+     (v854): `getComputedStyle` sale cuarenta veces en js/68 y encontrarlo
+     suelto no dice que lo use ESTA cuenta. */
+  const trozo = (desde, hasta) => {
+    const i = j68.indexOf(desde);
+    if (i < 0) return '';
+    const j = j68.indexOf(hasta, i + desde.length);
+    return j < 0 ? j68.slice(i) : j68.slice(i, j);
+  };
+  const cuenta = trozo('function anchoQueLeeElDibujo(', '\n  function ajustarDibujos(');
+  const pase  = trozo('function ajustarDibujos(', '\n  function pintar(');
+
+  const hayPie = /pcr-dibujo-pie/.test(c72) && /pcr-dibujo-pie/.test(j68);
+  if (!hayPie || !cuenta || !pase) {
+    anotarSinMaterial('MATERIAL - la ficha pinta dibujos con su pie, y el ajuste existe',
+      'sin pie declarado o sin la cuenta: lo de abajo no tendria que medir');
+  } else {
+    comprobar('MATERIAL - la ficha pinta dibujos con su pie, y el ajuste existe',
+      true, 'el pie esta en la hoja de estilo y en el HTML, y las dos funciones estan escritas');
+
+    /* 1 - el piso sale del PIE, medido, y no de un numero escrito. Un piso
+       traido de otro modulo seria el numero a ojo de la v869, y uno escrito
+       en la hoja de estilo se queda viejo en silencio el dia que alguien
+       toque un font-size de js/74 (clase B). */
+    const delPie = /getComputedStyle\(pie\)\.fontSize/.test(cuenta);
+    const aOjo = /(>=|<=|<|>)\s*1[0-9](\.\d+)?\b/.test(cuenta) ||
+                 /piso\s*=\s*\d/.test(cuenta);
+    comprobar('el piso sale del pie del dibujo, medido, no de un numero escrito',
+      delPie && !aOjo,
+      delPie && !aOjo ? 'lee getComputedStyle(pie).fontSize y no compara contra ningun piso escrito'
+        : (!delPie ? 'no mide el pie: el piso vendria de otra parte'
+                   : 'compara contra un piso escrito a mano dentro de la cuenta'));
+
+    /* 2 - el pie se busca dentro de la caja del dibujo. Subiendo por el
+       documento se encuentra el pie de la figura de al lado, que explica
+       otra cosa: es la trampa de la v854, y la sonda la produjo de verdad
+       -el corte de calle encontraba el pie de la carta solar dos niveles
+       arriba-. */
+    const dentro = /closest\(\s*'[^']*pcr-dibujo[^']*'\s*\)/.test(cuenta) &&
+                   /caja\s*\?\s*caja\.querySelector\('\.pcr-dibujo-pie'\)/.test(cuenta);
+    comprobar('y se busca DENTRO de la caja del dibujo, no en el documento',
+      dentro,
+      dentro ? 'sube con closest hasta la caja y busca el pie ahi dentro'
+             : 'busca el pie fuera de la caja: encontraria el de la figura de al lado');
+
+    /* 3 - el rotulo mas chico se lee del atributo Y de la clase. js/74 los
+       escribe como atributo y la seccion de calle como clase css: mirando
+       solo una de las dos, la mitad de los dibujos quedaria sin medir y el
+       ajuste pasaria por no tener nada que ajustar. */
+    const dosVias = /getAttribute\('font-size'\)/.test(cuenta) &&
+                    /getComputedStyle\(ts\[i\]\)\.fontSize/.test(cuenta);
+    comprobar('y el rotulo mas chico se lee del atributo Y de la clase',
+      dosVias,
+      dosVias ? 'las dos vias, que es como js/74 y la seccion de calle los escriben'
+              : 'solo una via: los dibujos de la otra quedarian sin medir');
+
+    /* 4 - un dibujo con su pie AL LADO no se estira. Lo dice la propia hoja
+       de estilo: no puede crecer mas que su mitad de la fila o empuja al pie
+       fuera de la caja. Se reconoce por el display de la caja y no por el
+       nombre de la clase, para que una maquetacion nueva en fila lo herede. */
+    const fila = /flex/.test(cuenta) && /flexDirection/.test(cuenta) &&
+                 !/pcr-dibujo-fila/.test(cuenta);
+    comprobar('y un dibujo con el pie AL LADO no se estira',
+      fila,
+      fila ? 'lo reconoce por el display de su caja, no por el nombre de la clase'
+           : (/pcr-dibujo-fila/.test(cuenta)
+              ? 'lo reconoce por el nombre de la clase: una fila nueva no lo heredaria'
+              : 'no mira la maquetacion: estirarlo empujaria el pie fuera de la caja'));
+
+    /* 5 - el pase corre al final de pintar, con el DOM ya puesto. El ancho
+       que un rotulo necesita se MIDE sobre lo pintado; deducirlo del HTML es
+       lo que la v990 ya pago en el modulo presidencial. */
+    const iRep = j68.indexOf('reponerBorrador();\n    /* Y los dibujos');
+    comprobar('y el pase corre al final de pintar, con el DOM ya puesto',
+      iRep > 0 && /ajustarDibujos\(h\);/.test(j68),
+      iRep > 0 ? 'va detras de reponerBorrador, que es donde el DOM ya esta'
+               : 'no esta enganchado al final de pintar: mediria sobre lo de antes');
+
+    /* 6 - la exencion se cuenta. Un dibujo sin pie propio no tiene de donde
+       sacar su piso y NO se le inventa uno; lo que no puede pasar es que se
+       salte en silencio, que se lee igual que un aprobado (v966). */
+    const cola68 = j68.slice(j68.indexOf('estado: function'));
+    const cuentaExen = /sinPie\+\+/.test(pase) && /enFila\+\+/.test(pase) &&
+                       /S\.dibujosSinPie\s*=/.test(pase) && /S\.dibujosEnFila\s*=/.test(pase) &&
+                       /dibujosSinPie/.test(cola68) && /dibujosEnFila/.test(cola68);
+    comprobar('y las dos exenciones se cuentan APARTE, no se saltan en silencio',
+      cuentaExen,
+      cuentaExen ? 'sin pie y en fila van por separado y los dos se exponen: a uno hay que escribirle un pie, al otro no le falta nada'
+                 : 'se saltan sin contarse, o las dos en la misma cifra: se leerian igual que un ajuste');
+
+    /* Y la cuenta devuelve un objeto con su razon, nunca un cero pelado: con
+       un solo numero, «no tiene pie» y «esta en una fila» se juntan en uno y
+       el pase no puede contarlas aparte (v876). */
+    const conRazon = /razon:\s*'sin-pie'/.test(cuenta) && /razon:\s*'en-fila'/.test(cuenta) &&
+                     /r\.razon === 'en-fila'/.test(pase);
+    comprobar('y la cuenta devuelve su razon, no un cero pelado',
+      conRazon,
+      conRazon ? 'devuelve { ancho, razon } y el pase reparte por ella'
+               : 'devuelve un numero: las dos exenciones se leerian como una sola');
+
+    /* La guarda de la guarda: si el pase dejara de llamar a la cuenta, todo
+       lo de arriba seguiria en verde sobre una funcion que nadie usa (v878). */
+    comprobar('y el pase sigue sacando el ancho de esa cuenta',
+      /anchoQueLeeElDibujo\(sv\)/.test(pase),
+      /anchoQueLeeElDibujo\(sv\)/.test(pase)
+        ? 'ajustarDibujos lo pide ahi, asi que lo de arriba vigila lo que corre'
+        : 'dejo de pedirlo: la cuenta quedaria sin usar y las comprobaciones de arriba, en verde sobre nada');
+  }
+}
+
 /* Las dos cuentas van APARTE porque piden cosas distintas: una fallada hay
    que arreglarla, una sin material hay que mirarla —o se quedó sin él porque
    el registro mejoró, o porque la función dejó de ver lo que medía—. Sumarlas

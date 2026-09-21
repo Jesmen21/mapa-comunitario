@@ -17907,6 +17907,156 @@ que es lo que tiene que hacer: sin la función, ni mide, ni rebota, ni se proteg
   Si algún día otra superficie mide para dibujar, hereda el problema y no el
   arreglo. `pendiente`
 
+## Un dibujo no se queda más chico que su pie (v1010)
+
+Salió **mirando el papel** —el método que encontró los defectos de la v874, la
+v882, la v885, la v887, la v974, la v978, la v985 y la v987— sobre una
+superficie que nadie había medido: los dibujos de `js/74` **en la ficha de
+pantalla**, no en la lámina.
+
+    v1009   pcr-carta sale a 240 px en una caja de 358 · rótulos de 8 px · y a 240 en una de 736
+    v1010   sale a 336 · rótulos de 11,2 px · y a 355 en la de 736
+
+### La medición, antes de tocar nada
+
+`js/74` escribe sus rótulos en **unidades del dibujo** —`font-size="8"`— y eso
+está bien: son medidas de papel, y la lámina las estira o las encoge con `--k`.
+En la ficha de pantalla no hay `--k`: el SVG sale con el `width="240"` que trae
+escrito, así que **una unidad es un píxel y los ocho se imprimen a ocho**.
+
+Medido con la sonda, reanudando una ficha guardada y recorriendo las ocho
+pestañas:
+
+| a 390 px de ventana | sale a | blanco a cada lado | rótulo más chico |
+|---|---|---|---|
+| `pcr-carta` (carta solar) | 240 px | **59 px** | **8 px** |
+| `pcr-rosa-rumbos` (rosa de vientos) | 200 px | **79 px** | **10 px** |
+| `pcr-seccion` (la calle) | 342 px | 8 px | 8,5 px |
+| el **pie** que los explica, dos centímetros debajo | | | **11,84 px** |
+
+Y a 768 px los dos primeros **salen igual de grandes**, con 268 px de blanco a
+cada lado: `.pcr-dibujo svg{ max-width:100% }` solo los deja encoger, nunca
+crecer. El tercero sí crece —tiene `width:100%`— y a 768 sus rótulos llegan a
+18 px. O sea que el mecanismo correcto ya estaba escrito en el mismo módulo, y
+dos de los tres dibujos no lo usaban.
+
+### El piso es el PIE, y por eso no es un número traído de otro módulo
+
+La tentación era el piso de 13 px que el módulo presidencial tiene desde la
+v791 y que la v990 le aplicó a sus gráficos. Traerlo acá sería un número que
+nadie puede defender en esta hoja —el error del techo de Overpass de la v869—.
+La vara sale de la propia hoja de estilo, que ya lo dice con todas las letras:
+
+> «Un dibujo sin pie es un adorno: **el pie es el que dice qué se está
+> mirando** y es lo que se lee después de que el ojo se paró en la figura.»
+
+Así que la regla, con sus dos términos medidos:
+
+> **El rótulo más chico de un dibujo no se lee más chico que el pie que lo
+> explica.**
+
+Los dos están en la misma caja, a un palmo, y uno es la explicación del otro.
+Si el pie se lee y los rótulos no, el dibujo es decoración.
+
+El dibujo crece hasta `ancho = unidades × pie ÷ rótulo más chico` y ahí para.
+Para abajo lo limita la caja —a 390 px la carta llega a 336 y se queda en 11,2,
+que es lo que el teléfono da—; **para arriba lo limita la cuenta**, y esa mitad
+hace falta: sin ella, en un escritorio la carta saldría con rótulos de 38 px,
+más grandes que cualquier titular, que es el defecto de la v1009 al revés.
+
+### Se mide sobre el DOM, no se escribe en la hoja de estilo
+
+Los dos anchos de hoy son 355 y 237 px. Escribirlos como `max-width` en
+`css/72` sería la **clase B**: el día que alguien toque un `font-size` de
+`js/74`, el número se queda viejo **en silencio**. Calculado al pintar, sale de
+la figura misma, y **un dibujo nuevo lo hereda sin que su autor se acuerde**
+(v867).
+
+Va al final de `pintar()`, junto a `reponerBorrador()` y por la misma razón: el
+ancho que un rótulo necesita se mide sobre lo pintado.
+
+### Lo que NO toca, y las dos exenciones que se cuentan aparte
+
+* **La lámina.** Se compone como un documento aparte, con su propia hoja de
+  estilo y sus milímetros de papel (§21). Por el pase solo pasa lo que `pintar`
+  deja en `#pcr-hoja`.
+* **Un dibujo sin pie propio.** No hay de dónde sacar el piso y **no se
+  inventa**. El pie se busca con `closest` dentro de la caja del dibujo y sin
+  salir de ella — y eso no es teórico: la primera sonda subía dos niveles y le
+  daba al corte de calle **el pie de la carta solar**, que explica otra figura.
+  Es la trampa de la v854, producida de verdad.
+* **Un dibujo con el pie AL LADO.** Ahí el ancho ya lo decidió la maquetación
+  —la propia hoja de estilo lo dice: «no puede crecer más que su mitad de la
+  fila o empuja al pie fuera de la caja»— y estirarlo rompería justo eso.
+
+Las dos últimas **se cuentan por separado y se exponen** en `estado()`, porque
+piden cosas distintas: a una caja hay que escribirle un pie, y a la otra no le
+falta nada. Juntarlas en una cifra mandaría a revisar lo que está bien, que es
+la distinción de la v899. Por eso la cuenta devuelve `{ ancho, razon }` y nunca
+un cero pelado (v876).
+
+#### La rama de la fila no tiene material, y se midió contra un caso fabricado
+
+Hoy ningún dibujo con rótulos vive en una caja en fila: la única que hay —la
+trama de cien cuadraditos— **no lleva texto**, así que el filtro la descarta
+antes y la rama no se ejercita. Es el agujero que este proyecto lleva
+veintiocho tandas persiguiendo, y acá está en código vivo y no en una guarda.
+
+Se ejercitó **fabricando el caso**, que es la regla de la v970: se le añadió un
+rótulo a la trama en `js/74`, se corrió la sonda y se midió el resultado —la
+trama se queda en sus 112 px, sin `max-width`, y el pie de 212 px sigue dentro
+de su caja—, y después se devolvió `js/74`. La rama se reconoce por el
+`display` de la caja y **no por el nombre de la clase**, para que una
+maquetación nueva en fila la herede igual.
+
+### Lo que sigue midiendo mal, y no se toca acá
+
+**`pcr-seccion` —el corte de la calle— saca sus rótulos a 8,5 px a 390 px de
+ventana**, por debajo del pie. Y no lo arregla este pase: ya ocupa el 100 % del
+ancho, así que **no hay a dónde crecer**. Lo que le falta es lo otro que la
+v990 describió —que la geometría del dibujo suponga otro tamaño de letra— y eso
+descuadra cotas e interlíneas, que es su propia tanda con su propia medición.
+Además **no tiene pie propio**: por la vara de esta versión, primero hay que
+escribirle uno. `pendiente`
+
+### Demostrado contra la v1009
+
+Nueve aserciones, cada una con su propia inyección fiel (v993), contra una
+copia guardada en `/tmp` y no con `git checkout --` sobre trabajo sin confirmar
+(v973):
+
+```
+? MATERIAL · las dos funciones no existen (el estado de la v1009)
+✗ el piso sale del pie del dibujo, medido, no de un numero escrito
+✗ y se busca DENTRO de la caja del dibujo, no en el documento
+✗ y el rotulo mas chico se lee del atributo Y de la clase
+✗ y un dibujo con el pie AL LADO no se estira
+✗ y el pase corre al final de pintar, con el DOM ya puesto
+✗ y las dos exenciones se cuentan APARTE, no se saltan en silencio
+✗ y la cuenta devuelve su razon, no un cero pelado
+✗ y el pase sigue sacando el ancho de esa cuenta
+```
+
+La primera es la de MATERIAL y sale con `?` —no en rojo— porque una guarda sin
+material se mira, no se arregla (v970). Y una sola inyección pone **dos** en
+rojo, que es correcto y conviene decirlo: quitarle al pase la rama de la fila
+se lleva por delante lo que la otra mide.
+
+### Lo que NO se pudo correr
+
+**Ninguna suite de navegador**, por lo mismo que la v973 a la v1009: este
+contenedor no tiene `../urbis-motor` ni el `node_modules` del banco de pruebas.
+Corrió `revisar.js` entero con sus nueve comprobaciones nuevas, y se midió el
+papel con la sonda —reanudando una ficha guardada, recorriendo las ocho
+pestañas y leyendo el `viewBox`, el ancho impreso y el `font-size` de cada
+rótulo a 390, 420, 768 y 1.200 px—, que es lo que encontró las dos cosas que no
+se veían leyendo: que `max-width:100%` solo encoge, y que el pie de la caja de
+al lado se deja encontrar.
+
+Las aserciones que corresponderían a esto en una suite de navegador —que
+`dibujosAjustados` sea 2 y `dibujosSinPie` 1, y que ningún rótulo baje del pie
+cuando hay sitio— quedan pendientes de un contenedor con el banco de pruebas.
+
 ## La lista viva: lo que al pliego educativo todavía le falta (v866)
 
 Esta lista se quedó vieja **cinco veces**. Cuatro dentro de la hoja —la

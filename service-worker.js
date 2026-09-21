@@ -1,4 +1,4 @@
-const URBIS_CACHE = 'urbis-v1009-girar-vuelve-a-medir';
+const URBIS_CACHE = 'urbis-v1010-el-dibujo-y-su-pie';
 const URBIS_ASSETS = [
   './',
   './index.html',

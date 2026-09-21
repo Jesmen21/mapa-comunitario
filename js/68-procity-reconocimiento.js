@@ -14458,6 +14458,109 @@ function donaHTML(datos, colorDe, nombreDe) {
       '</div>';
   }
 
+  /* ── UN DIBUJO NO SE QUEDA MÁS CHICO QUE SU PROPIO PIE (v1010) ────────
+     `js/74` escribe sus rótulos en UNIDADES DEL DIBUJO —`font-size="8"`— y
+     eso está bien: son medidas de papel, y la lámina las estira o las encoge
+     con `--k`. En la ficha de pantalla no hay `--k`: el SVG sale con el
+     `width="240"` que trae escrito, así que una unidad es un píxel y los
+     ocho se imprimen a ocho.
+
+     Medido a 390 px de ventana, dentro de una caja de 358:
+
+        pcr-carta          sale a 240 px · 59 px de blanco a cada lado · 8 px
+        pcr-rosa-rumbos    sale a 200 px · 79 px de blanco a cada lado · 10 px
+        el pie que los explica, dos centímetros debajo             · 11,84 px
+
+     y a 768 px de ventana **salen igual de grandes**, con 268 px de blanco a
+     cada lado: `max-width:100%` solo los deja encoger, nunca crecer.
+
+     La regla, y sus dos términos se MIDEN, no se ponen a ojo (v869):
+
+       > el rótulo más chico de un dibujo no se lee más chico que el pie que
+       > lo explica.
+
+     El pie es la vara porque es el texto que el ojo lee justo después de la
+     figura —lo dice la propia hoja de estilo: «un dibujo sin pie es un
+     adorno»— y porque los dos están en la misma caja, a un palmo. Un piso
+     traído de otro módulo sería un número que nadie puede defender acá.
+
+     Así que el dibujo crece hasta `ancho = unidades × pie / rótulo más
+     chico` y ahí para. Para abajo lo limita la caja; para arriba, la cuenta
+     —sin ella, en un escritorio de 1.200 la carta saldría con rótulos de 38
+     px, más grandes que cualquier titular, que es el defecto de la v1009 al
+     revés—.
+
+     Se hace al pintar y sobre el DOM, no en la hoja de estilo con dos
+     anchos escritos: un `max-width:317px` se queda viejo en silencio el día
+     que alguien toque un `font-size` de `js/74` —la clase B—, y un dibujo
+     nuevo lo hereda sin que su autor se acuerde (v867).
+
+     Lo que NO toca, y por qué:
+     · la LÁMINA, que se compone como un documento aparte con su propia hoja
+       de estilo y sus milímetros de papel (§21). Acá solo pasa lo que
+       `pintar` deja en `#pcr-hoja`;
+     · un dibujo SIN pie propio: no hay de dónde sacar el piso y no se
+       inventa. Se cuenta APARTE del que está en fila, porque piden cosas
+       distintas —a uno hay que escribirle un pie, al otro no le falta
+       nada—, que es la distinción de la v899;
+     · un dibujo en FILA con su pie al lado: ahí el ancho ya lo decidió la
+       maquetación —«no puede crecer más que su mitad de la fila o empuja al
+       pie fuera de la caja»— y estirarlo rompería justo eso. Se reconoce por
+       el `display:flex` en fila de su caja, no por el nombre de la clase, así
+       que una maquetación nueva en fila lo hereda igual. */
+  /* Devuelve SIEMPRE un objeto con su razón y nunca un cero pelado: «no
+     tiene pie» y «está en una fila» piden cosas distintas —la primera es una
+     caja a la que hay que escribirle su pie, la segunda es una maquetación
+     que ya decidió el ancho— y un mismo número las juntaría en una (v876). */
+  function anchoQueLeeElDibujo(sv) {
+    var vb = String(sv.getAttribute('viewBox') || '').split(/[\s,]+/);
+    var unidades = parseFloat(vb[2]);
+    if (!(unidades > 0)) return { ancho: 0, razon: 'sin-viewbox' };
+    /* El pie de ESTE dibujo, buscado dentro de su caja y sin salir de ella:
+       el de la caja de al lado explica otra figura, y medir el documento
+       entero es la trampa de la v854. */
+    var caja = sv.closest ? sv.closest('.pcr-dibujo, .pcr-corte-caja') : null;
+    var pie = caja ? caja.querySelector('.pcr-dibujo-pie') : null;
+    if (!pie) return { ancho: 0, razon: 'sin-pie' };
+    var cc = getComputedStyle(caja);
+    if (/flex/.test(cc.display) && /^row/.test(cc.flexDirection)) {
+      return { ancho: 0, razon: 'en-fila' };
+    }
+    var piePx = parseFloat(getComputedStyle(pie).fontSize);
+    if (!(piePx > 0)) return { ancho: 0, razon: 'sin-pie' };
+    /* El rótulo más chico, venga del atributo o de una clase: dentro de un
+       `viewBox` los dos están en unidades del dibujo y se comparan igual. */
+    var menor = Infinity, ts = sv.querySelectorAll('text');
+    for (var i = 0; i < ts.length; i++) {
+      var u = parseFloat(ts[i].getAttribute('font-size'));
+      if (!(u > 0)) u = parseFloat(getComputedStyle(ts[i]).fontSize);
+      if (u > 0 && u < menor) menor = u;
+    }
+    if (!(menor < Infinity)) return { ancho: 0, razon: 'sin-rotulos' };
+    return { ancho: Math.round(unidades * piePx / menor), razon: 'ok' };
+  }
+
+  function ajustarDibujos(raiz) {
+    var n = 0, sinPie = 0, enFila = 0;
+    try {
+      var svs = raiz ? raiz.querySelectorAll('svg[viewBox]') : [];
+      for (var i = 0; i < svs.length; i++) {
+        var sv = svs[i];
+        if (!sv.querySelector('text')) continue;
+        var r = anchoQueLeeElDibujo(sv);
+        if (r.razon === 'en-fila') { enFila++; continue; }
+        if (!r.ancho) { sinPie++; continue; }
+        sv.style.width = '100%';
+        sv.style.height = 'auto';
+        sv.style.maxWidth = r.ancho + 'px';
+        n++;
+      }
+    } catch (e) { /* un ajuste de dibujo no puede costar la ficha (v870) */ }
+    S.dibujosAjustados = n;
+    S.dibujosSinPie = sinPie;
+    S.dibujosEnFila = enFila;
+  }
+
   function pintar() {
     var h = hoja();
     // Cada repintado es un instante nuevo: lo que se calculó en el anterior
@@ -14579,6 +14682,9 @@ function donaHTML(datos, colorDe, nombreDe) {
     /* Y lo último: lo que quedó a medio teclear en una puerta de campo vuelve
        a su sitio (v954). Va al final porque necesita el DOM ya puesto. */
     reponerBorrador();
+    /* Y los dibujos, por la misma razón: el ancho que un rótulo necesita se
+       mide sobre el DOM ya pintado, no se deduce del HTML (v1010). */
+    ajustarDibujos(h);
   }
 
   function htmlEncogidaCalor() {
@@ -32740,6 +32846,12 @@ function donaHTML(datos, colorDe, nombreDe) {
         vertices: S.poligono ? S.poligono.length : 0,
         areaM2: Math.round(areaDelPoligono()),
         hay: !!S.resultado,
+        /* Cuántos dibujos de la ficha quedaron con su ancho medido, y
+           cuántos se quedaron sin piso porque no tienen pie propio: una
+           exención que no se cuenta se lee igual que un aprobado (v966). */
+        dibujosAjustados: S.dibujosAjustados || 0,
+        dibujosSinPie: S.dibujosSinPie || 0,
+        dibujosEnFila: S.dibujosEnFila || 0,
         /* La llave del sector: lo que una prueba necesita para escribirle al
            almacén de campo se agrega acá (v871), en vez de reconstruirla
            afuera con su propia fórmula — que sería la segunda ruta de cálculo
