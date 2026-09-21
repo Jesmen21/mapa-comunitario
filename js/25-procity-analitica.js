@@ -19,6 +19,9 @@
    invisible. */
 (function(){
   'use strict';
+  /* La rama de singular de una baldosa: la cifra y su rótulo van en dos
+     elementos y el lector los lee juntos (v1028). */
+  const pl = (n, sing, plur) => (Number(n) === 1 ? sing : plur);
 
   const LS_KEY = 'pc_analitica_uso_v1';
   const MAX_DIAS = 90;          // se descarta lo más viejo para no crecer sin fin
@@ -213,8 +216,8 @@
         'No guarda coordenadas, nombres de área ni contenido de los análisis — solo conteos de este dispositivo.</p>' +
       (r.suma
         ? '<div class="pca-an-kpis">' +
-            '<div><b>' + r.suma + '</b><small>acciones</small></div>' +
-            '<div><b>' + r.dias + '</b><small>días con uso</small></div>' +
+            '<div><b>' + r.suma + '</b><small>' + pl(r.suma, 'acción', 'acciones') + '</small></div>' +
+            '<div><b>' + r.dias + '</b><small>' + pl(r.dias, 'día con uso', 'días con uso') + '</small></div>' +
             '<div><b>' + (r.ultimoDia || '—') + '</b><small>último día</small></div>' +
           '</div>' +
           (barras ? '<div class="pca-an-grafico">' + barras + '</div>' : '') +

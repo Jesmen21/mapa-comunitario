@@ -4404,7 +4404,7 @@
             : null);
       if (!forma) return;
       var cuando = new Date(f.ts).toLocaleDateString('es-CO', { day: 'numeric', month: 'short' });
-      forma.bindTooltip((f.nombre || cuando) + ' · ' + f.total + ' usos', { sticky: true });
+      forma.bindTooltip((f.nombre || cuando) + ' · ' + f.total + ' ' + pl(f.total, 'uso', 'usos'), { sticky: true });
       forma.addTo(capaGuardadas);
       try { caja = caja ? caja.extend(forma.getBounds()) : forma.getBounds(); } catch (e) {}
     });
@@ -6940,7 +6940,7 @@ function donaHTML(datos, colorDe, nombreDe) {
         var dens = st.densidadHabHa != null ? st.densidadHabHa
                  : (hab && meta.areaM2 ? Math.round(10 * hab / (meta.areaM2 / 10000)) / 10 : null);
         if (!hab) return '<b>' + esc(areaTxt) + '</b> <span>de área analizada</span>';
-        return '<b>' + fmtN(hab) + '</b> <span>habitantes</span>' +
+        return '<b>' + fmtN(hab) + '</b> <span>' + pl(fmtN(hab), 'habitante', 'habitantes') + '</span>' +
           (dens != null ? '<b>' + conComa(dens) + '</b> <span>hab/ha</span>' : '');
       }
       var pen = ter && ter.pendiente;
@@ -7118,7 +7118,7 @@ function donaHTML(datos, colorDe, nombreDe) {
       
       caja('El sitio',
       '<div class="kpis">' +
-      '<div class="k"><b>' + (st.total || 0) + '</b><small>usos registrados</small></div>' +
+      '<div class="k"><b>' + (st.total || 0) + '</b><small>' + pl((st.total || 0), 'uso registrado', 'usos registrados') + '</small></div>' +
       '<div class="k"><b>' + (st.densidadPorHa != null ? conComa(Number(st.densidadPorHa).toFixed(1)) : '—') +
       '</b><small>por hectárea</small></div>' +
       '</div>' +
@@ -7418,12 +7418,12 @@ function donaHTML(datos, colorDe, nombreDe) {
       return '<div class="kpis">' +
       '<div class="k"><b>' + q.huellaM2.toLocaleString('es-CO') + '</b><small>m² de huella</small></div>' +
       '<div class="k"><b>' + q.construibleM2.toLocaleString('es-CO') + '</b><small>m² construibles</small></div>' +
-      '<div class="k"><b>' + q.viviendas + '</b><small>viviendas</small></div>' +
+      '<div class="k"><b>' + q.viviendas + '</b><small>' + pl(q.viviendas, 'vivienda', 'viviendas') + '</small></div>' +
       '</div>' +
       cabeDibujado(q) +
       fila('Índices usados', 'ocupación ' + String(q.indices.io).replace('.', ',') +
       ' · construcción ' + String(q.indices.ic).replace('.', ',') + ' · ' +
-      q.indices.pisos + ' pisos') +
+      q.indices.pisos + ' ' + pl(q.indices.pisos, 'piso', 'pisos')) +
       fila('Aislamientos', q.indices.aisFrente + ' / ' + q.indices.aisLado + ' / ' +
       q.indices.aisFondo + ' m') +
       fila('Pisos que salen', String(q.pisosQueSalen).replace('.', ',')) +
@@ -7602,7 +7602,7 @@ function donaHTML(datos, colorDe, nombreDe) {
          se cuenta al salir a campo; lo que la barra COMPARA es la densidad. */
       var cae = (primero.porHa && ultimo.porHa) ? primero.porHa / ultimo.porHa : null;
       return barras(an, function (a) { return a.etiqueta + (a.agrupado ? ' ·agrupado' : ''); },
-      function (a) { return conComa(a.porHa || 0) + '/ha · ' + a.n + ' usos'; },
+      function (a) { return conComa(a.porHa || 0) + '/ha · ' + a.n + ' ' + pl(a.n, 'uso', 'usos'); },
       function (a) { return a.porHa || 0; }) +
       (cae != null
       ? '<p class="lee">' + (cae >= 1.5
@@ -7724,9 +7724,9 @@ function donaHTML(datos, colorDe, nombreDe) {
       var remates = (Number(mo.intersecciones) || 0) + sinSalida;
       var pctCiego = remates ? Math.round(100 * sinSalida / remates) : 0;
       return '<div class="kpis">' +
-        '<div class="k"><b>' + porKm2 + '</b><small>cruces por km²</small></div>' +
+        '<div class="k"><b>' + porKm2 + '</b><small>' + pl(porKm2, 'cruce por km²', 'cruces por km²') + '</small></div>' +
         '<div class="k"><b>' + (mo.tramoMedioM || 0) + '</b><small>m entre cruces</small></div>' +
-        (sinSalida ? '<div class="k"><b>' + sinSalida + '</b><small>calles sin salida</small></div>' : '') +
+        (sinSalida ? '<div class="k"><b>' + sinSalida + '</b><small>' + pl(sinSalida, 'calle sin salida', 'calles sin salida') + '</small></div>' : '') +
         '</div>' +
         fila('Intersecciones contadas', mo.intersecciones) +
         fila('Densidad de vía', conComa(vi.kmPorHa || 0) + ' km por hectárea') +
@@ -7838,7 +7838,7 @@ function donaHTML(datos, colorDe, nombreDe) {
       '<div class="kpis">' +
       '<div class="k"><b>' + conComa(ll.pctLleno) + ' %</b><small>construido</small></div>' +
       '<div class="k"><b>' + conComa(ll.pctVacio) + ' %</b><small>libre</small></div>' +
-      '<div class="k"><b>' + (mo.intersecciones || 0) + '</b><small>intersecciones</small></div>' +
+      '<div class="k"><b>' + (mo.intersecciones || 0) + '</b><small>' + pl((mo.intersecciones || 0), 'intersección', 'intersecciones') + '</small></div>' +
       '</div>' +
       '</div>' +
       fila('Área construida', esc(formatearM2(ll.areaConstruidaM2))) +
@@ -8828,8 +8828,7 @@ function donaHTML(datos, colorDe, nombreDe) {
       ? '<div class="kpis">' +
         '<div class="k"><b>' + conComa(t.verdeDesde) + '%</b><small>verde en ' + t.desde + '</small></div>' +
         '<div class="k"><b>' + conComa(t.verdeHasta) + '%</b><small>verde en ' + t.hasta + '</small></div>' +
-        '<div class="k"><b>' + (t.verde > 0 ? '+' : '') + conComa(t.verde) +
-        '</b><small>puntos de diferencia</small></div>' +
+        '<div class="k"><b>' + (t.verde > 0 ? '+' : '') + conComa(t.verde) + '</b><small>' + pl((t.verde > 0 ? '+' : '') + conComa(t.verde), 'punto de diferencia', 'puntos de diferencia') + '</small></div>' +
         '</div>'
       : '') +
       conc.map(function (c) {
@@ -8900,7 +8899,7 @@ function donaHTML(datos, colorDe, nombreDe) {
               : (function () { try { return infraDeServicios(res); } catch (e) { return null; } })();
       if (!inf) return '';
       return '<div class="kpis">' +
-      '<div class="k"><b>' + inf.n + '</b><small>objetos registrados</small></div>' +
+      '<div class="k"><b>' + inf.n + '</b><small>' + pl(inf.n, 'objeto registrado', 'objetos registrados') + '</small></div>' +
       (inf.masCerca && inf.masCerca.distM != null
       ? '<div class="k"><b>' + inf.masCerca.distM + '</b><small>m al más cercano</small></div>'
       : '') +
@@ -8966,9 +8965,9 @@ function donaHTML(datos, colorDe, nombreDe) {
       if (!am) return '';
       var nada = !am.parques && !am.cuerposAgua && !am.verdeNatural;
       return '<div class="kpis">' +
-      '<div class="k"><b>' + (am.parques || 0) + '</b><small>parques</small></div>' +
-      '<div class="k"><b>' + (am.cuerposAgua || 0) + '</b><small>cuerpos de agua</small></div>' +
-      '<div class="k"><b>' + (am.verdeNatural || 0) + '</b><small>manchas de verde</small></div>' +
+      '<div class="k"><b>' + (am.parques || 0) + '</b><small>' + pl((am.parques || 0), 'parque', 'parques') + '</small></div>' +
+      '<div class="k"><b>' + (am.cuerposAgua || 0) + '</b><small>' + pl((am.cuerposAgua || 0), 'cuerpo de agua', 'cuerpos de agua') + '</small></div>' +
+      '<div class="k"><b>' + (am.verdeNatural || 0) + '</b><small>' + pl((am.verdeNatural || 0), 'mancha de verde', 'manchas de verde') + '</small></div>' +
       '</div>' +
       (am.scoreVerde != null ? fila('Presencia de verde', am.scoreVerde + ' / 100') : '') +
       (nada
@@ -9022,7 +9021,7 @@ function donaHTML(datos, colorDe, nombreDe) {
       var porHab = hab > 0 ? Math.round(10 * e.areaM2 / hab) / 10 : null;
       var meta = e.metaM2Hab || 15;
       return '<div class="kpis">' +
-      '<div class="k"><b>' + String(e.areaHa).replace('.', ',') + '</b><small>hectáreas</small></div>' +
+      '<div class="k"><b>' + String(e.areaHa).replace('.', ',') + '</b><small>' + pl(String(e.areaHa).replace('.', ','), 'hectárea', 'hectáreas') + '</small></div>' +
       '<div class="k"><b>' + String(e.pctDelSector).replace('.', ',') + '%</b><small>del sector</small></div>' +
       '<div class="k"><b>' + (porHab != null ? String(porHab).replace('.', ',') : '—') +
       '</b><small>m² por habitante</small></div>' +
@@ -9201,7 +9200,7 @@ function donaHTML(datos, colorDe, nombreDe) {
       if (!cu) return '';
       return '<div class="kpis">' +
       '<div class="k"><b>' + cu.pctLleno + '%</b><small>del frente con fachada</small></div>' +
-      '<div class="k"><b>' + cu.edificios + '</b><small>edificios dan al frente</small></div>' +
+      '<div class="k"><b>' + cu.edificios + '</b><small>' + pl(cu.edificios, 'edificio da al frente', 'edificios dan al frente') + '</small></div>' +
       (cu.frenteTipicoM != null
       ? '<div class="k"><b>' + cu.frenteTipicoM + '</b><small>m de frente típico</small></div>' : '') +
       '</div>' +
@@ -9280,7 +9279,7 @@ function donaHTML(datos, colorDe, nombreDe) {
           'solo, con la sombra hora por hora y los vecinos que toca.</p>';
       }
       return '<div class="kpis">' +
-      '<div class="k"><b>' + sp.pisos + '</b><small>pisos que permite la norma</small></div>' +
+      '<div class="k"><b>' + sp.pisos + '</b><small>' + pl(sp.pisos, 'piso que permite la norma', 'pisos que permite la norma') + '</small></div>' +
       '<div class="k"><b>' + sp.alturaM + '</b><small>m de alto</small></div>' +
       (sp.peor
       ? '<div class="k"><b>' + Number(sp.peor.m2Fuera).toLocaleString('es-CO') +
@@ -9533,7 +9532,7 @@ function donaHTML(datos, colorDe, nombreDe) {
       })();
       if (!anL) return '';
       return '<div class="kpis">' +
-      '<div class="k"><b>' + anL.total + '</b><small>marcas de lo que no se mide</small></div>' +
+      '<div class="k"><b>' + anL.total + '</b><small>' + pl(anL.total, 'marca de lo que no se mide', 'marcas de lo que no se mide') + '</small></div>' +
       (anL.pctSector != null
       ? '<div class="k"><b>' + anL.pctSector + '%</b><small>del sector marcado</small></div>'
       : '') +
@@ -12416,9 +12415,9 @@ function donaHTML(datos, colorDe, nombreDe) {
       '<h1>Reconocimiento del sector' + (nom ? ' · ' + esc(nom) : '') + '</h1>' +
       '<p class="sub">URBIS Pro City · ' + esc(cuando) + ' · ' + esc(area) + '</p>' +
       '<div class="kpis">' +
-        '<div class="kpi"><b>' + (st.total || 0) + '</b><small>usos registrados</small></div>' +
+        '<div class="kpi"><b>' + (st.total || 0) + '</b><small>' + pl((st.total || 0), 'uso registrado', 'usos registrados') + '</small></div>' +
         '<div class="kpi"><b>' + (st.densidadPorHa != null ? Number(st.densidadPorHa).toFixed(1) : '—') + '</b><small>por hectárea</small></div>' +
-        '<div class="kpi"><b>' + (zonas.vacios.length + zonas.flojos.length) + '</b><small>rumbos sin datos</small></div>' +
+        '<div class="kpi"><b>' + (zonas.vacios.length + zonas.flojos.length) + '</b><small>' + pl((zonas.vacios.length + zonas.flojos.length), 'rumbo sin datos', 'rumbos sin datos') + '</small></div>' +
       '</div>' +
       /* Los mapas, arriba del todo: en una hoja de arquitectura se entra por
          los planos y recién después se lee. Antes el PDF empezaba con una
@@ -15779,10 +15778,11 @@ function donaHTML(datos, colorDe, nombreDe) {
       '<div class="pcr-pobla">' +
         '<div class="pcr-pobla-n">' +
           '<b>' + Number(hoy).toLocaleString('es-CO') + '</b>' +
-          '<small>' + (censal ? 'personas · DANE' : 'personas · estimado') + '</small>' +
+          '<small>' + pl(hoy, 'persona · ', 'personas · ') +
+            (censal ? 'DANE' : 'estimado') + '</small>' +
         '</div>' +
         (st.viviendasCenso
-          ? '<div class="pcr-pobla-n"><b>' + Number(st.viviendasCenso).toLocaleString('es-CO') + '</b><small>viviendas</small></div>'
+          ? '<div class="pcr-pobla-n"><b>' + Number(st.viviendasCenso).toLocaleString('es-CO') + '</b><small>' + pl(Number(st.viviendasCenso).toLocaleString('es-CO'), 'vivienda', 'viviendas') + '</small></div>'
           : '') +
         // `estrato` NO es un número: es un objeto con el reparto por manzanas
         // (predominante, mínimo, máximo, promedio). Pintarlo con String() daba
@@ -16117,7 +16117,7 @@ function donaHTML(datos, colorDe, nombreDe) {
         }).join('') +
       '</div>' +
       '<div class="pcr-kpis">' +
-        '<div class="pcr-kpi"><b>' + a.edificios + '</b><small>edificios en el área</small></div>' +
+        '<div class="pcr-kpi"><b>' + a.edificios + '</b><small>' + pl(a.edificios, 'edificio en el área', 'edificios en el área') + '</small></div>' +
         '<div class="pcr-kpi"><b>' + a.cobertura + '%</b><small>con altura registrada</small></div>' +
         '<div class="pcr-kpi"><b>' + a.maximo + '</b><small>el más alto, en pisos</small></div>' +
       '</div>' +
@@ -16771,7 +16771,11 @@ function donaHTML(datos, colorDe, nombreDe) {
       (dib ? '<div class="pcr-dibujo">' + dib + '</div>' : '') +
       '<div class="pcr-lote">' +
         am.curva.map(function (p) {
-          return '<div class="pcr-lote-fila"><span>Cada ' + p.tr + ' años</span><b>' +
+          return /* Un periodo de retorno de un año no ocurre —la NSR-10 los da en 475,
+             975 y 2.475— pero la rama va igual: dejar un hallazgo permanente en
+             el barrido del papel es lo que enseña a ignorar la salida (v886). */
+          '<div class="pcr-lote-fila"><span>Cada ' + p.tr + ' ' +
+            pl(p.tr, 'año', 'años') + '</span><b>' +
             p.gal + ' gal · ' + String(p.g).replace('.', ',') + ' g</b></div>';
         }).join('') +
         (am.ae != null ? '<div class="pcr-lote-fila"><span>Ae · umbral de daño</span><b>' +
@@ -17160,7 +17164,7 @@ function donaHTML(datos, colorDe, nombreDe) {
         '</div>';
       })() +
 
-      '<p class="pcr-pista">Las alturas salen de un modelo de <b>' + t.resolucionM + ' metros de paso</b> (' +
+      '<p class="pcr-pista">Las alturas salen de un modelo de <b>' + t.resolucionM + ' ' + pl(t.resolucionM, 'metro', 'metros') + ' de paso</b> (' +
       esc(t.fuente || '') + '). Sirve para leer el relieve del sector; <b>no</b> para dar la cota de una ' +
       'esquina ni para un diseño: entre dos puntos de la rejilla el terreno puede hacer cualquier cosa. ' +
       'La medida fina se levanta con topografía en campo.</p>';
@@ -17370,7 +17374,7 @@ function donaHTML(datos, colorDe, nombreDe) {
 
     return h4('verde', 'Espacio público efectivo') +
       '<div class="pcr-kpis">' +
-        '<div class="pcr-kpi"><b>' + String(e.areaHa).replace('.', ',') + '</b><small>hectáreas de espacio público</small></div>' +
+        '<div class="pcr-kpi"><b>' + String(e.areaHa).replace('.', ',') + '</b><small>' + pl(String(e.areaHa).replace('.', ','), 'hectárea de espacio público', 'hectáreas de espacio público') + '</small></div>' +
         '<div class="pcr-kpi"><b>' + String(e.pctDelSector).replace('.', ',') + '%</b><small>del área del sector</small></div>' +
         '<div class="pcr-kpi"><b>' + (porHab != null ? String(porHab).replace('.', ',') : '—') +
           '</b><small>m² por habitante</small></div>' +
@@ -17956,7 +17960,7 @@ function donaHTML(datos, colorDe, nombreDe) {
       { id: 'que-hay-por-categoria', t: 'Qué hay, por categoría', g: 'Lo que hay',
         listo: Object.keys(st.porGrupo || {}).some(function (k) {
           return k !== 'otro' && st.porGrupo[k] > 0; }),
-        falta: 'no hay usos clasificados', dato: (st.total || 0) + ' usos' },
+        falta: 'no hay usos clasificados', dato: (st.total || 0) + ' ' + pl(st.total || 0, 'uso', 'usos') },
       /* Las tres de la lámina B. Entran al inventario el mismo día que entran
          al papel: una caja que el pliego imprime y esta lista no conoce no se
          puede apagar desde ningún sitio (v857). */
@@ -18451,11 +18455,11 @@ function donaHTML(datos, colorDe, nombreDe) {
     var lista = [];
     if (pois.length) {
       lista.push({ id: 'calor:todos', t: 'Todos los usos', listo: true,
-                   dato: pois.length + ' usos' });
+                   dato: pois.length + ' ' + pl(pois.length, 'uso', 'usos') });
       categoriasQueCambian(st, pois, 2).forEach(function (g) {
           lista.push({ id: 'calor:' + g.id,
                        t: sinEmoji((G[g.id] && (G[g.id].t || G[g.id].nombre)) || g.id),
-                       listo: true, dato: g.n + ' usos' });
+                       listo: true, dato: g.n + ' ' + pl(g.n, 'uso', 'usos') });
         });
     }
     lista.push({ id: 'cobertura', t: 'Cobertura del suelo', pide: 'cobertura',
@@ -18584,7 +18588,7 @@ function donaHTML(datos, colorDe, nombreDe) {
     grupos.forEach(function (g) {
       lista.push({ id: 'calor:g:' + g.id, grupo: 'Lo que hay',
                    nombre: (G[g.id] && (G[g.id].t || G[g.id].nombre)) || g.id,
-                   dato: g.n + ' usos', color: COL[g.id] || '#94a3b8',
+                   dato: g.n + ' ' + pl(g.n, 'uso', 'usos'), color: COL[g.id] || '#94a3b8',
                    on: S.calor.indexOf('g:' + g.id) !== -1, listo: !!S.resultado,
                    falta: 'analice el sector' });
     });
@@ -18878,7 +18882,7 @@ function donaHTML(datos, colorDe, nombreDe) {
            conteo, el área de la mancha en hectáreas y el rumbo del eje mayor.
            El método NO va acá — es idéntico en los ocho y se imprime una sola
            vez para toda la fila. */
-        var piezas = [g.n + ' usos'];
+        var piezas = [g.n + ' ' + pl(g.n, 'uso', 'usos')];
         if (md && md.niveles && md.niveles[0] && md.niveles[0].areaM2 > 0)
           piezas.push('mancha ' + ha(md.niveles[0].areaM2));
         if (md && md.niveles && md.niveles[1] && md.niveles[1].areaM2 > 0)
@@ -19469,7 +19473,7 @@ function donaHTML(datos, colorDe, nombreDe) {
             return { lat: centroM.lat + a.hasta / 110540, lng: centroM.lng, texto: a.etiqueta + ' · ' + a.n, color: '#0A6F9E' };
           })
         }),
-        conv: anN.map(function (a, i) { return { c: TONOS_AN[Math.min(i, 3)], t: a.etiqueta + ' · ' + a.n + ' usos', f: 'punto' }; }),
+        conv: anN.map(function (a, i) { return { c: TONOS_AN[Math.min(i, 3)], t: a.etiqueta + ' · ' + a.n + ' ' + pl(a.n, 'uso', 'usos'), f: 'punto' }; }),
         pie: 'cuántos usos hay en cada anillo de distancia al centro del área'
       });
     }
@@ -23124,7 +23128,8 @@ function donaHTML(datos, colorDe, nombreDe) {
       '<text x="' + ((xa1 + xa2) / 2).toFixed(1) + '" y="' + (base + 10) + '" class="pcr-sec-t" text-anchor="middle">calzada</text>' +
       (andenM > 0 ? '<text x="' + ((xa2 + xe2) / 2).toFixed(1) + '" y="' + (base - hPx - 5).toFixed(1) + '" class="pcr-sec-t" text-anchor="middle">andén' + (andenSupuesto ? ' (sin medir)' : '') + '</text>' : '') +
       '<text x="' + (px + hp * 0.3).toFixed(1) + '" y="' + (pyTop + 4).toFixed(1) + '" class="pcr-sec-t">1,7 m</text>' +
-      '<text x="' + (x3).toFixed(1) + '" y="' + (base - hPx - 5).toFixed(1) + '" class="pcr-sec-t" text-anchor="end">' + Math.max(1, Math.round(p.alturaMediaM / 3)) + ' pisos</text>' +
+      '<text x="' + (x3).toFixed(1) + '" y="' + (base - hPx - 5).toFixed(1) + '" class="pcr-sec-t" text-anchor="end">' + Math.max(1, Math.round(p.alturaMediaM / 3)) + ' ' +
+      pl(Math.max(1, Math.round(p.alturaMediaM / 3)), 'piso', 'pisos') + '</text>' +
       // Las cotas: la altura al lado del edificio, el ancho bajo la calzada.
       '<path d="M' + (xe1 - 4).toFixed(1) + ' ' + (base - hPx).toFixed(1) + 'v' + hPx.toFixed(1) + '" class="pcr-sec-alt"/>' +
       cota(xa1, xa2, base + 20, f1(p.anchoMedioM) + ' m de calzada' +
@@ -23451,7 +23456,12 @@ function donaHTML(datos, colorDe, nombreDe) {
   /* Un «1» seguido de plural se lee como un descuido de quien firma la hoja,
      no de quien la programó (v874). Acá pasa en cada renglón de pendientes,
      porque la cifra puede ser uno. */
-  function pl(n, sing, plur) { return n === 1 ? sing : plur; }
+  /* `Number(n)` y no `n === 1`: a las baldosas se les pasa el MISMO valor que
+     imprimen, y ese llega a veces ya formateado —`String(x).replace('.', ',')`,
+     un `toLocaleString`—. Con la comparación estricta, «1» en texto daba
+     plural, que es exactamente la debilidad que se le encontró a `plural` en
+     js/70 (v1028) y por la que se retiró. */
+  function pl(n, sing, plur) { return Number(n) === 1 ? sing : plur; }
 
   function bloqueLevantado() {
     var L = (function () { try { return levantadoDeCampo(); } catch (e) { return null; } })();
@@ -23483,7 +23493,7 @@ function donaHTML(datos, colorDe, nombreDe) {
         '<div class="pcr-kpis">' +
           '<div class="pcr-kpi"><b>' + A.arboles + '</b><small>árbol' + (A.arboles === 1 ? '' : 'es') + ' mapeado' + (A.arboles === 1 ? '' : 's') + '</small></div>' +
           '<div class="pcr-kpi"><b>' + A.conEspecie + '</b><small>con especie de la lista</small></div>' +
-          '<div class="pcr-kpi"><b>' + A.palmas + '</b><small>son palmas</small></div>' +
+          '<div class="pcr-kpi"><b>' + A.palmas + '</b><small>' + pl(A.palmas, 'es palma', 'son palmas') + '</small></div>' +
         '</div>';
 
       if (A.especies.length) {
@@ -23699,7 +23709,7 @@ function donaHTML(datos, colorDe, nombreDe) {
     return h4('campo', 'Lo levantado en campo') +
       '<div class="pcr-kpis">' +
         '<div class="pcr-kpi"><b>' + conf.length + '</b><small>coinciden con el mapa</small></div>' +
-        '<div class="pcr-kpi"><b>' + nuevos.length + '</b><small>encontrados por el curso</small></div>' +
+        '<div class="pcr-kpi"><b>' + nuevos.length + '</b><small>' + pl(nuevos.length, 'encontrado por el curso', 'encontrados por el curso') + '</small></div>' +
         '<div class="pcr-kpi"><b>' + disc.length + '</b><small>no coinciden</small></div>' +
       '</div>' +
       (vistos
@@ -24112,9 +24122,9 @@ function donaHTML(datos, colorDe, nombreDe) {
     return '<div class="pcr-curso">' +
       h4('perfil', 'Vista del curso') +
       '<div class="pcr-kpis">' +
-        '<div class="pcr-kpi"><b>' + r.total + '</b><small>puntos levantados</small></div>' +
+        '<div class="pcr-kpi"><b>' + r.total + '</b><small>' + pl(r.total, 'punto levantado', 'puntos levantados') + '</small></div>' +
         '<div class="pcr-kpi"><b>' + r.semana + '</b><small>en los últimos 7 días</small></div>' +
-        '<div class="pcr-kpi"><b>' + r.autores.length + '</b><small>personas mapeando</small></div>' +
+        '<div class="pcr-kpi"><b>' + r.autores.length + '</b><small>' + pl(r.autores.length, 'persona mapeando', 'personas mapeando') + '</small></div>' +
       '</div>' +
 
       '<p class="pcr-lab">Quién levantó cuánto</p>' +
@@ -26588,7 +26598,7 @@ function donaHTML(datos, colorDe, nombreDe) {
       '<div class="pcr-kpis">' +
         '<div class="pcr-kpi"><b>' + formatearM2(a.areaM2).replace(' m²', '') + '</b><small>m² de lote</small></div>' +
         '<div class="pcr-kpi"><b>' + a.perimetroM + '</b><small>m de perímetro</small></div>' +
-        '<div class="pcr-kpi"><b>' + a.esquinas + '</b><small>esquinas</small></div>' +
+        '<div class="pcr-kpi"><b>' + a.esquinas + '</b><small>' + pl(a.esquinas, 'esquina', 'esquinas') + '</small></div>' +
       '</div>' +
       /* El plano acotado. Es lo primero que se dibuja en cualquier
          anteproyecto y hasta acá el lote se leía como una tabla de números:
@@ -28405,7 +28415,7 @@ function donaHTML(datos, colorDe, nombreDe) {
       '</b> con todo lo que se asoma a menos de treinta metros.</p>' +
       '<div class="pcr-kpis">' +
         '<div class="pcr-kpi"><b>' + cu.pctLleno + '%</b><small>del frente con fachada</small></div>' +
-        '<div class="pcr-kpi"><b>' + cu.edificios + '</b><small>edificios dan al frente</small></div>' +
+        '<div class="pcr-kpi"><b>' + cu.edificios + '</b><small>' + pl(cu.edificios, 'edificio da al frente', 'edificios dan al frente') + '</small></div>' +
         (cu.frenteTipicoM != null
           ? '<div class="pcr-kpi"><b>' + cu.frenteTipicoM + '</b><small>m de frente típico</small></div>'
           : '') +
@@ -28501,8 +28511,7 @@ function donaHTML(datos, colorDe, nombreDe) {
           '</b><small>m² de huella</small></div>' +
         '<div class="pcr-kpi"><b>' + q.construibleM2.toLocaleString('es-CO') +
           '</b><small>m² construibles</small></div>' +
-        '<div class="pcr-kpi"><b>' + String(q.pisosQueSalen).replace('.', ',') +
-          '</b><small>pisos que salen</small></div>' +
+        '<div class="pcr-kpi"><b>' + String(q.pisosQueSalen).replace('.', ',') + '</b><small>' + pl(String(q.pisosQueSalen).replace('.', ','), 'piso que sale', 'pisos que salen') + '</small></div>' +
       '</div>' +
       '<p class="pcr-conc">En un lote de <b>' + q.areaLoteM2.toLocaleString('es-CO') +
       ' m²</b> caben <b>' + q.viviendas + '</b> viviendas de ' + idx.m2Vivienda +
@@ -28588,9 +28597,9 @@ function donaHTML(datos, colorDe, nombreDe) {
 
     return cab + explica +
       '<div class="pcr-kpis">' +
-        '<div class="pcr-kpi"><b>' + u.recorridos + '</b><small>recorridos</small></div>' +
-        '<div class="pcr-kpi"><b>' + u.marcas + '</b><small>marcas en total</small></div>' +
-        '<div class="pcr-kpi"><b>' + u.acuerdos.length + '</b><small>sitios donde coinciden</small></div>' +
+        '<div class="pcr-kpi"><b>' + u.recorridos + '</b><small>' + pl(u.recorridos, 'recorrido', 'recorridos') + '</small></div>' +
+        '<div class="pcr-kpi"><b>' + u.marcas + '</b><small>' + pl(u.marcas, 'marca en total', 'marcas en total') + '</small></div>' +
+        '<div class="pcr-kpi"><b>' + u.acuerdos.length + '</b><small>' + pl(u.acuerdos.length, 'sitio donde coincide', 'sitios donde coinciden') + '</small></div>' +
       '</div>' +
       '<p class="pcr-pista">De: ' + esc(u.autores.join(', ')) + '.</p>' +
       (u.acuerdos.length
@@ -28692,8 +28701,8 @@ function donaHTML(datos, colorDe, nombreDe) {
       '<div class="pcr-kpis">' +
         '<div class="pcr-kpi"><b>' + (mv.nViasArterias || 0) + '</b><small>corredor' +
           ((mv.nViasArterias === 1) ? '' : 'es') + ' principal' + ((mv.nViasArterias === 1) ? '' : 'es') + '</small></div>' +
-        '<div class="pcr-kpi"><b>' + (mv.paradasBus || 0) + '</b><small>paradas de bus</small></div>' +
-        '<div class="pcr-kpi"><b>' + (mv.ciclorrutas || 0) + '</b><small>tramos de ciclorruta</small></div>' +
+        '<div class="pcr-kpi"><b>' + (mv.paradasBus || 0) + '</b><small>' + pl((mv.paradasBus || 0), 'parada de bus', 'paradas de bus') + '</small></div>' +
+        '<div class="pcr-kpi"><b>' + (mv.ciclorrutas || 0) + '</b><small>' + pl((mv.ciclorrutas || 0), 'tramo de ciclorruta', 'tramos de ciclorruta') + '</small></div>' +
       '</div>' +
       medidor('Facilidad para llegar', mv.scoreAcceso, 
         (mv.scoreAcceso >= 60 ? 'Bien conectado: llega transporte y hay vías de peso.'
@@ -29008,9 +29017,9 @@ function donaHTML(datos, colorDe, nombreDe) {
     return '' +
       h4('verde', 'Verde y agua') +
       '<div class="pcr-kpis">' +
-        '<div class="pcr-kpi"><b>' + (am.parques || 0) + '</b><small>parques y plazas</small></div>' +
-        '<div class="pcr-kpi"><b>' + (am.cuerposAgua || 0) + '</b><small>cuerpos de agua</small></div>' +
-        '<div class="pcr-kpi"><b>' + (am.verdeNatural || 0) + '</b><small>manchas de verde</small></div>' +
+        '<div class="pcr-kpi"><b>' + (am.parques || 0) + '</b><small>' + pl((am.parques || 0), 'parque o plaza', 'parques y plazas') + '</small></div>' +
+        '<div class="pcr-kpi"><b>' + (am.cuerposAgua || 0) + '</b><small>' + pl((am.cuerposAgua || 0), 'cuerpo de agua', 'cuerpos de agua') + '</small></div>' +
+        '<div class="pcr-kpi"><b>' + (am.verdeNatural || 0) + '</b><small>' + pl((am.verdeNatural || 0), 'mancha de verde', 'manchas de verde') + '</small></div>' +
       '</div>' +
       medidor('Presencia de verde', am.scoreVerde,
         (am.scoreVerde >= 55 ? 'Sector con verde a la mano.'
@@ -30782,10 +30791,10 @@ function donaHTML(datos, colorDe, nombreDe) {
         htmlCorrida() +
 
         '<div class="pcr-kpis">' +
-          '<div class="pcr-kpi"><b>' + (st.total || 0) + '</b><small>usos registrados</small></div>' +
+          '<div class="pcr-kpi"><b>' + (st.total || 0) + '</b><small>' + pl((st.total || 0), 'uso registrado', 'usos registrados') + '</small></div>' +
           '<div class="pcr-kpi"><b>' + radioTxt + '</b><small>' + radioEtiqueta + '</small></div>' +
           '<div class="pcr-kpi"><b>' + dens + '</b><small>por hectárea</small></div>' +
-          '<div class="pcr-kpi"><b>' + (zonas.vacios.length + zonas.flojos.length) + '</b><small>rumbos sin datos</small></div>' +
+          '<div class="pcr-kpi"><b>' + (zonas.vacios.length + zonas.flojos.length) + '</b><small>' + pl((zonas.vacios.length + zonas.flojos.length), 'rumbo sin datos', 'rumbos sin datos') + '</small></div>' +
         '</div>' +
 
         htmlPestanas(P) +
@@ -31090,8 +31099,8 @@ function donaHTML(datos, colorDe, nombreDe) {
       '<div class="kpis">' +
         '<div class="kpi"><b>' + c.totalOsm + '</b><small>tenía OSM</small></div>' +
         '<div class="kpi"><b>' + c.totalCampo + '</b><small>mapeó el curso</small></div>' +
-        '<div class="kpi oro"><b>' + c.nuevos.length + '</b><small>usos nuevos</small></div>' +
-        '<div class="kpi"><b>' + c.confirmados.length + '</b><small>confirmados</small></div>' +
+        '<div class="kpi oro"><b>' + c.nuevos.length + '</b><small>' + pl(c.nuevos.length, 'uso nuevo', 'usos nuevos') + '</small></div>' +
+        '<div class="kpi"><b>' + c.confirmados.length + '</b><small>' + pl(c.confirmados.length, 'confirmado', 'confirmados') + '</small></div>' +
         '<div class="kpi"><b>' + c.sinVerificar.length + '</b><small>sin verificar</small></div>' +
       '</div>' +
       (c.nuevos.length
@@ -31204,8 +31213,8 @@ function donaHTML(datos, colorDe, nombreDe) {
         '<div class="pcr-kpis">' +
           '<div class="pcr-kpi"><b>' + c.totalOsm + '</b><small>tenía OSM</small></div>' +
           '<div class="pcr-kpi"><b>' + c.totalCampo + '</b><small>mapeó el curso</small></div>' +
-          '<div class="pcr-kpi pcr-kpi-oro"><b>' + c.nuevos.length + '</b><small>usos nuevos</small></div>' +
-          '<div class="pcr-kpi"><b>' + c.confirmados.length + '</b><small>confirmados</small></div>' +
+          '<div class="pcr-kpi pcr-kpi-oro"><b>' + c.nuevos.length + '</b><small>' + pl(c.nuevos.length, 'uso nuevo', 'usos nuevos') + '</small></div>' +
+          '<div class="pcr-kpi"><b>' + c.confirmados.length + '</b><small>' + pl(c.confirmados.length, 'confirmado', 'confirmados') + '</small></div>' +
         '</div>' +
 
         (c.nuevos.length
@@ -31484,7 +31493,7 @@ function donaHTML(datos, colorDe, nombreDe) {
     return '<div class="pcr-medir pcr-reanudar">' +
       '<p class="pcr-lab">Seguir donde quedó</p>' +
       '<p class="pcr-conc"><b>' + esc(f.nombre || 'Sector sin nombre') + '</b>' +
-      (cuando ? ' · ' + esc(cuando) : '') + ' · ' + (f.total || 0) + ' usos' +
+      (cuando ? ' · ' + esc(cuando) : '') + ' · ' + (f.total || 0) + ' ' + pl(f.total || 0, 'uso', 'usos') +
       (medido.length ? ', con ' + esc(medido.join(', ')) : '') + '.</p>' +
       (function () {
         /* Qué trae de verdad. Antes decía que las huellas no volvían nunca;
@@ -31974,7 +31983,7 @@ function donaHTML(datos, colorDe, nombreDe) {
       el.innerHTML = ico('atras', 18) +
         '<span><b>Seguir donde quedó</b>' +
         '<small>' + esc(reciente.nombre || 'Sector sin nombre') + ' · ' +
-        (reciente.total || 0) + ' usos' + (med.length ? ', con ' + esc(med.join(', ')) : '') +
+        (reciente.total || 0) + ' ' + pl(reciente.total || 0, 'uso', 'usos') + (med.length ? ', con ' + esc(med.join(', ')) : '') +
         '</small></span>' + asaPlegar();
       el.setAttribute('aria-label', S.volverPlegado
         ? 'Abrir el aviso del sector que estaba analizando'
@@ -32158,7 +32167,7 @@ function donaHTML(datos, colorDe, nombreDe) {
           'puntos en el mapa hay que analizarlo otra vez.</p>'
         : '') +
       '<div class="pcr-kpis">' +
-        '<div class="pcr-kpi"><b>' + (st.total || 0) + '</b><small>usos registrados</small></div>' +
+        '<div class="pcr-kpi"><b>' + (st.total || 0) + '</b><small>' + pl((st.total || 0), 'uso registrado', 'usos registrados') + '</small></div>' +
         '<div class="pcr-kpi"><b>' + esc(tam) + '</b><small>' + (esPol ? 'área' : 'alcance') + '</small></div>' +
         '<div class="pcr-kpi"><b>' + (st.densidadPorHa != null ? Number(st.densidadPorHa).toFixed(1) : '—') +
           '</b><small>por hectárea</small></div>' +
