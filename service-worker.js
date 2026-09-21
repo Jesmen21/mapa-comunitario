@@ -1,4 +1,4 @@
-const URBIS_CACHE = 'urbis-v991-tiene-pisos-es-del-tipo';
+const URBIS_CACHE = 'urbis-v992-en-que-estado-esta';
 const URBIS_ASSETS = [
   './',
   './index.html',
@@ -78,6 +78,7 @@ const URBIS_ASSETS = [
   './js/03b-edificio-vocabulario.js',
   './js/03c-arbol-especies.js',
   './js/03d-mobiliario-material.js',
+  './js/03e-estado-urbano.js',
   './js/03c-reportes-rapidos.js',
   './js/04-marker-proximity.js',
   './js/05-helpers-temporal-security.js',

@@ -1097,6 +1097,11 @@ html body.u52-real-map #urbis-mobile-app .u52-jac-mapcentric .u52-mapcentric-rou
   background:linear-gradient(90deg, var(--edu-accent), var(--edu-accent-deep));
   transform-origin:left center; animation:pcrCrecerBarra .5s cubic-bezier(.22,.9,.3,1) both;
 }
+/* La barra del ESTADO lleva el color de SU peldaño (v992). El color sale del
+   vocabulario y llega por `--e`: escrito acá sería un cuarto verde que se
+   separa del que pintan el globo, la ficha y el panel del punto. */
+.pcr-hoja .pcr-nivel-barra.pcr-nivel-estado i,
+.pcr-pestana .pcr-nivel-barra.pcr-nivel-estado i{ background:var(--e, currentColor); }
 .pcr-hoja .pcr-nivel-n, .pcr-pestana .pcr-nivel-n{
   font-size:.86rem !important; font-weight:700 !important; font-variant-numeric:tabular-nums;
   color:var(--edu-ink) !important; -webkit-text-fill-color:var(--edu-ink) !important;

@@ -4820,7 +4820,7 @@
      criterios para un mismo hecho se separan a la tanda siguiente (v879), y
      acá el que se separaría publicaría la foto de alguien sin moderar. */
   function fichaDeProCity(p, d){
-    let foto = '', nota = '', especie = '', material = '', pisos = '';
+    let foto = '', nota = '', especie = '', material = '', estado = '', pisos = '';
     try{
       const f = (typeof window.urbisFotoDeReporte === 'function') ? window.urbisFotoDeReporte(p) : null;
       if(f && f.hay && f.puedeVerla){
@@ -4853,6 +4853,17 @@
       const m = window.URBIS_MOBILIARIO ? window.URBIS_MOBILIARIO.leer(p.descripcion) : null;
       if(m && m.texto) material = `<div class="u52-procity-selpanel-dato">\u{1F9F1} ${esc(m.texto)}</div>`;
     }catch(e){}
+    /* Y en qué estado está (v992), con su color y su aviso. Sin el aviso, un
+       juicio desde la acera se lee como una inspección. */
+    try{
+      const e2 = window.URBIS_ESTADO ? window.URBIS_ESTADO.leer(p.descripcion) : null;
+      const V2 = window.URBIS_ESTADO_VOC;
+      if(e2 && e2.texto){
+        estado = `<div class="u52-procity-selpanel-dato u52-selpanel-estado" style="--e:${esc(e2.color || '#94A3B8')}">`
+          + `<i class="popup-estado-punto" aria-hidden="true"></i>Estado: <b>${esc(e2.texto)}</b>`
+          + (V2 ? `<small>${esc(V2.AVISO)}</small>` : '') + `</div>`;
+      }
+    }catch(e){}
     /* Qué clase de comercio, piso por piso (v989). Un dato que se guarda y que
        ninguna pantalla alcanza se ve, desde afuera, exactamente igual que un
        dato que no existe —es la clase C de este proyecto, y es el defecto que
@@ -4869,7 +4880,7 @@
         }
       }
     }catch(e){}
-    return foto + nota + especie + material + pisos;
+    return foto + nota + especie + material + estado + pisos;
   }
 
   // Panel compacto al tocar un punto: quién lo publicó + Editar (permite
@@ -5796,6 +5807,7 @@
     let especieOtroPre = '';
     let materialPre = '';
     let materialOtroPre = '';
+    let estadoPre = '';
     let fotoPre = '';
     if(editando){
       const dp = (typeof globalData !== 'undefined' && Array.isArray(globalData)) ? globalData.find(x => String(x.lat) === String(proCity.editLat)) : null;
@@ -5825,6 +5837,11 @@
         try{
           const mb = window.URBIS_MOBILIARIO ? window.URBIS_MOBILIARIO.leer(dp.descripcion) : null;
           if(mb){ materialPre = mb.material; materialOtroPre = mb.otroTexto; }
+        }catch(e){}
+        /* Y en qué estado está (v992), por la misma razón. */
+        try{
+          const eb = window.URBIS_ESTADO ? window.URBIS_ESTADO.leer(dp.descripcion) : null;
+          if(eb) estadoPre = eb.estado;
         }catch(e){}
         /* Y la foto, que es la que costó una (v986). Va por el portero y no
            leyendo la casilla en crudo: quien edita es su autor o un
@@ -5951,7 +5968,36 @@
             <label for="ins-material-otro">¿De qué es? Así entra en la lista de la próxima versión.</label>
             <input type="text" id="ins-material-otro" maxlength="60" autocomplete="off" value="${esc(materialOtroPre)}">
           </div>
-          <small class="u52-procity-edificio-pista">De qué está hecho, no cómo está: una banca de madera puede estar nueva o podrida, y eso es otra cosa que todavía no se registra.</small>
+          <small class="u52-procity-edificio-pista">De qué está hecho, no cómo está: eso se pregunta aparte, justo abajo.</small>
+        </div>`;
+    }
+
+    /* En qué estado está (v992). NO es una lista con buscador como la especie
+       y el material: son cuatro peldaños, y un buscador para cuatro cosas es
+       absurdo. Son cuatro botones con el color con que se pidió —«verde está
+       buena, naranja medio regular, malo, muy malo»— y cada uno lleva SU
+       CRITERIO debajo, que es lo que hace que dos personas califiquen por la
+       misma vara y que la cifra se pueda contar (v942).
+
+       Opcional, por la razón de la v973. */
+    const VOC_EST = window.URBIS_ESTADO_VOC || null;
+    let htmlEstado = '';
+    if(proCity.dim === MATRIZ_USOS_KEY && VOC_EST && VOC_EST.esUsoConEstado(usoParteSel)){
+      const chip = (n, c, d) => `
+        <button type="button" class="u52-estado-chip${estadoPre === n ? ' on' : ''}"
+                style="--e:${esc(c)}" data-u52-estado="${esc(n)}"
+                aria-pressed="${estadoPre === n ? 'true' : 'false'}">
+          <b>${esc(n)}</b><small>${esc(d)}</small>
+        </button>`;
+      htmlEstado = `
+        <div class="u52-procity-especie u52-estado-bloque" id="ins-estado-bloque">
+          <label>¿En qué estado está? <i>opcional</i></label>
+          <input type="hidden" id="ins-estado" value="${esc(estadoPre)}">
+          <div class="u52-estado-chips">
+            ${VOC_EST.ESTADOS.map(e => chip(e.n, e.c, e.d)).join('')}
+            ${chip(VOC_EST.NO_SE_SABE(), '#94A3B8', 'Se miró y no se pudo determinar desde la acera.')}
+          </div>
+          <small class="u52-procity-edificio-pista">${esc(VOC_EST.AVISO)}</small>
         </div>`;
     }
     panel.innerHTML = `
@@ -5974,6 +6020,7 @@
         ${htmlEdificio}
         ${htmlEspecie}
         ${htmlMaterial}
+        ${htmlEstado}
         ${avisoDePrecisionHTML()}
         <input id="ins-direccion" type="text" maxlength="120" placeholder="Dirección o punto de referencia (opcional)" autocomplete="street-address" value="${esc(dirPrefill)}">
         <textarea id="ins-nota" maxlength="180" placeholder="Descripción técnica opcional">${esc(notaPrefill)}</textarea>
@@ -6071,6 +6118,31 @@
       alElegir: null
     }
   };
+
+  /* Los chips del estado (v992). Delegado sobre el bloque y no un manejador
+     por botón: un peldaño nuevo lo hereda sin que nadie se acuerde. Repinta
+     SOLO los chips y no el formulario entero —recomponerlo borraría la
+     dirección y la nota que la persona ya escribió (v975)—. */
+  function elegirEstado(valor){
+    const cajaE = document.getElementById('ins-estado');
+    const bloque = document.getElementById('ins-estado-bloque');
+    if(!cajaE || !bloque) return;
+    /* Volver a tocar el peldaño puesto lo QUITA: sin eso, un toque por error
+       en un campo opcional no se puede deshacer sin recargar. */
+    const nuevo = (String(cajaE.value || '') === valor) ? '' : valor;
+    cajaE.value = nuevo;
+    bloque.querySelectorAll('[data-u52-estado]').forEach(b => {
+      const on = b.getAttribute('data-u52-estado') === nuevo;
+      b.classList.toggle('on', on);
+      b.setAttribute('aria-pressed', on ? 'true' : 'false');
+    });
+  }
+  document.addEventListener('click', ev => {
+    const b = ev.target && ev.target.closest ? ev.target.closest('[data-u52-estado]') : null;
+    if(!b) return;
+    ev.preventDefault();
+    elegirEstado(b.getAttribute('data-u52-estado') || '');
+  });
 
   function pintarLista(clave, q){
     const cfg = LISTAS_CERRADAS[clave];

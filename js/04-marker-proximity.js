@@ -886,7 +886,12 @@
        mapeó. Un prefijo dentro de una sola casilla es una convención que el
        lector siguiente tiene que adivinar. */
     mobiliarioMaterial:     BASE_OFFSET + TIMELINE_EXTRA_OFFSET + 19,
-    mobiliarioMaterialOtro: BASE_OFFSET + TIMELINE_EXTRA_OFFSET + 20
+    mobiliarioMaterialOtro: BASE_OFFSET + TIMELINE_EXTRA_OFFSET + 20,
+    /* En qué estado está lo que se mapeó (v992). Al final, como toda casilla
+       nueva. UNA y no dos: la escala no lleva «Otro» —cuatro peldaños con su
+       criterio escrito no son una lista incompleta—, así que no hay texto
+       libre que acompañar. El vocabulario vive en js/03e. */
+    estadoUrbano:           BASE_OFFSET + TIMELINE_EXTRA_OFFSET + 21
   };
   // La casilla que las tres funciones se disputaban. Se conserva con nombre
   // propio porque hay registros viejos con validaciones o con código de carpeta
@@ -1019,6 +1024,34 @@
         texto: V ? V.texto(valor, otroTexto) : valor,
         idxMaterial: URBIS_SLOTS.mobiliarioMaterial,
         idxMaterialOtro: URBIS_SLOTS.mobiliarioMaterialOtro
+      };
+    }
+  });
+
+  /* En qué estado está (v992). Mismo molde que el material: lo que depende
+     del ORDEN de las casillas se resuelve acá y en ningún otro sitio. */
+  window.URBIS_ESTADO = Object.assign(window.URBIS_ESTADO || {}, {
+    leer: function (descripcion) {
+      const d = String(descripcion || '').split(' | ');
+      const V = window.URBIS_ESTADO_VOC;
+      const crudo = String(d[URBIS_SLOTS.estadoUrbano] || '').trim();
+      const valor = (!crudo || crudo === 'undefined') ? '' : crudo;
+      const noSeSabe = !!(V && valor === V.NO_SE_SABE());
+      /* Un valor que la escala ya no conoce NO se cuenta y NO se tira: se
+         devuelve para poder nombrarlo. Es la decisión de la v932 con las
+         partes de un vacío. */
+      const fila = (V && !noSeSabe) ? V.estadoPorNombre(valor) : null;
+      return {
+        estado: valor,
+        /* Utilizable para cualquier cuenta: '' en cuanto no sea un peldaño
+           de la escala. El valor crudo se conserva para poder informarlo. */
+        estadoUtil: fila ? fila.n : '',
+        noSeSabe: noSeSabe,
+        desconocido: !!valor && !noSeSabe && !fila,
+        peso: fila ? fila.p : null,
+        color: fila ? fila.c : '',
+        texto: V ? V.texto(valor) : valor,
+        idxEstado: URBIS_SLOTS.estadoUrbano
       };
     }
   });

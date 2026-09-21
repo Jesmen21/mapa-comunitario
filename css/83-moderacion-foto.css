@@ -197,6 +197,32 @@ body[data-role="gov"] .urbis-sello-aprobar{
 }
 .detalle-especie.detalle-material b{ color:#e6ecf7 !important; -webkit-text-fill-color:#e6ecf7; }
 
+/* ── En qué estado está (v992) ───────────────────────────────────────────
+   El color NO se escribe acá: llega por `--e` desde el vocabulario de
+   js/03e, que es el único sitio donde vive. Cuatro peldaños escritos en
+   cuatro hojas de estilo serían cuatro verdes que se separan a la tanda
+   siguiente, y el que se separaría es el que nadie vuelve a mirar. */
+.popup-estado-punto{
+  display:inline-block; width:9px; height:9px; border-radius:50%;
+  margin-right:6px; vertical-align:middle;
+  background:var(--e, #94A3B8);
+}
+.popup-estado{ color:#4a5a78; font-weight:700; }
+/* El mismo dato en la ficha, sobre fondo OSCURO, y DESPUÉS de
+   `.detalle-especie`: misma especificidad, gana la de abajo (v979). El borde
+   y el fondo sí toman el color del peldaño, con alpha, porque es lo que hace
+   que «muy malo» se distinga de «bueno» sin leer. */
+.detalle-especie.detalle-estado{
+  border-color:color-mix(in srgb, var(--e, #94A3B8) 55%, transparent);
+  background:color-mix(in srgb, var(--e, #94A3B8) 14%, transparent);
+  color:#dbe3ef !important; -webkit-text-fill-color:#dbe3ef;
+}
+.detalle-especie.detalle-estado b{ color:#fff !important; -webkit-text-fill-color:#fff; }
+.detalle-especie.detalle-estado small{
+  display:block; margin-top:3px; font-size:.68rem; opacity:.75;
+  color:#cbd5e6 !important; -webkit-text-fill-color:#cbd5e6;
+}
+
 /* ── Pedir corrección (v835) ──────────────────────────────────────────────
    Ámbar, como todo lo que en URBIS dice «esto todavía no está confirmado».
    Va arriba de la tarjeta y del detalle: es lo único de esas pantallas que

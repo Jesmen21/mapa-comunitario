@@ -844,6 +844,21 @@
         }
         descripcionFinal = d.join(' | ');
     })();
+    /* En qué estado está (v992). Mismo molde que el material y por la misma
+       razón: sin el bloque en pantalla, `insEst` es null y no se toca la
+       casilla, así que editar un punto por otro camino no borra el estado
+       que alguien juzgó en la calle. */
+    (function guardarEstadoUrbano(){
+        const insEst = document.getElementById('ins-estado');
+        if (!insEst) return;
+        const S = window.URBIS_SLOTS || {};
+        if (S.estadoUrbano == null) return;
+        const d = String(descripcionFinal).split(' | ');
+        for (let k = 0; k < S.estadoUrbano; k++) if (d[k] === undefined) d[k] = '';
+        d[S.estadoUrbano] = String(insEst.value || '').replace(/\|/g, '-').trim();
+        fichaSlotsEscritos.push(S.estadoUrbano);
+        descripcionFinal = d.join(' | ');
+    })();
     // ── ¿Hubo gente herida? ───────────────────────────────────────────────
     // Se guarda DESPUÉS del bloque temporal y de la ficha del edificio, en su
     // propia casilla (URBIS_SLOTS.victimas). Solo se escribe si el formulario

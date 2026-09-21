@@ -14927,6 +14927,199 @@ Once aserciones en rojo de doce, contra una copia guardada en `/tmp` y no con
 La duodécima es MATERIAL y va primero (v920): es la precondición, y pasa en las
 dos versiones porque la tabla que se invierte y el catálogo existían antes.
 
+## En qué estado está lo que se mapea (v992)
+
+Pedido con estas palabras, mapeando: **«verde está buena, naranja medio
+regular, malo, muy malo»**. Es lo que la v981 y la v982 dejaron declarado y sin
+hacer: se puede mapear un hidrante, una tapa de alcantarillado y una banca, y
+no había manera de decir que están rotos — que es justamente lo que un vecino
+quiere reportar.
+
+    v991   Mobiliario Urbano · Banca        →  de qué está hecha, y nada más
+    v992   Mobiliario Urbano · Banca        →  «Malo», con su criterio y su color
+
+### No va en la lista de materiales, y el propio js/03d dice por qué
+
+Su cabecera lo dejó escrito en la v981: *«el material se ve, el estado se
+juzga, y dos personas califican distinto la misma banca. Mezclarlos en una
+lista haría que "metálica" y "oxidada" fueran valores del mismo campo»*. Son
+dos campos, dos vocabularios y dos archivos.
+
+### Y por qué SÍ se puede contar, que es lo que cambia
+
+La v942 declinó contar el estado del andén, con esta razón: *«eso pediría una
+escala acordada antes de salir, que es trabajo de curso y no de código»*.
+
+La objeción es correcta, y **lo que la levanta es escribir la escala**. Cada
+peldaño lleva AQUÍ su criterio, en una lista cerrada:
+
+| | Criterio | |
+|---|---|---|
+| **Bueno** | cumple su función y no se le ve daño | verde |
+| **Regular** | sirve, con daño a la vista: óxido, pintura perdida, fisuras, grafiti | naranja |
+| **Malo** | no cumple bien su función: banca sin tablas, tapa hundida, poste inclinado, vía con huecos | rojo |
+| **Muy malo o inservible** | no se puede usar, o es un riesgo: tapa faltante, luminaria arrancada | rojo oscuro |
+
+Sin el criterio escrito, «regular» es una opinión; con él, es una observación
+contra una vara, y dos personas califican por lo mismo. Hay una guarda que lo
+exige peldaño por peldaño: **es la condición de que la cifra se pueda
+publicar**, no una ayuda de pantalla.
+
+Lo que sigue siendo cierto va impreso al lado de cualquier cifra y **viaja con
+ella y no con la pantalla** (v867): *es un juicio desde la acera contra la
+escala escrita, no una inspección técnica*.
+
+### Sin «Otro», a propósito
+
+Las otras dos listas cerradas —la especie y el material— llevan «Otro (no está
+en la lista)» porque su lista es incompleta por construcción: siempre hay un
+árbol más. **Una escala de cuatro peldaños no es incompleta**: o el objeto cae
+en uno, o no se pudo determinar. Un «Otro» acá invitaría a texto libre sobre un
+juicio, que es exactamente lo que lo volvería incontable.
+
+Por eso es **una** casilla y no dos, a diferencia de la especie y el material.
+
+### Cuatro botones, no un buscador
+
+La especie y el material se eligen con una lista y un buscador. Acá son cuatro
+peldaños, y **un buscador para cuatro cosas es absurdo**: son cuatro botones
+con el color con que se pidió y con su criterio debajo, a la vista en el
+momento de elegir. Forzar el control dentro de `LISTAS_CERRADAS` habría sido
+compartir una forma que no sirve para esta.
+
+Dos decisiones del control: **volver a tocar el peldaño puesto lo quita** —sin
+eso, un toque por error en un campo opcional no se deshace sin recargar—, y el
+manejador va **delegado** sobre el bloque, así que un peldaño nuevo lo hereda
+sin que nadie se acuerde. Y repinta **solo los chips**: recomponer el
+formulario borraría la dirección y la nota que la persona ya escribió (v975).
+
+### Cinco usos, y los dos que se dejaron fuera con su razón
+
+Los cuatro que ya llevan material —lo que se toca y se pisa— más **las vías**,
+que es donde se pidió. Fuera quedan:
+
+* el **arbolado**, porque «Árbol en riesgo (inclinado, seco o ahuecado)» ya es
+  un TIPO del catálogo, y tener las dos cosas serían dos maneras de codificar
+  un solo hecho — la clase B. Tiene su guarda;
+* el **espacio público**, porque el estado de un parque es un compuesto —el
+  césped, las bancas, la luz— y un solo peldaño para todo eso no dice de qué
+  habla.
+
+Y el recorrido del recuento tuvo que abrirse a la UNIÓN: el estado va en cinco
+usos y el material en cuatro —las vías lo llevan y no llevan material—, así que
+con una sola puerta las vías se habrían quedado fuera del recuento sin que nada
+lo dijera.
+
+### El recuento es por USO, y no publica una media
+
+Por uso, por lo mismo que el material (v988): «el 40 % está malo» sobre
+canecas, tapas, murales, vallas y vías juntas no describe ninguna de las cinco.
+Con su **denominador** pegado (v943).
+
+Y **no se publica una media**, aunque se calcula: la escala es ordinal de
+cuatro peldaños y un «2,3» no corresponde a ninguno — y encima escondería lo
+único que decide una intervención, que es cuánto hay en «malo» o peor. La media
+se conserva solo para ordenar los usos de peor a mejor, y no sale a pantalla.
+Lo que sí se suma en un sitio es **«malo» y «muy malo» juntos**, que es la cifra
+por la que alguien sale a arreglar algo: sumarla en el resumen impide que cada
+pantalla la sume con otro criterio (v879).
+
+Un peldaño que la escala ya no conozca **se nombra y no se cuenta ni se tira**,
+que es la decisión de la v932 con las partes de un vacío.
+
+### El color vive en un solo sitio
+
+En el vocabulario, pegado a su peldaño, y llega a las cuatro superficies por
+`--e`. Escrito en cada hoja de estilo serían cuatro verdes que se separan, y el
+que se separaría es el que nadie vuelve a mirar.
+
+#### Y la guarda de eso se cazó a sí misma
+
+Su primera versión buscaba el hex **en toda la hoja** y denunció `css/72` por
+`--edu-ok:#1B9E6B` y `--edu-bad:#C2410C`. No es un defecto: los dos coinciden
+porque la escala se pintó **a propósito** con los colores que este proyecto ya
+usa para «resuelto» y «mal», y enseñar dos verdes para dos cosas parecidas
+sería peor.
+
+Que coincidan hoy no los hace una sola cosa —rebautizar la paleta educativa no
+debe repintar una escala de condición, que es la prueba de la clase B— así que
+se les deja coincidir, y lo que se vigila es que ninguna **regla del estado**
+escriba el color por su cuenta. Una guarda con falsos positivos termina en una
+lista de excepciones que envejece hasta no significar nada (v895).
+
+### Las once guardas, y las dos que pasaron una inyección fiel
+
+Con MATERIAL primero (v920). Persiguen el criterio escrito, que dos peldaños no
+compartan color ni peso, que todo uso exista en el catálogo, que el arbolado
+quede fuera, que el color no se cuele en una hoja, que las cuatro superficies
+lo lean, que el guardado no toque la casilla sin el bloque en pantalla —el
+defecto exacto que la v986 pagó con las fotos—, que el recuento vaya por uso,
+que el aviso viaje con la cifra, que el archivo entre por las **dos** puertas
+(sin el service worker el campo no sale en un teléfono instalado, sin un solo
+error) y, la de la guarda, que el lector siga leyendo su casilla.
+
+**Dos pasaron su inyección fiel y hubo que apretarlas**, y las dos por lo mismo
+—medían el archivo entero y no el sitio—:
+
+* «las superficies lo leen» buscaba `URBIS_ESTADO.leer` suelto, y js/20 lo lee
+  **dos veces** —para prellenar el formulario al editar y para el panel del
+  punto—, así que dejar el panel mudo pasaba en verde. Se mide dentro de la
+  función que pinta cada superficie, que es la lección de la v854;
+* «el lector mira su casilla» pasaba con el índice cambiado a 999, porque
+  `idxEstado: URBIS_SLOTS.estadoUrbano` seguía escrito dos renglones más abajo.
+  Ahora se exige que el valor CRUDO salga de ahí.
+
+### Demostrado contra la v991
+
+Diez inyecciones fieles, una por guarda, contra copias guardadas (v973):
+
+```
+criterio   ✗ cada peldaño lleva su criterio escrito  — sin criterio: Regular
+color      ✗ ningún peldaño repite color ni peso  — repetidos: #1b9e6b
+uso        ✗ todo uso con estado existe en el catálogo  — Vias e Infraestructura Vial
+arbol      ✗ el arbolado NO lleva estado  — «Árbol en riesgo» ya es un tipo
+hoja       ✗ ninguna regla del estado escribe el color  — css/83 → #1b9e6b
+muda       ✗ las cuatro superficies leen el estado  — no lo alcanza: el panel del punto
+guardado   ✗ el guardado no toca la casilla sin el bloque  — escribe siempre
+unacifra   ✗ el recuento va por uso y con su denominador  — una sola cifra
+sw         ✗ entra por index.html y por el service worker  — falta en index.html
+lector     ✗ y el lector sigue mirando su casilla  — el campo sería documentación
+```
+
+### Medido en el navegador, por el camino de verdad
+
+El flujo entero con clics —pestaña Mapas, «Pro City», «En el mapa», un toque en
+el lienzo, buscar «Banca» y elegirla— hasta el formulario:
+
+```
+bloque de estado: sí · 5 chips
+Bueno #1B9E6B · Regular #D99A32 · Malo #C2410C · Muy malo #8C1D18 · No se sabe #94A3B8
+cada uno con su criterio a la vista · arranca vacío
+toque en «Malo» → valor «Malo», aria-pressed true
+segundo toque    → valor vacío, el chip se apaga
+```
+
+Y la ida y vuelta por la casilla de verdad, con las cinco ramas: un peldaño, el
+peor, «No se sabe» —que es una respuesta y no un hueco—, un peldaño que la
+escala no tiene —que se nombra y no cuenta— y la casilla vacía.
+
+**El flujo de Pro City sí se dejó accionar esta vez**, y queda escrito cómo
+porque la v989 y la v991 lo declararon imposible: los botones existen pero
+`click()` de Playwright los ve invisibles, así que se disparan con
+`page.evaluate(n => n.click(), el)`; la entrada es `#tab-btn-mapping` y después
+`[data-u52-call="procity-open-map"]`; y el atajo al tipo es
+`window.urbisProCityCategorySearch('…')` más `[data-u52-procity-search-item]`,
+que evita tener que recorrer grupo → uso → tipo.
+
+### Lo que NO se pudo correr
+
+**Ninguna suite de navegador**, por lo mismo que la v973 a la v991: este
+contenedor no tiene `../urbis-motor` ni el `node_modules` del banco de pruebas.
+Y el **recuento pintado** no se pudo ver: pide un análisis, y el análisis pide
+el motor. Queda cubierto por la comprobación estática —que exige que vaya por
+uso, con denominador y con el aviso— y por el precedente del panel de la v988,
+que es el mismo sitio y la misma forma.
+
 ## «Tiene pisos» es del TIPO, no del USO (v991)
 
 Lo que la v989 dejó medido y declarado pendiente: **un gimnasio o una academia

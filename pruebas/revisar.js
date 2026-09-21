@@ -5231,6 +5231,205 @@ console.log('\n  -- el subtipo de cada piso (v989) --');
   }
 }
 
+/* ── En qué estado está lo que se mapea (v992) ─────────────────────────────
+   Se puede mapear un hidrante, una tapa y una banca, y hasta la v991 no había
+   manera de decir que están rotos —que es lo que un vecino quiere reportar—.
+
+   Lo que la v942 objetó para el andén sigue siendo cierto y es lo que estas
+   guardas protegen: contar un juicio solo vale si la escala está ACORDADA. La
+   escala está escrita y cada peldaño lleva su criterio; sin el criterio,
+   «regular» vuelve a ser una opinión y la cifra deja de significar algo. */
+console.log('\n  -- en qué estado está lo que se mapea (v992) --');
+{
+  const j03e = soloCodigo(leer('js/03e-estado-urbano.js'));
+  const j04e = soloCodigo(leer('js/04-marker-proximity.js'));
+  const j20e = soloCodigo(leer('js/20-mobile-functional-app.js'));
+  const j10e = soloCodigo(leer('js/10-visible-markers.js'));
+  const j12e = soloCodigo(leer('js/12-spa-ui.js'));
+  const j68e = soloCodigo(leer('js/68-procity-reconocimiento.js'));
+
+  const bloque = (txt, nom, ab, ce) => {
+    const i = txt.indexOf(nom); if (i < 0) return null;
+    const a = txt.indexOf(ab, i), c = txt.indexOf(ce, a);
+    if (a < 0 || c < 0) return null;
+    try { return eval('(' + txt.slice(a, c + ce.length) + ')'); } catch (e) { return null; }
+  };
+  const escala = bloque(j03e, 'var ESTADOS =', '[', '\n  ]');
+  const usosE = bloque(j03e, 'var USOS_CON_ESTADO =', '[', ']');
+  const catE = (() => {
+    const i = j20e.indexOf('const PROCITY_MATRIZ_USOS = [');
+    if (i < 0) return null;
+    const a = j20e.indexOf('[', i), c = j20e.indexOf('\n  ];', a);
+    try { return eval(j20e.slice(a, c + 4)); } catch (e) { return null; }
+  })();
+
+  if (!escala || !usosE || !catE) {
+    anotarSinMaterial('MATERIAL · la escala y sus usos se dejan leer',
+      'no se pudo leer: ' + [!escala && 'ESTADOS', !usosE && 'USOS_CON_ESTADO',
+        !catE && 'el catálogo'].filter(Boolean).join(', '));
+  } else {
+    comprobar('MATERIAL · la escala tiene peldaños y usos donde aplicarse',
+      escala.length >= 3 && usosE.length >= 1,
+      escala.length + ' peldaños sobre ' + usosE.length + ' usos');
+
+    /* 1 · Lo que convierte el juicio en una vara: cada peldaño con SU
+       criterio escrito. Sin él la v942 tiene razón y la cifra no se puede
+       publicar. */
+    const sinCriterio = escala.filter(e => !e.d || String(e.d).trim().length < 30).map(e => e.n);
+    comprobar('cada peldaño lleva su criterio escrito, o la cifra no se puede contar',
+      sinCriterio.length === 0,
+      sinCriterio.length ? 'sin criterio: ' + sinCriterio.join(' · ') +
+        ' — volvería a ser una opinión y no una observación contra una vara'
+      : 'los ' + escala.length + ' dicen contra qué se califica');
+
+    /* 2 · Dos peldaños del mismo color son un solo peldaño para quien mira,
+       y dos del mismo peso no se pueden ordenar. */
+    const cols = escala.map(e => String(e.c || '').toLowerCase());
+    const pesos = escala.map(e => e.p);
+    const colRep = cols.filter((c, i) => cols.indexOf(c) !== i);
+    const pesRep = pesos.filter((v, i) => pesos.indexOf(v) !== i);
+    comprobar('ningún peldaño repite color ni peso',
+      colRep.length === 0 && pesRep.length === 0 && cols.every(c => /^#[0-9a-f]{6}$/.test(c)),
+      (colRep.length || pesRep.length) ? 'repetidos — color: ' + (colRep.join(',') || '—') +
+        ' · peso: ' + (pesRep.join(',') || '—') + ': dos peldaños iguales son uno solo'
+      : 'los ' + escala.length + ' se distinguen por color y se ordenan por peso');
+
+    /* 3 · Todo uso declarado existe en el catálogo. Un renombre allá dejaría
+       el campo apagado en silencio, que es la forma de la v974. */
+    const fantasmaU = usosE.filter(u => !catE.some(x => x.u === u));
+    comprobar('todo uso con estado existe en el catálogo',
+      fantasmaU.length === 0,
+      fantasmaU.length ? 'no está en la Matriz: ' + fantasmaU.join(' · ') +
+        ' — el campo quedaría apagado sin que nada lo dijera'
+      : 'los ' + usosE.length + ' están');
+
+    /* 4 · Y el arbolado NO lo lleva: «Árbol en riesgo (inclinado, seco o
+       ahuecado)» ya es un TIPO del catálogo, así que tener las dos cosas
+       serían dos maneras de codificar un solo hecho. */
+    const arbol = usosE.indexOf('Arbolado Urbano') >= 0;
+    comprobar('el arbolado NO lleva estado: su riesgo ya es un tipo del catálogo',
+      !arbol,
+      arbol ? 'lo lleva, y «Árbol en riesgo» ya es un tipo: dos codificaciones de un hecho'
+            : 'el riesgo del árbol se dice por su tipo y en ningún otro sitio');
+
+    /* 5 · El color vive en UN sitio. Escrito en cada hoja de estilo serían
+       cuatro verdes que se separan, y el que se separaría es el que nadie
+       vuelve a mirar. */
+    /* Y se mide sobre las REGLAS DEL ESTADO, no sobre la hoja entera. La
+       primera versión buscaba el hex en todo el archivo y denunció
+       `css/72` por `--edu-ok:#1B9E6B` y `--edu-bad:#C2410C`, que son tokens
+       de la paleta educativa y no tienen nada que ver: los dos coinciden
+       porque la escala se pintó A PROPÓSITO con los colores que este
+       proyecto ya usa para «resuelto» y «mal», y enseñar dos verdes para dos
+       cosas parecidas sería peor. Que coincidan hoy no los hace una sola
+       cosa —rebautizar la paleta educativa no debe repintar una escala de
+       condición— así que se les deja coincidir, y lo que se vigila es que
+       ninguna regla DEL ESTADO escriba el color por su cuenta.
+
+       Una guarda con falsos positivos termina en una lista de excepciones
+       que envejece hasta no significar nada (v895). */
+    const hojas = ['css/52-urbis-pro-city.css', 'css/83-moderacion-foto.css',
+                   'css/72-edu-diseno.css', 'css/68-procity-reconocimiento.css'];
+    const coladas = [];
+    hojas.forEach(f => {
+      let c = '';
+      try { c = leer(f); } catch (e) { return; }
+      /* Cada regla por separado: del selector a su llave de cierre. Lo que
+         importa es si una regla que pinta el estado trae un hex de la
+         escala, no si el hex existe en algún otro sitio del archivo. */
+      (c.match(/[^{}]*\{[^{}]*\}/g) || []).forEach(regla => {
+        if (!/estado/i.test(regla.split('{')[0])) return;
+        const cuerpo = regla.slice(regla.indexOf('{')).toLowerCase();
+        cols.forEach(h => { if (cuerpo.indexOf(h) >= 0) coladas.push(f + ' → ' + h); });
+      });
+    });
+    comprobar('ninguna regla del estado escribe el color de un peldaño',
+      coladas.length === 0,
+      coladas.length ? 'colado: ' + coladas.join(' · ') + ' — se separaría del vocabulario'
+                     : 'las ' + hojas.length + ' lo reciben por --e desde js/03e');
+
+    /* 6 · Las cuatro superficies lo leen, y TODAS por el lector: la casilla
+       se resuelve en js/04 y en ningún otro sitio. Un dato que se guarda y
+       que ninguna pantalla alcanza se ve igual que uno que no existe —la
+       clase C, y el defecto que la v985 encontró en este mismo panel—. */
+    /* Se mide DENTRO de la función que pinta cada superficie, no en el
+       archivo entero: js/20 lee el estado dos veces —para prellenar el
+       formulario al editar y para el panel del punto— así que buscarlo suelto
+       daba por buena una superficie muda. Es la lección de la v854, y la
+       inyección fiel fue la que lo enseñó. */
+    const dentroDe = (txt, nom, fin) => {
+      const i = txt.indexOf(nom); if (i < 0) return '';
+      const j = txt.indexOf(fin, i); return j < 0 ? txt.slice(i) : txt.slice(i, j);
+    };
+    const superficies = [
+      [j10e, 'el globo y la ficha'],
+      [dentroDe(j20e, 'function fichaDeProCity(', '\n  }'), 'el panel del punto'],
+      [dentroDe(j68e, 'function levantadoDeCampo(', '\n  }'), 'el recuento']
+    ];
+    const mudas = superficies.filter(([t]) => !/URBIS_ESTADO\s*\.\s*leer|LE\.leer/.test(t));
+    comprobar('el globo, la ficha, el panel y el recuento leen el estado',
+      mudas.length === 0,
+      mudas.length ? 'no lo alcanzan: ' + mudas.map(x => x[1]).join(' · ')
+                   : 'las ' + superficies.length + ' pasan por URBIS_ESTADO.leer');
+
+    /* 7 · El guardado va condicionado a que el bloque esté en pantalla, o
+       editar un punto por otro camino borraría el estado que alguien juzgó.
+       Es literalmente el defecto que la v986 pagó con las fotos. */
+    const iG = j12e.indexOf('function guardarEstadoUrbano(');
+    const cG = iG >= 0 ? j12e.slice(iG, j12e.indexOf('})();', iG)) : '';
+    const condicionado = !!cG && /getElementById\('ins-estado'\)/.test(cG) && /if \(!insEst\) return;/.test(cG);
+    comprobar('el guardado no toca la casilla si el bloque no está en pantalla',
+      condicionado,
+      condicionado ? 'editar por otro camino no borra el estado levantado'
+        : !cG ? 'no hay guardado del estado: lo que se elige no se guarda'
+              : 'escribe siempre: editar un punto por otro camino borraría lo levantado');
+
+    /* 8 · El recuento va POR USO. Una sola cifra sobre canecas, tapas,
+       murales, vallas y vías no describe ninguna de las cinco (v854, v988). */
+    const iR = j68e.indexOf('function resumenEstado(');
+    const cR = iR >= 0 ? j68e.slice(iR, j68e.indexOf('\n  }', iR)) : '';
+    const porUso = !!cR && /usos:\s*filas/.test(cR);
+    comprobar('el recuento del estado va por uso y con su denominador',
+      porUso && /cobertura/.test(cR),
+      porUso ? 'un grupo por uso, cada uno con su cobertura'
+             : 'una sola cifra para los cinco usos: no describiría ninguno');
+
+    /* 9 · El aviso viaja con la CIFRA y no con la pantalla, que es la regla
+       del aviso de origen (v867): una pantalla nueva lo hereda. */
+    const avisoEnVoc = /AVISO\s*:/.test(j03e);
+    const avisoEnCifra = /aviso:\s*\(VE && VE\.AVISO\)/.test(j68e);
+    comprobar('el aviso de que es un juicio viaja con la cifra',
+      avisoEnVoc && avisoEnCifra,
+      (avisoEnVoc && avisoEnCifra) ? 'una pantalla nueva lo hereda sin que su autor se acuerde'
+        : 'sin aviso en: ' + [!avisoEnVoc && 'el vocabulario', !avisoEnCifra && 'el recuento']
+            .filter(Boolean).join(' y ') + ' — un juicio a secas se lee como una inspección');
+
+    /* 10 · El archivo entra por las DOS puertas. Sin el service worker, un
+       teléfono con la aplicación instalada no lo descarga y el campo no sale,
+       sin un solo error (v981). */
+    const enIndex = /03e-estado-urbano\.js/.test(leer('index.html'));
+    const enSW = /03e-estado-urbano\.js/.test(leer('service-worker.js'));
+    comprobar('el vocabulario entra por index.html y por el service worker',
+      enIndex && enSW,
+      (enIndex && enSW) ? 'las dos puertas'
+        : 'falta en: ' + [!enIndex && 'index.html', !enSW && 'el service worker'].filter(Boolean).join(' y '));
+
+    /* 11 · Guarda de la guarda: si el lector dejara de mirar la casilla, todo
+       lo de arriba seguiría en verde sobre un campo que nadie lee. */
+    const iL = j04e.indexOf('window.URBIS_ESTADO = Object.assign');
+    const cL = iL >= 0 ? j04e.slice(iL, j04e.indexOf('\n  });', iL)) : '';
+    /* El valor CRUDO tiene que salir de la casilla, no basta con nombrarla:
+       la primera versión pasaba en verde con el índice cambiado, porque
+       `idxEstado: URBIS_SLOTS.estadoUrbano` seguía ahí. */
+    const mira = /crudo\s*=\s*String\(d\[URBIS_SLOTS\.estadoUrbano\]/.test(cL)
+              && /estadoPorNombre/.test(cL);
+    comprobar('y el lector sigue mirando su casilla y la escala',
+      mira,
+      mira ? 'la casilla se resuelve en js/04 y en ningún otro sitio'
+           : 'dejó de mirarlas: el campo sería documentación');
+  }
+}
+
 /* ── «Tiene pisos» es del TIPO y no del USO (v991) ─────────────────────────
    Hasta la v990 lo decidía el uso, y `Deportivo` estaba en la lista de «sin
    pisos» entera: una cancha no tiene plantas y un coliseo sí, y son tipos del

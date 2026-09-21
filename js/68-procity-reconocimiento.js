@@ -3388,7 +3388,8 @@
   var memoLevantado = { llave: '', valor: null };
   function levantadoDeCampo() {
     var VA = window.URBIS_ARBOL_VOC, VM = window.URBIS_MOBILIARIO_VOC;
-    var LA = window.URBIS_ARBOL, LM = window.URBIS_MOBILIARIO;
+    var VE = window.URBIS_ESTADO_VOC;
+    var LA = window.URBIS_ARBOL, LM = window.URBIS_MOBILIARIO, LE = window.URBIS_ESTADO;
     if (!S.resultado) return null;
     var pts = puntosDelCurso();
     var llave = (S.tickPintado || 0) + '·' + pts.length + '·' + (S.fichaActualId || '');
@@ -3404,6 +3405,10 @@
                 otroNombrado: 0, otroSinNombrar: 0, palmas: 0,
                 especies: {}, generos: {}, otros: {} };
     var mob = {};
+    /* Y el estado, también POR USO y por la misma razón: «el 40 % está malo»
+       sobre canecas, tapas, murales, vallas y vías juntas no describe
+       ninguna de las cinco. */
+    var est = {};
 
     pts.forEach(function (p) {
       var lat = parseFloat(String(p.lat || '').replace(',', '.'));
@@ -3415,7 +3420,12 @@
       var tipo = String(partes[1] || '').trim();
       var esArbol = !!(VA && typeof VA.esUsoDeArbol === 'function' && VA.esUsoDeArbol(uso));
       var esMat = !!(VM && typeof VM.esUsoConMaterial === 'function' && VM.esUsoConMaterial(uso));
-      if (!esArbol && !esMat) return;
+      /* El estado va en CINCO usos y el material en cuatro: las vías lo
+         llevan y no llevan material. Así que la puerta del recorrido es la
+         unión, y cada cuenta filtra por lo suyo — con una sola, las vías se
+         quedarían fuera del recuento de estado sin que nada lo dijera. */
+      var esEst = !!(VE && typeof VE.esUsoConEstado === 'function' && VE.esUsoConEstado(uso));
+      if (!esArbol && !esMat && !esEst) return;
       try { if (!puntoDentroDelSector({ lat: lat, lng: lng })) return; } catch (e) { return; }
 
       if (esArbol && LA && typeof LA.leer === 'function') {
@@ -3454,10 +3464,25 @@
         else if (m.esOtro) { if (m.otroTexto) u.otroNombrado++; else u.otroSinNombrar++; }
         else { u.conMaterial++; u.materiales[m.material] = (u.materiales[m.material] || 0) + 1; }
       }
+
+      if (esEst && LE && typeof LE.leer === 'function') {
+        var e2 = LE.leer(p.descripcion);
+        var ue = est[uso] || (est[uso] = { uso: uso, n: 0, conEstado: 0, sinAnotar: 0,
+                                           noSeSabe: 0, desconocido: 0, peldanos: {}, suma: 0 });
+        ue.n++;
+        if (!e2.estado) ue.sinAnotar++;
+        else if (e2.noSeSabe) ue.noSeSabe++;
+        else if (e2.desconocido) ue.desconocido++;
+        else {
+          ue.conEstado++; ue.suma += e2.peso;
+          ue.peldanos[e2.estadoUtil] = (ue.peldanos[e2.estadoUtil] || 0) + 1;
+        }
+      }
     });
 
-    var salida = { arbolado: resumenArbolado(arb), mobiliario: resumenMobiliario(mob) };
-    if (!salida.arbolado && !salida.mobiliario) salida = null;
+    var salida = { arbolado: resumenArbolado(arb), mobiliario: resumenMobiliario(mob),
+                   estado: resumenEstado(est) };
+    if (!salida.arbolado && !salida.mobiliario && !salida.estado) salida = null;
     memoLevantado = { llave: llave, valor: salida };
     return salida;
   }
@@ -3482,6 +3507,46 @@
     return Object.keys(obj).map(function (k) {
       return { n: k, cuenta: obj[k], pct: total ? Math.round(1000 * obj[k] / total) / 10 : 0 };
     }).sort(function (a, b) { return b.cuenta - a.cuenta || a.n.localeCompare(b.n, 'es'); });
+  }
+
+  /* El estado, por uso. Se publica el reparto y el PEOR, no una media: la
+     media de una escala ordinal de cuatro peldaños es un número que no
+     corresponde a ningún peldaño —«2,3» no es nada— y encima esconde el caso
+     que importa, que es cuánto hay inservible. La media se conserva solo para
+     ordenar los usos de peor a mejor, y no se imprime. */
+  function resumenEstado(e) {
+    var usos = Object.keys(e);
+    if (!usos.length) return null;
+    var VE = window.URBIS_ESTADO_VOC;
+    var orden = (VE && VE.ESTADOS) ? VE.ESTADOS.map(function (x) { return x.n; }) : [];
+    var filas = usos.map(function (k) {
+      var u = e[k];
+      var peldanos = Object.keys(u.peldanos).map(function (n) {
+        var f = (VE && typeof VE.estadoPorNombre === 'function') ? VE.estadoPorNombre(n) : null;
+        return { n: n, cuenta: u.peldanos[n], color: f ? f.c : '',
+                 pct: u.conEstado ? Math.round(1000 * u.peldanos[n] / u.conEstado) / 10 : 0,
+                 p: f ? f.p : 99 };
+      }).sort(function (a, b) { return a.p - b.p; });
+      /* «Malo» y «Muy malo» juntos: es la cifra por la que alguien sale a
+         arreglar algo, y sumarla acá impide que cada pantalla la sume por su
+         cuenta con otro criterio (v879). */
+      var malos = peldanos.filter(function (x) { return x.p >= 2; })
+                          .reduce(function (n, x) { return n + x.cuenta; }, 0);
+      return { uso: u.uso, n: u.n, conEstado: u.conEstado, sinAnotar: u.sinAnotar,
+               noSeSabe: u.noSeSabe, desconocido: u.desconocido,
+               peldanos: peldanos, malos: malos,
+               /* El denominador viaja con el reparto: sin él, «el 50 % está
+                  malo» sobre dos de cuarenta se lee como del sector (v943). */
+               cobertura: u.n ? Math.round(100 * u.conEstado / u.n) : 0,
+               media: u.conEstado ? u.suma / u.conEstado : 0 };
+    }).filter(function (x) { return x.conEstado > 0 || x.sinAnotar > 0 || x.noSeSabe > 0 || x.desconocido > 0; })
+      .sort(function (a, b) { return b.media - a.media || b.n - a.n; });
+    if (!filas.length) return null;
+    return { usos: filas, orden: orden,
+             aviso: (VE && VE.AVISO) || '',
+             total: filas.reduce(function (n, x) { return n + x.n; }, 0),
+             conEstado: filas.reduce(function (n, x) { return n + x.conEstado; }, 0),
+             malos: filas.reduce(function (n, x) { return n + x.malos; }, 0) };
   }
 
   function resumenArbolado(a) {
@@ -23168,8 +23233,8 @@ function donaHTML(datos, colorDe, nombreDe) {
   function bloqueLevantado() {
     var L = (function () { try { return levantadoDeCampo(); } catch (e) { return null; } })();
     if (!L) return '';
-    var A = L.arbolado, M = L.mobiliario;
-    var out = h4('verde', 'Especies y materiales de lo levantado');
+    var A = L.arbolado, M = L.mobiliario, E = L.estado;
+    var out = h4('verde', 'Especies, materiales y estado de lo levantado');
 
     out += '<p class="pcr-pista">Lo que el curso mapeó <b>dentro de este sector</b>, con el ' +
       'detalle que solo se ve desde el andén. Son las cifras de <b>lo levantado</b>, no las del ' +
@@ -23291,6 +23356,44 @@ function donaHTML(datos, colorDe, nombreDe) {
       out += '<p class="pcr-pista">A diferencia del arbolado, acá no hay un umbral publicado ' +
         'contra el cual leer el reparto. Lo que sí permite es dimensionar una reposición: qué ' +
         'material predomina, y por tanto con qué se va a tener que trabajar.</p>';
+    }
+
+    if (E) {
+      /* El estado se puede CONTAR, y la razón va impresa: la v942 declinó
+         contar el del andén porque «pediría una escala acordada antes de
+         salir». La escala está escrita, con el criterio de cada peldaño al
+         lado, así que dos personas califican contra la misma vara. Lo que
+         sigue siendo cierto va al lado de la cifra y no en una nota al pie. */
+      out += '<p class="pcr-lab">En qué estado está lo mapeado</p>' +
+        '<p class="pcr-pista">' + esc(E.aviso) + ' Cada familia va por su cuenta, por lo mismo ' +
+        'que el material: «el 40 % está malo» sobre canecas, tapas, murales, vallas y vías ' +
+        'juntas no describe ninguna de las cinco.</p>';
+      E.usos.forEach(function (u) {
+        out += '<p class="pcr-lab pcr-lab-sub">' + esc(u.uso) + ' · ' + u.n + ' mapeado' + (u.n === 1 ? '' : 's') + '</p>';
+        if (u.peldanos.length) {
+          var mayorE = u.peldanos.reduce(function (n, x) { return Math.max(n, x.cuenta); }, 1);
+          out += '<div class="pcr-niveles">' + u.peldanos.map(function (x) {
+            return '<div class="pcr-nivel">' +
+              '<span class="pcr-nivel-nom">' + esc(x.n) + '</span>' +
+              '<span class="pcr-nivel-barra pcr-nivel-estado" style="--e:' + esc(x.color || '#94A3B8') + '">' +
+              '<i style="width:' + Math.round(100 * x.cuenta / mayorE) + '%"></i></span>' +
+              '<span class="pcr-nivel-n">' + x.cuenta + '<em>' + x.pct + '%</em></span></div>';
+          }).join('') + '</div>' +
+          '<p class="pcr-pista">Sobre <b>' + u.conEstado + ' de ' + u.n + '</b> con el estado ' +
+          'anotado' + (u.malos ? ' · <b>' + u.malos + '</b> ' + pl(u.malos, 'está', 'están') +
+            ' en «malo» o peor, que es por lo que alguien sale a arreglar algo' : '') + '.</p>';
+        }
+        var pe = [];
+        if (u.sinAnotar) pe.push('<b>' + u.sinAnotar + '</b> sin estado anotado — tarea de campo');
+        if (u.noSeSabe) pe.push('<b>' + u.noSeSabe + '</b> ' + pl(u.noSeSabe, 'mirado', 'mirados') + ' y no ' + pl(u.noSeSabe, 'determinado', 'determinados') + ' — es una respuesta');
+        /* Un peldaño que la escala ya no conoce se NOMBRA y no se cuenta ni
+           se tira: es la decisión de la v932 con las partes de un vacío. */
+        if (u.desconocido) pe.push('<b>' + u.desconocido + '</b> con un peldaño que la escala ya no tiene — no ' + pl(u.desconocido, 'cuenta', 'cuentan'));
+        if (pe.length) out += '<p class="pcr-pista">' + pe.join(' · ') + '.</p>';
+      });
+      out += '<p class="pcr-pista">No se publica una media: la escala es de cuatro peldaños y ' +
+        'un «2,3» no corresponde a ninguno — y encima escondería lo único que decide una ' +
+        'intervención, que es cuánto hay en «malo» o peor.</p>';
     }
 
     return out;

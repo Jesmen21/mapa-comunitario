@@ -450,6 +450,19 @@
       if (_mb && _mb.texto) materialPopup = `<div class="popup-desc popup-material">\ud83e\uddf1 ${limpiarHTML(_mb.texto)}</div>`;
     } catch(e){}
 
+    /* En qué estado está (v992). El color sale del vocabulario y no de la
+       hoja de estilo: escrito en cada pantalla serían tres verdes que se
+       separan a la tanda siguiente. */
+    let estadoPopup = '';
+    try {
+      const _eb = window.URBIS_ESTADO ? window.URBIS_ESTADO.leer(p.descripcion) : null;
+      if (_eb && _eb.texto) {
+        const _c = _eb.color || '#94A3B8';
+        estadoPopup = `<div class="popup-desc popup-estado" style="--e:${limpiarHTML(_c)}">`
+          + `<i class="popup-estado-punto" aria-hidden="true"></i>Estado: <b>${limpiarHTML(_eb.texto)}</b></div>`;
+      }
+    } catch(e){}
+
     let descPopup = (d[2] && d[2].trim() && d[2] !== 'N/A') ? `<div class="popup-desc">${limpiarHTML(d[2])}</div>` : '';
 
     // Botones de dueño dentro del popup (en móvil el popup ES el detalle visible).
@@ -623,6 +636,7 @@
         ${sinDirPopup}
         ${especiePopup}
         ${materialPopup}
+        ${estadoPopup}
         ${fotoMiniPopup}
         ${descPopup}
         ${victimasHTML}
@@ -944,6 +958,20 @@
       const _mbD = (_visD.verDetalle && window.URBIS_MOBILIARIO) ? window.URBIS_MOBILIARIO.leer(p.descripcion) : null;
       if (_mbD && _mbD.texto) _materialDet = `<div class="detalle-especie detalle-material">\ud83e\uddf1 Material: <b>${limpiarHTML(_mbD.texto)}</b></div>`;
     } catch(e){}
+    let _estadoDet = '';
+    try {
+      const _ebD = (_visD.verDetalle && window.URBIS_ESTADO) ? window.URBIS_ESTADO.leer(p.descripcion) : null;
+      if (_ebD && _ebD.texto) {
+        const _cD = _ebD.color || '#94A3B8';
+        /* El aviso va CON la cifra y no en la pantalla: es la regla del
+           aviso de origen (v867). Un juicio desde la acera presentado a
+           secas se lee como una inspección. */
+        const _V = window.URBIS_ESTADO_VOC;
+        _estadoDet = `<div class="detalle-especie detalle-estado" style="--e:${limpiarHTML(_cD)}">`
+          + `<i class="popup-estado-punto" aria-hidden="true"></i>Estado: <b>${limpiarHTML(_ebD.texto)}</b>`
+          + (_V ? `<small>${limpiarHTML(_V.AVISO)}</small>` : '') + '</div>';
+      }
+    } catch(e){}
     const _notaDet     = _visD.verDetalle ? (d[2] || 'Sin notas.')
                                           : 'Lo que se escribió acá se publica cuando un administrador confirme el reporte.';
     const _autorDet    = _visD.verDetalle ? creadorNombre : 'Se dice al confirmarse';
@@ -976,6 +1004,7 @@
         ${_sinDirDet}
         ${_especieDet}
         ${_materialDet}
+        ${_estadoDet}
         ${_pedidoDet}
         ${_avisoDet}
         ${_victimasDet}

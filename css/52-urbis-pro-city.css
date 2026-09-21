@@ -887,6 +887,44 @@
     color:#1f6b40 !important; -webkit-text-fill-color:#1f6b40;
     font-size:1.05rem !important; font-weight:900 !important; line-height:1 !important;
   }
+  /* ── Los chips del estado (v992) ──────────────────────────────────────
+     Cuatro peldaños con su color y su criterio debajo. No es una lista con
+     buscador como la especie y el material: un buscador para cuatro cosas es
+     absurdo, y el criterio tiene que estar A LA VISTA al elegir — es lo que
+     hace que dos personas califiquen contra la misma vara.
+
+     El color llega por `--e` desde el vocabulario de js/03e y no se escribe
+     acá: cuatro verdes en cuatro hojas de estilo se separan. */
+  #urbis-mobile-app .u52-estado-chips{ display:grid; gap:6px; }
+  #urbis-mobile-app .u52-estado-chip{
+    display:grid; gap:2px; text-align:left;
+    border:1px solid rgba(15,32,50,.16) !important;
+    border-left:4px solid var(--e, #94A3B8) !important;
+    border-radius:10px; padding:8px 10px !important;
+    background:#fff !important; width:100%;
+  }
+  #urbis-mobile-app .u52-estado-chip b{
+    font-size:.78rem; font-weight:800; line-height:1.2;
+    color:var(--e, #1b2b3a) !important; -webkit-text-fill-color:var(--e, #1b2b3a);
+  }
+  #urbis-mobile-app .u52-estado-chip small{
+    font-size:.66rem; line-height:1.35; font-weight:600;
+    color:#5a6b7d !important; -webkit-text-fill-color:#5a6b7d;
+  }
+  /* El elegido se ve sin leer: el peldaño puesto lleva su propio color de
+     fondo, no un marco gris genérico. */
+  #urbis-mobile-app .u52-estado-chip.on{
+    border-color:var(--e, #94A3B8) !important;
+    background:color-mix(in srgb, var(--e, #94A3B8) 12%, #fff) !important;
+    box-shadow:inset 0 0 0 1px var(--e, #94A3B8);
+  }
+  #urbis-mobile-app .u52-estado-chip:active{ transform:scale(.99); }
+  /* El punto de color del panel del punto: el mismo elemento que el globo y
+     la ficha usan, por la misma regla de js/03e. */
+  #urbis-mobile-app .u52-selpanel-estado small{
+    display:block; margin-top:2px; font-size:.64rem; opacity:.8;
+  }
+
   #urbis-mobile-app .u52-procity-especie .especie-otro{ display:grid; gap:5px; }
   #urbis-mobile-app .u52-procity-especie .especie-otro[hidden]{ display:none; }
   #urbis-mobile-app .u52-procity-especie .especie-otro label{
