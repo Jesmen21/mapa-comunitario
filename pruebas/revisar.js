@@ -78,6 +78,46 @@ function fueraDeComentario(txt) {
    lo que alguien escribió que hace. Los caracteres de comentario se
    reemplazan por espacios y no se borran, para que las líneas sigan
    contando igual. */
+/* ── Y EL REGISTRO, QUE TAMBIÉN SE PUBLICA (v1017) ────────────────────
+   La guarda leía `js/` y las páginas, y ahí se acababa. Pero la prosa de
+   `assets/data/*.json` —el título, el detalle y el contrapunto de cada
+   hecho, las líneas de cada alerta— se PINTA en `seguimiento.html` y en el
+   mapa igual que cualquier cadena de `js/`: es texto que ve el usuario, y
+   no pasaba por ninguna comprobación de idioma.
+
+   En un JSON todo lo entrecomillado es contenido, menos las CLAVES. Una
+   clave se reconoce por lo que viene después de cerrar: si es `:`, es una
+   clave. Sin esa distinción, `tipoFuente` y `titulo` se leen como prosa y
+   el primer barrido da miles de falsos «ti». */
+function dentroDeValorJson(txt) {
+  const s = new Uint8Array(txt.length);
+  let i = 0;
+  while (i < txt.length) {
+    if (txt[i] !== '"') { i++; continue; }
+    const ini = i + 1;
+    let j = ini;
+    while (j < txt.length) {
+      if (txt[j] === '\\') { j += 2; continue; }
+      if (txt[j] === '"') break;
+      j++;
+    }
+    if (j >= txt.length) break;
+    let k = j + 1;
+    while (k < txt.length && /\s/.test(txt[k])) k++;
+    const esClave = txt[k] === ':';
+    /* Y una URL tampoco es prosa: la dirección de una fuente lleva el
+       titular del medio dentro —«…que-parte-de-que-me-converti-no-entendiste/»—
+       y eso no lo escribimos nosotros ni se lee como texto. Se reconoce por
+       la forma y no con un renglón de lista, que es lo que hace que una
+       dirección nueva no cueste una excepción. */
+    const valor = txt.slice(ini, j);
+    const esUrl = /^(https?:|www\.|\/\/)/.test(valor);
+    if (!esClave && !esUrl) for (let q = ini; q < j; q++) s[q] = 1;
+    i = j + 1;
+  }
+  return s;
+}
+
 function soloCodigo(txt) {
   const com = fueraDeComentario(txt);
   let out = '';
@@ -2762,14 +2802,21 @@ console.log('\n  -- el FODA del curso --');
      quede vigilado sin que su autor se acuerde — que es la misma razón por la
      que el aviso de origen de VT vive en `enviar` (v867). */
   const archivos = fs.readdirSync(R('js')).filter(f => /\.js$/.test(f)).map(f => 'js/' + f)
-    .concat(fs.readdirSync(RAIZ).filter(f => /\.html$/.test(f)));
+    .concat(fs.readdirSync(RAIZ).filter(f => /\.html$/.test(f)))
+    /* Y los registros que se publican (v1017). A `assets/data/` le escribe una
+       rutina diaria que no lee esta bitácora, así que es justo donde una
+       forma nueva puede entrar sin que nadie la mire. */
+    .concat(fs.readdirSync(R('assets/data')).filter(f => /\.json$/.test(f)).map(f => 'assets/data/' + f));
 
   const hallados = [];
   archivos.forEach(function (rel) {
     let txt = '';
     try { txt = leer(rel); } catch (e) { return; }
     if (!txt) return;
-    const com = fueraDeComentario(txt), bajo = txt.toLowerCase();
+    /* En un JSON no hay comentarios: lo que hace de «fuera de comentario» es
+       estar dentro de un VALOR de prosa —ni una clave ni una dirección—. */
+    const com = /\.json$/.test(rel) ? dentroDeValorJson(txt) : fueraDeComentario(txt);
+    const bajo = txt.toLowerCase();
     VOSEO.forEach(function (f) {
       let k = 0;
       while ((k = bajo.indexOf(f, k)) !== -1) {
@@ -3045,6 +3092,18 @@ console.log('\n  -- el FODA del curso --');
      verdad: en castellano casi nada acaba así. */
   const NO_ES_IMPERFECTO = ['sílabas', 'habas', 'trabas', 'bravas', 'octavas'];
 
+  /* Lo que el REGISTRO trae y no es tuteo (v1017): nombres propios de personas
+     y entidades, y sustantivos corrientes en un texto de gobierno. Salen de
+     medir los dos registros publicados, no de imaginarlos. */
+  const DEL_REGISTRO_AS = ['Nicolás', 'Tomás', 'Andrés'];
+  const DEL_REGISTRO_IAS = ['Invías', 'Azarías', 'Matías', 'Elías', 'Farías',
+                            'economías', 'cesantías', 'metodologías', 'estadías',
+                            'garantías', 'mayorías', 'minorías', 'anomalías',
+                            'compañías', 'alcaldías', 'veedurías', 'auditorías'];
+  /* «Duarte» acaba en -arte y cae en la familia del enclítico, no en la del
+     pretérito: la terminación manda, no el parecido. */
+  const DEL_REGISTRO_ENC = ['Duarte'];
+
   /* Y la SEXTA familia estructural: el ENCLÍTICO `-te` pegado a un infinitivo
      o a un gerundio (v1012). «darte», «ubicarte», «moviéndote» solo pueden ser
      tú: hablando de usted son «darle», «ubicarse», «moviéndose». No hay una
@@ -3070,13 +3129,20 @@ console.log('\n  -- el FODA del curso --');
   ];
 
   const arch = fs.readdirSync(R('js')).filter(f => /\.js$/.test(f)).map(f => 'js/' + f)
-    .concat(fs.readdirSync(RAIZ).filter(f => /\.html$/.test(f)));
+    .concat(fs.readdirSync(RAIZ).filter(f => /\.html$/.test(f)))
+    /* Los registros que se publican. Se leen del disco, así que un archivo de
+       datos nuevo queda vigilado sin que su autor se acuerde (v867) — y eso
+       importa acá más que en otros sitios: a `assets/data/` le escribe una
+       rutina diaria que no lee esta bitácora. */
+    .concat(fs.readdirSync(R('assets/data')).filter(f => /\.json$/.test(f)).map(f => 'assets/data/' + f));
   const tuteos = [];
   arch.forEach(function (rel) {
     let txt = '';
     try { txt = leer(rel); } catch (e) { return; }
     if (!txt) return;
-    const cad = /\.html$/.test(rel) ? dentroDeTextoHtml(txt) : dentroDeCadena(txt);
+    const cad = /\.json$/.test(rel) ? dentroDeValorJson(txt)
+              : /\.html$/.test(rel) ? dentroDeTextoHtml(txt)
+              : dentroDeCadena(txt);
     const bajo = txt.toLowerCase();
     const apunta = (k, largo) => {
       const ctx = txt.slice(Math.max(0, k - 45), k + 45).toLowerCase();
@@ -3096,7 +3162,7 @@ console.log('\n  -- el FODA del curso --');
     let m;
     while ((m = reAS.exec(txt))) {
       if (!cad[m.index]) continue;
-      if (NO_ES_FUTURO.some(w => w.toLowerCase() === m[0].toLowerCase())) continue;
+      if (NO_ES_FUTURO.concat(DEL_REGISTRO_AS).some(w => w.toLowerCase() === m[0].toLowerCase())) continue;
       apunta(m.index, m[0].length);
     }
     /* Y el PRETÉRITO en -ste, que es la tercera mitad estructural (v945).
@@ -3124,7 +3190,7 @@ console.log('\n  -- el FODA del curso --');
     const reENC = /(?<![A-Za-zÁÉÍÓÚÜÑáéíóúüñ])[A-Za-zÁÉÍÓÚÜÑáéíóúüñ]*(?:arte|erte|irte|ándote|éndote)(?![A-Za-zÁÉÍÓÚÜÑáéíóúüñ])/g;
     while ((m = reENC.exec(txt))) {
       if (!cad[m.index]) continue;
-      if (NO_ES_ENCLITICO.some(w => w.toLowerCase() === m[0].toLowerCase())) continue;
+      if (NO_ES_ENCLITICO.concat(DEL_REGISTRO_ENC).some(w => w.toLowerCase() === m[0].toLowerCase())) continue;
       if (/[A-ZÁÉÍÓÚÜÑ]/.test(m[0].slice(1))) continue;
       apunta(m.index, m[0].length);
     }
@@ -3133,7 +3199,7 @@ console.log('\n  -- el FODA del curso --');
        ninguna otra persona. «pasarías» y «estabas» solo pueden ser tú —la
        primera y la tercera son «pasaría» y «estaba», sin ese -s—. Lo que
        colisiona no son otras personas sino SUSTANTIVOS, y esos se listan. */
-    [[/[A-Za-zÁÉÍÓÚÜÑáéíóúüñ]+ías(?![A-Za-zÁÉÍÓÚÜÑáéíóúüñ])/g, NO_ES_CONDICIONAL],
+    [[/[A-Za-zÁÉÍÓÚÜÑáéíóúüñ]+ías(?![A-Za-zÁÉÍÓÚÜÑáéíóúüñ])/g, NO_ES_CONDICIONAL.concat(DEL_REGISTRO_IAS)],
      [/[A-Za-zÁÉÍÓÚÜÑáéíóúüñ]+abas(?![A-Za-zÁÉÍÓÚÜÑáéíóúüñ])/g, NO_ES_IMPERFECTO]]
       .forEach(function (par) {
         const re = par[0], permitidas = par[1];
@@ -3234,6 +3300,24 @@ console.log('\n  -- el FODA del curso --');
        donde existe para hablar. */
     const oE = prueba(/(?<![A-Za-zÁÉÍÓÚÜÑáéíóúüñ])[A-Za-zÁÉÍÓÚÜÑáéíóúüñ]*(?:arte|erte|irte|ándote|éndote)(?![A-Za-zÁÉÍÓÚÜÑáéíóúüñ])/g,
       NO_ES_ENCLITICO);
+    /* Y el recorrido del JSON, contra sus tres casos de respuesta conocida:
+       una CLAVE que contiene «ti» —`tipoFuente` es el que llenó de falsos el
+       primer barrido—, una URL con el titular dentro, y la prosa, que es lo
+       único que debe verse. Sin esto puede quedarse sin morder y seguiría en
+       verde, que es como pasó la v878 con su propia lista. */
+    const J = '{ "tipoFuente": "verificado",\n' +
+              '  "u": "https://x.co/no-entendiste/",\n' +
+              '  "matiz": "Si te la comparten, es falso" }';
+    const cj = dentroDeValorJson(J);
+    const iClave = J.indexOf('tipoFuente'), iUrl = J.indexOf('no-entendiste'),
+          iProsa = J.indexOf('te la comparten'), iVal = J.indexOf('verificado');
+    comprobar('el recorrido del JSON ve la prosa, y no la clave ni la dirección',
+      !cj[iClave] && !cj[iUrl] && !!cj[iProsa] && !!cj[iVal],
+      'la clave ' + (cj[iClave] ? 'SE DENUNCIARÍA' : 'queda fuera') +
+      ', la dirección ' + (cj[iUrl] ? 'SE DENUNCIARÍA' : 'queda fuera') +
+      ', la prosa ' + (cj[iProsa] ? 'se ve' : 'NO SE VERÍA') +
+      ' y un valor corto ' + (cj[iVal] ? 'también' : 'NO'));
+
     comprobar('la del enclítico -te caza el tuteo y deja pasar los sustantivos',
       oE('darte') && oE('ubicarte') && oE('moverte') && oE('moviéndote') &&
       !oE('arte') && !oE('parte') && !oE('fuerte') && !oE('convierte') && !oE('reparte'),

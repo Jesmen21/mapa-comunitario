@@ -18671,6 +18671,99 @@ todo el CSS ya estaba precargado** — incluidos los doce archivos de
 una comprobación. El hueco era solo de iconos y manifiestos, que es lo que el
 patrón de antes no podía ver.
 
+## El registro también se publica (v1017)
+
+La tercera de la misma forma —una regla que se cumple en unas superficies y
+otras la esquivan—, y esta vez sobre el idioma, que es de lo que este proyecto
+más ha escrito.
+
+    v1016   la guarda del idioma lee 96 archivos: js/ y las páginas
+    v1017   lee 100: también los registros que se publican
+
+### Lo que no pasaba por ninguna comprobación
+
+La prosa de `assets/data/*.json` —el título, el detalle y el **contrapunto** de
+cada hecho, el **matiz** de cada contradicción, las líneas de cada alerta— se
+pinta en `seguimiento.html` y en el mapa **igual que cualquier cadena de
+`js/`**. Es texto que ve el usuario, y ninguna de las dos guardas de idioma
+—§7 el voseo, §9 el tuteo— lo leía.
+
+Y es justo donde más falta hace: a `assets/data/` **le escribe una rutina
+diaria** que no lee esta bitácora, así que es el sitio por el que una forma
+nueva entra sin que nadie la mire.
+
+Medido, había **uno**, en el matiz de una desinformación desmentida:
+
+> «URBIS no publica esta acusación como hecho. Si **te** la comparten, es
+> desinformación verificada.»
+
+Es la voz editorial del módulo, no una cita: exactamente lo que §9 unificó.
+
+### En un JSON todo lo entrecomillado es contenido, menos dos cosas
+
+Y las dos se reconocen por la FORMA, sin una lista:
+
+* **las CLAVES.** Una clave se distingue por lo que viene después de cerrar:
+  si es `:`, es una clave. Sin esa distinción, `tipoFuente`, `titulo` y
+  `tiene` se leen como prosa y el primer barrido da **3.598 falsos «ti»**;
+* **las DIRECCIONES.** La URL de una fuente lleva el titular del medio dentro
+  —`…que-parte-de-que-me-converti-no-entendiste/`— y eso ni lo escribimos
+  nosotros ni se lee como texto. Sin excluirlas, ese «entendiste» sale
+  denunciado como un pretérito de tú; con ellas fuera, no.
+
+El recorrido tiene su caso de respuesta conocida, como los otros tres de esta
+guarda: una clave con «ti» dentro, una dirección con el titular, y la prosa.
+Sin él puede quedarse sin morder y seguiría en verde (v878).
+
+### Ocho nombres que el registro usa y no son tuteo
+
+Un registro de gobierno trae nombres propios y sustantivos que las familias
+estructurales no pueden distinguir de un verbo: **Nicolás**, **Azarías**,
+**Invías**, **Duarte**, y **economías**, **cesantías**, **metodologías**,
+**estadías**. Van a la lista de permitidas de **su propia familia**, que es
+donde manda la terminación y no el parecido: `Invías` y `Azarías` acaban en
+-ías, `Duarte` en -arte. Puestos en la lista equivocada, la guarda los seguía
+denunciando — y así salió la primera corrida.
+
+### Lo que queda dicho y hoy no ocurre
+
+**Una cita no es nuestra voz.** Si un día el registro cita a alguien que tutea
+—y citar es exactamente lo que hace un registro—, la guarda lo denunciaría, y
+lo correcto no sería corregirle las palabras a nadie sino declararlo. Medido
+hoy: **ninguna cita de los dos registros trae una forma de tú**, así que el
+caso no existe todavía y no se inventa una salida para él. `pendiente`
+
+### Demostrado contra la v1016
+
+Cuatro inyecciones, contra copias guardadas en `/tmp` (v973). La primera es el
+estado exacto de la v1016 —el tuteo puesto y la guarda sin leer los
+registros— y es la que vale:
+
+```
+✓ ningún tuteo en el texto que ve el usuario (§9)  — revisados 96 archivos…
+```
+
+**Verde, con «Si te la comparten» publicado en la página.** Las otras tres:
+
+```
+✗ ningún tuteo … — assets/data/seguimiento-presidencial.json:6539 «te»
+✗ el recorrido del JSON ve la prosa, y no la clave ni la dirección
+    — la clave SE DENUNCIARÍA
+✗ el recorrido del JSON … — la dirección SE DENUNCIARÍA
+  ✗ y con ella, «entendiste» dentro de una URL
+```
+
+### Y el voseo lee lo mismo
+
+La guarda de §7 se extendió con el mismo recorrido —en un JSON no hay
+comentarios, así que lo que hace de «fuera de comentario» es estar dentro de
+un valor de prosa—. Medido: **cero voseos en los tres registros**, que es lo
+que tenía que salir; lo que gana es que el de mañana no entre en silencio.
+
+El recorrido vive ahora a nivel de módulo, al lado de `fueraDeComentario` y
+por la misma razón que aquel subió en la v926: hace falta en dos sitios y una
+segunda copia divergiría a la tanda siguiente.
+
 ## La lista viva: lo que al pliego educativo todavía le falta (v866)
 
 Esta lista se quedó vieja **cinco veces**. Cuatro dentro de la hoja —la

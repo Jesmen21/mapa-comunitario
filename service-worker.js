@@ -1,4 +1,4 @@
-const URBIS_CACHE = 'urbis-v1016-lo-que-carga-sin-red';
+const URBIS_CACHE = 'urbis-v1017-el-registro-tambien-se-publica';
 const URBIS_ASSETS = [
   './',
   './index.html',
