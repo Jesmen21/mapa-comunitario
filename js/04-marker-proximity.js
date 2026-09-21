@@ -898,7 +898,13 @@
        una escala de cuatro peldaños no puede estar incompleta. El
        vocabulario vive en js/03c, con la especie: es del mismo uso. */
     arbolSitio:             BASE_OFFSET + TIMELINE_EXTRA_OFFSET + 22,
-    arbolSitioOtro:         BASE_OFFSET + TIMELINE_EXTRA_OFFSET + 23
+    arbolSitioOtro:         BASE_OFFSET + TIMELINE_EXTRA_OFFSET + 23,
+    /* De qué está hecha la vía (v1000). Dos casillas por lo mismo que la
+       especie y el material: la salida «Otro» necesita dónde poner el
+       nombre, y meterlo en la misma casilla obligaría a inventar un
+       separador dentro de un valor de lista cerrada. */
+    viaSuperficie:          BASE_OFFSET + TIMELINE_EXTRA_OFFSET + 24,
+    viaSuperficieOtro:      BASE_OFFSET + TIMELINE_EXTRA_OFFSET + 25
   };
   // La casilla que las tres funciones se disputaban. Se conserva con nombre
   // propio porque hay registros viejos con validaciones o con código de carpeta
@@ -1041,6 +1047,37 @@
   /* Dónde está sembrado el árbol (v993). Mismo molde que la especie y el
      material: lo que depende del ORDEN de las casillas se resuelve acá y en
      ningún otro sitio. */
+  /* ── DE QUÉ ESTÁ HECHA LA VÍA (v1000) ────────────────────────────────────
+     Mismo molde que `URBIS_ARBOL`, `URBIS_MOBILIARIO` y `URBIS_SITIO`: quien
+     pregunta no tiene por qué saber en qué casilla vive nada, y el orden de
+     las casillas se resuelve en este archivo y en ningún otro. */
+  window.URBIS_SUPERFICIE = {
+    leer: function (descripcion) {
+      const d = String(descripcion || '').split(' | ');
+      const V = window.URBIS_SUPERFICIE_VOC || null;
+      const crudo = String(d[URBIS_SLOTS.viaSuperficie] || '').trim();
+      const otro = String(d[URBIS_SLOTS.viaSuperficieOtro] || '').trim();
+      const valor = (!crudo || crudo === 'undefined') ? '' : crudo;
+      const otroTexto = (!otro || otro === 'undefined') ? '' : otro;
+      const noSeSabe = !!(V && valor === V.NO_SE_SABE());
+      const esOtro = !!(V && valor === V.OTRO());
+      return {
+        superficie: valor,
+        /* Utilizable para cualquier cuenta: '' en cuanto sea una de las dos
+           salidas. El valor crudo se conserva para poder informarlo, que es
+           la regla de la v973 —no se pierde lo que alguien contestó—. */
+        superficieUtil: (noSeSabe || esOtro) ? '' : valor,
+        sinSuperficie: !valor,
+        noSeSabe: noSeSabe,
+        esOtro: esOtro,
+        otroTexto: otroTexto,
+        texto: V ? V.texto(valor, otroTexto) : valor,
+        idxSuperficie: URBIS_SLOTS.viaSuperficie,
+        idxSuperficieOtro: URBIS_SLOTS.viaSuperficieOtro
+      };
+    }
+  };
+
   window.URBIS_SITIO = Object.assign(window.URBIS_SITIO || {}, {
     leer: function (descripcion) {
       const d = String(descripcion || '').split(' | ');

@@ -1,4 +1,4 @@
-const URBIS_CACHE = 'urbis-v980-el-boton-de-gps-del-mapa';
+const URBIS_CACHE = 'urbis-v999-un-acto-de-gobierno-declara-su-nivel';
 const URBIS_ASSETS = [
   './',
   './index.html',
@@ -78,6 +78,8 @@ const URBIS_ASSETS = [
   './js/03b-edificio-vocabulario.js',
   './js/03c-arbol-especies.js',
   './js/03d-mobiliario-material.js',
+  './js/03e-estado-urbano.js',
+  './js/03f-superficie-via.js',
   './js/03c-reportes-rapidos.js',
   './js/04-marker-proximity.js',
   './js/05-helpers-temporal-security.js',

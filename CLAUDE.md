@@ -16421,6 +16421,154 @@ Documentar las 19 entradas sin fuente, conseguir la fuente del acto de las seis
 `sin-acto`, y decidir la identidad de objeto de las ocho contradicciones — esta
 última, explícitamente de quien firma el módulo.
 
+## De qué está hecha la vía (v1000)
+
+La otra mitad de lo que se pidió con el estado: **«verde está buena, naranja
+medio regular, malo, muy malo… y el tipo de pavimento»**. El estado entró en la
+v992 y la superficie faltaba — y sin ella el estado no se puede leer: un
+«regular» sobre asfalto y un «regular» sobre una vía en tierra no son el mismo
+problema ni los arregla la misma entidad.
+
+    v999   «Vías e Infraestructura Vial» tiene estado y nada que diga de qué es
+    v1000  ocho superficies, buscables, al lado del estado
+
+### Por qué NO va en la lista de materiales de js/03d
+
+Era el atajo obvio —`USOS_CON_MATERIAL` existe y bastaba un renglón— y la
+prueba de la clase B lo descarta **en las dos direcciones**: *¿existe un cambio
+razonable que deba mover una y no la otra?* Una banca puede ser de guadua y una
+vía no; una vía puede ser de afirmado y una banca no. Con una sola lista, quien
+mapea una caneca tendría que pasar por «adoquín» y quien mapea una cuadra por
+«lona o tela», y el día que entre un material de mobiliario se le ofrecería a
+las vías sin que nadie lo decidiera.
+
+Y el propio título de aquel archivo lo dice: **«de qué está hecho el MOBILIARIO
+URBANO»**. Meter la calzada ahí sería ampliar ese archivo a algo que su nombre
+no cubre.
+
+La guarda persigue esa separación por su clase: **ningún valor puede estar en
+las dos listas**. Demostrada metiendo `Asfalto` entre los materiales: sale
+«repetidos: Asfalto — el conteo se partiría entre dos valores del mismo hecho».
+
+### Y por qué es un CAMPO y no tipos nuevos del catálogo
+
+La misma razón de la v981: «Vía principal en asfalto», «Vía principal en
+adoquín», «Vía local en tierra» multiplica el catálogo por ocho y el análisis
+deja de poder contar vías principales — tendría que sumar ocho tipos que
+alguien tiene que acordarse de mantener juntos. Con un campo, el conteo por
+tipo sigue siendo uno.
+
+### Las ocho, y lo que las distingue DESDE EL ANDÉN
+
+Cada una lleva su `d`, y no es una ayuda: **es lo que hace que dos personas
+clasifiquen igual la misma cuadra**, que es lo mismo que la escala del estado
+de la v992. «Losas grises con juntas cada pocos metros» decide entre placa de
+concreto y asfalto sin saber de pavimentos.
+
+Dos que existen porque la vía colombiana las tiene y una lista genérica no:
+**huella de concreto** —dos franjas para las llantas y el centro sin
+pavimentar, que es media vía rural del país— y **afirmado (recebo o
+gravilla)**, que no es lo mismo que tierra y que la gente llama «destapada».
+La octava es **mixta**, para la cuadra que cambia de material a la mitad: sin
+ella, quien la tiene delante elige «el más parecido» y mete un dato falso
+(v973).
+
+### Lo que esta lista NO mide, y va dicho en el propio archivo
+
+El **estado**, que vive en js/03e y se juzga contra una escala escrita. La
+superficie SE VE; el estado se califica. Mezclarlos haría que «asfalto» y «con
+huecos» fueran valores del mismo campo, que es el error que este módulo lleva
+tandas deshaciendo — y es literalmente lo que js/03d ya tiene escrito sobre sí
+mismo.
+
+Tampoco el **ancho** ni los carriles: eso lo levanta la plantilla del perfil
+vial (v939), que se camina con cinta. Y tampoco el **andén**, que tiene la suya
+desde la v942 con columna de material: tener las dos cosas serían dos maneras
+de codificar un solo hecho.
+
+### El componente ya existía, y esa es la mitad barata
+
+El control de lista cerrada —buscador, chip, «No se sabe», «Otro» con texto
+libre— lo comparten desde la v993 la especie, el material y el sitio de
+siembra, y la superficie entra como una entrada más en `LISTAS_CERRADAS`. Un
+cuarto control para lo mismo se habría separado de los otros tres.
+
+Lo único que hubo que alinear es el nombre: `pintarLista` llama `V.buscar(q)`,
+y el vocabulario lo exponía como `buscarSuperficie`. **Con otro nombre el
+control sale VACÍO y sin un solo error**, que es la forma de la v895 — así que
+tiene su guarda.
+
+### Demostrado contra la v999
+
+Ocho en rojo de ocho, contra una copia guardada en `/tmp` y con una inyección
+fiel por aserción (v993):
+
+```
+✗ todo uso que lleva superficie existe en el catálogo  — Vias e Infraestructura Vial
+✗ la superficie y el material siguen siendo dos vocabularios  — repetidos: Asfalto
+✗ las dos casillas están repartidas en URBIS_SLOTS  — sin casilla
+✗ quien lee pregunta por el lector y quien escribe por el reparto  — no hay lector
+✗ la superficie se guarda y se pinta donde el punto se ve  — falta: alguna pantalla
+✗ las clases nuevas tienen regla que las pinte  — sin regla: popup-superficie
+✗ el archivo nuevo está en index.html y en el service worker  — falta en: el service worker
+✗ y el vocabulario expone el nombre que el control llama  — no lo expone
+```
+
+#### Y una de mis guardas que no mordía, por segunda vez en el proyecto
+
+La de «se guarda y se pinta» buscaba los IDENTIFICADORES —`popup-superficie`,
+`detalle-superficie`— y pasó en verde sobre la inyección que quitaba
+`${superficiePopup}` de la plantilla: la cadena se seguía calculando y no
+llegaba a la pantalla. Es la lección de la v976 —**una comprobación estática
+cuenta menciones y no alcanzabilidad**— y el arreglo es el que la v977 ya
+había usado: **se buscan los HUECOS de la plantilla**, que es lo que llega al
+lector.
+
+### Y se miró el papel
+
+El camino de verdad en el navegador —`?app=educativo`, el botón de mapeo, Pro
+City, «En el mapa», un toque, buscar «vía principal»—:
+
+```
+el tipo elegido: 🛣️ Vía principal / arteria
+bloque de superficie: SÍ · bloque de estado: SÍ
+rótulo: ¿De qué está hecha? (opcional)
+buscando «asf»: Asfalto · Mixta (dos superficies en el tramo) · No se sabe · Otro
+```
+
+Y las siete búsquedas de la calle contra el vocabulario: asfalto, pavimentada,
+destapada, adoquín, huella, tierra y recebo ponen cada una la suya de primera.
+
+### Lo que sigue, medido: la vía es un TRAMO y se mapea como un punto
+
+Queda dicho acá con su medición para que la tanda que lo tome no empiece por
+averiguarlo. Hoy una vía se mapea como un punto, y una vía es una LÍNEA: el
+usuario lo pidió con esas palabras —«una línea o polilínea para las vías»— y
+es lo que falta para que el estado y la superficie describan un tramo en vez
+de un sitio.
+
+Lo medido de lo que costaría:
+
+* **la geometría cabe en el registro sin tocar el servidor.** Una fila es
+  `tipo · lat · lng · descripcion · fecha` (v930) y la descripción es un
+  reparto de casillas (`URBIS_SLOTS`, js/04) con veintiséis repartidas. Los
+  vértices caben en una casilla como `lat,lng;lat,lng;…` —seis decimales, que
+  es lo que `guardarTrazo` ya usa: once centímetros—, y `lat`/`lng` de la fila
+  serían el punto medio, para que el punto siga apareciendo en el mapa y en
+  las búsquedas por cercanía;
+* **los separadores están libres**: la v989 midió que `;` `:` `+` y `>` no
+  aparecen en ninguna de las 631 cadenas del catálogo, y las casillas se parten
+  por ` | `, así que un separador de adentro no colisiona;
+* **el dibujo por toques ya existe** —`S.intPts` en js/68, para el polígono de
+  análisis— y es lo que habría que reusar en vez de escribir un segundo;
+* **los atributos ya están los dos**: el estado (v992) y la superficie (v1000).
+  Lo que falta es la geometría, no lo que se dice de ella.
+
+Lo que NO está medido y decide el tamaño de esa tanda: qué hace el análisis
+con una línea —hoy `puntoAElemento` (v984) emite un nodo, y una vía debería
+entrar como `way` con su `highway`— y cómo se dibuja en el mapa sin que una
+capa de líneas tape los puntos.
+
 ## La lista viva: lo que al pliego educativo todavía le falta (v866)
 
 Esta lista se quedó vieja **cinco veces**. Cuatro dentro de la hoja —la

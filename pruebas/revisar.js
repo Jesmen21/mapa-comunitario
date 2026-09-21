@@ -6222,6 +6222,144 @@ console.log('\n  -- un error de GPS dice cuál de los tres es (v996) --');
   }
 }
 
+/* ── De qué está hecha la vía (v1000) ──────────────────────────────────────
+   La otra mitad de lo que se pidió con el estado: «verde está buena, naranja
+   medio regular… y el tipo de pavimento». Sin la superficie, el estado no se
+   puede leer —un «regular» sobre asfalto y uno sobre tierra no son el mismo
+   problema ni los arregla la misma entidad—.
+
+   Va en su propio vocabulario y NO en la lista de materiales de js/03d, y la
+   prueba de la clase B lo dice en las dos direcciones: una banca puede ser de
+   guadua y una vía no; una vía puede ser de afirmado y una banca no. El propio
+   título de aquel archivo es «de qué está hecho el MOBILIARIO URBANO». */
+console.log('\n  -- de qué está hecha la vía (v1000) --');
+{
+  const j03s = soloCodigo(leer('js/03f-superficie-via.js'));
+  const j04s = soloCodigo(leer('js/04-marker-proximity.js'));
+  const j20s = soloCodigo(leer('js/20-mobile-functional-app.js'));
+  const j12s = soloCodigo(leer('js/12-spa-ui.js'));
+  const j10s = soloCodigo(leer('js/10-visible-markers.js'));
+  const c83s = leer('css/83-moderacion-foto.css');
+
+  const lista = (() => {
+    const i = j03s.indexOf('var SUPERFICIES'); if (i < 0) return [];
+    const c = j03s.slice(i, j03s.indexOf('\n  ];', i));
+    return [...c.matchAll(/\{ n:'([^']+)'/g)].map((m) => m[1]);
+  })();
+  const usos = (() => {
+    const i = j03s.indexOf('var USOS_CON_SUPERFICIE'); if (i < 0) return [];
+    const c = j03s.slice(i, j03s.indexOf(';', i));
+    return [...c.matchAll(/'([^']+)'/g)].map((m) => m[1]);
+  })();
+
+  /* MATERIAL primero (v920): sin vocabulario que leer, todo lo de abajo
+     pasaría por no tener nada delante. */
+  if (lista.length < 4 || !usos.length) {
+    anotarSinMaterial('MATERIAL · el vocabulario de superficie se deja leer',
+      lista.length + ' superficies · ' + usos.length + ' usos');
+  } else {
+    comprobar('MATERIAL · el vocabulario de superficie se deja leer',
+      true, lista.length + ' superficies y ' + usos.length +
+        (usos.length === 1 ? ' uso que la lleva' : ' usos que la llevan'));
+
+    /* 1 · Todo uso que lleva el campo existe en el catálogo. Un renombre allá
+       dejaría el campo apagado en silencio, que es la forma de la v974. */
+    const cat = leer('js/20-mobile-functional-app.js');
+    const fuera = usos.filter((u) => cat.indexOf("'" + u + "'") < 0 && cat.indexOf('"' + u + '"') < 0);
+    comprobar('todo uso que lleva superficie existe en el catálogo',
+      fuera.length === 0,
+      fuera.length === 0 ? (usos.length === 1 ? 'el uso que la lleva está en la Matriz'
+                                             : 'los ' + usos.length + ' están en la Matriz')
+        : 'no están en la Matriz: ' + fuera.join(' · ') + ' — el campo quedaría apagado sin que nada lo diga');
+
+    /* 2 · Y la superficie no se coló en la lista de MATERIALES, ni al revés.
+       Son dos vocabularios y el día que se mezclen, quien mapea una caneca
+       tendría que pasar por «adoquín». */
+    const j03m = soloCodigo(leer('js/03d-mobiliario-material.js'));
+    const mats = (() => {
+      const i = j03m.indexOf('var MATERIALES'); if (i < 0) return [];
+      const c = j03m.slice(i, j03m.indexOf('\n  ];', i));
+      return [...c.matchAll(/\{ n:'([^']+)'/g)].map((m) => m[1]);
+    })();
+    const cruce = lista.filter((x) => mats.indexOf(x) >= 0);
+    comprobar('la superficie y el material siguen siendo dos vocabularios',
+      mats.length >= 5 && cruce.length === 0,
+      mats.length < 5 ? 'no se pudo leer la lista de materiales: no se está comprobando nada'
+        : cruce.length === 0 ? lista.length + ' superficies y ' + mats.length + ' materiales, sin un valor repetido'
+          : 'repetidos: ' + cruce.join(' · ') + ' — el conteo se partiría entre dos valores del mismo hecho');
+
+    /* 3 · Las dos casillas están repartidas y AL FINAL. Reordenar una
+       existente rompe lo que ya está guardado (js/04 lo dice desde siempre). */
+    const slots = /viaSuperficie:\s*BASE_OFFSET/.test(j04s) && /viaSuperficieOtro:\s*BASE_OFFSET/.test(j04s);
+    comprobar('las dos casillas están repartidas en URBIS_SLOTS',
+      slots,
+      slots ? 'viaSuperficie y viaSuperficieOtro salen del reparto único'
+            : 'sin casilla: la superficie no tendría dónde guardarse');
+
+    /* 4 · Quien LEE pregunta por el lector de js/04 y no corta la descripción
+       por su cuenta; quien ESCRIBE toma la posición de `URBIS_SLOTS`, que es
+       el reparto único. Son dos cosas distintas y por eso se miden aparte: el
+       guardado necesita el índice y no el lector, y exigirle el lector sería
+       medir otra cosa de la que se dice medir. */
+    const lector = /window\.URBIS_SUPERFICIE = \{/.test(j04s);
+    const leen = [['el formulario', j20s], ['el globo y la ficha', j10s]]
+      .filter(([, t]) => !/URBIS_SUPERFICIE\b/.test(t)).map(([n]) => n);
+    const escribePorSlots = /S\.viaSuperficie\b/.test(j12s) && !/\[\s*\d{2,}\s*\]\s*=/.test(
+      j12s.slice(Math.max(0, j12s.indexOf('guardarSuperficieVia')), j12s.indexOf('guardarSuperficieVia') + 1400));
+    comprobar('quien lee pregunta por el lector y quien escribe por el reparto',
+      lector && leen.length === 0 && escribePorSlots,
+      !lector ? 'no hay lector: cada pantalla cortaría la descripción por su cuenta'
+        : leen.length ? 'no lo usan: ' + leen.join(' · ') + ' — se separarían a la tanda siguiente'
+          : !escribePorSlots ? 'el guardado no toma la posición de URBIS_SLOTS: escribiría en una casilla de otro'
+            : 'las dos pantallas leen por js/04 y el guardado escribe por el reparto único');
+
+    /* 5 · Guarda contra el dato que nadie alcanza (clase C): se guarda y se
+       PINTA. Un campo que se guarda y que ninguna pantalla enseña se ve, desde
+       afuera, igual que uno que no existe — es el defecto que la v985
+       encontró en este mismo panel. */
+    const guarda = /guardarSuperficieVia/.test(j12s);
+    /* Se buscan los HUECOS de la plantilla y no los identificadores: una
+       comprobación estática cuenta menciones y no alcanzabilidad, así que
+       calcular la cadena y no insertarla la dejaría en verde con el dato
+       invisible. Es el defecto que la v977 encontró en su propia guarda y que
+       la v976 dejó escrito. */
+    const pinta = /\$\{superficiePopup\}/.test(j10s) && /\$\{_superficieDet\}/.test(j10s) &&
+                  /\+ superficie \+/.test(j20s);
+    comprobar('la superficie se guarda y se pinta donde el punto se ve',
+      guarda && pinta,
+      (guarda && pinta) ? 'se guarda en js/12 y sale en el globo, en la ficha y en el panel del punto'
+        : 'falta: ' + [!guarda && 'el guardado', !pinta && 'alguna pantalla'].filter(Boolean).join(' y ') +
+          ' — un dato que nadie alcanza se ve igual que uno que no existe');
+
+    /* 6 · Las clases nuevas están pintadas (v895): una clase que ninguna regla
+       pinta es HTML válido, sin error y sin aspecto. */
+    const cls = ['popup-superficie', 'detalle-superficie'].filter((c) => c83s.indexOf('.' + c) < 0);
+    comprobar('las clases nuevas tienen regla que las pinte',
+      cls.length === 0,
+      cls.length === 0 ? 'las dos se pintan en css/83'
+        : 'sin regla: ' + cls.join(' · ') + ' — saldrían sin aspecto y sin error');
+
+    /* 7 · El archivo entra por las DOS puertas (v981). Sin la del service
+       worker, un teléfono con la aplicación instalada no lo descarga, el
+       vocabulario no existe y el campo no sale, sin un solo error. */
+    const enIndex = leer('index.html').indexOf('js/03f-superficie-via.js') >= 0;
+    const enSW = leer('service-worker.js').indexOf('js/03f-superficie-via.js') >= 0;
+    comprobar('el archivo nuevo está en index.html y en el service worker',
+      enIndex && enSW,
+      (enIndex && enSW) ? 'entra por las dos puertas'
+        : 'falta en: ' + [!enIndex && 'index.html', !enSW && 'el service worker'].filter(Boolean).join(' y '));
+
+    /* 8 · Guarda de la guarda (v878): el control de lista cerrada llama
+       `V.buscar(q)`. Con otro nombre el control saldría VACÍO y sin un solo
+       error, que es la forma de la v895. */
+    const buscar = /buscar:\s*buscarSuperficie/.test(j03s);
+    comprobar('y el vocabulario expone el nombre que el control llama',
+      buscar,
+      buscar ? 'expone `buscar`, que es lo que pintarLista pide a las cuatro'
+             : 'no lo expone: el control saldría vacío y sin un solo error');
+  }
+}
+
 /* ── Un ACTO de gobierno declara su nivel (v999) ───────────────────────────
    `hechosDelMandato` deja fuera del score lo que no es del gobierno nacional,
    y eso solo puede funcionar si el nivel está escrito. La v941 lo decidió para

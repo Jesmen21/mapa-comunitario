@@ -460,6 +460,15 @@
       }
     } catch(e){}
 
+    /* De qué está hecha la vía (v1000). Junto al estado, que es con lo que
+       se lee: un «regular» sobre asfalto y uno sobre tierra no son el mismo
+       problema. */
+    let superficiePopup = '';
+    try {
+      const _pb = window.URBIS_SUPERFICIE ? window.URBIS_SUPERFICIE.leer(p.descripcion) : null;
+      if (_pb && _pb.texto) superficiePopup = `<div class="popup-desc popup-superficie">\ud83d\udee3\ufe0f ${limpiarHTML(_pb.texto)}</div>`;
+    } catch(e){}
+
     /* En qué estado está (v992). El color sale del vocabulario y no de la
        hoja de estilo: escrito en cada pantalla serían tres verdes que se
        separan a la tanda siguiente. */
@@ -646,6 +655,7 @@
         ${sinDirPopup}
         ${especiePopup}
         ${sitioPopup}
+        ${superficiePopup}
         ${materialPopup}
         ${estadoPopup}
         ${fotoMiniPopup}
@@ -974,6 +984,11 @@
           + '</div>';
       }
     } catch(e){}
+    let _superficieDet = '';
+    try {
+      const _pbD = (_visD.verDetalle && window.URBIS_SUPERFICIE) ? window.URBIS_SUPERFICIE.leer(p.descripcion) : null;
+      if (_pbD && _pbD.texto) _superficieDet = `<div class="detalle-especie detalle-superficie">\ud83d\udee3\ufe0f Superficie: <b>${limpiarHTML(_pbD.texto)}</b></div>`;
+    } catch(e){}
     let _materialDet = '';
     try {
       const _mbD = (_visD.verDetalle && window.URBIS_MOBILIARIO) ? window.URBIS_MOBILIARIO.leer(p.descripcion) : null;
@@ -1025,6 +1040,7 @@
         ${_sinDirDet}
         ${_especieDet}
         ${_sitioDet}
+        ${_superficieDet}
         ${_materialDet}
         ${_estadoDet}
         ${_pedidoDet}

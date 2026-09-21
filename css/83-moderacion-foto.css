@@ -335,3 +335,13 @@ body[data-role="gov"] .urbis-sello-aprobar{
   padding:6px 10px; font-size:.74rem; cursor:pointer;
   background:#fff; color:#a32b23 !important; -webkit-text-fill-color:#a32b23 !important;
 }
+
+/* De qué está hecha la vía (v1000). Un solo color y sin rama de «falta»: la
+   superficie es un dato opcional como el material, no una tarea pendiente
+   como el árbol sin sitio. Gris pizarra, que es lo que se lee al lado del
+   color del estado sin competir con él: el estado es el que tiene que saltar
+   a la vista, y darle a la superficie un color de alarma sería enseñar dos
+   códigos para una fila (v880). */
+.popup-superficie{ color:#55606b; font-weight:700; }
+.detalle-especie.detalle-superficie{ color:#cbd5e1 !important; -webkit-text-fill-color:#cbd5e1; }
+.detalle-especie.detalle-superficie b{ color:#f1f5f9 !important; -webkit-text-fill-color:#f1f5f9; }

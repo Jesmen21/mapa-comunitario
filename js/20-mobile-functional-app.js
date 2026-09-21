@@ -4836,7 +4836,7 @@
      criterios para un mismo hecho se separan a la tanda siguiente (v879), y
      acá el que se separaría publicaría la foto de alguien sin moderar. */
   function fichaDeProCity(p, d){
-    let foto = '', nota = '', especie = '', sitio = '', material = '', estado = '', pisos = '';
+    let foto = '', nota = '', especie = '', sitio = '', material = '', superficie = '', estado = '', pisos = '';
     try{
       const f = (typeof window.urbisFotoDeReporte === 'function') ? window.urbisFotoDeReporte(p) : null;
       if(f && f.hay && f.puedeVerla){
@@ -4872,6 +4872,12 @@
         sitio = `<div class="u52-procity-selpanel-dato${s2.sinSitio ? ' falta' : ''}">\u{1FAB4} Sembrado en: ${esc(s2.texto)}</div>`;
       }
     }catch(e){}
+    /* De qué está hecha la vía (v1000), junto al estado: es con lo que se
+       lee. */
+    try{
+      const su = window.URBIS_SUPERFICIE ? window.URBIS_SUPERFICIE.leer(p.descripcion) : null;
+      if(su && su.texto) superficie = `<div class="u52-procity-selpanel-dato">\u{1F6E3}\uFE0F ${esc(su.texto)}</div>`;
+    }catch(e){}
     try{
       const m = window.URBIS_MOBILIARIO ? window.URBIS_MOBILIARIO.leer(p.descripcion) : null;
       if(m && m.texto) material = `<div class="u52-procity-selpanel-dato">\u{1F9F1} ${esc(m.texto)}</div>`;
@@ -4903,7 +4909,7 @@
         }
       }
     }catch(e){}
-    return foto + nota + especie + sitio + material + estado + pisos;
+    return foto + nota + especie + sitio + material + superficie + estado + pisos;
   }
 
   // Panel compacto al tocar un punto: quién lo publicó + Editar (permite
@@ -5840,6 +5846,8 @@
     let estadoPre = '';
     let sitioPre = '';
     let sitioOtroPre = '';
+    let superficiePre = '';
+    let superficieOtroPre = '';
     let fotoPre = '';
     if(editando){
       const dp = (typeof globalData !== 'undefined' && Array.isArray(globalData)) ? globalData.find(x => String(x.lat) === String(proCity.editLat)) : null;
@@ -5879,6 +5887,11 @@
         try{
           const sb = window.URBIS_SITIO ? window.URBIS_SITIO.leer(dp.descripcion) : null;
           if(sb){ sitioPre = sb.sitio; sitioOtroPre = sb.otroTexto; }
+        }catch(e){}
+        /* Y de qué está hecha la vía (v1000). */
+        try{
+          const pb = window.URBIS_SUPERFICIE ? window.URBIS_SUPERFICIE.leer(dp.descripcion) : null;
+          if(pb){ superficiePre = pb.superficie; superficieOtroPre = pb.otroTexto; }
         }catch(e){}
         /* Y la foto, que es la que costó una (v986). Va por el portero y no
            leyendo la casilla en crudo: quien edita es su autor o un
@@ -6006,6 +6019,34 @@
           <small class="u52-procity-edificio-pista">Un árbol sin hueco en el piso es el que levanta el andén y el que se seca primero. Es otra cosa que el tipo «Árbol que levanta el andén»: ese ya lo está levantando, y esto dice dónde está sembrado.</small>
         </div>`;
     }
+    /* ── De qué está hecha la vía (v1000) ──────────────────────────────
+       La otra mitad de lo que se pidió con el estado: «verde está buena,
+       naranja medio regular… y el tipo de pavimento». Sin la superficie, el
+       estado no se puede leer —un «regular» sobre asfalto y uno sobre tierra
+       no son el mismo problema ni los arregla la misma entidad—. Comparte el
+       componente de lista cerrada con las otras tres. */
+    const VOC_SUP = window.URBIS_SUPERFICIE_VOC || null;
+    let htmlSuperficie = '';
+    if(proCity.dim === MATRIZ_USOS_KEY && VOC_SUP && VOC_SUP.esUsoConSuperficie(usoParteSel)){
+      htmlSuperficie = `
+        <div class="u52-procity-especie" id="ins-superficie-bloque">
+          <label for="ins-superficie-busca">¿De qué está hecha? <i>opcional</i></label>
+          <input type="hidden" id="ins-superficie" value="${esc(superficiePre)}">
+          <div id="ins-superficie-elegida" class="especie-elegida"${superficiePre ? '' : ' hidden'}>
+            ${superficiePre ? esc(VOC_SUP.texto(superficiePre, superficieOtroPre)) : ''}
+            <button type="button" data-u52-lista-quitar="superficie" aria-label="Quitar superficie">×</button>
+          </div>
+          <input type="text" id="ins-superficie-busca" class="u52-matriz-search" autocomplete="off"
+                 placeholder="🔎 Buscar (asfalto, adoquín, afirmado, tierra…)"
+                 oninput="window.urbisSuperficieBuscar(this.value)">
+          <div id="ins-superficie-lista" class="especie-lista"></div>
+          <div id="ins-superficie-otro-caja" class="especie-otro"${superficieOtroPre ? '' : ' hidden'}>
+            <label for="ins-superficie-otro">¿Cuál es? Así entra en la lista de la próxima versión.</label>
+            <input type="text" id="ins-superficie-otro" maxlength="60" autocomplete="off" value="${esc(superficieOtroPre)}">
+          </div>
+          <small class="u52-procity-edificio-pista">Es lo que se ve, no cómo está: el estado va en la escala de arriba. Una vía puede ser de asfalto y estar mala, o de afirmado y estar bien mantenida.</small>
+        </div>`;
+    }
     /* ── De qué está hecho (v981) ──────────────────────────────────────
        Pedido con la foto de una caneca de varilla oxidada: «bancas,
        jardineras, canecas y postes… basura metálica». Sale solo en los usos
@@ -6086,6 +6127,7 @@
         ${htmlEdificio}
         ${htmlEspecie}
         ${htmlSitio}
+        ${htmlSuperficie}
         ${htmlMaterial}
         ${htmlEstado}
         ${avisoDePrecisionHTML()}
@@ -6195,6 +6237,16 @@
       pieNoSabe: 'Se miró y no se pudo determinar desde la acera',
       pieOtro: 'Sí se sabe cómo es, y no está en esta lista',
       alElegir: null
+    },
+    /* De qué está hecha la vía (v1000), por la misma forma. */
+    superficie: {
+      pfx: 'ins-superficie',
+      voc: () => window.URBIS_SUPERFICIE_VOC,
+      pie: x => x.d,
+      vacio: 'Ninguna superficie de la lista se llama así.',
+      pieNoSabe: 'Se miró y no se pudo determinar desde la acera',
+      pieOtro: 'Sí se sabe cuál es, y no está en esta lista',
+      alElegir: null
     }
   };
 
@@ -6254,6 +6306,7 @@
   window.urbisEspecieBuscar = function(val){ try{ pintarLista('especie', val); }catch(e){} };
   window.urbisMaterialBuscar = function(val){ try{ pintarLista('material', val); }catch(e){} };
   window.urbisSitioBuscar = function(val){ try{ pintarLista('sitio', val); }catch(e){} };
+  window.urbisSuperficieBuscar = function(val){ try{ pintarLista('superficie', val); }catch(e){} };
 
   /* El tipo y la especie son dos casillas correctas por separado que pueden
      contradecirse —«Palma» con un mango dentro—. Se dice acá, donde todavía

@@ -869,6 +869,31 @@
         }
         descripcionFinal = d.join(' | ');
     })();
+    /* De qué está hecha la vía (v1000). Mismo molde que la especie y el
+       sitio: sin el bloque en pantalla, `insSup` es null y no se toca ninguna
+       de las dos casillas, así que editar una vía por otro camino no borra la
+       superficie que alguien vio en la calle. */
+    (function guardarSuperficieVia(){
+        const insSup = document.getElementById('ins-superficie');
+        if (!insSup) return;
+        const S = window.URBIS_SLOTS || {};
+        if (S.viaSuperficie == null) return;
+        const d = String(descripcionFinal).split(' | ');
+        const tope = Math.max(S.viaSuperficie, S.viaSuperficieOtro || 0);
+        for (let k = 0; k < tope; k++) if (d[k] === undefined) d[k] = '';
+        const sup = String(insSup.value || '').replace(/\|/g, '-').trim();
+        d[S.viaSuperficie] = sup; fichaSlotsEscritos.push(S.viaSuperficie);
+        /* El texto libre SOLO acompaña a «Otro»: dejarlo pegado convertiría
+           un descarte en un dato que nadie volvió a escribir. */
+        const insOtroSup = document.getElementById('ins-superficie-otro');
+        const esOtroSup = !!(window.URBIS_SUPERFICIE_VOC && sup === window.URBIS_SUPERFICIE_VOC.OTRO());
+        if (S.viaSuperficieOtro != null) {
+            d[S.viaSuperficieOtro] = (esOtroSup && insOtroSup)
+                ? String(insOtroSup.value || '').replace(/\|/g, '-').slice(0, 60).trim() : '';
+            fichaSlotsEscritos.push(S.viaSuperficieOtro);
+        }
+        descripcionFinal = d.join(' | ');
+    })();
     /* En qué estado está (v992). Mismo molde que el material y por la misma
        razón: sin el bloque en pantalla, `insEst` es null y no se toca la
        casilla, así que editar un punto por otro camino no borra el estado
