@@ -690,23 +690,32 @@
 .pcr-hoja.pcr-encogida .pcr-calor-fila .pcr-cal-chip{ flex:0 0 auto; white-space:nowrap; }
 
 /* El asa: se toca para abrir la hoja entera. Ancha, porque en el celular se
-   agarra con el pulgar. */
+   agarra con el pulgar — y ALTA, que es lo que no era: medida, daba 21 px de
+   zona tocable contra los 28 que este módulo declara como «lo mínimo que no
+   se falla» en el deslizador del radio. El alto va por `min-height` y no por
+   relleno, para que la cifra se vea al leer la regla (v1014). */
 .pcr-asa{
   display:block; width:100%; border:0; background:none;
-  padding:10px 0 6px; cursor:pointer;
+  padding:10px 0 6px; cursor:pointer; min-height:28px; box-sizing:border-box;
 }
 .pcr-asa::before{
   content:''; display:block; width:44px; height:5px; margin:0 auto;
   border-radius:99px; background:#cfe0ea;
 }
 .pcr-asa:active::before{ background:#34CCFE; }
-/* El asa de la hoja ABIERTA. Alta a propósito —24 px de zona tocable contra
-   los 5 que mide la rayita— porque es el objetivo de un pulgar en movimiento,
-   no de un dedo apuntando. `touch-action:none` es lo que impide que el
-   navegador se quede con el gesto vertical y lo convierta en desplazamiento
-   de la página antes de que lleguemos a verlo. */
+/* El asa de la hoja ABIERTA. Alta a propósito porque es el objetivo de un
+   pulgar en movimiento, no de un dedo apuntando. El comentario decía «24 px
+   de zona tocable» y la regla daba 19 —9 + 5 + 5—: una propiedad afirmada
+   que el código no tenía (v926). Ahora son los 28 que el módulo declara, y
+   el número va en la regla en vez de en el comentario, que es donde no se
+   puede quedar viejo.
+
+   `touch-action:none` es lo que impide que el navegador se quede con el
+   gesto vertical y lo convierta en desplazamiento de la página antes de que
+   lleguemos a verlo. */
 .pcr-asa-abierta{
-  padding:9px 0 5px; touch-action:none; -webkit-user-select:none; user-select:none;
+  padding:9px 0 5px; min-height:28px; box-sizing:border-box;
+  touch-action:none; -webkit-user-select:none; user-select:none;
   background:var(--edu-ground, #fff);
   border-radius:20px 20px 0 0;
 }
@@ -1385,7 +1394,13 @@
    mezclen con las de la de al lado al mirarlas en un teléfono. */
 .pcr-act-f { border-top: 1px dashed #CFDCE6; padding-top: 8px; margin-top: 8px; }
 .pcr-act-f:first-of-type { border-top: 0; padding-top: 0; margin-top: 0; }
+/* Marcar cuál es la cuadra del lote CAMBIA la cifra que se publica: la
+   casilla del paramento está rotulada a escala de predio, así que se mide
+   sobre una sola cuadra (v934). Fallar el toque acá no es una molestia, es
+   publicar la cuadra de otro. Medido, la fila daba 19 px de alto; va a los
+   28 que el módulo declara. */
 .pcr-act-r { display: flex; align-items: center; gap: 8px; margin: 6px 0 2px;
+             min-height: 28px;
              font-size: 13px; color: #33505F; cursor: pointer; }
 .pcr-act-r input { width: 16px; height: 16px; flex: none; }
 

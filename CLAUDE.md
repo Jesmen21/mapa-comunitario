@@ -18392,6 +18392,112 @@ quedaría en verde sin mirar nada.
 con la sonda —los 715 textos de las ocho pestañas de la ficha, con su tamaño,
 su caja y el de su padre—, que es lo que separó el rótulo del texto corrido.
 
+## Lo que se toca, y lo que el marcado dice que es (v1014)
+
+Con la sonda de la ficha ya montada, la misma pregunta de la v1013 sobre otra
+propiedad: **qué mide cada cosa que hay que tocar.** Y una vara que este módulo
+ya declara, en el deslizador del radio:
+
+> El control se toca con el dedo, así que va alto: **28 px de alto útil es lo
+> mínimo que no se falla.**
+
+Medidos los 219 controles de las ocho pestañas, **tres se quedaban por debajo**
+—y ninguno es un caso de estilo—:
+
+| | Medía | Qué pasa si se falla |
+|---|---|---|
+| `.pcr-act-r` · «Esta es la cuadra del lote» | **19 px** | se publica la cuadra de otro |
+| `.pcr-asa-abierta` · el asa de la hoja | **19 px** | no se llega al mapa |
+| `.pcr-asa` · el asa encogida | 21 px | no se vuelve al informe |
+
+El primero no es una molestia: la casilla del paramento está rotulada a escala
+de **predio**, así que se mide sobre UNA cuadra (v934). Marcar la de al lado
+publica una cifra que no es la del lote.
+
+### El asa prometía 24 px y daba 19
+
+Su propio comentario decía, con esas palabras: *«Alta a propósito —24 px de
+zona tocable contra los 5 que mide la rayita—»*. La regla era
+`padding:9px 0 5px` sobre una rayita de 5: **19 px**. Una propiedad afirmada
+que el código no tiene, que es la clase de la v926.
+
+Los tres van ahora por `min-height`, y **el número vive en la regla y no en el
+comentario**, que es donde no se puede quedar viejo. La guarda persigue
+justamente eso: si un comentario vuelve a prometer una cifra distinta de la que
+la regla declara, sale en rojo.
+
+### Siete etiquetas que no etiquetaban nada
+
+Salió del mismo barrido: cuatro `<label class="pcr-lab">` de 12 px que la sonda
+marcaba como objetivos de toque. Leídos, no son objetivos —apuntan a un campo
+de 41 px, que es el que se toca— pero tres de ellos **no apuntaban a nada**:
+un `<label>` sin `for` y sin control dentro anuncia un control que no existe,
+y un lector de pantalla lo lee como el nombre de un campo que no está.
+
+Medidos en el módulo entero: **siete**, y se reparten en dos clases que piden
+cosas distintas:
+
+* **tres encabezan un GRUPO de botones** —«A qué escala analizarlo», «Radio»,
+  «¿En cuántos grupos sale el curso?»—. Un `<label>` no puede nombrar a un
+  grupo; eso es `role="group"` con `aria-labelledby`, y así quedan.
+* **cuatro son rótulos sobre una cifra** —«Área dibujada», «Centro del sector»,
+  «El lote a intervenir» ×2—. Son párrafos, y así quedan.
+
+La guarda va sobre las 45 etiquetas que el módulo emite y falla cerrado: o
+llevan su `for`, o llevan su control dentro.
+
+### Y dos imperativos de tú, en las mismas líneas
+
+Leyendo esos rótulos aparecieron los dos que la v1012 dejó dichos como la
+mitad que **ninguna guarda cubre** —el presente y el imperativo no se pueden
+separar de la tercera persona—, y con la firma de siempre: mezclados con usted
+en la misma frase.
+
+> «Después **elige** cuánto de su alrededor **quiere** estudiar»
+> «**Mueve** el mapa hasta el sector y **toca** «Usar el centro del mapa»» —
+> tres renglones debajo de «**Marque** en el mapa el terreno».
+
+Barridos los candidatos de js/68 que ABREN una frase —a media frase un
+imperativo es indistinguible de una tercera persona—, quedan **68** y los
+demás son terceras personas: «Cómo se **mueve** el sector», «**mira** al
+poniente», «**Toca** verificar» (el impersonal). Los dos de arriba eran los
+únicos dirigidos al lector.
+
+### Lo que se midió y NO se tocó
+
+**67 botones a 38 px.** Están por encima de los 28 que el módulo declara y por
+debajo de los 44 que la v987 usó para los controles del mapa — que son otra
+superficie: flotan sobre el mapa y compiten con sus gestos. Subir los 67 a 44
+cambia la maquetación de la ficha entera, y esa es una decisión de quien la
+usa, no una corrección. Queda medido. `pendiente`
+
+Y los tres `<label for>` de 12 px —«Nombre del sector», «Nombre del proyecto»,
+«Ubicación administrativa»— **se quedan como están**: apuntan a un campo de
+41 px, que es el objetivo real. Medirlos con la vara del toque habría cambiado
+algo que está bien.
+
+### Demostrado contra la v1013
+
+Cuatro inyecciones, cada una con su aserción (v993), contra copias guardadas
+en `/tmp` (v973):
+
+```
+✗ los objetivos de toque del modulo llegan a ese piso  — .pcr-act-r
+✗ y el alto de un asa no se promete en un comentario  — promete 24 px y la regla declara 28
+✗ ninguna etiqueta del modulo etiqueta la nada  — 15201 <label class="pcr-lab">
+? MATERIAL - el modulo declara su piso de toque  — no se pudo leer el alto del deslizador
+```
+
+La última es la guarda de la guarda: quitándole el alto al deslizador, el piso
+sale de la nada y todo lo de arriba pasaría sin mirar nada.
+
+### Lo que NO se pudo correr
+
+**Ninguna suite de navegador**, por lo mismo que la v973 a la v1013. Corrió
+`revisar.js` con sus cinco comprobaciones nuevas, y se midió el papel con la
+sonda —los 219 controles de las ocho pestañas más la hoja encogida, con el
+alto del objetivo real: el `<label>` que envuelve al control cuando lo hay—.
+
 ## La lista viva: lo que al pliego educativo todavía le falta (v866)
 
 Esta lista se quedó vieja **cinco veces**. Cuatro dentro de la hoja —la

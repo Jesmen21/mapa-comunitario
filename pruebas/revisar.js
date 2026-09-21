@@ -7578,6 +7578,99 @@ console.log('\n  -- un small dentro de algo ya chico se encoge dos veces (v1013)
   }
 }
 
+console.log('\n  -- lo que se toca, y lo que el marcado dice que es (v1014) --');
+{
+  const c68 = leer('css/68-procity-reconocimiento.css');
+  const c72 = leer('css/72-edu-diseno.css');
+  const j68 = leer('js/68-procity-reconocimiento.js');
+
+  /* El piso NO se escribe aca: sale del control que este modulo ya hizo alto
+     a proposito —el deslizador del radio, con su `height` declarado y su
+     comentario al lado: «el control se toca con el dedo, asi que va alto».
+     Un numero traido de otra pantalla seria el numero a ojo de la v869. */
+  const gRango = c72.match(/\.pcr-hoja \.pcr-rango\{[^}]*height:\s*(\d+)px/);
+  const PISO = gRango ? Number(gRango[1]) : 0;
+
+  /* Los objetivos de toque propios del modulo: los que se tocan para ACTUAR,
+     no los rotulos que apuntan a un campo —ahi el objetivo es el campo, que
+     mide 41 px—. Son tres, y los tres salieron medidos por debajo del piso:
+     las dos asas (19 y 21 px) y la fila que decide cual es la cuadra del
+     lote (19 px), que no es una molestia sino publicar la cuadra de otro. */
+  const TOCABLES = ['.pcr-asa', '.pcr-asa-abierta', '.pcr-act-r'];
+  const sinAlto = TOCABLES.filter(function (sel) {
+    const esc2 = sel.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    const re = new RegExp(esc2 + '\\s*\\{[^}]*\\}', 'g');
+    let m, ok = false;
+    while ((m = re.exec(c68))) {
+      const g = m[0].match(/min-height:\s*(\d+)px/);
+      if (g && Number(g[1]) >= PISO) ok = true;
+    }
+    return !ok;
+  });
+
+  if (!PISO) {
+    anotarSinMaterial('MATERIAL - el modulo declara su piso de toque',
+      'no se pudo leer el alto del deslizador: lo de abajo no tendria contra que medir');
+  } else {
+    comprobar('MATERIAL - el modulo declara su piso de toque', true,
+      'el deslizador del radio declara ' + PISO + ' px, que es «lo minimo que no se falla»');
+
+    comprobar('los objetivos de toque del modulo llegan a ese piso',
+      sinAlto.length === 0,
+      sinAlto.length === 0
+        ? 'las dos asas y la fila de la cuadra del lote declaran min-height >= ' + PISO + ' px'
+        : sinAlto.join(' · ') + ' — se quedan por debajo de los ' + PISO +
+          ' px que el propio modulo llama el minimo que no se falla');
+
+    /* Y el alto va en la REGLA y no en un comentario: el asa de la hoja
+       abierta decia «24 px de zona tocable» y la regla daba 19 —9 + 5 + 5—,
+       que es una propiedad afirmada y no cumplida (v926). */
+    const iAsa = c68.indexOf('.pcr-asa-abierta{');
+    const comentario = iAsa > 0 ? c68.slice(Math.max(0, iAsa - 700), iAsa) : '';
+    const prometeOtro = /(\d+)\s*px de zona tocable/.exec(comentario);
+    comprobar('y el alto de un asa no se promete en un comentario',
+      !prometeOtro || Number(prometeOtro[1]) === PISO,
+      !prometeOtro ? 'el comentario no afirma una cifra: la cifra esta en la regla'
+        : (Number(prometeOtro[1]) === PISO
+            ? 'el comentario dice los mismos ' + PISO + ' px que la regla'
+            : 'el comentario promete ' + prometeOtro[1] + ' px y la regla declara ' + PISO));
+
+    /* Una etiqueta que no etiqueta nada anuncia un control que no existe. El
+       modulo tenia siete: tres encabezaban un GRUPO de botones —eso es
+       `role="group"` con `aria-labelledby`, no un `<label>`— y cuatro eran
+       rotulos sobre una cifra. */
+    const re = /<label\b[^>]*>/g; let m; const malos = [];
+    while ((m = re.exec(j68))) {
+      if (/\bfor=/.test(m[0])) continue;
+      const hasta = j68.slice(m.index, m.index + 900);
+      const cierra = hasta.indexOf('</label>');
+      const cuerpo = cierra > 0 ? hasta.slice(0, cierra) : hasta;
+      if (/<(input|select|textarea)\b/.test(cuerpo)) continue;
+      malos.push(j68.slice(0, m.index).split('\n').length + ' ' + m[0].slice(0, 46));
+    }
+    comprobar('ninguna etiqueta del modulo etiqueta la nada',
+      malos.length === 0,
+      malos.length === 0
+        ? 'las ' + (j68.match(/<label\b[^>]*>/g) || []).length +
+          ' etiquetas llevan su `for` o su control dentro'
+        : malos.slice(0, 6).join(' · ') + ' — anuncian un control que no existe');
+
+    /* La guarda de la guarda: todo lo de arriba se mide contra el piso que
+       declara el deslizador. Si dejara de declararlo, el piso caeria a cero y
+       las comprobaciones pasarian sin mirar nada (v878). */
+    /* La razon va partida en dos renglones en la hoja, asi que se busca la
+       mitad que cabe en uno: es la que dice POR QUE son esos pixeles. */
+    const conRazon = /lo m[ií]nimo que no se falla/i.test(c72);
+    comprobar('y el piso sigue saliendo del control que el modulo hizo alto',
+      PISO >= 24 && conRazon,
+      (PISO >= 24 && conRazon)
+        ? 'sale de .pcr-rango (' + PISO + ' px), con su razon escrita al lado'
+        : (PISO < 24
+            ? 'el deslizador declara ' + PISO + ' px: el piso saldria de la nada'
+            : 'el deslizador perdio la razon escrita: el numero quedaria sin de donde'));
+  }
+}
+
 /* Las dos cuentas van APARTE porque piden cosas distintas: una fallada hay
    que arreglarla, una sin material hay que mirarla —o se quedó sin él porque
    el registro mejoró, o porque la función dejó de ver lo que medía—. Sumarlas

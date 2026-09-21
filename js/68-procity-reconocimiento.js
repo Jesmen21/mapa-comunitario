@@ -15023,8 +15023,8 @@ function donaHTML(datos, colorDe, nombreDe) {
       /* La escala, que es lo que esta ventana vino a resolver. Dos maneras de
          analizar el MISMO sitio, dichas como lo que son. */
       '<div class="pcr-campo">' +
-        '<label class="pcr-lab">A qué escala analizarlo</label>' +
-        '<div class="pcr-escala-ops">' +
+        '<p class="pcr-lab" id="pcr-lab-escala">A qué escala analizarlo</p>' +
+        '<div class="pcr-escala-ops" role="group" aria-labelledby="pcr-lab-escala">' +
           '<button type="button" data-pcr="trazo-escala" data-e="poligono"' +
             ' class="pcr-escala-op' + (porRadio ? '' : ' pcr-escala-on') + '"' +
             ' aria-pressed="' + (porRadio ? 'false' : 'true') + '">' +
@@ -15159,9 +15159,9 @@ function donaHTML(datos, colorDe, nombreDe) {
           var c = centroDelLote();
           if (!c) {
             return '<div class="pcr-campo">' +
-              '<label class="pcr-lab">El lote a intervenir</label>' +
+              '<p class="pcr-lab">El lote a intervenir</p>' +
               '<p class="pcr-pista">Marque en el mapa el terreno sobre el que va a proponer algo. ' +
-              'Después elige cuánto de su alrededor quiere estudiar: el círculo azul sale ' +
+              'Después elija cuánto de su alrededor quiere estudiar: el círculo azul sale ' +
               'centrado en el lote.</p>' +
               '<button type="button" data-pcr="lote-dibujar" class="pcr-mini pcr-lote-btn">' +
                 ico('lapiz') + 'Marcar el lote en el mapa</button>' +
@@ -15169,7 +15169,7 @@ function donaHTML(datos, colorDe, nombreDe) {
             '</div>';
           }
           return '<div class="pcr-campo">' +
-              '<label class="pcr-lab">El lote a intervenir</label>' +
+              '<p class="pcr-lab">El lote a intervenir</p>' +
               '<p class="pcr-areainfo">' + formatearM2(areaM2De(S.lote)) + ' · ' +
                 S.lote.length + ' esquinas · centro en ' + c.lat.toFixed(5) + ', ' + c.lng.toFixed(5) +
               '</p>' +
@@ -15198,22 +15198,22 @@ function donaHTML(datos, colorDe, nombreDe) {
         })()
       : esPol
       ? '<div class="pcr-campo">' +
-          '<label class="pcr-lab">Área dibujada</label>' +
+          '<p class="pcr-lab">Área dibujada</p>' +
           '<p class="pcr-areainfo">' + (S.poligono ? S.poligono.length : 0) + ' vértices' +
             (areaDelPoligono() ? ' · ' + formatearArea(areaDelPoligono()) : '') + '</p>' +
           '<small class="pcr-pista">Se analiza exactamente lo que trazó. Si lo vuelve a dibujar, toque otra vez «El área dibujada».</small>' +
         '</div>'
       : '<div class="pcr-campo">' +
-          '<label class="pcr-lab">Centro del sector</label>' +
+          '<p class="pcr-lab">Centro del sector</p>' +
           '<div class="pcr-centro">' +
             '<code>' + esc(donde) + '</code>' +
             '<button type="button" data-pcr="recentrar" class="pcr-mini">Usar el centro del mapa</button>' +
           '</div>' +
-          '<small class="pcr-pista">Mueve el mapa hasta el sector y toca «Usar el centro del mapa».</small>' +
+          '<small class="pcr-pista">Mueva el mapa hasta el sector y toque «Usar el centro del mapa».</small>' +
         '</div>' +
         '<div class="pcr-campo">' +
-          '<label class="pcr-lab">Radio</label>' +
-          '<div class="pcr-radios">' + botones + '</div>' +
+          '<p class="pcr-lab" id="pcr-lab-radio">Radio</p>' +
+          '<div class="pcr-radios" role="group" aria-labelledby="pcr-lab-radio">' + botones + '</div>' +
         '</div>';
 
     return '' +
@@ -29259,8 +29259,8 @@ function donaHTML(datos, colorDe, nombreDe) {
       '<p class="pcr-tarea-intro">Reparto listo para imprimir: a cada grupo, un rumbo y un encargo. ' +
       'Primero los rumbos donde <b>no hay nada</b> —ahí todo lo que levanten es nuevo—, ' +
       'después los que tienen poco, y al final los que ya están mapeados, donde el trabajo es verificar.</p>' +
-      '<label class="pcr-lab">¿En cuántos grupos sale el curso?</label>' +
-      '<div class="pcr-radios">' + botones + '</div>' +
+      '<p class="pcr-lab" id="pcr-lab-grupos">¿En cuántos grupos sale el curso?</p>' +
+      '<div class="pcr-radios" role="group" aria-labelledby="pcr-lab-grupos">' + botones + '</div>' +
       '<div class="pcr-plan">' +
         plan.map(function (a) {
           return '<div class="pcr-tarea' + (a.vacio ? ' pcr-tarea-nueva' : '') + '">' +
