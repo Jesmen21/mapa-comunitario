@@ -8232,7 +8232,7 @@ console.log('\n  -- una cifra de 1 no lleva un plural detras (v1019) --');
                        diagnostico y se barrio el documento. Salian «1
                        elementos» dos veces, una de ellas en la frase que
                        existe PARA el sector de pocos elementos. */
-                    'js/26-procity-diagnostico.js'];
+                    'js/26-procity-diagnostico.js', 'js/24-procity-analisis.js'];
 
   /* Palabras que acaban en «s» y no son plurales, con su razon al lado. Es la
      misma forma que la lista de invariables de `tdoslaminas` y que el `leeme`
@@ -8254,7 +8254,11 @@ console.log('\n  -- una cifra de 1 no lleva un plural detras (v1019) --');
       /* `\s*` y no ` *`: el ternario parte de linea a menudo -`n === 1\n ? …`-
          y con el espacio simple la guarda daba por pelado un sitio que si
          tiene su rama. Lo destapo js/70, donde esa forma es la corriente. */
-      const tieneRama = /===\s*1\s*\?|!==\s*1\s*\?|plural\(|\bpl\(|\bcn\(/.test(antes);
+      /* `[?)]` y no solo `?`: la rama puede ser un `if (d === 1) return
+         'ayer';` y no un ternario. Lo destapo js/24, donde esa es la forma
+         corriente, y sin esto la guarda denunciaba un sitio que SI la tiene
+         -un rojo sobre codigo correcto ensena a ignorar la salida (v895). */
+      const tieneRama = /===\s*1\s*[?)]|!==\s*1\s*[?)]|plural\(|\bpl\(|\bcn\(/.test(antes);
       /* Una cifra que es una CONSTANTE del modulo no puede valer 1 sin que
          alguien edite la constante, asi que no hay rama que escribir. */
       const deConstante = /\b([A-Z][A-Z0-9_]{3,})\s*$/.test(antes);
@@ -8268,7 +8272,11 @@ console.log('\n  -- una cifra de 1 no lleva un plural detras (v1019) --');
      el codigo, que es la trampa de la v970. Lo que sobrevive al cero es otra
      cosa: que estos archivos sigan imprimiendo sustantivos contados. Se
      cuentan los de las dos formas -con rama y sin ella-. */
-  const CON_RAMA = /\?\s*'[ ·]*[a-záéíóúñ]+'\s*:\s*'[ ·]*[a-záéíóúñ]+s'|\b(?:plural|pl)\(/g;
+  /* `cn(` entra en el MATERIAL: es la forma con la que js/24 y js/26
+     escriben hoy casi todos sus contados, y sin ella el recuento no se movia
+     al entrar dos archivos enteros -o sea que decia mirar mas de lo que
+     miraba-. */
+  const CON_RAMA = /\?\s*'[ ·]*[a-záéíóúñ]+'\s*:\s*'[ ·]*[a-záéíóúñ]+s'|\b(?:plural|pl|cn)\(/g;
   const exentas = new Set(NO_ES_PLURAL.map((x) => x[0]));
   let sitios = 0;
   const pelados = [];
@@ -8309,19 +8317,29 @@ console.log('\n  -- una cifra de 1 no lleva un plural detras (v1019) --');
   const CON_PL = "plural(n, 'uso', 'usos') + ' de ' + m + ' usos totales'";
   const CON_SALTO = "x.n === 1\n      ? 'un uso' : x.n + ' usos del sector'";
   const DE_CONSTANTE = "'faltan ' + FICHA_MIN_CASOS + ' casos de postura'";
+  const CON_IF = "if (d === 1) return 'ayer';\n    return 'hace ' + d + ' días';";
+  /* El caso de `cn` tiene que ser uno que el barrido ENCUENTRE, o pasa por no
+     casar el patron y no por reconocer la rama -la trampa de la v1019, en la
+     que ya cai una vez-. Este casa en «+ ' triangulos'» y tiene el `cn(` unas
+     palabras antes, que es la forma de js/24. */
+  const CON_CN = "S.geo.ultimoDato = cn(hilos.length, 'hilo', 'hilos') + ' y ' + tris.length + ' triángulos';";
   const veSin = sinRama(SIN).some((s) => s.sinRama);
   const veCon = sinRama(CON).some((s) => s.sinRama);
   const veConPl = sinRama(CON_PL).some((s) => s.sinRama);
   const veSalto = sinRama(CON_SALTO).some((s) => s.sinRama);
   const veCte = sinRama(DE_CONSTANTE).some((s) => s.sinRama);
+  const veIf = sinRama(CON_IF).some((s) => s.sinRama);
+  const veCn = sinRama(CON_CN).some((s) => s.sinRama);
   comprobar('el barrido distingue el sitio con rama del que no la tiene',
-    veSin && !veCon && !veConPl && !veSalto && !veCte,
+    veSin && !veCon && !veConPl && !veSalto && !veCte && !veIf && !veCn,
     !veSin ? 'no ve el que NO tiene rama: no vigilaria nada'
       : veCon ? 'denuncia un ternario que si esta: daria rojo sobre lo que esta bien'
         : veConPl ? 'no reconoce plural(): denunciaria los sitios de js/67 y js/68'
           : veSalto ? 'no reconoce el ternario partido de linea: es la forma corriente en js/70'
             : veCte ? 'denuncia una cifra que es una constante del modulo'
-              : 've el pelado, y calla el del ternario -en una linea y partido-, el de plural() y el de una constante');
+              : veIf ? 'no reconoce la rama escrita como `if (n === 1) return`: es la forma corriente en js/24'
+                : veCn ? 'no reconoce cn(): denunciaria los sitios de js/24 y js/26'
+                  : 've el pelado, y calla los cinco que SI la tienen: el ternario en una linea, el partido, el `if`, plural(), cn() y la constante');
 
   /* Y que la lista de exentas siga siendo lo que dice: una palabra sin su
      razon escrita es una excepcion que envejece hasta no significar nada
@@ -8523,6 +8541,69 @@ console.log('\n  -- una distancia no se escribe con punto (v1022) --');
    Falla CERRADO (v880): un campo nuevo impreso en crudo sale en rojo en su
    primera composicion. Si alguna vez hace falta imprimir un campo de TEXTO,
    va en la lista de abajo con su razon; hoy no hay ninguno. */
+/* LA BALDOSA DE CIFRA LLEVA SU SINGULAR (v1028).
+   El numero y su rotulo viven en DOS elementos hermanos -`<b>1</b>` y
+   `<small>puntos mapeados</small>`-, asi que no los ve ninguna de las reglas
+   que este proyecto ya tiene: ni la del papel por NODO de texto -son dos
+   nodos- ni la del codigo, que busca una cifra pegada a un plural dentro de
+   una misma cadena. Y el lector si los lee juntos: «1 puntos mapeados».
+
+   Se vio componiendo el panel de Pro City con UN punto mapeado. Aqui se puede
+   vigilar con precision porque la baldosa se arma en un solo sitio desde la
+   v1028: toda llamada cuyo rotulo traiga una palabra en plural pasa tambien
+   su forma en singular. Las que no traen ninguna -«por hectarea», «de uso
+   mixto»- no la necesitan y no se les pide. */
+console.log('\n  -- la baldosa de cifra lleva su singular (v1028) --');
+{
+  const j24 = soloCodigo(leer('js/24-procity-analisis.js'));
+  /* Las llamadas: `kpi(<valor>, '<rotulo>'[, '<singular>'])`. El valor puede
+     traer parentesis -`String(x).replace(...)`- asi que se corta contando. */
+  const llamadas = [];
+  const re = /\bkpi\(/g;
+  let m;
+  while ((m = re.exec(j24))) {
+    let i = m.index + 4, d = 1, buf = '';
+    for (; i < j24.length && d > 0; i++) {
+      const ch = j24[i];
+      if (ch === '(') d++;
+      else if (ch === ')') { d--; if (!d) break; }
+      buf += ch;
+    }
+    llamadas.push({ txt: buf, en: m.index });
+  }
+  const conPlural = llamadas.filter((l) => {
+    const rot = /,\s*'([^']+)'/.exec(l.txt);
+    return rot && /\b[a-záéíóúñ]+s\b/.test(rot[1]);
+  });
+  const sinSingular = conPlural.filter((l) => (l.txt.match(/'/g) || []).length < 4)
+    .map((l) => 'js/24:' + j24.slice(0, l.en).split('\n').length + ' ' +
+                (/,\s*'([^']+)'/.exec(l.txt) || [])[1]);
+
+  if (llamadas.length < 8 || !/function kpiHTML\(/.test(j24)) {
+    comprobar('MATERIAL · el panel arma baldosas de cifra por un solo sitio', false,
+      !/function kpiHTML\(/.test(j24)
+        ? 'NO PUDO CORRER: ya no hay un armador único de baldosas'
+        : 'NO PUDO CORRER: solo ' + llamadas.length + ' baldosas');
+  } else {
+    comprobar('MATERIAL · el panel arma baldosas de cifra por un solo sitio', true,
+      llamadas.length + ' baldosas, ' + conPlural.length + ' con un rótulo en plural');
+    /* LA GUARDA DE LA GUARDA: que el armador USE el singular que se le pasa.
+       Sin esto, volver a la baldosa de dos argumentos deja las llamadas
+       intactas -siguen pasando su tercer argumento- y todo lo de arriba sigue
+       en verde mientras la pantalla imprime «1 puntos mapeados». */
+    comprobar('y el armador usa el singular que se le pasa',
+      /singular\s*&&\s*n\s*===\s*1/.test(j24),
+      /singular\s*&&\s*n\s*===\s*1/.test(j24)
+        ? 'kpiHTML elige el rótulo con el singular'
+        : 'kpiHTML ignora su singular: las llamadas lo pasarían y la baldosa imprimiría el plural igual');
+    comprobar('toda baldosa con rótulo en plural lleva su singular',
+      sinSingular.length === 0,
+      sinSingular.length
+        ? sinSingular.length + ' imprimirían «1 cosas» en dos elementos: ' + sinSingular.slice(0, 4).join(' · ')
+        : 'las ' + conPlural.length + ' lo llevan');
+  }
+}
+
 console.log('\n  -- una cifra del diagnóstico pasa por su formateador (v1027) --');
 {
   const j26 = soloCodigo(leer('js/26-procity-diagnostico.js'));

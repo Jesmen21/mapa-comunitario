@@ -288,7 +288,7 @@
         dato: num(i.mPorPx) + ' m por punto',
         texto: 'El área es extensa, así que la cobertura se leyó a ' + num(i.mPorPx) +
                ' m por punto: sirve para ver masas —dónde hay monte y dónde ciudad— pero ' +
-               'no distingue un patio arbolado de un techo. Para leer detalle, dibuja un ' +
+               'no distingue un patio arbolado de un techo. Para leer detalle, dibuje un ' +
                'área más pequeña.'
       });
     }
@@ -472,7 +472,7 @@
     // ese tipo, y decirlo así enseña más que dejarlo en blanco.
     if (!foda.fortalezas.length) foda.fortalezas.push('No se detectaron fortalezas destacables con lo mapeado hasta ahora.');
     if (!foda.debilidades.length) foda.debilidades.push('No se detectaron debilidades relevantes en los indicadores medidos.');
-    if (!foda.oportunidades.length) foda.oportunidades.push('Amplía el mapeo o analiza la cobertura para descubrir oportunidades.');
+    if (!foda.oportunidades.length) foda.oportunidades.push('Amplíe el mapeo o analice la cobertura para descubrir oportunidades.');
     if (!foda.riesgos.length) foda.riesgos.push('Sin riesgos evidentes en los datos disponibles.');
     return foda;
   }
@@ -550,7 +550,7 @@
     let resumen;
     if (!props.length) {
       resumen = 'Con los indicadores medidos, el área no muestra carencias que exijan una ' +
-                'implantación prioritaria. Amplía el mapeo o analiza la cobertura del suelo ' +
+                'implantación prioritaria. Amplíe el mapeo o analice la cobertura del suelo ' +
                 'para afinar la lectura.';
     } else {
       resumen = 'A partir de ' + cn(i.total, 'elemento mapeado', 'elementos mapeados') + ' en ' + num(i.areaHa) +

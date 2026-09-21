@@ -117,6 +117,29 @@
      sitios, porque las dos cifras caen en la misma lámina y una hoja que
      escribe el número de dos maneras se lee como escrita por dos personas. */
   function conComaN(n){ return String(n).replace('.', ','); }
+  /* La rama de singular, sobre el formateador que este módulo YA tiene: `cn`
+     escribe la cifra con `conComaN` y no estrena un segundo formateador, que
+     sería la clase B en la misma tanda que vino a deshacer una. */
+  const pl = (n, sing, plur) => (Number(n) === 1 ? sing : plur);
+  const cn = (n, sing, plur) => conComaN(n) + ' ' + pl(n, sing, plur);
+  /* LA BALDOSA DE CIFRA, en un solo sitio para sus dos superficies —el panel
+     y el informe—, que solo se diferenciaban en la clase de CSS y traían los
+     mismos ocho rótulos escritos dos veces: la clase B a punto de pasar.
+
+     Hace además las dos cosas que la baldosa hacía mal, y las dos se vieron
+     componiendo el panel con un solo punto mapeado:
+
+     * la CIFRA pasa por `conComaN` —salía «0.1 por hectárea», que es el punto
+       decimal de la v885—;
+     * y el RÓTULO lleva su rama de singular. Esta es la que ninguna guarda
+       veía: el número y su rótulo van en DOS elementos hermanos, así que ni
+       una regla por nodo de texto ni una sobre el código los ve juntos — y el
+       lector sí los lee juntos, «1 puntos mapeados». */
+  function kpiHTML(clase, v, plural, singular){
+    const n = Number(String(v).replace(',', '.'));
+    const rotulo = (singular && n === 1) ? singular : plural;
+    return '<div class="' + clase + '"><b>' + conComaN(v) + '</b><small>' + rotulo + '</small></div>';
+  }
   function fmtArea(m2){
     const ha = m2 / 10000;
     return ha >= 1 ? conComaN(Math.round(ha * 100) / 100) + ' ha' : Math.round(m2) + ' m²';
@@ -180,7 +203,7 @@
           icon: L.divIcon({
             className: 'pca-vertice-root',
             html: '<div class="' + clases + '"></div>' +
-                  (primero && cerrable ? '<span class="pca-vertice-tip">Toca para cerrar</span>' : ''),
+                  (primero && cerrable ? '<span class="pca-vertice-tip">Toque para cerrar</span>' : ''),
             iconSize: [primero && cerrable ? 22 : 14, primero && cerrable ? 22 : 14],
             iconAnchor: [primero && cerrable ? 11 : 7, primero && cerrable ? 11 : 7]
           })
@@ -262,10 +285,10 @@
         '<b>' + n + ' punto' + (n === 1 ? '' : 's') + '</b>' +
         '<small>' + (listo
           ? fmtArea(areaM2(S.pts)) + ' · borde ' + fmtDist(perimetroM(S.pts, true)) +
-            ' — toca el punto dorado para cerrar, o cualquier otro para quitarlo'
+            ' — toque el punto dorado para cerrar, o cualquier otro para quitarlo'
           : n >= 1
-            ? 'Toca el mapa para seguir el contorno. Un punto que salió mal se quita tocándolo.'
-            : 'Toca el mapa para marcar el contorno (mínimo 3 puntos)') + '</small>' +
+            ? 'Toque el mapa para seguir el contorno. Un punto que salió mal se quita tocándolo.'
+            : 'Toque el mapa para marcar el contorno (mínimo 3 puntos)') + '</small>' +
       '</div>' +
       '<div class="pca-barra-btns">' +
         /* Con la palabra al lado del icono. Un icono suelto entre un aspa y un
@@ -477,7 +500,7 @@
       '<div class="pca-burbuja-cab"><span>' + ico('area', 18) + '</span><b>Área lista</b>' +
         '<button type="button" class="pca-burbuja-x" data-u52-call="pca-cerrar-burbuja" aria-label="Cerrar">✕</button></div>' +
       '<div class="pca-burbuja-datos">' + fmtArea(areaM2(S.pts)) +
-        ' · ' + S.pts.length + ' vértices</div>' +
+        ' · ' + cn(S.pts.length, 'vértice', 'vértices') + '</div>' +
       '<button type="button" class="pca-burbuja-ok" data-u52-call="pca-ver-analisis">' + ico('estadistica', 16) + 'Ver el análisis</button>' +
       '<div class="pca-burbuja-alt">' +
         '<button type="button" data-u52-call="pca-guardar">' + ico('guardar', 16) + 'Guardar</button>' +
@@ -943,7 +966,7 @@
       '<i></i><span>' + icoCat(ico, 13) + esc(txt) + '</span></button>';
     return '<div class="pca-heat-sel">' +
       h4('calor', 'Mapa de calor', 'pca-h-heat') +
-      '<p class="pca-heat-ayuda">Muestra dónde se concentra lo mapeado. Elige una categoría y el panel se cierra para que lo veas sobre el mapa.</p>' +
+      '<p class="pca-heat-ayuda">Muestra dónde se concentra lo mapeado. Elija una categoría y el panel se cierra para que lo vea sobre el mapa.</p>' +
       '<div class="pca-heat-chips">' +
         chip('todos', '🔥', 'Todos los usos', '#ef4444') +
         ctx.grupos.map(g => chip(g.id, g.i, g.t, ctx.colorGrupo[g.id])).join('') +
@@ -1505,7 +1528,7 @@
               '<div class="pca-guardada-txt">' +
                 '<b>' + esc(a.nombre) + '</b>' +
                 '<span class="pca-guardada-dato">' + fmtArea(a.areaM2 || 0) + '</span>' +
-                '<small>' + a.pts.length + ' vértices · ' + esc(haceCuanto(a.fecha)) + '</small>' +
+                '<small>' + cn(a.pts.length, 'vértice', 'vértices') + ' · ' + esc(haceCuanto(a.fecha)) + '</small>' +
               '</div>' +
             '</button>' +
             '<button type="button" class="pca-guardada-borrar" data-u52-call="pca-borrar" data-id="' + esc(a.id) + '" aria-label="Borrar área ' + esc(a.nombre) + '">' +
@@ -1518,7 +1541,7 @@
       '<div class="pca-intro">' +
         '<span class="pca-intro-ico">' + ico('lapiz', 22) + '</span>' +
         '<div><b>Dibuje el área que quiere analizar</b>' +
-        '<small>Marca el contorno de un barrio, una manzana o un corredor y URBIS cuenta todo lo que la comunidad ya mapeó adentro — sin depender del radio de la ciudad.</small></div>' +
+        '<small>Marque el contorno de un barrio, una manzana o un corredor y URBIS cuenta todo lo que la comunidad ya mapeó adentro — sin depender del radio de la ciudad.</small></div>' +
       '</div>' +
       '<button type="button" class="pca-btn-principal" data-u52-call="pca-dibujar">' + ico('lapiz') + 'Dibujar área en el mapa</button>' +
       // Reconocimiento (js/68): mira qué tiene OpenStreetMap ANTES de salir a
@@ -1573,12 +1596,12 @@
       }).join('') + '</table>'
     ) : '';
 
-    const kpi = (v, t) => '<div class="pca-kpi"><b>' + v + '</b><small>' + t + '</small></div>';
+    const kpi = (v, plural, singular) => kpiHTML('pca-kpi', v, plural, singular);
 
     return '<div class="pca-panel">' +
       '<div class="pca-cabeza">' +
         '<div><b>' + esc(S.nombre || 'Área sin nombre') + '</b>' +
-        '<small>' + fmtArea(r.areaM2) + ' · borde ' + fmtDist(r.perimetroM) + ' · ' + S.pts.length + ' vértices</small></div>' +
+        '<small>' + fmtArea(r.areaM2) + ' · borde ' + fmtDist(r.perimetroM) + ' · ' + cn(S.pts.length, 'vértice', 'vértices') + '</small></div>' +
         '<div class="pca-cabeza-btns">' +
           '<button type="button" data-u52-call="pca-guardar" aria-label="Guardar área">' + ico('guardar', 18) + '</button>' +
           '<button type="button" data-u52-call="pca-dibujar" aria-label="Dibujar otra">' + ico('lapiz', 18) + '</button>' +
@@ -1587,10 +1610,10 @@
       '</div>' +
 
       '<div class="pca-kpis">' +
-        kpi(r.total, 'puntos mapeados') +
+        kpi(r.total, 'puntos mapeados', 'punto mapeado') +
         kpi(r.densidad, 'por hectárea') +
-        kpi(r.mios, 'míos') +
-        kpi(r.deOtros, 'de otros') +
+        kpi(r.mios, 'míos', 'mío') +
+        kpi(r.deOtros, 'de otros', 'de otro') +
       '</div>' +
 
       /* Lo contado piso por piso, cuando lo hay. Va pegado a las cifras del
@@ -1599,9 +1622,9 @@
       (r.alturas
         ? h4('crecer', 'Lo que se contó piso por piso') +
           '<div class="pca-kpis">' +
-            kpi(r.alturas.plantas, 'plantas contadas') +
-            kpi(r.densidadPlantas, 'plantas por hectárea') +
-            kpi(String(r.alturas.media).replace('.', ','), 'pisos de media') +
+            kpi(r.alturas.plantas, 'plantas contadas', 'planta contada') +
+            kpi(r.densidadPlantas, 'plantas por hectárea', 'planta por hectárea') +
+            kpi(String(r.alturas.media).replace('.', ','), 'pisos de media', 'piso de media') +
             kpi(r.alturas.mixtos, 'de uso mixto') +
           '</div>' +
           (r.alturas.porUso.length
@@ -1611,8 +1634,8 @@
                 String(x.plantas).replace('.', ',') + '</td></tr>').join('') +
               '</table>'
             : '') +
-          '<p class="pca-nota">' + r.alturas.conPisos + ' de ' + r.alturas.edificios +
-            ' edificios mapeados traen sus pisos' +
+          '<p class="pca-nota">' + r.alturas.conPisos + ' de ' + cn(r.alturas.edificios, 'edificio mapeado', 'edificios mapeados') +
+            ' traen sus pisos' +
             (r.alturas.sinPlantas
               ? '; a ' + r.alturas.sinPlantas + ' le' + (r.alturas.sinPlantas === 1 ? '' : 's') +
                 ' falta decir qué hay en cada planta'
@@ -1982,7 +2005,7 @@
       return '<tr><td>' + esc(d) + '</td><td class="n">' + n + '</td><td class="n">' + pct + '%</td></tr>';
     }).join('');
 
-    const kpi = (v, t2) => '<div class="kpi"><b>' + v + '</b><small>' + t2 + '</small></div>';
+    const kpi = (v, plural, singular) => kpiHTML('kpi', v, plural, singular);
 
     // ── Conclusiones, FODA e implantación ────────────────────────────────
     // Lo mismo que se ve en el panel, con el mismo motor: el informe no puede
@@ -1997,8 +2020,8 @@
             (typeof D.htmlPoblacion === 'function' ? D.htmlPoblacion(dg) : '') + '</div>' +
           '<div class="bloque ancho"><h2>Conclusiones del área</h2>' +
             '<div class="ver-grid">' + D.htmlVeredictos(dg) + '</div></div>' +
-          '<div class="bloque ancho"><h2>FODA de usos <em>· a partir de ' + dg.ind.total +
-            ' elementos mapeados</em></h2>' + D.htmlFoda(dg, 4) + '</div>' +
+          '<div class="bloque ancho"><h2>FODA de usos <em>· a partir de ' + cn(dg.ind.total, 'elemento mapeado', 'elementos mapeados') +
+            '</em></h2>' + D.htmlFoda(dg, 4) + '</div>' +
           '<div class="bloque ancho"><h2>Propuesta de implantación</h2>' +
             D.htmlImplantacion(dg) +
             '<p class="pie-nota">Ejercicio académico. Las cantidades son una referencia de ' +
@@ -2109,8 +2132,8 @@
     '<b>Perímetro:</b> ', fmtDist(r.perimetroM), '<br>',
     '<b>Vértices:</b> ', S.pts.length, '</div>',
     '<div class="kpis">',
-      kpi(r.total, 'puntos mapeados'), kpi(r.densidad, 'por hectárea'),
-      kpi(r.mios, 'míos'), kpi(r.deOtros, 'de otros'),
+      kpi(r.total, 'puntos mapeados', 'punto mapeado'), kpi(r.densidad, 'por hectárea'),
+      kpi(r.mios, 'míos', 'mío'), kpi(r.deOtros, 'de otros', 'de otro'),
     '</div>',
     (g.donut ? '<div class="chart" style="margin-top:7px"><img src="' + g.donut + '" alt=""></div>' : ''),
   '</div>',
@@ -2123,8 +2146,8 @@
 '<div class="fila">',
   '<div class="bloque"><h2>Lo que se contó piso por piso</h2>',
     '<div class="kpis">',
-      kpi(r.alturas.plantas, 'plantas contadas'), kpi(r.densidadPlantas, 'plantas por hectárea'),
-      kpi(String(r.alturas.media).replace('.', ','), 'pisos de media'), kpi(r.alturas.mixtos, 'de uso mixto'),
+      kpi(r.alturas.plantas, 'plantas contadas', 'planta contada'), kpi(r.densidadPlantas, 'plantas por hectárea', 'planta por hectárea'),
+      kpi(String(r.alturas.media).replace('.', ','), 'pisos de media', 'piso de media'), kpi(r.alturas.mixtos, 'de uso mixto'),
     '</div>',
     (r.alturas.porUso.length
       ? '<table style="margin-top:6px"><tr><th>Qué hay en las plantas</th><th>Plantas</th></tr>' +
@@ -2176,7 +2199,7 @@
     '<p class="pie-nota">Estimación por <b>color</b> de imagen satelital: no es NDVI ni un ' +
       'estudio ambiental certificado. El ' + rr.pctAmbiguo + '% queda en tonos cálidos, donde ' +
       'teja, concreto envejecido, suelo descubierto y matorral seco no se distinguen. ' +
-      rr.pasadas + ' lecturas cruzadas, malla ' + esc(rr.malla) + ', ' +
+      cn(rr.pasadas, 'lectura cruzada', 'lecturas cruzadas') + ', malla ' + esc(rr.malla) + ', ' +
       String(rr.mPorPx).replace('.', ',') + ' m por píxel.</p>' +
     '</div></div>';
 })(),
@@ -2204,7 +2227,7 @@ bloquesDiag,
   function exportarPDF(){
     const ctx = (typeof window.urbisProCityCtxAnalisis === 'function') ? window.urbisProCityCtxAnalisis() : null;
     if (!ctx) { alert('El análisis no está listo todavía.'); return; }
-    if (!S.cerrada || S.pts.length < 3) { alert('Primero dibuja y cierra un área.'); return; }
+    if (!S.cerrada || S.pts.length < 3) { alert('Primero dibuje y cierre un área.'); return; }
     const sel = document.getElementById('pca-estilo-pdf');
     const estilo = (sel && sel.value) || estiloGuardado();
     try { localStorage.setItem(LS_ESTILO, estilo); } catch(e){}
@@ -2752,13 +2775,13 @@ bloquesDiag,
       const hilos = mallaProximidad(pts, par.radio);
       hilos.forEach(([a, b]) => linea(a, b, 1.4, .55));
       pts.forEach(p => nodo(p, 3.5));
-      S.geo.ultimoDato = hilos.length + ' hilos';
+      S.geo.ultimoDato = cn(hilos.length, 'hilo', 'hilos');
 
     } else if (tipo === 'delaunay') {
       triangular();
       aristasDeTriangulos(tris).forEach(e => linea(pts[e[0]], pts[e[1]], 1.6, .75));
       pts.forEach(p => nodo(p, 3));
-      S.geo.ultimoDato = tris.length + ' triángulos';
+      S.geo.ultimoDato = cn(tris.length, 'triángulo', 'triángulos');
 
     } else if (tipo === 'mst') {
       triangular();
@@ -2965,8 +2988,8 @@ bloquesDiag,
     const verImp = S.verImplantacion;
     return '<div class="pcd-sel">' +
       h4('escuela', 'Qué dice esta área', 'pca-h-diag') +
-      '<p class="pcd-ayuda">Lectura del sector a partir de sus ' + d.ind.total +
-        ' elementos mapeados' + (d.ind.hayCobertura ? ' y de la cobertura del suelo analizada' : '') + '.</p>' +
+      '<p class="pcd-ayuda">Lectura del sector a partir de ' + pl(d.ind.total, 'su único elemento mapeado', 'sus ' + d.ind.total + ' elementos mapeados') +
+        '' + (d.ind.hayCobertura ? ' y de la cobertura del suelo analizada' : '') + '.</p>' +
       '<div class="pcd-sub">Población y reparto de usos</div>' +
       (typeof D.htmlPoblacion === 'function' ? D.htmlPoblacion(d) : '') +
       '<div class="pcd-sub">Conclusiones</div>' +
@@ -3023,7 +3046,7 @@ bloquesDiag,
     return '<div class="pca-geo-sel">' +
       h4('area', 'Geometría del área', 'pca-h-geo') +
       '<p class="pca-geo-ayuda">Un mismo levantamiento admite muchas lecturas, y cada forma ' +
-        'responde una pregunta distinta. Al elegir una, el panel se cierra para que la veas sobre el mapa.</p>' +
+        'responde una pregunta distinta. Al elegir una, el panel se cierra para que la vea sobre el mapa.</p>' +
       '<div class="pcd-vista">' + vistaTexto(ctx) + '</div>' +
       '<div class="pca-geo-sub">¿Qué puntos conectar?</div>' +
       '<div class="pca-geo-filtros">' + filtros + '</div>' +
@@ -3519,7 +3542,7 @@ bloquesDiag,
     const externo = !!(ptsExternos && ptsExternos.length >= 3);
     const contorno = externo ? ptsExternos.slice() : S.pts;
     return new Promise(function (resolve, reject) {
-      if (!externo && (!S.cerrada || S.pts.length < 3)) { reject(new Error('Primero dibuja un área.')); return; }
+      if (!externo && (!S.cerrada || S.pts.length < 3)) { reject(new Error('Primero dibuje un área.')); return; }
       const bb = bboxDelArea(contorno);
       // Se pide un poco más ancho que el área para que el borde no quede pegado.
       const mLat = (bb.n - bb.s) * .04, mLng = (bb.e - bb.o) * .04;
@@ -3595,7 +3618,7 @@ bloquesDiag,
       });
 
       cadena.then(function () {
-        avisar('Cruzando las ' + LADOS.length + ' pasadas…');
+        avisar('Cruzando las ' + cn(LADOS.length, 'pasada', 'pasadas') + '…');
 
         // ── Voto entre pasadas ────────────────────────────────────────────
         // Cada resolución ve cosas distintas: la fina distingue el arbolito de
@@ -3795,13 +3818,13 @@ bloquesDiag,
           '<div class="pca-raster-nota">' + esc(c.nota) + '</div>').join('') +
       '</div>' +
       '<p class="pca-raster-lectura">Cobertura dominante: <b>' + esc(dom.etq.toLowerCase()) +
-        '</b> (' + dom.pct + '%). Estimado sobre ' + res.pixeles.toLocaleString('es-CO') +
-        ' puntos de la imagen dentro del área.</p>' +
+        '</b> (' + dom.pct + '%). Estimado sobre ' + res.pixeles.toLocaleString('es-CO') + ' ' +
+        pl(res.pixeles, 'punto', 'puntos') + ' de la imagen dentro del área.</p>' +
       // Ficha técnica de ESTA corrida. Va a la vista porque el resultado ya no
       // sale de una regla fija: depende de cuánto velo traía la foto y de qué
       // umbral pidió. Sin esto, dos análisis distintos del mismo sitio serían
       // inexplicables.
-      '<p class="pca-raster-ficha">' + res.pasadas + ' lecturas cruzadas · malla ' + esc(res.malla) +
+      '<p class="pca-raster-ficha">' + cn(res.pasadas, 'lectura cruzada', 'lecturas cruzadas') + ' · malla ' + esc(res.malla) +
         ' · velo retirado ' + res.velo + ' de 255 · umbral de verde ' + res.umbral + '</p>' +
       '<div class="pca-raster-aviso"><b>' + ico('alerta', 14) + 'Cómo leer esto</b>' +
         '<small>Estimación por <b>color</b> de imagen satelital: <b>no es NDVI ni un estudio ' +
@@ -3950,7 +3973,7 @@ bloquesDiag,
       cerrarBurbuja();
       chipGeo(ctx);
       if (n < 2) alert('Con este filtro solo hay ' + n + ' punto' + (n === 1 ? '' : 's') +
-        ' dentro del área. Elige "Todo lo mapeado" u otra categoría para ver la geometría.');
+        ' dentro del área. Elija "Todo lo mapeado" u otra categoría para ver la geometría.');
       return true;
     }
     // Cambiar el filtro no cierra el panel: se está eligiendo qué conectar,
@@ -3969,7 +3992,7 @@ bloquesDiag,
         cerrarBurbuja();
       }
       if (n < 2) alert('Con este filtro solo hay ' + n + ' punto' + (n === 1 ? '' : 's') +
-        ' dentro del área. Elige "Todo lo mapeado" u otra categoría para ver la geometría.');
+        ' dentro del área. Elija "Todo lo mapeado" u otra categoría para ver la geometría.');
       return true;
     }
     if (name === 'geo-filtro') {

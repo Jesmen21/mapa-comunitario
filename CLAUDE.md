@@ -20078,6 +20078,164 @@ se escribía —mi v1026 no subió el token porque solo tocó `revisar.js` y la
 bitácora—, así que este es el **v1027**. Se sube por encima, nunca bajando la
 propia: la regla del 7 de septiembre.
 
+## La pantalla del área habla de usted, y su baldosa concuerda (v1028)
+
+La misma sonda de la v1027, un paso atrás: además del diagnóstico se compone
+el **panel de análisis** de Pro City —js/24, la pantalla que sale al cerrar un
+área— con un solo punto mapeado. Salieron tres defectos de cifra y once de
+idioma, y uno de los tres no lo ve **ninguna** de las reglas que este proyecto
+tiene escritas.
+
+    v1027   «1 puntos mapeados» · «0.1 por hectárea» · «a partir de sus 1 elementos»
+    v1028   «1 punto mapeado»   · «0,1 por hectárea» · «a partir de su único elemento»
+
+### La baldosa de cifra: dos elementos hermanos que nadie miraba juntos
+
+```html
+<div class="pca-kpi"><b>1</b><small>puntos mapeados</small></div>
+```
+
+El número y su rótulo son **dos elementos**, y entre ellos no hay ni un
+espacio en el marcado —los separa el CSS—. Por eso:
+
+* la regla del papel **por nodo de texto** no los ve: son dos nodos;
+* la regla **sobre el código** tampoco: busca una cifra pegada a un plural
+  dentro de una misma cadena, y aquí el rótulo es una cadena aparte.
+
+Y el lector los lee juntos. **«1 puntos mapeados»**, en la primera baldosa de
+la pantalla, el día que alguien mapea su primer punto.
+
+#### El barrido tuvo que aprender a leer una baldosa
+
+Pegar la hoja entera fabricaría cifras que nadie escribió —la lección de la
+v885 con «100100»—, así que el barrido pega **solo dentro de un elemento con
+pocos descendientes**, uniendo a sus hijos con un espacio y exigiendo que el
+número sea un nodo completo. Con eso la baldosa aparece y la página no se
+convierte en una tira.
+
+Que `textContent` los pegue **sin nada** —«1puntos mapeados»— fue la vuelta
+que costó: el primer barrido pedía un separador y no encontraba ninguno.
+
+### Y se arregla donde estaba a punto de duplicarse
+
+La baldosa estaba escrita **dos veces** —una para el panel y otra para el
+informe—, idénticas salvo la clase de CSS, **con los mismos ocho rótulos
+copiados**. Es la clase B esperando a la tanda siguiente. Ahora hay un solo
+armador, y hace las dos cosas que la baldosa hacía mal: la cifra pasa por el
+formateador del módulo —salía «0.1 por hectárea», el punto decimal de la
+v885— y el rótulo lleva su rama de singular.
+
+La guarda que lo vigila puede ser exacta **porque la baldosa se arma en un
+solo sitio**: toda llamada cuyo rótulo traiga una palabra en plural pasa
+también su singular; las que no traen ninguna —«por hectárea», «de uso
+mixto»— no la necesitan y no se les pide. Y lleva su guarda de la guarda, que
+es la que de verdad muerde: **que el armador USE el singular que recibe**.
+Sin ella, volver a la baldosa de dos argumentos deja las llamadas intactas
+—siguen pasándolo— y todo lo demás sigue en verde mientras la pantalla
+imprime el plural.
+
+### El detector de ramas no veía dos formas que sí lo son
+
+Al meter js/24 en la guarda de concordancia salió en rojo un sitio **que está
+bien**:
+
+```js
+if (d === 1) return 'ayer';
+if (d < 30) return 'hace ' + d + ' días';
+```
+
+El detector buscaba `=== 1 ?` —un ternario— y esta rama es un `if`. Un rojo
+sobre código correcto enseña a ignorar la salida, que es la trampa de la v895,
+así que acepta `=== 1)` además de `=== 1 ?`.
+
+Y de paso, **el recuento de MATERIAL no contaba `cn(`**, que es la forma con
+la que js/24 y js/26 escriben hoy casi todos sus contados: al entrar dos
+archivos enteros el número no se movía de 96. Con `cn` dentro son **157**. El
+recuento decía mirar menos de lo que miraba —conservador, no peligroso— y
+ahora dice lo que es.
+
+#### Mi caso de respuesta conocida no casaba con el patrón. Otra vez
+
+Escribí como caso de `cn` una línea que el barrido **no encuentra**:
+
+```js
+S.geo.ultimoDato = cn(tris.length, 'triángulo', 'triángulos');
+```
+
+No hay ningún `+ ' <plural>'` ahí, así que `sinRama` devuelve vacío y la
+comprobación pasaba por no casar el patrón, no por reconocer la rama. Es
+exactamente lo que la v1019 dejó escrito —*«el caso con rama tiene que SER UNO
+QUE EL BARRIDO ENCUENTRE»*— y volví a caer. El bueno tiene el `cn(` unas
+palabras antes de un `+ ' triángulos'`.
+
+### Once imperativos de tú, encontrados leyendo
+
+La pantalla hablaba de tú en once sitios: «**Toca** el mapa para marcar el
+contorno», «**Elige** una categoría y el panel se cierra para que lo **veas**»,
+«Primero **dibuja** y **cierra** un área», «**Marca** el contorno de un
+barrio», «**Amplía** el mapeo o **analiza** la cobertura».
+
+Ninguna guarda puede cazarlos, y está declarado desde la v909 y la v945: **la
+forma de tú es idéntica a la de tercera persona**. La prueba de que la
+distinción es real y no mecánica son los cuatro que el mismo barrido marcó y
+que **no** se tocaron, porque son tercera persona:
+
+> «El trazado más corto que los **toca** todos» · «un lote abandonado
+> **arrastra** a los vecinos» · «sube el detalle: no **cierra**» · «ahí se
+> **ve** si el problema es la clasificación»
+
+Se corrigieron uno por uno, que es la regla de la v878: cambiar el pronombre
+no conjuga los verbos de alrededor.
+
+### Un defecto que metí yo, y que solo vio el papel
+
+Al branchear la frase del diagnóstico escribí `cn`, que **antepone la cifra**,
+donde el texto singular ya la llevaba dentro:
+
+> Lectura del sector a partir de **1 su único elemento mapeado**.
+
+El barrido dio **cero** —«1 su» no es «1 + plural»— y la frase estaba rota. La
+vio leer el papel, que es lo que el barrido no sustituye. Ahí va `pl`, que
+elige el texto y no escribe el número.
+
+### Demostrado contra la v1027
+
+Seis inyecciones, cada una con su aserción (v993) y cada una un cambio que
+podría pasar de verdad:
+
+```
+✗ y el armador usa el singular que se le pasa
+    — kpiHTML ignora su singular: las llamadas lo pasarían y la baldosa
+      imprimiría el plural igual
+✗ toda baldosa con rótulo en plural lleva su singular
+    — 2 imprimirían «1 cosas» en dos elementos: js/24:1613 · js/24:2135
+✗ MATERIAL · el panel arma baldosas por un solo sitio
+    — NO PUDO CORRER: ya no hay un armador único
+✗ todos llevan su rama de singular  — 1 imprimirian «1 cosas»: 24:2784 «triángulos»
+✗ el barrido distingue el sitio con rama  — no reconoce cn()
+✗ el barrido distingue el sitio con rama  — no reconoce la rama escrita como `if`
+```
+
+Y una que **no** se puede poner en rojo, dicha por lo que es: bajar el
+recuento de MATERIAL de 157 a 96 no falla, porque esa comprobación es un
+PISO —«al menos diez sitios»— y no una cifra exacta. Tiene que serlo: el
+número varía legítimamente cuando el código cambia. Así que el conteo de
+`cn(` es una corrección de exactitud, no algo que una aserción proteja, y se
+dice en vez de disimularlo.
+
+### Lo que queda medido de esta clase
+
+| | sin rama |
+|---|---|
+| js/68 (la lámina la vigila `tdoslaminas` sobre el papel) | 276 |
+| js/78 · «Qué cabe en el lote» | 10 |
+| js/64 · el análisis educativo | 9 |
+| js/90 · Visión Territorial | 9 |
+
+Y el tuteo del resto de estos módulos: la mitad estructural la vigila la
+guarda del §9; los imperativos hay que leerlos, y en esta pantalla ya se
+leyeron.
+
 ## La lista viva: lo que al pliego educativo todavía le falta (v866)
 
 Esta lista se quedó vieja **cinco veces**. Cuatro dentro de la hoja —la

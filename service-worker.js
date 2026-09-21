@@ -1,4 +1,4 @@
-const URBIS_CACHE = 'urbis-v1027-el-diagnostico-del-area';
+const URBIS_CACHE = 'urbis-v1028-la-pantalla-del-area';
 const URBIS_ASSETS = [
   './',
   './index.html',
