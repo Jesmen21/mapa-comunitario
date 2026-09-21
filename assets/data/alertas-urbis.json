@@ -1,6 +1,6 @@
 {
   "_comentario": "Alertas EDITORIALES del equipo URBIS (desastres verificados). Se publican editando este archivo — no requieren la hoja de cálculo ni credenciales. El mapa las dibuja junto a las que ya están en la base; si coinciden las coordenadas, se muestra una sola. Reglas: solo desastres naturales de fuente oficial, nunca violencia ni homicidios; coordenadas geocodificadas, jamás estimadas a ojo; sin fuente no se publica.",
-  "actualizado": "2026-09-19",
+  "actualizado": "2026-09-21",
   "alertas": [
     {
       "tipo": "Sismo",
@@ -37,21 +37,6 @@
       "url": "https://tolima.gov.co/noticias/10190-se-declara-la-calamidad-publica-en-el-tolima-ante-emergencia-por-incendios"
     },
     {
-      "tipo": "Incendio forestal",
-      "titulo": "Incendio forestal en el sector Guabinas — convertido en emergencia subterránea, 6-11 de septiembre de 2026, Yumbo, Valle del Cauca",
-      "lat": 3.5833,
-      "lng": -76.4972,
-      "desde": "2026-09-06",
-      "expira": "2026-09-19",
-      "lineas": [
-        "📅 El incendio se originó la tarde del domingo 6 de septiembre de 2026 en el sector Guabinas (Cerro Gordo), zona montañosa de Yumbo, Valle del Cauca; se reactivó en la tarde del martes 8 de septiembre pese a los avances previos de control (cerca del 80 %). Tras varios días de trabajo, el fuego dejó de verse en superficie pero, según el subcomandante de Bomberos Yumbo, se mantiene activo bajo tierra, con riesgo de reaparecer.",
-        "📊 Más de 470 hectáreas de vegetación afectadas, según los reportes de bomberos y de la Alcaldía de Yumbo. Más de 30 familias fueron evacuadas preventivamente y alojadas con ayuda humanitaria en el coliseo municipal de Yumbo; la Fuerza Aeroespacial Colombiana reportó 70 descargas con más de 32.000 galones de agua y retardante desde un Bambi Bucket, junto con bomberos de Yumbo y Cali, para contener los focos visibles.",
-        "ℹ️ Alerta informativa del equipo URBIS con base en la Alcaldía de Yumbo, la Fuerza Aeroespacial Colombiana y prensa regional (El País, El Tiempo, Pulzo). No es un reporte ciudadano. Coordenadas de referencia: centro del municipio de Yumbo; el incendio se ubica en la zona montañosa del sector Guabinas."
-      ],
-      "fuente": "Alcaldía de Yumbo / Bomberos Yumbo y Cali / Fuerza Aeroespacial Colombiana / El País / El Tiempo / Pulzo",
-      "url": "https://www.pulzo.com/nacion/incendio-subterraneo-en-yumbo-autoridades-combaten-emergencia-en-bosque-seco-tropical-PP5299954A"
-    },
-    {
       "tipo": "Sismo",
       "titulo": "Sismo de magnitud 4,5 — 11 de septiembre de 2026, Istmina, Chocó",
       "lat": 4.42,
@@ -70,7 +55,7 @@
     {
       "tipo": "Sismo",
       "titulo": "Sismo de magnitud 4,9 — 14 de septiembre de 2026, Istmina, Chocó",
-      "lat": 4.40,
+      "lat": 4.4,
       "lng": -76.79,
       "desde": "2026-09-14",
       "expira": "2026-09-28",
@@ -145,6 +130,38 @@
       ],
       "fuente": "Servicio Geológico Colombiano (SGC) / prensa nacional",
       "url": "https://www.vanguardia.com/colombia/2026/09/17/temblor-de-magnitud-46-sacudio-a-choco-este-jueves-y-tuvo-epicentro-en-sipi/"
+    },
+    {
+      "tipo": "Incendio forestal",
+      "titulo": "Incendio forestal en el cerro San Marcos — calamidad pública, 290 hectáreas afectadas, 19-21 de septiembre de 2026, Villa de Leyva, Boyacá",
+      "lat": 5.6333,
+      "lng": -73.5333,
+      "desde": "2026-09-19",
+      "expira": "2026-09-27",
+      "lineas": [
+        "📅 Se originó en la tarde del sábado 19 de septiembre de 2026, hacia la 1:00 p. m. (hora de Colombia), en el sector La Marmolera, cerro San Marcos, al norte del casco urbano de Villa de Leyva, Boyacá. Al 21 de septiembre seguía activo, con el 50 % del área controlada según el puesto de mando unificado.",
+        "📊 Cerca de 290 hectáreas de vegetación afectadas (cifra revisada al alza desde las 60 iniciales del sábado), según el Cuerpo de Bomberos y la Gobernación de Boyacá. El gobernador Carlos Amaya declaró calamidad pública; se suspendieron las clases presenciales del lunes 21 de septiembre; se evacuaron hoteles del sector —entre ellos el Hotel Arcoíris— y viviendas del nororiente del municipio; y se habilitó el coliseo municipal como centro de atención a familias afectadas. 37 personas han recibido atención médica, en su mayoría personal de socorro por caídas y afectaciones respiratorias y visuales; no se reportan muertos ni heridos graves. Más de 400 personas —207 bomberos y Defensa Civil, y cerca de 200 voluntarios— y cuatro helicópteros, incluido un Black Hawk de la Fuerza Aeroespacial Colombiana, trabajan en el control, con cerca de 170 descargas de agua (unos 240.000 litros).",
+        "⚠️ El Ministerio de Ambiente señaló, con base en información preliminar de la UNGRD, que el incendio habría sido provocado; las autoridades ofrecieron recompensa por información sobre su origen.",
+        "ℹ️ Alerta informativa del equipo URBIS con base en la Gobernación de Boyacá, el Ministerio de Ambiente, la UNGRD y prensa nacional (El Tiempo, Vanguardia, Publimetro, Infobae). No es un reporte ciudadano. Coordenadas de referencia: centro del municipio de Villa de Leyva; el incendio se ubica en el cerro San Marcos, al norte del casco urbano."
+      ],
+      "fuente": "Gobernación de Boyacá / Ministerio de Ambiente / UNGRD / El Tiempo / Vanguardia / Publimetro",
+      "url": "https://www.vanguardia.com/colombia/2026/09/21/incendio-forestal-en-villa-de-leyva-deja-290-hectareas-afectadas-y-activa-operativo/"
+    },
+    {
+      "tipo": "Sismo",
+      "titulo": "Enjambre sísmico en Chaparral, Tolima — sismo principal de magnitud 4,1, 20-21 de septiembre de 2026",
+      "lat": 3.84,
+      "lng": -75.61,
+      "desde": "2026-09-20",
+      "expira": "2026-10-04",
+      "lineas": [
+        "📅 El evento de mayor magnitud ocurrió el domingo 20 de septiembre de 2026 a las 4:52 a. m. (hora de Colombia), dando inicio a un enjambre sísmico que seguía activo en la madrugada del lunes 21 de septiembre, con más de 25 sismos registrados en la misma zona (el último, a las 6:14 a. m. de ese lunes).",
+        "📊 Magnitud 4,1 (corregida por el SGC desde un reporte preliminar de 4,4) · profundidad superficial, menor a 30 km · epicentro a 17 km de San Antonio, 19 km de Chaparral y 20 km de Roncesvalles, Tolima (3,84° N / 75,61° O, Servicio Geológico Colombiano). Se sintió en Ibagué, Cali, Pereira, Armenia y otras ciudades del Eje Cafetero; el SGC no reportó heridos ni daños estructurales, aunque numerosos residentes de Chaparral salieron de sus viviendas durante la madrugada del 21 de septiembre por la seguidilla de temblores, la mayoría de magnitud entre 2,5 y 3,2.",
+        "🌎 Los organismos de socorro adelantan inspecciones en los 47 municipios del Tolima como parte del protocolo de prevención activado tras el sismo principal.",
+        "ℹ️ Alerta informativa del equipo URBIS con base en el Servicio Geológico Colombiano y prensa nacional (El Tiempo, Semana, Infobae, Pulzo, El Espectador). No es un reporte ciudadano."
+      ],
+      "fuente": "Servicio Geológico Colombiano (SGC) / prensa nacional",
+      "url": "https://www.semana.com/nacion/articulo/sismo-de-magnitud-41-se-registro-en-chaparral-tolima-durante-la-madrugada/202624/"
     }
   ]
 }

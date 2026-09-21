@@ -1,4 +1,4 @@
-const URBIS_CACHE = 'urbis-v1025-el-marcado-dentro-del-js';
+const URBIS_CACHE = 'urbis-v1026-alertas-villa-de-leyva-chaparral';
 const URBIS_ASSETS = [
   './',
   './index.html',
