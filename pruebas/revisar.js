@@ -8277,6 +8277,96 @@ console.log('\n  -- una distancia no se escribe con punto (v1022) --');
             : 've la pelada, y calla el .replace, el conComa y el camino de SVG');
 }
 
+console.log('\n  -- el texto que la página trae escrito (v1023) --');
+{
+  /* Las cuatro reglas del papel -la concordancia de la v874, el punto decimal
+     y el separador de miles de la v885 y la v891, y los marcadores sin
+     reemplazar de la v889- se persiguen sobre lo que el JAVASCRIPT genera.
+     El texto que la PÁGINA trae escrito no lo miraba nadie, y por ahí se
+     coló «0.00 km» en el marcador de posición del corredor: la lectura salía
+     con punto hasta la primera actualización y con coma después, o sea las
+     dos ortografías en el mismo elemento.
+
+     Es la superficie mas facil de olvidar porque no es codigo: ninguna guarda
+     que recorra `js/` la ve, y la que recorre las paginas busca etiquetas y
+     atributos, no prosa. */
+  const paginas = fs.readdirSync(RAIZ).filter((f) => /\.html$/.test(f)).sort();
+
+  /* Lo que el navegador PINTA: fuera de <script>, de <style>, de los
+     comentarios y de los atributos. Se sustituye por espacios en vez de
+     borrar, para que el numero de linea siga siendo el de verdad. */
+  function soloTexto(html) {
+    const hueco = (m) => ' '.repeat(m.length);
+    return html
+      .replace(/<(script|style)\b[^>]*>[\s\S]*?<\/\1>/gi, hueco)
+      .replace(/<!--[\s\S]*?-->/g, hueco)
+      .replace(/<[^>]*>/g, hueco);
+  }
+
+  /* La lista de invariables se LEE de la suite que ya la tiene: dos copias de
+     una lista de palabras se separan a la tanda siguiente (v879). */
+  const suite = leer('pruebas/suites/tdoslaminas.js');
+  const iL = suite.indexOf('const INVARIABLES = /^(');
+  const crudo = iL < 0 ? '' : suite.slice(suite.indexOf('/^(', iL), suite.indexOf('/;', iL) + 1).slice(1, -1);
+  const INV = crudo ? new RegExp(crudo) : null;
+
+  const REGLAS = [
+    ['punto decimal', /(?<![\d.,:/])(\d+)\.(\d{1,2})(?![\d.])/g],
+    ['miles sin separar', /(?<![\d.,:/-])(\d{5,})(?![\d.,])/g],
+    ['marcador sin reemplazar', /(@@[A-Z_]+@@|\{\{[^}]+\}\}|\bundefined\b|\bNaN\b|\[object Object\])/g],
+    ['«1» con plural', /(?<![\d.,])1 ([a-záéíóúüñ]+)\b/g],
+  ];
+
+  let letras = 0;
+  const hallazgos = [];
+  paginas.forEach((f) => {
+    const t = soloTexto(leer(f));
+    letras += t.replace(/\s+/g, '').length;
+    REGLAS.forEach(([nombre, re]) => {
+      re.lastIndex = 0;
+      let m;
+      while ((m = re.exec(t))) {
+        if (nombre === '«1» con plural' && (!/s$/.test(m[1]) || !INV || INV.test(m[1]))) continue;
+        hallazgos.push(f + ':' + t.slice(0, m.index).split('\n').length + ' ' + nombre + ' «' + m[0].trim() + '»');
+      }
+    });
+  });
+
+  /* MATERIAL primero (v920): sin la lista de invariables la regla de la
+     concordancia no se puede correr, y sin texto no hay nada que mirar. */
+  if (!INV || letras < 2000) {
+    anotarSinMaterial('MATERIAL - las paginas traen prosa escrita, y la lista de invariables se pudo leer',
+      !INV ? 'no se encontro INVARIABLES en tdoslaminas: la regla de concordancia no correria'
+           : 'solo ' + letras + ' letras de texto: no habria casi nada que mirar');
+  } else {
+    comprobar('MATERIAL - las paginas traen prosa escrita, y la lista de invariables se pudo leer',
+      true, paginas.length + ' paginas con ' + letras + ' letras de texto propio');
+
+    comprobar('el texto escrito en las paginas cumple las cuatro reglas del papel',
+      hallazgos.length === 0,
+      hallazgos.length
+        ? hallazgos.length + ' hallazgo(s): ' + hallazgos.slice(0, 5).join(' · ')
+        : 'ninguna de las ' + paginas.length + ' trae punto decimal, miles sin separar, marcador ni «1» con plural');
+  }
+
+  /* LA GUARDA DE LA GUARDA (v878): el extractor tiene que quitar el script,
+     el estilo y los atributos, o la guarda denunciaria el codigo de la propia
+     pagina -y conservar las posiciones, o el numero de linea mentiria-. */
+  const MUESTRA = '<p>uno</p>\n<script>var x = 1.25;</script>\n<div data-v="9.99">dos</div>\n<p>3.50 km</p>';
+  const limpio = soloTexto(MUESTRA);
+  const veElTexto = /3\.50/.test(limpio);
+  const veElScript = /1\.25/.test(limpio);
+  const veElAtributo = /9\.99/.test(limpio);
+  const mismaLargo = limpio.length === MUESTRA.length;
+  comprobar('el extractor deja la prosa y quita el script, el estilo y los atributos',
+    veElTexto && !veElScript && !veElAtributo && mismaLargo,
+    !veElTexto ? 'se come la prosa: no vigilaria nada'
+      : veElScript ? 've dentro de <script>: denunciaria el codigo de la pagina'
+        : veElAtributo ? 've dentro de un atributo: denunciaria un data-* o un style'
+          : !mismaLargo ? 'no conserva las posiciones: el numero de linea mentiria'
+            : 'deja la prosa, quita script, estilo y atributos, y conserva las posiciones');
+}
+
 /* Las dos cuentas van APARTE porque piden cosas distintas: una fallada hay
    que arreglarla, una sin material hay que mirarla —o se quedó sin él porque
    el registro mejoró, o porque la función dejó de ver lo que medía—. Sumarlas

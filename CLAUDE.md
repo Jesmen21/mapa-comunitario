@@ -19457,6 +19457,71 @@ Tres inyecciones fieles contra una copia guardada, cada una con su aserción
     — toma un camino de SVG por un rotulo: daria rojo sobre geometria
 ```
 
+## El texto que la página trae escrito (v1023)
+
+Las cuatro reglas del papel —la concordancia de la v874, el punto decimal y
+el separador de miles de la v885 y la v891, y los marcadores sin reemplazar
+de la v889— se persiguen sobre **lo que el JavaScript genera**. El texto que
+la página trae escrito en su HTML no lo miraba nadie.
+
+Y por ahí se coló el marcador de posición del corredor:
+
+```html
+<strong id="runner-live-distance">0.00 km</strong>
+<strong id="runner-live-speed">0.0 km/h</strong>
+```
+
+Lo que lo hace peor que un punto suelto es que la v1022 acabó de arreglar el
+**JavaScript** que escribe encima: la lectura sale con **punto** hasta la
+primera actualización y con **coma** después. Las dos ortografías en el mismo
+elemento, y la que ve quien abre la pantalla y todavía no ha echado a andar
+el cronómetro es la mala.
+
+### La superficie más fácil de olvidar, porque no es código
+
+Ninguna guarda que recorra `js/` la ve. La que recorre las páginas —la de
+precarga de la v1016— busca etiquetas y atributos, no prosa. Y la que compone
+el papel compone la lámina.
+
+Medido, el resto está limpio: **cinco páginas, 15.866 letras de texto
+propio**, dos hallazgos, los dos el mismo. Así que **la guarda es el
+entregable y el arreglo son dos renglones** — lo que se compra es que el
+próximo marcador de posición con un punto salga en rojo en su primera
+corrida, en vez de vivir hasta que alguien mire la pantalla antes de pulsar
+nada.
+
+#### Lo que cuesta no quitar el script, medido
+
+El extractor sustituye `<script>`, `<style>`, los comentarios y las etiquetas
+**por espacios**, no los borra: así el número de línea que se reporta sigue
+siendo el de verdad. Y hay una comprobación de respuesta conocida de que
+quita cada cosa.
+
+Lo que cuesta saltársela salió de una inyección: **sin quitar el `<script>`,
+la guarda denuncia nueve cifras más**, todas de las reglas de estilo y del
+JavaScript en línea de la propia página —`3.05`, `2.6`, `1.05`—. Es la lista
+de excepciones de la v895 otra vez, y por eso el extractor va con su propia
+aserción.
+
+La lista de invariables —para no denunciar «1 más» o «1 país»— **se lee de
+`tdoslaminas`**, que ya la tiene. Dos copias de una lista de palabras se
+separan a la tanda siguiente (v879), y si un día no se encuentra, la guarda
+lo dice con su `?` en vez de correr media regla en silencio.
+
+### Demostrado contra la v1022
+
+Tres inyecciones fieles contra una copia guardada, cada una con su aserción
+(v993):
+
+```
+✗ el texto escrito en las paginas cumple las cuatro reglas del papel
+    — 2 hallazgo(s): index.html:668 punto decimal «0.00» · index.html:670 «0.0»
+✗ el extractor deja la prosa y quita el script, el estilo y los atributos
+    — ve dentro de <script>: denunciaria el codigo de la pagina  (9 hallazgos)
+? MATERIAL - las paginas traen prosa escrita…
+    — no se encontro INVARIABLES en tdoslaminas: la regla de concordancia no correria
+```
+
 ## La lista viva: lo que al pliego educativo todavía le falta (v866)
 
 Esta lista se quedó vieja **cinco veces**. Cuatro dentro de la hoja —la
