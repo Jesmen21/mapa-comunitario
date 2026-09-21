@@ -1873,12 +1873,22 @@ console.log('\n  -- la ficha del gobernante --');
      prueba de que el acto se expidió.
 
      ALCANCE, dicho y no disimulado: el rol está declarado donde importa y la
-     guarda muerde donde está declarado. Veinte entradas del registro usan
-     todavía la forma antigua `fuente` + `url`, que no puede llevarlo; esa es
-     una segunda manera de codificar las fuentes y queda medida para su
-     propia tanda. */
+     guarda muerde donde está declarado. La v967 migró las veinte entradas con
+     la forma antigua `fuente` + `url`, así que ya no hay ninguna que no PUEDA
+     llevarlo; lo que queda son las que nadie ha mirado todavía, y esas salen
+     `sin-declarar` en la cobertura que la ficha publica (v966) y son el primer
+     renglón de la lista de prioridades. */
   {
-    const ROLES_FUENTE = ['acto', 'efecto'];
+    /* El vocabulario se LEE de js/70 y no se copia acá: con dos listas, la
+       guarda acabaría comprobando que es igual a sí misma, y la que se
+       quedaría vieja sería esta (v957). */
+    const ROLES_FUENTE = (() => {
+      const j70r = soloCodigo(leer('js/70-seguimiento.js'));
+      const i = j70r.indexOf('var ROLES_DE_FUENTE = {');
+      if (i < 0) return [];
+      const c = j70r.slice(i, j70r.indexOf('\n  };', i));
+      return [...c.matchAll(/^\s*'([a-z-]+)':/gm)].map((m) => m[1]);
+    })();
     const malRol = [], soloEfecto = [];
     let conRol = 0;
     REGISTROS.forEach((ruta) => {
@@ -1897,8 +1907,63 @@ console.log('\n  -- la ficha del gobernante --');
     comprobar('MATERIAL · hay entradas que declaran el rol de sus fuentes',
       conRol > 0, conRol + ' entradas con rol declarado en sus fuentes');
 
+    comprobar('MATERIAL · el vocabulario del rol se lee de js/70',
+      ROLES_FUENTE.length >= 2,
+      ROLES_FUENTE.length ? ROLES_FUENTE.join(' | ') : 'no se pudo leer: la lista de abajo no vigilaría nada');
+
     comprobar('ningún rol de fuente sale de la lista conocida',
-      malRol.length === 0, malRol.length ? malRol.join(' · ') : 'acto | efecto');
+      malRol.length === 0 && ROLES_FUENTE.length >= 2,
+      malRol.length
+        ? malRol.length + ' fuera de la lista, las primeras: ' + malRol.slice(0, 4).join(' · ')
+        : ROLES_FUENTE.join(' | '));
+
+    /* UNA ENTRADA DECLARA TODAS SUS FUENTES O NINGUNA (v998).
+       `rolDeFuentes` da por comprobada la entrada en cuanto UNA de sus fuentes
+       dice `acto`, así que una declarada a medias se lee como revisada entera
+       mientras el resto de sus fuentes sigue sin mirar. Es la exención
+       silenciosa de la v966 entrando por la puerta de al lado, y la había:
+       la entrada del Decreto 1136 tenía una de cinco, que es justamente la
+       fuente que la v967 rescató del campo viejo.
+
+       Falla CERRADO (v880): declarar la primera fuente de una entrada obliga a
+       declarar las demás, en vez de dejar cuatro sin mirar tres tandas. */
+    const aMedias = [];
+    REGISTROS.forEach((ruta) => {
+      const quien = ruta.split('-').pop().replace('.json', '');
+      ((JSON.parse(leer(ruta)).entradas) || []).forEach((e) => {
+        const fs = e.fuentes || [];
+        if (!fs.length) return;
+        const con = fs.filter((f) => String(f.rol || '').trim()).length;
+        if (con > 0 && con < fs.length) {
+          aMedias.push(quien + '/' + (e.fecha || '?') + ' (' + con + ' de ' + fs.length + ')');
+        }
+      });
+    });
+    comprobar('una entrada declara el rol de TODAS sus fuentes o de ninguna',
+      aMedias.length === 0,
+      aMedias.length === 0
+        ? 'ninguna a medias: las que declaran, declaran enteras'
+        : 'a medias: ' + aMedias.join(' · ') +
+          ' — se leen como comprobadas con la mitad de sus fuentes sin mirar');
+
+    /* Y LA INSTRUCCIÓN QUE LA RUTINA DIARIA LEE TIENE QUE NOMBRARLO.
+       Acá estaba la causa de que 185 entradas nacieran sin rol: el campo
+       existía, la guarda existía, y la nota del propio registro —que es lo
+       único que lee quien escribe una entrada— no lo mencionaba. Es la
+       lección de la v903 §8 y la v933: la instrucción dice lo que la guarda
+       exige, o el material nace incumpliéndola. */
+    const sinNota = REGISTROS.filter((ruta) => {
+      const c = String(JSON.parse(leer(ruta))._comentario || '');
+      return !ROLES_FUENTE.every((r) => c.indexOf('`' + r + '`') >= 0);
+    });
+    comprobar('y la nota del registro nombra el rol y sus valores',
+      sinNota.length === 0 && ROLES_FUENTE.length >= 2,
+      ROLES_FUENTE.length < 2
+        ? 'sin vocabulario que exigir: la nota no se está comprobando contra nada'
+        : sinNota.length === 0
+          ? 'los ' + REGISTROS.length + ' registros explican los ' + ROLES_FUENTE.length + ' valores a quien escribe'
+          : 'sin explicarlo: ' + sinNota.join(' · ') +
+            ' — una entrada nueva nace sin rol y nadie se entera');
 
     /* `sin-acto` SE CUENTA Y SE NOMBRA, NO PONE ESTO EN ROJO (v970).
        La v965 lo escribió como fallo y eso empujaba a la salida peor: una
@@ -6195,10 +6260,13 @@ console.log('\n  -- una lista de prioridades también se queda vieja (v997) --')
      medición que siempre contestara «pendiente» dejaría la lista envejecer sin
      que nada lo dijera, y contra el registro de verdad eso no se ve (v970). */
   const MEDIDAS = {
-    'roles-declarados': (m) => {
-      const sin = m.ents.filter(e => (e.fuentes || []).length &&
-        !(e.fuentes || []).some(f => 'rol' in f));
-      return { hecho: sin.length === 0, cuanto: sin.length + ' de ' + m.ents.length + ' sin un solo rol' };
+    'sin-acto-cero': (m) => {
+      const sin = m.ents.filter((e) => {
+        const fs = e.fuentes || [];
+        const r = fs.map((f) => String(f.rol || '').trim()).filter(Boolean);
+        return r.length && r.indexOf('acto') < 0;
+      });
+      return { hecho: sin.length === 0, cuanto: sin.length + ' sin fuente del acto' };
     },
     'nivel-declarado': (m) => {
       const sin = m.ents.filter(e => !e.nivelGobierno);

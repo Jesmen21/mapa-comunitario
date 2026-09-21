@@ -19,18 +19,21 @@ prioridades también se queda vieja (v997)»**, más abajo.
 Medido el 21 de septiembre de 2026 sobre los dos registros —180 entradas del
 gobierno actual y 32 de Petro—:
 
-1. **Declarar el `rol` de las fuentes.** 185 de 212 entradas tienen `fuentes[]`
-   y **ninguna** con rol, así que la guarda de «al menos una fuente documenta
-   el acto» (v965) no corre sobre ellas: salen `sin-declarar` en la cobertura
-   que la v966 publica. `hecho cuando: roles-declarados`
-2. **Declarar el `nivelGobierno` de las entradas.** 197 de 212 no lo traen, y
+1. **Declarar el `nivelGobierno` de las entradas.** 197 de 212 no lo traen, y
    sin él la puerta del score (v941, v971) no puede dejar fuera un acto que no
    es del gobierno nacional. Los 13 **casos** sí lo tienen todos.
    `hecho cuando: nivel-declarado`
-3. **Documentar las 19 entradas del 4 al 17 de agosto**, que se escribieron sin
+2. **Documentar las 19 entradas del 4 al 17 de agosto**, que se escribieron sin
    citar fuente. No están «sin clasificar»: están SIN DOCUMENTAR, y su lista
    —con qué le falta a cada una— ya está escrita dentro del propio registro,
    en `_pendientesFuente`. `hecho cuando: sin-documentar-cero`
+3. **Conseguir la fuente del ACTO de las seis entradas `sin-acto`.** La v998
+   declaró el rol de las 562 fuentes y seis entradas quedaron sin ninguna que
+   documente su acto: la del Decreto 1012 y las emisoras de paz en el registro
+   actual, y cinco de Petro —la entrega de la Presidencia, las dos sanciones de
+   reforma, la posesión de 2022 y la denuncia de la exfiscal Laborde—. No es un
+   fallo y por eso no está en rojo: es el hallazgo que la guarda vino a
+   producir. `hecho cuando: sin-acto-cero`
 4. **Decidir la identidad de objeto de las 8 contradicciones documentadas.**
    Es lo único que bloquea el veredicto de fiabilidad (v972), y **no es de esta
    sesión**: leer si lo prometido y lo hecho son el mismo objeto cambia en
@@ -47,7 +50,10 @@ hallazgo, no obstáculo.**
 **Lo que ya NO está en la lista, y por qué:** la migración del esquema antiguo
 `fuente` + `url` la hizo la v967 —cero entradas quedan con esa forma en los dos
 registros— y la pantalla del módulo presidencial la implementó la v971, con sus
-diecisiete gráficos. Las dos seguían pedidas acá hasta la v996.
+diecisiete gráficos. Las dos seguían pedidas acá hasta la v996. Y el **rol de
+las fuentes**, que era el renglón 1 de esta misma lista, lo declaró la v998
+sobre las 212 entradas y las 562 fuentes: lo denunció la guarda que la v997
+acababa de escribir, en la primera tanda que la puso a prueba.
 
 Lo demás del módulo presidencial —los cuatro criterios sin validar, la media
 histórica del eje B, la fuente del eje C— pide archivo y fuente, no código, y
@@ -16158,6 +16164,156 @@ Subir el token rompería la caché de todos los teléfonos para no cambiarles un
 sola línea de lo que ven, y `revisar.js` lo deja pasar con razón: su regla es
 que la versión suba cuando cambia **el código**. Es el mismo precedente de la
 corrección de «Una declaración de "otra tanda" también se queda vieja».
+
+## El rol de cada fuente, declarado en las 562 (v998)
+
+El renglón 1 de la lista de prioridades, hecho entero. Y la tanda empezó por
+medir POR QUÉ 185 entradas de 212 no lo traían, en vez de ponerse a declarar.
+
+    v997   27 entradas con rol · 1 a medias · la nota del registro no lo menciona
+    v998   212 con rol · 0 a medias · 206 ok y 6 «sin acto», que son el hallazgo
+
+### La causa: la instrucción no decía lo que la guarda exige
+
+El campo existía desde la v965, la guarda existía, y el `_comentario` del
+registro —que es **lo único que lee la rutina diaria que escribe las
+entradas**— no lo mencionaba. Así que toda entrada nueva nacía `sin-declarar`
+por construcción, y el pendiente crecía solo.
+
+Es la lección de la v903 §8 y de la v933 dicha en otro sitio: **la instrucción
+dice lo que la guarda exige, o el material nace incumpliéndola.** Los dos
+registros llevan ahora la nota entera —los tres valores, la regla de todas o
+ninguna, y qué hacer cuando ninguna fuente documenta el acto—, y una guarda
+exige que siga estando.
+
+### Una entrada declarada A MEDIAS se lee como revisada entera
+
+Salió al medir y era real. `rolDeFuentes` da la entrada por comprobada en
+cuanto UNA de sus fuentes dice `acto`, así que una entrada con una de cinco
+declaradas sale `ok` mientras las otras cuatro siguen sin mirar. Es la exención
+silenciosa de la v966 entrando por la puerta de al lado.
+
+Y la había: **la entrada del Decreto 1136**, con una de cinco — y esa una es
+justamente la fuente que la v967 rescató del campo viejo. La guarda falla
+CERRADO (v880): declarar la primera fuente obliga a declarar las demás.
+
+### `contexto`, el tercer valor, entró con su caso delante
+
+Esa misma entrada lo obligó. Cita dos columnas de **julio** sobre la campaña,
+que no documentan el acto de agosto y tampoco documentan lo que vino después de
+él. Meterlas en `efecto` sería declarar mal la procedencia (v867) por no tener
+dónde ponerlas.
+
+**Y no es una salida barata**, que es lo que había que comprobar antes de
+añadirlo: `contexto` no cambia ningún estado calculado —una entrada cuyas
+fuentes sean todas de contexto sigue siendo `sin-acto`—, así que no puede
+fabricar un verde. Lo único que hace es que una fuente de fondo se pueda
+declarar sin mentir.
+
+El vocabulario vive en **un solo sitio**, `ROLES_DE_FUENTE` en js/70, y la
+guarda lo LEE de ahí en vez de copiarlo: con dos listas, acabaría comprobando
+que es igual a sí misma (v957).
+
+### La vara con la que se clasificaron las 562
+
+La que la v967 escribió: **una cobertura del mismo día del hecho es `acto`; la
+reacción de un tercero es `efecto`**; y lo que no es ninguna de las dos
+—antecedente, perfil, cobertura anterior— es `contexto`. Tres decisiones de
+método que conviene dejar escritas porque volverán:
+
+* **un fact-check de una declaración documenta la declaración.** «Detector: el
+  logro de Petro es engañoso» es cobertura del acto con encuadre crítico, no
+  una consecuencia suya. Lo mismo la nota de teleSUR sobre el protocolo
+  universitario.
+* **una cobertura crítica sigue siendo del acto.** El encuadre no cambia el
+  rol; lo que lo cambia es de qué habla la pieza.
+* **ante la duda, `efecto` o `contexto`.** Las dos son conservadoras: ninguna
+  puede fabricar un `ok`. Solo `acto` puede, y por eso es la que se escribe
+  cuando se está seguro.
+
+### Las seis `sin-acto` son el hallazgo, no el residuo
+
+| Registro | Entrada | Lo que tiene |
+|---|---|---|
+| actual | las 20 emisoras de paz (18 ago) | solo la alerta de la FLIP, que es la reacción |
+| Petro | la denuncia de la exfiscal Laborde (22 ago) | solo las dos respuestas, no la denuncia |
+| Petro | entrega de la Presidencia (7 ago 2026) | un balance económico y la TRM |
+| Petro | sanción de la reforma laboral (25 jun 2025) | dos balances de legado |
+| Petro | sanción de la reforma pensional (16 jul 2024) | dos recuentos de hitos |
+| Petro | posesión de 2022 | un recuento de hitos |
+
+Ninguna se ascendió para que la guarda pasara. Es literalmente lo que la lista
+de prioridades dice —«se queda en `sin-acto` y se sigue: es hallazgo, no
+obstáculo»— y lo que la v970 hizo posible al sacar ese estado del rojo: **una
+guarda que se pone roja sobre un hallazgo empuja a esconder el hallazgo.**
+
+Las seis pasan a ser el renglón 3 de la lista, con su condición medible.
+
+### La guarda de la v997 se cobró en la primera tanda que la puso a prueba
+
+Al terminar de declarar las 212, `revisar.js` dijo:
+
+```
+✗ ningún renglón de la lista está ya cumplido
+    — ya está hecho y la lista lo sigue pidiendo: roles-declarados
+      — la sesión siguiente rehace trabajo hecho
+```
+
+Es exactamente para lo que se escribió, una tanda antes. El renglón salió de la
+lista y su medición se reemplazó por la de las seis `sin-acto`.
+
+De paso, la guarda de MATERIAL de la v970 —«hay entradas declarantes sobre las
+que la comprobación NO corre»— se quedó **sin material**, que es lo que esa
+tanda diseñó: se queda sin él porque el registro MEJORÓ, sale con su `?` y no
+pone la corrida en rojo.
+
+### Y una del método de parchear un registro que otra sesión escribe a diario
+
+`json.dumps` reformateó el archivo entero —6.716 líneas cambiadas para añadir
+una frase— y eso, en un archivo que otra sesión escribe varias veces al día, es
+un conflicto de fusión garantizado. Se revirtió y se parchea por TEXTO,
+validando con `json.loads` antes de escribir.
+
+Tres cosas más que el parcheador aprendió a hacer, cada una porque abortó:
+
+* **se ancla dentro del array `entradas`**, porque `_pendientesFuente` repite
+  los títulos de las que están sin documentar y el ancla salía ambigua;
+* **la sangría no es la misma en los dos registros**, así que el cierre del
+  array se busca al nivel de su apertura y no con una cadena fija;
+* **y se escriben TODAS las fuentes de una entrada o ninguna**, comprobado en
+  el propio parcheador: si el número de roles no cuadra con el de fuentes, no
+  escribe nada. Es la regla del parche por anclas —o escribe entero o no
+  escribe— aplicada al material.
+
+### Demostrado contra la v997
+
+Cuatro en rojo, contra una copia guardada en `/tmp` y con una inyección fiel
+por aserción (v993). Las dos primeras son **el estado real de la v997**:
+
+```
+✗ una entrada declara el rol de TODAS sus fuentes o de ninguna
+    — a medias: presidencial/2026-08-07 (1 de 5)
+✗ y la nota del registro nombra el rol y sus valores
+    — sin explicarlo: assets/data/seguimiento-presidencial.json
+      — una entrada nueva nace sin rol y nadie se entera
+✗ MATERIAL · el vocabulario del rol se lee de js/70  — no se pudo leer
+✗ ningún rol de fuente sale de la lista conocida  — 1 fuera de la lista: rol «antecedente»
+```
+
+Y una de mis propias guardas que no mordía: el lector del vocabulario buscaba
+`'var ROLES_DE_FUENTE'` **sin el `= {`**, así que un renombre a
+`ROLES_DE_FUENTE_OTRO` casaba por prefijo y la guarda seguía verde. El token va
+completo, que es la lección de la v979.
+
+### Y se miró el papel
+
+La ficha completa, en la sección de indicadores:
+
+> **Procedencia de las fuentes: comprobada en 6 de 6 entradas que declaran
+> indicador.** La comprobación corrió sobre todas: cada una tiene al menos una
+> fuente que documenta el acto.
+
+Contra la v997, que decía 5 de 6 y nombraba al Decreto 1171.
 
 ## La lista viva: lo que al pliego educativo todavía le falta (v866)
 

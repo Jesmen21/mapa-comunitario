@@ -2142,6 +2142,31 @@
          'comprobación no corre acá, y eso NO es que haya pasado: es que no se pudo hacer.' }
   };
 
+  /* ── EL VOCABULARIO DEL ROL, EN UN SOLO SITIO (v998) ─────────────────────
+     Vive acá y no en `revisar.js` porque lo tienen que conocer tres sitios: la
+     guarda, la ficha y —sobre todo— la nota del propio registro, que es lo que
+     lee la rutina diaria que escribe las entradas. Escrito en cada uno serían
+     tres listas que se separan a la tanda siguiente (v879).
+
+     `contexto` es el tercer valor y entró con su caso delante: la entrada del
+     Decreto 1136 cita dos columnas de JULIO sobre la campaña, que no
+     documentan el acto de agosto y tampoco documentan lo que vino después de
+     él. Meterlas en `efecto` sería declarar mal la procedencia (v867) por no
+     tener dónde ponerlas.
+
+     Y NO es una salida barata: `contexto` no cambia ningún estado calculado
+     —una entrada cuyas fuentes sean todas de contexto sigue siendo
+     `sin-acto`—, así que no puede fabricar un verde. Lo único que hace es que
+     una fuente de fondo se pueda declarar sin mentir. */
+  var ROLES_DE_FUENTE = {
+    'acto': 'Documenta el ACTO de esta entrada: el documento oficial, o la ' +
+            'cobertura del hecho mismo.',
+    'efecto': 'Documenta lo que vino DESPUÉS del acto: una reacción, un ' +
+              'pronunciamiento, una consecuencia.',
+    'contexto': 'Ni una cosa ni la otra: antecedente, perfil o cobertura ' +
+                'anterior que ayuda a entender la entrada. No prueba el acto.'
+  };
+
   function rolDeFuentes(e) {
     var fs = (e && e.fuentes) || [];
     if (!fs.length) {

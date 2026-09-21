@@ -1,5 +1,5 @@
 {
-  "_comentario": "URBIS · Seguimiento Presidencial · EL GOBIERNO ANTERIOR. Registro cerrado del mandato de Gustavo Petro (2022–2026), con la MISMA estructura y las MISMAS reglas que el del gobierno actual, para que la ficha se calcule con la misma función y no con una copia con otras reglas. Vive en su propio archivo porque es un registro cerrado: no lo toca la rutina diaria y no engorda el diff del que sí se actualiza. Lee CLAUDE.md antes de editarlo. — Lleva los MISMOS tres campos de Capa 1 que el registro actual, por el principio 1 del pliego: toda regla que se aplica a un gobierno se aplica a todos. Aflojarla acá sería la manera silenciosa de inclinar la comparación. — CAPA 3: cada contradicción documentada declara `mismoObjetoVerificado` (true | false). Es lo que separa un INCUMPLIMIENTO de una TENSIÓN RETÓRICA: solo las que tienen identidad de objeto alimentan el eje A de confiabilidad. NO es lo mismo que `estado: 'tension'`, que es un estado probatorio —todavía no está documentada—; una contradicción puede estar perfectamente documentada y aun así no hablar del mismo objeto. Sin declarar, el eje A no publica nivel y lo dice: publicar una acusación floja al lado de varias sólidas no suma, resta. — CAPA 1, v961: `tipoMedicion` pasa de `no-aplica` a `contexto-estructural`, que dice lo que ES y no lo que no es. Y el `contrargumentoOficial` «ausente» exige CONSTANCIA: se escribe { ausente: true, busco: [\"dónde se buscó\"], fecha: \"AAAA-MM-DD\" }. La palabra suelta «ausente» se ve y NO pesa en el indicador I-06 — afirmar que el Gobierno no respondió sin decir dónde se buscó es un señalamiento sin respaldo. — CAPA 2, v961: los criterios de I-04, I-05 e I-07 están ESCRITOS en js/70 (`CRITERIOS`), con su definición, su lista de lo que incluye y su lista de lo que NO. Antes de declarar un indicador se leen: si el hecho cae en el `excluye`, no se declara. Y una entrada que declara indicador trae además tres campos o no cuenta: `nivelGobierno` (nacional | departamental | distrital | municipal), `estadoProcesal` (en-firme | en-tramite-legislativo | en-revision-judicial | en-disputa-institucional | anunciado-sin-acto) y `tipoEvidencia` (documento-primario | dato-oficial | reporte-periodistico | testimonio | captura-de-pantalla). Es documento primario cuando el acto está identificado por su número o radicado, aunque la copia llegue por prensa. Lo declarado que no pasa el criterio no desaparece: la ficha dice cuántas se declararon, cuántas cuentan y qué le falta a cada una. — v962: nace el indicador I-13 (interferencia en la independencia técnica) para los actos sobre entidades del Ejecutivo con independencia solo TÉCNICA —el DANE (Ley 2335), las agencias reguladoras—, que NO son órganos autónomos y por eso no caben en I-05. La lista cerrada de órganos autónomos está en js/70 (`ORGANOS_AUTONOMOS`) y se consulta antes de declarar un I-05; el DANE no está en ella. I-13 cuenta una COINCIDENCIA documentada, no una causa probada, y no alimenta el eje B porque no hay media histórica suya. Un hecho no declara I-05 e I-13 a la vez: una entidad es autónoma o no lo es. — v963: toda declaración de indicador dice además POR CUÁL renglón del criterio entra, en `indicadoresPor`: { \"I-04\": \"<texto exacto de una línea del incluye>\" }. Se comprueba contra el texto literal del criterio en js/70, así que se copia y pega de ahí; una cita que el criterio no tenga no cuenta y se ve. Sin vía, la declaración no cuenta. Y la regla de la v961 al escribirla: si el hecho cae en el `excluye`, no se declara —se quitaron dos por eso, un anuncio sin acto y un acto del gobierno anterior.",
+  "_comentario": "URBIS · Seguimiento Presidencial · EL GOBIERNO ANTERIOR. Registro cerrado del mandato de Gustavo Petro (2022–2026), con la MISMA estructura y las MISMAS reglas que el del gobierno actual, para que la ficha se calcule con la misma función y no con una copia con otras reglas. Vive en su propio archivo porque es un registro cerrado: no lo toca la rutina diaria y no engorda el diff del que sí se actualiza. Lee CLAUDE.md antes de editarlo. — Lleva los MISMOS tres campos de Capa 1 que el registro actual, por el principio 1 del pliego: toda regla que se aplica a un gobierno se aplica a todos. Aflojarla acá sería la manera silenciosa de inclinar la comparación. — CAPA 3: cada contradicción documentada declara `mismoObjetoVerificado` (true | false). Es lo que separa un INCUMPLIMIENTO de una TENSIÓN RETÓRICA: solo las que tienen identidad de objeto alimentan el eje A de confiabilidad. NO es lo mismo que `estado: 'tension'`, que es un estado probatorio —todavía no está documentada—; una contradicción puede estar perfectamente documentada y aun así no hablar del mismo objeto. Sin declarar, el eje A no publica nivel y lo dice: publicar una acusación floja al lado de varias sólidas no suma, resta. — CAPA 1, v961: `tipoMedicion` pasa de `no-aplica` a `contexto-estructural`, que dice lo que ES y no lo que no es. Y el `contrargumentoOficial` «ausente» exige CONSTANCIA: se escribe { ausente: true, busco: [\"dónde se buscó\"], fecha: \"AAAA-MM-DD\" }. La palabra suelta «ausente» se ve y NO pesa en el indicador I-06 — afirmar que el Gobierno no respondió sin decir dónde se buscó es un señalamiento sin respaldo. — CAPA 2, v961: los criterios de I-04, I-05 e I-07 están ESCRITOS en js/70 (`CRITERIOS`), con su definición, su lista de lo que incluye y su lista de lo que NO. Antes de declarar un indicador se leen: si el hecho cae en el `excluye`, no se declara. Y una entrada que declara indicador trae además tres campos o no cuenta: `nivelGobierno` (nacional | departamental | distrital | municipal), `estadoProcesal` (en-firme | en-tramite-legislativo | en-revision-judicial | en-disputa-institucional | anunciado-sin-acto) y `tipoEvidencia` (documento-primario | dato-oficial | reporte-periodistico | testimonio | captura-de-pantalla). Es documento primario cuando el acto está identificado por su número o radicado, aunque la copia llegue por prensa. Lo declarado que no pasa el criterio no desaparece: la ficha dice cuántas se declararon, cuántas cuentan y qué le falta a cada una. — v962: nace el indicador I-13 (interferencia en la independencia técnica) para los actos sobre entidades del Ejecutivo con independencia solo TÉCNICA —el DANE (Ley 2335), las agencias reguladoras—, que NO son órganos autónomos y por eso no caben en I-05. La lista cerrada de órganos autónomos está en js/70 (`ORGANOS_AUTONOMOS`) y se consulta antes de declarar un I-05; el DANE no está en ella. I-13 cuenta una COINCIDENCIA documentada, no una causa probada, y no alimenta el eje B porque no hay media histórica suya. Un hecho no declara I-05 e I-13 a la vez: una entidad es autónoma o no lo es. — v963: toda declaración de indicador dice además POR CUÁL renglón del criterio entra, en `indicadoresPor`: { \"I-04\": \"<texto exacto de una línea del incluye>\" }. Se comprueba contra el texto literal del criterio en js/70, así que se copia y pega de ahí; una cita que el criterio no tenga no cuenta y se ve. Sin vía, la declaración no cuenta. Y la regla de la v961 al escribirla: si el hecho cae en el `excluye`, no se declara —se quitaron dos por eso, un anuncio sin acto y un acto del gobierno anterior. \u2014 v998 \u00b7 EL ROL DE CADA FUENTE. Toda fuente de `fuentes[]` lleva su `rol`, y son tres: `acto` (documenta el ACTO de esta entrada: el documento oficial, o la cobertura del hecho mismo), `efecto` (documenta lo que vino DESPU\u00c9S: una reacci\u00f3n, un pronunciamiento, una consecuencia) y `contexto` (ni una cosa ni la otra: antecedente, perfil o cobertura anterior; no prueba el acto). El vocabulario vive en js/70 (`ROLES_DE_FUENTE`) y se copia de ah\u00ed. Se declaran TODAS las fuentes de una entrada o NINGUNA: una entrada a medias se lee como comprobada mientras la mitad de sus fuentes sigue sin mirar, que es la exenci\u00f3n silenciosa que la v966 vino a cerrar. Y si ninguna fuente documenta el acto, la entrada se queda en `sin-acto` \u2014que desde la v970 es un estado que se cuenta y se nombra, no un fallo\u2014: no se asciende una de efecto a acto para que la guarda pase. Es hallazgo, no obst\u00e1culo.",
   "presidente": "Gustavo Petro",
   "periodo": "2022 – 2026",
   "posesion": "2022-08-07",
@@ -68,11 +68,13 @@
       "fuentes": [
         {
           "n": "El Colombiano · balance de la economía y retos para De la Espriella",
-          "u": "https://www.elcolombiano.com/negocios/economia-gobierno-petro-balance-retos-de-la-espriella-AP38511526"
+          "u": "https://www.elcolombiano.com/negocios/economia-gobierno-petro-balance-retos-de-la-espriella-AP38511526",
+          "rol": "contexto"
         },
         {
           "n": "XTB · el dólar despide al gobierno Petro por debajo de 3.200",
-          "u": "https://www.xtb.com/lat/analisis-y-noticias/analisis-de-mercado/dolar-hoy-colombia-dolar-despide-el-gobierno-petro-por-debajo-de-3-200"
+          "u": "https://www.xtb.com/lat/analisis-y-noticias/analisis-de-mercado/dolar-hoy-colombia-dolar-despide-el-gobierno-petro-por-debajo-de-3-200",
+          "rol": "contexto"
         }
       ]
     },
@@ -89,15 +91,18 @@
       "fuentes": [
         {
           "n": "Infobae · el CNE confirmó la sanción a la campaña Petro Presidente 2022",
-          "u": "https://www.infobae.com/colombia/2026/04/29/cne-confirmo-sancion-a-la-campana-petro-presidente-2022-por-violar-los-topes-de-gastos-electorales/"
+          "u": "https://www.infobae.com/colombia/2026/04/29/cne-confirmo-sancion-a-la-campana-petro-presidente-2022-por-violar-los-topes-de-gastos-electorales/",
+          "rol": "acto"
         },
         {
           "n": "El Colombiano · el CNE ratifica la sanción por violación de topes",
-          "u": "https://www.elcolombiano.com/colombia/cne-ratifica-sancion-campana-petro-presidente-2022-violacion-topes-electorales-AG35991122"
+          "u": "https://www.elcolombiano.com/colombia/cne-ratifica-sancion-campana-petro-presidente-2022-violacion-topes-electorales-AG35991122",
+          "rol": "acto"
         },
         {
           "n": "Portafolio · la campaña sí excedió los topes",
-          "u": "https://www.portafolio.co/economia/gobierno/campana-de-petro-si-excedio-topes-cne-ratifica-sancion-por-violacion-de-limites-492983"
+          "u": "https://www.portafolio.co/economia/gobierno/campana-de-petro-si-excedio-topes-cne-ratifica-sancion-por-violacion-de-limites-492983",
+          "rol": "acto"
         }
       ]
     },
@@ -114,7 +119,8 @@
       "fuentes": [
         {
           "n": "FIP · el costo de negociar mal: 29 mil integrantes de grupos armados",
-          "u": "https://ideaspaz.org/publicaciones/investigaciones-analisis/2026-08/el-costo-de-negociar-mal-29-mil-integrantes-de-grupos-armados-entre-disputas-y-gobernanzas-criminales"
+          "u": "https://ideaspaz.org/publicaciones/investigaciones-analisis/2026-08/el-costo-de-negociar-mal-29-mil-integrantes-de-grupos-armados-entre-disputas-y-gobernanzas-criminales",
+          "rol": "acto"
         }
       ]
     },
@@ -131,15 +137,18 @@
       "fuentes": [
         {
           "n": "Asocapitales · informe sobre la Paz Total",
-          "u": "https://www.asocapitales.co/sites/default/files/files/technical_documents/informe-paz-total.pdf"
+          "u": "https://www.asocapitales.co/sites/default/files/files/technical_documents/informe-paz-total.pdf",
+          "rol": "acto"
         },
         {
           "n": "El Colombiano · la Paz Total no evidencia resultados consistentes",
-          "u": "https://www.elcolombiano.com/colombia/paz-total-no-evidencia-resultados-consistentes-informe-de-asocapitales-GE36012523"
+          "u": "https://www.elcolombiano.com/colombia/paz-total-no-evidencia-resultados-consistentes-informe-de-asocapitales-GE36012523",
+          "rol": "efecto"
         },
         {
           "n": "Infobae · Asocapitales alertó por los resultados de la Paz Total",
-          "u": "https://www.infobae.com/colombia/2026/04/29/asocapitales-alerto-por-resultados-de-la-paz-total-en-las-principales-ciudades-del-pais-revelo-preocupante-deterioro-en-la-seguridad/"
+          "u": "https://www.infobae.com/colombia/2026/04/29/asocapitales-alerto-por-resultados-de-la-paz-total-en-las-principales-ciudades-del-pais-revelo-preocupante-deterioro-en-la-seguridad/",
+          "rol": "acto"
         }
       ]
     },
@@ -156,7 +165,8 @@
       "fuentes": [
         {
           "n": "Cambio · homicidios y secuestro en el primer semestre de 2026",
-          "u": "https://cambiocolombia.com/pais/articulo/2026/7/homicidios-bajaron-92-por-ciento-y-el-secuestro-cayo-70-por-ciento-en-cundinamarca-durante-el-primer-semestre-de-2026"
+          "u": "https://cambiocolombia.com/pais/articulo/2026/7/homicidios-bajaron-92-por-ciento-y-el-secuestro-cayo-70-por-ciento-en-cundinamarca-durante-el-primer-semestre-de-2026",
+          "rol": "acto"
         }
       ]
     },
@@ -173,11 +183,13 @@
       "fuentes": [
         {
           "n": "El Colombiano · Petro decreta alza de 23,78 % para 2026",
-          "u": "https://www.elcolombiano.com/negocios/salario-minimo-2026-colombia-alza-23-por-ciento-petro-decreto-HB32119718"
+          "u": "https://www.elcolombiano.com/negocios/salario-minimo-2026-colombia-alza-23-por-ciento-petro-decreto-HB32119718",
+          "rol": "acto"
         },
         {
           "n": "CNN · el alza y las críticas de empresarios y comerciantes",
-          "u": "https://cnnespanol.cnn.com/2025/12/30/colombia/gobierno-sube-salario-minimo-2026-efe"
+          "u": "https://cnnespanol.cnn.com/2025/12/30/colombia/gobierno-sube-salario-minimo-2026-efe",
+          "rol": "acto"
         }
       ]
     },
@@ -194,11 +206,13 @@
       "fuentes": [
         {
           "n": "Radio Nacional · balance de medidas para los trabajadores",
-          "u": "https://www.radionacional.co/actualidad/reformas-laboral-y-pensional-y-aumento-del-salario-balance-de-medidas-para-trabajadores"
+          "u": "https://www.radionacional.co/actualidad/reformas-laboral-y-pensional-y-aumento-del-salario-balance-de-medidas-para-trabajadores",
+          "rol": "contexto"
         },
         {
           "n": "LexLatin · el legado laboral que deberán resolver los candidatos",
-          "u": "https://lexlatin.com/reportajes/reforma-laboral-seguridad-social-colombia-candidatos-petro"
+          "u": "https://lexlatin.com/reportajes/reforma-laboral-seguridad-social-colombia-candidatos-petro",
+          "rol": "efecto"
         }
       ]
     },
@@ -214,11 +228,13 @@
       "fuentes": [
         {
           "n": "Canal Trece · principales hitos y reformas del gobierno Petro",
-          "u": "https://canaltrece.com.co/noticias/balance-de-gestion-principales-hitos-y-reformas-del-gobierno-de-gustavo-petro/"
+          "u": "https://canaltrece.com.co/noticias/balance-de-gestion-principales-hitos-y-reformas-del-gobierno-de-gustavo-petro/",
+          "rol": "contexto"
         },
         {
           "n": "Radio Nacional · reformas laboral y pensional",
-          "u": "https://www.radionacional.co/actualidad/reformas-laboral-y-pensional-y-aumento-del-salario-balance-de-medidas-para-trabajadores"
+          "u": "https://www.radionacional.co/actualidad/reformas-laboral-y-pensional-y-aumento-del-salario-balance-de-medidas-para-trabajadores",
+          "rol": "contexto"
         }
       ]
     },
@@ -235,11 +251,13 @@
       "fuentes": [
         {
           "n": "Pulzo · la Corte avala la reforma pensional y fija abril de 2027",
-          "u": "https://www.pulzo.com/economia/reforma-pensional-de-gustavo-petro-corte-constitucional-avala-cambios-clave-en-colombia-PP5284944A"
+          "u": "https://www.pulzo.com/economia/reforma-pensional-de-gustavo-petro-corte-constitucional-avala-cambios-clave-en-colombia-PP5284944A",
+          "rol": "acto"
         },
         {
           "n": "Yahoo Noticias · la Corte avala la reforma pensional",
-          "u": "https://es-us.noticias.yahoo.com/corte-colombia-avala-reforma-pensional-020700935.html"
+          "u": "https://es-us.noticias.yahoo.com/corte-colombia-avala-reforma-pensional-020700935.html",
+          "rol": "acto"
         }
       ]
     },
@@ -256,11 +274,13 @@
       "fuentes": [
         {
           "n": "DANE · pobreza monetaria 2025",
-          "u": "https://www.dane.gov.co/files/operaciones/PM/bol-PM-2025.pdf"
+          "u": "https://www.dane.gov.co/files/operaciones/PM/bol-PM-2025.pdf",
+          "rol": "acto"
         },
         {
           "n": "CEPR · avances sociales con restricciones monetarias y fiscales",
-          "u": "https://cepr.net/es/publications/colombia-durante-el-gobierno-de-petro-avances-sociales-en-un-contexto-de-restricciones-monetarias-y-fiscales/"
+          "u": "https://cepr.net/es/publications/colombia-durante-el-gobierno-de-petro-avances-sociales-en-un-contexto-de-restricciones-monetarias-y-fiscales/",
+          "rol": "efecto"
         }
       ]
     },
@@ -276,7 +296,8 @@
       "fuentes": [
         {
           "n": "CEPR · avances sociales con restricciones monetarias y fiscales",
-          "u": "https://cepr.net/es/publications/colombia-durante-el-gobierno-de-petro-avances-sociales-en-un-contexto-de-restricciones-monetarias-y-fiscales/"
+          "u": "https://cepr.net/es/publications/colombia-durante-el-gobierno-de-petro-avances-sociales-en-un-contexto-de-restricciones-monetarias-y-fiscales/",
+          "rol": "acto"
         }
       ]
     },
@@ -293,11 +314,13 @@
       "fuentes": [
         {
           "n": "Infobae · Petro se adjudicó el crecimiento de 3,5 % del DANE",
-          "u": "https://www.infobae.com/colombia/2026/08/18/petro-se-adjudico-el-merito-por-el-crecimiento-de-la-economia-colombiana-en-un-35-segun-el-dane-en-mi-gobierno/"
+          "u": "https://www.infobae.com/colombia/2026/08/18/petro-se-adjudico-el-merito-por-el-crecimiento-de-la-economia-colombiana-en-un-35-segun-el-dane-en-mi-gobierno/",
+          "rol": "acto"
         },
         {
           "n": "El Colombiano · balance de la economía y retos para De la Espriella",
-          "u": "https://www.elcolombiano.com/negocios/economia-gobierno-petro-balance-retos-de-la-espriella-AP38511526"
+          "u": "https://www.elcolombiano.com/negocios/economia-gobierno-petro-balance-retos-de-la-espriella-AP38511526",
+          "rol": "contexto"
         }
       ]
     },
@@ -314,7 +337,8 @@
       "fuentes": [
         {
           "n": "La Silla Vacía · Detector: el logro de Petro en incautaciones es engañoso",
-          "u": "https://www.lasillavacia.com/detector-de-mentiras/enganoso/detector-logro-de-petro-en-incautaciones-de-cocaina-es-enganoso/"
+          "u": "https://www.lasillavacia.com/detector-de-mentiras/enganoso/detector-logro-de-petro-en-incautaciones-de-cocaina-es-enganoso/",
+          "rol": "acto"
         }
       ]
     },
@@ -331,11 +355,13 @@
       "fuentes": [
         {
           "n": "Infobae · Petro respondió a la denuncia de la exfiscal Laborde",
-          "u": "https://www.infobae.com/colombia/2026/08/22/petro-respondio-a-lucy-laborde-por-denunciar-presiones-para-evitar-que-imputaran-el-delito-de-lavado-de-activos-a-su-hijo-nicolas-petro/"
+          "u": "https://www.infobae.com/colombia/2026/08/22/petro-respondio-a-lucy-laborde-por-denunciar-presiones-para-evitar-que-imputaran-el-delito-de-lavado-de-activos-a-su-hijo-nicolas-petro/",
+          "rol": "efecto"
         },
         {
           "n": "Radio Santa Fe · la Fiscal General niega haber ordenado eliminar delitos",
-          "u": "https://www.radiosantafe.com/2026/08/23/fiscal-general-niega-haber-ordenado-eliminar-delitos-a-nicolas-petro-la-acusacion-por-lavado-de-activos-y-enriquecimiento-ilicito-se-mantiene/"
+          "u": "https://www.radiosantafe.com/2026/08/23/fiscal-general-niega-haber-ordenado-eliminar-delitos-a-nicolas-petro-la-acusacion-por-lavado-de-activos-y-enriquecimiento-ilicito-se-mantiene/",
+          "rol": "efecto"
         }
       ]
     },
@@ -352,11 +378,13 @@
       "fuentes": [
         {
           "n": "Infobae · el tribunal deberá resolver más de 800 apelaciones",
-          "u": "https://www.infobae.com/colombia/2026/06/03/tribunal-superior-de-barranquilla-debera-resolver-mas-de-800-apelaciones-antes-de-iniciar-el-juicio-contra-nicolas-petro/"
+          "u": "https://www.infobae.com/colombia/2026/06/03/tribunal-superior-de-barranquilla-debera-resolver-mas-de-800-apelaciones-antes-de-iniciar-el-juicio-contra-nicolas-petro/",
+          "rol": "acto"
         },
         {
           "n": "El Tiempo · por qué el caso no ha avanzado a juicio",
-          "u": "https://www.eltiempo.com/justicia/delitos/nicolas-petro-por-que-el-caso-contra-el-exdiputado-por-supuesto-lavado-de-activos-no-ha-avanzado-a-juicio-3580628"
+          "u": "https://www.eltiempo.com/justicia/delitos/nicolas-petro-por-que-el-caso-contra-el-exdiputado-por-supuesto-lavado-de-activos-no-ha-avanzado-a-juicio-3580628",
+          "rol": "acto"
         }
       ]
     },
@@ -373,15 +401,18 @@
       "fuentes": [
         {
           "n": "Procuraduría · confirma la sanción a Olmedo López y Sneyder Pinilla",
-          "u": "https://www.procuraduria.gov.co/Pages/procuraduria-confirmo-sancion-olmedo-lopez-sneyder-pinilla-sobrecostos-adquisicion-carrotanques.aspx"
+          "u": "https://www.procuraduria.gov.co/Pages/procuraduria-confirmo-sancion-olmedo-lopez-sneyder-pinilla-sobrecostos-adquisicion-carrotanques.aspx",
+          "rol": "acto"
         },
         {
           "n": "Semana · la Contraloría emitió fallo por los 80 carrotanques",
-          "u": "https://www.semana.com/nacion/articulo/corrupcion-en-la-ungrd-contraloria-emitio-fallo-contra-olmedo-lopez-y-sneyder-pinilla-por-la-compra-de-80-carrotanques-para-la-guajira/202611/"
+          "u": "https://www.semana.com/nacion/articulo/corrupcion-en-la-ungrd-contraloria-emitio-fallo-contra-olmedo-lopez-y-sneyder-pinilla-por-la-compra-de-80-carrotanques-para-la-guajira/202611/",
+          "rol": "efecto"
         },
         {
           "n": "Cambio · la Procuraduría ratifica las sanciones",
-          "u": "https://cambiocolombia.com/poder/olmedo-lopez-snedyer-pinilla-procuraduria-ratifica-sancion-escandalo-carrotanques"
+          "u": "https://cambiocolombia.com/poder/olmedo-lopez-snedyer-pinilla-procuraduria-ratifica-sancion-escandalo-carrotanques",
+          "rol": "acto"
         }
       ]
     },
@@ -398,7 +429,8 @@
       "fuentes": [
         {
           "n": "Infobae · Petro le cierra la puerta al fracking",
-          "u": "https://www.infobae.com/colombia/2026/07/21/gustavo-petro-le-cierra-la-puerta-al-fracking-insiste-en-que-es-un-inmenso-error-y-que-aplicarlo-aumenta-la-pobreza-y-destruye-el-empleo/"
+          "u": "https://www.infobae.com/colombia/2026/07/21/gustavo-petro-le-cierra-la-puerta-al-fracking-insiste-en-que-es-un-inmenso-error-y-que-aplicarlo-aumenta-la-pobreza-y-destruye-el-empleo/",
+          "rol": "acto"
         }
       ]
     },
@@ -415,11 +447,13 @@
       "fuentes": [
         {
           "n": "CNN · por qué la propuesta de constituyente tiene pocas posibilidades",
-          "u": "https://cnnespanol.cnn.com/2024/04/26/petro-asamblea-constituyente-posibilidades-analisis-orix/amp/"
+          "u": "https://cnnespanol.cnn.com/2024/04/26/petro-asamblea-constituyente-posibilidades-analisis-orix/amp/",
+          "rol": "acto"
         },
         {
           "n": "Semana · Juvinao califica de «cantinflesco» el mensaje sobre la constituyente",
-          "u": "https://www.semana.com/politica/articulo/catherine-juvinao-dijo-que-mensaje-de-petro-sobre-constituyente-es-cantinflesco-pregunto-si-tiene-en-la-cabeza-una-insurreccion/202421/"
+          "u": "https://www.semana.com/politica/articulo/catherine-juvinao-dijo-que-mensaje-de-petro-sobre-constituyente-es-cantinflesco-pregunto-si-tiene-en-la-cabeza-una-insurreccion/202421/",
+          "rol": "efecto"
         }
       ]
     },
@@ -436,7 +470,8 @@
       "fuentes": [
         {
           "n": "La Silla Vacía · Detector: Petro insiste en narrativa de fraude electoral sin sustento",
-          "u": "https://www.lasillavacia.com/detector-de-mentiras/detector-petro-insiste-en-narrativa-de-fraude-electoral-sin-sustento/"
+          "u": "https://www.lasillavacia.com/detector-de-mentiras/detector-petro-insiste-en-narrativa-de-fraude-electoral-sin-sustento/",
+          "rol": "acto"
         }
       ]
     },
@@ -453,7 +488,8 @@
       "fuentes": [
         {
           "n": "La Silla Vacía · el manual de desinformación de Gustavo Petro",
-          "u": "https://www.lasillavacia.com/detector-de-mentiras/el-manual-de-desinformacion-de-gustavo-petro/"
+          "u": "https://www.lasillavacia.com/detector-de-mentiras/el-manual-de-desinformacion-de-gustavo-petro/",
+          "rol": "acto"
         }
       ]
     },
@@ -470,11 +506,13 @@
       "fuentes": [
         {
           "n": "Semana · la TRM tras la posesión de Petro",
-          "u": "https://www.semana.com/economia/macroeconomia/articulo/asi-esta-el-dolar-en-colombia-la-trm-que-regira-este-lunes-tras-posesion-de-petro/202243/"
+          "u": "https://www.semana.com/economia/macroeconomia/articulo/asi-esta-el-dolar-en-colombia-la-trm-que-regira-este-lunes-tras-posesion-de-petro/202243/",
+          "rol": "acto"
         },
         {
           "n": "XTB · el dólar despide al gobierno Petro por debajo de 3.200",
-          "u": "https://www.xtb.com/lat/analisis-y-noticias/analisis-de-mercado/dolar-hoy-colombia-dolar-despide-el-gobierno-petro-por-debajo-de-3-200"
+          "u": "https://www.xtb.com/lat/analisis-y-noticias/analisis-de-mercado/dolar-hoy-colombia-dolar-despide-el-gobierno-petro-por-debajo-de-3-200",
+          "rol": "contexto"
         }
       ]
     },
@@ -491,11 +529,13 @@
       "fuentes": [
         {
           "n": "Expansión · Petro deja menos pobreza pero una Colombia más endeudada",
-          "u": "https://expansion.mx/mundo/2026/05/27/petro-deja-menos-pobreza-pero-una-colombia-mas-endeudada"
+          "u": "https://expansion.mx/mundo/2026/05/27/petro-deja-menos-pobreza-pero-una-colombia-mas-endeudada",
+          "rol": "acto"
         },
         {
           "n": "El Colombiano · balance de la economía y retos para De la Espriella",
-          "u": "https://www.elcolombiano.com/negocios/economia-gobierno-petro-balance-retos-de-la-espriella-AP38511526"
+          "u": "https://www.elcolombiano.com/negocios/economia-gobierno-petro-balance-retos-de-la-espriella-AP38511526",
+          "rol": "acto"
         }
       ]
     },
@@ -512,7 +552,8 @@
       "fuentes": [
         {
           "n": "CEPR · avances sociales con restricciones monetarias y fiscales",
-          "u": "https://cepr.net/es/publications/colombia-durante-el-gobierno-de-petro-avances-sociales-en-un-contexto-de-restricciones-monetarias-y-fiscales/"
+          "u": "https://cepr.net/es/publications/colombia-durante-el-gobierno-de-petro-avances-sociales-en-un-contexto-de-restricciones-monetarias-y-fiscales/",
+          "rol": "acto"
         }
       ]
     },
@@ -529,11 +570,13 @@
       "fuentes": [
         {
           "n": "Asocapitales · informe sobre la Paz Total",
-          "u": "https://www.asocapitales.co/sites/default/files/files/technical_documents/informe-paz-total.pdf"
+          "u": "https://www.asocapitales.co/sites/default/files/files/technical_documents/informe-paz-total.pdf",
+          "rol": "acto"
         },
         {
           "n": "El Colombiano · la Paz Total no evidencia resultados consistentes",
-          "u": "https://www.elcolombiano.com/colombia/paz-total-no-evidencia-resultados-consistentes-informe-de-asocapitales-GE36012523"
+          "u": "https://www.elcolombiano.com/colombia/paz-total-no-evidencia-resultados-consistentes-informe-de-asocapitales-GE36012523",
+          "rol": "acto"
         }
       ]
     },
@@ -549,7 +592,8 @@
       "fuentes": [
         {
           "n": "Canal Trece · principales hitos y reformas del gobierno Petro",
-          "u": "https://canaltrece.com.co/noticias/balance-de-gestion-principales-hitos-y-reformas-del-gobierno-de-gustavo-petro/"
+          "u": "https://canaltrece.com.co/noticias/balance-de-gestion-principales-hitos-y-reformas-del-gobierno-de-gustavo-petro/",
+          "rol": "contexto"
         }
       ]
     },
@@ -566,7 +610,8 @@
       "fuentes": [
         {
           "n": "El Colombiano · Icetex, ESMAD, ACPM y promesas incumplidas",
-          "u": "https://www.elcolombiano.com/colombia/icetex-esmad-acp-y-promesas-incumplidas-de-petro-JH19785518"
+          "u": "https://www.elcolombiano.com/colombia/icetex-esmad-acp-y-promesas-incumplidas-de-petro-JH19785518",
+          "rol": "acto"
         }
       ]
     },
@@ -583,15 +628,18 @@
       "fuentes": [
         {
           "n": "Infobae · lo que dijo Sandra Ortiz",
-          "u": "https://www.infobae.com/colombia/2026/09/06/sandra-ortiz-senalo-una-posible-complicidad-de-gustavo-petro-en-caso-ungrd-alla-no-se-movia-nada-sin-que-el-presidente-supiera/"
+          "u": "https://www.infobae.com/colombia/2026/09/06/sandra-ortiz-senalo-una-posible-complicidad-de-gustavo-petro-en-caso-ungrd-alla-no-se-movia-nada-sin-que-el-presidente-supiera/",
+          "rol": "acto"
         },
         {
           "n": "Infobae · el vicepresidente del Senado dice lo contrario el mismo día",
-          "u": "https://www.infobae.com/colombia/2026/09/06/vicepresidente-del-senado-aseguro-que-el-desfalco-en-la-ungrd-ocurrio-a-espaldas-de-gustavo-petro-la-verdad-debe-salir-a-la-luz/"
+          "u": "https://www.infobae.com/colombia/2026/09/06/vicepresidente-del-senado-aseguro-que-el-desfalco-en-la-ungrd-ocurrio-a-espaldas-de-gustavo-petro-la-verdad-debe-salir-a-la-luz/",
+          "rol": "acto"
         },
         {
           "n": "Pulzo · resumen de la entrevista",
-          "u": "https://www.pulzo.com/nacion/sandra-ortiz-salpico-gustavo-petro-caso-corrupcion-ungrd-PP5294218"
+          "u": "https://www.pulzo.com/nacion/sandra-ortiz-salpico-gustavo-petro-caso-corrupcion-ungrd-PP5294218",
+          "rol": "acto"
         }
       ]
     },
@@ -608,7 +656,8 @@
       "fuentes": [
         {
           "n": "ColombiaCheck · el deepfake de Telemundo que compartió",
-          "u": "https://www.colombiacheck.com/chequeos/gustavo-petro-compartio-un-deepfake-del-noticiero-telemundo"
+          "u": "https://www.colombiacheck.com/chequeos/gustavo-petro-compartio-un-deepfake-del-noticiero-telemundo",
+          "rol": "acto"
         }
       ]
     },
@@ -625,7 +674,8 @@
       "fuentes": [
         {
           "n": "ColombiaCheck · las cifras de Invamer que nadie midió",
-          "u": "https://colombiacheck.com/chequeos/cuenta-desinformadora-inventa-preguntas-y-exagera-resultados-de-invamer-sobre-la-gestion"
+          "u": "https://colombiacheck.com/chequeos/cuenta-desinformadora-inventa-preguntas-y-exagera-resultados-de-invamer-sobre-la-gestion",
+          "rol": "acto"
         }
       ]
     },
@@ -642,19 +692,23 @@
       "fuentes": [
         {
           "n": "Infobae · el tribunal remite el caso a la Comisión de Acusación",
-          "u": "https://www.infobae.com/colombia/2026/06/03/tribunal-remitio-a-la-comision-de-acusacion-un-caso-contra-petro-por-presunto-desacato-a-medida-cautelar-sobre-denuncias-de-fraude-electoral/"
+          "u": "https://www.infobae.com/colombia/2026/06/03/tribunal-remitio-a-la-comision-de-acusacion-un-caso-contra-petro-por-presunto-desacato-a-medida-cautelar-sobre-denuncias-de-fraude-electoral/",
+          "rol": "acto"
         },
         {
           "n": "El Colombiano · la Registraduría desmonta uno por uno los señalamientos",
-          "u": "https://www.elcolombiano.com/especiales/elecciones-2026/gustavo-petro-resultados-elecciones-registraduria-desmiente-senalamientos-fraude-IP37297870"
+          "u": "https://www.elcolombiano.com/especiales/elecciones-2026/gustavo-petro-resultados-elecciones-registraduria-desmiente-senalamientos-fraude-IP37297870",
+          "rol": "contexto"
         },
         {
           "n": "El Colombiano · el documento que usó había sido modificado por un externo",
-          "u": "https://www.elcolombiano.com/colombia/gustavo-petro-denuncia-fraude-elecciones-2026-con-documento-registraduria-modificado-KB37362190"
+          "u": "https://www.elcolombiano.com/colombia/gustavo-petro-denuncia-fraude-elecciones-2026-con-documento-registraduria-modificado-KB37362190",
+          "rol": "contexto"
         },
         {
           "n": "La Silla Vacía · cómo fabrica las narrativas de fraude",
-          "u": "https://www.lasillavacia.com/detector-de-mentiras/asi-fabrica-petro-narrativas-infundadas-sobre-fraude-electoral/"
+          "u": "https://www.lasillavacia.com/detector-de-mentiras/asi-fabrica-petro-narrativas-infundadas-sobre-fraude-electoral/",
+          "rol": "contexto"
         }
       ]
     },
@@ -671,11 +725,13 @@
       "fuentes": [
         {
           "n": "El País · la Fiscalía desmiente a la exfiscal Laborde",
-          "u": "https://www.elpais.com.co/politica/fiscalia-desmiente-acusaciones-de-la-exfiscal-lucy-laborde-sobre-supuestas-presiones-para-favorecer-a-nicolas-petro-2326.html"
+          "u": "https://www.elpais.com.co/politica/fiscalia-desmiente-acusaciones-de-la-exfiscal-lucy-laborde-sobre-supuestas-presiones-para-favorecer-a-nicolas-petro-2326.html",
+          "rol": "acto"
         },
         {
           "n": "Radio Santa Fe · el fiscal general lo niega",
-          "u": "https://www.radiosantafe.com/2026/08/23/fiscal-general-niega-haber-ordenado-eliminar-delitos-a-nicolas-petro-la-acusacion-por-lavado-de-activos-y-enriquecimiento-ilicito-se-mantiene/"
+          "u": "https://www.radiosantafe.com/2026/08/23/fiscal-general-niega-haber-ordenado-eliminar-delitos-a-nicolas-petro-la-acusacion-por-lavado-de-activos-y-enriquecimiento-ilicito-se-mantiene/",
+          "rol": "acto"
         }
       ]
     },
@@ -692,11 +748,13 @@
       "fuentes": [
         {
           "n": "Infobae · lo que preguntó Petro sobre el operativo",
-          "u": "https://www.infobae.com/colombia/2026/09/05/muerte-de-bendito-menor-petro-cuestiono-a-la-policia-nacional-tras-operativo-que-ordeno-de-la-espriella-que-me-explique/"
+          "u": "https://www.infobae.com/colombia/2026/09/05/muerte-de-bendito-menor-petro-cuestiono-a-la-policia-nacional-tras-operativo-que-ordeno-de-la-espriella-que-me-explique/",
+          "rol": "acto"
         },
         {
           "n": "El País · cómo fue el operativo y los cuatro cuerpos",
-          "u": "https://www.elpais.com.co/judicial/bendito-menor-asi-fue-el-operativo-que-termino-con-cuatro-cuerpos-en-un-batallon-de-riohacha-esto-se-sabe-0429.html"
+          "u": "https://www.elpais.com.co/judicial/bendito-menor-asi-fue-el-operativo-que-termino-con-cuatro-cuerpos-en-un-batallon-de-riohacha-esto-se-sabe-0429.html",
+          "rol": "contexto"
         }
       ]
     }
