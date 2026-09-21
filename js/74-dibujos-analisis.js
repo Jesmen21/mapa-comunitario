@@ -133,7 +133,7 @@
       return '<circle cx="' + cx + '" cy="' + cy + '" r="' + n1(r) + '" fill="none" ' +
         'stroke="' + LINEA + '" stroke-width="1" stroke-dasharray="3 3"/>' +
         '<text x="' + (cx + 3) + '" y="' + n1(cy - r + 9) + '" font-size="8" fill="' + GRIS + '">' +
-        alt + '°</text>';
+        gr(alt) + '°</text>';
     }).join('');
 
     // El sector que se calienta: de 240° a 300°, el occidente ancho.

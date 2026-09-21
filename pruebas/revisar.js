@@ -8103,6 +8103,92 @@ console.log('\n  -- una cifra de 1 no lleva un plural detras (v1019) --');
     NO_ES_PLURAL.length + ' exenta(s), cada una con el motivo por el que no es un plural');
 }
 
+console.log('\n  -- un grado impreso lleva coma, no punto (v1021) --');
+{
+  /* La regla es la de la v885 y la v891 -en castellano el punto es de MILES,
+     asi que «89.1°» se lee como ochenta y nueve mil-. Se persigue desde
+     entonces SOBRE EL PAPEL de la lamina, en `tdoslaminas`, y la ficha no la
+     tenia: imprimia «89.1°», «270.8°», «58.7°» y «9.2 %» en pantalla.
+
+     POR QUE SOLO LOS GRADOS. Medido, la misma forma sobre el por ciento da
+     153 candidatos en js/68 y casi todos son enteros -`Math.round(pct)`,
+     constantes, cuentas-: una guarda asi termina en una lista de excepciones
+     que envejece hasta no significar nada (v895). El grado es la unica unidad
+     de este modulo que SIEMPRE puede salir fraccionaria -sale de una cuenta
+     astronomica- y por eso es la unica que se puede exigir entera. */
+  const archivos = fs.readdirSync(R('js')).filter((f) => /\.js$/.test(f)).map((f) => 'js/' + f)
+    .concat(fs.readdirSync(RAIZ).filter((f) => /\.html$/.test(f)));
+
+  /* El barrido, en una funcion: la guarda de la guarda corre EL MISMO (v879). */
+  const CONVIERTE = /conComa|replace\(|toLocaleString|\bgr\(|nDec|Math\.round|\bn1\(/;
+  function gradosPelados(txt) {
+    const re = /\+\s*([A-Za-z_$][\w$.[\]()]*)\s*\+\s*'°/g;
+    const out = [];
+    let m;
+    while ((m = re.exec(txt))) out.push({ expr: m[1], en: m.index, pelado: !CONVIERTE.test(m[1]) });
+    return out;
+  }
+
+  let total = 0;
+  const pelados = [];
+  archivos.forEach((rel) => {
+    const txt = /\.js$/.test(rel) ? soloCodigo(leer(rel)) : leer(rel);
+    gradosPelados(txt).forEach((g) => {
+      total++;
+      if (g.pelado) pelados.push(rel.slice(3, 5) + ':' + txt.slice(0, g.en).split('\n').length + ' ' + g.expr);
+    });
+  });
+
+  /* MATERIAL primero (v920): sin sitios que impriman grados no hay nada que
+     vigilar, y el verde seria vacio. */
+  if (total < 10) {
+    anotarSinMaterial('MATERIAL - lo servido imprime grados',
+      'solo ' + total + ' sitios: el barrido no tendria casi nada que mirar');
+  } else {
+    comprobar('MATERIAL - lo servido imprime grados',
+      true, total + ' sitios concatenan un valor con el signo de grado');
+
+    /* Falla CERRADO (v880): un rotulo nuevo en grados sale en rojo en su
+       primera corrida, no cuando alguien mire la pantalla. */
+    comprobar('todo grado impreso pasa por un convertidor de coma',
+      pelados.length === 0,
+      pelados.length
+        ? pelados.length + ' saldrian con punto, que en castellano es el separador de MILES: ' +
+          pelados.slice(0, 5).join(' · ')
+        : 'los ' + total + ' pasan por conComa, gr, n1 o Math.round');
+  }
+
+  /* LA GUARDA DE LA GUARDA (v878), contra casos de respuesta conocida. */
+  const PELADO = "'a ' + d.alturaMaxima + '°'";
+  const CON_COMA = "'a ' + conComa(d.alturaMaxima) + '°'";
+  const CON_GR = "'a ' + gr(x.alt) + '°'";
+  const REDONDEADO = "'a ' + Math.round(x.alt) + '°'";
+  const vePelado = gradosPelados(PELADO).some((g) => g.pelado);
+  const veComa = gradosPelados(CON_COMA).some((g) => g.pelado);
+  const veGr = gradosPelados(CON_GR).some((g) => g.pelado);
+  const veRedondeo = gradosPelados(REDONDEADO).some((g) => g.pelado);
+  comprobar('el barrido ve el grado pelado y calla el convertido',
+    vePelado && !veComa && !veGr && !veRedondeo,
+    !vePelado ? 'no ve el pelado: no vigilaria nada'
+      : veComa ? 'denuncia un conComa que si esta'
+        : veGr ? 'no reconoce gr(): denunciaria los rotulos de js/74'
+          : veRedondeo ? 'denuncia un Math.round, que no puede dar decimales'
+            : 've el pelado y calla los tres convertidos');
+
+  /* Y que el barrido siga mirando el CODIGO: en un comentario, un grado
+     pelado no imprime nada -los ejemplos de este bloque, sin ir mas lejos-. */
+  const enCodigo = "var s = 'a ' + d.alturaMaxima + '°';";
+  const veElDeCodigo = gradosPelados(soloCodigo(enCodigo)).some((g) => g.pelado);
+  const veElDelComentario = gradosPelados(soloCodigo('// ' + enCodigo)).some((g) => g.pelado);
+  comprobar('el barrido lee el codigo y no el comentario',
+    veElDeCodigo && !veElDelComentario,
+    !veElDeCodigo
+      ? 'no ve el que esta en codigo: no vigilaria nada'
+      : veElDelComentario
+        ? 've el de un comentario: denunciaria los ejemplos de este mismo bloque'
+        : 've el grado pelado en codigo y no el del comentario');
+}
+
 /* Las dos cuentas van APARTE porque piden cosas distintas: una fallada hay
    que arreglarla, una sin material hay que mirarla —o se quedó sin él porque
    el registro mejoró, o porque la función dejó de ver lo que medía—. Sumarlas

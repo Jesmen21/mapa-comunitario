@@ -19251,6 +19251,125 @@ Y la regla para entrar a la guarda sigue siendo la de la v1019, que esta
 tanda cumplió: **un archivo entra con su documento compuesto y barrido, no
 con una promesa.**
 
+## El punto decimal, en la pantalla que sí se usa (v1021)
+
+La v891 dejó escrito que **en castellano el punto es el separador de miles**,
+así que «89.1°» se lee como ochenta y nueve mil. Esa guarda vive en
+`tdoslaminas` y corre **sobre el papel de la lámina**. La ficha —que es la
+pantalla por la que se pasa todos los días— no la tenía.
+
+    v1020   Amanecer 5:48 · por el oriente · 89.1°   ·   9.2% lleno
+    v1021   Amanecer 5:48 · por el oriente · 89,1°   ·   9,2% lleno
+
+Es la misma forma de la v867 que esta serie viene encontrando: **la regla
+existe, se aplica en una superficie y las otras se le escapan.** Van cuatro
+tandas seguidas con la misma estructura, y siempre la superficie protegida es
+el papel y la que se escapa es la pantalla.
+
+### El mismo bloque, con la conversión puesta en el del medio
+
+Lo que lo hace inconfundible es que el vecino lo hace bien. En la caja del
+sol, los tres hitos van seguidos:
+
+```js
+'<small>por el ' + esc(SOL.rumbo(d.azimutSalida)) + ' · ' + d.azimutSalida + '°</small>'
+'<small>a ' + conComa(d.alturaMaxima) + '° sobre el horizonte</small>'
+'<small>por el ' + esc(SOL.rumbo(d.azimutPuesta)) + ' · ' + d.azimutPuesta + '°</small>'
+```
+
+El del medio pasa por `conComa` y los dos de los lados no. Igual que en la
+v1018 —«edificaciones» bien escrita tres renglones encima de «construcciónes»—
+y en la v1020, donde `js/70:853` concuerda bien y los dos de al lado no.
+
+Son **catorce sitios**: los tres del sol, los dos solsticios, la culminación,
+el eje de la mancha de calor, el mediodía sobre el lote, los cuatro del
+informe **en texto** —que también sale del edificio— y los dos rótulos de
+llenos y vacíos.
+
+#### El mismo valor, un destino que pide punto y otro que pide coma
+
+`ll.pctLleno` aparece cuatro veces en doce renglones:
+
+```js
+'<i class="pcr-lleno" style="width:' + ll.pctLleno + '%"></i>'   // aquí el punto es OBLIGATORIO
+'<span><b>' + ll.pctLleno + '%</b> lleno</span>'                  // aquí va la coma
+```
+
+Es exactamente la trampa de `n1` en la v891 —«de sus cuarenta y tantos usos,
+solo cuatro son rótulos que un lector ve»— repetida en la ficha. Convertir la
+función habría roto los anchos del CSS en silencio; lo que se convierte es el
+rótulo.
+
+### Dos pistas que la medición mató antes de que me costaran un arreglo falso
+
+Las dos son la regla de la v916 —medir la premisa antes de actuar— y las dos
+habrían sido cambios en producción sobre defectos que no existen:
+
+* **«0.6% de las vías lo trae».** Parecía un punto decimal más. El propio
+  código compara `perf.coberturaAncho < 60`, así que la escala es 0–100 y el
+  `0.6` era **de mi fixture**. Corregido a 63, el renglón desapareció.
+* **«undefined m» en un KPI.** Era el `relieve` que mi ficha no traía. Puesto,
+  apareció «undefined metros de paso» —`resolucionM`—; puesto ése, apareció
+  «(undefined%)» en otra fila.
+
+Y de ahí sale una regla que conviene tener escrita, porque no es obvia:
+
+> **La clase de los marcadores sin reemplazar (v889) NO se puede medir con un
+> fixture parcial.** Un campo que falta se imprime exactamente igual que una
+> plantilla rota, así que sobre un fixture incompleto el barrido produce un
+> `undefined` nuevo por cada hueco y ninguno es un defecto.
+
+Para medirla en la ficha hace falta un análisis completo, y con él el motor.
+Queda declarada, no dada por buena — el punto decimal sí se puede medir con
+este fixture porque sale de cuentas sobre valores que el fixture sí trae.
+
+### La guarda: solo los grados, y medido por qué
+
+Sobre lo servido entero —`js/` y las páginas—: todo valor concatenado con `°`
+pasa por un convertidor de coma. Recorre el disco y falla **cerrado** (v880):
+un rótulo nuevo en grados sale en rojo en su primera corrida.
+
+**Solo los grados**, y la razón va en la guarda: la misma forma aplicada al
+por ciento da **153 candidatos en `js/68`**, y casi todos son enteros
+—`Math.round(pct)`, constantes, conteos—. Una guarda así termina siendo una
+lista de excepciones que envejece hasta no significar nada (v895). El grado es
+la única unidad de este módulo que **siempre** puede salir fraccionaria
+—viene de una cuenta astronómica— y por eso es la única que se puede exigir
+entera, sin una sola excepción.
+
+De paso, el único grado de `js/74` que quedaba pelado —`alt`, de un arreglo
+literal `[30, 60]`— **no era un defecto**: no puede ser fraccionario. Se
+envolvió igual, porque no cuesta nada y deja la regla sin excepciones el día
+que a ese arreglo le entre un 45,5.
+
+### Demostrado contra la v1020
+
+Tres inyecciones fieles contra una copia guardada, cada una con su aserción
+(v993):
+
+```
+✗ todo grado impreso pasa por un convertidor de coma
+    — 13 saldrian con punto, que en castellano es el separador de MILES:
+      68:15618 sd.azimutSalida · 68:15619 sd.alturaMaxima · …
+✗ el barrido ve el grado pelado y calla el convertido
+    — no reconoce gr(): denunciaria los rotulos de js/74
+✗ el barrido lee el codigo y no el comentario
+    — ve el de un comentario: denunciaria los ejemplos de este mismo bloque
+```
+
+Y sobre la pantalla: la ficha compuesta y recorrida por sus ocho pestañas pasa
+de **nueve** cifras con punto decimal a **cero**.
+
+### Lo que queda, medido
+
+* **Dos en el módulo del corredor** (`js/46`): «0.00 km» y «0.0 km/h» en la
+  lectura en vivo. Es otra superficie, con sus propios `toFixed(2)`, y entra
+  con su propia medición — no de paso.
+* **El por ciento**, con sus 153 candidatos y la razón por la que no se
+  persigue.
+* **Los marcadores sin reemplazar en la ficha**, que piden un análisis de
+  verdad para poder medirse.
+
 ## La lista viva: lo que al pliego educativo todavía le falta (v866)
 
 Esta lista se quedó vieja **cinco veces**. Cuatro dentro de la hoja —la

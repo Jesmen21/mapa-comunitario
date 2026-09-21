@@ -15615,11 +15615,12 @@ function donaHTML(datos, colorDe, nombreDe) {
         if (sd && sd.salida) {
           var hh = function (x) { return x.toLocaleTimeString('es-CO', { hour: '2-digit', minute: '2-digit' }); };
           L.push('ASOLEAMIENTO (hoy, calculado)');
-          L.push('  Amanecer: ' + hh(sd.salida) + ' por el ' + SOL.rumbo(sd.azimutSalida) + ' (' + sd.azimutSalida + '°)');
-          L.push('  Mediodía solar: ' + hh(sd.cenit) + ' a ' + sd.alturaMaxima + '° de altura');
-          L.push('  Atardecer: ' + hh(sd.puesta) + ' por el ' + SOL.rumbo(sd.azimutPuesta) + ' (' + sd.azimutPuesta + '°)');
+          L.push('  Amanecer: ' + hh(sd.salida) + ' por el ' + SOL.rumbo(sd.azimutSalida) + ' (' + conComa(sd.azimutSalida) + '°)');
+          L.push('  Mediodía solar: ' + hh(sd.cenit) + ' a ' + conComa(sd.alturaMaxima) + '° de altura');
+          L.push('  Atardecer: ' + hh(sd.puesta) + ' por el ' + SOL.rumbo(sd.azimutPuesta) + ' (' + conComa(sd.azimutPuesta) + '°)');
           L.push('  Horas de luz: ' + String(sd.duracionH).replace('.', ',') + ' h');
-          L.push('  En el año: de ' + sa.solsticios.masBajo.altura + '° a ' + sa.solsticios.masAlto.altura + '° al mediodía');
+          L.push('  En el año: de ' + conComa(sa.solsticios.masBajo.altura) + '° a ' +
+        conComa(sa.solsticios.masAlto.altura) + '° al mediodía');
           (sa.cenitales || []).forEach(function (x) {
             L.push('  Sol en el cenit: ' + x.toLocaleDateString('es-CO', { day: 'numeric', month: 'long' }));
           });
@@ -16217,7 +16218,7 @@ function donaHTML(datos, colorDe, nombreDe) {
       '<div class="pcr-sol">' +
         '<div class="pcr-sol-hito">' +
           '<span class="pcr-lab">Amanecer</span><b>' + hora(d.salida) + '</b>' +
-          '<small>por el ' + esc(SOL.rumbo(d.azimutSalida)) + ' · ' + d.azimutSalida + '°</small>' +
+          '<small>por el ' + esc(SOL.rumbo(d.azimutSalida)) + ' · ' + conComa(d.azimutSalida) + '°</small>' +
         '</div>' +
         '<div class="pcr-sol-hito pcr-sol-alto">' +
           '<span class="pcr-lab">Mediodía solar</span><b>' + hora(d.cenit) + '</b>' +
@@ -16225,20 +16226,20 @@ function donaHTML(datos, colorDe, nombreDe) {
         '</div>' +
         '<div class="pcr-sol-hito">' +
           '<span class="pcr-lab">Atardecer</span><b>' + hora(d.puesta) + '</b>' +
-          '<small>por el ' + esc(SOL.rumbo(d.azimutPuesta)) + ' · ' + d.azimutPuesta + '°</small>' +
+          '<small>por el ' + esc(SOL.rumbo(d.azimutPuesta)) + ' · ' + conComa(d.azimutPuesta) + '°</small>' +
         '</div>' +
       '</div>' +
       '<div class="pcr-kpis">' +
         '<div class="pcr-kpi"><b>' + String(d.duracionH).replace('.', ',') + ' h</b><small>de luz hoy</small></div>' +
-        '<div class="pcr-kpi"><b>' + a.solsticios.masAlto.altura + '°</b><small>lo más alto del año</small></div>' +
-        '<div class="pcr-kpi"><b>' + a.solsticios.masBajo.altura + '°</b><small>lo más bajo del año</small></div>' +
+        '<div class="pcr-kpi"><b>' + conComa(a.solsticios.masAlto.altura) + '°</b><small>lo más alto del año</small></div>' +
+        '<div class="pcr-kpi"><b>' + conComa(a.solsticios.masBajo.altura) + '°</b><small>lo más bajo del año</small></div>' +
       '</div>' +
       '<p class="pcr-conc">Al amanecer las sombras caen hacia el <b>' + esc(sombraAmanecer) +
         '</b>; en la tarde, hacia el <b>' + esc(sombraTarde) + '</b>. ' +
         (fc.manda === 'cubierta'
           ? 'Hoy el sol culmina casi vertical (' + conComa(d.alturaMaxima) + '°), así que a esa hora ' +
             'la fachada recibe poco y <b>el problema es la cubierta</b>.'
-          : 'El sol culmina hacia el <b>' + esc(fc.culminacion) + '</b> a ' + d.alturaMaxima + '°.') +
+          : 'El sol culmina hacia el <b>' + esc(fc.culminacion) + '</b> a ' + conComa(d.alturaMaxima) + '°.') +
         ' Lo que de verdad recalienta es el sol de la tarde, que entra bajo por el ' +
         '<b>occidente</b>: es la fachada que hay que proteger.</p>' +
       (cenitales.length === 2
@@ -17221,9 +17222,9 @@ function donaHTML(datos, colorDe, nombreDe) {
          trama la deja contar. Es el mismo dato dos veces a propósito — uno se
          lee de cerca y el otro de lejos, colgado en la pared. */
       '<div class="pcr-dibujo pcr-dibujo-fila">' +
-        dib('trama', ll.pctLleno, { etiqueta: ll.pctLleno + ' de cada cien metros cuadrados del ' +
+        dib('trama', ll.pctLleno, { etiqueta: conComa(ll.pctLleno) + ' de cada cien metros cuadrados del ' +
              'sector están construidos' }) +
-        '<p class="pcr-dibujo-pie">De cada cien metros cuadrados del sector, <b>' + ll.pctLleno +
+        '<p class="pcr-dibujo-pie">De cada cien metros cuadrados del sector, <b>' + conComa(ll.pctLleno) +
         '</b> están construidos.</p>' +
       '</div>' +
       '<div class="pcr-llenos">' +
@@ -17232,8 +17233,12 @@ function donaHTML(datos, colorDe, nombreDe) {
           '<i class="pcr-vacio" style="width:' + ll.pctVacio + '%"></i>' +
         '</div>' +
         '<div class="pcr-llenos-cifras">' +
-          '<span><b>' + ll.pctLleno + '%</b> lleno</span>' +
-          '<span><b>' + ll.pctVacio + '%</b> vacío</span>' +
+          /* El MISMO valor con dos destinos opuestos: dos renglones más
+             arriba va en un `width:` de CSS, donde el punto es obligatorio,
+             y aquí es un rótulo, donde va la coma. Es la lección de `n1` en
+             la v891, en la ficha en vez de en la carta solar. */
+          '<span><b>' + conComa(ll.pctLleno) + '%</b> lleno</span>' +
+          '<span><b>' + conComa(ll.pctVacio) + '%</b> vacío</span>' +
         '</div>' +
       '</div>' +
       ((S.trzHuellas && S.trzHuellas.length)
@@ -18885,7 +18890,7 @@ function donaHTML(datos, colorDe, nombreDe) {
              corredor. */
           piezas.push(md.eje.redonda || md.eje.grados == null
             ? 'sin eje dominante (repartido parejo)'
-            : 'eje a ' + md.eje.grados + '°');
+            : 'eje a ' + conComa(md.eje.grados) + '°');
         }
         mapas.push({
           id: 'calor:' + g.id, grupo: grupoDeMapa('calor:' + g.id),
@@ -26735,7 +26740,7 @@ function donaHTML(datos, colorDe, nombreDe) {
       (a.sol && a.sol.salida
         ? '<p class="pcr-pista">Hoy sobre este lote: sale a las ' + esc(hh(a.sol.salida)) +
           ', se pone a las ' + esc(hh(a.sol.puesta)) + ', y al mediodía llega a ' +
-          a.sol.alturaMaxima + '°.</p>'
+          conComa(a.sol.alturaMaxima) + '°.</p>'
         : '') +
 
       (a.vecinos.length

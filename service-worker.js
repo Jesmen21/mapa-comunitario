@@ -1,4 +1,4 @@
-const URBIS_CACHE = 'urbis-v1020-un-caso-registrado-no-son-casos';
+const URBIS_CACHE = 'urbis-v1021-el-punto-decimal-en-la-ficha';
 const URBIS_ASSETS = [
   './',
   './index.html',

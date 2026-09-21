@@ -13,7 +13,7 @@
 
    La versión va acá y en vision-territorial.html, idéntica, como en los
    otros siete archivos de versión del sitio: revisar.js lo comprueba. */
-const VT_CACHE = 'urbis-vt-v1020-un-caso-registrado-no-son-casos';
+const VT_CACHE = 'urbis-vt-v1021-el-punto-decimal-en-la-ficha';
 const VT_ASSETS = [
   './vision-territorial.html',
   './css/90-vt.css',
