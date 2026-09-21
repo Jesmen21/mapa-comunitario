@@ -7874,6 +7874,118 @@ console.log('\n  -- el piso de texto vale en toda la pagina, no solo en la ficha
   }
 }
 
+console.log('\n  -- un plural no se fabrica pegando «es» (v1018) --');
+{
+  /* Regla de ortografia, estructural y SIN EXCEPCIONES: una palabra aguda
+     terminada en vocal con tilde + n pierde la tilde al pasar al plural
+     -edificacion→edificaciones, capitan→capitanes, jardin→jardines,
+     almacen→almacenes, atun→atunes-. Asi que pegarle «es» produce siempre
+     una falta de ortografia.
+
+     Y la falta NO SE PUEDE BUSCAR EN EL CODIGO: «edificaciónes» no esta
+     escrito en ninguna parte, se fabrica al componer. Por eso llevaba
+     versiones impresa en el informe de empresas y en la hoja del curso sin
+     que nada la viera: lo unico que la ensena es un documento compuesto, y
+     la unica suite que compone un documento mira la lamina.
+
+     DE QUE NO RESPONDE, dicho (v945, v952): de las palabras terminadas en
+     vocal con tilde + s, porque ahi no hay regla estructural -ingles→ingleses
+     pierde la tilde y pais→paises la conserva, que es hiato y no
+     acentuacion-; y de un plural mal escrito ENTERO, que ese si se puede
+     grepear y hoy no hay ninguno. Tampoco de pegar «s» a secas, que en las
+     acabadas en vocal con tilde es lo correcto: cafe→cafes, sofa→sofas. */
+  const archivos = fs.readdirSync(R('js')).filter((f) => /\.js$/.test(f)).map((f) => 'js/' + f)
+    .concat(fs.readdirSync(RAIZ).filter((f) => /\.html$/.test(f)));
+
+  /* El barrido, en una funcion: la comprobacion de abajo lo corre contra
+     casos de respuesta conocida, asi que tiene que ser EL MISMO y no una
+     copia -una copia se separaria a la tanda siguiente (v879)-. */
+  const CON_TILDE = /[áéíóú]n$/;
+  function pegados(txt) {
+    const re = /([A-Za-zÁÉÍÓÚÑáéíóúñ]+)'\s*\+\s*[^;\n]{0,80}?'es'/g;
+    const out = [];
+    let m;
+    while ((m = re.exec(txt))) {
+      out.push({ palabra: m[1], en: m.index, mal: CON_TILDE.test(m[1]) });
+    }
+    return out;
+  }
+
+  const todos = [], malos = [];
+  archivos.forEach((rel) => {
+    const crudo = leer(rel);
+    /* Se mira el CODIGO y no el archivo: un ejemplo dentro de un comentario
+       -como los de este mismo bloque- no imprime nada. `soloCodigo` conserva
+       las posiciones, asi que el numero de linea sigue siendo el de verdad. */
+    const txt = /\.js$/.test(rel) ? soloCodigo(crudo) : crudo;
+    pegados(txt).forEach((p) => {
+      const linea = txt.slice(0, p.en).split('\n').length;
+      const sitio = rel + ':' + linea + ' «' + p.palabra + '»';
+      todos.push(sitio);
+      if (p.mal) malos.push(sitio + ' → «' + p.palabra + 'es»');
+    });
+  });
+
+  /* MATERIAL primero (v920): sin sitios que fabriquen plurales, lo de abajo
+     pasaria por no tener nada que rechazar. */
+  if (todos.length < 3) {
+    anotarSinMaterial('MATERIAL - hay sitios que fabrican un plural pegando «es»',
+      'solo ' + todos.length + ': el barrido no tendria casi nada que mirar');
+  } else {
+    comprobar('MATERIAL - hay sitios que fabrican un plural pegando «es»',
+      true, todos.length + ' sitios pegan «es» a una palabra escrita aparte');
+
+    /* Falla CERRADO (v880): un sitio nuevo con una palabra acentuada sale en
+       rojo en su primera corrida, no cuando alguien lea el papel. */
+    comprobar('ninguno se lo pega a una palabra que termina en vocal con tilde',
+      malos.length === 0,
+      malos.length
+        ? malos.length + ' fabrican una falta que no esta escrita en ningun sitio: ' +
+          malos.slice(0, 4).join(' · ')
+        : 'los ' + todos.length + ' pegan «es» a palabras sin tilde, donde es correcto');
+  }
+
+  /* LA GUARDA DE LA GUARDA (v878). Si el barrido dejara de reconocer la
+     forma, todo lo de arriba seguiria en verde sin vigilar una palabra. Se
+     mide contra casos de respuesta conocida, como la de -ste en la v945. */
+  const DENUNCIA = [
+    "' edificación' + (e.total === 1 ? '' : 'es')",
+    "' construcción' +\n  (n === 1 ? '' : 'es')",
+    "'jardín' + (n === 1 ? '' : 'es')"
+  ];
+  const NO_DENUNCIA = [
+    "' corredor' + (n === 1 ? '' : 'es')",     // sin tilde: corredores
+    "' anterior' + (n === 1 ? '' : 'es')",     // sin tilde: anteriores
+    "(n === 1 ? 'edificación' : 'edificaciones')",  // los dos literales, que es el arreglo
+    "' café' + (n === 1 ? '' : 's')"           // pega «s», no «es»: cafés
+  ];
+  const fallaAlDenunciar = DENUNCIA.filter((c) => !pegados(c).some((p) => p.mal));
+  const fallaAlCallar = NO_DENUNCIA.filter((c) => pegados(c).some((p) => p.mal));
+  comprobar('el barrido reconoce la forma, y solo esa',
+    fallaAlDenunciar.length === 0 && fallaAlCallar.length === 0,
+    fallaAlDenunciar.length
+      ? 'no denuncia: ' + fallaAlDenunciar[0]
+      : fallaAlCallar.length
+        ? 'denuncia lo que esta bien: ' + fallaAlCallar[0]
+        : 'denuncia los ' + DENUNCIA.length + ' malos y calla los ' + NO_DENUNCIA.length + ' buenos');
+
+  /* Y que el barrido siga mirando el CODIGO. Comparar los dos recuentos del
+     archivo de verdad no comprueba nada -uno es siempre menor o igual que el
+     otro-, asi que va contra un caso de respuesta conocida: la misma falta,
+     una vez en codigo y otra dentro de un comentario. */
+  const enCodigo = "var s = ' edificación' + (n === 1 ? '' : 'es');";
+  const enComentario = '// ' + enCodigo;
+  const veLaDeCodigo = pegados(soloCodigo(enCodigo)).some((p) => p.mal);
+  const veLaDelComentario = pegados(soloCodigo(enComentario)).some((p) => p.mal);
+  comprobar('el barrido lee el codigo y no el comentario',
+    veLaDeCodigo && !veLaDelComentario,
+    !veLaDeCodigo
+      ? 'no ve la que esta en codigo: no vigilaria nada'
+      : veLaDelComentario
+        ? 've la que esta en un comentario: denunciaria los ejemplos de este mismo bloque'
+        : 've la falta en codigo y no la del comentario');
+}
+
 /* Las dos cuentas van APARTE porque piden cosas distintas: una fallada hay
    que arreglarla, una sin material hay que mirarla —o se quedó sin él porque
    el registro mejoró, o porque la función dejó de ver lo que medía—. Sumarlas

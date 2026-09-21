@@ -1,4 +1,4 @@
-const URBIS_CACHE = 'urbis-v1017-el-registro-tambien-se-publica';
+const URBIS_CACHE = 'urbis-v1018-un-plural-que-no-esta-escrito';
 const URBIS_ASSETS = [
   './',
   './index.html',

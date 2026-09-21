@@ -18764,6 +18764,203 @@ El recorrido vive ahora a nivel de módulo, al lado de `fueraDeComentario` y
 por la misma razón que aquel subió en la v926: hace falta en dos sitios y una
 segunda copia divergiría a la tanda siguiente.
 
+## Un plural que no está escrito en ninguna parte (v1018)
+
+Barrido el módulo de empresas —`analisis-ia.html`, `js/62` y `js/63`—, que
+nunca había pasado por ninguna de las comprobaciones de esta serie. El
+hallazgo no salió de leer el código: salió de **componer el documento y
+mirarlo**, que es el método que encontró los defectos de la v874, la v882, la
+v885 y la v887.
+
+    v1017   «1 edificaciónes con ficha levantada en campo»
+    v1018   «1 edificación …» · «7 edificaciones …»
+
+### La falta no se puede buscar en el código
+
+El informe escribe `' edificación' + (n === 1 ? '' : 'es')`. Leído, está
+bien; compuesto, imprime **«edificaciónes»**, que no es una palabra. La regla
+de ortografía es estructural y no tiene excepciones: una palabra aguda
+terminada en vocal con tilde + n **pierde la tilde** al pasar al plural
+—edificación→edificaciones, capitán→capitanes, jardín→jardines,
+almacén→almacenes, atún→atunes—.
+
+Y por eso llevaba versiones impresa sin que nada la viera: **«edificaciónes»
+no está escrito en ningún sitio**, se fabrica al componer. Un `grep` del
+plural mal escrito da cero.
+
+Son **siete**, en dos archivos, y el que más duele está en `js/63`: el mismo
+párrafo de sismo resistencia escribe **«edificaciones» bien, como literal**, y
+tres renglones más abajo fabrica **«construcciónes»**. Las dos ortografías, en
+el mismo párrafo, y ninguna de las dos se puede ver leyendo la mala.
+
+| Dónde | Qué imprimía |
+|---|---|
+| `js/63` · el tejido construido | «N edificaciónes con ficha levantada en campo» |
+| `js/63` · sismo resistencia | «N construcciónes anteriores» |
+| `js/63` · andenes | «Sobre N observaciónes de andén» |
+| `js/65` · caminabilidad | «sobre N observaciónes» |
+| `js/65` · patrimonio, vulnerabilidad, 1984 | «edificaciónes» ×2, «construcciónes» |
+
+El arreglo son **los dos literales**, que es lo que `pl(n, sing, plur)` de
+`js/68` y `plural` de `js/67` ya hacen: `(n === 1 ? 'edificación' :
+'edificaciones')`. Fabricar el plural es lo que no se puede hacer.
+
+### Por qué esta superficie escapaba
+
+Es la forma de la v867 que esta serie lleva encontrando tanda tras tanda: **la
+regla existe, se aplica en una superficie y las otras se le escapan.**
+
+La concordancia la persigue `tdoslaminas` desde la v874, **sobre el papel ya
+compuesto** — que es lo correcto, porque el defecto no existe en las variables
+sino en el documento. Pero la única suite que compone un documento compone **la
+lámina**. El informe de empresas y la hoja del curso componen los suyos y no
+los lee nadie.
+
+### El material salió de un resultado PERMISIVO
+
+Componer el informe pedía un resultado de análisis entero, y el motor no
+está en este contenedor. Se compone con un `Proxy` en el que **cualquier campo
+que el informe pida existe**: no fabrica cifras creíbles —no se miden cifras
+acá— pero deja que el documento se arme entero para medir su ortografía.
+
+Y tiene una propiedad que no era el plan y resultó ser la buena: el `Proxy`
+**no es `=== 1`**, así que todos los ternarios toman su rama de PLURAL. O sea
+que una sola corrida ejercita la rama que en producción casi nunca se mira dos
+veces, con el número 1 delante. Es la lección de la v874 —«el sector de prueba
+tenía DOS piezas, así que la rama del singular no se ejercitaba»— conseguida
+por el otro lado.
+
+### La guarda: estructural, y dice de qué no responde
+
+En `revisar.js`, recorriendo el disco y no una lista escrita, para que un
+archivo nuevo quede vigilado sin que su autor se acuerde (v867). Falla
+**cerrado** (v880): un sitio nuevo con una palabra acentuada sale en rojo en su
+primera corrida, no cuando alguien lea el papel.
+
+**De qué NO responde, escrito al lado** (v945, v952):
+
+* de las palabras terminadas en vocal con tilde + **s**, porque ahí no hay
+  regla estructural: inglés→ingleses pierde la tilde y país→países la
+  conserva, que es hiato y no acentuación;
+* de pegar **«s»** a secas, que en las acabadas en vocal con tilde es lo
+  correcto: café→cafés, sofá→sofás;
+* y de un plural mal escrito **entero**, que ese sí se puede grepear —medido,
+  hoy no hay ninguno: los únicos candidatos son «países» y «quiénes», las dos
+  correctas—.
+
+El barrido vive en una función y **la guarda de la guarda lo corre contra casos
+de respuesta conocida** —tres que tiene que denunciar y cuatro que tiene que
+callar, entre ellos el propio arreglo—, que es la forma de la v945. Y mira el
+CÓDIGO y no el archivo crudo, comprobado contra la misma falta escrita dos
+veces, una en código y otra dentro de un comentario: sin eso denunciaría los
+ejemplos del propio bloque.
+
+#### Una comprobación que no podía fallar, cazada antes de entrar
+
+La primera versión de esa última comparaba los dos recuentos del archivo de
+verdad: `pegados(soloCodigo(j63)).length <= pegados(j63).length`. **Es
+verdadera siempre** —uno es por construcción menor o igual que el otro— así
+que era un verde que no vigilaba nada (v878). Se vio al escribirla, no al
+demostrarla, y se reemplazó por el caso de respuesta conocida.
+
+### Mi propio barrido se quedó corto TRES veces en la misma tanda
+
+Y las tres por la misma causa: acotar la búsqueda con `[^)]`, que **se detiene
+en el primer paréntesis** — y estos sitios llevan uno dentro (`(n === 1 ? …)`)
+y además parten de línea. Las cuentas que fui dando:
+
+| | Sitios que pegan «es» | Con tilde |
+|---|---|---|
+| primer barrido a mano | 12 | **3** |
+| segundo, más ancho | 14 | 3 |
+| el de la guarda, acotado por `[^;\n]` | **19** | **7** |
+
+Es la cuarta vez en este proyecto que un barrido propio se equivoca donde la
+guarda buena acierta (v878, v891, v897, v903). La regla ya estaba escrita
+—**comprobar un barrido propio contra la guarda que existe antes de creerle**—
+y lo que esta tanda agrega es el caso concreto: **una cota `[^)]` sobre código
+que contiene paréntesis no es una cota, es un recorte silencioso.**
+
+### Lo que se midió y NO era un defecto
+
+Antes de esto, el barrido del módulo empezó por otra cosa: `aroXL` dibuja el
+mismo anillo a dos tamaños —38 mm en la hoja ejecutiva, 19 mm en la cabecera
+de oportunidad— con el rótulo dimensionado **en unidades del dibujo**, así que
+se escala con él. Medido sobre el informe compuesto:
+
+| | ancho del svg | rótulo impreso |
+|---|---|---|
+| anillo grande | 39,4 mm | **3,00 mm** = 8,5 pt |
+| anillo chico | 19,7 mm | **1,50 mm** = 4,2 pt |
+
+Parecía la clase B —dos tamaños para un rótulo— y la conclusión «4,2 pt no se
+lee» **no sobrevivió a medir el resto de la hoja**: `.gauge-s`, que el módulo
+dimensiona en CSS y lleva versiones publicado, sale a **1,28 mm = 3,6 pt**. O
+sea que el rótulo del anillo chico es MÁS grande que el que la hoja ya imprime,
+y ~1,3 mm es la casa y no una anomalía. El outlier es el grande, que es el
+titular.
+
+Tres cosas quedaron de esa vuelta y valen más que el arreglo que no se hizo:
+
+* **era la v916 mordiéndome a mí**: el síntoma estaba bien medido y mi
+  diagnóstico de la gravedad estaba importado de fuera del módulo, que es
+  exactamente el número a ojo de la v869;
+* **escalar el rótulo tampoco cabía**: medido, subirlo a los mismos
+  milímetros que el grande deja **−2 unidades de holgura** contra los dígitos
+  del puntaje. Se habría pisado;
+* y **un `font-size` de CSS dentro de un SVG tampoco escapa al `viewBox`** —se
+  comprobó: `.gauge-n` declara 13 px y sale a 3,61 mm, que son 13 × 42/40—, así
+  que las dos maneras que el módulo usa son equivalentes y no hay clase B.
+
+No se tocó nada. Queda escrito para que la idea no vuelva a parecer buena.
+
+### Lo que esta tanda NO arregla, medido
+
+El mismo barrido del informe compuesto dejó **trece** «1 seguido de plural»
+distintos, y una parte son de verdad: leídos en el código, «N habitantes en el
+área de influencia», «N corredores · N paradas · N ciclorrutas», «N locales a
+~N m» y «N usos identificados» **no tienen rama de singular**. Es la
+concordancia de la v874, viva en este módulo.
+
+No entra acá y la razón es de método, no de pereza: **los tres barridos
+estáticos que escribí para enumerarlos se quedaron cortos**, y el único
+enumerador fiable es el documento compuesto —que además no se puede convertir
+en guarda estática sin la lista de excepciones que envejece (v895)—. Arreglar
+a ojo lo que no se pudo enumerar es lo que este proyecto lleva cinco tandas
+deshaciendo.
+
+Queda con su número y con el método que sirve: **componer con el resultado
+permisivo y barrer el documento con la lista de invariables de
+`tdoslaminas`**, que es la que acierta donde un barrido nuevo se equivoca.
+
+### Demostrado contra la v1017
+
+Tres inyecciones fieles contra una copia guardada, cada una con su aserción
+(v993), y ninguna con `git checkout --` sobre trabajo sin confirmar (v973):
+
+```
+✗ ninguno se lo pega a una palabra que termina en vocal con tilde
+    — 7 fabrican una falta que no esta escrita en ningun sitio:
+      js/63:1219 «edificación» → «edificaciónes» · js/63:1237 «construcción» →
+      «construcciónes» · js/63:1270 «observación» → … · js/65:227 «observación» → …
+✗ el barrido reconoce la forma, y solo esa  — no denuncia: ' edificación' + …
+✗ el barrido lee el codigo y no el comentario
+    — ve la que esta en un comentario: denunciaria los ejemplos de este mismo bloque
+```
+
+Y sobre el papel: el informe recompuesto pasa de **«1 edificaciónes · 1
+construcciónes · 1 observaciónes»** a las tres bien escritas.
+
+### Lo que NO se pudo correr
+
+**Ninguna suite de navegador**, por lo mismo que la v973 a la v1017: este
+contenedor no tiene `../urbis-motor` ni el `node_modules` del banco de
+pruebas. Corrió `revisar.js` entero con sus cuatro comprobaciones nuevas, y se
+compuso y midió el informe de empresas con la sonda. Lo que no se ejercitó es
+la **hoja del curso** de `js/65`: componerla pide el análisis educativo y con
+él el motor, así que sus cuatro sitios se arreglaron y se comprobaron
+estáticamente, no sobre el papel.
+
 ## La lista viva: lo que al pliego educativo todavía le falta (v866)
 
 Esta lista se quedó vieja **cinco veces**. Cuatro dentro de la hoja —la

@@ -224,7 +224,7 @@
         (c.rampas ? '<li><span>Rampas de acceso</span><small>×' + c.rampas + '</small></li>' : '') +
       '</ul>' +
       '<p class="edu-nota">Caminabilidad <b>' + esc(c.nivel) + '</b> sobre ' + c.muestras +
-      ' observación' + (c.muestras === 1 ? '' : 'es') + ': ajusta el flujo peatonal en <b>' +
+      ' ' + (c.muestras === 1 ? 'observación' : 'observaciones') + ': ajusta el flujo peatonal en <b>' +
       signo + '%</b>.' +
       (c.fiable ? '' : ' Son pocas observaciones para el radio — conviene mapear más andén ' +
         'antes de sacar conclusiones.') + '</p>';
@@ -382,8 +382,8 @@
           epocas.map(k => fila(k, e.porEpoca[k], e.conEpoca)).join('') + '</ul>'
         : '<p class="edu-nota">Nadie registró la época de los edificios que mapearon.</p>') +
       (e.patrimonio
-        ? '<p class="edu-nota">🏛️ ' + e.patrimonio + ' edificación' +
-          (e.patrimonio === 1 ? '' : 'es') + ' anterior' + (e.patrimonio === 1 ? '' : 'es') +
+        ? '<p class="edu-nota">🏛️ ' + e.patrimonio + ' ' +
+          (e.patrimonio === 1 ? 'edificación' : 'edificaciones') + ' anterior' + (e.patrimonio === 1 ? '' : 'es') +
           ' a 1950: posible patrimonio, conviene mirarlo antes de que se pierda.</p>'
         : '') +
       (e.evaluables
@@ -394,11 +394,11 @@
             fila('Baja', e.baja, e.evaluables) +
           '</ul>' +
           '<p class="edu-nota"><b>Esto no es un diagnóstico estructural.</b> Es el cruce ' +
-          'de material y época sobre ' + e.evaluables + ' edificación' +
-          (e.evaluables === 1 ? '' : 'es') + ' con los dos datos completos: solo dice ' +
+          'de material y época sobre ' + e.evaluables + ' ' +
+          (e.evaluables === 1 ? 'edificación' : 'edificaciones') + ' con los dos datos completos: solo dice ' +
           'cuáles ameritan que las mire un ingeniero. El primer código sismo resistente ' +
-          'colombiano es de 1984, y aquí hay ' + e.anteriores1984 + ' construcción' +
-          (e.anteriores1984 === 1 ? '' : 'es') + ' anterior' +
+          'colombiano es de 1984, y aquí hay ' + e.anteriores1984 + ' ' +
+          (e.anteriores1984 === 1 ? 'construcción' : 'construcciones') + ' anterior' +
           (e.anteriores1984 === 1 ? '' : 'es') + ' a esa fecha.</p>'
         : '<p class="edu-nota">Para estimar vulnerabilidad hacen falta material Y época ' +
           'en el mismo edificio. Con uno solo no se puede decir nada, y media evaluación ' +

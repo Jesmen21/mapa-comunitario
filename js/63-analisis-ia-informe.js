@@ -1216,7 +1216,7 @@
     const mats = Object.keys(e.porMaterial).sort((a, b) => e.porMaterial[b] - e.porMaterial[a]);
     return '<div class="tarjeta"><h2>El tejido construido</h2>' +
       '<p class="sub-nivel" style="color:' + T.ok + '">' + e.total +
-      ' edificación' + (e.total === 1 ? '' : 'es') + ' con ficha levantada en campo</p>' +
+      ' ' + (e.total === 1 ? 'edificación' : 'edificaciones') + ' con ficha levantada en campo</p>' +
       (epocas.length
         ? '<h3 class="mini">Época de construcción</h3>' +
           epocas.map(k => filaBarra(k, e.porEpoca[k], e.conEpoca)).join('')
@@ -1234,7 +1234,7 @@
           'material y época sobre las ' + e.evaluables + ' edificaciones que traen los dos ' +
           'datos, y solo señala cuáles ameritan que las revise un ingeniero. El primer ' +
           'código sismo resistente colombiano es el Decreto 1400 de 1984: aquí hay ' +
-          e.anteriores1984 + ' construcción' + (e.anteriores1984 === 1 ? '' : 'es') +
+          e.anteriores1984 + ' ' + (e.anteriores1984 === 1 ? 'construcción' : 'construcciones') +
           ' anterior' + (e.anteriores1984 === 1 ? '' : 'es') + ' a esa fecha' +
           (e.patrimonio ? ', y ' + e.patrimonio + ' previa' + (e.patrimonio === 1 ? '' : 's') +
             ' a 1950 que podrían ser patrimonio' : '') + '.</p>'
@@ -1267,8 +1267,8 @@
       filaBarra('Andén continuo', c.continuo, c.muestras, T.ok) +
       filaBarra('Andén interrumpido', c.interrumpido, c.muestras, T.warn) +
       filaBarra('Sin andén / bordillo', c.sinAnden, c.muestras, T.bad) +
-      '<p class="pie-nota">Sobre ' + c.muestras + ' observación' +
-      (c.muestras === 1 ? '' : 'es') + ' de andén' +
+      '<p class="pie-nota">Sobre ' + c.muestras + ' ' +
+      (c.muestras === 1 ? 'observación' : 'observaciones') + ' de andén' +
       (c.rampas ? ' y ' + c.rampas + ' rampa(s) de acceso' : '') + '. ' +
       (c.fiable ? 'El andén no genera peatones: deja caminar a los que ya hay, por eso ajusta y no suma.'
                 : 'Son pocas observaciones para el radio; conviene mapear más antes de concluir.') +
