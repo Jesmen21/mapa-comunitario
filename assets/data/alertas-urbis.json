@@ -1,6 +1,6 @@
 {
   "_comentario": "Alertas EDITORIALES del equipo URBIS (desastres verificados). Se publican editando este archivo — no requieren la hoja de cálculo ni credenciales. El mapa las dibuja junto a las que ya están en la base; si coinciden las coordenadas, se muestra una sola. Reglas: solo desastres naturales de fuente oficial, nunca violencia ni homicidios; coordenadas geocodificadas, jamás estimadas a ojo; sin fuente no se publica.",
-  "actualizado": "2026-09-21",
+  "actualizado": "2026-09-22",
   "alertas": [
     {
       "tipo": "Sismo",
@@ -87,21 +87,6 @@
     },
     {
       "tipo": "Incendio forestal",
-      "titulo": "Incendio forestal en Alto Menga — más de 70 hectáreas y viviendas afectadas, 17 de septiembre de 2026, Cali",
-      "lat": 3.49191,
-      "lng": -76.52584,
-      "desde": "2026-09-17",
-      "expira": "2026-09-21",
-      "lineas": [
-        "📅 Se originó en la tarde del jueves 17 de septiembre de 2026, hacia la 1:11 p. m. (hora de Colombia), en el sector de Alto Menga (Altos de Menga), zona montañosa al norte de Cali. Los organismos de socorro lo dieron por controlado hacia las 10:20 p. m. del mismo jueves, tras varias horas de trabajo nocturno; al viernes 18 de septiembre continuaban enfriando puntos calientes para evitar que el viento lo reactivara.",
-        "📊 Cerca de 100 hectáreas de vegetación arrasadas —cifra revisada al alza frente al reporte inicial de más de 70 hectáreas—, según el Cuerpo de Bomberos Voluntarios de Cali. Cinco viviendas resultaron afectadas, una persona adulta mayor inhaló humo y dos bomberos sufrieron lesiones; más de 140 unidades entre bomberos de Cali y Yumbo, Defensa Civil y otros organismos atendieron la emergencia, dificultada por los fuertes vientos. El alcalde de Cali, Alejandro Eder, señaló que el incendio pudo ser provocado.",
-        "ℹ️ Alerta informativa del equipo URBIS con base en el Cuerpo de Bomberos Voluntarios de Cali y prensa regional y nacional (El Tiempo, El País, El Heraldo, El Espectador, Pulzo, 90 Minutos). No es un reporte ciudadano."
-      ],
-      "fuente": "Cuerpo de Bomberos Voluntarios de Cali / El Tiempo / El País / El Heraldo / El Espectador / Pulzo",
-      "url": "https://www.eltiempo.com/colombia/cali/emergencia-por-incendio-en-montanas-de-cali-cinco-casas-arrasadas-una-adulta-mayor-afectada-y-dos-bomberos-con-lesiones-3587008"
-    },
-    {
-      "tipo": "Incendio forestal",
       "titulo": "Incendio forestal en el Parque Nacional Natural Las Hermosas — más de 1.000 hectáreas, cerca de 45 días activo, Guadalajara de Buga, Valle del Cauca",
       "lat": 3.9019,
       "lng": -76.3039,
@@ -133,35 +118,35 @@
     },
     {
       "tipo": "Incendio forestal",
-      "titulo": "Incendio forestal en el cerro San Marcos — calamidad pública, 290 hectáreas afectadas, 19-21 de septiembre de 2026, Villa de Leyva, Boyacá",
+      "titulo": "Incendio forestal en el cerro San Marcos — calamidad pública, 1.200 hectáreas afectadas, 75 % controlado, 19-22 de septiembre de 2026, Villa de Leyva, Boyacá",
       "lat": 5.6333,
       "lng": -73.5333,
       "desde": "2026-09-19",
-      "expira": "2026-09-27",
+      "expira": "2026-09-29",
       "lineas": [
-        "📅 Se originó en la tarde del sábado 19 de septiembre de 2026, hacia la 1:00 p. m. (hora de Colombia), en el sector La Marmolera, cerro San Marcos, al norte del casco urbano de Villa de Leyva, Boyacá. Al 21 de septiembre seguía activo, con el 50 % del área controlada según el puesto de mando unificado.",
-        "📊 Cerca de 290 hectáreas de vegetación afectadas (cifra revisada al alza desde las 60 iniciales del sábado), según el Cuerpo de Bomberos y la Gobernación de Boyacá. El gobernador Carlos Amaya declaró calamidad pública; se suspendieron las clases presenciales del lunes 21 de septiembre; se evacuaron hoteles del sector —entre ellos el Hotel Arcoíris— y viviendas del nororiente del municipio; y se habilitó el coliseo municipal como centro de atención a familias afectadas. 37 personas han recibido atención médica, en su mayoría personal de socorro por caídas y afectaciones respiratorias y visuales; no se reportan muertos ni heridos graves. Más de 400 personas —207 bomberos y Defensa Civil, y cerca de 200 voluntarios— y cuatro helicópteros, incluido un Black Hawk de la Fuerza Aeroespacial Colombiana, trabajan en el control, con cerca de 170 descargas de agua (unos 240.000 litros).",
+        "📅 Se originó en la tarde del sábado 19 de septiembre de 2026, hacia la 1:00 p. m. (hora de Colombia), en el sector La Marmolera, cerro San Marcos, al norte del casco urbano de Villa de Leyva, Boyacá. Al 22 de septiembre la emergencia seguía activa: el ministro del Interior, Rodrigo Lara, reportó control del 75 % (frente al 50 % del balance del 21 de septiembre), con dos focos aún activos, uno de ellos crítico dentro del Santuario de Fauna y Flora Iguaque, donde el relieve impide las descargas de agua desde helicóptero.",
+        "📊 Balance más reciente (22 de septiembre, UNGRD / Ministerio del Interior): 1.200 hectáreas afectadas —de ellas unas 715 dentro del Santuario de Fauna y Flora Iguaque—, cifra revisada al alza frente a las 290 hectáreas del balance del 21 de septiembre en la madrugada. Más de 200 personas entre fuerza pública, bomberos y socorristas participan en el control, con cuatro helicópteros —un MI-17 contratado por la Gobernación de Boyacá y dos UH-60, uno de la Fuerza Aeroespacial Colombiana y otro del Ejército Nacional—, que realizaron 75 descargas de agua durante la jornada del 21 de septiembre. El gobernador Carlos Amaya declaró calamidad pública; se suspendieron las clases presenciales el 21 de septiembre y se evacuaron hoteles y viviendas del nororiente del municipio. 37 personas han recibido atención médica, en su mayoría personal de socorro por caídas y afectaciones respiratorias y visuales; no se reportan muertos ni heridos graves.",
         "⚠️ El Ministerio de Ambiente señaló, con base en información preliminar de la UNGRD, que el incendio habría sido provocado; las autoridades ofrecieron recompensa por información sobre su origen.",
-        "ℹ️ Alerta informativa del equipo URBIS con base en la Gobernación de Boyacá, el Ministerio de Ambiente, la UNGRD y prensa nacional (El Tiempo, Vanguardia, Publimetro, Infobae). No es un reporte ciudadano. Coordenadas de referencia: centro del municipio de Villa de Leyva; el incendio se ubica en el cerro San Marcos, al norte del casco urbano."
+        "ℹ️ Alerta informativa del equipo URBIS con base en la Gobernación de Boyacá, el Ministerio del Interior, el Ministerio de Ambiente, la UNGRD y prensa nacional (El Tiempo, Infobae, Portafolio, Publimetro, El Espectador). No es un reporte ciudadano. Coordenadas de referencia: centro del municipio de Villa de Leyva; el incendio se ubica en el cerro San Marcos y el Santuario de Iguaque, al norte y oriente del casco urbano."
       ],
-      "fuente": "Gobernación de Boyacá / Ministerio de Ambiente / UNGRD / El Tiempo / Vanguardia / Publimetro",
-      "url": "https://www.vanguardia.com/colombia/2026/09/21/incendio-forestal-en-villa-de-leyva-deja-290-hectareas-afectadas-y-activa-operativo/"
+      "fuente": "Gobernación de Boyacá / Ministerio del Interior / Ministerio de Ambiente / UNGRD / El Tiempo / Infobae / Portafolio",
+      "url": "https://www.publimetro.co/noticias/2026/09/22/incendio-en-villa-de-leyva-asi-avanza-el-control-de-las-llamas-y-estas-son-las-zonas-mas-afectadas/"
     },
     {
       "tipo": "Sismo",
-      "titulo": "Enjambre sísmico en Chaparral, Tolima — sismo principal de magnitud 4,1, 20-21 de septiembre de 2026",
+      "titulo": "Enjambre sísmico en Chaparral, Tolima — más de 130 sismos en tres días, magnitud máxima 4,2, 20-22 de septiembre de 2026",
       "lat": 3.84,
       "lng": -75.61,
       "desde": "2026-09-20",
-      "expira": "2026-10-04",
+      "expira": "2026-10-06",
       "lineas": [
-        "📅 El evento de mayor magnitud ocurrió el domingo 20 de septiembre de 2026 a las 4:52 a. m. (hora de Colombia), dando inicio a un enjambre sísmico que seguía activo en la madrugada del lunes 21 de septiembre, con más de 25 sismos registrados en la misma zona (el último, a las 6:14 a. m. de ese lunes).",
-        "📊 Magnitud 4,1 (corregida por el SGC desde un reporte preliminar de 4,4) · profundidad superficial, menor a 30 km · epicentro a 17 km de San Antonio, 19 km de Chaparral y 20 km de Roncesvalles, Tolima (3,84° N / 75,61° O, Servicio Geológico Colombiano). Se sintió en Ibagué, Cali, Pereira, Armenia y otras ciudades del Eje Cafetero; el SGC no reportó heridos ni daños estructurales, aunque numerosos residentes de Chaparral salieron de sus viviendas durante la madrugada del 21 de septiembre por la seguidilla de temblores, la mayoría de magnitud entre 2,5 y 3,2.",
-        "🌎 Los organismos de socorro adelantan inspecciones en los 47 municipios del Tolima como parte del protocolo de prevención activado tras el sismo principal.",
-        "ℹ️ Alerta informativa del equipo URBIS con base en el Servicio Geológico Colombiano y prensa nacional (El Tiempo, Semana, Infobae, Pulzo, El Espectador). No es un reporte ciudadano."
+        "📅 El enjambre empezó el domingo 20 de septiembre de 2026 a las 4:52 a. m. (hora de Colombia) y seguía activo en la mañana del martes 22 de septiembre. El Servicio Geológico Colombiano (SGC) registró más de 130 sismos entre el 20 y el 21 de septiembre, y una nueva tanda de al menos 11 movimientos en la madrugada del 22 de septiembre, con epicentros en Chaparral (Tolima) e Istmina (Chocó).",
+        "📊 Magnitud máxima 4,2 (evento de las 2:35 a. m. del 22 de septiembre, epicentro a unos 17-18 km de Roncesvalles, Tolima, profundidad superficial menor a 30 km, SGC). El 21 de septiembre se habían registrado ya al menos dos sismos de magnitud 4,0 (a las 9:48 a. m. y las 11:23 a. m.), y en la madrugada del 22 un movimiento reportado inicialmente en 4,3 fue revisado a la baja a magnitud 4,0. De los más de 130 movimientos contabilizados en el enjambre, al menos cinco alcanzaron o superaron magnitud 4,0.",
+        "🌎 El sismo de las 9:48 a. m. del 21 de septiembre obligó a evacuar preventivamente la sede de la Gobernación del Tolima en Ibagué; una inspección posterior no halló grietas ni daños que representaran riesgo estructural. La secuencia se sintió con fuerza en Bogotá, Cali, Ibagué, Buenaventura, Armenia y Pereira; el SGC no ha reportado heridos ni daños estructurales. Los organismos de socorro mantienen inspecciones preventivas en los 47 municipios del Tolima, y el SGC atribuye la actividad a fallas geológicas activas que cruzan el departamento.",
+        "ℹ️ Alerta informativa del equipo URBIS con base en el Servicio Geológico Colombiano y prensa nacional (El Tiempo, Semana, Infobae, Pulzo, El Espectador, El País). No es un reporte ciudadano."
       ],
       "fuente": "Servicio Geológico Colombiano (SGC) / prensa nacional",
-      "url": "https://www.semana.com/nacion/articulo/sismo-de-magnitud-41-se-registro-en-chaparral-tolima-durante-la-madrugada/202624/"
+      "url": "https://www.semana.com/nacion/articulo/servicio-geologico-dio-anuncio-tras-preocupante-cifra-de-temblores-en-chaparral-tolima-es-importante/202627/"
     }
   ]
 }
