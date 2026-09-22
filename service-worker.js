@@ -1,4 +1,4 @@
-const URBIS_CACHE = 'urbis-v1036-alertas-villa-de-leyva-chaparral';
+const URBIS_CACHE = 'urbis-v1037-seguimiento-presidencial-cholo-plan-salud-cepeda';
 const URBIS_ASSETS = [
   './',
   './index.html',

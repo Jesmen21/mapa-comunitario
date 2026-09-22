@@ -3,8 +3,8 @@
  "presidente": "Abelardo de la Espriella",
  "periodo": "2026 – 2030",
  "posesion": "2026-08-07",
- "actualizado": "2026-09-21",
- "proximaActualizacion": "2026-09-22",
+ "actualizado": "2026-09-22",
+ "proximaActualizacion": "2026-09-23",
  "categorias": {
   "gobierno": {
    "nombre": "Gobierno y decretos",
@@ -73,6 +73,115 @@
   }
  },
  "entradas": [
+  {
+   "fecha": "2026-09-21",
+   "precision": "exacta",
+   "categoria": "servicios",
+   "titulo": "El Gobierno anuncia la primera fase de un «plan de choque» en salud para destrabar la atención de más de un millón de pacientes",
+   "categoriaProbatoria": "hecho-probado",
+   "tipoMedicion": "actividad",
+   "nivelGobierno": "nacional",
+   "detalle": "Tras el Consejo de Ministros, el presidente Abelardo de la Espriella anunció el 21 de septiembre la primera fase de un «plan de choque» para destrabar la atención de 1.069.196 usuarios con medicamentos o procedimientos pendientes en el sistema de salud, con cobertura en los 32 departamentos: más de 700.000 personas con medicamentos represados y cerca de 300.000 con cirugías o exámenes diagnósticos aplazados. La medida central es un mecanismo extraordinario y temporal de compra de cartera a las EPS, con tasa de interés del 0 % y un año de gracia. El presidente aclaró que «no es un cheque en blanco» para las EPS: «no vamos a pagar dos veces la misma atención ni a reconocer de nuevo servicios que ya fueron pagados». El Gobierno anunció además una mesa de control técnico integrada por el Ministerio de Salud, la Superintendencia Nacional de Salud y la ADRES para hacer seguimiento a la reducción de pendientes, la entrega de servicios y el uso de los recursos, y ordenó a la ministra de Salud, Alejandra Vesga, poner en marcha de inmediato esta primera fase.",
+   "tipoFuente": "verificado",
+   "fuentes": [
+    {
+     "n": "El Tiempo · Presidente De La Espriella anunció primera fase de un plan de choque en salud tras consejo de ministros: «La solución tiene que llegar al paciente»",
+     "u": "https://www.eltiempo.com/politica/abelardo-de-la-espriella/presidente-de-la-espriella-anuncio-primera-fase-de-un-plan-de-choque-en-salud-tras-consejo-de-ministros-la-solucion-tiene-que-llegar-al-paciente-3587840",
+     "rol": "acto"
+    },
+    {
+     "n": "Infobae · Abelardo de la Espriella anuncia plan de choque en salud para destrabar la atención de 1.069.196 pacientes",
+     "u": "https://www.infobae.com/colombia/2026/09/22/abelardo-de-la-espriella-anuncia-plan-de-choque-en-salud-para-destrabar-la-atencion-de-1069196-pacientes/",
+     "rol": "acto"
+    },
+    {
+     "n": "El Espectador · De la Espriella ordena poner en marcha inmediatamente plan de choque en salud",
+     "u": "https://www.elespectador.com/salud/de-la-espriella-ordena-poner-en-marcha-inmediatamente-plan-de-choque-en-salud/",
+     "rol": "acto"
+    },
+    {
+     "n": "El Heraldo · Presidente De la Espriella ordena a la ministra Vesga poner en marcha la primera fase del plan de choque en salud",
+     "u": "https://www.elheraldo.co/colombia/2026/09/22/presidente-de-la-espriella-ordena-a-la-ministra-vesga-poner-en-marcha-la-primera-fase-del-plan-de-choque-en-salud/",
+     "rol": "acto"
+    },
+    {
+     "n": "El Colombiano · De la Espriella detalla plan de choque para el sistema de salud que incluye compra de cartera a EPS: «no es cheque en blanco»",
+     "u": "https://www.elcolombiano.com/colombia/salud/abelardo-de-la-espriella-detalla-plan-sistema-de-salud-eps-IA41364509",
+     "rol": "acto"
+    }
+   ]
+  },
+  {
+   "fecha": "2026-09-21",
+   "precision": "exacta",
+   "categoria": "gobierno",
+   "titulo": "De la Espriella confirma la muerte de alias 'Cholo', segundo cabecilla de las Autodefensas Conquistadoras de la Sierra Nevada, y advierte a alias 'Pinocho'",
+   "categoriaProbatoria": "hecho-probado",
+   "tipoMedicion": "actividad",
+   "nivelGobierno": "nacional",
+   "detalle": "La Policía Nacional, a través de su Dirección de Antinarcóticos, con apoyo de la Fiscalía General y de la Fuerza Aérea, ejecutó el 21 de septiembre un registro y allanamiento en el sector de Quebrada del Sol, corregimiento de Guachaca (Santa Marta), contra las Autodefensas Conquistadoras de la Sierra Nevada (ACSN), también llamadas 'los Pachenca'. El operativo dejó siete integrantes de la organización muertos —entre ellos José Luis Pérez Villanueva, alias 'Cholo' o 'Comando 25', señalado como segundo cabecilla y responsable de las finanzas del grupo tras la captura de alias 'Muñeca'— y tres capturados, además de la incautación de diez fusiles (uno de ellos calibre .50), dos lanzagranadas, dos pistolas y ocho granadas de 40 mm. El presidente Abelardo de la Espriella confirmó la baja de 'Cholo', convocó un consejo de seguridad extraordinario en Santa Marta y le envió un mensaje directo al máximo cabecilla de las ACSN, Fredy Castillo Carrillo, alias 'Pinocho', advirtiéndole que tiene fecha de vencimiento y que las autoridades van tras él. Tras el operativo, las ACSN anunciaron un paro armado de 48 horas en el Magdalena, con bloqueos y quema de vehículos en la Ruta del Sol, ante lo cual el presidente advirtió que «el que no se someta va a terminar en una bolsa y muerto».",
+   "tipoFuente": "verificado",
+   "fuentes": [
+    {
+     "n": "El Tiempo · Siete muertos, tres capturados y armas incautadas: los detalles del operativo en el que cayó alias Cholo, cabecilla de 'los Pachenca'",
+     "u": "https://www.eltiempo.com/justicia/conflicto-y-narcotrafico/siete-muertos-tres-capturados-y-armas-incautadas-los-detalles-del-operativo-en-el-que-cayo-alias-cholo-sucesor-de-bendito-menor-3587821",
+     "rol": "acto"
+    },
+    {
+     "n": "El Tiempo · Este era alias Cholo, segundo cabecilla de las Autodefensas Conquistadoras de la Sierra Nevada, abatido por la Fuerza Pública",
+     "u": "https://www.eltiempo.com/justicia/conflicto-y-narcotrafico/este-era-alias-cholo-segundo-cabecilla-de-las-autodefensas-conquistadoras-de-la-sierra-nevada-abatido-por-la-fuerza-publica-3587847",
+     "rol": "contexto"
+    },
+    {
+     "n": "Infobae · Abelardo de la Espriella brindó detalles de operativo en Santa Marta donde fue eliminado alias Cholo y lanzó advertencia: «Muy pronto vendrá 'Pinocho'»",
+     "u": "https://www.infobae.com/colombia/2026/09/22/abelardo-de-la-espriella-brindo-detalles-de-operativo-en-santa-marta-donde-fue-eliminado-alias-cholo-y-lanzo-advertencia-muy-pronto-vendra-pinocho/",
+     "rol": "acto"
+    },
+    {
+     "n": "El Heraldo · De la Espriella cita consejo de seguridad en Santa Marta tras muerte de alias Cholo, de Los Pachenca",
+     "u": "https://www.elheraldo.co/colombia/2026/09/22/de-la-espriella-cita-consejo-de-seguridad-en-santa-marta-tras-muerte-de-alias-cholo-de-los-pachenca-sigues-tu-pinocho/",
+     "rol": "acto"
+    },
+    {
+     "n": "El Universal · Paro armado en Santa Marta: De La Espriella toma medidas tras caída de alias Cholo",
+     "u": "https://www.eluniversal.com.co/colombia/2026/09/21/paro-armado-en-santa-marta-de-la-espriella-toma-medidas-tras-caida-de-alias-cholo/",
+     "rol": "efecto"
+    }
+   ]
+  },
+  {
+   "fecha": "2026-09-21",
+   "precision": "exacta",
+   "categoria": "eeuu",
+   "titulo": "El senador Iván Cepeda anuncia una tutela contra el Gobierno por el sobrevuelo de helicópteros militares de EE. UU. en Tumaco sin autorización del Senado",
+   "categoriaProbatoria": "hecho-probado",
+   "tipoMedicion": "contexto-estructural",
+   "detalle": "El senador de oposición Iván Cepeda anunció el 21 de septiembre que radicará una acción de tutela contra el presidente Abelardo de la Espriella por la vulneración de su derecho a la participación política, al no haber sido consultado sobre el ingreso de tropas extranjeras al espacio aéreo y terrestre del país. El reclamo se refiere al sobrevuelo, el 27 de agosto, de helicópteros UH-1Y Venom del Cuerpo de Marines de EE. UU. sobre Tumaco (Nariño) —dos de ellos en vuelo y un tercero del mismo tipo presente en el país—, hecho que el Comando Sur de EE. UU. (Southcom) hizo público en septiembre y que circuló en redes como evidencia de operaciones militares estadounidenses en territorio colombiano. Cepeda sostiene que el Ejecutivo desconoció la atribución que el artículo 173, numeral 4, de la Constitución le da al Senado para autorizar el tránsito de tropas extranjeras.",
+   "contrapunto": "Según reportó El Tiempo, fuentes del Gobierno explicaron que los helicópteros transportaban al comandante del Comando Sur, general Francis Donovan, y a su equipo durante una visita oficial a Colombia y Ecuador para reunirse con el Ministerio de Defensa y el comandante de las Fuerzas Militares, y que se trató del desplazamiento de personal —no de una operación militar autónoma de combate ni de ejercicio de mando—. Bajo esa lectura, el Gobierno podría sostener que el hecho no equivale al tránsito de tropas extranjeras que exige el aval previo del Senado o del Consejo de Estado (ver la entrada del 7 de septiembre sobre la certificación de este último). Esta entrada no resuelve cuál de las dos lecturas es la correcta; la tutela anunciada por Cepeda todavía no ha sido fallada.",
+   "tipoFuente": "disputado",
+   "fuentes": [
+    {
+     "n": "El Universal · Iván Cepeda anuncia tutela contra De la Espriella por presencia de tropas de EE. UU.",
+     "u": "https://www.eluniversal.com.co/colombia/2026/09/21/ivan-cepeda-anuncia-tutela-contra-de-la-espriella-por-presencia-de-tropas-de-ee-uu/",
+     "rol": "acto"
+    },
+    {
+     "n": "El País (Cali) · Iván Cepeda radicará tutela contra Gobierno por presencia de helicópteros militares de EEUU en Tumaco: «No he sido consultado»",
+     "u": "https://www.elpais.com.co/politica/ivan-cepeda-radicara-tutela-contra-gobierno-por-presencia-de-helicopteros-militares-de-eeuu-en-tumaco-no-he-sido-consultado-2159.html",
+     "rol": "acto"
+    },
+    {
+     "n": "Colombia.com · Iván Cepeda anuncia tutela contra De la Espriella por tropas de EE.UU. en Colombia",
+     "u": "https://www.colombia.com/actualidad/politica/ivan-cepeda-anuncia-tutela-contra-de-la-espriella-por-tropas-de-eeuu-en-colombia-601623",
+     "rol": "acto"
+    },
+    {
+     "n": "El Tiempo · La historia detrás de los dos helicópteros de EE. UU. que sobrevolaron Tumaco y generaron polémica en redes",
+     "u": "https://www.eltiempo.com/justicia/conflicto-y-narcotrafico/la-historia-detras-de-los-dos-helicopteros-de-ee-uu-que-sobrevolaron-tumaco-y-generaron-polemica-en-redes-3585035",
+     "rol": "contexto"
+    }
+   ]
+  },
   {
    "fecha": "2026-09-21",
    "precision": "exacta",
