@@ -11,7 +11,14 @@
   const $ = id => document.getElementById(id);
   const esc = s => String(s == null ? '' : s)
     .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
-  const miles = n => Number(n || 0).toLocaleString('es-CO');
+  /* Como se escribe un numero en castellano es UN hecho y vive en js/63, que
+     esta hoja ya carga antes que a ella (v1040). Lo que habia aqui era la
+     CUARTA copia del formateador: se presta, no se copia, o el dia que el
+     criterio cambie la hoja del curso y el informe divergen. `dec` es el
+     numero de decimales, para que nadie vuelva a escribir un
+     `toFixed(2).replace('.', ',')` a un lado. */
+  const numEs = (n, dec) => window.AIA_INFORME.numEs(n == null ? 0 : n, dec);
+  const miles = numEs;
 
   let ultimo = null;
 
@@ -198,7 +205,7 @@
       '<div class="edu-eje"><span>' + serie[0].anio + '</span><span>' + serie[corte].anio +
         '</span><span>' + serie[serie.length - 1].anio + '</span></div>' +
       '<p class="edu-nota">El censo es de ' + s.censoAnio + ' y se trae a hoy con la tasa de ' +
-      'crecimiento del municipio (' + (s.tasaAnualDane * 100).toFixed(2) + '% al año). ' +
+      'crecimiento del municipio (' + numEs(s.tasaAnualDane * 100, 2) + '% al año). ' +
       esc(s.advertenciaProyeccion || '') + '</p>' +
       '</div>';
   }
@@ -1098,11 +1105,11 @@
       const e = c.espacioPublico;
       html += '<h4 class="sep">🌳 Espacio público por habitante</h4>';
       if (e.m2PorHab != null) {
-        html += '<div class="edu-ep"><b>' + e.m2PorHab.toLocaleString('es-CO') + '<small> m²/hab</small></b>' +
+        html += '<div class="edu-ep"><b>' + numEs(e.m2PorHab) + '<small> m²/hab</small></b>' +
           '<div class="edu-ep-barra"><i style="width:' + Math.min(100, e.pctDeMeta) + '%"></i><em style="left:100%">meta ' + e.meta + '</em></div></div>';
       }
       html += '<p class="edu-nota">' + esc(e.lectura) + '</p>' +
-        (e.n ? '<p class="edu-nota"><b>Contado:</b> ' + e.parques.slice(0, 5).map(q => esc(q.nombre) + ' <em>(' + q.m2.toLocaleString('es-CO') + ' m²)</em>').join(' · ') +
+        (e.n ? '<p class="edu-nota"><b>Contado:</b> ' + e.parques.slice(0, 5).map(q => esc(q.nombre) + ' <em>(' + numEs(q.m2) + ' m²)</em>').join(' · ') +
                (e.n > 5 ? ' …' : '') + '. Los polígonos entran enteros aunque asomen fuera del radio.</p>' : '');
     }
     // Terreno y agua.
@@ -1110,7 +1117,7 @@
       html += '<h4 class="sep">⛰️ Terreno y agua</h4>';
       if (c.terreno) {
         const t = c.terreno;
-        html += '<div class="edu-terreno"><span><b>' + t.pendientePct.toLocaleString('es-CO') + ' %</b><small>pendiente media</small></span>' +
+        html += '<div class="edu-terreno"><span><b>' + numEs(t.pendientePct) + ' %</b><small>pendiente media</small></span>' +
           '<span><b>' + t.desnivelM + ' m</b><small>de desnivel</small></span>' +
           '<span><b>' + esc(t.cae.replace(/^el /, '')) + '</b><small>hacia donde cae</small></span></div>' +
           '<p class="edu-terreno-lectura' + (t.haciaElAgua ? ' ojo' : '') + '">' + esc(t.lectura) + '</p>' +

@@ -188,7 +188,7 @@
 
       puestas.push(rc);
       html += '<div class="hito ' + lado + '" style="left:' + x.toFixed(2) + '%;top:' + y.toFixed(2) + '%">' +
-        '<i></i><b>' + esc(etq) + '<em>' + hi.distM + ' m</em></b></div>';
+        '<i></i><b>' + esc(etq) + '<em>' + numEs(hi.distM) + ' m</em></b></div>';
     });
     return html;
   }
@@ -295,7 +295,7 @@
       Math.round(100 * x.n / maxN) + '%;background:' + T.acento + '"></i></div><b>' + x.n + '</b></div>').join('');
     return '<div class="tarjeta"><h2>De qué vive la cuadra</h2>' +
       (v.nombre
-        ? '<p class="voc-titulo">' + esc(v.nombre) + ' <em>· ' + v.share + '% de la oferta</em></p>' +
+        ? '<p class="voc-titulo">' + esc(v.nombre) + ' <em>· ' + numEs(v.share) + '% de la oferta</em></p>' +
           '<p class="voc-lectura">' + esc(v.lectura || '') + '</p>'
         : '<p class="voc-lectura">Sin masa comercial suficiente para asignarle una vocación al sector: ' +
           'la oferta instalada es demasiado escasa o demasiado repartida.</p>') +
@@ -340,15 +340,15 @@
   // ── Bloques de contenido ────────────────────────────────────────────────
   function kpis(r){
     const s = r.stats;
-    const item = (ico, val, lbl) => '<div class="kpi"><span>' + ico + '</span><b>' + val + '</b><small>' + lbl + '</small></div>';
+    const item = (ico, val, lbl) => '<div class="kpi"><span>' + ico + '</span><b>' + numEs(val) + '</b><small>' + lbl + '</small></div>';
     // Con censo se muestran 6 KPI (entra estrato); sin censo, los 5 de siempre.
     const e = s.estrato;
     return '<div class="kpis' + (e ? ' kpis-6' : '') + '">' +
-      item('👥', s.poblacionEstimada.toLocaleString('es-CO'),
+      item('👥', s.poblacionEstimada,
            s.poblacionEsCensal ? 'Habitantes · DANE 2018' : 'Población estimada') +
       (e ? item('🏷️', 'E' + e.predominante,
            e.minimo === e.maximo ? 'Estrato' : 'Estrato ' + e.minimo + '–' + e.maximo) : '') +
-      item('📍', s.total.toLocaleString('es-CO'), 'Usos identificados') +
+      item('📍', s.total, 'Usos identificados') +
       item('📐', s.densidadPorHa, 'Usos por hectárea') +
       item('🛣️', s.movilidad.nViasArterias, 'Vías arterias') +
       item('🚌', s.movilidad.paradasBus, 'Paradas transporte') +
@@ -358,13 +358,13 @@
   function datosGenerales(r){
     const fecha = new Date(r.meta.fechaISO).toLocaleString('es-CO', { dateStyle:'long', timeStyle:'short' });
     const radioTxt = r.meta.radioM >= 1000 ? (r.meta.radioM / 1000) + ' km' : r.meta.radioM + ' m';
-    const it = (ico, lbl, val) => '<div class="dg"><span>' + ico + '</span><div><b>' + lbl + '</b><p>' + val + '</p></div></div>';
+    const it = (ico, lbl, val) => '<div class="dg"><span>' + ico + '</span><div><b>' + lbl + '</b><p>' + numEs(val) + '</p></div></div>';
     return '<div class="datos-generales">' +
       it('🏢', 'Proyecto', esc(r.meta.proyectoNombre)) +
       it('📅', 'Fecha de análisis', esc(fecha)) +
       it('📍', 'Coordenadas', r.meta.lat.toFixed(6) + ', ' + r.meta.lng.toFixed(6)) +
       it('📋', 'Tipo de estudio', esc(NOMBRE_ESTUDIO[r.meta.tipoEstudio] || r.meta.tipoEstudio)) +
-      it('⭕', 'Radio de análisis', radioTxt + ' (~' + r.stats.areaHa + ' ha)') +
+      it('⭕', 'Radio de análisis', radioTxt + ' (~' + numEs(r.stats.areaHa) + ' ha)') +
       (r.meta.direccionAprox ? it('🧭', 'Referencia', esc(r.meta.direccionAprox)) : '') +
       '</div>';
   }
@@ -377,14 +377,14 @@
     const filas = grupos.map(g => {
       const n = s.porGrupo[g], pct = (100 * n / Math.max(s.total, 1));
       return '<tr><td><i class="dot" style="background:' + C[g] + '"></i>' + esc(G[g].t) + '</td>' +
-        '<td class="num">' + n.toLocaleString('es-CO') + '</td>' +
-        '<td class="num">' + pct.toFixed(1).replace('.', ',') + '%</td>' +
+        '<td class="num">' + numEs(n) + '</td>' +
+        '<td class="num">' + numEs(Math.round(pct * 10) / 10) + '%</td>' +
         '<td class="barra"><i style="width:' + (100 * n / max).toFixed(1) + '%;background:' + C[g] + '"></i></td></tr>';
     }).join('');
     return '<div class="bloque"><h2>Composición del entorno <em>(por número de usos)</em></h2>' +
       '<table class="tbl-comp"><thead><tr><th>Grupo de uso (Matriz URBIS)</th><th class="num">Usos</th><th class="num">%</th><th>Participación</th></tr></thead>' +
       '<tbody>' + filas + '</tbody>' +
-      '<tfoot><tr><td>TOTAL</td><td class="num">' + s.total.toLocaleString('es-CO') + '</td><td class="num">100%</td><td></td></tr></tfoot></table></div>';
+      '<tfoot><tr><td>TOTAL</td><td class="num">' + numEs(s.total) + '</td><td class="num">100%</td><td></td></tr></tfoot></table></div>';
   }
 
   // Aro de progreso en SVG: se imprime nítido a cualquier tamaño y no depende
@@ -398,7 +398,7 @@
         'stroke-linecap="round" stroke-dasharray="' + score + ' ' + (100 - score) + '" ' +
         'transform="rotate(-90 20 20)"/>' +
       '<text x="20" y="19" text-anchor="middle" dominant-baseline="central" class="gauge-n" ' +
-        'fill="' + color + '">' + score + '</text>' +
+        'fill="' + color + '">' + numEs(score) + '</text>' +
       '<text x="20" y="26.5" text-anchor="middle" class="gauge-s">/100</text></svg>';
   }
 
@@ -410,7 +410,7 @@
     if (!v.subscores && r.desglosePorUso && r.desglosePorUso.length) {
       desglose = '<table class="tbl-mini">' + r.desglosePorUso.map(d => {
         const c2 = d.nivel === 'Alta' ? T.ok : (d.nivel === 'Media' ? T.warn : T.bad);
-        return '<tr><td>' + d.icono + ' ' + esc(d.nombre) + '</td><td class="num" style="color:' + c2 + '"><b>' + d.score + '</b></td><td>' + esc(d.nivel) + '</td></tr>';
+        return '<tr><td>' + d.icono + ' ' + esc(d.nombre) + '</td><td class="num" style="color:' + c2 + '"><b>' + numEs(d.score) + '</b></td><td>' + esc(d.nivel) + '</td></tr>';
       }).join('') + '</table>';
     } else if (v.subscores) {
       const N = { demanda:'Demanda', competencia:'Competencia', complementarios:'Complementarios', movilidad:'Movilidad', entorno:'Entorno' };
@@ -428,7 +428,7 @@
         '<div class="hero-est">' + estrellasHTML(est) + '</div>' +
         '<div class="hero-info"><b>' + est + ' de 5</b>' +
           '<span class="nivel" style="background:' + col + '">Viabilidad ' + esc(v.nivel) + '</span>' +
-          '<em>' + v.score + '/100 según el análisis del entorno</em></div>' +
+          '<em>' + numEs(v.score) + '/100 según el análisis del entorno</em></div>' +
       '</div>' +
       (cg ? '<div class="hero-compat"><span>Compatibilidad entre los usos del proyecto</span>' +
             '<b>' + estrellasHTML(cg.estrellas) + '</b><em>' + cg.estrellas + ' de 5</em></div>' : '') +
@@ -440,7 +440,7 @@
     if (!r.ranking || !r.ranking.length) return '';
     return '<div class="bloque"><h2>Usos recomendados para el lote</h2><table class="tbl-mini">' +
       r.ranking.map((it, i) => '<tr><td class="pos">' + (i + 1) + '</td><td>' + it.icono + ' ' + esc(it.nombre) + '</td>' +
-        '<td class="num"><b>' + it.score + '</b></td><td class="razon">' + esc(it.razon) + '</td></tr>').join('') +
+        '<td class="num"><b>' + numEs(it.score) + '</b></td><td class="razon">' + esc(it.razon) + '</td></tr>').join('') +
       '</table></div>';
   }
 
@@ -449,7 +449,7 @@
     return r.recomendacionesUnidades.map(g =>
       '<div class="bloque"><h2>Qué poner en sus ' + g.cantidad + ' unidad(es) de "' + esc(g.usoNombre) + '"</h2>' +
       '<table class="tbl-mini">' + g.opciones.map(o =>
-        '<tr><td class="pos">' + o.unidadesSugeridas + '×</td><td>' + o.icono + ' ' + esc(o.nombre) + '</td><td class="num"><b>' + o.score + '</b>/100</td></tr>').join('') +
+        '<tr><td class="pos">' + o.unidadesSugeridas + '×</td><td>' + o.icono + ' ' + esc(o.nombre) + '</td><td class="num"><b>' + numEs(o.score) + '</b>/100</td></tr>').join('') +
       '</table></div>').join('');
   }
 
@@ -484,24 +484,51 @@
   // Tránsito vehicular y combustible: dos magnitudes que se piden mucho para
   // leer el movimiento de una esquina. Se muestran como RANGOS porque no hay
   // aforo ni datos de ventas detrás, y el pie del bloque lo declara.
-  function miles(n){ return n.toLocaleString('es-CO'); }
+  /* El UNICO formateador de cifras del informe (v1040). En castellano el
+     punto es el separador de MILES, asi que «5.00 km» se lee como cinco mil
+     y «0.1 por hectarea» como un uno. `toLocaleString('es-CO')` resuelve las
+     dos cosas de una vez —la coma decimal y el punto de miles—, y por eso el
+     formateador es UNO y no dos: como se escribe un numero en castellano es
+     un solo hecho, y dos copias se separan a la tanda siguiente (v879).
+
+     Se llama `numEs` y no `miles` porque el nombre viejo decia la mitad: lo
+     que hace es escribir un numero en castellano, no solo separarle los
+     miles — y este informe se le entrega a un cliente. `cifra` no se podia
+     usar: ya es la baldosa de KPI de este mismo archivo.
+
+     Toma cadenas ademas de numeros porque varios sitios llegan con un
+     `toFixed` ya hecho, y lo que no es un numero se devuelve tal cual: un
+     guion o un «—» no puede convertirse en NaN.
+
+     Y toma los DECIMALES como segundo argumento, para que nadie tenga que
+     escribir `toFixed(2).replace('.', ',')` a un lado: esa forma era una de
+     las tres copias que esta version retiro, y es la que se separa primero
+     porque parece inofensiva. Con esto, «cuantos decimales» y «como se
+     escribe un numero en castellano» siguen viviendo en el mismo sitio. */
+  function numEs(n, dec){
+    const x = typeof n === 'number' ? n : Number(n);
+    if (!Number.isFinite(x)) return String(n);
+    return typeof dec === 'number'
+      ? x.toLocaleString('es-CO', { minimumFractionDigits: dec, maximumFractionDigits: dec })
+      : x.toLocaleString('es-CO');
+  }
   function bloqueTrafico(f){
     const t = f.trafico;
     if (!t) return '';
     const filas = [];
     if (t.estimable) {
       filas.push('<div class="traf-fila"><span>🚗 Carros por día</span>' +
-        '<b>' + miles(t.carrosDiaMin) + '–' + miles(t.carrosDiaMax) + '</b></div>' +
+        '<b>' + numEs(t.carrosDiaMin) + '–' + numEs(t.carrosDiaMax) + '</b></div>' +
         '<p class="traf-pie">Por ' + esc(t.corredor.nombre) + ', vía ' + esc(t.corredor.jerarquia) +
-        ' a ' + t.corredor.distM + ' m.</p>');
+        ' a ' + numEs(t.corredor.distM) + ' m.</p>');
     } else {
       filas.push('<div class="traf-fila"><span>🚗 Carros por día</span><b>—</b></div>' +
         '<p class="traf-pie">Sin vía arteria en el radio: no hay corredor del que estimarlo.</p>');
     }
     if (t.estaciones > 0) {
       filas.push('<div class="traf-fila"><span>⛽ Litros al mes</span>' +
-        '<b>' + miles(t.litrosMesMin) + '–' + miles(t.litrosMesMax) + '</b></div>' +
-        '<p class="traf-pie">' + t.estaciones +
+        '<b>' + numEs(t.litrosMesMin) + '–' + numEs(t.litrosMesMax) + '</b></div>' +
+        '<p class="traf-pie">' + numEs(t.estaciones) +
         (t.estaciones === 1 ? ' estación' : ' estaciones') + ' de servicio en el radio.</p>');
     } else {
       filas.push('<div class="traf-fila"><span>⛽ Litros al mes</span><b>—</b></div>' +
@@ -517,13 +544,13 @@
     const col = v => v >= 70 ? T.ok : v >= 50 ? T.acento : v >= 30 ? T.warn : T.bad;
     const medidor = (etq, ico, v, nivel) =>
       '<div class="flujo-med"><div class="flujo-cab"><b>' + ico + ' ' + etq + '</b>' +
-      '<span style="color:' + col(v) + '">' + v + '/100 · ' + esc(nivel) + '</span></div>' +
+      '<span style="color:' + col(v) + '">' + numEs(v) + '/100 · ' + esc(nivel) + '</span></div>' +
       '<div class="flujo-barra"><i style="width:' + v + '%;background:' + col(v) + '"></i></div></div>';
 
     const franja = (etq, v) =>
       '<div class="flujo-hora"><small>' + etq + '</small>' +
       '<div class="flujo-barra alta"><i style="width:' + v + '%;background:' + T.acento + '"></i></div>' +
-      '<b>' + v + '</b></div>';
+      '<b>' + numEs(v) + '</b></div>';
 
     const gen = (f.generadores || []).slice(0, 6);
     const tablaGen = gen.length
@@ -533,7 +560,7 @@
                      // el lector puede ir a la esquina y comprobarlo.
                      ((g.ejemplos && g.ejemplos.length)
                         ? '<em class="gen-ej">' + esc(g.ejemplos.join(' · ')) + '</em>' : '') +
-                     '</td><td class="n">' + g.n + '</td>' +
+                     '</td><td class="n">' + numEs(g.n) + '</td>' +
                      '<td class="n">' + g.aporte + '</td></tr>').join('') + '</table>'
       : '<p class="flujo-vacio">No se identificaron generadores de peatones en el radio.</p>';
 
@@ -546,7 +573,7 @@
     const bloqueHitos = ordenados.length
       ? '<div class="hitos-lista">' + ordenados.map(h =>
           '<span class="hito-chip' + (h.sub === 'gimnasio' ? ' fuerte' : '') + '">' +
-          (h.icono || '📍') + ' <b>' + esc(h.nombre) + '</b><em>' + h.distM + ' m</em></span>').join('') +
+          (h.icono || '📍') + ' <b>' + esc(h.nombre) + '</b><em>' + numEs(h.distM) + ' m</em></span>').join('') +
         (gimnasios.length
           ? '<p class="hitos-nota"><b>' + esc(gimnasios[0].nombre) + '</b> a ' + gimnasios[0].distM +
             ' m concentra entradas y salidas a pie en horario fijo, mañana y final de la tarde: ' +
@@ -570,7 +597,7 @@
           medidor('Flujo vehicular', '🚗', f.vehicular, f.nivelVehicular) +
           '<p class="flujo-lectura">' + esc(lectura) + '</p>' +
           '<p class="flujo-lectura"><b>Hora fuerte: ' + esc(f.franjaFuerte) + '.</b> ' +
-            (f.parqueaderos ? f.parqueaderos + ' parqueadero' + (f.parqueaderos === 1 ? '' : 's') + ' en el radio.'
+            (f.parqueaderos ? numEs(f.parqueaderos) + ' parqueadero' + (f.parqueaderos === 1 ? '' : 's') + ' en el radio.'
                             : 'Sin parqueaderos identificados en el radio.') + '</p>' +
         '</div>' +
         '<div>' + tablaGen +
@@ -597,14 +624,14 @@
       const colJ = pesoJer >= 85 ? '#075E88' : pesoJer >= 65 ? '#0E86BE' : CELESTE;
       return '<tr><td class="via-n">' + esc(v.nombre) + '<em>' + esc(v.jerarquia) + '</em></td>' +
         '<td class="barra"><i style="width:' + Math.max(8, 100 - (v.distM / maxD * 78)).toFixed(0) + '%;background:' + colJ + '"></i></td>' +
-        '<td class="num">' + v.distM + ' m</td></tr>';
+        '<td class="num">' + numEs(v.distM) + ' m</td></tr>';
     }).join('');
     return '<div class="bloque"><h2>Movilidad y exposición vial</h2>' +
-      '<div class="expo"><div class="expo-num" style="color:' + col + '">' + m.exposicion + '<small>/100</small></div>' +
+      '<div class="expo"><div class="expo-num" style="color:' + col + '">' + numEs(m.exposicion) + '<small>/100</small></div>' +
       '<div class="expo-info"><b style="background:' + col + '">Exposición ' + esc(m.nivelExposicion) + '</b>' +
-      '<span>' + m.nViasArterias + (m.nViasArterias === 1 ? ' corredor' : ' corredores') +
-          ' · ' + m.paradasBus + (m.paradasBus === 1 ? ' parada' : ' paradas') +
-          ' · ' + m.ciclorrutas + (m.ciclorrutas === 1 ? ' ciclorruta' : ' ciclorrutas') +
+      '<span>' + numEs(m.nViasArterias) + (m.nViasArterias === 1 ? ' corredor' : ' corredores') +
+          ' · ' + numEs(m.paradasBus) + (m.paradasBus === 1 ? ' parada' : ' paradas') +
+          ' · ' + numEs(m.ciclorrutas) + (m.ciclorrutas === 1 ? ' ciclorruta' : ' ciclorrutas') +
           '</span></div></div>' +
       (barras ? '<table class="tbl-vias">' + barras + '</table>' : '') +
       '<p class="expo-arg">' + esc(m.argumento) + '</p></div>';
@@ -635,9 +662,9 @@
       ? '<div class="demo-mini">' +
           '<div class="demo-bar"><i style="width:' + d.pctMujeres + '%;background:#e0559b"></i>' +
             '<i style="width:' + d.pctHombres + '%;background:#2b8fd6"></i></div>' +
-          '<div class="demo-leg"><span><b style="background:#e0559b"></b>' + d.pctMujeres + '% mujeres</span>' +
-            '<span><b style="background:#2b8fd6"></b>' + d.pctHombres + '% hombres</span>' +
-            '<span class="demo-edad">' + d.pctNinos + '% menores de 15 · ' + d.pctMayores + '% de 65 o más</span></div>' +
+          '<div class="demo-leg"><span><b style="background:#e0559b"></b>' + numEs(d.pctMujeres) + '% mujeres</span>' +
+            '<span><b style="background:#2b8fd6"></b>' + numEs(d.pctHombres) + '% hombres</span>' +
+            '<span class="demo-edad">' + numEs(d.pctNinos) + '% menores de 15 · ' + numEs(d.pctMayores) + '% de 65 o más</span></div>' +
         '</div>'
       : '';
     return '<div class="bloque"><h2>Indicadores urbanos</h2>' + franjaEstrato + bloqueDemo +
@@ -660,9 +687,9 @@
     const filas = m.anillos.map(a =>
       '<tr' + (a.esAnalizado ? ' class="fila-act"' : '') + '><td class="ind-n">' + etq(a.radioM) +
       (a.esAnalizado ? ' •' : '') + '</td>' +
-      '<td>' + a.total + '</td><td>' + a.densidadPorHa + '</td>' +
-      '<td>' + a.comercio + '</td><td>' + a.equipamientos + '</td>' +
-      '<td>' + a.poblacionEstimada.toLocaleString('es-CO') + '</td></tr>').join('');
+      '<td>' + numEs(a.total) + '</td><td>' + numEs(a.densidadPorHa) + '</td>' +
+      '<td>' + numEs(a.comercio) + '</td><td>' + numEs(a.equipamientos) + '</td>' +
+      '<td>' + numEs(a.poblacionEstimada) + '</td></tr>').join('');
     return '<div class="bloque"><h2>El entorno según la distancia <em>· mismo dato, varios radios</em></h2>' +
       '<table class="tbl-radios"><tr class="cab"><th>Radio</th><th>Usos</th><th>Usos/ha</th>' +
       '<th>Comercio</th><th>Equipam.</th><th>Hab. est.</th></tr>' + filas + '</table>' +
@@ -713,7 +740,7 @@
       '<circle cx="21" cy="21" r="15.9155" fill="none" stroke="' + col + '" stroke-width="4.6" ' +
         'stroke-linecap="round" stroke-dasharray="' + v.score + ' ' + (100 - v.score) + '" ' +
         'transform="rotate(-90 21 21)"/>' +
-      '<text x="21" y="20.6" text-anchor="middle" font-size="13" font-weight="900" fill="' + col + '">' + v.score + '</text>' +
+      '<text x="21" y="20.6" text-anchor="middle" font-size="13" font-weight="900" fill="' + col + '">' + numEs(v.score) + '</text>' +
       '<text x="21" y="27" text-anchor="middle" font-size="3.3" font-weight="700" fill="' + T.txt3 + '">DE 100</text>' +
       '</svg>';
     return '<div class="veredicto">' +
@@ -775,7 +802,7 @@
       '<circle cx="21" cy="21" r="15.9155" fill="none" stroke="' + color + '" stroke-width="4.6" ' +
         'stroke-linecap="round" stroke-dasharray="' + score + ' ' + (100 - score) + '" ' +
         'transform="rotate(-90 21 21)"/>' +
-      '<text x="21" y="20.4" text-anchor="middle" font-size="12.5" font-weight="900" fill="' + color + '">' + score + '</text>' +
+      '<text x="21" y="20.4" text-anchor="middle" font-size="12.5" font-weight="900" fill="' + color + '">' + numEs(score) + '</text>' +
       '<text x="21" y="27" text-anchor="middle" font-size="3.2" font-weight="700" fill="' + T.txt3 + '">' +
         (etq || 'DE 100') + '</text></svg></div>';
   }
@@ -786,7 +813,7 @@
   function textoParqueo(f){
     if (!f) return '';
     if (f.parqueaderos > 0) {
-      return f.parqueaderos + (f.parqueaderos === 1 ? ' parqueadero mapeado' : ' parqueaderos mapeados') +
+      return numEs(f.parqueaderos) + (f.parqueaderos === 1 ? ' parqueadero mapeado' : ' parqueaderos mapeados') +
         ' en el radio' + (f.parqueoProbable && f.parqueoProbable.length
           ? ', más formatos que suelen traer el suyo.' : '.');
     }
@@ -822,7 +849,7 @@
         '<p class="ejec-frase">' + esc(lectura) + '</p>' +
       '</div>' +
       '<div class="ejec-chips">' +
-        '<span class="chip" style="background:' + col + '">' + v.score + ' / 100</span>' +
+        '<span class="chip" style="background:' + col + '">' + numEs(v.score) + ' / 100</span>' +
         '<span class="chip chip-oro">' + est + ' de 5 &#9733;</span>' +
       '</div></div>';
   }
@@ -854,11 +881,11 @@
       '<h2>Cómo ha crecido la población</h2>' +
       '<div class="pobl-cifras">' +
         '<div><small>Censo ' + s.censoAnio + '</small><b>' +
-          s.poblacionCenso.toLocaleString('es-CO') + '</b><em>contado</em></div>' +
+          numEs(s.poblacionCenso) + '</b><em>contado</em></div>' +
         '<div class="fl">&rarr;</div>' +
         '<div><small>' + s.anioProyeccion + '</small><b style="color:' + T.acento + '">' +
-          s.poblacionProyectada.toLocaleString('es-CO') + '</b><em>proyectado</em></div>' +
-        '<div class="delta">+' + s.crecimientoPct + '%</div>' +
+          numEs(s.poblacionProyectada) + '</b><em>proyectado</em></div>' +
+        '<div class="delta">+' + numEs(s.crecimientoPct) + '%</div>' +
       '</div>' +
       '<svg class="pobl-svg" viewBox="0 0 ' + W + ' ' + H + '" preserveAspectRatio="none">' +
         '<path d="' + area + '" fill="' + T.acento + '22"/>' +
@@ -869,7 +896,7 @@
       '</svg>' +
       '<div class="pobl-eje"><span>' + serie[0].anio + '</span><span>' + hoy.anio +
         '</span><span>' + serie[serie.length - 1].anio + '</span></div>' +
-      '<p class="pie-nota">Crece ' + (s.tasaAnualDane * 100).toFixed(2) +
+      '<p class="pie-nota">Crece ' + numEs(s.tasaAnualDane * 100, 2) +
         '% al año según la serie de proyecciones municipales del DANE; el tramo punteado va ' +
         'hacia adelante. ' + esc(s.advertenciaProyeccion || '') + '</p>' +
       '</div>';
@@ -888,9 +915,9 @@
       '<div class="anillo"><span>' + x.etiqueta + '</span>' +
       '<div class="comp-barra"><i style="width:' + Math.round(100 * x.peso / max) +
         '%;background:' + T.acento + '"></i></div>' +
-      '<b>' + x.peso + '%</b></div>' +
+      '<b>' + numEs(x.peso) + '%</b></div>' +
       '<p class="anillo-ej">' + x.n + (x.n === 1 ? ' uso' : ' usos') + ' · ' + x.comercios + ' de comercio' +
-      (x.ejemplos.length ? ' — ' + esc(x.ejemplos.map(e => e.nombre + ' (' + e.distM + ' m)').join(', ')) : '') +
+      (x.ejemplos.length ? ' — ' + esc(x.ejemplos.map(e => e.nombre + ' (' + numEs(e.distM) + ' m)').join(', ')) : '') +
       '</p>').join('');
     const nuc = (s.nucleos || [])[0];
     const lista = (v && v.competidores) || [];
@@ -900,23 +927,23 @@
         '<p class="pie-nota">Cuánto de la influencia sobre el lote viene de cada distancia. ' +
         'Lo de cerca pesa más: no es lo mismo un supermercado a 100 m que a 900 m.</p>' +
         filas +
-        (nuc ? '<p class="nucleo">La concentración comercial que más interviene: <b>' + nuc.n +
-               (nuc.n === 1 ? ' local' : ' locales') + ' a ~' + nuc.distM + ' m</b>, sobre todo de ' +
+        (nuc ? '<p class="nucleo">La concentración comercial que más interviene: <b>' + numEs(nuc.n) +
+               (nuc.n === 1 ? ' local' : ' locales') + ' a ~' + numEs(nuc.distM) + ' m</b>, sobre todo de ' +
                esc(nuc.rubroDominante.toLowerCase()) + '.' +
                (nuc.nombres.length ? ' Por ejemplo: ' + esc(nuc.nombres.join(', ')) + '.' : '') + '</p>'
              : '') +
       '</div>' +
       '<div class="tarjeta"><h2>Competencia directa' +
-        (v && v.nCompetidores != null ? ' (' + v.nCompetidores + ')' : '') + '</h2>' +
+        (v && v.nCompetidores != null ? ' (' + numEs(v.nCompetidores) + ')' : '') + '</h2>' +
         (v && v.nCompetidores === 0
           ? '<p class="pie-nota">No se identificó competencia directa en el radio. El mapa abierto ' +
             'no lo ve todo: conviene confirmarlo en campo antes de darlo por bueno.</p>'
           : (lista.length
               ? '<table class="tbl-gente"><tr><th>Establecimiento</th><th class="n">Dist.</th></tr>' +
                 lista.map(c => '<tr><td>' + esc(c.nombre) + '<em>' + esc(c.rubro) + '</em></td>' +
-                  '<td class="n">' + c.distM + ' m</td></tr>').join('') + '</table>'
+                  '<td class="n">' + numEs(c.distM) + ' m</td></tr>').join('') + '</table>'
               : '') +
-            (anon ? '<p class="pie-nota">' + anon +
+            (anon ? '<p class="pie-nota">' + numEs(anon) +
                     (anon === 1 ? ' competidor más figura en el mapa sin nombre'
                                 : ' competidores más figuran en el mapa sin nombre') +
                     ': cuentan igual en el puntaje, pero no se pueden citar.</p>' : '')) +
@@ -933,7 +960,7 @@
     const s = r.stats, f = (s.movilidad && s.movilidad.flujo) || {};
     const radioTxt = r.meta.radioM >= 1000 ? (r.meta.radioM / 1000) + ' km' : r.meta.radioM + ' m';
     const cajas = [
-      { n: s.poblacionEstimada.toLocaleString('es-CO'), t: 'Habitantes',
+      { n: numEs(s.poblacionEstimada), t: 'Habitantes',
         // Con proyección, la cifra es la de HOY y hay que decirlo: presentar
         // un dato de 2018 como si fuera actual subestima la demanda.
         s: s.poblacionProyectada
@@ -944,7 +971,7 @@
         s: f.nivelPeatonal || '—', c: colFlujo(f.peatonal || 0) },
       { n: (f.vehicular || 0) + ' / 100', t: 'Flujo vehicular',
         s: f.nivelVehicular || '—', c: colFlujo(f.vehicular || 0) },
-      { n: s.total.toLocaleString('es-CO'), t: 'Usos identificados',
+      { n: numEs(s.total), t: 'Usos identificados',
         s: 'en ' + radioTxt, c: T.acento },
       { n: s.movilidad.nViasArterias, t: 'Vías arterias',
         s: 'en el radio', c: s.movilidad.nViasArterias > 0 ? T.acento : T.bad },
@@ -959,7 +986,7 @@
     const refs = edu ? (r.referencias || null) : null;
     return '<div class="seis">' + cajas.map(c => {
       const ref = refs ? refs[c.t] : '';
-      return '<div class="dato"><b style="color:' + c.c + '">' + c.n + '</b>' +
+      return '<div class="dato"><b style="color:' + c.c + '">' + numEs(c.n) + '</b>' +
         '<span>' + esc(c.t) + '</span><small>' + esc(c.s) + '</small>' +
         (ref ? '<i class="dato-ref">' + esc(ref) + '</i>' : '') + '</div>';
     }).join('') + '</div>';
@@ -1019,7 +1046,7 @@
     const s = r.stats, m = s.movilidad, f = m.flujo || {};
     const barra = (etq, val, nivel) =>
       '<div class="cl-flujo"><div class="cl-cab"><b>' + etq + '</b>' +
-      '<span style="color:' + colFlujo(val) + '">' + val + ' / 100 · ' + esc(nivel || '—') + '</span></div>' +
+      '<span style="color:' + colFlujo(val) + '">' + numEs(val) + ' / 100 · ' + esc(nivel || '—') + '</span></div>' +
       '<div class="cl-barra"><i style="width:' + val + '%;background:' + colFlujo(val) + '"></i></div></div>';
     const lectura = f.dominante === 'ninguno'
       ? 'No pasa casi nadie, ni a pie ni en carro. El negocio tendría que traer su propia clientela, no capturarla del flujo.'
@@ -1043,11 +1070,11 @@
         barra('FLUJO VEHICULAR', f.vehicular || 0, f.nivelVehicular) + '</div>' +
       '<div class="cl-lectura"><b>LECTURA CLAVE</b><p>' + esc(lectura) + '</p>' + consejo + '</div>' +
       '<div class="cl-minis">' +
-        '<div><b>DEMANDA</b><small>' + s.poblacionEstimada.toLocaleString('es-CO') +
+        '<div><b>DEMANDA</b><small>' + numEs(s.poblacionEstimada) +
           (s.poblacionEstimada === 1 ? ' habitante' : ' habitantes') +
             ' en el área de influencia.</small></div>' +
         '<div><b>VISIBILIDAD</b><small>Exposición vial ' + esc((m.nivelExposicion || '').toLowerCase()) +
-          (via ? '; ' + esc(via.nombre) + ' a ' + via.distM + ' m.' : '.') + '</small></div>' +
+          (via ? '; ' + esc(via.nombre) + ' a ' + numEs(via.distM) + ' m.' : '.') + '</small></div>' +
         '<div><b>DÓNDE PARAR</b><small>' + esc(textoParqueo(f)) + '</small></div>' +
         '<div><b>RETO</b><small>' + esc(reto) + '</small></div>' +
       '</div></div>';
@@ -1075,15 +1102,15 @@
         '<div class="sub-fila"><span>' + N[k] + '</span>' +
         '<div class="sub-barra"><i style="width:' + v.subscores[k] + '%;background:' +
           (v.subscores[k] >= 60 ? T.ok : v.subscores[k] >= 40 ? T.warn : T.bad) + '"></i></div>' +
-        '<b>' + v.subscores[k] + '</b></div>').join('');
+        '<b>' + numEs(v.subscores[k]) + '</b></div>').join('');
     }
     const caja = (mejor && peor && mejor !== peor)
       ? '<div class="sub-resumen">' +
-          '<div><b class="et-ok">FORTALEZA</b><span>' + N[mejor] + ' ' + v.subscores[mejor] + '/100</span></div>' +
-          '<div><b class="et-bad">RETO</b><span>' + N[peor] + ' ' + v.subscores[peor] + '/100</span></div>' +
+          '<div><b class="et-ok">FORTALEZA</b><span>' + N[mejor] + ' ' + numEs(v.subscores[mejor]) + '/100</span></div>' +
+          '<div><b class="et-bad">RETO</b><span>' + N[peor] + ' ' + numEs(v.subscores[peor]) + '/100</span></div>' +
         '</div>'
       : '';
-    return '<div class="tarjeta"><h2>Viabilidad &middot; ' + v.score + ' / 100</h2>' +
+    return '<div class="tarjeta"><h2>Viabilidad &middot; ' + numEs(v.score) + ' / 100</h2>' +
       '<p class="sub-nivel" style="color:' + col + '">' + est + ' de 5 &#9733; &middot; Viabilidad ' + esc(v.nivel) + '</p>' +
       '<p class="nota-pie">La puntuación se construye con cinco dimensiones del entorno.</p>' +
       filas + caja + '</div>';
@@ -1102,7 +1129,7 @@
       ? '<table class="tbl-gente"><tr><th>Uso / ejemplos</th><th class="n">Cant.</th><th class="n">Aporte</th></tr>' +
         gen.map(g => '<tr><td>' + esc(g.nombre) +
           ((g.ejemplos && g.ejemplos.length) ? '<em>' + esc(g.ejemplos.join(' &middot; ')) + '</em>' : '') +
-          '</td><td class="n">' + g.n + '</td><td class="n">' + g.aporte + '</td></tr>').join('') + '</table>'
+          '</td><td class="n">' + numEs(g.n) + '</td><td class="n">' + numEs(g.aporte) + '</td></tr>').join('') + '</table>'
       : '<p class="nota-pie">No se identificaron generadores de peatones en el radio.</p>';
     // Lo que RESTA. Un informe que solo suma miente por omisión: el tramo de
     // bodegas o los tres locales cerrados con reja son lo que corta el
@@ -1112,7 +1139,7 @@
       ? '<div class="resta"><h3>Lo que rompe el recorrido a pie</h3>' +
         pen.map(pp => '<div class="resta-fila"><span>' + esc(pp.nombre) +
           ' <em>&middot; ' + esc(pp.motivo) + '</em></span><b>&minus;' + pp.resta +
-          ' (' + pp.n + ')</b></div>').join('') +
+          ' (' + numEs(pp.n) + ')</b></div>').join('') +
         '<p class="pie-nota">Descuenta ' + (f.restaPeaton || 0) + ' de ' + (f.sumaBruta || 0) +
         ((f.sumaBruta || 0) === 1 ? ' punto bruto' : ' puntos brutos') +
         ' de atracción peatonal.</p></div>'
@@ -1121,7 +1148,7 @@
         'locales desocupados o ruinas) en el radio: la continuidad del andén no tiene cortes visibles.</p></div>';
     const hora = (etq, val) =>
       '<div class="hf"><span>' + etq + '</span><div class="cl-barra"><i style="width:' + val +
-      '%;background:' + T.acento + '"></i></div><b>' + val + '</b></div>';
+      '%;background:' + T.acento + '"></i></div><b>' + numEs(val) + '</b></div>';
     // El gimnasio va primero y resaltado: es el hito que más cambia el tránsito
     // de una acera —entra y sale gente a horas fijas, todos los días— y por eso
     // se pidió expresamente que no quedara escondido en la lista.
@@ -1138,8 +1165,8 @@
         (hitos.length
           ? '<h2 class="h2-sep">Hitos que mueven la acera</h2>' +
             hitos.map(h => '<div class="hito-fila' + (h.sub === 'gimnasio' ? ' fuerte' : '') + '">' +
-              '<span>' + esc(h.nombre) + '</span><b>' + h.distM + ' m</b></div>').join('') +
-            (resto ? '<p class="nota-pie">+ ' + esc(resto.nombre) + ' &middot; ' + resto.distM + ' m</p>' : '')
+              '<span>' + esc(h.nombre) + '</span><b>' + numEs(h.distM) + ' m</b></div>').join('') +
+            (resto ? '<p class="nota-pie">+ ' + esc(resto.nombre) + ' &middot; ' + numEs(resto.distM) + ' m</p>' : '')
           : '') +
       '</div>' +
       '<div>' + resta + '</div></div>';
@@ -1150,14 +1177,14 @@
     const f = r.stats.movilidad && r.stats.movilidad.flujo;
     const t = f && f.trafico;
     if (!t) return '';
-    const cifra = (v, etq) => '<div class="tr-par"><b>' + v + '</b><span>' + etq + '</span></div>';
+    const cifra = (v, etq) => '<div class="tr-par"><b>' + numEs(v) + '</b><span>' + etq + '</span></div>';
     return '<div class="transito">' +
       '<div class="tr-rot">Tránsito y combustible</div>' +
-      cifra(t.estimable ? miles(t.carrosDiaMin) + '&ndash;' + miles(t.carrosDiaMax) : '&mdash;', 'carros por día') +
-      cifra(t.estaciones ? miles(t.litrosMesMin) + '&ndash;' + miles(t.litrosMesMax) : '&mdash;', 'litros / mes') +
+      cifra(t.estimable ? numEs(t.carrosDiaMin) + '&ndash;' + numEs(t.carrosDiaMax) : '&mdash;', 'carros por día') +
+      cifra(t.estaciones ? numEs(t.litrosMesMin) + '&ndash;' + numEs(t.litrosMesMax) : '&mdash;', 'litros / mes') +
       '<div class="tr-notas">' +
         '<small>' + (t.estaciones
-            ? t.estaciones + (t.estaciones === 1 ? ' estación' : ' estaciones') + ' de servicio en el radio'
+            ? numEs(t.estaciones) + (t.estaciones === 1 ? ' estación' : ' estaciones') + ' de servicio en el radio'
             : 'Sin estaciones de servicio en el radio') +
           ' &middot; rangos de orden de magnitud, no mediciones ni cifras de ventas.</small>' +
         '<small>Nota: el flujo es potencial estimado a partir de usos y malla vial; no es un aforo.</small>' +
@@ -1174,7 +1201,7 @@
       const n = s.porGrupo[g], pct = (100 * n / Math.max(s.total, 1));
       return '<div class="comp-fila"><span>' + esc(G[g].t) + '</span>' +
         '<div class="comp-barra"><i style="width:' + (100 * n / max).toFixed(1) + '%;background:' + C[g] + '"></i></div>' +
-        '<b>' + n.toLocaleString('es-CO') + '</b><em>' + pct.toFixed(1).replace('.', ',') + '%</em></div>';
+        '<b>' + numEs(n) + '</b><em>' + numEs(Math.round(pct * 10) / 10) + '%</em></div>';
     }).join('');
     // Se declara cuántos usos no vienen del mapa abierto sino de un
     // levantamiento del propio analista. Callarlo haría el informe
@@ -1182,14 +1209,14 @@
     // qué parte se añadió, aunque las dos pesen igual en el cálculo.
     const nMan = s.manuales || 0;
     const nota = nMan
-      ? '<p class="pie-nota">De ellos, ' + nMan +
+      ? '<p class="pie-nota">De ellos, ' + numEs(nMan) +
         (nMan === 1 ? ' fue agregado' : ' fueron agregados') +
         ' en campo por quien hizo el análisis y no proviene' + (nMan === 1 ? '' : 'n') +
         ' del mapa abierto. Cuenta' + (nMan === 1 ? '' : 'n') +
         ' igual en todos los cálculos de este informe.</p>'
       : '';
     return '<div class="tarjeta"><h2>Composición del entorno</h2>' +
-      '<p class="sub-nivel" style="color:' + T.ok + '">' + s.total.toLocaleString('es-CO') +
+      '<p class="sub-nivel" style="color:' + T.ok + '">' + numEs(s.total) +
         (s.total === 1 ? ' uso identificado' : ' usos identificados') + '</p>' +
       filas + nota + '</div>';
   }
@@ -1204,7 +1231,7 @@
     return '<div class="comp-fila"><span>' + esc(etq) + '</span>' +
       '<div class="comp-barra"><i style="width:' + pct.toFixed(1) + '%;background:' +
       (color || T.acento) + '"></i></div>' +
-      '<b>' + n + '</b><em>' + pct.toFixed(0) + '%</em></div>';
+      '<b>' + numEs(n) + '</b><em>' + numEs(Math.round(pct)) + '%</em></div>';
   }
 
   // La ficha puede venir de un curso (`r.edu`) o de un analista que la levantó
@@ -1221,7 +1248,7 @@
     const epocas = Object.keys(e.porEpoca).sort((a, b) => e.porEpoca[b] - e.porEpoca[a]);
     const mats = Object.keys(e.porMaterial).sort((a, b) => e.porMaterial[b] - e.porMaterial[a]);
     return '<div class="tarjeta"><h2>El tejido construido</h2>' +
-      '<p class="sub-nivel" style="color:' + T.ok + '">' + e.total +
+      '<p class="sub-nivel" style="color:' + T.ok + '">' + numEs(e.total) +
       ' ' + (e.total === 1 ? 'edificación' : 'edificaciones') + ' con ficha levantada en campo</p>' +
       (epocas.length
         ? '<h3 class="mini">Época de construcción</h3>' +
@@ -1237,18 +1264,18 @@
           filaBarra('Media', e.media, e.evaluables, T.warn) +
           filaBarra('Baja', e.baja, e.evaluables, T.ok) +
           '<p class="pie-nota"><b>No es un diagnóstico estructural.</b> Es el cruce de ' +
-          'material y época sobre las edificaciones que traen los dos datos (' + e.evaluables + '), ' +
+          'material y época sobre las edificaciones que traen los dos datos (' + numEs(e.evaluables) + '), ' +
           'y solo señala cuáles ameritan que las revise un ingeniero. El primer ' +
           'código sismo resistente colombiano es el Decreto 1400 de 1984: aquí hay ' +
-          e.anteriores1984 + ' ' + (e.anteriores1984 === 1 ? 'construcción' : 'construcciones') +
+          numEs(e.anteriores1984) + ' ' + (e.anteriores1984 === 1 ? 'construcción' : 'construcciones') +
           ' anterior' + (e.anteriores1984 === 1 ? '' : 'es') + ' a esa fecha' +
-          (e.patrimonio ? ', y ' + e.patrimonio + ' previa' + (e.patrimonio === 1 ? '' : 's') +
+          (e.patrimonio ? ', y ' + numEs(e.patrimonio) + ' previa' + (e.patrimonio === 1 ? '' : 's') +
             ' a 1950 que podrían ser patrimonio' : '') + '.</p>'
         : '<p class="pie-nota">Para estimar vulnerabilidad hace falta material Y época en el ' +
           'mismo edificio; con uno solo no se puede afirmar nada.</p>') +
       (e.noSeSabe || e.otros
-        ? '<p class="pie-nota">' + (e.noSeSabe ? e.noSeSabe + ' dato(s) marcados «no se sabe»' : '') +
-          (e.noSeSabe && e.otros ? ' y ' : '') + (e.otros ? e.otros + ' como «otro»' : '') +
+        ? '<p class="pie-nota">' + (e.noSeSabe ? numEs(e.noSeSabe) + ' dato(s) marcados «no se sabe»' : '') +
+          (e.noSeSabe && e.otros ? ' y ' : '') + (e.otros ? numEs(e.otros) + ' como «otro»' : '') +
           ': no cuentan como observación en ningún cálculo de este informe.</p>'
         : '') +
       '</div>';
@@ -1269,13 +1296,13 @@
     return '<div class="tarjeta"><h2>Caminabilidad</h2>' +
       '<p class="sub-nivel" style="color:' +
       (c.nivel === 'Buena' ? T.ok : c.nivel === 'Irregular' ? T.warn : T.bad) + '">' +
-      esc(c.nivel) + ' · ajusta el flujo peatonal en ' + (pct > 0 ? '+' + pct : pct) + '%</p>' +
+      esc(c.nivel) + ' · ajusta el flujo peatonal en ' + (pct > 0 ? '+' + numEs(pct) : numEs(pct)) + '%</p>' +
       filaBarra('Andén continuo', c.continuo, c.muestras, T.ok) +
       filaBarra('Andén interrumpido', c.interrumpido, c.muestras, T.warn) +
       filaBarra('Sin andén / bordillo', c.sinAnden, c.muestras, T.bad) +
-      '<p class="pie-nota">Sobre ' + c.muestras + ' ' +
+      '<p class="pie-nota">Sobre ' + numEs(c.muestras) + ' ' +
       (c.muestras === 1 ? 'observación' : 'observaciones') + ' de andén' +
-      (c.rampas ? ' y ' + c.rampas + ' rampa(s) de acceso' : '') + '. ' +
+      (c.rampas ? ' y ' + numEs(c.rampas) + ' rampa(s) de acceso' : '') + '. ' +
       (c.fiable ? 'El andén no genera peatones: deja caminar a los que ya hay, por eso ajusta y no suma.'
                 : 'Son pocas observaciones para el radio; conviene mapear más antes de concluir.') +
       '</p></div>';
@@ -1290,7 +1317,7 @@
       : /media|en transici|riesgo alto|especializado/i.test(t) ? T.warn : T.bad;
     const fila = (etq, val, nota, color) =>
       '<div class="ind-fila"><span>' + esc(etq) + '</span>' +
-      '<b style="color:' + (color || colNivel(val)) + '">' + val + '</b>' +
+      '<b style="color:' + (color || colNivel(val)) + '">' + numEs(val) + '</b>' +
       (nota ? '<em>' + nota + '</em>' : '') + '</div>';
     let out = '';
     const e = i.estrato;
@@ -1300,8 +1327,8 @@
     }
     const d = i.demografia;
     if (d && d.disponible) {
-      out += fila('Sexo', d.pctMujeres + '% mujeres &middot; ' + d.pctHombres + '% hombres',
-                  d.pctNinos + '% menores de 15 &middot; ' + d.pctMayores + '% de 65 o más', T.acento);
+      out += fila('Sexo', numEs(d.pctMujeres) + '% mujeres &middot; ' + numEs(d.pctHombres) + '% hombres',
+                  numEs(d.pctNinos) + '% menores de 15 &middot; ' + numEs(d.pctMayores) + '% de 65 o más', T.acento);
     }
     out += fila('Diversidad de usos', esc(i.diversidad.nivel));
     out += fila('Actividad comercial', esc(i.comercio.nivel));
@@ -1318,8 +1345,8 @@
     const etq = v => v >= 1000 ? (v / 1000) + ' km' : v + ' m';
     const filas = m.anillos.map(a =>
       '<tr' + (a.esAnalizado ? ' class="fila-act"' : '') + '><td>' + etq(a.radioM) + '</td>' +
-      '<td>' + a.total + '</td><td>' + a.densidadPorHa + '</td><td>' + a.comercio + '</td>' +
-      '<td>' + a.equipamientos + '</td><td>' + a.poblacionEstimada.toLocaleString('es-CO') + '</td></tr>').join('');
+      '<td>' + numEs(a.total) + '</td><td>' + numEs(a.densidadPorHa) + '</td><td>' + numEs(a.comercio) + '</td>' +
+      '<td>' + numEs(a.equipamientos) + '</td><td>' + numEs(a.poblacionEstimada) + '</td></tr>').join('');
     /* El mismo dibujo de la pantalla, hecho por js/58. Se pinta ANTES de la
        tabla: en una hoja impresa la forma se ve de lejos y la tabla se
        consulta de cerca, así que el orden de lectura es ese y no al revés.
@@ -1349,7 +1376,9 @@
   function bloqueContextoInforme(r){
     const c = r.contexto;
     if (!c) return '';
-    const km = m => (m / 1000).toLocaleString('es-CO', { maximumFractionDigits: 1 });
+    // Convierte metros a kilometros Y los escribe: la conversion es suya, el
+    // formato sale del formateador unico (v1040).
+    const km = m => numEs(Math.round(m / 100) / 10);
     const migas = (c.limites || []).map(l => esc(l.nombre)).join(' › ');
     const rutas = (c.rutas || []).slice(0, 12).map(x =>
       '<li>' + (x.ref ? '<b>' + esc(x.ref) + '</b> ' : '') + esc(x.nombre || 'Ruta') +
@@ -1397,12 +1426,12 @@
     const fila = (etq, n, pct) =>
       '<tr><td class="ind-n">' + etq + '</td>' +
       '<td class="hor-b"><i style="width:' + (pct || 0) + '%"></i></td>' +
-      '<td class="hor-n">' + n + '</td><td class="hor-p">' + (pct || 0) + ' %</td></tr>';
+      '<td class="hor-n">' + numEs(n) + '</td><td class="hor-p">' + numEs(pct || 0) + ' %</td></tr>';
     return '<div class="tarjeta"><h3 class="tarj-t">Lo que dice el letrero ' +
         '<em>· declarado en el mapa, no estimado</em></h3>' +
-      '<p class="hor-cob"><b>' + h.conDato + ' de ' + h.total + '</b> ' + (h.total === 1 ? 'uso declara' : 'usos declaran') + ' horario ' +
-        '(' + h.cobertura + ' % de cobertura)' +
-        (h.suficiente ? '. Los porcentajes son sobre esos ' + h.conDato + '.'
+      '<p class="hor-cob"><b>' + numEs(h.conDato) + ' de ' + numEs(h.total) + '</b> ' + (h.total === 1 ? 'uso declara' : 'usos declaran') + ' horario ' +
+        '(' + numEs(h.cobertura) + ' % de cobertura)' +
+        (h.suficiente ? '. Los porcentajes son sobre esos ' + numEs(h.conDato) + '.'
                       : ' — muy poco para describir el sector.') + '</p>' +
       '<table class="tbl-horarios">' +
         fila('Abren después de las 8 p.m.', h.deNoche, h.pct.deNoche) +
@@ -1473,9 +1502,9 @@
     const pocos = (e.leidos || 0) < 25;
     const faltan = Object.keys(e.sinTraducir || {});
     return '<div class="base-edu' + (pocos ? ' flojo' : '') + '">' +
-      '<b>' + (pocos ? '⚠ ' : '✓ ') + 'Este análisis se hizo con ' + (e.leidos || 0).toLocaleString('es-CO') +
+      '<b>' + (pocos ? '⚠ ' : '✓ ') + 'Este análisis se hizo con ' + numEs(e.leidos || 0) +
         ((e.leidos || 0) === 1 ? ' punto' : ' puntos') + ' que el curso mapeó' +
-        (e.puntosDelCurso > e.leidos ? ' (de ' + e.puntosDelCurso.toLocaleString('es-CO') + ' en el radio; el resto son reportes de situaciones, no usos del suelo)' : '') + '.</b>' +
+        (e.puntosDelCurso > e.leidos ? ' (de ' + numEs(e.puntosDelCurso) + ' en el radio; el resto son reportes de situaciones, no usos del suelo)' : '') + '.</b>' +
       '<p>' + (pocos
         ? 'Con tan pocos puntos el resultado es un ejercicio, no un diagnóstico: el sector tiene más de lo que se alcanzó a mapear. ' +
           'La población del DANE, en cambio, está completa siempre.'
@@ -1517,7 +1546,7 @@
     const F = (window.URBIS_EDU && window.URBIS_EDU.faltantes) ? window.URBIS_EDU.faltantes(r) : [];
     return '<div class="tarjeta"><h2>Qué falta por levantar</h2>' +
       (F.length
-        ? '<ul class="falta">' + F.slice(0, 7).map(f => '<li><b>' + esc(f.t) + (f.n ? ' <em>' + f.n + '</em>' : '') + '</b>' +
+        ? '<ul class="falta">' + F.slice(0, 7).map(f => '<li><b>' + esc(f.t) + (f.n ? ' <em>' + numEs(f.n) + '</em>' : '') + '</b>' +
             '<small>' + esc(f.d) + '</small></li>').join('') + '</ul>'
         : '<p class="nota-pie">Nada pendiente: el curso levantó todo lo que el análisis sabe pedir.</p>') +
       '</div>';
@@ -2391,7 +2420,7 @@ pie(4, r, autor, true),
         ' <em>(' + lista.length + ' punto' + (lista.length === 1 ? '' : 's') + ')</em></h2>' +
         '<table><thead><tr><th style="width:34px">#</th><th>Punto</th><th>Tipo de uso</th><th class="num" style="width:60px">Distancia</th></tr></thead><tbody>' +
         lista.map((p, i) => '<tr><td class="idx">' + (i + 1) + '</td><td>' + p.icono + ' ' + esc(p.nombre) + '</td>' +
-          '<td class="sub">' + esc(p.sub.replace(/_/g, ' ')) + '</td><td class="num">' + p.distM + ' m</td></tr>').join('') +
+          '<td class="sub">' + esc(p.sub.replace(/_/g, ' ')) + '</td><td class="num">' + numEs(p.distM) + ' m</td></tr>').join('') +
         '</tbody></table></section>';
     };
 
@@ -2404,7 +2433,7 @@ pie(4, r, autor, true),
         const pares = Object.keys(t).filter(k => !/^(name|addr:|name:|source|check_date|wikidata|wikipedia)/.test(k))
           .map(k => k + '=' + t[k]).join(' · ') || '(sin etiquetas útiles)';
         return '<tr><td class="idx">' + (i + 1) + '</td><td>' + esc(p.nombre) + '</td>' +
-          '<td class="tags">' + esc(pares) + '</td><td class="num">' + p.distM + ' m</td></tr>';
+          '<td class="tags">' + esc(pares) + '</td><td class="num">' + numEs(p.distM) + ' m</td></tr>';
       }).join('') + '</tbody></table></section>'
     ) : '<section class="ok"><h2>✅ Sin usos pendientes</h2><p class="nota">Todos los puntos del radio quedaron clasificados dentro de la Matriz de Usos.</p></section>';
 
@@ -2447,7 +2476,7 @@ pie(4, r, autor, true),
 '<div class="meta">', esc(titulo), '<br>', esc(fecha), '</div></header>',
 '<div class="resumen"><b>Ubicación:</b> ', r.meta.lat.toFixed(6), ', ', r.meta.lng.toFixed(6),
 ' &nbsp;·&nbsp; <b>Radio:</b> ', radioTxt, ' (~', r.stats.areaHa, ' ha)',
-' &nbsp;·&nbsp; <b>Total de puntos:</b> ', r.stats.total.toLocaleString('es-CO'),
+' &nbsp;·&nbsp; <b>Total de puntos:</b> ', numEs(r.stats.total),
 ' &nbsp;·&nbsp; <b>Sin clasificar:</b> ', sinClasificar.length, '</div>',
 bloqueSinClasificar,
 gruposOrdenados.map(seccion).join(''),
@@ -2548,6 +2577,9 @@ gruposOrdenados.map(seccion).join(''),
     calcZoom, urlMapaEstatico,
     // Estilos del informe (Fase 4): la app los lee para pintar el selector y
     // para generar las gráficas con los colores del estilo elegido.
-    ESTILOS
+    ESTILOS,
+    // El formateador de cifras, para que js/62 no escriba una segunda copia:
+    // como se escribe un numero en castellano es UN hecho (v1040).
+    numEs
   };
 })();

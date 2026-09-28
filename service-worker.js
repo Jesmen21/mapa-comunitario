@@ -1,4 +1,4 @@
-const URBIS_CACHE = 'urbis-v1039-la-foto-del-mapeo-se-ve-entera';
+const URBIS_CACHE = 'urbis-v1042-una-cifra-en-castellano-en-un-solo-sitio';
 const URBIS_ASSETS = [
   './',
   './index.html',

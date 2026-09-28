@@ -5,6 +5,15 @@
 (function(){
   'use strict';
 
+  /* El formateador de cifras NO se copia: es el del informe (js/63), que en
+     analisis-ia.html carga antes que este archivo. En castellano el punto es
+     el separador de MILES, asi que una cifra sin formatear se lee mal —«5.00
+     km» son cinco mil— y dos copias de esa regla se separan a la tanda
+     siguiente (v879). Si js/63 no estuviera cargado, esto revienta al
+     llamarlo en vez de escribir un numero mal: un respaldo aqui seria la
+     segunda copia. */
+  const numEs = (n, dec) => window.AIA_INFORME.numEs(n, dec);
+
   const CENTRO_CUCUTA = [7.8891, -72.4967];
   const ALTURAS_SHEET = { wizard: .58, peek: 0, analizando: .40, resultados: .62, full: .92 }; // fracción de viewport (peek usa px fijos)
   const PEEK_PX = 96;
@@ -281,8 +290,8 @@
           '<span>' + escHTML(nombreDeSub(f.u.sub)) +
             (f.u.nombre ? '<b>' + escHTML(f.u.nombre) + '</b>' : '') +
             '<em>' + (f.d == null ? 'sin lote fijado'
-                      : (f.fuera ? 'a ' + f.d + ' m · fuera del radio, no cuenta'
-                                 : 'a ' + f.d + ' m')) + '</em>' +
+                      : (f.fuera ? 'a ' + numEs(f.d) + ' m · fuera del radio, no cuenta'
+                                 : 'a ' + numEs(f.d) + ' m')) + '</em>' +
           '</span>' +
           '<button type="button" class="ed" data-editar="' + f.u.id + '" title="Editar">✏️</button>' +
           '<button type="button" class="bo" data-borrar="' + f.u.id + '" title="Eliminar">🗑️</button>' +
@@ -532,7 +541,7 @@
         dashArray: p.manual ? '3 2' : null,
         fillColor: p.color, fillOpacity: p.grupo === 'otro' ? .95 : .85
       }).bindPopup('<b>' + p.icono + ' ' + escHTML(p.nombre) + '</b><br>' +
-        escHTML(window.AIA_MOTOR.GRUPOS[p.grupo].t) + ' · ' + p.distM + ' m' +
+        escHTML(window.AIA_MOTOR.GRUPOS[p.grupo].t) + ' · ' + numEs(p.distM) + ' m' +
         (p.manual ? '<br><em>Agregado por usted</em>' : ''))
         .addTo(S.capaPOIs);
     });
@@ -1121,13 +1130,13 @@
         (nMan > 0
           ? '<p class="aia-aviso-manual">✍️ ' +
             (nMan === 1 ? 'Un uso de este análisis lo agregó usted'
-                        : nMan + ' usos de este análisis los agregó usted') +
+                        : numEs(nMan) + ' usos de este análisis los agregó usted') +
             ' y no viene' + (nMan === 1 ? '' : 'n') + ' del mapa abierto. ' +
             'Cuenta' + (nMan === 1 ? '' : 'n') + ' igual que los demás y sale' +
             (nMan === 1 ? '' : 'n') + ' con aro blanco en el mapa.</p>'
           : '') +
         (nOtro > 0
-          ? '<p>❓ Se ' + (nOtro === 1 ? 'encontró 1 uso' : 'encontraron ' + nOtro + ' usos') +
+          ? '<p>❓ Se ' + (nOtro === 1 ? 'encontró 1 uso' : 'encontraron ' + numEs(nOtro) + ' usos') +
             ' sin clasificar en este radio (aparecen en fucsia en el mapa). ' +
             '<button type="button" id="aia-btn-nombrar-otro">🏷️ Agregar a la Matriz de Usos</button></p>'
           : '') +
@@ -1164,13 +1173,13 @@
       }
     }
 
-    $('aia-res-titulo').innerHTML = '<b>' + escHTML(r.meta.proyectoNombre) + '</b> · ' + r.meta.radioM + ' m' +
+    $('aia-res-titulo').innerHTML = '<b>' + escHTML(r.meta.proyectoNombre) + '</b> · ' + numEs(r.meta.radioM) + ' m' +
       (r.meta.direccionAprox ? '<br><small>' + escHTML(r.meta.direccionAprox) + '</small>' : '');
 
     const idActual = S.idGuardadoActual || null;
     const ref = (saca, v) => referencia(saca, v, idActual);
     $('aia-kpis').innerHTML =
-      kpi(s.poblacionEstimada.toLocaleString('es-CO'),
+      kpi(s.poblacionEstimada,
           s.poblacionProyectada
             ? 'Habitantes (' + s.anioProyeccion + ', proyectado)'
             : (s.poblacionEsCensal ? 'Habitantes (DANE ' + s.censoAnio + ')' : 'Población estimada'),
@@ -1291,7 +1300,7 @@
       .sort((a, b) => (s.porGrupo[b] || 0) - (s.porGrupo[a] || 0))
       .map(g => '<div class="aia-cat-card" style="--col:' + C[g] + '">' +
         '<div class="aia-cat-head"><span>' + G[g].i + ' ' + escHTML(G[g].t) + '</span><b>' + s.porGrupo[g] + '</b></div>' +
-        '<ul>' + (s.topPorGrupo[g] || []).map(p => '<li>' + p.icono + ' ' + escHTML(p.nombre) + ' <small>' + p.distM + ' m</small></li>').join('') + '</ul></div>')
+        '<ul>' + (s.topPorGrupo[g] || []).map(p => '<li>' + p.icono + ' ' + escHTML(p.nombre) + ' <small>' + numEs(p.distM) + ' m</small></li>').join('') + '</ul></div>')
       .join('');
 
     renderTablaPuntos(r);
@@ -1371,7 +1380,7 @@
         ? '<ul class="aia-comp">' + lista.map(c =>
             '<li><span>' + escHTML(c.icono + ' ' + c.nombre) +
             '<small>' + escHTML(c.rubro) + '</small></span>' +
-            '<b>' + c.distM + ' m</b></li>').join('') + '</ul>'
+            '<b>' + numEs(c.distM) + ' m</b></li>').join('') + '</ul>'
         : '') +
       (anon
         ? '<p class="aia-flujo-nota">' + anon +
@@ -1391,10 +1400,10 @@
     const filas = an.map(x =>
       '<li><span>' + x.etiqueta + '</span>' +
       '<i><b style="width:' + Math.round(100 * x.peso / max) + '%"></b></i>' +
-      '<b>' + x.peso + '%</b></li>' +
+      '<b>' + numEs(x.peso) + '%</b></li>' +
       (x.ejemplos.length
         ? '<p class="aia-anillo-ej">' + x.n + (x.n === 1 ? ' uso' : ' usos') + ' · ' + x.comercios + ' de comercio — ' +
-          escHTML(x.ejemplos.map(e => e.nombre + ' (' + e.distM + ' m)').join(', ')) + '</p>'
+          escHTML(x.ejemplos.map(e => e.nombre + ' (' + numEs(e.distM) + ' m)').join(', ')) + '</p>'
         : '<p class="aia-anillo-ej">' + x.n + (x.n === 1 ? ' uso' : ' usos') + ' · ' + x.comercios + ' de comercio</p>')
     ).join('');
     const nuc = (s.nucleos || [])[0];
@@ -1404,7 +1413,7 @@
       '<ul class="aia-anillos">' + filas + '</ul>' +
       (nuc
         ? '<div class="aia-nucleo">🏬 La concentración comercial que más interviene: ' +
-          '<b>' + nuc.n + (nuc.n === 1 ? ' local' : ' locales') + ' a ~' + nuc.distM + ' m</b>, sobre todo de ' +
+          '<b>' + numEs(nuc.n) + (nuc.n === 1 ? ' local' : ' locales') + ' a ~' + numEs(nuc.distM) + ' m</b>, sobre todo de ' +
           escHTML(nuc.rubroDominante.toLowerCase()) + '.' +
           (nuc.nombres.length ? ' Por ejemplo: ' + escHTML(nuc.nombres.join(', ')) + '.' : '') +
           '</div>'
@@ -1428,7 +1437,7 @@
     if (!h || !h.total) return '';
     const fila = (etq, n, pct) => '<li><span>' + etq + '</span>' +
       '<i><b style="width:' + (pct || 0) + '%"></b></i>' +
-      '<em>' + n + '</em><small>' + (pct || 0) + '%</small></li>';
+      '<em>' + numEs(n) + '</em><small>' + numEs(pct || 0) + '%</small></li>';
     if (!h.conDato) {
       return '<h4 class="aia-flujo-sub">🌙 Lo que dice el letrero</h4>' +
         '<p class="aia-flujo-nota">' + escHTML(h.lectura) + '</p>';
@@ -1466,13 +1475,13 @@
     const col = v => v >= 70 ? '#4ade80' : v >= 50 ? '#22d3ee' : v >= 30 ? '#f5b942' : '#f87171';
     const medidor = (etq, ico, v, nivel) =>
       '<div class="aia-flujo-med"><div class="aia-flujo-cab"><span>' + ico + ' ' + etq + '</span>' +
-      '<b style="color:' + col(v) + '">' + v + '/100 · ' + escHTML(nivel) + '</b></div>' +
+      '<b style="color:' + col(v) + '">' + numEs(v) + '/100 · ' + escHTML(nivel) + '</b></div>' +
       '<div class="aia-barra"><i style="width:' + v + '%;background:' + col(v) + '"></i></div></div>';
 
     const franja = (etq, v) =>
       '<div class="aia-flujo-hora"><small>' + etq + '</small>' +
       '<div class="aia-barra"><i style="width:' + v + '%;background:#22d3ee"></i></div>' +
-      '<b>' + v + '</b></div>';
+      '<b>' + numEs(v) + '</b></div>';
 
     const lectura = f.dominante === 'ninguno'
       ? 'No pasa casi nadie, ni a pie ni en carro: aquí el negocio tendría que traer su propia clientela, no capturarla del flujo.'
@@ -1562,18 +1571,17 @@
       (function(){
         const t = f.trafico;
         if (!t) return '';
-        const miles = n => n.toLocaleString('es-CO');
         const fila = (ico, etq, val, pie) =>
-          '<div class="aia-traf-fila"><span>' + ico + ' ' + etq + '</span><b>' + val + '</b></div>' +
+          '<div class="aia-traf-fila"><span>' + ico + ' ' + etq + '</span><b>' + numEs(val) + '</b></div>' +
           '<p class="aia-traf-pie">' + escHTML(pie) + '</p>';
         return '<h4 class="aia-flujo-sub">Tránsito y combustible</h4>' +
           fila('🚗', 'Carros por día',
-               t.estimable ? miles(t.carrosDiaMin) + '–' + miles(t.carrosDiaMax) : '—',
+               t.estimable ? numEs(t.carrosDiaMin) + '–' + numEs(t.carrosDiaMax) : '—',
                t.estimable
-                 ? 'Por ' + t.corredor.nombre + ', vía ' + t.corredor.jerarquia + ' a ' + t.corredor.distM + ' m.'
+                 ? 'Por ' + t.corredor.nombre + ', vía ' + t.corredor.jerarquia + ' a ' + numEs(t.corredor.distM) + ' m.'
                  : 'Sin vía arteria en el radio: no hay corredor del que estimarlo.') +
           fila('⛽', 'Litros al mes',
-               t.estaciones ? miles(t.litrosMesMin) + '–' + miles(t.litrosMesMax) : '—',
+               t.estaciones ? numEs(t.litrosMesMin) + '–' + numEs(t.litrosMesMax) : '—',
                t.estaciones
                  ? t.estaciones + (t.estaciones === 1 ? ' estación' : ' estaciones') + ' de servicio en el radio.'
                  : 'Sin estaciones de servicio en el radio.');
@@ -1613,7 +1621,7 @@
       const filas = pois.map(p =>
         '<tr><td>' + p.icono + ' ' + escHTML(p.nombre) + '</td>' +
         '<td><span class="aia-tabla-dot" style="background:' + p.color + '"></span>' + escHTML(G[p.grupo].t) + '</td>' +
-        '<td class="aia-tabla-num">' + p.distM + ' m</td></tr>'
+        '<td class="aia-tabla-num">' + numEs(p.distM) + ' m</td></tr>'
       ).join('');
       cont.innerHTML = '<h3>📍 Todos los puntos del radio (' + pois.length + ')</h3>' +
         '<div class="aia-tabla-orden">' +
@@ -1674,7 +1682,7 @@
               const pct = Math.round(100 * x.manzanas / Math.max(1, ind.manzanasConEstrato));
               return '<div class="aia-estrato-fila"><span>Estrato ' + x.estrato + '</span>' +
                 '<i><b style="width:' + pct + '%"></b></i>' +
-                '<em>' + x.manzanas + ' mz · ' + pct + '%</em></div>';
+                '<em>' + numEs(x.manzanas) + ' mz · ' + numEs(pct) + '%</em></div>';
             }).join('') +
           '</div>' +
           '<p class="aia-estrato-txt">' + escHTML(ind.detalle) + '</p>' +
@@ -1712,11 +1720,11 @@
                 serie[serie.length - 1].anio + '</span></div>' +
             '<div class="aia-crece-cifras">' +
               '<div><small>Censo ' + s.censoAnio + '</small><b>' +
-                s.poblacionCenso.toLocaleString('es-CO') + '</b><em>contado</em></div>' +
+                numEs(s.poblacionCenso) + '</b><em>contado</em></div>' +
               '<div class="flecha">→</div>' +
               '<div class="hoy"><small>' + s.anioProyeccion + '</small><b>' +
-                s.poblacionProyectada.toLocaleString('es-CO') + '</b><em>proyectado</em></div>' +
-              '<div class="delta">+' + s.crecimientoPct + '%</div>' +
+                numEs(s.poblacionProyectada) + '</b><em>proyectado</em></div>' +
+              '<div class="delta">+' + numEs(s.crecimientoPct) + '%</div>' +
             '</div>' +
             '<svg class="aia-crece-svg" viewBox="0 0 ' + W + ' ' + H + '" preserveAspectRatio="none" aria-hidden="true">' +
               '<path d="' + area + '" fill="rgba(34,211,238,.16)"/>' +
@@ -1731,7 +1739,7 @@
             '<div class="aia-crece-eje"><span>' + serie[0].anio + '</span>' +
               '<span>' + hoy.anio + '</span>' +
               '<span>' + serie[serie.length - 1].anio + '</span></div>' +
-            '<p class="aia-demo-txt">Crece ' + (s.tasaAnualDane * 100).toFixed(2) +
+            '<p class="aia-demo-txt">Crece ' + numEs(s.tasaAnualDane * 100, 2) +
               '% al año. El tramo punteado es proyección hacia adelante. ' +
               escHTML(s.advertenciaProyeccion || '') + '</p>' +
           '</div>';
@@ -1755,15 +1763,15 @@
               '<i class="hom" style="width:' + dm.pctHombres + '%"></i>' +
             '</div>' +
             '<div class="aia-demo-leyenda">' +
-              '<span><b class="muj"></b>Mujeres ' + dm.pctMujeres + '% <em>(' + dm.mujeres.toLocaleString('es-CO') + ')</em></span>' +
-              '<span><b class="hom"></b>Hombres ' + dm.pctHombres + '% <em>(' + dm.hombres.toLocaleString('es-CO') + ')</em></span>' +
+              '<span><b class="muj"></b>Mujeres ' + numEs(dm.pctMujeres) + '% <em>(' + numEs(dm.mujeres) + ')</em></span>' +
+              '<span><b class="hom"></b>Hombres ' + numEs(dm.pctHombres) + '% <em>(' + numEs(dm.hombres) + ')</em></span>' +
             '</div>' +
           '</div>' +
           '<div class="aia-demo-edades">' +
             dm.tramos.map(t =>
               '<div class="aia-demo-fila"><span>' + t.icono + ' ' + t.etiqueta + '</span>' +
               '<i><b style="width:' + Math.min(100, t.pct * 2) + '%"></b></i>' +
-              '<em>' + t.pct + '%</em></div>').join('') +
+              '<em>' + numEs(t.pct) + '%</em></div>').join('') +
           '</div>' +
           (dm.envejecimiento != null
             ? '<div class="aia-demo-indice"><b>' + dm.envejecimiento + '</b>' +
@@ -1820,12 +1828,12 @@
       '<th>Comercio</th><th>Equip.</th><th>Hab. est.</th></tr>' +
       m.anillos.map(a => '<tr' + (a.esAnalizado ? ' class="act"' : '') + '><td>' + etq(a.radioM) + '</td>' +
         '<td>' + a.total + '</td><td>' + a.densidadPorHa + '</td><td>' + a.comercio + '</td>' +
-        '<td>' + a.equipamientos + '</td><td>' + a.poblacionEstimada.toLocaleString('es-CO') + '</td></tr>').join('') +
+        '<td>' + numEs(a.equipamientos) + '</td><td>' + numEs(a.poblacionEstimada) + '</td></tr>').join('') +
       '</table><p class="aia-radio-lectura">' + escHTML(m.lectura) + '</p>';
   }
 
   function kpi(valor, etiqueta, color, referencia){
-    return '<div class="aia-kpi"' + (color ? ' style="border-color:' + color + '"' : '') + '><b' + (color ? ' style="color:' + color + '"' : '') + '>' + valor + '</b><small>' + etiqueta + '</small>' + (referencia || '') + '</div>';
+    return '<div class="aia-kpi"' + (color ? ' style="border-color:' + color + '"' : '') + '><b' + (color ? ' style="color:' + color + '"' : '') + '>' + numEs(valor) + '</b><small>' + etiqueta + '</small>' + (referencia || '') + '</div>';
   }
 
   /* ── La referencia ────────────────────────────────────────────────────
@@ -1893,11 +1901,11 @@
       '<div class="aia-comp-barra">' +
       claves.map(k => '<span class="aia-comp-tramo" data-uso="' + escHTML(k) + '"' +
         ' style="width:' + up[k] + '%;background:' + (C[k] || NEUTRO) + '"' +
-        ' title="' + nombre(k) + ' ' + up[k] + '%"></span>').join('') +
+        ' title="' + nombre(k) + ' ' + numEs(up[k]) + '%"></span>').join('') +
       '</div>' +
       '<ul class="aia-comp-leyenda">' +
       claves.map(k => '<li><i style="background:' + (C[k] || NEUTRO) + '"></i>' +
-        '<b>' + nombre(k) + '</b><span>' + up[k] + '%</span></li>').join('') +
+        '<b>' + nombre(k) + '</b><span>' + numEs(up[k]) + '%</span></li>').join('') +
       '</ul>';
   }
 
@@ -1981,7 +1989,7 @@
         return '<div class="aia-guardado-card" data-id="' + g.id + '">' +
           '<label class="aia-guardado-check"><input type="checkbox" data-comparar="' + g.id + '" ' + (comparando.has(g.id) ? 'checked' : '') + '></label>' +
           '<div class="aia-guardado-info" data-abrir="' + g.id + '">' +
-          '<b>' + escHTML(g.nombre) + '</b><small>' + escHTML(g.ciudad) + ' · ' + new Date(g.fechaISO).toLocaleDateString('es-CO') + ' · ' + g.radioM + ' m</small>' +
+          '<b>' + escHTML(g.nombre) + '</b><small>' + escHTML(g.ciudad) + ' · ' + new Date(g.fechaISO).toLocaleDateString('es-CO') + ' · ' + numEs(g.radioM) + ' m</small>' +
           '<small>' + escHTML(g.resultado.meta.proyectoNombre) + '</small></div>' +
           '<span class="aia-guardado-nivel" style="color:' + color + '">' + nivel + (v ? ' ' + v.score : '') + '</span>' +
           '<button type="button" class="aia-guardado-borrar" data-borrar="' + g.id + '">🗑️</button>' +
@@ -2038,11 +2046,11 @@
       '<div class="aia-tabla-comparar-wrap"><table class="aia-tabla-comparar"><thead><tr><th>Criterio</th>' +
       guardados.map(g => '<th>' + escHTML(g.nombre) + '</th>').join('') + '</tr></thead><tbody>' +
       '<tr><td>Proyecto</td>' + guardados.map(g => '<td>' + escHTML(g.resultado.meta.proyectoNombre) + '</td>').join('') + '</tr>' +
-      '<tr><td>Radio</td>' + guardados.map(g => '<td>' + g.radioM + ' m</td>').join('') + '</tr>' +
+      '<tr><td>Radio</td>' + guardados.map(g => '<td>' + numEs(g.radioM) + ' m</td>').join('') + '</tr>' +
       '<tr><td>Viabilidad</td>' + guardados.map(g => { const v = g.resultado.viabilidad; return '<td>' + (v ? v.nivel + ' (' + v.score + ')' : '—') + '</td>'; }).join('') + '</tr>' +
-      '<tr><td>Usos identificados</td>' + guardados.map(g => '<td>' + g.resultado.stats.total + '</td>').join('') + '</tr>' +
-      '<tr><td>Población estimada</td>' + guardados.map(g => '<td>' + g.resultado.stats.poblacionEstimada.toLocaleString('es-CO') + '</td>').join('') + '</tr>' +
-      '<tr><td>Uso predominante</td>' + guardados.map(g => { const up = g.resultado.stats.usoPredominante; const top = Object.keys(up).reduce((a,b)=>up[a]>=up[b]?a:b); return '<td>' + top + ' (' + up[top] + '%)</td>'; }).join('') + '</tr>' +
+      '<tr><td>Usos identificados</td>' + guardados.map(g => '<td>' + numEs(g.resultado.stats.total) + '</td>').join('') + '</tr>' +
+      '<tr><td>Población estimada</td>' + guardados.map(g => '<td>' + numEs(g.resultado.stats.poblacionEstimada) + '</td>').join('') + '</tr>' +
+      '<tr><td>Uso predominante</td>' + guardados.map(g => { const up = g.resultado.stats.usoPredominante; const top = Object.keys(up).reduce((a,b)=>up[a]>=up[b]?a:b); return '<td>' + top + ' (' + numEs(up[top]) + '%)</td>'; }).join('') + '</tr>' +
       '<tr><td>Fortalezas</td>' + guardados.map(g => '<td>' + filaFoda(g, 'fortalezas') + '</td>').join('') + '</tr>' +
       '<tr><td>Riesgos</td>' + guardados.map(g => '<td>' + filaFoda(g, 'riesgos') + '</td>').join('') + '</tr>' +
       '<tr><td>Oportunidades</td>' + guardados.map(g => '<td>' + filaFoda(g, 'oportunidades') + '</td>').join('') + '</tr>' +

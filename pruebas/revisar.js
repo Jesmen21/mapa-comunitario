@@ -5130,6 +5130,171 @@ console.log('\n  -- lo que la fila guarda y el panel de Pro City enseña (v985) 
   }
 }
 
+console.log('\n  -- la coma decimal y el separador de miles en el informe de empresas (v1040) --');
+{
+  /* EN CASTELLANO EL PUNTO ES EL SEPARADOR DE MILES, asi que «12480» sin
+     separar y «8.5 km» con punto son las dos maneras de escribir mal una
+     cifra en un papel que se le entrega a un cliente. La lamina lo tiene
+     guardado sobre el papel desde la v874/v885; el informe de empresas no lo
+     tenia, y su panel tenia TRES formateadores -uno global, uno dentro de una
+     funcion y uno escrito a mano- mas las cifras que no pasaban por ninguno:
+     en la tabla de comparacion, «Poblacion estimada» salia con separador y
+     «Usos identificados», la fila de al lado, en crudo.
+
+     La regla exacta es la de la v1022: LA UNIDAD es lo que vuelve guardable el
+     resto. Una propiedad concatenada con «%», «km», «m²», «ha», «/100» o
+     «habitantes» es un ROTULO y no puede ser otra cosa -no hay regla de CSS ni
+     camino de SVG que lleve esas letras detras-, asi que se le puede exigir el
+     formateador SIN UNA SOLA EXCEPCION. Medido antes de escribirla: sobre los
+     dos archivos da 17 casos, de los que 5 son geometria dentro de un
+     `style="width:"` y 12 son rotulos de verdad; con la geometria descartada,
+     cero falsos positivos. Una regla mas ancha -«todo campo del resultado que
+     se imprima»- da 37 falsos positivos, que son los textos y los anios, o sea
+     la lista de excepciones que envejece hasta no significar nada (v895). */
+  const j62 = soloCodigo(leer('js/62-analisis-ia-app.js'));
+  const j63 = soloCodigo(leer('js/63-analisis-ia-informe.js'));
+  const enLinea = (src, i) => src.slice(0, i).split('\n').length;
+
+  const UNI = "(?:%|\\s*km\\b|\\s*m²|\\s*ha\\b|\\s*/\\s*100|\\s*pts\\b|\\s*min\\b|\\s*m\\b|\\s*habitantes\\b)";
+  const RE_ROT = new RegExp("\\+\\s*([A-Za-z_$][\\w$]*(?:\\.[\\w$]+)+)\\s*\\+\\s*'" + UNI, 'g');
+  /* La misma «%» pegada a un `width:` es un ancho: ahi el punto es
+     obligatorio y convertirlo romperia el dibujo en silencio (v891 con n1). */
+  const RE_GEO = /(?:width|height|left|top|right|bottom|stroke-width|font-size|transform|translate|cx|cy|viewBox)\s*:?\s*['"]?\s*$/;
+
+  function rotulosPelados(src) {
+    const fuera = [];
+    const re = new RegExp(RE_ROT.source, 'g');
+    let m;
+    while ((m = re.exec(src)) !== null) {
+      const antes = src.slice(Math.max(0, m.index - 90), m.index);
+      if (RE_GEO.test(antes)) continue;
+      fuera.push(enLinea(src, m.index) + ' ' + m[1]);
+    }
+    return fuera;
+  }
+  function geometriaVista(src) {
+    let n = 0;
+    const re = new RegExp(RE_ROT.source, 'g');
+    let m;
+    while ((m = re.exec(src)) !== null) {
+      if (RE_GEO.test(src.slice(Math.max(0, m.index - 90), m.index))) n++;
+    }
+    return n;
+  }
+
+  /* MATERIAL, y va primero (v920): sin el formateador no hay por donde pasar,
+     y sin geometria a la vista el descarte no se estaria ejercitando. */
+  /* Se pide la FUNCION, no su lista de parametros: la primera version exigia
+     `numEs(n)` exacto y al agregarle los decimales se quedo sin material sin
+     que nada estuviera roto. Un ancla por forma envejece igual que una por
+     distancia (v935). */
+  const declara = /function\s+numEs\s*\(/.test(j63);
+  /* El objeto que se expone se corta de su llave a su cierre, no por una
+     ventana de caracteres: un ancla por distancia envejece (v935). */
+  const iExp = j63.indexOf('AIA_INFORME');
+  const objExp = iExp < 0 ? '' : j63.slice(iExp, j63.indexOf('\n  };', iExp) + 1);
+  const expone = /(^|[\s,{])numEs\s*[,}\n]/.test(objExp);
+  const geoVista = geometriaVista(j62) + geometriaVista(j63);
+  if (!declara || !expone || geoVista < 3) {
+    anotarSinMaterial('MATERIAL · el informe declara su formateador y hay geometria que descartar',
+      'declara=' + declara + ' expone=' + expone + ' geometria=' + geoVista);
+  } else {
+    const pelados = rotulosPelados(j62).concat(rotulosPelados(j63));
+    comprobar('toda cifra con unidad pasa por el formateador del informe',
+      pelados.length === 0,
+      pelados.length === 0
+        ? geoVista + ' de geometria descartada, y ningun rotulo sin formatear'
+        : pelados.length + ' saldrian con punto o sin separar, que en castellano ' +
+          'es el separador de MILES: ' + pelados.slice(0, 6).join(' · '));
+
+    /* Y el formateador es UNO. Tres copias es lo que habia, y la que se queda
+       vieja es siempre la que nadie vuelve a mirar (v879). La fecha es otra
+       cosa: `new Date(...).toLocaleDateString` es legitimo y no se persigue. */
+    const copias = [];
+    /* El CUERPO del propio formateador se corta de su llave a su cierre, no
+       por una ventana de caracteres: la primera version lo miraba a 60 y
+       denunciaba a numEs por usar toLocaleString, que es lo que hace (v935). */
+    const iNum = j63.indexOf('function numEs');
+    const cuerpoNum = iNum < 0 ? [0, 0] : [iNum, j63.indexOf('\n  }', iNum)];
+    [['js/62', j62], ['js/63', j63]].forEach(function (par) {
+      const re = /([A-Za-z_$][\w$.]*)\s*\.\s*toLocaleString\s*\(\s*'es-CO'/g;
+      let m;
+      while ((m = re.exec(par[1])) !== null) {
+        if (par[0] === 'js/63' && m.index > cuerpoNum[0] && m.index < cuerpoNum[1]) continue;
+        const antes = par[1].slice(Math.max(0, m.index - 60), m.index);
+        if (/Date\s*\([^)]*\)\s*\.?\s*$/.test(antes)) continue;
+        copias.push(par[0] + ':' + enLinea(par[1], m.index));
+      }
+      const re2 = /toFixed\s*\(\s*\d\s*\)\s*\.\s*replace\s*\(\s*'\.'\s*,\s*','/g;
+      while ((m = re2.exec(par[1])) !== null) copias.push(par[0] + ':' + enLinea(par[1], m.index) + ' (a mano)');
+    });
+    comprobar('el formateador es UNO, y no hay una segunda copia',
+      copias.length === 0,
+      copias.length === 0
+        ? 'una sola ruta para escribir una cifra en castellano'
+        : copias.length + ' copias del formateador: ' + copias.join(' · ') +
+          ' — se separan a la tanda siguiente');
+
+    /* QUIEN LO USA LO PRESTA, no lo copia: con una copia propia, el dia que el
+       formateador cambie de criterio la pantalla y el papel divergen. Y se
+       pregunta por los archivos que USAN el nombre, leidos del disco, no por
+       una lista escrita: el tercero -la hoja del curso, que tenia la CUARTA
+       copia- entro en esta version, y el cuarto entra sin que su autor se
+       acuerde (v867). El unico que puede declararlo es quien lo escribe. */
+    const usan = fs.readdirSync(R('js')).filter((f) => /\.js$/.test(f))
+      .map((f) => ['js/' + f, soloCodigo(leer('js/' + f))])
+      .filter((par) => /\bnumEs\b/.test(par[1]));
+    const declaran = usan.filter((par) => /function\s+numEs\s*\(/.test(par[1])).map((par) => par[0]);
+    const copian = usan
+      .filter((par) => declaran.indexOf(par[0]) < 0)
+      .filter((par) => !/numEs\s*=\s*[^;]*AIA_INFORME\s*\.\s*numEs/.test(par[1]))
+      .map((par) => par[0]);
+    comprobar('quien usa el formateador lo toma del informe, no escribe el suyo',
+      declaran.length === 1 && copian.length === 0,
+      declaran.length !== 1
+        ? declaran.length + ' archivos lo declaran: ' + declaran.join(' \u00b7 ') +
+          ' \u2014 «como se escribe un numero en castellano» es UN hecho'
+        : copian.length
+          ? copian.length + ' lo escriben por su cuenta: ' + copian.join(' \u00b7 ') +
+            ' \u2014 se separan a la tanda siguiente'
+          : 'lo declara solo js/63, y los otros ' + (usan.length - 1) + ' lo leen de AIA_INFORME');
+
+    /* GUARDA CONTRA PASARSE (v879, v882, v890). Un ANIO no es una cantidad:
+       «2.018» no es una fecha. El paper lo midio -censoAnio y anioProyeccion
+       salen sin separar, a proposito- y esto impide que una tanda futura los
+       enrute «por completar». */
+    const anios = [];
+    [['js/62', j62], ['js/63', j63]].forEach(function (par) {
+      const re = /numEs\s*\(\s*[^)]*[Aa]nio/g;
+      let m;
+      while ((m = re.exec(par[1])) !== null) anios.push(par[0] + ':' + enLinea(par[1], m.index));
+    });
+    comprobar('y un ANIO no pasa por el formateador',
+      anios.length === 0,
+      anios.length === 0
+        ? 'los anios salen sin separador, que es lo correcto'
+        : anios.length + ' anios enrutados: imprimirian «2.018», que no es una fecha: ' + anios.join(' · '));
+
+    /* GUARDA DE LA GUARDA (v878): si el barrido deja de reconocer la forma,
+       todo lo de arriba sigue en verde vigilando nada. Tres casos de respuesta
+       conocida, sacados de estos mismos archivos: el rotulo pelado que tiene
+       que denunciar, el ya enrutado y la geometria que tiene que callar. */
+    const CASO_MAL  = "'</b> · ' + r.meta.radioM + ' m'";
+    const CASO_BIEN = "'</b> · ' + numEs(r.meta.radioM) + ' m'";
+    const CASO_GEO  = "'<i style=\"width:' + d.score + '%;background:' + color + '\"></i>'";
+    const veMal  = rotulosPelados(CASO_MAL).length === 1;
+    const veBien = rotulosPelados(CASO_BIEN).length === 0;
+    const veGeo  = rotulosPelados(CASO_GEO).length === 0 && geometriaVista(CASO_GEO) === 1;
+    comprobar('el barrido ve el rotulo pelado, y calla el enrutado y la geometria',
+      veMal && veBien && veGeo,
+      veMal && veBien && veGeo
+        ? 'distingue las tres formas contra casos de respuesta conocida'
+        : !veMal ? 'no ve el rotulo pelado: no vigilaria nada'
+                 : !veBien ? 'denuncia uno ya enrutado: daria rojo sobre lo que esta bien'
+                           : 'toma la geometria por un rotulo: convertirla romperia el dibujo');
+  }
+}
+
 console.log('\n  -- la foto del panel de Pro City se ve entera, y a su tamano (v1039) --');
 {
   const c52 = leer('css/52-urbis-pro-city.css');
@@ -8694,9 +8859,16 @@ console.log('\n  -- una distancia no se escribe con punto (v1022) --');
 
      Y por que no el metro a secas: «m» es tambien el comando `moveto` de un
      camino de SVG, y el patron no los distingue. Queda fuera, dicho. */
-  const UNIDAD = /^\s*(?:\}|\+)?\s*['"`]?\s*(km\/h|min\/km|km|ha|m²|m2|°C|%<|\s%)/;
+  /* El «%» se acota por lo que le SIGUE, no por lo que tiene delante. Un «%»
+     de geometria cierra su declaracion -«'%;background:» o «'%"»- y uno de
+     rotulo sigue con texto: «'% al ano», «'% de la oferta». Pedir un espacio
+     DELANTE, que es lo que decia esta regla, era una exclusion de geometria
+     implicita y por eso se le escapaban los dos rotulos que dicen «% al ano»
+     -uno en el informe de empresas y otro en su panel, con la tasa del DANE-.
+     Medido con la forma nueva: los dos aparecen y los 16 de geometria no. */
+  const UNIDAD = /^\s*(?:\}|\+)?\s*['"`]?\s*(km\/h|min\/km|km|ha|m²|m2|°C|%<|\s%|%(?=[\s\p{L}]))/u;
   const YA_CONVIERTE = /^\s*\.replace\(/;
-  const ENVUELTO = /conComa\(\s*$|\bgr\(\s*$|num\(\s*$/;
+  const ENVUELTO = /conComa\(\s*$|\bgr\(\s*$|num\(\s*$|numEs\(\s*$/;
 
   function unidadesPeladas(txt) {
     const re = /\.toFixed\(\s*([12])\s*\)/g;

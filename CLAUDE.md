@@ -21392,6 +21392,268 @@ Las aserciones que corresponderían a esto en `tpisos` —mapear con foto, abrir
 el panel y comprobar que se ve entera— quedan pendientes de un contenedor con
 el banco de pruebas.
 
+## Una cifra en castellano se escribe en un solo sitio (v1042)
+
+Segundo peldaño del orden que el usuario fijó para el módulo de empresas. La
+v1038 lo dejó medido: **48 porcentajes concatenados en crudo y ningún
+convertidor de coma en `js/62`**, con la advertencia de que no se pudo medir si
+el motor los devuelve fraccionarios.
+
+    v1039   91 cifras sin separador en el papel del informe · 19 bien escritas
+    v1040   36, todas textos o años · 74 bien escritas
+
+### El módulo tenía CUATRO formateadores, y ninguno cubría todo
+
+Medido antes de escribir nada, «cómo se escribe un número en castellano» estaba
+resuelto en cuatro sitios distintos:
+
+| Dónde | Qué era |
+|---|---|
+| `js/63` · `miles(n)` | global del informe |
+| `js/62` · `const miles` | otra global, del panel |
+| `js/62:1565` · `const miles` | una tercera, **dentro de una función** |
+| `js/65` · `const miles` | una cuarta, en la hoja del curso |
+| y a mano | `pct.toFixed(1).replace('.', ',')`, dos veces |
+
+Y lo que de verdad enseña el defecto está en la tabla de comparación del panel,
+en **dos renglones consecutivos**:
+
+```js
+'<tr><td>Usos identificados</td>'  … + g.resultado.stats.total + …            // en crudo
+'<tr><td>Población estimada</td>'  … .poblacionEstimada.toLocaleString('es-CO') // con separador
+```
+
+Medido en la pantalla con la v1039, ese par imprime **«Usos identificados
+124803120»** —dos celdas pegadas, porque ninguna trae separador— al lado de
+**«Población estimada 45.300 9.870»**. El autor formateó una fila y dejó la de
+al lado en crudo, y las dos se leen juntas.
+
+Es el mismo patrón que la v1018 encontró con «edificaciones» bien escrita tres
+renglones encima de «construcciónes», y la v1020 con `js/70:853` concordando
+bien entre dos que no. **Cuando la regla vive en cuatro sitios, lo que falla no
+es ninguno de los cuatro: es lo que no pasa por ninguno.**
+
+### `numEs`, y por qué toma los decimales
+
+Uno solo, en `js/63`, y `js/62` y `js/65` **lo prestan** —`window.AIA_INFORME.numEs`—
+en vez de copiarlo. El nombre no es `cifra` porque `cifra` ya es la baldosa de
+KPI de ese mismo archivo, que es la homonimia que este proyecto persigue desde
+la v885.
+
+Toma `dec` como segundo argumento, y eso no es comodidad: **es lo que quita la
+razón de escribir `toFixed(2).replace('.', ',')` a un lado**, que era una de las
+cuatro copias y la que se separa primero porque parece inofensiva. Con él,
+«cuántos decimales» y «cómo se escribe un número en castellano» siguen viviendo
+en el mismo sitio.
+
+Y conserva la precisión que el autor pidió: `numEs(1.2, 2)` da **«1,20»** y no
+«1,2». Un `toLocaleString` a secas se la habría comido.
+
+### La regla exacta es la UNIDAD, y se midió cuál discrimina
+
+Es la de la v1022, y la elección salió de contar falsos positivos, no de
+suponerlos:
+
+| Regla candidata | Sitios | Falsos positivos |
+|---|---|---|
+| todo campo del resultado que se imprima | 37 | **37** — son los textos y los años |
+| propiedad concatenada con una unidad | 17 | **5**, geometría dentro de un `style="width:"` |
+| **lo mismo, con la geometría descartada** | **12** | **cero** |
+
+La primera fila es la lista de excepciones que envejece hasta no significar nada
+(v895): de los 37, treinta son textos que el barrido no puede distinguir de una
+cifra —`viabilidad.nivel` es «Alta», `contexto.paso.nombre` es un nombre— y
+ocho son años.
+
+Los doce estaban **todos en el panel** y ninguno en el informe: distancias y
+radios, `p.distM + ' m'`, `g.radioM + ' m'`. Un radio llega a 8.000 m, así que
+imprimían «8000 m».
+
+### Y un año NO pasa por el formateador
+
+La guarda contra pasarse, que es la mitad que este proyecto empareja siempre
+(v879, v882, v890): `numEs(2018)` da **«2.018»**, que no es una fecha. Los ocho
+sitios que imprimen `censoAnio` y `anioProyeccion` se dejaron en crudo a
+propósito, y hay una comprobación que se pone roja si alguien los enruta «por
+completar». Sin ella, el arreglo barato sería pasar todo por el formateador.
+
+### El «%» de la v1022 pedía un espacio delante, y eso escondía tres rótulos
+
+El hallazgo de la tanda, y no es del informe. La regla de la v1022 buscaba
+`%<|\s%` —un `%` con un espacio delante o un `<` detrás— y eso **era una
+exclusión de geometría implícita**: un `%` dentro de un `style="width:…%"` va
+pegado al número y seguido de `;` o de la comilla.
+
+Funcionaba por la forma, no por la propiedad. Y por eso se le escapaban los
+rótulos que dicen **«% al año»**:
+
+```js
+'<p class="pie-nota">Crece ' + (s.tasaAnualDane * 100).toFixed(2) + '% al año…'
+```
+
+**La misma frase, en tres archivos** —el informe, su panel y la hoja del curso—
+imprimiendo la tasa de crecimiento del DANE con punto decimal. Es la clase B en
+la redacción que la v1019 ya había anotado para estos archivos, con un defecto
+vivo dentro.
+
+Y no lo encontró el papel: **el fixture del informe deja los arreglos vacíos**,
+así que ese bloque no llega a componerse. Lo encontró el barrido estático. Van
+las dos maneras y ninguna sustituye a la otra.
+
+El `%` se acota ahora **por lo que le SIGUE**, que es donde la geometría se
+distingue de verdad: un `%` de geometría cierra su declaración, uno de rótulo
+sigue con texto. Medido: aparecen los tres rótulos y los dieciséis sitios de
+geometría siguen fuera.
+
+### La hoja del curso entró porque la guarda lo exigió, no de paso
+
+`js/65` tenía la cuarta copia y tres `toLocaleString` en línea. No estaba en el
+peldaño —el peldaño dice «el informe de empresas»— y **la guarda ensanchada se
+puso roja sobre ella**, así que la alternativa era aflojar la regla para que
+pasara. Eso es lo que este proyecto tiene prohibido desde el principio, así que
+se arregló el defecto: presta el formateador, como el panel, y su `miles` queda
+siendo un alias.
+
+Comprobado que puede: `index.html` carga `js/63` antes que `js/65`.
+
+### Y la guarda pregunta por los archivos, no por una lista
+
+`quien usa el formateador lo toma del informe` se leía primero como «js/62 lo
+toma», y su inyección fiel **pasaba en verde** con `js/65` escribiendo la suya:
+la comprobación no la miraba. Ahora recorre `js/` del disco, se queda con los
+que usan el nombre, y exige que **solo uno lo declare** y los demás lo lean de
+`AIA_INFORME`. El cuarto que lo use queda vigilado sin que su autor se acuerde
+(v867).
+
+### Tres anclas mías demasiado apretadas, las tres cazadas al demostrar
+
+Y las tres de la misma familia —un ancla por distancia o por forma envejece
+(v935)—, así que vale nombrarlas juntas:
+
+* **el objeto que se expone** se buscaba con una ventana de 400 caracteres y
+  `numEs` está a 688. Se corta de su llave a su cierre;
+* **el cuerpo del propio formateador** se excluía con una ventana de 60, y
+  `function numEs` queda a 90: la guarda denunciaba a `numEs` por usar
+  `toLocaleString`, que es lo que hace. Se corta igual;
+* **el MATERIAL** exigía `numEs(n)` con su lista de parámetros exacta, y al
+  agregarle `dec` se quedó sin material sin que nada estuviera roto. Pide la
+  función.
+
+### Y una aserción que imprimía su texto de rojo estando en verde
+
+La guarda de la guarda cerraba en un ternario sin rama de éxito, así que en
+verde imprimía «toma la geometría por un rótulo». Es el defecto que este
+proyecto lleva encontrado cuatro veces —v1019, v1021, v1025, v1027— y esta es la
+quinta. Un detalle que describe el fallo mientras la comprobación pasa es peor
+que ninguno: se lee como un rojo que nadie arregló.
+
+### Demostrado contra la v1039
+
+Diez inyecciones fieles, una por aserción (v993), contra copias guardadas y no
+con `git checkout --` sobre trabajo sin confirmar (v973):
+
+```
+✗ toda cifra con unidad pasa por el formateador  — 1 saldrian…: 1176 r.meta.radioM
+✗ el formateador es UNO, y no hay una segunda copia  — 1 copias: js/63:521
+✗ quien usa el formateador lo toma del informe  — 1 lo escriben por su cuenta: js/62
+✗ quien usa el formateador lo toma del informe  — 1 lo escriben por su cuenta: js/65
+✗ y un ANIO no pasa por el formateador  — imprimirian «2.018», que no es una fecha: js/63:967
+✗ toda cifra con unidad pasa por el formateador  — 5 saldrian… (la geometria sin descartar)
+✗ el barrido ve el rotulo pelado …  — toma la geometria por un rotulo
+✗ el barrido ve el rotulo pelado …  — no ve el rotulo pelado: no vigilaria nada
+✗ toda cifra con unidad pasa por la coma (v1022)  — 1 saldrian…: 63:899
+✗ toda cifra con unidad pasa por la coma (v1022)  — 1 saldrian…: 65:208
+? MATERIAL · el informe declara su formateador  — SIN MATERIAL HOY: expone=false
+```
+
+La que más vale es la octava: con el barrido devolviendo una lista vacía **las
+otras cuatro del bloque quedan en verde** y solo la guarda de la guarda lo
+caza, que es el patrón de la v878. Y la del `js/65` no muerde en el bloque de la
+v1022 —ahí sigue verde— sino en el de la v1040, que es el que pregunta quién
+declara el formateador.
+
+Y **una inyección que NO muerde, dicha por lo que es**: devolver el `%` estrecho
+de la v1022 deja todo en verde, porque los tres rótulos que escondía ya están
+enrutados y no queda nada que esconder. Es la situación de la v1032 con el
+recorte del punto y coma, vista desde el otro lado: **una vez arreglado el sitio
+que una regla escondía, desactivar el ensanchamiento ya no cambia nada**, así que
+el ensanchamiento queda medido y no protegido por una aserción.
+
+### Medido sobre el papel y sobre la pantalla
+
+El informe se compone con la API de verdad (`construirHTMLEjecutivo`) y se
+barre nodo por nodo, en tres pasadas: con las cuentas en plural, en uno, y con
+cada hoja numérica en 12345.678 —que es lo que enseña la coma y el separador de
+una vez—.
+
+| | punto decimal | miles sin separar | bien escritas |
+|---|---|---|---|
+| v1039 | 0 | **91** | 19 |
+| v1040 | 0 | **36** | **74** |
+
+Las 36 que quedan se resolvieron **campo por campo contra el código**, no por el
+nombre: treinta son textos que pasan por `esc()` —`viabilidad.nivel`,
+`contexto.*.lectura`, los tres `mapaCalor.foco*.texto`— y seis son
+`censoAnio`/`anioProyeccion`. Ninguna es una cantidad.
+
+Y de la pantalla, la única parte que se puede mirar sin motor —la lista de
+análisis guardados y su tabla de comparación, que leen del almacén—:
+
+| | v1039 | v1040 |
+|---|---|---|
+| lista de guardados | `8000 m` · `2500 m` | `8.000 m` · `2.500 m` |
+| comparación · Radio | `2500 m` · `8000 m` | `2.500 m` · `8.000 m` |
+| comparación · Usos | **`124803120`** | `12.480` · `3.120` |
+
+#### Un `<style>` dentro de `textContent` fabrica cifras que nadie escribió
+
+La primera medición del papel dio **208 puntos decimales y 66 miles**, y casi
+todos eran colores: `textContent` de un nodo con el `<style>` dentro devuelve el
+CSS, así que `#627285` se leía como una cifra de seis dígitos —41 veces— y
+`font-size:7.4px` como un punto decimal. Quitando el `<style>` y el `<script>`,
+que es lo que la v1023 ya hacía para una página, quedan 91.
+
+Vale anotarlo porque el número inflado es creíble: 208 defectos en un informe de
+trece paneles no habría hecho dudar a nadie.
+
+### Lo que esta versión NO hace, y queda medido
+
+* **Los porcentajes del informe siguen sin medirse fraccionarios.** `h.cobertura`
+  y `h.pct.*` los calcula el motor, que vive en el repositorio privado y no está
+  en este contenedor, así que no se pudo comprobar si llegan redondeados. Lo que
+  sí está cerrado es el riesgo: pasen como pasen, ahora van por el formateador.
+  `pendiente`
+* **Los otros diez sitios del panel** —los que el barrido enrutó y la pantalla no
+  pudo enseñar— piden una corrida con motor. Se comprobaron estáticamente y
+  quedan cubiertos por la guarda, no por el papel. `pendiente`
+* **Los peldaños 3 a 6** del orden que el usuario fijó: la escala declarada de
+  cada panel, el discriminante de la v875 sobre el score de viabilidad, el método
+  por panel y los vacíos con su trámite. `pendiente`
+
+### Lo que NO se pudo correr
+
+**Ninguna suite de navegador**, por lo mismo que la v973 en adelante: este
+contenedor no tiene `../urbis-motor` ni el `node_modules` del banco de pruebas.
+Corrió `revisar.js` entero con sus cinco comprobaciones nuevas, y se midió el
+papel del informe en sus tres pasadas más la parte de la pantalla que se puede
+abrir sin motor, en las dos versiones.
+
+### Y una de numeración: la otra sesión publicó DOS mientras tanto
+
+Esto se escribió sobre la v1039 y se midió contra ella, que es lo que las tablas
+de arriba comparan. Al ir a subir, `origin/main` ya iba en
+**1041-seguimiento-presidencial-y-foto-del-mapeo-completa**, con su propio commit
+diciendo «segundo choque de versión v1040 → v1041»: la otra sesión se llevó los
+dos números. Se sube **por encima de los dos**, nunca bajando el propio —para la
+caché de un teléfono, una versión que no sube es una versión que no existe—, así
+que esto es la **v1042**. Es la regla del 7 de septiembre.
+
+Y el intento de traer lo de arriba con el árbol sucio se cobró la otra regla de
+la casa en el acto: `git merge` **abortó** y su última línea imprimió
+`Updating d4b5ca4..c862346`, que se lee como que funcionó. Lo dijo
+`git merge-base --is-ancestor`, no el mensaje. El orden correcto es el escrito:
+**guardar primero, fusionar después.**
+
 ## La lista viva: lo que al pliego educativo todavía le falta (v866)
 
 Esta lista se quedó vieja **cinco veces**. Cuatro dentro de la hoja —la
