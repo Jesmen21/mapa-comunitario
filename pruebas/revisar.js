@@ -5445,6 +5445,103 @@ console.log('\n  -- a que escala esta medido cada panel del informe de empresas 
             : 'una escribe su propio numero: el dia que se mueva, la otra se queda vieja');
 }
 
+console.log('\n  -- con la capa vacia el informe no publica score ni recomendacion (v1044) --');
+{
+  const j63 = soloCodigo(leer('js/63-analisis-ia-informe.js'));
+
+  /* El cuerpo de una funcion, cortado a su cierre de dos espacios: una
+     extension real y no una ventana de caracteres (v935). */
+  const cuerpo = (nombre) => {
+    const i = j63.indexOf('function ' + nombre + '(');
+    if (i < 0) return null;
+    const j = j63.indexOf('\n  }', i);
+    return j < 0 ? null : j63.slice(i, j);
+  };
+
+  const disc = cuerpo('capaVaciaAIA');
+  /* Los cuatro paneles que publican un juicio sobre la capa: los tres del
+     score —el aro grande de la hoja 1, el detalle de la hoja 2 y el del
+     listado— y el de oportunidad, que es el mismo molde dos paneles abajo. */
+  const PANELES = ['bloqueEjecutivo', 'bloqueViabilidadDetalle', 'bloqueViabilidad', 'bloqueOportunidad'];
+  const cuerpos = PANELES.map((n) => [n, cuerpo(n)]);
+
+  if (!disc || cuerpos.some((c) => !c[1])) {
+    anotarSinMaterial('MATERIAL · el discriminante y los paneles del score se dejan leer',
+      'discriminante=' + (disc ? 'si' : 'no') + ' · sin cuerpo: ' +
+      (cuerpos.filter((c) => !c[1]).map((c) => c[0]).join(' · ') || 'ninguno'));
+  } else {
+    /* Falla CERRADO: un panel que publique el juicio sin pasar por el
+       discriminante vuelve a publicar un score sobre una capa vacia. */
+    const pelados = cuerpos.filter((c) => !/capaVaciaAIA\(/.test(c[1])).map((c) => c[0]);
+    comprobar('los paneles que publican el juicio pasan por el discriminante',
+      pelados.length === 0,
+      pelados.length === 0
+        ? 'los ' + PANELES.length + ' lo consultan antes de publicar'
+        : 'publicarian un puntaje sobre una capa vacia: ' + pelados.join(' · '));
+
+    /* El discriminante mira los TRES contadores que el resultado deja leer,
+       que es lo que lo hace auditable: sin uno, la capa que ese cuenta se
+       publicaria vacia igual. */
+    /* Se mide el `push` de cada capa y no la mención del contador: la primera
+       version buscaba la variable `comercio` y quitando su renglon entero
+       SEGUIA en verde —la variable sigue nombrada en la condicion del par de
+       abajo—. Una guarda que pasa por una mencion no vigila nada (v878). */
+    const CONTADORES = [
+      /* El `if (` va DENTRO del patron: sin el, la condicion del par de abajo
+         —`nComp === 0 && comercio === 0)`— satisface sola la de locales, y
+         quitar el renglon de locales seguia en verde. Lo destapo la
+         inyeccion, que es para lo que se demuestra en rojo. */
+      ['usos',         /if\s*\(total === 0\)\s*faltan\.push/,    /Number\(s\.total\)/],
+      ['locales',      /if\s*\(comercio === 0\)\s*faltan\.push/, /porGrupo[^;]*\.comercio/],
+      ['competidores', /if\s*\(nComp === 0 && comercio === 0\)\s*faltan\.push/, /nCompetidores/]
+    ];
+    const faltaCont = CONTADORES.filter((c) => !(c[1].test(disc) && c[2].test(disc))).map((c) => c[0]);
+    comprobar('y mira los tres contadores de capa que el resultado trae',
+      faltaCont.length === 0,
+      faltaCont.length === 0
+        ? 'usos, locales y competidores'
+        : 'no los mira: ' + faltaCont.join(' · ') + ' — esa capa se publicaria vacia igual');
+
+    /* CERO es cero y AUSENTE no es cero (v875, v899). Con `Number(undefined)`
+       el `=== 0` da falso, que es lo correcto; la guarda exige que la
+       comparacion siga siendo estricta contra cero y no un `!x`, que daria
+       verdadero para `undefined` y declararia vacia una capa que no se pudo
+       leer — la misma confusion en la otra direccion. */
+    comprobar('y distingue CERO de AUSENTE: un campo que no viene no dispara',
+      /===\s*0/.test(disc) && !/if\s*\(\s*!\s*(total|comercio|nComp)\b/.test(disc),
+      /===\s*0/.test(disc) && !/if\s*\(\s*!\s*(total|comercio|nComp)\b/.test(disc)
+        ? 'compara contra cero, asi que un campo ausente no declara la capa vacia'
+        : 'con un `!x` un campo que no vino se leeria como capa vacia');
+
+    /* La mitad que sostiene el caso honesto: cero competidores CON comercio
+       mapeado es un hallazgo —y el panel de competencia ya lo dice asi desde
+       antes—, no una capa vacia. El par es lo que lo separa. */
+    comprobar('y cero competidores con comercio mapeado NO es capa vacia',
+      /nComp === 0 && comercio === 0/.test(disc),
+      /nComp === 0 && comercio === 0/.test(disc)
+        ? 'exige el par: sin el, un hallazgo real se leeria como capa vacia'
+        : 'le basta el cero de competidores: taparia un hallazgo del propio informe');
+
+    /* Una sola redaccion para los cuatro: con cuatro, la que se quedara vieja
+       seria la que nadie vuelve a mirar (v879). */
+    const usanTexto = cuerpos.filter((c) => /sinMedirAIA\(/.test(c[1])).length;
+    comprobar('y los cuatro escriben el «sin medir» por la misma funcion',
+      usanTexto === PANELES.length,
+      usanTexto === PANELES.length
+        ? 'una redaccion, no cuatro'
+        : usanTexto + ' de ' + PANELES.length + ': las otras escriben la suya y se separan');
+
+    /* Y dice COMO se llena: un vacio que no dice como se resuelve es la mitad
+       del trabajo (v880). */
+    const cTexto = cuerpo('sinMedirAIA') || '';
+    comprobar('y el «sin medir» dice que falta y como se llena',
+      /Cómo se llena/.test(cTexto) && /Cero usos mapeados y cero usos/.test(cTexto) && /existentes no son lo mismo/.test(cTexto),
+      /Cómo se llena/.test(cTexto) && /Cero usos mapeados y cero usos/.test(cTexto) && /existentes no son lo mismo/.test(cTexto)
+        ? 'nombra la capa vacia, dice la distincion y da el camino'
+        : 'se queda en la marca: sin el camino es un rotulo, no una tarea');
+  }
+}
+
 console.log('\n  -- la foto del panel de Pro City se ve entera, y a su tamano (v1039) --');
 {
   const c52 = leer('css/52-urbis-pro-city.css');

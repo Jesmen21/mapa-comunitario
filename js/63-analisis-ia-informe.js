@@ -501,6 +501,10 @@
   function bloqueViabilidad(r){
     if (!r.viabilidad) return '';
     const v = r.viabilidad;
+    const vacia = capaVaciaAIA(r);
+    if (vacia.length) return '<div class="bloque"><h2>Viabilidad del proyecto</h2>' +
+      escalaAIA('viabilidad') +
+      sinMedirAIA(vacia, 'el puntaje de viabilidad ni su nivel') + '</div>';
     const col = v.nivel === 'Alta' ? T.ok : (v.nivel === 'Media' ? T.warn : T.bad);
     let desglose = '';
     if (!v.subscores && r.desglosePorUso && r.desglosePorUso.length) {
@@ -923,10 +927,76 @@
 
   function colFlujo(v){ return v >= 70 ? T.ok : v >= 50 ? T.acento : v >= 30 ? T.warn : T.bad; }
 
+  /* ── El discriminante de la v875 en el informe de empresas (v1044) ───────
+     «Cero mapeado» y «cero existente» son cosas distintas, y el score de
+     viabilidad las juntaba: con el radio sin un solo uso registrado, las
+     cinco dimensiones del puntaje se calculan sobre una capa vacía y el
+     informe publicaba igual un número, un nivel y una recomendación de
+     inversión —«El entorno reúne condiciones favorables», «Conviene revisar
+     alternativas antes de descartar el lote»—. Es la misma forma que el
+     pliego educativo encontró en la v875 y llamó «el error más grave de la
+     lámina»: la cifra es defendible una por una y la conclusión no.
+
+     El módulo YA sabía hacerlo en un sitio: «Competencia directa (0)» dice
+     desde antes que «el mapa abierto no lo ve todo: conviene confirmarlo en
+     campo antes de darlo por bueno». Lo que faltaba es que esa lectura
+     llegara a los paneles que publican el juicio.
+
+     Las tres capas son las que el resultado deja contar, y el discriminante
+     de cada una es cuántos puntos de esa clase hay MAPEADOS —igual que
+     `categorias[].puntos` en la v875—:
+
+       usos         `stats.total` en cero: no hay nada sobre qué medir.
+       locales      `stats.porGrupo.comercio` en cero: sin un solo local
+                    mapeado, «complementarios» y «entorno» miden el vacío.
+       competidores `viabilidad.nCompetidores` en cero Y sin comercio
+                    mapeado. El par es lo que lo hace honesto: cero
+                    competidores con doscientos locales a la vista SÍ es un
+                    hallazgo —y el panel de competencia ya lo dice así—;
+                    cero competidores sin un solo local es una capa vacía.
+
+     CERO es cero y AUSENTE no es cero: un campo que el resultado no trae no
+     dispara nada. Afirmar que la capa está vacía porque no se pudo leer
+     sería la misma confusión, en la otra dirección. */
+  function capaVaciaAIA(r){
+    const s = r.stats || {}, v = r.viabilidad || {};
+    const total = Number(s.total);
+    const comercio = Number((s.porGrupo || {}).comercio);
+    const nComp = Number(v.nCompetidores);
+    const faltan = [];
+    if (total === 0) faltan.push('usos registrados');
+    if (comercio === 0) faltan.push('locales de comercio');
+    if (nComp === 0 && comercio === 0) faltan.push('competidores identificables');
+    return faltan;
+  }
+  /* Una sola redacción para los cuatro paneles que dejan de publicar: con
+     cuatro, la que se quedara vieja sería la que nadie vuelve a mirar
+     (v879). Dice qué falta y CÓMO se llena —un vacío que no dice cómo se
+     resuelve es la mitad del trabajo (v880)—. */
+  function sinMedirAIA(faltan, queNoSePublica){
+    return '<div class="aia-sinmedir">' +
+      '<b>SIN MEDIR</b>' +
+      '<p>No se publica ' + queNoSePublica + ': dentro del radio no hay ' +
+        esc(faltan.join(', ni ')) + ' en OpenStreetMap, así que lo que se calcularía ' +
+        'no mide el entorno, mide una capa vacía. Cero usos mapeados y cero usos ' +
+        'existentes no son lo mismo.</p>' +
+      '<p class="aia-sinmedir-como">Cómo se llena: mapear el radio en OpenStreetMap ' +
+        '—cualquiera puede—, o recorrerlo en campo y registrar lo que hay. Con la capa ' +
+        'puesta, el puntaje se calcula solo.</p>' +
+      '</div>';
+  }
+
   // ── 1. Lectura ejecutiva ────────────────────────────────────────────────
   function bloqueEjecutivo(r){
     const v = r.viabilidad;
     if (!v) return bloqueRanking(r);
+    /* El discriminante de la v875: con la capa vacía no se publica ni el
+       puntaje ni la lectura, que es una recomendación de inversión. */
+    const vacia = capaVaciaAIA(r);
+    if (vacia.length) return '<div class="ejec ejec-sinmedir">' +
+      '<div class="ejec-txt"><b class="ejec-rot">VIABILIDAD DEL PROYECTO</b>' +
+      sinMedirAIA(vacia, 'el puntaje de viabilidad ni la lectura del entorno') +
+      '</div></div>';
     const col = v.nivel === 'Alta' ? T.ok : (v.nivel === 'Media' ? T.warn : T.bad);
     const est = estrellasDeScore(v.score);
     const lectura = v.nivel === 'Alta'
@@ -1095,6 +1165,15 @@
   function bloqueOportunidad(r){
     const i = r.indicadores;
     if (!i) return '';
+    /* El mismo molde, dos paneles más abajo: «+8 potencial · hoy hay 0» sobre
+       una capa vacía convierte «nadie lo mapeó» en «falta de todo». Se incluye
+       porque dejarlo sería publicar el defecto que el panel de al lado acaba
+       de dejar de publicar, que es la razón por la que la v875 no arregló solo
+       los tres sitios que su pliego nombraba. */
+    const vacia = capaVaciaAIA(r);
+    if (vacia.length) return '<div class="tarjeta"><h2>Oportunidad urbana</h2>' +
+      escalaAIA('oportunidad') +
+      sinMedirAIA(vacia, 'el puntaje de oportunidad ni los usos que faltarían') + '</div>';
     const so = i.scoreOportunidad;
     const col = so.valor >= 75 ? T.ok : so.valor >= 60 ? T.acento : so.valor >= 45 ? T.warn : T.bad;
     const est = estrellasDeScore(so.valor);
@@ -1152,7 +1231,15 @@
       ? 'El entorno mueve más carro que peatón. Sin parqueo resuelto, el flujo puede pasar de largo sin convertirse en cliente.'
       : 'El entorno reparte parejo entre peatón y carro. Conviene resolver los dos accesos y no apostar a uno solo.';
     const via = (m.viasArterias || [])[0];
-    const reto = !f.hayDondeParar
+    /* «Diferenciarse de la competencia ya instalada» es una recomendación
+       sobre una competencia que, con la capa vacía, nadie midió. Va primero
+       porque es la que puede ser falsa; las otras dos ramas se sostienen
+       igual (v875). */
+    const vaciaClave = capaVaciaAIA(r);
+    const reto = vaciaClave.length
+      ? 'No se puede nombrar el reto: dentro del radio no hay ' + vaciaClave.join(', ni ') +
+        ' en el mapa abierto, así que no hay competencia medida con la que compararse.'
+      : !f.hayDondeParar
       ? 'No hay parqueadero mapeado ni formatos que suelan traer el suyo: el flujo pasa de largo.'
       : f.avisoDatos
       ? 'La zona está poco mapeada: el flujo real puede ser mayor que el estimado.'
@@ -1180,6 +1267,10 @@
   function bloqueViabilidadDetalle(r){
     const v = r.viabilidad;
     if (!v) return '';
+    const vacia = capaVaciaAIA(r);
+    if (vacia.length) return '<div class="tarjeta"><h2>Viabilidad</h2>' +
+      escalaAIA('viabilidad-detalle') +
+      sinMedirAIA(vacia, 'el puntaje ni sus cinco dimensiones') + '</div>';
     const col = v.nivel === 'Alta' ? T.ok : (v.nivel === 'Media' ? T.warn : T.bad);
     const est = estrellasDeScore(v.score);
     const N = { demanda:'Demanda', competencia:'Competencia', complementarios:'Complementarios',
@@ -2392,6 +2483,14 @@ pie(4, r, autor, true),
 '.aia-base b{display:block;font-size:7.6px;color:', T.tinta, ';line-height:1.35}',
 '.aia-base p{font-size:6.9px;line-height:1.4;color:', T.txt3, ';margin:2px 0 0}',
 '.aia-base-esc{border-top:1px dashed ', T.borde, ';padding-top:2px;color:', T.bad, ' !important}',
+/* «Sin medir» (v1044): el mismo ámbar con el que la franja de arriba avisa
+   de pocos usos, porque es la misma clase de aviso —una tarea para quien
+   analiza, no una conclusión para quien decide—. */
+'.aia-sinmedir{border:1px dashed ', T.warn, ';border-radius:5px;padding:5px 7px;background:#fff8ec}',
+'.aia-sinmedir b{display:block;font-size:8.6px;font-weight:900;letter-spacing:.8px;color:', T.warn, '}',
+'.aia-sinmedir p{font-size:6.9px;line-height:1.4;color:', T.txt3, ';margin:2px 0 0}',
+'.aia-sinmedir-como{color:', T.ok, ' !important;font-weight:600}',
+'.ejec-sinmedir{display:block}',
 '.nota-pie{font-size:6.9px;line-height:1.4;color:', T.txt3, ';margin-top:5px}',
 /* El aro vive en una caja de tamaño fijo que nada puede invadir: ese es el
    defecto que se venía repitiendo —una barra de ancho completo cruzándolo—. */

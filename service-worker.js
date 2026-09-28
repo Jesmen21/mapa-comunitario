@@ -1,4 +1,4 @@
-const URBIS_CACHE = 'urbis-v1043-la-escala-de-cada-panel-del-informe';
+const URBIS_CACHE = 'urbis-v1044-sin-capa-no-hay-score-de-viabilidad';
 const URBIS_ASSETS = [
   './',
   './index.html',

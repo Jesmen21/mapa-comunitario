@@ -21830,6 +21830,131 @@ y un radio de 12,3 km, «✓ … 47.883 ha» y el aviso de que el radio pasa de 
 * **Los porcentajes fraccionarios** siguen sin poderse medir en el papel por lo
   mismo. `pendiente`
 
+## Sin capa no hay score de viabilidad (v1044)
+
+Cuarto peldaño. Es el discriminante de la v875 —«el error más grave de la
+lámina»— llevado al informe que se le entrega a un cliente: **cero mapeado y
+cero existente son cosas distintas**, y el score de viabilidad las juntaba.
+
+    v1043   capa vacía → «VIABILIDAD DEL PROYECTO · Alta · el entorno reúne condiciones favorables»
+    v1044   capa vacía → «SIN MEDIR», con qué falta y cómo se llena
+
+Con el radio sin un solo uso registrado, las cinco dimensiones del puntaje se
+calculan sobre una capa vacía y el informe publicaba igual un número, un nivel
+y una **recomendación de inversión**: «El entorno reúne condiciones favorables
+para el proyecto», o «Conviene revisar alternativas mejor calificadas o evaluar
+otro radio antes de descartar el lote». La cifra es defendible una por una y la
+conclusión no, que es lo que hace cara a esta clase.
+
+### El módulo ya sabía hacerlo, en un panel
+
+«Competencia directa (0)» dice desde antes de esta versión que **«el mapa
+abierto no lo ve todo: conviene confirmarlo en campo antes de darlo por
+bueno»**. O sea que la lectura correcta estaba escrita en un sitio y no llegaba
+a los paneles que publican el juicio — la forma de la v867 otra vez.
+
+### Las tres capas, y el discriminante de cada una
+
+El de la v875 era `categorias[].puntos`: cuántos equipamientos de esa clase hay
+**mapeados**. Acá son los tres contadores que el resultado deja leer:
+
+| Capa | Discriminante | Por qué |
+|---|---|---|
+| **usos** | `stats.total` en cero | ninguna de las cinco dimensiones tiene sobre qué medirse |
+| **locales** | `stats.porGrupo.comercio` en cero | sin un local mapeado, «complementarios» y «entorno» miden el vacío |
+| **competidores** | `nCompetidores` en cero **Y** sin comercio | el par es lo que lo hace honesto |
+
+La tercera fila es la que costó pensar. **Cero competidores con doscientos
+locales a la vista SÍ es un hallazgo** —y el panel de competencia ya lo dice
+así—; cero competidores sin un solo local es una capa vacía. Sin el par, el
+arreglo taparía un hallazgo del propio informe. Hay una guarda dedicada a ese
+par, y una inyección que la pone en rojo.
+
+#### Cero es cero, y ausente no es cero
+
+Un campo que el resultado no trae **no dispara nada**: `Number(undefined) === 0`
+es falso, y así tiene que quedarse. Declarar la capa vacía porque no se pudo
+leer sería la misma confusión en la otra dirección, que es la distinción que la
+v899 estrenó entre «sin dato» y «panel fuera». La guarda exige la comparación
+estricta contra cero y rechaza un `!x`, que daría verdadero para lo ausente.
+
+Las cuatro ramas se miden en la misma corrida: capa puesta, capa vacía, campos
+ausentes, y cero competidores con comercio mapeado. Sin las tres últimas, un
+«SIN MEDIR» puesto en todas partes pasaría igual.
+
+### Cuatro paneles, y por qué el cuarto
+
+Los tres del score —el aro grande de la hoja 1, el detalle de la hoja 2 y el
+del listado— más **«Oportunidad urbana»**, que es el mismo molde dos paneles
+más abajo: «+8 potencial · hoy hay 0» sobre una capa vacía convierte «nadie lo
+mapeó» en «falta de todo». Dejarlo habría sido publicar, dos dedos debajo, el
+defecto que el panel de al lado acaba de dejar de publicar — que es la razón
+por la que la v875 no arregló solo los tres sitios que su pliego nombraba.
+
+Y el **RETO** de «lo más importante para el cliente», que decía «Diferenciarse
+de la competencia ya instalada en el radio»: es una recomendación sobre una
+competencia que nadie midió. Sus otras dos ramas se sostienen igual, así que la
+nueva va primero y no las toca.
+
+### Una redacción, no cuatro
+
+`sinMedirAIA` la escribe una vez: con cuatro, la que se quedaría vieja sería la
+que nadie vuelve a mirar (v879). Y dice **cómo se llena** —mapear el radio, o
+recorrerlo en campo— porque un vacío que no dice cómo se resuelve es la mitad
+del trabajo (v880). Va en el mismo ámbar de la franja de arriba, porque es la
+misma clase de aviso: una tarea para quien analiza, no una conclusión para
+quien decide.
+
+### Lo que el papel corrigió
+
+«dentro del radio **hay ningún uso registrado**, ningún local de comercio…» no
+es castellano. Se vio leyendo la franja compuesta, no el código: la lista se
+arma ahora con «no hay … ni … ni …».
+
+### Una guarda mía que no mordía, cazada por su propia inyección
+
+«Y mira los tres contadores de capa» buscaba la **variable** `comercio` en el
+discriminante. Quitando el renglón entero de esa capa la guarda **seguía en
+verde**, porque la condición del par de abajo —`nComp === 0 && comercio === 0`—
+la nombra igual. Ahora el patrón lleva el `if (` dentro, que es lo que separa la
+capa de la mención. Es la lección de siempre: una guarda que pasa por una
+mención no vigila nada (v878), y lo destapó demostrar en rojo.
+
+### Demostrado contra la v1043
+
+Seis inyecciones fieles, una por aserción (v993):
+
+```
+✗ los paneles que publican el juicio pasan por el discriminante  — bloqueEjecutivo
+✗ y mira los tres contadores de capa que el resultado trae  — no los mira: locales
+✗ y distingue CERO de AUSENTE: un campo que no viene no dispara  — con un `!x` …
+✗ y cero competidores con comercio mapeado NO es capa vacia  — le basta el cero
+✗ y los cuatro escriben el «sin medir» por la misma funcion  — 3 de 4
+✗ y el «sin medir» dice que falta y como se llena  — se queda en la marca
+```
+
+La primera es el estado exacto de la v1043 para ese panel.
+
+### Medido sobre el papel
+
+| | SIN MEDIR | score | recomendación | oportunidad |
+|---|---|---|---|---|
+| capa puesta | 0 | 7/100 | sí | sí |
+| **capa vacía** | **3** | **no sale** | **no** | **no** |
+| campos ausentes | 0 | 7/100 | sí | sí |
+| cero competidores con comercio | 0 | 7/100 | sí | sí |
+
+### Lo que esta versión NO hace, medido
+
+**Los dos flujos de «los 6 datos» siguen saliendo con la capa vacía** —«Flujo
+peatonal 7/100»—, y no se tocan por una razón medida: el flujo **ya tiene su
+propio discriminante del motor**, `avisoDatos`, que el panel de flujo imprime
+con su ⚠️ desde antes. Es el motor el que decide cuándo la zona está poco
+mapeada, y su umbral no se puede leer desde este contenedor; inventarle otro
+sería el número a ojo de la v869. Lo que sí queda medido es que la banda de los
+seis datos **no lee ese aviso** aunque lo tenga al lado, mientras el panel de
+flujo sí. `pendiente`
+
 ## La lista viva: lo que al pliego educativo todavía le falta (v866)
 
 Esta lista se quedó vieja **cinco veces**. Cuatro dentro de la hoja —la
