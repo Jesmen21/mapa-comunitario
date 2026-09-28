@@ -1,4 +1,4 @@
-const URBIS_CACHE = 'urbis-v1038-cada-app-abre-su-propia-puerta';
+const URBIS_CACHE = 'urbis-v1039-la-foto-del-mapeo-se-ve-entera';
 const URBIS_ASSETS = [
   './',
   './index.html',

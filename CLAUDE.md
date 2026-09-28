@@ -21210,6 +21210,188 @@ primera es el estado exacto de la v1035:
 
 Las dos del tema y el nombre son el error que esta misma tanda cometió.
 
+## La foto del mapeo se ve entera, y a su tamaño (v1039)
+
+Reportado con el dedo sobre la pantalla: **«la foto pixelada y recortada del
+panel de Pro City»**. Son dos cosas con causas distintas, y medir antes de
+suponer —la regla de la v863 y la v916— destapó una tercera **peor que las
+dos**, en la misma superficie.
+
+    v1038   se ve el 42,9 % de una foto 3:4 y el 32,2 % de una 9:16 · se guarda a 810×1080
+    v1039   se ve el 100 % de las dos · se guarda a 960×1280 · y tocar un punto sin red ya no congela
+
+### Recortada: 57 % del alto, y lo que se tira es lo que se fotografió
+
+`object-fit:cover` con `max-height:190px`. Medido en el panel de verdad, sobre
+un teléfono de 390 px a DPR 3:
+
+| | se ve | se pierde |
+|---|---|---|
+| retrato 3:4 | **42,9 %** | 57,1 % del alto |
+| retrato 9:16 | **32,2 %** | 67,8 % |
+
+**La foto de un mapeo es evidencia**, así que lo que el recorte tira es justo
+lo que alguien fue a fotografiar: la copa de la palma sobre el cableado, el
+poste inclinado entero. Es la misma decisión que la v898 tomó con las cotas
+del lote —una cota que no se puede leer no es una medida, es tinta encima del
+plano— dicha sobre una foto.
+
+Se ve completa, y **no lleva techo propio**: el que hace falta lo pone la
+tarjeta, que además se recorre. Un techo en la foto volvería a decidir por el
+lector qué parte de la suya le toca ver.
+
+### Y quitar el recorte destapó el defecto de la v896, otra vez
+
+Sin techo, una foto 9:16 empuja la tarjeta **182 px fuera de la pantalla por
+arriba** —medido—, y con ella el título y la **×**, que es lo único que cierra
+el panel. El panel es `position:absolute` anclado abajo y **no tenía ni techo
+ni recorrido**.
+
+La tarjeta topa ahora contra su contenedor y se recorre. Tres cosas que
+costaron una medición cada una:
+
+* **el panel necesita `top`**, o su altura es la del contenido y un
+  `max-height:100%` no topa contra nada;
+* **`box-sizing:border-box`**, porque el techo se cuenta CON el relleno: sin
+  él la tarjeta se salía 29 px;
+* y **los toques se reparten** —`pointer-events:none` en el panel, `auto` en
+  la tarjeta—, o el panel, que ahora cubre la pantalla, le quitaría al mapa el
+  toque en todo lo que la tarjeta no ocupa. Medido con la tercera corrida, la
+  del punto sin foto: ahí la tarjeta mide 325 px y el mapa sigue recibiendo el
+  toque encima.
+
+#### Y el papel enseñó lo que la caja no
+
+Con `top:0` la medida decía que la **×** estaba dentro de la tarjeta, y lo
+estaba — **con la barra de arriba encima**, que va en un `z-index` más alto.
+Se vio mirando la captura, que es el método que encontró los defectos de la
+v874, la v882, la v885, la v887 y la v974.
+
+Los 102 px del `top` salen de medir la barra en tres teléfonos (390, 360 y
+430 px de ancho): arranca en `env(safe-area-inset-top) + 12px` y mide 82 de
+alto, así que cierra en env + 94; los 8 que faltan son el aire. Y **no se
+comparan contra un número escrito en la guarda**: se comparan contra el `top`
+que la propia barra declara, así que moverla pone esto en rojo.
+
+### Pixelada: el piso de calidad costaba resolución, medido
+
+La foto se guarda dentro de una celda de Sheets, así que el techo de 42.000
+caracteres es duro y subirlo no es el arreglo: **medido, los 7.000 de holgura
+que quedan hasta 50.000 dan un 8 % más de lado y no se notan.**
+
+Lo que sí costaba resolución era el **piso de calidad de 0,45**. Su comentario
+suponía que una foto grande con calidad baja sale «pastosa»; medido a los dos
+anchos a los que la foto se ve de verdad —996 px de dispositivo en este panel
+y 1746 en el visor a pantalla completa, los dos medidos—, el error contra el
+original es MENOR cuantos más píxeles tiene, hasta un punto de giro:
+
+| lado | ancho | q máxima | error@panel | error@visor |
+|---|---|---|---|---|
+| 2000 | 1500 | 0,107 | 5,59 | 6,64 |
+| **1600** | **1200** | **0,289** | **5,16** | **6,37** |
+| 1280 | 960 | 0,449 | 5,25 | 6,58 |
+| 1080 | 810 | 0,681 | 5,61 | 7,03 |
+| 900 | 675 | 0,790 | 6,07 | 7,50 |
+| 640 | 480 | 0,914 | 7,70 | 9,08 |
+
+**El criterio no es el gusto: es el error donde la foto SE VE**, y el ancho
+sale de medir el panel, no de elegirlo. Con eso el piso queda derivado —admite
+el tamaño del mínimo y rechaza el de más allá— y **1600 no estaba siquiera en
+la escalera**. En el sector de prueba la foto pasa de 810×1080 a **960×1280**,
+y el aumento en el panel de **1,48× a 1,04×**: deja de estirarse.
+
+El último recurso tiene un piso **más bajo** a propósito, y va dicho: su
+criterio es otro —allí se elige entre dos fotos buenas y aquí entre una pobre
+y ninguna evidencia—.
+
+#### Lo que se midió y NO se hizo: reducir por mitades
+
+Era la hipótesis obvia —un reescalado en un paso de 4,5× produce aliasing— y
+**la medición la refuta**: contra el escalado por mitades, el mismo tamaño en
+dos de tres casos y 0,04 de calidad en el tercero. Chrome con
+`imageSmoothingQuality:'high'` ya lo hace bien. No se tocó, que es lo contrario
+de la mudanza que la v882 tuvo que deshacer.
+
+### El cuelgue que apareció midiendo, y es peor que lo reportado
+
+La sonda no podía abrir el panel: se colgaba. `showProCitySelectedPanel` se
+repinta a sí mismo «cuando terminen de cargar las carpetas», y
+`loadProCityFolders` **no pone su bandera ni cuando no hay usuario ni cuando
+la red falla** —sale por su puerta temprana en el primer caso y se traga el
+error en el segundo—, así que el repintado se volvía a llamar sin parar.
+
+Medido en el navegador, con el código de la v1038:
+
+| | tras tocar un punto |
+|---|---|
+| sin sesión | **la pestaña NO responde** |
+| con sesión y sin red | **la pestaña NO responde** |
+
+La segunda es la que importa: **es el caso de quien mapea en la calle sin
+señal**, que es para lo que URBIS existe. El arreglo es una condición —se
+repinta solo si las carpetas LLEGARON— y no es un parche: ese repintado existe
+para enseñar el nombre de la carpeta, y sin ellas no hay nombre que enseñar.
+
+Va en esta tanda y no en otra porque es la misma superficie que el reporte
+nombra, y una pestaña congelada pesa más que un recorte.
+
+#### La guarda de la guarda dice por qué hace falta
+
+Si `loadProCityFolders` pusiera SIEMPRE su bandera, la comprobación de arriba
+seguiría siendo correcta y dejaría de proteger de algo. Hay una que lo mide, y
+su inyección tuvo que arreglarse dos veces: `.catch(function(){});` sale
+**cuatro veces** en `js/20` y la primera no es esta, así que el parche tocaba
+otra función y la guarda seguía en verde **con razón**. El ancla se toma con
+su contexto — es la lección de siempre, cobrada en una demostración.
+
+### Demostrado contra la v1038
+
+Quince inyecciones fieles, una por aserción (v993), contra copias guardadas en
+el borrador y no con `git checkout --` sobre trabajo sin confirmar (v973):
+
+```
+✗ la foto del panel se ve entera  — la recorta: object-fit:cover · max-height:190px
+✗ y la tarjeta tiene techo, recorrido y box-sizing  — le falta el techo · el recorrido · el box-sizing
+✗ y el panel declara su top  — sin top: el techo de la tarjeta no resolvería contra nada
+✗ y arranca por debajo de la barra  — panel en +8px y la barra en +16px: le taparía el título y la X
+✗ y los toques se reparten  — el panel los atrapa: el mapa dejaría de recibir el toque
+✗ y el piso deja pasar ese tamaño  — piso 0.45: 1600 no cabría y la escalera caería a uno con más error
+✗ la escalera empieza en el tamaño de menor error  — arranca en 1280
+✗ y el último recurso pide MENOS calidad  — respaldo en 0.30 y piso en 0.25
+✗ y solo si LLEGARON  — repinta pase lo que pase: sin sesión o sin red, tocar un punto congela la pestaña
+```
+
+Más las cinco de MATERIAL y la del lector de CSS, que es la que más enseña:
+**sin quitarle los comentarios a la regla, un `top:` citado dentro de uno se
+leería como una declaración** —la v926 en CSS— y, al revés, un comentario
+entre dos declaraciones rompe el `;` que las separa y la de abajo deja de
+encontrarse. Las dos mitades se demostraron.
+
+### Lo que esta versión NO hace, y queda medido
+
+* **La foto sin techo se come el panel cuando es muy alta.** Medido: una 9:16
+  ocupa 590 de los 642 px de la tarjeta, así que la nota y las acciones piden
+  recorrer. Ponerle un techo que deje asomar lo de abajo es una decisión
+  editorial —cuánto es «asomar» no sale de ninguna medición— y la tarjeta ya
+  garantiza que nada queda inalcanzable. `pendiente`
+* **El visor a pantalla completa sigue aumentando 1,46×** (antes 2,16×). No se
+  puede bajar más sin subir el techo de la celda, que está medido y no
+  alcanza. `pendiente`
+
+### Lo que NO se pudo correr
+
+**Ninguna suite de navegador**, por lo mismo que la v973 en adelante: este
+contenedor no tiene `../urbis-motor` ni el `node_modules` del banco de
+pruebas. Corrió `revisar.js` entero con sus catorce comprobaciones nuevas, y
+se midió el papel con la sonda —el panel de verdad, con tres clases de punto y
+la foto pasada por el camino de compresión de verdad—, que es lo que encontró
+las tres cosas que no se veían leyendo: el recorte, la tarjeta fuera de la
+pantalla y el cuelgue.
+
+Las aserciones que corresponderían a esto en `tpisos` —mapear con foto, abrir
+el panel y comprobar que se ve entera— quedan pendientes de un contenedor con
+el banco de pruebas.
+
 ## La lista viva: lo que al pliego educativo todavía le falta (v866)
 
 Esta lista se quedó vieja **cinco veces**. Cuatro dentro de la hoja —la
