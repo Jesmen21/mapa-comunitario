@@ -5295,6 +5295,156 @@ console.log('\n  -- la coma decimal y el separador de miles en el informe de emp
   }
 }
 
+console.log('\n  -- a que escala esta medido cada panel del informe de empresas (v1043) --');
+{
+  const j63 = soloCodigo(leer('js/63-analisis-ia-informe.js'));
+
+  /* Las dos tablas se LEEN del modulo y no se copian aca: una copia acabaria
+     comprobando que es igual a si misma (v957). Se cortan de su llave de
+     apertura al `};` de su propia sangria, que es una extension real y no una
+     ventana de caracteres (v935). */
+  const tabla = (nombre) => {
+    const i = j63.indexOf('const ' + nombre + ' = {');
+    if (i < 0) return null;
+    const j = j63.indexOf('\n  };', i);
+    if (j < 0) return null;
+    const cuerpo = j63.slice(i + ('const ' + nombre + ' = {').length, j);
+    const out = {};
+    /* La clave puede ir entrecomillada o no —`'hora-fuerte':` lleva un guion
+       y `predio:` no—, y una sola de las dos formas dejaba la tercera tabla
+       vacia sin que nada lo dijera: la guarda de MATERIAL de abajo no la
+       contaba, asi que el fallo salio tres aserciones mas abajo y con el
+       nombre equivocado. Las dos formas, y las tres tablas en el MATERIAL. */
+    const re = /(?:'([^']+)'|([A-Za-z][\w-]*))\s*:\s*'([^']*)'/g;
+    let m;
+    while ((m = re.exec(cuerpo)) !== null) out[m[1] || m[2]] = m[3];
+    return out;
+  };
+  const CON = tabla('ESCALA_AIA');
+  const SIN = tabla('SIN_ESCALA_AIA');
+  const VOC = tabla('ESCALA_TEXTO_AIA');
+
+  /* Un PANEL de este modulo es una `.tarjeta` o un `.bloque`: es la convencion
+     del propio informe y es la que la sonda cuenta sobre el papel. El trozo de
+     cada uno va de su apertura a la apertura del SIGUIENTE panel o al final de
+     su funcion, lo que llegue antes — una extension real, no N caracteres. */
+  const panelesDe = (src) => {
+    const re = /class="(?:tarjeta|bloque)[^"]*"/g;
+    const ini = [];
+    let m;
+    while ((m = re.exec(src)) !== null) ini.push(m.index);
+    return ini.map((i, k) => {
+      const sigPanel = k + 1 < ini.length ? ini[k + 1] : src.length;
+      const sigFn = src.indexOf('\n  function ', i);
+      const fin = Math.min(sigPanel, sigFn < 0 ? src.length : sigFn);
+      const linea = src.slice(0, i).split('\n').length;
+      return { linea: linea, trozo: src.slice(i, fin) };
+    });
+  };
+  const paneles = panelesDe(j63);
+
+  if (!CON || !SIN || !VOC || Object.keys(CON).length < 20 ||
+      /* Los minimos son «el lector devolvio algo», no una cifra a ojo: si
+         se rompe, una tabla sale VACIA y eso es lo que hay que cazar. El
+         vocabulario tiene hoy dos valores y crece o encoge con los paneles,
+         asi que pedirle tres seria un techo puesto a ojo que se pone rojo
+         cuando el modulo mejora (v970). */
+      Object.keys(SIN).length < 1 || Object.keys(VOC).length < 1 || paneles.length < 20) {
+    anotarSinMaterial('MATERIAL · las tablas de escala y los paneles se dejan leer',
+      'CON=' + (CON ? Object.keys(CON).length : 'no') + ' · SIN=' + (SIN ? Object.keys(SIN).length : 'no') +
+      ' · VOC=' + (VOC ? Object.keys(VOC).length : 'no') + ' · paneles=' + paneles.length);
+  } else {
+    /* Falla CERRADO: un panel nuevo sin su llamada sale en rojo en su primera
+       composicion, en vez de imprimir sus cifras sin decir sobre que extension
+       se midieron — que es como salian los 16 del informe hasta la v1042. */
+    const pelados = paneles.filter((p) => !/escalaAIA\(/.test(p.trozo));
+    comprobar('todo panel del informe declara a que escala esta medido', pelados.length === 0,
+      pelados.length === 0
+        ? paneles.length + ' paneles, todos con su rotulo'
+        : pelados.length + ' publicarian cifras sin decir sobre que extension se midieron: ' +
+          pelados.slice(0, 6).map((p) => 'js/63:' + p.linea).join(' · '));
+
+    const usados = [];
+    let mu;
+    const reU = /escalaAIA\(\s*'([^']+)'\s*\)/g;
+    while ((mu = reU.exec(j63)) !== null) usados.push(mu[1]);
+
+    /* Un identificador que no esta en ninguna de las dos tablas imprime
+       «escala sin declarar» en rojo: se ve. Pero verlo en el papel es tarde,
+       asi que la guarda lo caza antes. */
+    const fantasma = usados.filter((id) => !(id in CON) && !(id in SIN));
+    comprobar('y todo identificador usado existe en una de las dos tablas', fantasma.length === 0,
+      fantasma.length === 0
+        ? usados.length + ' identificadores, todos declarados'
+        : 'imprimirian «escala sin declarar» en rojo: ' + fantasma.slice(0, 6).join(' · '));
+
+    /* Y ninguno sobra: una entrada que no usa nadie es un no-op que se lee
+       igual que una que funciona (v973). */
+    const sobran = Object.keys(CON).concat(Object.keys(SIN)).filter((id) => usados.indexOf(id) < 0);
+    comprobar('y ninguna entrada de las tablas se quedo sin panel', sobran.length === 0,
+      sobran.length === 0 ? 'ninguna sobra' : 'no las usa nadie: ' + sobran.slice(0, 6).join(' · '));
+
+    /* Toda escala declarada sale del vocabulario del propio modulo: un valor
+       suelto imprimiria su literal crudo en el rotulo. */
+    const fuera = Object.keys(CON).filter((id) => !(CON[id] in VOC));
+    comprobar('y toda escala declarada esta en el vocabulario del modulo', fuera.length === 0,
+      fuera.length === 0
+        ? Object.keys(VOC).length + ' valores: ' + Object.keys(VOC).join(' · ')
+        : 'fuera del vocabulario: ' + fuera.map((id) => id + '=' + CON[id]).slice(0, 6).join(' · '));
+
+    /* Y ningun valor del vocabulario se queda sin panel: una escala declarada
+       que no rotula nada es vocabulario que no llama nadie (v885), y el dia
+       que alguien la crea en uso el rotulo saldria con su literal crudo. */
+    const vocSobra = Object.keys(VOC).filter((v) => Object.keys(CON).every((id) => CON[id] !== v));
+    comprobar('y ningun valor del vocabulario se quedo sin usar',
+      vocSobra.length === 0,
+      vocSobra.length === 0
+        ? 'los ' + Object.keys(VOC).length + ' se usan'
+        : 'no rotula nada: ' + vocSobra.join(' · '));
+
+    /* La mitad que impide el atajo: sin ella, el arreglo barato seria meterlos
+       todos en SIN_ESCALA y el rotulo dejaria de significar algo. Cada razon
+       se escribe, como las etiquetas exentas de la v1029. */
+    const mudas = Object.keys(SIN).filter((id) => String(SIN[id]).trim().length < 20);
+    comprobar('y cada panel sin escala dice POR QUE no la lleva', mudas.length === 0,
+      mudas.length === 0
+        ? Object.keys(SIN).length + ' sin escala, cada uno con su razon escrita'
+        : 'sin razon escrita: ' + mudas.slice(0, 6).join(' · '));
+
+    /* La guarda de la guarda: si `escalaAIA` dejara de leer las tablas, todo
+       lo de arriba seguiria en verde sobre dos tablas que son documentacion
+       (v878). Se mide el CUERPO de la funcion, cortado a su cierre. */
+    const iF = j63.indexOf('function escalaAIA(');
+    const cuerpoF = iF < 0 ? '' : j63.slice(iF, j63.indexOf('\n  }', iF));
+    comprobar('y el rotulador sigue leyendo las tres tablas', /ESCALA_AIA\[/.test(cuerpoF) && /SIN_ESCALA_AIA\[/.test(cuerpoF) && /ESCALA_TEXTO_AIA\[/.test(cuerpoF),
+      /ESCALA_AIA\[/.test(cuerpoF) && /SIN_ESCALA_AIA\[/.test(cuerpoF) && /ESCALA_TEXTO_AIA\[/.test(cuerpoF)
+        ? 'lee las tres'
+        : 'dejo de leer alguna: las tablas serian documentacion y el rotulo no cambiaria');
+  }
+
+  /* La otra mitad del peldano: el informe que va al CLIENTE dice con cuantos
+     usos se hizo. El del curso lo declara desde siempre; el de empresas no
+     llamaba a ese bloque una sola vez —medido sobre el papel—. */
+  const iEmp = j63.indexOf('function cuerpoEmpresa()');
+  const cuerpoEmp = iEmp < 0 ? '' : j63.slice(iEmp, j63.indexOf('function cuerpoEdu()', iEmp));
+  comprobar('el informe de empresas dice con cuantos usos se hizo el analisis', iEmp > 0 && /bloqueBaseAIA\(r\)/.test(cuerpoEmp),
+    iEmp < 0 ? 'no se encontro cuerpoEmpresa'
+             : (/bloqueBaseAIA\(r\)/.test(cuerpoEmp)
+                 ? 'la franja va en la hoja 1, antes de la primera cifra'
+                 : 'no lo dice: publicaria sus paneles sin decir sobre cuantos usos se hicieron'));
+
+  /* Y el umbral es UNO solo: con dos numeros, el dia que alguien mueva el del
+     curso el del cliente se queda viejo y nadie lo ve (v879). */
+  const iBase = j63.indexOf('function bloqueBaseAIA(');
+  const cuerpoBase = iBase < 0 ? '' : j63.slice(iBase, j63.indexOf('\n  }', iBase));
+  const iEdu = j63.indexOf('function bloqueBaseInforme(');
+  const cuerpoEdu2 = iEdu < 0 ? '' : j63.slice(iEdu, j63.indexOf('\n  }', iEdu));
+  const dosUsan = /MIN_USOS_FIABLE/.test(cuerpoBase) && /MIN_USOS_FIABLE/.test(cuerpoEdu2);
+  comprobar('y las dos advertencias de «pocos usos» salen del mismo umbral', dosUsan && /const MIN_USOS_FIABLE\s*=\s*\d+/.test(j63),
+    dosUsan ? 'las dos leen MIN_USOS_FIABLE'
+            : 'una escribe su propio numero: el dia que se mueva, la otra se queda vieja');
+}
+
 console.log('\n  -- la foto del panel de Pro City se ve entera, y a su tamano (v1039) --');
 {
   const c52 = leer('css/52-urbis-pro-city.css');

@@ -1,4 +1,4 @@
-const URBIS_CACHE = 'urbis-v1042-una-cifra-en-castellano-en-un-solo-sitio';
+const URBIS_CACHE = 'urbis-v1043-la-escala-de-cada-panel-del-informe';
 const URBIS_ASSETS = [
   './',
   './index.html',

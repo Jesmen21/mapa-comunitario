@@ -86,6 +86,102 @@
   let T = ESTILOS.institucional;
   function fijarEstilo(id){ T = ESTILOS[id] || ESTILOS.institucional; return T; }
 
+  /* ── A qué escala está medido cada panel (v1043) ────────────────────────
+     Es el error más caro de un análisis urbano y no se ve: una densidad
+     medida sobre un radio de 2.500 m impresa al lado del conteo de la
+     cuadra se lee como si fuera de la cuadra. El pliego educativo lo
+     resolvió en la v854 con su propia tabla; este informe salía con CERO
+     paneles rotulados —medido sobre el papel, 16 de 16—.
+
+     La tabla NO se comparte con la del pliego educativo, y la razón va
+     escrita para que nadie la unifique creyendo que es la clase B: lo que
+     coincide es la JERARQUÍA territorial y no el texto, y acá el texto
+     tiene que decir otra cosa. El pliego analiza «el sector»; este módulo
+     analiza SIEMPRE un radio alrededor de un punto —`meta.radioM`, sin una
+     sola rama de polígono— y su propia prosa lo llama «el radio». Dos
+     documentos, dos redacciones de la misma jerarquía.
+
+     La clave es un IDENTIFICADOR y no el título: los títulos de este
+     informe llevan la cifra dentro —«Viabilidad · 78 / 100», «Competencia
+     directa (3)»— así que una tabla por título sería un ancla por forma, y
+     esas envejecen (v935). */
+  const ESCALA_TEXTO_AIA = {
+    /* Solo los dos valores que algun panel usa. El pliego educativo declara
+       seis peldanos de la jerarquia y usa tres; aca no hay `predio` —este
+       modulo no dibuja lote: analiza SIEMPRE un radio, medido— ni ningun
+       panel medido a escala de municipio, asi que declararlos seria
+       vocabulario que no llama nadie (v885). Agregar uno cuesta un renglon el
+       dia que un panel lo necesite, y la guarda exige que ninguno sobre. */
+    radio: 'Radio analizado',
+    /* No está en el vocabulario del pliego educativo, y es una desviación
+       declarada y no disimulada: el panel de comparación multi-radio mide a
+       300, 500 y 1.000 m A LA VEZ, y su sentido entero es que NO hay una
+       sola escala. Con los seis valores del pliego habría que elegir uno y
+       mentir, o dejarlo sin rótulo, que es lo que esta versión vino a
+       quitar. */
+    varios: 'Varios radios'
+  };
+  const ESCALA_AIA = {
+    /* Lo medido sobre los usos que caen dentro del radio. Es casi todo el
+       informe, y eso es justo lo que hay que decir: un score de viabilidad
+       que el lector lee como «de mi lote» se calcula sobre el entorno. */
+    'atrae-vehiculos': 'radio', 'vocacion': 'radio', 'composicion-tabla': 'radio',
+    'viabilidad': 'radio', 'ranking': 'radio', 'unidades': 'radio',
+    'foda': 'radio', 'flujo': 'radio', 'movilidad': 'radio',
+    'indicadores': 'radio', 'recomendaciones': 'radio',
+    'anillos': 'radio', 'competencia': 'radio', 'oportunidad': 'radio',
+    'viabilidad-detalle': 'radio', 'generadores': 'radio', 'hora-fuerte': 'radio',
+    'composicion': 'radio', 'indicadores-filas': 'radio',
+    'horarios': 'radio', 'horarios-vacio': 'radio', 'forma': 'radio', 'forma-vacia': 'radio',
+    /* El censo se cuenta sobre las manzanas que caen en el radio, así que la
+       CIFRA es del radio; la TASA con la que se proyecta es municipal y el
+       propio panel lo dice en su renglón —«según la serie de proyecciones
+       municipales del DANE»—. Se rotula por lo que mide, que es la regla
+       que el pliego ya aplicó a «Presión de crecimiento». */
+    'poblacion': 'radio',
+    /* Lo levantado caminando: cada fila es de un edificio o de un tramo, y
+       lo que se declara es sobre qué se midió —el radio—, no el tamaño de
+       la casilla. Es la misma lectura que el pliego le dio a sus seis
+       plantillas de campo. */
+    'edificacion': 'radio', 'caminabilidad': 'radio', 'caminabilidad-vacia': 'radio',
+    /* Compara ESTE radio contra el de otro sector: las dos columnas son de
+       la misma escala, y por eso la comparación se sostiene. */
+    'comparacion': 'radio',
+    /* Las migas administrativas y la población de paso son municipales; el
+       resto del panel —las busetas que paran en el radio, las casas de
+       cambio, el paso más cercano— es del radio. Manda lo que el panel
+       MIDE, y lo municipal lo nombra como tal en su propia prosa. */
+    'contexto': 'radio',
+    'multi-radio': 'varios', 'radios': 'varios'
+  };
+  /* Un panel que NO publica una cifra medida sobre un territorio no lleva
+     escala, y dice por qué. Sin esta mitad, el arreglo barato sería
+     rotularlos todos «radio» y el rótulo dejaría de significar algo. */
+  const SIN_ESCALA_AIA = {
+    'guia': 'define las cifras del informe; no publica ninguna',
+    'como-leer': 'define las cifras del informe; no publica ninguna',
+    'como-leer-edu': 'define las cifras del informe; no publica ninguna',
+    'falta': 'lista lo que queda por levantar; es una tarea, no una medición',
+    'compatibilidad': 'cruza los usos que el cliente declaró; no mide el entorno'
+  };
+  /* El rótulo va FUERA del `<h2>` y pegado debajo, por lo que el pliego
+     aprendió en la v854: el título de un panel se extrae con un patrón que
+     una etiqueta dentro rompe. Un identificador que no está en ninguna de
+     las dos tablas imprime «escala sin declarar» en rojo en vez de callar:
+     callar deja que el lector suponga que es del radio. */
+  function escalaAIA(id){
+    const e = ESCALA_AIA[id];
+    if (e) return '<p class="aia-escala">' + esc(ESCALA_TEXTO_AIA[e] || e) + '</p>';
+    if (SIN_ESCALA_AIA[id]) return '';
+    return '<p class="aia-escala aia-escala-sin">escala sin declarar</p>';
+  }
+
+  /* Con menos de este número de usos el motor deja de dar por fiable su
+     propio mapa de calor (`mapaCalor.fiable`), y es el mismo número con el
+     que el informe del curso avisa desde que existe. Una sola constante
+     para que las dos advertencias no puedan separarse. */
+  const MIN_USOS_FIABLE = 25;
+
   function estrellasHTML(n){ return '★'.repeat(n) + '☆'.repeat(Math.max(0, 5 - n)); }
   function estrellasDeScore(score){ return Math.max(1, Math.min(5, Math.round((score || 0) / 20))); }
 
@@ -275,7 +371,7 @@
         gen.map(g => '<tr><td>' + esc(g.nombre) + '</td><td class="n">' + g.n +
           '</td><td class="n">' + g.aporte + '</td></tr>').join('') + '</table>'
       : '<p class="nota-pie">No se identificaron usos que atraigan viajes en vehículo en el radio.</p>';
-    return '<div class="tarjeta"><h2>Qué atrae vehículos</h2>' + filas +
+    return '<div class="tarjeta"><h2>Qué atrae vehículos</h2>' + escalaAIA('atrae-vehiculos') + filas +
       '<p class="pie-nota">' + textoParqueo(f) + '</p></div>';
   }
 
@@ -293,7 +389,7 @@
     const barras = rep.map(x =>
       '<div class="hf voc-fila"><span>' + esc(x.nombre) + '</span><div class="cl-barra"><i style="width:' +
       Math.round(100 * x.n / maxN) + '%;background:' + T.acento + '"></i></div><b>' + x.n + '</b></div>').join('');
-    return '<div class="tarjeta"><h2>De qué vive la cuadra</h2>' +
+    return '<div class="tarjeta"><h2>De qué vive la cuadra</h2>' + escalaAIA('vocacion') +
       (v.nombre
         ? '<p class="voc-titulo">' + esc(v.nombre) + ' <em>· ' + numEs(v.share) + '% de la oferta</em></p>' +
           '<p class="voc-lectura">' + esc(v.lectura || '') + '</p>'
@@ -381,7 +477,7 @@
         '<td class="num">' + numEs(Math.round(pct * 10) / 10) + '%</td>' +
         '<td class="barra"><i style="width:' + (100 * n / max).toFixed(1) + '%;background:' + C[g] + '"></i></td></tr>';
     }).join('');
-    return '<div class="bloque"><h2>Composición del entorno <em>(por número de usos)</em></h2>' +
+    return '<div class="bloque"><h2>Composición del entorno <em>(por número de usos)</em></h2>' + escalaAIA('composicion-tabla') +
       '<table class="tbl-comp"><thead><tr><th>Grupo de uso (Matriz URBIS)</th><th class="num">Usos</th><th class="num">%</th><th>Participación</th></tr></thead>' +
       '<tbody>' + filas + '</tbody>' +
       '<tfoot><tr><td>TOTAL</td><td class="num">' + numEs(s.total) + '</td><td class="num">100%</td><td></td></tr></tfoot></table></div>';
@@ -422,7 +518,7 @@
     // pero como respaldo del dato principal.
     const est = estrellasDeScore(v.score);
     const cg = r.compatibilidadGlobal;
-    return '<div class="bloque"><h2>Viabilidad del proyecto <em>· qué tan bien encaja SU proyecto en este lote</em></h2>' +
+    return '<div class="bloque"><h2>Viabilidad del proyecto <em>· qué tan bien encaja SU proyecto en este lote</em></h2>' + escalaAIA('viabilidad') +
       '<div class="hero">' +
         gaugeSVG(v.score, col) +
         '<div class="hero-est">' + estrellasHTML(est) + '</div>' +
@@ -438,7 +534,7 @@
 
   function bloqueRanking(r){
     if (!r.ranking || !r.ranking.length) return '';
-    return '<div class="bloque"><h2>Usos recomendados para el lote</h2><table class="tbl-mini">' +
+    return '<div class="bloque"><h2>Usos recomendados para el lote</h2>' + escalaAIA('ranking') + '<table class="tbl-mini">' +
       r.ranking.map((it, i) => '<tr><td class="pos">' + (i + 1) + '</td><td>' + it.icono + ' ' + esc(it.nombre) + '</td>' +
         '<td class="num"><b>' + numEs(it.score) + '</b></td><td class="razon">' + esc(it.razon) + '</td></tr>').join('') +
       '</table></div>';
@@ -447,7 +543,7 @@
   function bloqueUnidades(r){
     if (!r.recomendacionesUnidades || !r.recomendacionesUnidades.length) return '';
     return r.recomendacionesUnidades.map(g =>
-      '<div class="bloque"><h2>Qué poner en sus ' + g.cantidad + ' unidad(es) de "' + esc(g.usoNombre) + '"</h2>' +
+      '<div class="bloque"><h2>Qué poner en sus ' + g.cantidad + ' unidad(es) de "' + esc(g.usoNombre) + '"</h2>' + escalaAIA('unidades') +
       '<table class="tbl-mini">' + g.opciones.map(o =>
         '<tr><td class="pos">' + o.unidadesSugeridas + '×</td><td>' + o.icono + ' ' + esc(o.nombre) + '</td><td class="num"><b>' + numEs(o.score) + '</b>/100</td></tr>').join('') +
       '</table></div>').join('');
@@ -455,7 +551,7 @@
 
   function bloqueCompatibilidad(r){
     if (!r.compatibilidad || !r.compatibilidad.length) return '';
-    return '<div class="bloque"><h2>Compatibilidad entre usos</h2><table class="tbl-mini">' +
+    return '<div class="bloque"><h2>Compatibilidad entre usos</h2>' + escalaAIA('compatibilidad') + '<table class="tbl-mini">' +
       r.compatibilidad.slice(0, 3).map(c => '<tr><td>' + c.iconoA + ' ' + esc(c.usoA) + ' + ' + c.iconoB + ' ' + esc(c.usoB) + '</td>' +
         '<td class="estrellas">' + '★'.repeat(c.estrellas) + '☆'.repeat(5 - c.estrellas) + '</td>' +
         '<td class="razon">' + esc(c.motivo) + '</td></tr>').join('') + '</table></div>';
@@ -468,7 +564,7 @@
     // Va a todo el ancho de la hoja en 4 columnas: los hallazgos ahora citan
     // lugares por su nombre y en columnas angostas se disparaban a 8 líneas,
     // que era lo que obligaba a encoger toda la hoja.
-    return '<div class="bloque"><h2>Análisis FODA del entorno</h2><div class="foda-grid4">' +
+    return '<div class="bloque"><h2>Análisis FODA del entorno</h2>' + escalaAIA('foda') + '<div class="foda-grid4">' +
       caja('Fortalezas', '💪', f.fortalezas, 'f') + caja('Debilidades', '⚠️', f.debilidades, 'd') +
       caja('Oportunidades', '🚀', f.oportunidades, 'o') + caja('Riesgos', '🛑', f.riesgos, 'r') +
       '</div></div>';
@@ -590,7 +686,7 @@
         ? 'El entorno mueve más carro que peatón: sin parqueo resuelto, el flujo pasa de largo sin convertirse en cliente.'
         : 'El entorno reparte parejo entre peatón y carro: conviene resolver los dos accesos y no apostar a uno solo.';
 
-    return '<div class="bloque ancho"><h2>Flujo peatonal y vehicular <em>· potencial estimado</em></h2>' +
+    return '<div class="bloque ancho"><h2>Flujo peatonal y vehicular <em>· potencial estimado</em></h2>' + escalaAIA('flujo') +
       '<div class="flujo-grid">' +
         '<div>' +
           medidor('Flujo peatonal', '🚶', f.peatonal, f.nivelPeatonal) +
@@ -626,7 +722,7 @@
         '<td class="barra"><i style="width:' + Math.max(8, 100 - (v.distM / maxD * 78)).toFixed(0) + '%;background:' + colJ + '"></i></td>' +
         '<td class="num">' + numEs(v.distM) + ' m</td></tr>';
     }).join('');
-    return '<div class="bloque"><h2>Movilidad y exposición vial</h2>' +
+    return '<div class="bloque"><h2>Movilidad y exposición vial</h2>' + escalaAIA('movilidad') +
       '<div class="expo"><div class="expo-num" style="color:' + col + '">' + numEs(m.exposicion) + '<small>/100</small></div>' +
       '<div class="expo-info"><b style="background:' + col + '">Exposición ' + esc(m.nivelExposicion) + '</b>' +
       '<span>' + numEs(m.nViasArterias) + (m.nViasArterias === 1 ? ' corredor' : ' corredores') +
@@ -667,7 +763,7 @@
             '<span class="demo-edad">' + numEs(d.pctNinos) + '% menores de 15 · ' + numEs(d.pctMayores) + '% de 65 o más</span></div>' +
         '</div>'
       : '';
-    return '<div class="bloque"><h2>Indicadores urbanos</h2>' + franjaEstrato + bloqueDemo +
+    return '<div class="bloque"><h2>Indicadores urbanos</h2>' + escalaAIA('indicadores') + franjaEstrato + bloqueDemo +
       '<table class="tbl-ind">' +
       fila('Diversidad de usos', i.diversidad.valor, i.diversidad.nivel) +
       fila('Actividad comercial', Math.min(100, i.comercio.total * 2), i.comercio.nivel) +
@@ -690,7 +786,7 @@
       '<td>' + numEs(a.total) + '</td><td>' + numEs(a.densidadPorHa) + '</td>' +
       '<td>' + numEs(a.comercio) + '</td><td>' + numEs(a.equipamientos) + '</td>' +
       '<td>' + numEs(a.poblacionEstimada) + '</td></tr>').join('');
-    return '<div class="bloque"><h2>El entorno según la distancia <em>· mismo dato, varios radios</em></h2>' +
+    return '<div class="bloque"><h2>El entorno según la distancia <em>· mismo dato, varios radios</em></h2>' + escalaAIA('multi-radio') +
       '<table class="tbl-radios"><tr class="cab"><th>Radio</th><th>Usos</th><th>Usos/ha</th>' +
       '<th>Comercio</th><th>Equipam.</th><th>Hab. est.</th></tr>' + filas + '</table>' +
       '<p class="radio-lectura">' + esc(m.lectura) + '</p></div>';
@@ -698,7 +794,7 @@
 
   function bloqueRecomendaciones(r){
     if (!r.recomendaciones || !r.recomendaciones.length) return '';
-    return '<div class="bloque"><h2>Recomendaciones</h2><ul class="recos">' +
+    return '<div class="bloque"><h2>Recomendaciones</h2>' + escalaAIA('recomendaciones') + '<ul class="recos">' +
       r.recomendaciones.slice(0, 4).map(t => '<li>' + esc(t) + '</li>').join('') + '</ul></div>';
   }
 
@@ -773,7 +869,7 @@
     if (i.demografia && i.demografia.disponible) {
       filas.push(['📊 Edad y sexo', 'Quién vive alrededor: orienta qué tipo de oferta tiene demanda.']);
     }
-    return '<div class="bloque"><h2>Cómo leer este informe</h2><div class="guia">' +
+    return '<div class="bloque"><h2>Cómo leer este informe</h2>' + escalaAIA('guia') + '<div class="guia">' +
       filas.map(f => '<div><b>' + f[0] + '</b><small>' + f[1] + '</small></div>').join('') +
       '</div></div>';
   }
@@ -878,7 +974,7 @@
     const area = hasta + ' L' + px(corte).toFixed(2) + ' ' + H + ' L0 ' + H + ' Z';
     const hoy = serie[corte];
     return '<div class="tarjeta pobl">' +
-      '<h2>Cómo ha crecido la población</h2>' +
+      '<h2>Cómo ha crecido la población</h2>' + escalaAIA('poblacion') +
       '<div class="pobl-cifras">' +
         '<div><small>Censo ' + s.censoAnio + '</small><b>' +
           numEs(s.poblacionCenso) + '</b><em>contado</em></div>' +
@@ -923,7 +1019,7 @@
     const lista = (v && v.competidores) || [];
     const anon = (v && v.competidoresSinNombre) || 0;
     return '<div class="fila dos">' +
-      '<div class="tarjeta"><h2>Radio de importancia</h2>' +
+      '<div class="tarjeta"><h2>Radio de importancia</h2>' + escalaAIA('anillos') +
         '<p class="pie-nota">Cuánto de la influencia sobre el lote viene de cada distancia. ' +
         'Lo de cerca pesa más: no es lo mismo un supermercado a 100 m que a 900 m.</p>' +
         filas +
@@ -934,7 +1030,7 @@
              : '') +
       '</div>' +
       '<div class="tarjeta"><h2>Competencia directa' +
-        (v && v.nCompetidores != null ? ' (' + numEs(v.nCompetidores) + ')' : '') + '</h2>' +
+        (v && v.nCompetidores != null ? ' (' + numEs(v.nCompetidores) + ')' : '') + '</h2>' + escalaAIA('competencia') +
         (v && v.nCompetidores === 0
           ? '<p class="pie-nota">No se identificó competencia directa en el radio. El mapa abierto ' +
             'no lo ve todo: conviene confirmarlo en campo antes de darlo por bueno.</p>'
@@ -1003,7 +1099,7 @@
     const col = so.valor >= 75 ? T.ok : so.valor >= 60 ? T.acento : so.valor >= 45 ? T.warn : T.bad;
     const est = estrellasDeScore(so.valor);
     const opos = (i.oportunidades.lista || []).slice(0, 3);
-    return '<div class="tarjeta"><h2>Oportunidad urbana</h2>' +
+    return '<div class="tarjeta"><h2>Oportunidad urbana</h2>' + escalaAIA('oportunidad') +
       '<div class="oport-cab">' + aroXL(so.valor, col, '/100') +
         '<div><span class="oport-nivel" style="color:' + col + '">' + esc(so.nivel) + '</span>' +
         '<div class="oport-est">' + estrellasHTML(est) + '</div></div>' +
@@ -1036,7 +1132,7 @@
       const k = filas.findIndex(f => f[0] === 'Edad y sexo');
       if (k >= 0) filas.splice(k, 1);
     }
-    return '<div class="tarjeta"><h2>Cómo leer el informe</h2><div class="leer">' +
+    return '<div class="tarjeta"><h2>Cómo leer el informe</h2>' + escalaAIA('como-leer') + '<div class="leer">' +
       filas.map(f => '<div><b>' + esc(f[0]) + '</b><small>' + esc(f[1]) + '</small></div>').join('') +
       '</div></div>';
   }
@@ -1110,7 +1206,7 @@
           '<div><b class="et-bad">RETO</b><span>' + N[peor] + ' ' + numEs(v.subscores[peor]) + '/100</span></div>' +
         '</div>'
       : '';
-    return '<div class="tarjeta"><h2>Viabilidad &middot; ' + numEs(v.score) + ' / 100</h2>' +
+    return '<div class="tarjeta"><h2>Viabilidad &middot; ' + numEs(v.score) + ' / 100</h2>' + escalaAIA('viabilidad-detalle') +
       '<p class="sub-nivel" style="color:' + col + '">' + est + ' de 5 &#9733; &middot; Viabilidad ' + esc(v.nivel) + '</p>' +
       '<p class="nota-pie">La puntuación se construye con cinco dimensiones del entorno.</p>' +
       filas + caja + '</div>';
@@ -1158,8 +1254,8 @@
     const hitos = orden.slice(0, 3);
     const resto = orden.slice(3, 4)[0];
     return '<div class="gente">' +
-      '<div class="tarjeta">' + filas + '</div>' +
-      '<div class="tarjeta"><h2>Hora fuerte</h2>' +
+      '<div class="tarjeta">' + escalaAIA('generadores') + filas + '</div>' +
+      '<div class="tarjeta"><h2>Hora fuerte</h2>' + escalaAIA('hora-fuerte') +
         hora('Mañana', f.franjas.manana) + hora('Mediodía', f.franjas.mediodia) +
         hora('Tarde', f.franjas.tarde) + hora('Noche', f.franjas.noche || 0) +
         (hitos.length
@@ -1215,7 +1311,7 @@
         ' del mapa abierto. Cuenta' + (nMan === 1 ? '' : 'n') +
         ' igual en todos los cálculos de este informe.</p>'
       : '';
-    return '<div class="tarjeta"><h2>Composición del entorno</h2>' +
+    return '<div class="tarjeta"><h2>Composición del entorno</h2>' + escalaAIA('composicion') +
       '<p class="sub-nivel" style="color:' + T.ok + '">' + numEs(s.total) +
         (s.total === 1 ? ' uso identificado' : ' usos identificados') + '</p>' +
       filas + nota + '</div>';
@@ -1247,7 +1343,7 @@
     if (!e || !e.total) return '';
     const epocas = Object.keys(e.porEpoca).sort((a, b) => e.porEpoca[b] - e.porEpoca[a]);
     const mats = Object.keys(e.porMaterial).sort((a, b) => e.porMaterial[b] - e.porMaterial[a]);
-    return '<div class="tarjeta"><h2>El tejido construido</h2>' +
+    return '<div class="tarjeta"><h2>El tejido construido</h2>' + escalaAIA('edificacion') +
       '<p class="sub-nivel" style="color:' + T.ok + '">' + numEs(e.total) +
       ' ' + (e.total === 1 ? 'edificación' : 'edificaciones') + ' con ficha levantada en campo</p>' +
       (epocas.length
@@ -1288,12 +1384,12 @@
     const c = ((r.stats.movilidad || {}).flujo || {}).caminabilidad;
     if (!c || !c.muestras) return '';
     if (!c.muestras) {
-      return '<div class="tarjeta"><h2>Caminabilidad</h2>' +
+      return '<div class="tarjeta"><h2>Caminabilidad</h2>' + escalaAIA('caminabilidad-vacia') +
         '<p class="pie-nota">No se registró el estado del andén en este radio, así que el ' +
         'flujo peatonal se calculó sin ajustarlo. Un vacío de datos no es un andén bueno.</p></div>';
     }
     const pct = Math.round((c.factor - 1) * 100);
-    return '<div class="tarjeta"><h2>Caminabilidad</h2>' +
+    return '<div class="tarjeta"><h2>Caminabilidad</h2>' + escalaAIA('caminabilidad') +
       '<p class="sub-nivel" style="color:' +
       (c.nivel === 'Buena' ? T.ok : c.nivel === 'Irregular' ? T.warn : T.bad) + '">' +
       esc(c.nivel) + ' · ajusta el flujo peatonal en ' + (pct > 0 ? '+' + numEs(pct) : numEs(pct)) + '%</p>' +
@@ -1335,7 +1431,7 @@
     out += fila('Expansión (suelo libre)', esc(i.expansion.nivel));
     out += fila('Transformación (obras)', esc(i.transformacion.nivel));
     out += fila('Riesgo urbano', esc(i.riesgos.nivel));
-    return '<div class="tarjeta"><h2>Indicadores urbanos</h2>' + out + '</div>';
+    return '<div class="tarjeta"><h2>Indicadores urbanos</h2>' + escalaAIA('indicadores-filas') + out + '</div>';
   }
 
   // ── 8. El entorno según la distancia ────────────────────────────────────
@@ -1355,7 +1451,7 @@
        describiendo el tamaño del círculo en vez del barrio. */
     const dibujo = (window.URBIS_ANILLOS && window.URBIS_ANILLOS.grafico)
       ? window.URBIS_ANILLOS.grafico(m) : '';
-    return '<div class="tarjeta">' + dibujo +
+    return '<div class="tarjeta">' + escalaAIA('radios') + dibujo +
       '<table class="tbl-radios2">' +
       '<tr class="cab"><th>Radio</th><th>Usos</th><th>Usos/ha</th><th>Comercio</th>' +
       '<th>Equipam.</th><th>Hab. est.</th></tr>' + filas + '</table>' +
@@ -1383,7 +1479,7 @@
     const rutas = (c.rutas || []).slice(0, 12).map(x =>
       '<li>' + (x.ref ? '<b>' + esc(x.ref) + '</b> ' : '') + esc(x.nombre || 'Ruta') +
       (x.operador ? ' <em>' + esc(x.operador) + '</em>' : '') + '</li>').join('');
-    return '<div class="tarjeta"><h3 class="tarj-t">El sector en su contexto <em>· OpenStreetMap</em></h3>' +
+    return '<div class="tarjeta"><h3 class="tarj-t">El sector en su contexto <em>· OpenStreetMap</em></h3>' + escalaAIA('contexto') +
       (migas ? '<p class="ctx-migas">' + migas + '</p>' : '') +
       ((c.barrios || []).length ? '<p class="nota-pie">Barrios nombrados cerca: ' +
         c.barrios.slice(0, 5).map(b => esc(b.nombre)).join(', ') + '.</p>' : '') +
@@ -1409,7 +1505,7 @@
   function bloqueComparacionInforme(r){
     const c = r.comparacion;
     if (!c || !c.filas) return '';
-    return '<div class="tarjeta"><h3 class="tarj-t">Comparado con ' + esc(c.otro.nombre) + '</h3>' +
+    return '<div class="tarjeta"><h3 class="tarj-t">Comparado con ' + esc(c.otro.nombre) + '</h3>' + escalaAIA('comparacion') +
       '<table class="tbl-comp"><thead><tr><th></th><th class="n">Este sector</th><th class="n">' + esc(c.otro.nombre) + '</th></tr></thead><tbody>' +
       c.filas.map(f => '<tr><td>' + esc(f.t) + '</td><td class="n' + (f.gana === 'este' ? ' g' : '') + '">' + esc(f.este) + '</td>' +
                        '<td class="n' + (f.gana === 'otro' ? ' g' : '') + '">' + esc(f.otro) + '</td></tr>').join('') +
@@ -1420,7 +1516,7 @@
     const h = (r.stats || {}).horarios;
     if (!h || !h.total) return '';
     if (!h.conDato) {
-      return '<div class="tarjeta"><h3 class="tarj-t">Lo que dice el letrero</h3>' +
+      return '<div class="tarjeta"><h3 class="tarj-t">Lo que dice el letrero</h3>' + escalaAIA('horarios-vacio') +
         '<p class="nota-pie">' + esc(h.lectura) + '</p></div>';
     }
     const fila = (etq, n, pct) =>
@@ -1428,7 +1524,7 @@
       '<td class="hor-b"><i style="width:' + (pct || 0) + '%"></i></td>' +
       '<td class="hor-n">' + numEs(n) + '</td><td class="hor-p">' + numEs(pct || 0) + ' %</td></tr>';
     return '<div class="tarjeta"><h3 class="tarj-t">Lo que dice el letrero ' +
-        '<em>· declarado en el mapa, no estimado</em></h3>' +
+        '<em>· declarado en el mapa, no estimado</em></h3>' + escalaAIA('horarios') +
       '<p class="hor-cob"><b>' + numEs(h.conDato) + ' de ' + numEs(h.total) + '</b> ' + (h.total === 1 ? 'uso declara' : 'usos declaran') + ' horario ' +
         '(' + numEs(h.cobertura) + ' % de cobertura)' +
         (h.suficiente ? '. Los porcentajes son sobre esos ' + numEs(h.conDato) + '.'
@@ -1499,7 +1595,7 @@
   function bloqueBaseInforme(r){
     const e = r.edu;
     if (!e) return '';
-    const pocos = (e.leidos || 0) < 25;
+    const pocos = (e.leidos || 0) < MIN_USOS_FIABLE;
     const faltan = Object.keys(e.sinTraducir || {});
     return '<div class="base-edu' + (pocos ? ' flojo' : '') + '">' +
       '<b>' + (pocos ? '⚠ ' : '✓ ') + 'Este análisis se hizo con ' + numEs(e.leidos || 0) +
@@ -1523,6 +1619,69 @@
   }
 
   /* Cómo leer las cifras: definiciones y no ventas. Es lo que se enseña. */
+  /* ── Sobre qué se analizó, en el informe que va al cliente (v1043) ──────
+     El informe del curso declara desde siempre con cuántos puntos se hizo
+     el análisis y avisa cuando son pocos (`bloqueBaseInforme`). El de
+     empresas NO: medido sobre el papel, ese bloque no se llama una sola vez
+     en `cuerpoEmpresa` —y aunque se llamara, sale vacío sin `r.edu`—, así
+     que el informe que se le entrega a un cliente publicaba dieciséis
+     paneles de cifras sin decir sobre cuántos usos se hicieron.
+
+     Va como FRANJA y no como panel de sección: es una declaración sobre el
+     documento entero y no una medición de una sección, igual que el aviso
+     de escala del pliego educativo.
+
+     Y declara el RADIO con su área, que es la otra mitad de la misma cosa:
+     toda cifra «por hectárea» o «por habitante» es un promedio sobre esa
+     extensión, y 8 km de radio son 201 km². El corte no se inventa —sería
+     el techo a ojo que este proyecto ya pagó una vez— sino que sale del
+     propio módulo: `RADIOS_COMPARATIVA` es el rango de radios que este
+     análisis compara, así que por encima de su máximo el informe está
+     midiendo más de lo que sabe comparar, y lo dice. */
+  function bloqueBaseAIA(r){
+    const s = r.stats || {};
+    const radioM = Number((r.meta || {}).radioM) || 0;
+    const usos = Number(s.total) || 0;
+    const pocos = usos < MIN_USOS_FIABLE;
+    const areaHa = radioM ? Math.round(Math.PI * radioM * radioM / 10000) : 0;
+    const radioTxt = radioM >= 1000 ? numEs(Math.round(radioM / 100) / 10) + ' km' : numEs(radioM) + ' m';
+    const RC = (window.AIA_MOTOR && window.AIA_MOTOR.RADIOS_COMPARATIVA) || [];
+    const tope = RC.length ? Math.max.apply(null, RC) : 0;
+    const grande = tope && radioM > tope;
+    return '<div class="aia-base' + (pocos ? ' flojo' : '') + '">' +
+      '<b>' + (pocos ? '⚠ ' : '✓ ') + 'Este análisis se hizo con ' + numEs(usos) +
+        (usos === 1 ? ' uso registrado' : ' usos registrados') +
+        ' en OpenStreetMap dentro de un radio de ' + radioTxt +
+        (areaHa ? ' (' + numEs(areaHa) + ' ha)' : '') + '.</b>' +
+      '<p>' + (pocos
+        /* La cifra NO va delante de un plural, y no es un capricho de estilo:
+           la guarda de concordancia lo denuncia con razón —«1 usos»— y su
+           exención de constantes pide la constante pegada al texto, así que
+           `numEs(MIN_USOS_FIABLE) + ' usos'` no la alcanza. Aflojar dos
+           guardas por una frase es lo contrario de lo que se hace acá: la
+           frase se escribe de otra manera y dice el umbral igual. */
+        ? 'Por debajo de ' + numEs(MIN_USOS_FIABLE) + ' el resultado describe un ejercicio y no el ' +
+          'sector: el entorno tiene más de lo que el mapa abierto registra, y cada uso que aparezca ' +
+          'mueve las cifras. Conviene verificarlo en campo antes de decidir con ellas.'
+        : 'Suficientes usos para que las cifras del entorno empiecen a ser estables. Lo que el mapa ' +
+          'abierto no registra sigue existiendo: un uso sin mapear no cuenta en ninguna de estas cifras.') +
+      /* La población solo se declara independiente del mapa cuando de verdad
+         sale del censo: `poblacionEsCensal` puede ser falso y entonces la
+         cifra es una estimación de URBIS sobre lo mapeado, que es justo lo
+         contrario de lo que esta frase afirma. */
+      (s.poblacionEsCensal || s.poblacionProyectada
+        ? ' La población sale del censo del DANE y no depende de lo que esté mapeado.'
+        : ' La población tampoco es censal: el censo no respondió y la cifra es una estimación de URBIS.') +
+      '</p>' +
+      (grande
+        ? '<p class="aia-base-esc">Este radio está por encima de los ' + numEs(tope) + ' m que este ' +
+          'análisis compara entre sí, así que toda cifra por hectárea o por habitante es un promedio ' +
+          'sobre ' + numEs(areaHa) + ' ha que pueden mezclar barrios distintos. Para leer una cuadra, ' +
+          'conviene volver a analizar con un radio menor.</p>'
+        : '') +
+      '</div>';
+  }
+
   function bloqueComoLeerEdu(r){
     const s = r.stats;
     const filas = [
@@ -1535,7 +1694,7 @@
       ['El mapa de calor', 'dónde se concentra el movimiento dentro del radio, contra su propio máximo. Dice dónde, no cuánto.'],
       ['El horario del letrero', 'lo declarado en la puerta, distinto de lo estimado por tipo de uso. Cuando no coinciden, ahí hay una pregunta.']
     ];
-    return '<div class="tarjeta"><h2>Cómo leer estas cifras</h2><div class="leer">' +
+    return '<div class="tarjeta"><h2>Cómo leer estas cifras</h2>' + escalaAIA('como-leer-edu') + '<div class="leer">' +
       filas.map(f => '<div><b>' + esc(f[0]) + '</b><small>' + esc(f[1]) + '</small></div>').join('') +
       '</div></div>';
   }
@@ -1544,7 +1703,7 @@
      resultado. Si el curso ya lo levantó, no aparece. */
   function bloqueFaltaInforme(r){
     const F = (window.URBIS_EDU && window.URBIS_EDU.faltantes) ? window.URBIS_EDU.faltantes(r) : [];
-    return '<div class="tarjeta"><h2>Qué falta por levantar</h2>' +
+    return '<div class="tarjeta"><h2>Qué falta por levantar</h2>' + escalaAIA('falta') +
       (F.length
         ? '<ul class="falta">' + F.slice(0, 7).map(f => '<li><b>' + esc(f.t) + (f.n ? ' <em>' + numEs(f.n) + '</em>' : '') + '</b>' +
             '<small>' + esc(f.d) + '</small></li>').join('') + '</ul>'
@@ -1577,13 +1736,13 @@
   function bloqueFormaInforme(r){
     const f = r.formaEdu && r.formaEdu.morfologia && r.formaEdu.morfologia.forma;
     if (!f) {
-      return '<div class="tarjeta"><h2>La forma de la traza</h2><p class="nota-pie">' +
+      return '<div class="tarjeta"><h2>La forma de la traza</h2>' + escalaAIA('forma-vacia') + '<p class="nota-pie">' +
         (r.formaEdu ? 'Sin calles suficientes en el radio para describir la traza.'
                     : 'No se pidió. Está a un botón en el panel del curso: ortogonal, radial, media naranja, lineal o plato roto, medido con las calles.') +
         '</p></div>';
     }
     const n = r.formaEdu.nVias || 0;
-    return '<div class="tarjeta"><h2>La forma de la traza</h2>' +
+    return '<div class="tarjeta"><h2>La forma de la traza</h2>' + escalaAIA('forma') +
       '<p class="forma-nombre">' + esc(f.nombre) + ' <em>· ' + n + (n === 1 ? ' calle' : ' calles') + '</em></p>' +
       '<p class="nota-pie">' + esc(f.descripcion || '') + '</p>' +
       '<p class="nota-pie"><b>Por qué:</b> ' + esc(f.porque || '') + '</p>' +
@@ -1636,6 +1795,8 @@
 '<div class="hoja"><div class="contenido">',
 
 cabecera(titulo, 'Análisis del entorno · URBIS', ubicacionTxt, fecha, 1),
+
+bloqueBaseAIA(r),
 
 seccion(1, 'Lectura ejecutiva', 'la historia que conviene contar al cliente'),
 bloqueEjecutivo(r),
@@ -2214,6 +2375,23 @@ pie(4, r, autor, true),
 '.tarjeta h2{font-size:8.6px;font-weight:900;letter-spacing:.6px;text-transform:uppercase;',
 'color:', T.cab1, ';margin-bottom:5px}',
 '.tarjeta .h2-sep{margin-top:8px}',
+/* El rótulo de escala (v1043). Va pegado debajo del título, así que el
+   título cede su margen: con los dos el rótulo se leía como el primer
+   renglón del cuerpo y no como parte del encabezado. */
+'.tarjeta h2:has(+ .aia-escala),.bloque h2:has(+ .aia-escala),.tarj-t:has(+ .aia-escala){margin-bottom:1px}',
+'.aia-escala{font-size:6.2px;letter-spacing:.5px;text-transform:uppercase;font-weight:700;',
+'color:', T.txt3, ';margin:0 0 5px}',
+/* Sin declarar va en rojo: un panel sin rótulo deja que el lector suponga
+   que la cifra es del radio, que es justo lo que la tabla evita. */
+'.aia-escala-sin{color:', T.bad, '}',
+/* La franja «sobre qué se analizó» (v1043). Va arriba del todo, así que se
+   lee antes de la primera cifra; en ámbar cuando los usos no alcanzan. */
+'.aia-base{border:1px solid ', T.borde, ';border-left:3px solid ', T.ok, ';border-radius:5px;',
+'padding:5px 8px;margin:7px 0 0;background:', T.panel, '}',
+'.aia-base.flojo{border-left-color:', T.warn, ';background:#fff8ec}',
+'.aia-base b{display:block;font-size:7.6px;color:', T.tinta, ';line-height:1.35}',
+'.aia-base p{font-size:6.9px;line-height:1.4;color:', T.txt3, ';margin:2px 0 0}',
+'.aia-base-esc{border-top:1px dashed ', T.borde, ';padding-top:2px;color:', T.bad, ' !important}',
 '.nota-pie{font-size:6.9px;line-height:1.4;color:', T.txt3, ';margin-top:5px}',
 /* El aro vive en una caja de tamaño fijo que nada puede invadir: ese es el
    defecto que se venía repitiendo —una barra de ancho completo cruzándolo—. */

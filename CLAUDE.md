@@ -21654,6 +21654,182 @@ la casa en el acto: `git merge` **abortó** y su última línea imprimió
 `git merge-base --is-ancestor`, no el mensaje. El orden correcto es el escrito:
 **guardar primero, fusionar después.**
 
+## La escala de cada panel del informe de empresas (v1043)
+
+Tercer peldaño del orden que el usuario fijó. Es el error más caro de un
+análisis urbano y no se ve (v854): una densidad medida sobre un radio de
+2.500 m, impresa al lado del conteo de la cuadra, se lee como si fuera de la
+cuadra.
+
+    v1042   16 paneles · 0 con escala · el informe no dice sobre cuántos usos se hizo
+    v1043   16 paneles · 15 rotulados y 1 declarado sin escala · la franja lo dice
+
+### Dos premisas medidas, y las dos estaban mal
+
+La regla de la v916 se cobró dos veces antes de escribir una línea, y las dos
+notas erradas eran **mías, de la medición de la v1038**:
+
+* aquella contó **13 paneles**. Son **16**: contó por `<h2>` y este módulo
+  titula tres de sus tarjetas con `<h3 class="tarj-t">` —«El sector en su
+  contexto», «Lo que dice el letrero»— y una no lleva título. La unidad que
+  el módulo usa de verdad es la **tarjeta**: `.tarjeta` o `.bloque`;
+* y escribió que el informe de empresas **sí** declara con cuántos puntos se
+  hizo el análisis. No lo declara: `bloqueBaseInforme` existe, pero
+  `cuerpoEmpresa` **no lo llama una sola vez** —y aunque lo llamara, sale
+  vacío sin `r.edu`, que es el resultado del curso—. O sea que el informe que
+  se le entrega a un cliente publicaba dieciséis paneles de cifras sin decir
+  sobre cuántos usos se hicieron.
+
+### La clave es un identificador, y no el título
+
+El pliego educativo keyea su `ESCALA_PANEL` por el título porque los suyos son
+literales. Acá no: **«Viabilidad · 78 / 100»** y **«Competencia directa (3)»**
+llevan la cifra dentro. Una tabla por título sería un ancla por forma, y esas
+envejecen (v935). Cada panel declara su identificador donde se arma.
+
+### Por qué la tabla NO se comparte con la del pliego, medido
+
+Parece la clase B y no lo es, y conviene dejarlo escrito para que nadie la
+unifique ni la deje partida por la razón equivocada. Lo que coincide es la
+**jerarquía territorial**; lo que difiere es el **texto**, y el pliego ya tenía
+las dos cosas separadas (`ESCALA_PANEL` y `ESCALA_TEXTO`). Acá el texto tiene
+que decir otra cosa: el pliego analiza «el sector», y este módulo analiza
+**siempre un radio alrededor de un punto** —medido: `meta.radioM` sin una sola
+rama de polígono en los dos archivos— y su propia prosa lo llama «el radio».
+De paso, `js/68` no se carga en `analisis-ia.html`, así que tampoco habría de
+dónde prestarlo.
+
+El vocabulario tiene **dos** valores y no seis: no hay `predio` —este módulo no
+dibuja lote— ni ningún panel medido a escala de municipio, y declarar valores
+que no rotulan nada es vocabulario que no llama nadie (v885). Hay una guarda
+para cada dirección: ninguna escala fuera del vocabulario, y ningún valor del
+vocabulario sin usar.
+
+#### Un valor que el pliego no tiene, declarado y no disimulado
+
+**`varios`**, «Varios radios», para la comparación multi-radio. Ese panel mide
+a 300, 500 y 1.000 m **a la vez** y su sentido entero es que no hay una sola
+escala: con los seis valores del pliego habría que elegir uno y mentir, o
+dejarlo sin rótulo, que es lo que esta versión vino a quitar. Es la misma
+desviación que la v957 hizo con `contexto-estructural`, dicha en su sitio.
+
+### Los dos paneles que costaron la decisión
+
+* **«Cómo ha crecido la población»** es el caso de escala mixta de manual: la
+  cifra se cuenta sobre las manzanas censales del radio y **la tasa con la que
+  se proyecta es municipal**, y el propio panel lo dice en su renglón —«según
+  la serie de proyecciones municipales del DANE»—. Se rotula por lo que MIDE,
+  que es la regla que el pliego ya aplicó a «Presión de crecimiento».
+* **«El sector en su contexto»** tiene las migas administrativas y la población
+  de paso en municipal, y el resto —las busetas que paran en el radio, las
+  casas de cambio, el paso más cercano— en el radio. Manda lo que mide, y lo
+  municipal lo nombra como tal en su propia prosa.
+
+### Cinco paneles sin escala, cada uno con su razón
+
+La mitad que impide el atajo: sin ella, el arreglo barato sería rotularlos
+todos «radio» y el rótulo dejaría de significar algo. El criterio va escrito
+una vez —**la escala dice sobre qué extensión se midió lo que sostiene la
+cifra**— y con él las tres cajas de «cómo leer», «qué falta por levantar» y
+«Compatibilidad entre usos» quedan fuera: las tres publican algo que no se
+midió sobre un territorio. La guarda exige que la razón esté escrita y que
+diga algo.
+
+### La otra mitad: sobre cuántos usos se hizo
+
+Una franja arriba de la hoja 1, antes de la primera cifra, porque es una
+declaración sobre el documento entero y no una medición de una sección.
+
+El umbral **no se inventa**: son los mismos 25 con los que el informe del curso
+avisa desde que existe, y los mismos con los que el motor deja de dar por
+fiable su propio mapa de calor. Va en **una** constante que las dos
+advertencias leen, con su guarda: con dos números, el día que alguien mueva el
+del curso el del cliente se queda viejo y nadie lo ve.
+
+Y declara el **radio con su área**, que es la otra mitad de la misma cosa: toda
+cifra «por hectárea» o «por habitante» es un promedio sobre esa extensión, y
+8 km de radio son 201 km². El corte tampoco se inventa —sería el techo a ojo
+que este proyecto ya pagó en la v869— sino que sale del propio módulo:
+`RADIOS_COMPARATIVA` es el rango que este análisis compara entre sí, así que
+por encima de su máximo el informe está midiendo más de lo que sabe comparar,
+y lo dice. Es la decisión de la v890, en el otro documento.
+
+### Lo que el papel enseñó y el código no
+
+La franja afirmaba, sin condición, que **«la población sale del censo del DANE
+y no depende de lo que esté mapeado»**. Es falso cuando `poblacionEsCensal` es
+falso: ahí la cifra es una estimación de URBIS sobre lo mapeado, que es
+exactamente lo contrario. Se vio leyendo la franja compuesta, no el código.
+
+### Dos defectos de mis propias guardas, los dos cazados al demostrar
+
+* **El lector de tablas solo veía la clave entrecomillada.** `'hora-fuerte':`
+  la lleva y `predio:` no, así que el vocabulario salía **vacío** — y el fallo
+  no apareció donde tenía que aparecer: la guarda de MATERIAL no contaba esa
+  tercera tabla, así que salió tres aserciones más abajo y con el nombre
+  equivocado, «seis escalas fuera del vocabulario» sobre un vocabulario que no
+  se había leído. Se arreglaron las dos mitades: el lector acepta las dos
+  formas, y el MATERIAL cuenta las tres tablas.
+* **Los mínimos del MATERIAL estaban puestos a ojo.** Pedían tres entradas al
+  vocabulario, que hoy tiene dos: eso es un techo que se pone rojo cuando el
+  módulo mejora (v970). El mínimo es «el lector devolvió algo», que es el modo
+  de fallo real.
+
+### Y una frase que dos guardas denunciaron con razón
+
+«Con menos de 25 **usos** las cifras…» es un «1 + plural» en potencia, y lo
+cazaron la guarda de concordancia de la v1019 y el trinquete de prosa de la
+v1032. La exención de constantes de esa guarda pide la constante **pegada** al
+texto, y desde la v1042 este módulo envuelve toda cifra en `numEs(…)`, así que
+`numEs(MIN_USOS_FIABLE) + ' usos'` no la alcanza.
+
+**No se aflojó ninguna de las dos por una frase.** La frase se escribe de otra
+manera —«Por debajo de 25 el resultado describe…»— y dice el umbral igual. El
+hueco de la exención queda medido y sin tocar: hoy no lo alcanza ningún otro
+sitio del repositorio, y parchearlo en la tanda que se beneficia de parchearlo
+es lo que este proyecto llama aflojar una aserción.
+
+### Demostrado contra la v1042
+
+Diez inyecciones fieles, una por aserción (v993), contra copias guardadas y no
+con `git checkout --` sobre trabajo sin confirmar (v973):
+
+```
+✗ todo panel del informe declara a que escala esta medido
+    — 1 publicarian cifras sin decir sobre que extension se midieron: js/63:1346
+✗ y todo identificador usado existe en una de las dos tablas  — hora-mas-fuerte
+✗ y ninguna entrada de las tablas se quedo sin panel  — oportunidad-vieja
+✗ y toda escala declarada esta en el vocabulario del modulo  — contexto=comuna
+✗ y ningun valor del vocabulario se quedo sin usar  — comuna
+✗ y cada panel sin escala dice POR QUE no la lleva  — sin razon escrita: falta
+✗ y el rotulador sigue leyendo las tres tablas  — dejo de leer alguna
+✗ el informe de empresas dice con cuantos usos se hizo el analisis  — no lo dice
+✗ y las dos advertencias de «pocos usos» salen del mismo umbral  — una escribe su propio numero
+? MATERIAL · las tablas de escala y los paneles se dejan leer  — VOC=0
+```
+
+La primera es el estado exacto de la v1042 para ese panel, y la última es el
+defecto del lector de tablas cazado por donde tenía que salir.
+
+### Medido sobre el papel
+
+Los dieciséis paneles del informe compuesto: **15 con su rótulo y cero «escala
+sin declarar»**; el que no lo lleva es «Cómo leer el informe», que está
+declarado sin escala con su razón. Y las dos ramas de la franja en la misma
+corrida: con un uso, «⚠ … 1 uso registrado» y el aviso del umbral; con muchos
+y un radio de 12,3 km, «✓ … 47.883 ha» y el aviso de que el radio pasa de los
+2.000 m que el módulo compara.
+
+### Lo que esta versión NO hace
+
+* **El método de cada panel** —la fórmula, la fuente, el error típico—, que es
+  el peldaño siguiente. Y con una medición que lo condiciona: `js/67` declara
+  en su propio export que **el análisis lo hace SIEMPRE el servidor**, así que
+  la fórmula de `viabilidad`, de `indicadores` y del flujo vive en el
+  repositorio del motor, que no está en este contenedor. `pendiente`
+* **Los porcentajes fraccionarios** siguen sin poderse medir en el papel por lo
+  mismo. `pendiente`
+
 ## La lista viva: lo que al pliego educativo todavía le falta (v866)
 
 Esta lista se quedó vieja **cinco veces**. Cuatro dentro de la hoja —la
