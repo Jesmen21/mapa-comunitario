@@ -257,6 +257,63 @@ console.log('\n  -- el modo sin conexión --');
     PAGINAS.length >= 3
       ? 'son ' + PAGINAS.length + ' y se leen del disco, así que una página nueva queda vigilada sin que su autor se acuerde'
       : 'se está mirando ' + PAGINAS.length + ': las demás quedarían sin comprobar');
+
+  /* Un manifiesto declara su propia PUERTA DE ARRANQUE, y la superficie que lo
+     usa tiene que alcanzarlo: sin eso, instalar la app abre OTRA. Medido, dos
+     lo estaban — `manifest-empresarial.json` declara `/analisis-ia.html` y esa
+     página enlazaba el general, que arranca en «/», así que quien instalaba
+     URBIS Empresas terminaba en la aplicación ciudadana; y el educativo igual.
+     Es la clase C: el archivo existe, el mecanismo para usarlo existe, y nada
+     los conecta — desde afuera se ve igual que si el manifiesto no existiera.
+
+     Se alcanza por DOS caminos y los dos cuentan: el `<link>` de una página, o
+     la tabla de identidades de js/70-modo-app.js, que lo intercambia cuando
+     index.html arranca en un modo. La lista de manifiestos se lee del disco,
+     así que uno nuevo queda vigilado sin que su autor se acuerde (v867). */
+  const MANIFIESTOS = fs.readdirSync(RAIZ)
+    .filter((f) => /^manifest.*\.json$/.test(f)).sort();
+  const alcanzados = new Set();
+  PAGINAS.concat(['vision-territorial.html']).forEach(function (h) {
+    [...leer(h).matchAll(/rel="manifest"[^>]*href="([^"?]+)"/g)]
+      .forEach((m) => alcanzados.add(m[1].replace(/^\.\//, '')));
+  });
+  const modoApp = soloCodigo(leer('js/70-modo-app.js'));
+  const IDENTS = [...modoApp.matchAll(/\{[^{}]*manifiesto:\s*'([^']+)'[^{}]*\}/g)];
+  IDENTS.forEach((m) => alcanzados.add(m[1]));
+  const sinAlcanzar = MANIFIESTOS.filter((m) => !alcanzados.has(m));
+  comprobar('todo manifiesto lo alcanza una página o la tabla de identidades',
+    sinAlcanzar.length === 0 && MANIFIESTOS.length >= 3,
+    sinAlcanzar.length
+      ? 'no lo alcanza nadie: ' + sinAlcanzar.join(' · ') +
+        ' — instalar esa app abriría otra, porque su página enlaza un manifiesto cuyo start_url no es el suyo'
+      : MANIFIESTOS.length < 3
+        ? 'NO PUDO CORRER: solo ' + MANIFIESTOS.length + ' manifiesto(s) leído(s)'
+        : 'los ' + MANIFIESTOS.length + ' se alcanzan: ' + MANIFIESTOS.join(', '));
+
+  /* Y lo que la tabla de identidades escribe SALE del manifiesto, no de
+     memoria: el nombre y el color de la app están declarados en dos sitios, y
+     al escribir la entrada del modo educativo puse un tema y un nombre que el
+     manifiesto no dice. Es la clase B cometida en la tanda que la cita, y la
+     cazó medir el archivo en vez de leer el renglón. */
+  const desajuste = [];
+  IDENTS.forEach(function (m) {
+    let j;
+    try { j = JSON.parse(leer(m[1])); } catch (e) { desajuste.push(m[1] + ': no se pudo leer'); return; }
+    const nom = /nombre:\s*'([^']*)'/.exec(m[0]);
+    const tem = /tema:\s*'([^']*)'/.exec(m[0]);
+    if (nom && j.short_name && nom[1] !== j.short_name) {
+      desajuste.push(m[1] + ': nombre «' + nom[1] + '» contra short_name «' + j.short_name + '»');
+    }
+    if (tem && j.theme_color && tem[1].toLowerCase() !== String(j.theme_color).toLowerCase()) {
+      desajuste.push(m[1] + ': tema ' + tem[1] + ' contra theme_color ' + j.theme_color);
+    }
+  });
+  comprobar('y el nombre y el color de cada identidad salen de SU manifiesto',
+    desajuste.length === 0 && IDENTS.length >= 2,
+    desajuste.length ? 'escritos de memoria: ' + desajuste.join(' · ')
+      : IDENTS.length < 2
+        ? 'NO PUDO CORRER: la tabla de identidades trae ' + IDENTS.length + ' entrada(s), así que no habría dos hechos que atar'
+        : 'las ' + IDENTS.length + ' coinciden con su manifiesto');
 }
 
 // ── 2. una sola puerta al servidor ───────────────────────────────────────
@@ -5070,6 +5127,191 @@ console.log('\n  -- lo que la fila guarda y el panel de Pro City enseña (v985) 
       unSitio,
       unSitio ? 'el panel entra en la misma regla de css/83'
               : 'el panel estrena un tratamiento propio: se separarán');
+  }
+}
+
+console.log('\n  -- la foto del panel de Pro City se ve entera, y a su tamano (v1039) --');
+{
+  const c52 = leer('css/52-urbis-pro-city.css');
+  const c99 = leer('css/99-mobile-clean-core.css');
+  const j05 = soloCodigo(leer('js/05-helpers-temporal-security.js'));
+
+  /* La regla de un selector, SIN sus comentarios: se corta del selector a su
+     llave de cierre y se le quitan los `/* *\/`. Las dos mitades hacen
+     falta: sin quitarlos, un `top:` citado dentro de un comentario se leeria
+     como una declaracion —que es el defecto de la v926 en CSS— y, al reves,
+     un comentario entre dos declaraciones rompe el `;` que las separa y la
+     de abajo deja de encontrarse. Se busca la ULTIMA, que es la que gana. */
+  const reglaDe = (css, sel) => {
+    const re = new RegExp(sel.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '\\s*\\{([^}]*)\\}', 'g');
+    let m, ult = null;
+    while ((m = re.exec(css)) !== null) ult = m[1];
+    return ult === null ? null : ult.replace(/\/\*[\s\S]*?\*\//g, ' ');
+  };
+
+  const rPanel = reglaDe(c52, '#urbis-mobile-app .u52-procity-selpanel');
+  const rCard  = reglaDe(c52, '#urbis-mobile-app .u52-procity-selpanel-card');
+  const rFoto  = reglaDe(c52, '#urbis-mobile-app .u52-procity-selpanel-foto');
+
+  /* MATERIAL primero (v920): sin las tres reglas no hay nada que mirar y
+     todo lo de abajo pasaria sobre la nada. */
+  const hayCss = !!(rPanel && rCard && rFoto);
+  comprobar('MATERIAL · se leen las tres reglas del panel del punto',
+    hayCss,
+    hayCss ? 'panel, tarjeta y foto'
+           : 'no se pudieron leer: ' + [!rPanel && 'panel', !rCard && 'tarjeta', !rFoto && 'foto'].filter(Boolean).join(' · '));
+
+  if (hayCss) {
+    /* La foto de un mapeo es EVIDENCIA. Con `cover` y un techo en px se
+       tiraba el 57,1 % del alto de una foto 3:4 y el 67,8 % de una 9:16
+       —medido en el panel de verdad—, y lo que se tira es justo lo que se
+       fotografio. El techo que hace falta lo pone la tarjeta, que ademas se
+       recorre; uno aqui volveria a decidir por el lector que parte de su
+       foto le toca ver. */
+    const recorta = [];
+    if (/object-fit\s*:\s*cover/.test(rFoto)) recorta.push('object-fit:cover');
+    const mh = /max-height\s*:\s*([^;]+)/.exec(rFoto);
+    if (mh && !/none/i.test(mh[1])) recorta.push('max-height:' + mh[1].trim());
+    comprobar('la foto del panel se ve entera, sin recortar',
+      recorta.length === 0,
+      recorta.length ? 'la recorta: ' + recorta.join(' · ') + ' — se tira lo que se fotografio'
+                     : 'ancho completo y alto libre, con object-fit:contain de red');
+
+    /* Y la otra mitad: sin techo NI recorrido en la tarjeta, una foto alta la
+       empuja fuera de la pantalla por arriba —medido, 182 px de cabecera
+       fuera con una foto 9:16—, que es el defecto de la v896. El
+       `box-sizing` va porque el techo se cuenta CON el relleno: sin el se
+       sale 29 px. */
+    const faltaCard = [];
+    if (!/max-height\s*:/.test(rCard)) faltaCard.push('el techo');
+    if (!/overflow-y\s*:\s*auto/.test(rCard)) faltaCard.push('el recorrido');
+    if (!/box-sizing\s*:\s*border-box/.test(rCard)) faltaCard.push('el box-sizing');
+    comprobar('y la tarjeta tiene techo, recorrido y box-sizing',
+      faltaCard.length === 0,
+      faltaCard.length ? 'le falta ' + faltaCard.join(' · ') + ': una foto alta la sacaria de la pantalla'
+                       : 'topa contra su contenedor y se recorre, asi que nada queda inalcanzable');
+
+    /* El techo de la tarjeta solo resuelve si el panel tiene ALTO definido,
+       y eso lo da su `top`. Con `top:auto` el panel mide lo que mida su
+       contenido y un `max-height:100%` no topa contra nada. */
+    const panelTop = /(^|;)\s*top\s*:\s*([^;]+)/.exec(rPanel);
+    comprobar('y el panel declara su top, que es contra lo que la tarjeta topa',
+      !!panelTop && !/auto/i.test(panelTop[2]),
+      panelTop ? 'top:' + panelTop[2].trim() : 'sin top: el techo de la tarjeta no resolveria contra nada');
+
+    /* Y arranca por DEBAJO de la barra de arriba, que va en un z-index mas
+       alto y le tapaba el titulo y la X —lo unico que cierra el panel—. No
+       se compara con un numero escrito aqui: se compara con el top que la
+       propia barra declara, asi que moverla pone esto en rojo. */
+    /* La barra la declaran VARIAS reglas y cual gana depende de la
+       especificidad, que desde aqui no se resuelve. Se toma la MAYOR de las
+       declaradas, que es el peor caso: ser mas estricto que la realidad es
+       la direccion segura. */
+    const topsBarra = [...c99.replace(/\s+/g, ' ')
+      .matchAll(/\.u52-mapcentric-topbar\s*\{[^}]*top\s*:\s*calc\(env\(safe-area-inset-top,0px\)\s*\+\s*(\d+)px\)/g)]
+      .map(m => Number(m[1]));
+    const rBarra = topsBarra.length ? [null, String(Math.max.apply(null, topsBarra))] : null;
+    const px = panelTop ? /\+\s*(\d+)px/.exec(panelTop[2]) : null;
+    const debajo = !!(rBarra && px && Number(px[1]) > Number(rBarra[1]));
+    comprobar('y arranca por debajo de la barra de arriba, no en el borde',
+      debajo,
+      !rBarra ? 'no se pudo leer el top de la barra: esta comprobacion no vigila nada'
+        : !px ? 'el top del panel no se cuenta desde el mismo env(): no se pueden comparar'
+        : debajo ? 'panel en +' + px[1] + 'px contra la barra en +' + rBarra[1] + 'px'
+                 : 'panel en +' + px[1] + 'px y la barra en +' + rBarra[1] + 'px: la barra le taparia el titulo y la X');
+
+    /* Con `top` puesto el panel cubre la pantalla, asi que los toques se
+       reparten o el mapa deja de recibirlos donde la tarjeta no esta. */
+    const pnNone = /pointer-events\s*:\s*none/.test(rPanel);
+    const pnAuto = /pointer-events\s*:\s*auto/.test(rCard);
+    comprobar('y los toques se reparten: el panel los deja pasar y la tarjeta no',
+      pnNone && pnAuto,
+      !pnNone ? 'el panel los atrapa: el mapa dejaria de recibir el toque encima de la tarjeta'
+        : !pnAuto ? 'la tarjeta los deja pasar tambien: sus botones no responderian'
+        : 'panel en none, tarjeta en auto');
+  }
+
+  /* Y el cuelgue que aparecio midiendo este mismo panel: se repintaba a si
+     mismo «cuando terminen de cargar las carpetas», y `loadProCityFolders`
+     no pone su bandera ni cuando no hay usuario ni cuando la red falla, asi
+     que el repintado se volvia a llamar sin parar. Medido: sin sesion, y con
+     sesion pero sin red, tocar un punto CONGELA la pestana. */
+  const j20 = soloCodigo(leer('js/20-mobile-functional-app.js'));
+  const iPanel = j20.indexOf('function showProCitySelectedPanel(');
+  const cuerpoPanel = iPanel < 0 ? '' : j20.slice(iPanel, j20.indexOf('\n  }', iPanel));
+  const seRepinta = /loadProCityFolders\(\)\.then\(\(\)\s*=>\s*\{([^}]*)\}/.exec(cuerpoPanel);
+
+  comprobar('MATERIAL · el panel se repinta cuando llegan las carpetas',
+    !!seRepinta,
+    seRepinta ? 'el repintado esta ahi, y es el que puede volverse un bucle'
+              : 'ya no se repinta: esta comprobacion no vigilaria nada');
+
+  if (seRepinta) {
+    /* La bandera es lo unico que distingue «llegaron» de «se intento y no
+       llegaron»: sin mirarla, el repintado vuelve a esperar lo que ya se
+       sabe que no va a llegar. */
+    const mira = /proCity\.foldersLoaded/.test(seRepinta[1]);
+    comprobar('y solo si LLEGARON, o vuelve a llamarse a si mismo sin parar',
+      mira,
+      mira ? 'comprueba foldersLoaded antes de repintar'
+           : 'repinta pase lo que pase: sin sesion o sin red, tocar un punto congela la pestana');
+
+    /* Y la guarda de la guarda, que es la que dice por que hace falta: si
+       `loadProCityFolders` pusiera SIEMPRE su bandera, lo de arriba seguiria
+       siendo correcto y ya no protegeria de nada. */
+    const iCarga = j20.indexOf('function loadProCityFolders(');
+    const cuerpoCarga = iCarga < 0 ? '' : j20.slice(iCarga, j20.indexOf('\n  }', iCarga));
+    const salidaSinBandera = /if\(!usuario\)\s*return Promise\.resolve\(\);/.test(cuerpoCarga)
+                          || /\.catch\(function\(\)\{\}\)/.test(cuerpoCarga);
+    comprobar('MATERIAL · y la carga tiene caminos que no ponen esa bandera',
+      salidaSinBandera,
+      salidaSinBandera ? 'sale sin ponerla si no hay usuario o si la red falla: por eso hay que mirarla'
+                       : 'ya la pone siempre: lo de arriba sigue bien y dejo de proteger de algo');
+  }
+
+  /* El piso de calidad de la escalera de compresion. Sale de medir el error
+     contra el original a los dos anchos a los que la foto SE VE —996 px de
+     dispositivo en este panel y 1746 en el visor—, y el minimo cae en 1600
+     px de lado; 2000 ya empeora. */
+  const piso = /const URBIS_FOTO_PISO_Q\s*=\s*([\d.]+)\s*;/.exec(j05);
+  comprobar('MATERIAL · el piso de calidad de la foto se lee del modulo',
+    !!piso, piso ? 'URBIS_FOTO_PISO_Q = ' + piso[1] : 'no se pudo leer: lo de abajo no vigilaria nada');
+
+  if (piso) {
+    const lados = /const lados = \[([^\]]+)\]/.exec(j05);
+    const tiene1600 = !!(lados && lados[1].split(',').map(x => x.trim()).indexOf('1600') === 0);
+    comprobar('la escalera empieza en el tamano de menor error medido',
+      tiene1600,
+      lados ? (tiene1600 ? 'arranca en 1600, que es el minimo medido' : 'arranca en ' + lados[1].split(',')[0].trim() + ': se queda por debajo del minimo medido')
+            : 'no se pudo leer la escalera');
+
+    /* Y el piso tiene que dejar pasar ese tamano: con 0,45 —lo de antes—
+       1600 necesitaba 0,289 y quedaba fuera, asi que la escalera caia a
+       1080 con MAS error. El corte medido esta entre 0,107 (2000, que ya
+       empeora) y 0,289 (1600, el minimo). */
+    const q = Number(piso[1]);
+    comprobar('y el piso deja pasar ese tamano sin admitir el que ya empeora',
+      q > 0.107 && q <= 0.289,
+      'piso ' + q + (q > 0.289 ? ': 1600 no cabria y la escalera caeria a uno con mas error'
+        : q <= 0.107 ? ': admitiria 2000, que medido sale peor' : ', entre el giro medido y el minimo'));
+
+    /* El ultimo recurso tiene un piso MAS BAJO a proposito: su criterio es
+       otro —alli se elige entre dos fotos buenas y aqui entre una pobre y
+       ninguna evidencia—. Con uno mas alto que el de la escalera, el
+       respaldo pediria mas calidad que el camino normal. */
+    const ult = /_mejorCalidadQueQuepa\(img, 320, 49000, ([\d.]+)\)/.exec(j05);
+    comprobar('y el ultimo recurso pide MENOS calidad que la escalera, no mas',
+      !!ult && Number(ult[1]) < q,
+      !ult ? 'no se pudo leer el ultimo recurso'
+           : Number(ult[1]) < q ? 'respaldo en ' + ult[1] + ' contra el piso en ' + q
+                                : 'respaldo en ' + ult[1] + ' y piso en ' + q + ': el respaldo seria mas exigente que el camino normal');
+
+    /* Y la guarda de la guarda: sin esto, el piso seria una constante que
+       nadie lee y todo lo de arriba seguiria en verde. */
+    const lee = /const piso = pisoQ == null \? URBIS_FOTO_PISO_Q : pisoQ;/.test(j05);
+    comprobar('y la escalera sigue leyendo esa constante',
+      lee, lee ? '_mejorCalidadQueQuepa la usa como su piso'
+               : 'dejo de leerla: el piso volveria a estar escrito suelto y esto no vigilaria nada');
   }
 }
 

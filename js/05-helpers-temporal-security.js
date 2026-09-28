@@ -870,8 +870,32 @@
   // termina en 900 px con q≈0.7 en vez de 360 px con q=0.42.
   // `pisoQ` evita el caso "enorme pero pastosa": si a ese tamaño no se alcanza
   // una calidad mínima digna, se prefiere bajar de tamaño y ganar nitidez.
+  /* El PISO de calidad sale de MEDIR, no de oido (v1039). El comentario de
+     arriba suponia que una foto grande con calidad baja sale "pastosa" y
+     que por eso conviene bajar de tamano; medido a los dos anchos a los que
+     la foto se ve de verdad —996 px de dispositivo en el panel de Pro City
+     y 1746 en el visor a pantalla completa, los dos medidos— el error
+     contra el original es MENOR cuantos mas pixeles tiene, hasta un punto
+     de giro:
+
+         lado   ancho   q maxima   error@panel   error@visor
+         2000   1500      0,107       5,59          6,64     <- ya empeora
+         1600   1200      0,289       5,16          6,37     <- el minimo
+         1280    960      0,449       5,25          6,58
+         1080    810      0,681       5,61          7,03     <- donde caia
+          900    675      0,790       6,07          7,50
+          640    480      0,914       7,70          9,08
+
+     Asi que 0,45 no protegia de nada: costaba resolucion. El piso es el que
+     ADMITE el tamano del minimo y RECHAZA el de mas alla —entre 0,107 y
+     0,289 esta el giro—, y con 0,25 las dos clases de foto medidas
+     aterrizan justo en su minimo: la de grano normal en 1600 (necesita
+     0,289) y la de grano fuerte en 1280 (necesita 0,325, porque a 1600 solo
+     alcanza 0,158 y queda por debajo del piso). */
+  const URBIS_FOTO_PISO_Q = 0.25;
+
   function _mejorCalidadQueQuepa(img, lado, techo, pisoQ) {
-      const piso = pisoQ == null ? 0.45 : pisoQ;
+      const piso = pisoQ == null ? URBIS_FOTO_PISO_Q : pisoQ;
       let bajo = piso, alto = 0.92, mejor = '';
       // Si ni con la calidad mínima cabe, este tamaño no sirve.
       const base = imagenADataURLComprimida(img, lado, piso);
@@ -890,14 +914,20 @@
       const img = await cargarImagenDesdeArchivo(file);
       // De mayor a menor: el primero que quepa gana, y ya viene con la mejor
       // calidad posible para ese tamaño.
-      const lados = [1280, 1080, 900, 760, 640, 520, 420, 320];
+      // 1600 es el minimo de error medido y no estaba en la escalera: el
+      // techo de la celda no deja pasar de ahi con una calidad digna, y
+      // 2000 ya sale peor (v1039).
+      const lados = [1600, 1280, 1080, 900, 760, 640, 520, 420, 320];
       for(const lado of lados) {
           const d = _mejorCalidadQueQuepa(img, lado, URBIS_MAX_FOTO_DATAURL);
           if(d) return d;
       }
       // Último recurso: se baja el piso de calidad y se usa todo el margen que
       // aún deja la celda. Peor una foto pobre que ninguna evidencia.
-      const ultimo = _mejorCalidadQueQuepa(img, 320, 49000, 0.3);
+      // Su piso es MAS BAJO que el de la escalera a proposito, porque su
+      // criterio es otro: alli se elige entre dos fotos buenas y aqui entre
+      // una pobre y ninguna evidencia.
+      const ultimo = _mejorCalidadQueQuepa(img, 320, 49000, 0.15);
       if(ultimo) return ultimo;
       throw new Error('La foto sigue siendo demasiado pesada para guardarse en SheetDB/Google Sheets. Use una foto más pequeña o pega un link de imagen.');
   }
