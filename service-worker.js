@@ -1,4 +1,4 @@
-const URBIS_CACHE = 'urbis-v1037-seguimiento-presidencial-cholo-plan-salud-cepeda';
+const URBIS_CACHE = 'urbis-v1038-alertas-choco-tolima-santa-marta';
 const URBIS_ASSETS = [
   './',
   './index.html',

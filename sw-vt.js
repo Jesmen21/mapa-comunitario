@@ -13,7 +13,7 @@
 
    La versión va acá y en vision-territorial.html, idéntica, como en los
    otros siete archivos de versión del sitio: revisar.js lo comprueba. */
-const VT_CACHE = 'urbis-vt-v1037-seguimiento-presidencial-cholo-plan-salud-cepeda';
+const VT_CACHE = 'urbis-vt-v1038-alertas-choco-tolima-santa-marta';
 const VT_ASSETS = [
   './vision-territorial.html',
   './css/90-vt.css',
