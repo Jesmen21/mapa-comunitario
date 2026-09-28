@@ -154,6 +154,251 @@
     'contexto': 'radio',
     'multi-radio': 'varios', 'radios': 'varios'
   };
+  /* ── De dónde sale la cifra de cada panel (v1045) ───────────────────────
+     Medido contra el código, uno por uno, y con una restricción que decide
+     la mitad de la tabla: `js/67` declara en su propio export que **el
+     análisis lo hace SIEMPRE el servidor**, así que la fórmula de
+     `viabilidad`, de `indicadores` y del flujo vive en el repositorio del
+     motor —que no está en este contenedor y cuyas reglas no se sirven al
+     navegador a propósito—. Para esos paneles la fórmula NO se escribe: se
+     declara quién la calcula, que es lo que consta. Inventarla sería
+     exactamente lo que la v863 prohíbe, y copiar las entradas del pliego
+     educativo sería peor: describirían otro cálculo.
+
+     Donde la cuenta SÍ está en lo servido, va la cuenta:
+       · el reparto por grupo se calcula en este mismo archivo;
+       · la proyección de población, en `js/67`;
+       · la caminabilidad y la ficha de edificio, en `js/64`.
+
+     Tres campos y no cinco. El pliego educativo declara fórmula, fuente,
+     confiabilidad, referencia y error típico; acá `confiabilidad` y
+     `referencia` no se pueden medir para los paneles del motor, y
+     escribirlas «media» o dejarlas en blanco sería relleno. Lo que sí se
+     puede defender de los dieciséis es de dónde sale, quién lo calcula y
+     qué NO es. */
+  const METODO_AIA = {
+    'oportunidad': {
+      f: 'los usos registrados en OpenStreetMap dentro del radio',
+      c: 'lo calcula el motor de URBIS; la lista de «+N potencial» compara los usos que hay contra los que el motor espera para un entorno así',
+      l: 'califica el SITIO y no la idea: no dice que el proyecto vaya a funcionar' },
+    'viabilidad': {
+      f: 'los usos del radio y la población del censo DANE',
+      c: 'lo calcula el motor de URBIS: cinco dimensiones —demanda, competencia, complementarios, movilidad y entorno— resumidas en un puntaje de 0 a 100',
+      l: 'es el encaje del uso declarado en ESTE entorno; no es una proyección financiera ni una medición del lote' },
+    'viabilidad-detalle': {
+      f: 'los usos del radio y la población del censo DANE',
+      c: 'lo calcula el motor de URBIS: cinco dimensiones resumidas en un puntaje de 0 a 100, y cada una se imprime aparte',
+      l: 'es el encaje del uso declarado en ESTE entorno; no es una proyección financiera ni una medición del lote' },
+    'ranking': {
+      f: 'los usos del radio y el programa que el cliente declaró',
+      c: 'lo calcula el motor de URBIS: puntúa cada uso candidato contra lo que el entorno ya tiene',
+      l: 'puntúa el encaje urbano, no la rentabilidad' },
+    'unidades': {
+      f: 'el ranking de usos y las unidades que el cliente declaró',
+      c: 'lo calcula el motor de URBIS: reparte las unidades entre los usos mejor calificados',
+      l: 'es una sugerencia de programa, no un estudio de mercado' },
+    'recomendaciones': {
+      f: 'las cifras de este mismo análisis',
+      c: 'lo calcula el motor de URBIS a partir de los indicadores del entorno',
+      l: 'URBIS recomienda y el humano decide: ninguna de estas líneas es una decisión' },
+    'foda': {
+      f: 'las cifras de este mismo análisis',
+      c: 'lo calcula el motor de URBIS: selecciona los hallazgos que más se apartan de lo esperable',
+      l: 'es una lectura de las cifras, no una medición nueva' },
+    'movilidad': {
+      f: 'las vías y las paradas de OpenStreetMap dentro del radio',
+      c: 'lo calcula el motor de URBIS: la exposición pesa cada corredor por su jerarquía y su distancia al punto',
+      l: 'mide la malla MAPEADA, no el tránsito: una vía sin mapear no existe para esta cifra' },
+    'flujo': {
+      f: 'los usos de OpenStreetMap dentro del radio',
+      c: 'lo calcula el motor de URBIS: cada uso aporta según su tipo, y el andén observado ajusta el resultado',
+      l: 'es un potencial estimado por tipo de uso; no es un aforo ni un conteo' },
+    'generadores': {
+      f: 'los usos de OpenStreetMap dentro del radio',
+      c: 'lo calcula el motor de URBIS: cada uso aporta al peatón según su tipo, y los frentes muertos restan',
+      l: 'es un potencial estimado por tipo de uso; no es un aforo' },
+    'hora-fuerte': {
+      f: 'el horario típico de cada tipo de uso presente en el radio',
+      c: 'lo calcula el motor de URBIS repartiendo el aporte de cada uso entre las cuatro franjas',
+      l: 'las franjas son estimadas por tipo de uso, no observadas en la calle' },
+    'atrae-vehiculos': {
+      f: 'los usos de OpenStreetMap dentro del radio',
+      c: 'lo calcula el motor de URBIS: cada uso aporta viajes en vehículo según su tipo',
+      l: 'son viajes estimados por tipo de uso, no conteos de entrada' },
+    'anillos': {
+      f: 'los usos de OpenStreetMap con su distancia al punto',
+      c: 'lo calcula el motor de URBIS: lo cercano pesa más, y el reparto suma 100',
+      l: 'es influencia estimada por distancia, no clientes' },
+    'competencia': {
+      f: 'los usos del mismo rubro que el proyecto, dentro del radio',
+      c: 'lo calcula el motor de URBIS cruzando el programa declarado con la Matriz de Usos',
+      l: 'solo cuenta lo mapeado y solo cita lo nombrado: cero no es «no hay»' },
+    'vocacion': {
+      f: 'los rubros comerciales registrados en el radio',
+      c: 'lo calcula el motor de URBIS: la vocación es el rubro con mayor participación en la oferta',
+      l: 'describe la oferta MAPEADA, no el mercado' },
+    'contexto': {
+      f: 'los límites administrativos, las rutas y los pasos de OpenStreetMap',
+      c: 'se toman tal cual de la consulta, sin recalcular nada',
+      l: 'es lo que hay subido a OpenStreetMap, no la oferta completa' },
+    'composicion': {
+      f: 'los usos del radio clasificados en la Matriz de Usos de URBIS',
+      c: 'se cuenta en este mismo archivo: el porcentaje de cada grupo es 100 × usos del grupo ÷ total de usos',
+      l: 'cuenta USOS, no superficie, ni empleo, ni facturación' },
+    'composicion-tabla': {
+      f: 'los usos del radio clasificados en la Matriz de Usos de URBIS',
+      c: 'se cuenta en este mismo archivo: el porcentaje de cada grupo es 100 × usos del grupo ÷ total de usos',
+      l: 'cuenta USOS, no superficie, ni empleo, ni facturación' },
+    'indicadores': {
+      f: 'el censo DANE por manzana (estrato, sexo y edad) y los usos de OpenStreetMap',
+      c: 'el estrato y el reparto por sexo y edad se cuentan de las manzanas censales que caen en el radio; los cinco niveles los calcula el motor de URBIS',
+      l: 'el estrato es del censo de 2018, y un «nivel» es una lectura del motor y no una medida' },
+    'indicadores-filas': {
+      f: 'el censo DANE por manzana (estrato, sexo y edad) y los usos de OpenStreetMap',
+      c: 'el estrato y el reparto por sexo y edad se cuentan de las manzanas censales que caen en el radio; los cinco niveles los calcula el motor de URBIS',
+      l: 'el estrato es del censo de 2018, y un «nivel» es una lectura del motor y no una medida' },
+    'poblacion': {
+      f: 'el censo DANE por manzana y la serie de proyecciones municipales del DANE',
+      c: 'se proyecta en js/67: la tasa anual es (P₁/P₀) elevado a 1÷años, menos 1, y la población es la base por (1+tasa) elevado a los años transcurridos',
+      l: 'la tasa es del MUNICIPIO aplicada al radio: supone que todos los barrios crecen igual' },
+    'edificacion': {
+      f: 'la ficha de edificio levantada en campo, edificio por edificio',
+      c: 'se cuenta en js/64: el reparto por época y por material sale de las fichas que traen ese dato, y la vulnerabilidad cruza los dos',
+      l: 'NO es un diagnóstico estructural: señala cuáles ameritan que las revise un ingeniero' },
+    'caminabilidad': {
+      f: 'el estado del andén observado al mapear, tramo por tramo',
+      c: 'se calcula en js/64: el índice es la suma de las observaciones dividida por su número, y el factor es 0,75 + 0,35 × índice',
+      l: 'AJUSTA el flujo peatonal, no lo genera: un andén bueno deja caminar a quien ya pasa' },
+    'caminabilidad-vacia': {
+      f: 'el estado del andén observado al mapear, tramo por tramo',
+      c: 'se calcula en js/64 sobre las observaciones de andén; sin ninguna, el flujo se deja sin ajustar',
+      l: 'un vacío de datos no es un andén bueno' },
+    'horarios': {
+      f: 'la etiqueta de horario que el establecimiento tiene puesta en OpenStreetMap',
+      c: 'se cuenta tal cual, sin estimar nada',
+      l: 'es lo DECLARADO en el letrero, no lo observado: puede estar desactualizado' },
+    'horarios-vacio': {
+      f: 'la etiqueta de horario de OpenStreetMap',
+      c: 'se cuenta tal cual, sin estimar nada',
+      l: 'que no haya horarios declarados no significa que los locales estén cerrados' },
+    'multi-radio': {
+      f: 'el mismo análisis repetido a varios radios',
+      c: 'se repite la consulta a cada radio de la comparativa y se cuenta lo que cae dentro de cada uno',
+      l: 'no son anillos: cada radio INCLUYE a los menores, así que las cifras no se restan entre sí' },
+    'radios': {
+      f: 'el mismo análisis repetido a varios radios',
+      c: 'se repite la consulta a cada radio de la comparativa y se cuenta lo que cae dentro de cada uno',
+      l: 'no son anillos: cada radio INCLUYE a los menores' },
+    'comparacion': {
+      f: 'otro sector analizado con este mismo método',
+      c: 'se ponen las mismas cifras una al lado de la otra, sin recalcular ninguna',
+      l: 'la comparación solo se sostiene si los dos radios son comparables' },
+    'forma': {
+      f: 'la traza de vías de OpenStreetMap dentro del radio',
+      c: 'lo calcula el motor de URBIS a partir de la malla mapeada',
+      l: 'describe la traza MAPEADA: donde falte una calle por mapear, la forma sale distinta' },
+    'forma-vacia': {
+      f: 'la traza de vías de OpenStreetMap dentro del radio',
+      c: 'lo calcula el motor de URBIS a partir de la malla mapeada',
+      l: 'sin malla mapeada no hay forma que describir' }
+  };
+  /* Un panel que no publica una cifra no tiene método que declarar, por la
+     misma razón por la que no lleva escala. La razón se escribe y se
+     comprueba: sin esta mitad, el atajo sería meterlos todos acá. */
+  const SIN_METODO_AIA = {
+    'guia': 'define las cifras del informe; no calcula ninguna',
+    'como-leer': 'define las cifras del informe; no calcula ninguna',
+    'como-leer-edu': 'define las cifras del informe; no calcula ninguna',
+    'falta': 'lista lo que queda por levantar; no hay cifra que calcular',
+    'compatibilidad': 'cruza los usos que el cliente declaró; no mide el entorno'
+  };
+
+  /* Los dos paneles que no llevan título propio en el papel: su nombre no
+     se puede leer del `<h2>` porque no hay ninguno, así que se declara. Es
+     la única razón admitida para escribir un nombre a mano, y la guarda
+     exige que ningún id con título propio esté acá. */
+  const SIN_TITULO_AIA = {
+    'generadores': 'Qué trae gente a pie',
+    'radios': 'El entorno según la distancia'
+  };
+
+  /* La hoja de método (v1045). Sale de lo que el informe COMPUSO: recorre el
+     cuerpo buscando los identificadores que el rótulo de escala dejó, en el
+     orden en el que aparecen, y arma una fila por panel. Así no puede listar
+     un panel que no salió ni olvidar uno que sí.
+
+     Va en su propia hoja y no como pie de cada panel, y la razón está
+     medida: con el pie debajo de los dieciséis, la hoja 4 pasa de 761 a 811
+     px sobre un papel de 756 —y la 3 queda a trece px del borde—. El informe
+     tiene hojas de tamaño FIJO: no bisecta como el pliego educativo, así que
+     lo que no cabe se sale sin que nada lo diga. Un método que revienta la
+     maquetación no es un método declarado, es una hoja rota. */
+  function hojaMetodoAIA(cuerpoHTML, titulo, fecha, autor, r){
+    /* El nombre del panel NO se escribe en una tercera lista: se lee del
+       propio título, que el rótulo sigue por construcción —`escalaAIA` se
+       emite pegado detrás del `</h2>`—. Una tabla de nombres al lado sería
+       una lista más que mantener y la primera que se quedaría vieja al
+       renombrar un panel (v878). */
+    const vistos = [], nombre = {};
+    /* El título se lee por ADYACENCIA exacta y no con un `[\s\S]*?`: la
+       primera versión usaba uno y se tragaba el título del panel ANTERIOR
+       cuando el de este no existía —una fila de la tabla salió de 210 px con
+       medio panel dentro—. Lo destapó medir el alto de cada fila, no leer.
+       Es el ancla por forma que envejece (v935), cometida en su propio
+       lector: ahora se exige que lo de delante TERMINE en `</h2>` o `</h3>`
+       y el título se corta desde su propia apertura. */
+    const re = /<p class="aia-escala"[^>]*data-m="([^"]+)"/g;
+    let m;
+    while ((m = re.exec(cuerpoHTML)) !== null) {
+      const id = m[1];
+      if (vistos.indexOf(id) >= 0) continue;
+      vistos.push(id);
+      const antes = cuerpoHTML.slice(0, m.index).replace(/\s+$/, '');
+      const cierra = /<\/h([23])>$/.exec(antes);
+      let t = '';
+      if (cierra) {
+        const abre = antes.lastIndexOf('<h' + cierra[1]);
+        if (abre >= 0) {
+          /* El `<em>` de un título es su SUBTÍTULO y no su nombre, así que
+             se quita entero; y la cifra que varios títulos llevan dentro
+             —«Viabilidad · 78 / 100», «Competencia directa (3)»— sobra en
+             una tabla de método, que habla del panel y no de su valor. */
+          t = antes.slice(abre).replace(/^<h[23][^>]*>/, '').replace(/<\/h[23]>$/, '')
+                   .replace(/<em[^>]*>[\s\S]*?<\/em>/g, ' ')
+                   .replace(/<[^>]*>/g, ' ').replace(/&middot;|&nbsp;/g, ' ')
+                   .replace(/\s+/g, ' ').trim()
+                   .replace(/\s*\([\d.,]+\)$/, '').replace(/\s*·?\s*[\d.,]+\s*\/\s*100$/, '')
+                   .replace(/\s*·\s*$/, '').trim();
+        }
+      }
+      nombre[id] = t || SIN_TITULO_AIA[id] || id;
+    }
+    if (!vistos.length) return '';
+    const fila = (id) => {
+      const d = METODO_AIA[id];
+      const e = ESCALA_AIA[id];
+      /* Un panel compuesto sin entrada lo DICE en rojo, en vez de faltar de
+         la tabla: faltar se lee igual que no existir. */
+      if (!d) return '<tr class="met-sin"><td colspan="4">' + esc(id) +
+        ' — método sin declarar</td></tr>';
+      return '<tr><td class="met-p">' + esc(nombre[id] || id) + '</td>' +
+        '<td>' + esc(d.f) + '</td><td>' + esc(d.c) + '</td>' +
+        '<td class="met-l">' + esc(d.l) + '</td></tr>';
+    };
+    return '<div class="hoja"><div class="contenido">' +
+      cabecera(titulo, 'Cómo se midió cada panel', 'de dónde sale cada cifra y qué no es', fecha, N_HOJAS) +
+      seccion(0, 'Cómo se midió cada panel', 'una fila por panel de este informe, en el orden en que salen') +
+      '<table class="tbl-met"><thead><tr><th>Panel</th><th>De dónde sale</th>' +
+      '<th>Cómo se calcula</th><th>Lo que NO es</th></tr></thead><tbody>' +
+      vistos.map(fila).join('') + '</tbody></table>' +
+      '<p class="nota-pie">Las cifras que calcula el motor de URBIS se marcan como tales: ' +
+      'su regla no se publica, que es lo que distingue este análisis de un conteo. Lo que sí ' +
+      'está en el navegador —el reparto por grupo, la proyección de población, la ficha de ' +
+      'campo— va con su cuenta escrita, para que cualquiera la rehaga.</p>' +
+      pie(N_HOJAS, r, autor) +
+      '</div></div>';
+  }
+
   /* Un panel que NO publica una cifra medida sobre un territorio no lleva
      escala, y dice por qué. Sin esta mitad, el arreglo barato sería
      rotularlos todos «radio» y el rótulo dejaría de significar algo. */
@@ -171,7 +416,11 @@
      callar deja que el lector suponga que es del radio. */
   function escalaAIA(id){
     const e = ESCALA_AIA[id];
-    if (e) return '<p class="aia-escala">' + esc(ESCALA_TEXTO_AIA[e] || e) + '</p>';
+    /* El identificador viaja en el rótulo. Es lo que permite que la hoja de
+       método salga de lo que el informe COMPUSO de verdad y no de una lista
+       escrita al lado: con dos listas, la que se quedaría vieja sería la del
+       método, porque nadie la vuelve a mirar (v879). */
+    if (e) return '<p class="aia-escala" data-m="' + esc(id) + '">' + esc(ESCALA_TEXTO_AIA[e] || e) + '</p>';
     if (SIN_ESCALA_AIA[id]) return '';
     return '<p class="aia-escala aia-escala-sin">escala sin declarar</p>';
   }
@@ -888,8 +1137,10 @@
   // conclusión, después los datos que la sostienen, y al final el FODA con el
   // siguiente paso.
 
+  /* `n` en cero o vacío imprime el título sin numerar: la hoja de método no
+     es una sección más del análisis y numerarla «0.» se lee como un error. */
   function seccion(n, titulo, sub){
-    return '<div class="sec"><b>' + n + '. ' + esc(titulo) + '</b>' +
+    return '<div class="sec"><b>' + (n ? n + '. ' : '') + esc(titulo) + '</b>' +
            (sub ? '<em>' + esc(sub) + '</em>' : '') + '</div>';
   }
 
@@ -1673,7 +1924,11 @@
   // Cuántas hojas tiene el informe. Vive en una constante porque la
   // numeración del pie y la del encabezado tienen que decir lo mismo, y
   // antes había que acordarse de cambiar los dos sitios a mano.
-  const N_HOJAS = 4;
+  /* Cuántas hojas tiene el informe. Deja de ser constante porque el de
+     empresas lleva una más —la del método— y el del curso no: ya declara su
+     método en la lectura del grupo. Se fija al componer, igual que el estilo
+     (`fijarEstilo`), que es el precedente de este mismo archivo. */
+  let N_HOJAS = 4;
 
   // Cabecera y pie iguales en todas las hojas: la numeración "n/N" es lo único
   // que cambia, y es lo que permite reconocer una hoja suelta si se imprime.
@@ -1881,7 +2136,11 @@
     const radioTxt = r.meta.radioM >= 1000 ? (r.meta.radioM / 1000) + ' km' : r.meta.radioM + ' m';
     const edu = !!opciones.educativo;
 
-    function cuerpoEmpresa(){ return [
+    function cuerpoEmpresa(){
+      /* La hoja del método es la quinta y sale del cuerpo YA compuesto, así
+         que no puede listar un panel que no salió ni olvidar uno que sí. */
+      N_HOJAS = 5;
+      const cuerpo = [
 // ══ HOJA 1 · la conclusión y lo que el cliente necesita para decidir ══
 '<div class="hoja"><div class="contenido">',
 
@@ -1974,14 +2233,20 @@ pie(4, r, autor),
 '</div></div>',
 
 '</div>',
-    ].join(''); }
+      ].join('');
+      return cuerpo + hojaMetodoAIA(cuerpo, titulo, fecha, autor, r);
+    }
 
     /* ── El informe del curso ─────────────────────────────────────────────
        Las mismas cuatro hojas, sin el negocio: ni viabilidad del proyecto,
        ni «lo más importante para el cliente», ni el POT como siguiente
        paso. En su lugar: sobre qué se analizó, qué falta por levantar, y
        la lectura del curso, que va de primera porque es lo que se evalúa. */
-    function cuerpoEdu(){ return [
+    function cuerpoEdu(){
+      /* El informe del curso se queda en cuatro: su método lo declara la
+         lectura del grupo y «cómo leer estas cifras», que ya van dentro. */
+      N_HOJAS = 4;
+      return [
 '<div class="hoja"><div class="contenido">',
 cabecera(titulo, 'Análisis del sector · ejercicio del curso', ubicacionTxt, fecha, 1),
 seccion(1, 'Sobre qué se analizó', 'lo que el curso mapeó, antes de las cifras'),
@@ -2491,6 +2756,22 @@ pie(4, r, autor, true),
 '.aia-sinmedir p{font-size:6.9px;line-height:1.4;color:', T.txt3, ';margin:2px 0 0}',
 '.aia-sinmedir-como{color:', T.ok, ' !important;font-weight:600}',
 '.ejec-sinmedir{display:block}',
+/* La tabla de método (v1045). Compacta a propósito: son dieciséis filas y
+   la hoja mide lo que mide —el informe no bisecta—, así que el ancho de
+   cada columna se reparte por lo que cada campo necesita y no a partes
+   iguales. Medido: con esto las dieciséis caben en su hoja. */
+'.tbl-met{width:100%;border-collapse:collapse;margin-top:4px;table-layout:fixed}',
+'.tbl-met th{font-size:6.2px;text-transform:uppercase;letter-spacing:.5px;text-align:left;',
+'color:', T.acento, ';border-bottom:1px solid ', T.borde, ';padding:0 4px 2px 0}',
+'.tbl-met td{font-size:6.9px;line-height:1.35;color:', T.txt3, ';vertical-align:top;',
+'padding:2.5px 4px 2.5px 0;border-bottom:1px solid ', T.borde, '}',
+'.tbl-met th:nth-child(1),.tbl-met td:nth-child(1){width:17%}',
+'.tbl-met th:nth-child(2),.tbl-met td:nth-child(2){width:24%}',
+'.tbl-met th:nth-child(3),.tbl-met td:nth-child(3){width:33%}',
+'.tbl-met .met-p{font-weight:800;color:', T.tinta, '}',
+'.tbl-met .met-l{color:', T.tinta, '}',
+/* Un panel compuesto sin método lo dice en rojo, no falta de la tabla. */
+'.tbl-met .met-sin td{color:', T.bad, ';font-weight:700}',
 '.nota-pie{font-size:6.9px;line-height:1.4;color:', T.txt3, ';margin-top:5px}',
 /* El aro vive en una caja de tamaño fijo que nada puede invadir: ese es el
    defecto que se venía repitiendo —una barra de ancho completo cruzándolo—. */

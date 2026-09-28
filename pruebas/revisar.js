@@ -5542,6 +5542,229 @@ console.log('\n  -- con la capa vacia el informe no publica score ni recomendaci
   }
 }
 
+console.log('\n  -- de donde sale la cifra de cada panel del informe (v1045) --');
+{
+  const j63 = soloCodigo(leer('js/63-analisis-ia-informe.js'));
+
+  const tabla3 = (nombre) => {
+    const i = j63.indexOf('const ' + nombre + ' = {');
+    if (i < 0) return null;
+    const j = j63.indexOf('\n  };', i);
+    if (j < 0) return null;
+    const cuerpo = j63.slice(i, j);
+    const out = {};
+    const re = /'([^']+)':\s*\{\s*\n\s*f:\s*'([^']*)',\s*\n\s*c:\s*'([^']*)',\s*\n\s*l:\s*'([^']*)'/g;
+    let m;
+    while ((m = re.exec(cuerpo)) !== null) out[m[1]] = { f: m[2], c: m[3], l: m[4] };
+    return out;
+  };
+  const tablaTxt = (nombre) => {
+    const i = j63.indexOf('const ' + nombre + ' = {');
+    if (i < 0) return null;
+    const j = j63.indexOf('\n  };', i);
+    if (j < 0) return null;
+    const out = {};
+    const re = /'([^']+)'\s*:\s*'([^']*)'/g;
+    let m;
+    const cuerpo = j63.slice(i, j);
+    while ((m = re.exec(cuerpo)) !== null) out[m[1]] = m[2];
+    return out;
+  };
+
+  const MET = tabla3('METODO_AIA');
+  const SINM = tablaTxt('SIN_METODO_AIA');
+  const SINT = tablaTxt('SIN_TITULO_AIA');
+  /* Los identificadores que los paneles usan de verdad, leidos del codigo:
+     la tabla de metodo se mide contra ellos y no contra una lista escrita. */
+  const usados = [];
+  let mu;
+  const reU = /escalaAIA\(\s*'([^']+)'\s*\)/g;
+  while ((mu = reU.exec(j63)) !== null) if (usados.indexOf(mu[1]) < 0) usados.push(mu[1]);
+
+  if (!MET || !SINM || !SINT || Object.keys(MET).length < 20 || usados.length < 20) {
+    anotarSinMaterial('MATERIAL · las tablas de metodo y los identificadores se dejan leer',
+      'METODO=' + (MET ? Object.keys(MET).length : 'no') + ' · SIN_METODO=' + (SINM ? Object.keys(SINM).length : 'no') +
+      ' · SIN_TITULO=' + (SINT ? Object.keys(SINT).length : 'no') + ' · ids=' + usados.length);
+  } else {
+    /* Falla CERRADO: un panel nuevo sin su metodo sale en rojo, en vez de
+       publicar una cifra sin decir de donde sale. */
+    const pelados = usados.filter((id) => !(id in MET) && !(id in SINM));
+    comprobar('todo panel declara de donde sale su cifra',
+      pelados.length === 0,
+      pelados.length === 0
+        ? usados.length + ' identificadores: ' + Object.keys(MET).length + ' con metodo y ' +
+          Object.keys(SINM).length + ' sin cifra que calcular'
+        : 'publicarian una cifra sin decir de donde sale: ' + pelados.slice(0, 6).join(' · '));
+
+    const sobran = Object.keys(MET).concat(Object.keys(SINM)).filter((id) => usados.indexOf(id) < 0);
+    comprobar('y ninguna entrada de metodo se quedo sin panel',
+      sobran.length === 0,
+      sobran.length === 0 ? 'ninguna sobra' : 'no las usa nadie: ' + sobran.slice(0, 6).join(' · '));
+
+    /* Los tres campos con algo escrito. Sin esto, el atajo seria dejarlos en
+       blanco y la tabla saldria con filas vacias que se leen como «no se
+       sabe» en vez de como «nadie lo escribio». */
+    const flojas = Object.keys(MET).filter((id) => {
+      const d = MET[id];
+      return String(d.f).trim().length < 15 || String(d.c).trim().length < 20 || String(d.l).trim().length < 20;
+    });
+    comprobar('y los tres campos dicen algo: de donde sale, como se calcula y que NO es',
+      flojas.length === 0,
+      flojas.length === 0
+        ? 'los ' + Object.keys(MET).length + ' con sus tres campos escritos'
+        : 'con algun campo en blanco: ' + flojas.slice(0, 6).join(' · '));
+
+    /* La cuenta que la tabla ESCRIBE se comprueba contra el codigo que dice
+       tenerla. Es lo unico de esta familia que se puede verificar desde aca,
+       y hay que decir lo que NO cubre: `js/67` declara que el analisis lo
+       hace SIEMPRE el servidor, asi que la formula de los paneles del motor
+       vive en el repositorio del motor y ninguna guarda de este contenedor
+       puede compararla con nada. Lo que si se impide es lo contrario —que un
+       panel afirme una cuenta que su archivo no tiene— y que la tabla deje
+       de nombrar al motor donde le toca.
+
+       La primera version contaba cuantas entradas nombraban al motor y
+       cuantas escribian su cuenta, y una inyeccion la dejo en VERDE: cambiar
+       una entrada de «lo calcula el motor» a «se calcula en este archivo» no
+       movia ninguno de los dos recuentos. Contar no es comprobar (v878). */
+    const CUENTAS = [
+      ['composicion',      'js/63-analisis-ia-informe.js', /100 \* n \/ Math\.max\(s\.total, 1\)/],
+      ['composicion-tabla','js/63-analisis-ia-informe.js', /100 \* n \/ Math\.max\(s\.total, 1\)/],
+      ['poblacion',        'js/67-analisis-cliente.js',    /Math\.pow\(1 \+ tasaAnual, anios\)/],
+      ['caminabilidad',    'js/64-analisis-edu.js',        /0\.75 \+ 0\.35 \* indice/],
+      ['edificacion',      'js/64-analisis-edu.js',        /edif\.porEpoca\[ficha\.epoca\]/],
+      ['caminabilidad-vacia','js/64-analisis-edu.js',       /indice === null \? 1/]
+    ];
+    const rotas = CUENTAS.filter((c) => {
+      const d = MET[c[0]];
+      if (!d) return true;
+      /* La entrada tiene que SEGUIR diciendo que su cuenta esta en lo
+         servido —si pasa a «lo calcula el motor», ya no hay que comprobar
+         nada y la fila sobra de esta lista—, y el codigo tiene que tenerla. */
+      if (!/se (?:cuenta|calcula|proyecta) en (?:este mismo archivo|js\/6\d)/.test(d.c)) return true;
+      return !c[2].test(soloCodigo(leer(c[1])));
+    });
+    /* Y la otra direccion, que es la que lo hace fallar CERRADO: una entrada
+       que dice calcularse en un archivo SERVIDO tiene que estar en la lista
+       de arriba. Sin esto queda el agujero que la primera version dejaba —un
+       panel del motor pasa a afirmar una cuenta local y nadie la comprueba—,
+       y de hecho lo tenia vivo: `caminabilidad-vacia` afirmaba su cuenta en
+       js/64 y no estaba en la lista.
+
+       De que NO responde, dicho: caza la entrada que NOMBRA un archivo
+       servido o «este mismo archivo». Una escrita de otra manera —«se cuenta
+       de las manzanas censales», que es lo que dice `indicadores`— se le
+       escapa, porque ahi no hay ningun archivo contra el que comprobar. Esa
+       mitad es vocabulario y falla abierto, como la del voseo (v880). */
+    const locales = Object.keys(MET).filter((id) =>
+      /se (?:cuenta|calcula|proyecta) en (?:este mismo archivo|js\/6\d)/.test(MET[id].c));
+    const sinVerificar = locales.filter((id) => !CUENTAS.some((c) => c[0] === id));
+    comprobar('y toda entrada que dice calcularse en lo servido esta en esa lista',
+      sinVerificar.length === 0,
+      sinVerificar.length === 0
+        ? locales.length + ' afirman una cuenta local, y las ' + locales.length + ' se comprueban'
+        : 'afirman una cuenta local que nadie comprueba: ' + sinVerificar.slice(0, 6).join(' · '));
+
+    const servidor = /Análisis: siempre por el servidor/.test(leer('js/67-analisis-cliente.js'));
+    const delMotor = Object.keys(MET).filter((id) => /motor de URBIS/.test(MET[id].c)).length;
+    comprobar('y la cuenta que la tabla escribe esta de verdad en el archivo que nombra',
+      rotas.length === 0 && servidor && delMotor > 0,
+      rotas.length
+        ? 'la afirman y su archivo no la tiene: ' + rotas.map((c) => c[0]).join(' · ')
+        : !servidor
+          ? 'js/67 ya no declara que el analisis lo hace el servidor: hay que volver a medir de donde sale cada cifra'
+          : !delMotor
+            ? 'ninguna entrada nombra al motor: o se invento una formula, o se callo quien la calcula'
+            : CUENTAS.length + ' cuentas comprobadas contra su archivo, y ' + delMotor +
+              ' paneles declaran que los calcula el motor — cuya regla no se sirve al navegador');
+
+    /* Un nombre escrito a mano solo se admite para el panel que NO tiene
+       titulo propio en el papel: los demas se leen del `<h2>`, y una tabla
+       de nombres al lado seria la primera que se queda vieja al renombrar. */
+    const conTitulo = Object.keys(SINT).filter((id) => {
+      const i = j63.indexOf("escalaAIA('" + id + "')");
+      if (i < 0) return false;
+      return /<\/h[23]>'?\s*\+\s*$|<\/h[23]>/.test(j63.slice(Math.max(0, i - 120), i));
+    });
+    comprobar('y solo lleva nombre a mano el panel sin titulo propio',
+      conTitulo.length === 0,
+      conTitulo.length === 0
+        ? Object.keys(SINT).length + ' sin titulo en el papel: ' + Object.keys(SINT).join(' · ')
+        : 'tienen titulo y aun asi lo escriben a mano: ' + conTitulo.join(' · '));
+
+    /* La guarda de la guarda: la hoja sale de lo COMPUESTO. Si dejara de
+       leer los identificadores del cuerpo, listaria otra cosa —o nada— y
+       todo lo de arriba seguiria en verde sobre una tabla que no se
+       imprime (v878). */
+    const iH = j63.indexOf('function hojaMetodoAIA(');
+    const cH = iH < 0 ? '' : j63.slice(iH, j63.indexOf('\n  }', iH));
+    const leeCuerpo = /data-m="\(\[\^"\]\+\)"/.test(cH) || /data-m="\(/.test(cH);
+    comprobar('y la hoja de metodo sale de lo que el informe COMPUSO',
+      leeCuerpo && /METODO_AIA\[/.test(cH),
+      leeCuerpo && /METODO_AIA\[/.test(cH)
+        ? 'recorre el cuerpo por los identificadores del rotulo'
+        : 'dejo de leer el cuerpo o la tabla: listaria una lista escrita al lado, que se separa');
+
+    /* Y el rotulo sigue llevando el identificador, que es lo que lo hace
+       posible: sin el, la hoja de metodo sale vacia sin que nada lo diga. */
+    const iE = j63.indexOf('function escalaAIA(');
+    const cE = iE < 0 ? '' : j63.slice(iE, j63.indexOf('\n  }', iE));
+    comprobar('y el rotulo de escala sigue llevando el identificador',
+      /data-m="/.test(cE),
+      /data-m="/.test(cE)
+        ? 'el rotulo lo lleva, asi que la hoja lo encuentra'
+        : 'dejo de llevarlo: la hoja de metodo saldria vacia sin decir por que');
+  }
+
+  /* La celda de la tabla es PROSA —frases enteras que se leen a treinta
+     centimetros— asi que va al tamano de prosa del propio modulo y no a uno
+     mas chico. El tamano se LEE de `.nota-pie`, que es esa clase, en vez de
+     escribirse aca: si un dia se mueve, la tabla tiene que seguirla o la
+     guarda lo dice (v890). Los rotulos en mayusculas —la cabecera de la
+     tabla y el de escala— son otra clase y van aparte, que es la vara que
+     este proyecto usa desde la v791.
+
+     Medido: 6,3px eran 1,33 mm de papel contra los 1,46 de la prosa del
+     modulo, y subirlos cuesta CERO en las otras cuatro hojas —la del metodo
+     pasa de 376 a 417px de 756—. */
+  const cssI = leer('js/63-analisis-ia-informe.js');
+  const px = (sel) => { const m = new RegExp("'" + sel.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') +
+    "\\{[^']*font-size:([\\d.]+)px").exec(cssI); return m ? parseFloat(m[1]) : null; };
+  const pxProsa = px('.nota-pie');
+  const pxMet = px('.tbl-met td');
+  /* Y si el lector se queda sin material, esto FALLA y no sale con su `?`:
+     la frontera de la v1026 es si el material puede llegar a cero por una
+     MEJORA, y el CSS de una tabla que se imprime no puede quedarse vacio
+     legitimamente. Un renombre de la clase deja la guarda sin mirar nada, y
+     eso es un defecto, no una mejora. */
+  if (pxProsa === null || pxMet === null) {
+    comprobar('y la celda de la tabla va al tamano de prosa del modulo',
+      false,
+      'NO PUDO CORRER: prosa=' + pxProsa + ' · tabla=' + pxMet +
+        ' — alguna clase se renombro, asi que el tamano de la tabla ya no se vigila');
+  } else {
+    comprobar('y la celda de la tabla va al tamano de prosa del modulo',
+      pxMet >= pxProsa,
+      pxMet >= pxProsa
+        ? 'la tabla en ' + pxMet + 'px, la prosa del modulo en ' + pxProsa + 'px'
+        : 'la tabla en ' + pxMet + 'px por debajo de los ' + pxProsa + 'px de la prosa del modulo: ' +
+          'frases enteras impresas mas chicas que el resto del texto corrido');
+  }
+
+  /* El informe de empresas compone su hoja de metodo, y el del curso no la
+     necesita: declara el suyo en la lectura del grupo. Las dos hojas se
+     cuentan aparte para que la paginacion no mienta. */
+  const iEmp = j63.indexOf('function cuerpoEmpresa()');
+  const cuerpoEmp = iEmp < 0 ? '' : j63.slice(iEmp, j63.indexOf('function cuerpoEdu()', iEmp));
+  const iEdu = j63.indexOf('function cuerpoEdu()');
+  const cuerpoEdu3 = iEdu < 0 ? '' : j63.slice(iEdu, iEdu + 400);
+  const ok5 = /N_HOJAS = 5/.test(cuerpoEmp) && /hojaMetodoAIA\(/.test(cuerpoEmp) && /N_HOJAS = 4/.test(cuerpoEdu3);
+  comprobar('el informe de empresas compone su hoja de metodo y la pagina',
+    ok5,
+    ok5 ? 'cinco hojas en el de empresas, cuatro en el del curso'
+        : 'o no la compone, o la pagina diria «de 4» con cinco hojas impresas');
+}
+
 console.log('\n  -- la foto del panel de Pro City se ve entera, y a su tamano (v1039) --');
 {
   const c52 = leer('css/52-urbis-pro-city.css');

@@ -21955,6 +21955,179 @@ sería el número a ojo de la v869. Lo que sí queda medido es que la banda de l
 seis datos **no lee ese aviso** aunque lo tenga al lado, mientras el panel de
 flujo sí. `pendiente`
 
+## De dónde sale la cifra de cada panel (v1045)
+
+Peldaño 5 del orden que el usuario fijó, con su condición escrita: *«El método
+por panel, uno por uno, medido contra el código real. No copies las entradas
+del educativo ni inventes un método que nadie midió.»*
+
+    v1044   36 paneles rotulados con su escala · ninguno dice de dónde sale su cifra
+    v1045   31 con su método, 5 sin cifra que calcular, y la hoja que los imprime
+
+### El educativo tiene 78 entradas, y copiarlas sería inventar 31 métodos
+
+`METODO_PANEL` de la lámina son 78 entradas con su fórmula, su fuente, su
+confiabilidad y su error típico, escritas una por una leyendo de dónde sale
+cada cifra. Copiarlas acá habría sido lo que la v863 prohíbe, y el reparto
+medido lo enseña: de los 31 paneles del informe de empresas, **19 no los
+calcula este repositorio**.
+
+| | Cuántos |
+|---|---|
+| lo calcula el **motor**, cuya regla no se sirve al navegador | **19** |
+| se cuenta en un archivo **servido**, con su fórmula escrita | 6 |
+| se toma **tal cual** de la consulta, sin recalcular nada | 6 |
+| **no publica ninguna cifra** —guía, cómo se lee, compatibilidad, lo que falta— | 5 |
+
+La fila de los 19 es la que decide la tanda. Su fórmula vive en el
+repositorio privado, así que **ninguna guarda de este contenedor puede
+compararla con nada** — y escribirla igual sería exactamente el método
+inventado que la instrucción prohíbe. Lo que la entrada dice es quién la
+calcula y qué NO es, que es lo que consta.
+
+### Lo que sí se puede verificar, y se verifica
+
+Las **seis** que afirman una cuenta local nombran su archivo y su fórmula, y
+la guarda **las busca ahí**:
+
+| Panel | Archivo | La cuenta |
+|---|---|---|
+| Composición del entorno ×2 | js/63 | `100 * n / Math.max(s.total, 1)` |
+| Población | js/67 | `Math.pow(1 + tasaAnual, anios)` |
+| El tejido construido | js/64 | `edif.porEpoca[ficha.epoca]` |
+| Caminabilidad | js/64 | `0.75 + 0.35 * indice` |
+| Caminabilidad sin datos | js/64 | `indice === null ? 1` |
+
+#### La primera versión CONTABA en vez de comprobar, y una inyección la dejó verde
+
+El hallazgo de la tanda, y es sobre mi propia guarda. La escribí contando
+cuántas entradas nombraban al motor y cuántas escribían su cuenta, con un
+mínimo en cada recuento. Al inyectar el caso que de verdad importa —**una
+entrada del motor que pasa a afirmar una cuenta local**, que es cómo se
+fabrica un método inventado— **no se movió ninguno de los dos recuentos** y la
+guarda siguió en verde.
+
+**Contar no es comprobar** (v878). La que quedó hace las dos direcciones, y la
+segunda es la que falla cerrado:
+
+* la fórmula que la tabla escribe **existe en el archivo que nombra** —así, el
+  día que alguien cambie `0.75 + 0.35 * indice` en js/64, la afirmación de la
+  tabla se pone roja en vez de quedarse vieja—;
+* y **toda entrada que dice calcularse en lo servido está en esa lista**, así
+  que un panel del motor no puede pasar a afirmar una cuenta local sin traer
+  su fórmula verificable.
+
+Y la segunda dirección **tenía el agujero vivo**: `caminabilidad-vacia`
+afirmaba su cuenta en js/64 y no estaba en la lista. Lo encontró la guarda al
+escribirla, no leyendo.
+
+**De qué NO responde, dicho y no disimulado** (v945, v952): caza la entrada que
+NOMBRA un archivo servido o «este mismo archivo». Una escrita de otra manera
+—«se cuentan de las manzanas censales», que es lo que dice `indicadores`— se le
+escapa, porque ahí no hay ningún archivo contra el que comprobar. Esa mitad es
+vocabulario y falla abierto, como la del voseo.
+
+### El método va en su HOJA, y eso se midió
+
+Lo barato era un pie de método bajo cada panel, como la lámina. Medido, cuesta
+**50 px por panel** en unas hojas que ya van justas —la 1 cierra en 781 px de
+las 756 que da el papel, y eso es anterior a esta tanda—, así que dieciséis
+pies son dos hojas más de las que nadie pidió.
+
+La hoja propia cuesta **una**: el informe de empresas pasa de cuatro a cinco y
+la del método mide **417 px de 756**. El del curso se queda en cuatro —declara
+su método en la lectura del grupo—, así que `N_HOJAS` se fija por informe y la
+paginación no miente: medida, imprime `1/5 … 5/5` y «Página N de 5».
+
+#### La hoja se arma de lo COMPUESTO, no de una lista al lado
+
+`hojaMetodoAIA` recorre el cuerpo ya compuesto por el `data-m` que el rótulo
+de escala de la v1043 dejó puesto, y saca el nombre de cada panel de su propio
+`<h2>`. Una lista de títulos escrita al lado sería la primera que se queda
+vieja al renombrar un panel (v878), y por eso solo llevan nombre a mano **los
+dos que no tienen título propio en el papel** —con una comprobación de que
+ningún otro se cuele ahí—.
+
+Así, un panel nuevo aparece en la hoja de método sin que su autor se acuerde
+(v867), y si no declaró su método sale en rojo en su primera corrida.
+
+##### El lector se comía el título del panel anterior
+
+Costó medir y no se veía leyendo. La primera versión buscaba el `<h2>` con un
+`[\s\S]*?` perezoso entre la apertura y el cierre, así que en un panel sin
+título propio agarraba **desde el `<h2>` del panel de arriba**: una fila de la
+tabla midió **210 px** y la hoja cerró en 784. Se vio midiendo el alto de cada
+fila, no leyendo el patrón.
+
+Se resuelve exigiendo adyacencia exacta —que el texto anterior TERMINE en
+`</h2>` o `</h3>` y se corte desde su propia apertura—: las filas vuelven a
+medir entre 14 y 22 px y la hoja a 417.
+
+### Y la celda de la tabla es PROSA
+
+Salió midiendo en milímetros de papel, que es la unidad de una hoja que se
+imprime (v1035):
+
+| | Papel |
+|---|---|
+| la celda de la tabla, antes | **1,33 mm** |
+| la prosa del propio módulo (`.nota-pie`) | 1,46 mm |
+| el rótulo de escala y la cabecera de la tabla, en versalitas | 1,31 mm |
+
+Las celdas son **frases enteras** que se leen a treinta centímetros, así que
+van al tamaño de prosa del módulo y no a uno más chico — es la clase de la
+v1013. Los rótulos en mayúsculas se quedan donde están, que es la vara que
+este proyecto usa desde la v791 y la misma con la que la v1013 separó un
+rótulo de un texto corrido; y el más chico de la hoja sigue por encima del
+texto más chico que el módulo imprime a propósito (`.gauge-s`, 1,28 mm, medido
+en la v1018).
+
+**Cuesta cero en las otras cuatro hojas** y la del método pasa de 376 a 417 px.
+Y el tamaño **se LEE de `.nota-pie`** en vez de escribirse en la guarda: si un
+día se mueve, la tabla tiene que seguirlo (v890).
+
+Y esa guarda **falla en rojo cuando se queda sin material**, no con su `?`: la
+frontera de la v1026 es si el material puede llegar a cero por una MEJORA, y el
+CSS de una tabla que se imprime no puede quedarse vacío legítimamente.
+
+### Demostrado contra la v1044
+
+Doce inyecciones fieles, una por aserción (v993), contra copias guardadas y no
+con `git checkout --` sobre trabajo sin confirmar (v973):
+
+```
+✗ todo panel declara de donde sale su cifra  — publicarian una cifra sin decir de donde sale: vocacion
+✗ y ninguna entrada de metodo se quedo sin panel  — no las usa nadie: vocacion-vieja
+✗ y los tres campos dicen algo  — con algun campo en blanco: vocacion
+✗ y toda entrada que dice calcularse en lo servido esta en esa lista
+    — afirman una cuenta local que nadie comprueba: vocacion
+✗ y la cuenta que la tabla escribe esta de verdad en el archivo que nombra
+    — la afirman y su archivo no la tiene: caminabilidad
+✗ …  — la afirman y su archivo no la tiene: caminabilidad-vacia
+✗ y solo lleva nombre a mano el panel sin titulo propio  — tienen titulo y aun asi lo escriben a mano: vocacion
+✗ y la hoja de metodo sale de lo que el informe COMPUSO  — dejo de leer el cuerpo o la tabla
+✗ y el rotulo de escala sigue llevando el identificador  — dejo de llevarlo
+✗ el informe de empresas compone su hoja de metodo y la pagina  — o no la compone, o la pagina diria «de 4»
+✗ y la celda de la tabla va al tamano de prosa del modulo  — la tabla en 6.3px por debajo de los 6.9px
+✗ …  — NO PUDO CORRER: alguna clase se renombro
+```
+
+La cuarta es la que enseña el defecto de mi primera guarda: **es la inyección
+que aquella dejaba en verde.** Y la undécima es el estado medido de la v1044.
+
+### Lo que NO se pudo correr
+
+**Ninguna suite de navegador**, por lo mismo que la v973 en adelante: este
+contenedor no tiene `../urbis-motor` ni el `node_modules` del banco de
+pruebas. Corrió `revisar.js` entero con sus diez comprobaciones nuevas, y se
+midió el papel con la sonda —las cinco hojas con su alto, las piezas y las
+filas de la hoja de método, su texto entero y los tamaños en milímetros—.
+
+Y sigue en pie lo que la v1043 dejó declarado: la fórmula de los 19 paneles
+del motor no se puede comprobar desde acá, y decirlo es la única cosa honesta
+que se puede hacer con ella.
+`pendiente`
+
 ## La lista viva: lo que al pliego educativo todavía le falta (v866)
 
 Esta lista se quedó vieja **cinco veces**. Cuatro dentro de la hoja —la
