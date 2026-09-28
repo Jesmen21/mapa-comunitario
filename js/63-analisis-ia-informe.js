@@ -484,7 +484,7 @@
   // Tránsito vehicular y combustible: dos magnitudes que se piden mucho para
   // leer el movimiento de una esquina. Se muestran como RANGOS porque no hay
   // aforo ni datos de ventas detrás, y el pie del bloque lo declara.
-  /* El UNICO formateador de cifras del informe (v1040). En castellano el
+  /* El UNICO formateador de cifras del informe (v1042). En castellano el
      punto es el separador de MILES, asi que «5.00 km» se lee como cinco mil
      y «0.1 por hectarea» como un uno. `toLocaleString('es-CO')` resuelve las
      dos cosas de una vez —la coma decimal y el punto de miles—, y por eso el
@@ -1377,7 +1377,7 @@
     const c = r.contexto;
     if (!c) return '';
     // Convierte metros a kilometros Y los escribe: la conversion es suya, el
-    // formato sale del formateador unico (v1040).
+    // formato sale del formateador unico (v1042).
     const km = m => numEs(Math.round(m / 100) / 10);
     const migas = (c.limites || []).map(l => esc(l.nombre)).join(' › ');
     const rutas = (c.rutas || []).slice(0, 12).map(x =>
@@ -2579,7 +2579,7 @@ gruposOrdenados.map(seccion).join(''),
     // para generar las gráficas con los colores del estilo elegido.
     ESTILOS,
     // El formateador de cifras, para que js/62 no escriba una segunda copia:
-    // como se escribe un numero en castellano es UN hecho (v1040).
+    // como se escribe un numero en castellano es UN hecho (v1042).
     numEs
   };
 })();

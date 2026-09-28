@@ -21400,7 +21400,7 @@ convertidor de coma en `js/62`**, con la advertencia de que no se pudo medir si
 el motor los devuelve fraccionarios.
 
     v1039   91 cifras sin separador en el papel del informe · 19 bien escritas
-    v1040   36, todas textos o años · 74 bien escritas
+    v1042   36, todas textos o años · 74 bien escritas
 
 ### El módulo tenía CUATRO formateadores, y ninguno cubría todo
 
@@ -21569,7 +21569,7 @@ con `git checkout --` sobre trabajo sin confirmar (v973):
 La que más vale es la octava: con el barrido devolviendo una lista vacía **las
 otras cuatro del bloque quedan en verde** y solo la guarda de la guarda lo
 caza, que es el patrón de la v878. Y la del `js/65` no muerde en el bloque de la
-v1022 —ahí sigue verde— sino en el de la v1040, que es el que pregunta quién
+v1022 —ahí sigue verde— sino en el de la v1042, que es el que pregunta quién
 declara el formateador.
 
 Y **una inyección que NO muerde, dicha por lo que es**: devolver el `%` estrecho
@@ -21589,7 +21589,7 @@ una vez—.
 | | punto decimal | miles sin separar | bien escritas |
 |---|---|---|---|
 | v1039 | 0 | **91** | 19 |
-| v1040 | 0 | **36** | **74** |
+| v1042 | 0 | **36** | **74** |
 
 Las 36 que quedan se resolvieron **campo por campo contra el código**, no por el
 nombre: treinta son textos que pasan por `esc()` —`viabilidad.nivel`,
@@ -21599,7 +21599,7 @@ nombre: treinta son textos que pasan por `esc()` —`viabilidad.nivel`,
 Y de la pantalla, la única parte que se puede mirar sin motor —la lista de
 análisis guardados y su tabla de comparación, que leen del almacén—:
 
-| | v1039 | v1040 |
+| | v1039 | v1042 |
 |---|---|---|
 | lista de guardados | `8000 m` · `2500 m` | `8.000 m` · `2.500 m` |
 | comparación · Radio | `2500 m` · `8000 m` | `2.500 m` · `8.000 m` |

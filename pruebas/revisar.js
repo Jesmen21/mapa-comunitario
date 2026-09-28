@@ -5130,7 +5130,7 @@ console.log('\n  -- lo que la fila guarda y el panel de Pro City enseña (v985) 
   }
 }
 
-console.log('\n  -- la coma decimal y el separador de miles en el informe de empresas (v1040) --');
+console.log('\n  -- la coma decimal y el separador de miles en el informe de empresas (v1042) --');
 {
   /* EN CASTELLANO EL PUNTO ES EL SEPARADOR DE MILES, asi que «12480» sin
      separar y «8.5 km» con punto son las dos maneras de escribir mal una

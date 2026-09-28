@@ -12,7 +12,7 @@
   const esc = s => String(s == null ? '' : s)
     .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
   /* Como se escribe un numero en castellano es UN hecho y vive en js/63, que
-     esta hoja ya carga antes que a ella (v1040). Lo que habia aqui era la
+     esta hoja ya carga antes que a ella (v1042). Lo que habia aqui era la
      CUARTA copia del formateador: se presta, no se copia, o el dia que el
      criterio cambie la hoja del curso y el informe divergen. `dec` es el
      numero de decimales, para que nadie vuelva a escribir un

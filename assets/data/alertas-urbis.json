@@ -1,6 +1,6 @@
 {
   "_comentario": "Alertas EDITORIALES del equipo URBIS (desastres verificados). Se publican editando este archivo — no requieren la hoja de cálculo ni credenciales. El mapa las dibuja junto a las que ya están en la base; si coinciden las coordenadas, se muestra una sola. Reglas: solo desastres naturales de fuente oficial, nunca violencia ni homicidios; coordenadas geocodificadas, jamás estimadas a ojo; sin fuente no se publica.",
-  "actualizado": "2026-09-22",
+  "actualizado": "2026-09-28",
   "alertas": [
     {
       "tipo": "Sismo",
@@ -19,38 +19,6 @@
       ],
       "fuente": "Servicio Geológico Colombiano (SGC) / UNGRD",
       "url": "https://www.sgc.gov.co/detallesismo/SGC2026pxhbxc/resumen"
-    },
-    {
-      "tipo": "Incendio forestal",
-      "titulo": "Incendios forestales en el Tolima — calamidad pública departamental, más de 50.000 hectáreas afectadas, 9 de septiembre de 2026",
-      "lat": 4.4389,
-      "lng": -75.2322,
-      "desde": "2026-08-13",
-      "expira": "2026-09-26",
-      "lineas": [
-        "📅 El Consejo Departamental de Gestión del Riesgo del Tolima declaró calamidad pública el 13 de agosto de 2026 por los incendios forestales que afectan al departamento; el presidente Abelardo De la Espriella oficializó la declaratoria de calamidad pública y desastre nacional el 27 de agosto. Al 12 de septiembre de 2026 la emergencia seguía activa: la UNGRD reportó, a las 8:30 a. m., 17 incendios forestales activos en el país (5 controlados), 7 de ellos en el Tolima —en las veredas Páramo y California (Cunday), el sector Piedra vía Payandé (Ibagué), La Salitre (San Luis), Guayabal (Chaparral), El Real (Rovira), El Dinde (Valle de San Juan), Llano de Olaya (Ortega) y la finca Hacienda (Alvarado)—, que sigue siendo el departamento más afectado.",
-        "📊 Según un sobrevuelo de la Fuerza Aeroespacial Colombiana citado por la UNGRD (balance del 8 de septiembre, 6:30 a. m.), más de 50.000 hectáreas afectadas en unos 25 municipios del Tolima desde agosto; 2.650 productores agropecuarios afectados, pérdidas estimadas en $134.000 millones de pesos y 163.000 animales en riesgo. Solo en San Luis, uno de los municipios más golpeados, el fuego ya consumió más de 10.000 hectáreas, llegó a la mina La Esmeralda y afectó viviendas y el cementerio del corregimiento de Payandé. Un puesto de mando unificado opera en el CENOP, con apoyo aéreo de la Fuerza Aeroespacial, el Ejército y AVIPO, y cuatro carrotanques de la UNGRD refuerzan el territorio.",
-        "📊 Balance más reciente de la UNGRD, al corte de las 6:00 p. m. del viernes 18 de septiembre de 2026: 15 incendios forestales activos en el país (9 controlados), 9 de ellos en el Tolima —en Alvarado, Armero, Ataco, Ortega, Prado, San Luis, Villahermosa y Villarrica—; se dieron por controlados los de Carmen de Apicalá, Chaparral, Coyaima y Suárez. El Tolima sigue siendo el departamento que concentra más incendios activos del país.",
-        "ℹ️ Alerta informativa del equipo URBIS con base en la UNGRD y la Gobernación del Tolima. No es un reporte ciudadano. Coordenadas de referencia: centro del municipio de Ibagué, capital del departamento; el hecho afecta a numerosos municipios del Tolima, no solo a Ibagué."
-      ],
-      "fuente": "UNGRD / Gobernación del Tolima / Fuerza Aeroespacial Colombiana / Ejército Nacional",
-      "url": "https://tolima.gov.co/noticias/10190-se-declara-la-calamidad-publica-en-el-tolima-ante-emergencia-por-incendios"
-    },
-    {
-      "tipo": "Sismo",
-      "titulo": "Sismo de magnitud 4,5 — 11 de septiembre de 2026, Istmina, Chocó",
-      "lat": 4.42,
-      "lng": -76.72,
-      "desde": "2026-09-11",
-      "expira": "2026-09-25",
-      "lineas": [
-        "📅 Ocurrió el viernes 11 de septiembre de 2026 a las 11:42 a. m. (hora de Colombia).",
-        "📊 Magnitud 4,5 (algunos boletines iniciales hablaron de 4,3-4,4 antes de actualizarse) · profundidad 41 km · epicentro a unos 27 km del municipio de Sipí y 14 km de Istmina, Chocó (4,42° N / 76,72° O, Servicio Geológico Colombiano). Se sintió con fuerza en Quibdó, Cali, Buenaventura, Armenia, Pereira y Manizales, y provocó evacuaciones preventivas de edificaciones en el centro y sur de Cali y en el Área Metropolitana Centro Occidente (Armenia); no se reportaron heridos ni daños estructurales.",
-        "🌎 Un sismo posterior de magnitud 4,6 y profundidad 43 km, también con epicentro en Istmina, se registró a las 6:16 a. m. del sábado 12 de septiembre; se sintió en Risaralda, Valle del Cauca y Quindío, sin evacuaciones ni daños reportados. La zona forma parte de la actividad sísmica que sigue registrándose en el Chocó desde el terremoto de magnitud 7,4 del 10 de agosto, con epicentro distinto (San José del Palmar, a unos 80 km de Istmina).",
-        "ℹ️ Alerta informativa del equipo URBIS con base en el Servicio Geológico Colombiano y prensa nacional (El Espectador, El País, Pulzo, Infobae). No es un reporte ciudadano."
-      ],
-      "fuente": "Servicio Geológico Colombiano (SGC) / prensa nacional",
-      "url": "https://www.elespectador.com/ciencia/temblor-de-magnitud-4-5-se-registro-en-choco-se-reportan-evacuaciones-en-varias-ciudades/"
     },
     {
       "tipo": "Sismo",
@@ -91,14 +59,14 @@
       "lat": 3.9019,
       "lng": -76.3039,
       "desde": "2026-08-03",
-      "expira": "2026-09-29",
+      "expira": "2026-10-05",
       "lineas": [
-        "📅 El incendio se originó a comienzos de agosto de 2026 (fecha aproximada) en el sector La Mesa – Río Loro, en la zona rural alta de Guadalajara de Buga, Valle del Cauca, dentro del Parque Nacional Natural Las Hermosas Gloria Valencia de Castaño. Al 17 de septiembre de 2026 completaba cerca de 45 días activo, con reactivaciones intermitentes pese a controles parciales; seguía en la lista de incendios forestales activos que reportó la UNGRD al corte de las 6:00 p. m. del viernes 18 de septiembre de 2026, entre los dos que permanecían activos en el Valle del Cauca (el otro, el de Alto Menga en Cali, ya controlado ese mismo corte).",
-        "📊 Más de 1.000 hectáreas afectadas dentro del parque, según el Cuerpo de Bomberos de Guadalajara de Buga. El difícil acceso —hasta siete horas de desplazamiento desde el casco urbano de Buga, entre vía terrestre y trayecto a pie, según el comandante de Bomberos Harold Humberto Alzate Tejada— ha dificultado las labores de control en la zona de alta montaña, donde el viento y la topografía han favorecido la aparición de nuevos focos incluso después de controlar los anteriores.",
-        "ℹ️ Alerta informativa del equipo URBIS con base en la UNGRD, el Cuerpo de Bomberos de Guadalajara de Buga y prensa regional y nacional (El Espectador, El Tiempo, Occidente.co, 90 Minutos, Infobae). No es un reporte ciudadano. Coordenadas de referencia: centro del municipio de Guadalajara de Buga; el incendio se ubica en la zona rural alta del municipio, dentro del parque, no en el casco urbano."
+        "📅 El incendio se originó a comienzos de agosto de 2026 (fecha aproximada) en el sector La Mesa – Río Loro, en la zona rural alta de Guadalajara de Buga, Valle del Cauca, dentro del Parque Nacional Natural Las Hermosas Gloria Valencia de Castaño. Al 27 de septiembre de 2026 cumplía más de 50 días activo: dos focos siguen sin controlar por fuera del área protegida del parque —en el predio Basconia (Buga) y en el municipio de El Cerrito—, mientras otros dos focos registrados fuera del parque ya fueron controlados, según Parques Nacionales Naturales.",
+        "📊 Entre 1.500 y 2.000 hectáreas afectadas según los balances más recientes (El Tiempo y El Espectador, 27 de septiembre de 2026), con el fuego avanzando tanto en superficie como en el subsuelo del páramo, lo que dificulta su control. Preocupa el riesgo para el abastecimiento de agua de Tuluá y para el hábitat del oso de anteojos y los frailejones del páramo.",
+        "ℹ️ Alerta informativa del equipo URBIS con base en la UNGRD, Parques Nacionales Naturales y prensa regional y nacional (El Tiempo, El Espectador, LA FM, BluRadio). No es un reporte ciudadano. Coordenadas de referencia: centro del municipio de Guadalajara de Buga; el incendio se ubica en la zona rural alta del municipio, dentro y fuera del parque, no en el casco urbano."
       ],
-      "fuente": "UNGRD / Cuerpo de Bomberos de Guadalajara de Buga / El Espectador / El Tiempo / Occidente.co",
-      "url": "https://www.elespectador.com/colombia/mas-regiones/incendio-en-las-hermosas-buga-completa-45-dias-y-afecta-mas-de-mil-hectareas/"
+      "fuente": "UNGRD / Parques Nacionales Naturales / El Tiempo / El Espectador / LA FM",
+      "url": "https://www.eltiempo.com/colombia/cali/incendio-en-paramo-de-las-hermosas-en-valle-cumple-50-dias-y-destruye-2-000-hectareas-si-dejamos-avanzar-el-fuego-se-afectara-suministro-de-agua-3589166"
     },
     {
       "tipo": "Sismo",
@@ -118,35 +86,67 @@
     },
     {
       "tipo": "Incendio forestal",
-      "titulo": "Incendio forestal en el cerro San Marcos — calamidad pública, 1.200 hectáreas afectadas, 75 % controlado, 19-22 de septiembre de 2026, Villa de Leyva, Boyacá",
+      "titulo": "Incendio forestal en el cerro San Marcos e Iguaque — liquidado tras 1.480 hectáreas afectadas, 19-26 de septiembre de 2026, Villa de Leyva, Boyacá",
       "lat": 5.6333,
       "lng": -73.5333,
       "desde": "2026-09-19",
       "expira": "2026-09-29",
       "lineas": [
-        "📅 Se originó en la tarde del sábado 19 de septiembre de 2026, hacia la 1:00 p. m. (hora de Colombia), en el sector La Marmolera, cerro San Marcos, al norte del casco urbano de Villa de Leyva, Boyacá. Al 22 de septiembre la emergencia seguía activa: el ministro del Interior, Rodrigo Lara, reportó control del 75 % (frente al 50 % del balance del 21 de septiembre), con dos focos aún activos, uno de ellos crítico dentro del Santuario de Fauna y Flora Iguaque, donde el relieve impide las descargas de agua desde helicóptero.",
-        "📊 Balance más reciente (22 de septiembre, UNGRD / Ministerio del Interior): 1.200 hectáreas afectadas —de ellas unas 715 dentro del Santuario de Fauna y Flora Iguaque—, cifra revisada al alza frente a las 290 hectáreas del balance del 21 de septiembre en la madrugada. Más de 200 personas entre fuerza pública, bomberos y socorristas participan en el control, con cuatro helicópteros —un MI-17 contratado por la Gobernación de Boyacá y dos UH-60, uno de la Fuerza Aeroespacial Colombiana y otro del Ejército Nacional—, que realizaron 75 descargas de agua durante la jornada del 21 de septiembre. El gobernador Carlos Amaya declaró calamidad pública; se suspendieron las clases presenciales el 21 de septiembre y se evacuaron hoteles y viviendas del nororiente del municipio. 37 personas han recibido atención médica, en su mayoría personal de socorro por caídas y afectaciones respiratorias y visuales; no se reportan muertos ni heridos graves.",
+        "📅 Se originó en la tarde del sábado 19 de septiembre de 2026, hacia la 1:00 p. m. (hora de Colombia), en el sector La Marmolera, cerro San Marcos, al norte del casco urbano de Villa de Leyva, Boyacá, y se extendió al Santuario de Fauna y Flora Iguaque. El Ministerio del Interior declaró el incendio 100 % controlado tras siete días de operación aérea y terrestre, y el gobernador de Boyacá, Carlos Amaya, cerró el último Puesto de Mando Unificado el 26 de septiembre con la liquidación de las últimas hectáreas activas; ya empezó la restauración de las zonas afectadas.",
+        "📊 Balance final: 1.480 hectáreas afectadas en total, de ellas 1.180 dentro del Santuario de Fauna y Flora Iguaque. Participaron más de 700 personas entre bomberos, Ejército, Fuerza Aeroespacial Colombiana, Parques Nacionales Naturales, Corpoboyacá y la Unidad Departamental de Gestión del Riesgo; se realizaron 1.023 descargas aéreas de agua (cerca de 1,6 millones de litros), más 126.000 litros transportados en carrotanques. No se reportaron muertos, heridos ni viviendas perdidas; se salvaron más de 6.000 hectáreas del santuario.",
         "⚠️ El Ministerio de Ambiente señaló, con base en información preliminar de la UNGRD, que el incendio habría sido provocado; las autoridades ofrecieron recompensa por información sobre su origen.",
-        "ℹ️ Alerta informativa del equipo URBIS con base en la Gobernación de Boyacá, el Ministerio del Interior, el Ministerio de Ambiente, la UNGRD y prensa nacional (El Tiempo, Infobae, Portafolio, Publimetro, El Espectador). No es un reporte ciudadano. Coordenadas de referencia: centro del municipio de Villa de Leyva; el incendio se ubica en el cerro San Marcos y el Santuario de Iguaque, al norte y oriente del casco urbano."
+        "ℹ️ Alerta informativa del equipo URBIS con base en la Gobernación de Boyacá, el Ministerio del Interior, la UNGRD y prensa nacional (El Colombiano, Infobae, Semana, El Tiempo). No es un reporte ciudadano. Coordenadas de referencia: centro del municipio de Villa de Leyva; el incendio se ubicó en el cerro San Marcos y el Santuario de Iguaque, al norte y oriente del casco urbano."
       ],
-      "fuente": "Gobernación de Boyacá / Ministerio del Interior / Ministerio de Ambiente / UNGRD / El Tiempo / Infobae / Portafolio",
-      "url": "https://www.publimetro.co/noticias/2026/09/22/incendio-en-villa-de-leyva-asi-avanza-el-control-de-las-llamas-y-estas-son-las-zonas-mas-afectadas/"
+      "fuente": "Gobernación de Boyacá / Ministerio del Interior / UNGRD / El Colombiano / Infobae",
+      "url": "https://www.elcolombiano.com/colombia/incendio-villa-de-leyva-liquidado-santuario-iguaque-MB41513285"
     },
     {
       "tipo": "Sismo",
-      "titulo": "Enjambre sísmico en Chaparral, Tolima — más de 130 sismos en tres días, magnitud máxima 4,2, 20-22 de septiembre de 2026",
+      "titulo": "Enjambre sísmico en Chaparral, Tolima — más de 979 sismos desde el 20 de septiembre, magnitud máxima 4,2, 20-28 de septiembre de 2026",
       "lat": 3.84,
       "lng": -75.61,
       "desde": "2026-09-20",
-      "expira": "2026-10-06",
+      "expira": "2026-10-12",
       "lineas": [
-        "📅 El enjambre empezó el domingo 20 de septiembre de 2026 a las 4:52 a. m. (hora de Colombia) y seguía activo en la mañana del martes 22 de septiembre. El Servicio Geológico Colombiano (SGC) registró más de 130 sismos entre el 20 y el 21 de septiembre, y una nueva tanda de al menos 11 movimientos en la madrugada del 22 de septiembre, con epicentros en Chaparral (Tolima) e Istmina (Chocó).",
-        "📊 Magnitud máxima 4,2 (evento de las 2:35 a. m. del 22 de septiembre, epicentro a unos 17-18 km de Roncesvalles, Tolima, profundidad superficial menor a 30 km, SGC). El 21 de septiembre se habían registrado ya al menos dos sismos de magnitud 4,0 (a las 9:48 a. m. y las 11:23 a. m.), y en la madrugada del 22 un movimiento reportado inicialmente en 4,3 fue revisado a la baja a magnitud 4,0. De los más de 130 movimientos contabilizados en el enjambre, al menos cinco alcanzaron o superaron magnitud 4,0.",
-        "🌎 El sismo de las 9:48 a. m. del 21 de septiembre obligó a evacuar preventivamente la sede de la Gobernación del Tolima en Ibagué; una inspección posterior no halló grietas ni daños que representaran riesgo estructural. La secuencia se sintió con fuerza en Bogotá, Cali, Ibagué, Buenaventura, Armenia y Pereira; el SGC no ha reportado heridos ni daños estructurales. Los organismos de socorro mantienen inspecciones preventivas en los 47 municipios del Tolima, y el SGC atribuye la actividad a fallas geológicas activas que cruzan el departamento.",
-        "ℹ️ Alerta informativa del equipo URBIS con base en el Servicio Geológico Colombiano y prensa nacional (El Tiempo, Semana, Infobae, Pulzo, El Espectador, El País). No es un reporte ciudadano."
+        "📅 El enjambre sísmico empezó el domingo 20 de septiembre de 2026 a las 4:52 a. m. (hora de Colombia) y seguía activo la madrugada del lunes 28 de septiembre. Según el boletín del Servicio Geológico Colombiano (SGC), van 979 sismos de magnitud igual o mayor a 2,0 ML desde el inicio de la secuencia, 22 de ellos de magnitud igual o mayor a 4,0 ML; el máximo diario se alcanzó el 22-23 de septiembre, con 186 sismos en un solo día.",
+        "📊 Magnitud máxima 4,2, alcanzada varias veces: el 22 de septiembre a las 2:35 a. m., el 27 de septiembre a las 7:57 a. m. (sentido en Ibagué, Cali, Yumbo, Sevilla y Armenia) y el 28 de septiembre a las 3:39 a. m. (epicentro a 17 km de Roncesvalles, Tolima, 3,85° N / 75,65° O). Todos con profundidad superficial (menos de 30 km), característica de sismicidad cortical según el SGC.",
+        "🌎 El sismo de las 9:48 a. m. del 21 de septiembre obligó a evacuar preventivamente la sede de la Gobernación del Tolima en Ibagué; una inspección posterior no halló grietas ni daños estructurales. A través de la app Sismo Sentido, el SGC ha recibido más de 14.600 reportes ciudadanos sobre 458 sismos de la secuencia, con intensidad entre 2 (apenas sentido) y 5 (sentido fuerte); no se han recibido reportes de daños.",
+        "ℹ️ Alerta informativa del equipo URBIS con base en el Servicio Geológico Colombiano y prensa nacional (El Tiempo, Semana, Pulzo, El País, PYC Noticias). No es un reporte ciudadano."
       ],
       "fuente": "Servicio Geológico Colombiano (SGC) / prensa nacional",
-      "url": "https://www.semana.com/nacion/articulo/servicio-geologico-dio-anuncio-tras-preocupante-cifra-de-temblores-en-chaparral-tolima-es-importante/202627/"
+      "url": "https://canalpyc.com/sismos-en-chaparral-tolima-el-servicio-geologico-colombiano-reporta-979-eventos-y-mas-de-14-600-reportes-de-temblores-sentidos/"
+    },
+    {
+      "tipo": "Sismo",
+      "titulo": "Sismo de magnitud 4,3 — 27 de septiembre de 2026, Istmina, Chocó",
+      "lat": 4.46,
+      "lng": -76.7,
+      "desde": "2026-09-27",
+      "expira": "2026-10-11",
+      "lineas": [
+        "📅 Ocurrió el domingo 27 de septiembre de 2026 a las 4:57 p. m. (hora de Colombia).",
+        "📊 Magnitud 4,3 · profundidad 43 km · epicentro a unos 22 km del municipio de Sipí y 51 km de Trujillo y El Dovio, Valle del Cauca (4,46° N / 76,70° O, Servicio Geológico Colombiano). Se sintió con fuerza en Pereira, Armenia, Buenaventura, Manizales, Ibagué y Cali; el SGC no reportó heridos ni daños estructurales.",
+        "🌎 Es parte de la secuencia sísmica que el SGC monitorea desde hace varias semanas en los municipios de Istmina, Medio San Juan, Sipí y Litoral del San Juan (Chocó), con profundidades que suelen estar entre 30 y 70 km, y de la actividad sísmica que sigue registrándose en el Chocó desde el terremoto de magnitud 7,4 del 10 de agosto de 2026.",
+        "ℹ️ Alerta informativa del equipo URBIS con base en el Servicio Geológico Colombiano y prensa nacional (El Espectador, El País, Pulzo, Radio Nacional). No es un reporte ciudadano."
+      ],
+      "fuente": "Servicio Geológico Colombiano (SGC) / prensa nacional",
+      "url": "https://www.sgc.gov.co/detallesismo/SGC2026qgfpju/resumen"
+    },
+    {
+      "tipo": "Zona de inundación activa",
+      "titulo": "Inundaciones tras fuertes lluvias en 11 sectores de Santa Marta — 27 de septiembre de 2026, Magdalena",
+      "lat": 11.2422,
+      "lng": -74.2056,
+      "desde": "2026-09-27",
+      "expira": "2026-10-02",
+      "lineas": [
+        "📅 Ocurrió en la tarde del domingo 27 de septiembre de 2026 (hora de Colombia), tras una jornada de lluvias intensas sobre Santa Marta, Magdalena.",
+        "📊 Afectaciones preliminares en 11 sectores de la ciudad —Pescaíto, Manzanares, Minca, Taganga, Los Alpes A y B, Bonda, Timayuí 1 y 2, Cartagena-Bonda, Bastidas y Parques de Bolívar—: 7 viviendas totalmente destruidas y 29 más con pérdida de enseres, según el balance preliminar de la Alcaldía Distrital de Santa Marta.",
+        "⚠️ La Alcaldía activó un Puesto de Mando Unificado (PMU) y mantiene alerta roja por crecientes súbitas en los ríos Piedras y Manzanares y por riesgo de deslizamientos en la ciudad.",
+        "ℹ️ Alerta informativa del equipo URBIS con base en la Alcaldía Distrital de Santa Marta (Ogricc) y prensa nacional (Infobae, El Tiempo). No es un reporte ciudadano. Coordenadas de referencia: centro de Santa Marta; las inundaciones afectan a varios sectores de la ciudad, no solo al centro."
+      ],
+      "fuente": "Alcaldía de Santa Marta (Ogricc) / El Tiempo / Infobae",
+      "url": "https://www.infobae.com/colombia/2026/09/27/fuertes-lluvias-en-santa-marta-dejan-afectaciones-en-11-sectores-y-autoridades-activan-pmu/"
     }
   ]
 }

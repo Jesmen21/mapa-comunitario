@@ -3,8 +3,8 @@
  "presidente": "Abelardo de la Espriella",
  "periodo": "2026 – 2030",
  "posesion": "2026-08-07",
- "actualizado": "2026-09-22",
- "proximaActualizacion": "2026-09-23",
+ "actualizado": "2026-09-28",
+ "proximaActualizacion": "2026-09-29",
  "categorias": {
   "gobierno": {
    "nombre": "Gobierno y decretos",
@@ -73,6 +73,305 @@
   }
  },
  "entradas": [
+  {
+   "fecha": "2026-09-28",
+   "precision": "exacta",
+   "categoria": "gobierno",
+   "titulo": "Un operativo conjunto contra la minería ilegal en el río Nechí (El Bagre, Antioquia) destruye maquinaria y golpea a una subestructura del Clan del Golfo",
+   "categoriaProbatoria": "hecho-probado",
+   "tipoMedicion": "actividad",
+   "nivelGobierno": "nacional",
+   "detalle": "El presidente Abelardo de la Espriella dio a conocer el 28 de septiembre los resultados de un operativo conjunto de la Policía, el Ejército y la Armada en el sector de Río Viejo, sobre el río Nechí, en El Bagre (Antioquia), contra la extracción ilegal de oro. La Fuerza Pública destruyó tres dragas de fabricación brasileña, dos retroexcavadoras, cuatro dragas de buceo y trece motores industriales usados en la minería ilegal. Según el mandatario, del punto intervenido se extraían cerca de 26,5 kilos de oro al mes, con un valor aproximado de $11.130 millones mensuales en el mercado informal, y vinculó la operación a Uldar Cardona Rueda, señalado de integrar una subestructura del Clan del Golfo que cobraría una extorsión del 15 % sobre esa producción. De la Espriella enmarcó el golpe dentro de lo que llamó una «guerra sin tregua» contra la minería ilegal: «Mi orden ha sido clara: combatir sin piedad la minería ilegal que devasta nuestros ecosistemas y alimenta al terrorismo».",
+   "tipoFuente": "verificado",
+   "contrapunto": "Las cifras del oro extraído y su valor mensual, así como la vinculación de la estructura al Clan del Golfo, son las que entregó el propio Gobierno al anunciar el operativo; no hay todavía, al cierre de esta entrada, una imputación de cargos ni una respuesta pública de los señalados.",
+   "fuentes": [
+    {
+     "n": "Vanguardia · Abelardo De La Espriella lanza ofensiva contra la minería ilegal: $11.130 millones en oro",
+     "u": "https://www.vanguardia.com/colombia/2026/09/28/abelardo-de-la-espriella-lanza-ofensiva-contra-la-mineria-ilegal-11130-millones-en-oro/",
+     "rol": "acto"
+    },
+    {
+     "n": "Semana · Abelardo De La Espriella anuncia guerra sin tregua contra la minería ilegal en Colombia y entrega resultados de un certero golpe: «Mi orden»",
+     "u": "https://www.semana.com/politica/articulo/abelardo-de-la-espriella-anuncia-guerra-sin-tregua-contra-la-mineria-ilegal-en-colombia-y-entrega-resultados-de-un-certero-golpe-mi-orden/202611/",
+     "rol": "acto"
+    },
+    {
+     "n": "NTN24 · Impactantes imágenes del operativo contra la minería ilegal en el río Nechí que habría afectado las finanzas del Clan del Golfo",
+     "u": "https://www.ntn24.com/noticias-actualidad/impactantes-imagenes-del-operativo-contra-la-mineria-ilegal-en-el-rio-nechi-que-habria-afectado-las-finanzas-del-clan-del-golfo-asi-lo-dejo-ver-el-presidente-de-la-espriella-653912",
+     "rol": "acto"
+    }
+   ]
+  },
+  {
+   "fecha": "2026-09-27",
+   "precision": "exacta",
+   "categoria": "corrupcion",
+   "titulo": "De la Espriella pide a la justicia evaluar beneficios penales para investigados por corrupción del gobierno anterior que colaboren y entreguen pruebas",
+   "categoriaProbatoria": "hecho-probado",
+   "tipoMedicion": "actividad",
+   "nivelGobierno": "nacional",
+   "detalle": "En una alocución televisada el domingo 27 de septiembre —dos días después de que el Consejo de Estado decretara la pérdida de investidura del expresidente del Senado Iván Name por tráfico de influencias en el caso de corrupción de la UNGRD—, el presidente Abelardo de la Espriella pidió a las autoridades judiciales evaluar, de acuerdo con las normas del Código Penal, la posibilidad de que personas investigadas por corrupción en el gobierno de Gustavo Petro colaboren con la justicia a cambio de beneficios. Dijo que quienes entreguen pruebas y cómplices, y resarzan el daño causado, podrían recibir «un castigo atenuado por la colaboración y por el acto de contrición». El mandatario no especificó qué tipo de beneficios se ofrecerían ni anunció un mecanismo nuevo: dejó la evaluación de los posibles acuerdos, la utilidad de la información y los beneficios procedentes en manos de las autoridades judiciales. Sobre los investigados dijo: «los corruptos tienen que caer, tienen que pagar, el latrocinio que perpetraron no puede quedar en la impunidad».",
+   "tipoFuente": "verificado",
+   "contrapunto": "El presidente no anunció un mecanismo legal nuevo ni precisó qué beneficios permite la ley vigente: la decisión sobre si existen acuerdos posibles, qué información resulta útil y qué beneficios son procedentes queda en manos de las autoridades judiciales, no del Ejecutivo. Varios medios señalan además que el propósito declarado incluye obtener pruebas contra el propio expresidente Gustavo Petro, lo que hace de la propuesta también una pieza de la disputa política entre los dos.",
+   "fuentes": [
+    {
+     "n": "El Heraldo · De la Espriella arremete contra el gobierno Petro tras decisión sobre Iván Name: «Los corruptos tienen que caer»",
+     "u": "https://www.elheraldo.co/politica/2026/09/28/de-la-espriella-arremete-contra-el-gobierno-petro-tras-decision-sobre-ivan-name-los-corruptos-tienen-que-caer/",
+     "rol": "acto"
+    },
+    {
+     "n": "El Tiempo · Presidente Abelardo De La Espriella habla de beneficios para investigados por corrupción que colaboren con la justicia: «Si entregan las pruebas»",
+     "u": "https://www.eltiempo.com/politica/abelardo-de-la-espriella/presidente-abelardo-de-la-espriella-habla-de-beneficios-para-investigados-por-corrupcion-que-colaboren-con-la-justicia-si-entregan-las-pruebas-3589363",
+     "rol": "acto"
+    },
+    {
+     "n": "Infobae · De la Espriella propone a acusados de corrupción una rebaja de sus condenas a cambio de pruebas contra Petro",
+     "u": "https://www.infobae.com/america/agencias/2026/09/28/de-la-espriella-propone-a-acusados-de-corrupcion-una-rebaja-de-sus-condenas-cambio-de-pruebas-contra-petro/",
+     "rol": "acto"
+    },
+    {
+     "n": "Portafolio · De la Espriella pide evaluar la posibilidad de atenuar las penas a corruptos que delaten a sus cómplices",
+     "u": "https://www.portafolio.co/economia/gobierno/de-la-espriella-pide-evaluar-la-posibilidad-de-atenuar-las-penas-a-corruptos-que-delaten-a-sus-complices-503395",
+     "rol": "acto"
+    }
+   ]
+  },
+  {
+   "fecha": "2026-09-27",
+   "precision": "exacta",
+   "categoria": "creditos",
+   "titulo": "En alocución, De la Espriella ordena a Hacienda iniciar conversaciones con el FMI para buscar una «salida negociada» a la crisis fiscal",
+   "categoriaProbatoria": "hecho-probado",
+   "tipoMedicion": "actividad",
+   "nivelGobierno": "nacional",
+   "detalle": "En una alocución televisada el domingo 27 de septiembre, el presidente Abelardo de la Espriella anunció que ordenó al ministro de Hacienda, Miguel Gómez Martínez, y a su equipo económico iniciar conversaciones con el Fondo Monetario Internacional (FMI) para buscar una salida negociada a la situación fiscal del país. El mandatario calificó el panorama fiscal como «la más crítica de toda nuestra historia» y dijo que el Estado tiene dificultades para responder al mismo tiempo por el pago de la deuda pública —que según cifras oficiales del cierre del primer semestre de 2026 asciende al 60 % del PIB— y por sus gastos de funcionamiento: «las finanzas públicas ya no aguantan más» y «el saldo está en rojo». Atribuyó la situación a la administración de Gustavo Petro: «se robaron todo».",
+   "tipoFuente": "verificado",
+   "contrapunto": "Es un giro frente a lo que el propio Gobierno había dicho tres semanas antes: el 28 de agosto, en la 60ª Convención Bancaria de Asobancaria, el mismo ministro Gómez Martínez había dicho que el Gobierno no buscaría un acuerdo con el FMI para respaldar el ajuste fiscal. El caso queda documentado en la sección de contradicciones de este seguimiento. Ni el presidente ni el ministro han explicado públicamente, al cierre de esta entrada, la razón del cambio de posición.",
+   "fuentes": [
+    {
+     "n": "La República · De la Espriella ordenó a MinHacienda iniciar conversaciones con el FMI por crisis fiscal",
+     "u": "https://www.larepublica.co/economia/de-la-espriella-ordeno-a-minhacienda-iniciar-conversaciones-con-el-fmi-por-crisis-fiscal-4491492",
+     "rol": "acto"
+    },
+    {
+     "n": "Infobae · Abelardo de la Espriella busca una salida a la crisis fiscal y ordena abrir conversaciones con el FMI: «El saldo está en rojo»",
+     "u": "https://www.infobae.com/colombia/2026/09/28/abelardo-de-la-espriella-busca-una-salida-a-la-crisis-fiscal-y-ordena-abrir-conversaciones-con-el-fmi-el-saldo-esta-en-rojo/",
+     "rol": "acto"
+    },
+    {
+     "n": "Semana · Abelardo De La Espriella ordena a Minhacienda conversar con el Fondo Monetario Internacional por crisis fiscal: «El saldo está en rojo»",
+     "u": "https://www.semana.com/politica/articulo/abelardo-de-la-espriella-ordena-a-minhacienda-conversar-con-el-fondo-monetario-internacional-por-crisis-fiscal-el-saldo-esta-en-rojo/202637/",
+     "rol": "acto"
+    },
+    {
+     "n": "Bloomberg Línea · De la Espriella anuncia que Colombia iniciará conversaciones con el FMI ante crisis fiscal",
+     "u": "https://www.bloomberglinea.com/latinoamerica/colombia/de-la-espriella-anuncia-que-colombia-iniciara-conversaciones-con-el-fmi-ante-crisis-fiscal/",
+     "rol": "acto"
+    }
+   ]
+  },
+  {
+   "fecha": "2026-09-26",
+   "precision": "exacta",
+   "categoria": "gobierno",
+   "titulo": "De la Espriella designa a Beatriz Eugenia Vélez Vengoechea como nueva presidenta de Colpensiones, con la orden de reportar irregularidades del gobierno anterior",
+   "categoriaProbatoria": "hecho-probado",
+   "tipoMedicion": "actividad",
+   "nivelGobierno": "nacional",
+   "detalle": "El presidente Abelardo de la Espriella designó el 26 de septiembre a la abogada Beatriz Eugenia Vélez Vengoechea, especialista en Seguridad Social y Derecho Laboral con más de 30 años de experiencia profesional y directiva, como nueva presidenta de Colpensiones. Entre sus tareas están proteger los recursos de los afiliados, garantizar el pago oportuno de las pensiones y mejorar la atención al ciudadano. El presidente le encomendó además investigar y reportar a las autoridades cualquier irregularidad o ilegalidad que encuentre de la administración anterior.",
+   "tipoFuente": "verificado",
+   "fuentes": [
+    {
+     "n": "Infobae · Abelardo de la Espriella designó a Beatriz Eugenia Vélez como nueva presidenta de Colpensiones",
+     "u": "https://www.infobae.com/colombia/2026/09/26/abelardo-de-la-espriella-designo-a-beatriz-eugenia-velez-como-nueva-presidenta-de-colpensiones/",
+     "rol": "acto"
+    },
+    {
+     "n": "El Colombiano · Beatriz Vélez Vengoechea, nueva presidenta de Colpensiones",
+     "u": "https://www.elcolombiano.com/negocios/beatriz-velez-vengoechea-nueva-presidenta-colpensiones-FH41570656",
+     "rol": "acto"
+    },
+    {
+     "n": "IFM Noticias · Beatriz Eugenia Vélez Vengoechea, nueva presidenta de Colpensiones: De la Espriella le encomendó proteger los recursos y combatir la corrupción",
+     "u": "https://ifmnoticias.com/empresas/beatriz-eugenia-velez-vengoechea-nueva-presidenta-de-colpensiones-de-la-espriella-le-encomendo-proteger-los-recursos-y-combatir-la-corrupcion/",
+     "rol": "acto"
+    },
+    {
+     "n": "Pulzo · Nueva presidenta de Colpensiones es la abogada Beatriz Eugenia Vélez Vengoechea",
+     "u": "https://www.pulzo.com/nacion/nueva-presidenta-colpensiones-es-abogada-beatriz-eugenia-velez-vengoechea-PP5314120A",
+     "rol": "acto"
+    }
+   ]
+  },
+  {
+   "fecha": "2026-09-25",
+   "precision": "exacta",
+   "categoria": "gobierno",
+   "titulo": "De la Espriella entrega personalmente a alias 'Araña', cabecilla de los Comandos de la Frontera nombrado gestor de paz por Petro, a la justicia de EE. UU.: van 94 extradiciones",
+   "categoriaProbatoria": "hecho-probado",
+   "tipoMedicion": "actividad",
+   "nivelGobierno": "nacional",
+   "detalle": "El 25 de septiembre el presidente Abelardo de la Espriella hizo personalmente la entrega a las autoridades estadounidenses de Geovany Andrés Rojas, alias «Araña», cabecilla de los Comandos de la Frontera, en un acto en el Comando Aéreo de Combate N.° 3 de Malambo (área metropolitana de Barranquilla), adonde fue trasladado desde la cárcel La Picota en Bogotá. Rojas había sido capturado en Bogotá en febrero de 2025 con fines de extradición, pero el trámite quedó suspendido mientras participaba como vocero en los diálogos de paz del gobierno anterior, en los que había sido designado gestor de paz por Gustavo Petro. El procedimiento se reactivó tras una orden emitida por De la Espriella el 26 de agosto. Es requerido por una corte del sur de California por narcotráfico y organización criminal, y podría enfrentar cadena perpetua; en Colombia la Fiscalía lo vinculó recientemente a una investigación por 16 homicidios cometidos en Caquetá entre 2020 y 2024. Según la Presidencia, con esta ya son 94 las extradiciones concretadas en lo corrido de este Gobierno.",
+   "tipoFuente": "verificado",
+   "fuentes": [
+    {
+     "n": "Presidencia de la República · Presidente De La Espriella entregó a alias 'Araña' a la justicia de Estados Unidos: ya son 94 extradiciones en este Gobierno",
+     "u": "https://www.presidencia.gov.co/prensa/Paginas/Presidente-De-La-Espriella-entrego-a-alias-Arana-a-la-justicia-de-Estados-260925.aspx",
+     "rol": "acto"
+    },
+    {
+     "n": "Infobae · Comenzó la extradición a Estados Unidos de alias Araña, cabecilla de los Comandos de Frontera que había sido nombrado gestor de paz por el Gobierno Petro",
+     "u": "https://www.infobae.com/colombia/2026/09/25/comenzo-al-extradicion-a-estados-unidos-de-alias-arana-cabecilla-de-los-comandos-de-frontera-que-habia-sido-nombrado-gestor-de-paz-por-el-gobierno-petro/",
+     "rol": "acto"
+    },
+    {
+     "n": "El Tiempo · Nuevo documento de la Fiscalía de Estados Unidos revela detalles de la extradición de alias 'Araña': podría enfrentar cadena perpetua por narcotráfico",
+     "u": "https://www.eltiempo.com/mundo/eeuu-y-canada/nuevo-documento-de-la-fiscalia-de-estados-unidos-revela-detalles-de-la-extradicion-de-alias-arana-podria-enfrentar-cadena-perpetua-por-narcotrafico-3589228",
+     "rol": "acto"
+    },
+    {
+     "n": "El Tiempo · Presidente Abelardo De La Espriella se pronunció tras extradición de alias Araña, cabecilla de 'Comandos de Frontera', a Estados Unidos",
+     "u": "https://www.eltiempo.com/politica/abelardo-de-la-espriella/presidente-abelardo-de-la-espriella-se-pronuncio-tras-extradicion-de-alias-arana-cabecilla-de-comandos-de-frontera-a-estados-unidos-3589016",
+     "rol": "acto"
+    }
+   ]
+  },
+  {
+   "fecha": "2026-09-24",
+   "precision": "exacta",
+   "categoria": "exterior",
+   "titulo": "El vicepresidente Restrepo lee en la Asamblea General de la ONU un discurso de De la Espriella con críticas a la organización y la presentación de la «Patria Milagro»",
+   "categoriaProbatoria": "hecho-probado",
+   "tipoMedicion": "actividad",
+   "nivelGobierno": "nacional",
+   "detalle": "El vicepresidente José Manuel Restrepo intervino el jueves 24 de septiembre ante la Asamblea General de la ONU en Nueva York en representación del presidente Abelardo de la Espriella, quien no viajó porque, según explicó, se comprometió a no salir del país durante los cuatro años de su gobierno. Restrepo leyó una carta del mandatario que hizo un balance de sus primeras semanas de gobierno, incluida la respuesta al terremoto de magnitud 7,4 del 10 de agosto, y presentó los ejes de la «Patria Milagro», el programa con el que el Gobierno busca recuperar la seguridad, la confianza y el crecimiento económico del país. El discurso cuestionó además la eficacia de la ONU: Restrepo planteó si el organismo responde de manera suficiente a los problemas para los que fue creado, y dijo que el Gobierno «no busca complacer a nadie».",
+   "tipoFuente": "verificado",
+   "fuentes": [
+    {
+     "n": "Semana · Discurso del gobierno De La Espriella ante la ONU: «Colombia quiere volver a creer en sí misma y que el mundo vuelva a creer en Colombia»",
+     "u": "https://www.semana.com/politica/articulo/discurso-del-gobierno-de-la-espriella-ante-la-onu-colombia-quiere-volver-a-creer-en-si-misma-y-que-el-mundo-vuelva-a-creer-en-colombia/202641/",
+     "rol": "acto"
+    },
+    {
+     "n": "Infobae · El vicepresidente José Manuel Restrepo leyó discurso de Abelardo de la Espriella en Naciones Unidas con críticas al globalismo y a la misma ONU: «No busco complacer a nadie»",
+     "u": "https://www.infobae.com/colombia/2026/09/24/el-vicepresidente-jose-manuel-restrepo-leyo-discurso-de-abelardo-de-la-espriella-en-naciones-unidas-con-criticas-al-globalismo-y-a-la-misma-onu-no-busco-complacer-a-nadie/",
+     "rol": "acto"
+    },
+    {
+     "n": "El Heraldo · Las claves del discurso de José Manuel Restrepo ante la Asamblea General de la ONU",
+     "u": "https://www.elheraldo.co/colombia/2026/09/24/el-vicepresidente-jose-manuel-restrepo-habla-ante-la-asamblea-general-de-la-onu-en-nueva-york/",
+     "rol": "acto"
+    },
+    {
+     "n": "Cambio · José Manuel Restrepo leyó en la ONU el discurso de Colombia que habría sido escrito por De la Espriella",
+     "u": "https://cambiocolombia.com/poder/articulo/2026/9/he-sido-critico-de-esta-organizacion-asi-fue-el-discurso-que-llevo-a-la-onu-el-vicepresidente-jose-manuel-restrepo",
+     "rol": "acto"
+    }
+   ]
+  },
+  {
+   "fecha": "2026-09-23",
+   "precision": "exacta",
+   "categoria": "economia",
+   "titulo": "Las comisiones económicas avalan en primer debate el Presupuesto 2027, con un recorte de $170.000 millones a la JEP; 521 proposiciones sin aval del Ejecutivo pasan a las plenarias",
+   "categoriaProbatoria": "hecho-probado",
+   "tipoMedicion": "actividad",
+   "nivelGobierno": "nacional",
+   "estadoProcesal": "en-tramite-legislativo",
+   "tipoEvidencia": "dato-oficial",
+   "detalle": "El 23 de septiembre las comisiones económicas conjuntas de Senado y Cámara aprobaron en primer debate, con 59 votos a favor y 19 en contra, el informe de ponencia del Presupuesto General de la Nación de 2027, ya sobre el monto de $634,9 billones que se había avalado el 14 de septiembre (registrado en este mismo seguimiento). Entre los ajustes incorporados, la Jurisdicción Especial para la Paz (JEP) perdió $170.000 millones, que se reasignaron principalmente a fortalecer la justicia ordinaria y a salud. De las 625 proposiciones que radicaron los congresistas para el debate —con exigencias de gasto por $111,6 billones, según Hacienda—, 521 quedaron sin el aval del Ejecutivo y se llevan como constancia a la discusión en las plenarias de Cámara y Senado, donde el proyecto debe surtir su segundo y último debate antes del 20 de octubre.",
+   "tipoFuente": "verificado",
+   "fuentes": [
+    {
+     "n": "El Tiempo · Así se llegó al aval del Presupuesto 2027 en primer debate: recorte a la JEP, sumas a salud y pulso por 521 proposiciones; ¿qué sigue?",
+     "u": "https://www.eltiempo.com/amp/politica/congreso/avanza-discusion-del-presupuesto-para-2027-se-aprueba-ponencia-mayoritaria-y-se-lleva-a-segundo-debate-las-proposiciones-no-avaladas-3588382",
+     "rol": "acto"
+    },
+    {
+     "n": "Infobae · Comisiones Económicas del Congreso aprobaron el Presupuesto General de la Nación de 2027 por $634,9 billones",
+     "u": "https://www.infobae.com/colombia/2026/09/24/comisiones-economicas-del-congreso-aprobaron-el-presupuesto-general-de-la-nacion-de-2027-por-6349-billones/",
+     "rol": "acto"
+    },
+    {
+     "n": "El Heraldo · Presupuesto 2027 pasa su primera prueba en el Congreso: estos son los principales cambios",
+     "u": "https://www.elheraldo.co/economia/2026/09/24/presupuesto-2027-pasa-su-primera-prueba-en-el-congreso-estos-son-los-principales-cambios/",
+     "rol": "acto"
+    },
+    {
+     "n": "Semana · Presupuesto 2027 fue aprobado en primer debate en el Congreso por 635 billones de pesos",
+     "u": "https://www.semana.com/economia/macroeconomia/articulo/presupuesto-2027-fue-aprobado-en-primer-debate-en-el-congreso-por-635-billones-de-pesos/202658/",
+     "rol": "acto"
+    }
+   ]
+  },
+  {
+   "fecha": "2026-09-23",
+   "precision": "exacta",
+   "categoria": "corrupcion",
+   "titulo": "La SIC, bajo el actual Gobierno, ordena priorizar la investigación de un presunto esquema de corrupción en contratación pública por cerca de $2 billones",
+   "categoriaProbatoria": "hecho-probado",
+   "tipoMedicion": "actividad",
+   "nivelGobierno": "nacional",
+   "detalle": "La Superintendencia de Industria y Comercio (SIC), bajo el actual Gobierno, ordenó el 23 de septiembre priorizar la investigación de un presunto esquema de coordinación entre las empresas Aldesarrollo, Red Summa y Kluster Latam, que según la entidad habrían actuado de forma concertada —aunque formalmente independientes— para simular pluralidad de oferentes y alterar la libre competencia en procesos de contratación pública. La SIC anunció la revisión de más de 300 contratos por cerca de $2 billones y señaló a Moisés Hernández (también conocido como Moisés Garvín) como presunto líder de la estructura investigada, cuya contratación con las tres empresas registró un crecimiento acelerado desde 2022. La entidad ordenó remitir copias a la Unidad de Información y Análisis Financiero (UIAF), la Fiscalía General y la Contraloría General para que adelanten las actuaciones de su competencia.",
+   "tipoFuente": "verificado",
+   "contrapunto": "Es un hallazgo preliminar de la SIC: no hay todavía, al cierre de esta entrada, imputación de cargos ni fallo, y ni Moisés Hernández ni las empresas señaladas habían dado una respuesta pública. Los contratos revisados abarcan varios años y administraciones —la contratación creció desde 2022—, así que el caso no es atribuible en exclusiva al gobierno de ningún presidente.",
+   "fuentes": [
+    {
+     "n": "El Espectador · SIC investiga posible esquema de contratación pública por cerca de COP 2 billones",
+     "u": "https://www.elespectador.com/economia/empresas/sic-investiga-posible-esquema-de-contratacion-publica-por-cerca-de-cop-2-billones/",
+     "rol": "acto"
+    },
+    {
+     "n": "El Heraldo · SIC ordena priorizar investigación sobre un posible esquema de corrupción en contratación pública liderado por Moisés Hernández",
+     "u": "https://www.elheraldo.co/colombia/2026/09/23/sic-ordena-priorizar-investigacion-sobre-un-posible-esquema-de-corrupcion-en-contratacion-publica-liderado-por-moises-hernandez/",
+     "rol": "acto"
+    },
+    {
+     "n": "Portafolio · SIC pone bajo la lupa más de 300 contratos por posible esquema de corrupción cercano a $2 billones",
+     "u": "https://www.portafolio.co/economia/gobierno/sic-pone-bajo-la-lupa-mas-de-300-contratos-por-posible-esquema-de-corrupcion-cercano-a-2-billones-503090",
+     "rol": "acto"
+    },
+    {
+     "n": "Asuntos Legales · SIC prioriza investigación por posible corrupción en contratos por $2 billones",
+     "u": "https://www.asuntoslegales.com.co/actualidad/sic-prioriza-investigacion-por-posible-corrupcion-en-contratos-por-2-billones-4488585",
+     "rol": "acto"
+    }
+   ]
+  },
+  {
+   "fecha": "2026-09-22",
+   "precision": "exacta",
+   "categoria": "emergencia",
+   "titulo": "El Gobierno anuncia que decretará una segunda emergencia económica, esta vez por el fenómeno de El Niño, para el 28 de septiembre",
+   "categoriaProbatoria": "hecho-probado",
+   "tipoMedicion": "actividad",
+   "nivelGobierno": "nacional",
+   "detalle": "El ministro de Agricultura, Indalecio Dangond, anunció el martes 22 de septiembre, durante un debate de control político en la Comisión Quinta del Senado, que el Gobierno decretaría el lunes 28 de septiembre una segunda emergencia económica —la primera fue la del terremoto del 10 de agosto— esta vez para anticiparse a los efectos del fenómeno de El Niño sobre el sector agroexportador. Según el ministro, la medida buscaría congelar por tres o cuatro meses el pago de la cartera agropecuaria y reestructurar las obligaciones a dos años sin afectar la calificación financiera de los productores, sobre una cartera cercana a $55 billones vinculada a actividades agroexportadoras —flores, caña, café, cacao, palma, aguacate, cítricos, maracuyá y tilapia— que generan cerca de USD 11.000 millones al año. Dangond dijo que, decretada la emergencia, la Superintendencia Financiera permitiría de inmediato a la banca congelar el pago de esas deudas, «como se hizo con el covid».",
+   "tipoFuente": "verificado",
+   "contrapunto": "Al cierre de esta entrada lo confirmado es el anuncio, hecho por el ministro de Agricultura en el Congreso: la medida requiere todavía la firma del presidente y de la totalidad del gabinete ministerial, prevista para el 28 de septiembre, y este seguimiento no encontró una fuente que confirme de forma independiente que el decreto ya fue expedido.",
+   "fuentes": [
+    {
+     "n": "Semana · Gobierno De La Espriella decretará nueva emergencia económica el lunes 28 de septiembre por el fenómeno del Niño",
+     "u": "https://www.semana.com/economia/macroeconomia/articulo/gobierno-de-la-espriella-decretara-nueva-emergencia-economica-el-lunes-28-de-septiembre-por-el-fenomeno-de-el-nino/202637/",
+     "rol": "acto"
+    },
+    {
+     "n": "Infobae · Gobierno de Abelardo de la Espriella anunció que presentará decreto de emergencia económica por el fenómeno de El Niño: en qué consiste",
+     "u": "https://www.infobae.com/colombia/2026/09/23/gobierno-de-abelardo-de-la-espriella-anuncio-que-presentara-decreto-de-emergencia-economica-por-el-fenomeno-de-el-nino-en-que-consiste/",
+     "rol": "acto"
+    },
+    {
+     "n": "Portafolio · El Gobierno De La Espriella prepara su segunda declaratoria de emergencia económica, esta vez por El Niño",
+     "u": "https://www.portafolio.co/economia/gobierno/el-gobierno-de-la-espriella-prepara-su-segunda-declaratoria-de-emergencia-economica-esta-vez-por-el-nino-503081",
+     "rol": "acto"
+    },
+    {
+     "n": "La República · Gobierno va por su segunda declaratoria de emergencia económica a causa de El Niño",
+     "u": "https://www.larepublica.co/economia/gobierno-va-por-su-segunda-declaratoria-de-emergencia-economica-a-causa-de-el-nino-4488236",
+     "rol": "acto"
+    }
+   ]
+  },
   {
    "fecha": "2026-09-21",
    "precision": "exacta",
@@ -6736,6 +7035,35 @@
  "contradicciones": {
   "_nota": "Cada caso exige LAS DOS declaraciones documentadas. Si solo hay una, no es contradicción: es una postura. Y si un verificador la desmintió, se publica como desmentida — publicar una acusación falsa destruye la credibilidad del seguimiento. Un caso puede llevar 'cuenta': false: queda registrado y visible, pero NO suma al veredicto de fiabilidad de la Ficha del gobernante. Se usa cuando el propio matiz dice que el giro no habla de su palabra —una conversión religiosa, por ejemplo—. La ficha muestra esos casos igual, marcados como no contados y con el motivo, para que la decisión esté a la vista y no escondida en el código. Los casos de CORRUPCIÓN no van aquí sino en 'casos', con su estado probatorio: una contradicción es una palabra contra otra; un caso es un hecho contra la ley.",
   "casos": [
+   {
+    "estado": "documentada",
+    "tema": "Crisis fiscal y el FMI: dijo que el Gobierno no buscaría un acuerdo, y un mes después ordenó abrir las conversaciones",
+    "antes": "28 de agosto de 2026, 60ª Convención Bancaria de Asobancaria (Cartagena): el ministro de Hacienda, Miguel Gómez Martínez, dijo que el Gobierno no buscaría un acuerdo con el Fondo Monetario Internacional (FMI) para respaldar el ajuste fiscal, y presentó los pilares del ajuste —entre ellos un recorte de gasto público cercano a $21,9 billones— como la vía propia del Gobierno.",
+    "despues": "El domingo 27 de septiembre de 2026, en alocución televisada, el presidente Abelardo de la Espriella anunció que ordenó al propio ministro Gómez Martínez y a su equipo económico iniciar conversaciones con el FMI para buscar una «salida negociada» a la crisis fiscal, que calificó como «la más crítica de toda nuestra historia»: «el saldo está en rojo».",
+    "matiz": "Ni el presidente ni el ministro han explicado públicamente, al cierre de esta entrada, la razón del cambio de posición en menos de un mes. Las dos declaraciones son del mismo funcionario y sobre el mismo asunto —si el Gobierno buscaría o no un acuerdo con el FMI—, lo que distingue este caso de una simple evolución de la coyuntura fiscal.",
+    "fuentes": [
+     {
+      "n": "Valora Analitik · Esta es la estrategia fiscal que presenta el ministro de Hacienda en la Convención Bancaria",
+      "u": "https://www.valoraanalitik.com/relevante-esta-es-la-estrategia-fiscal-que-presenta-el-ministro-de-hacienda-en-la-convencion-bancaria/",
+      "rol": "acto"
+     },
+     {
+      "n": "Valora Analitik · De la Espriella no buscará acuerdo con el FMI para ejecutar ajuste fiscal",
+      "u": "https://www.valoraanalitik.com/relevante-de-la-espriella-no-buscara-acuerdo-con-el-fmi-para-ejecutar-ajuste-fiscal/",
+      "rol": "acto"
+     },
+     {
+      "n": "La República · De la Espriella ordenó a MinHacienda iniciar conversaciones con el FMI por crisis fiscal",
+      "u": "https://www.larepublica.co/economia/de-la-espriella-ordeno-a-minhacienda-iniciar-conversaciones-con-el-fmi-por-crisis-fiscal-4491492",
+      "rol": "acto"
+     },
+     {
+      "n": "Infobae · Abelardo de la Espriella busca una salida a la crisis fiscal y ordena abrir conversaciones con el FMI: «El saldo está en rojo»",
+      "u": "https://www.infobae.com/colombia/2026/09/28/abelardo-de-la-espriella-busca-una-salida-a-la-crisis-fiscal-y-ordena-abrir-conversaciones-con-el-fmi-el-saldo-esta-en-rojo/",
+      "rol": "acto"
+     }
+    ]
+   },
    {
     "estado": "documentada",
     "tema": "Mérito en el empleo público: prometió blindarlo y objetó la ley que lo blindaba",
