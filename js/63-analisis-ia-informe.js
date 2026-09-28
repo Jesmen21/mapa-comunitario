@@ -310,8 +310,96 @@
     'como-leer': 'define las cifras del informe; no calcula ninguna',
     'como-leer-edu': 'define las cifras del informe; no calcula ninguna',
     'falta': 'lista lo que queda por levantar; no hay cifra que calcular',
-    'compatibilidad': 'cruza los usos que el cliente declaró; no mide el entorno'
+    'compatibilidad': 'cruza los usos que el cliente declaró; no mide el entorno',
+    'vacios': 'lista lo que falta conseguir y en qué ventanilla; no hay cifra que calcular'
   };
+
+  /* ── Los vacíos obligatorios del informe, con su trámite ──────────────
+     §6 del orden fijado. Hasta la v1045 el informe cerraba con UNA línea
+     —«verificar norma urbanística (POT) y prefactibilidad financiera»— y
+     eso es exactamente lo que la v880 llamó un muro: nombrar el documento
+     y callar el trámite deja al lector sin saber a qué ventanilla ir.
+
+     Cada vacío cierra un límite que el informe YA declara en su propia
+     tabla de método, y lo dice con el id de ese panel: así no se puede
+     inventar un vacío sin un límite medido detrás, y la guarda lo
+     comprueba contra `METODO_AIA`. Ninguno se copió del módulo educativo
+     —que no se carga en esta página— y el de la norma pide otro documento
+     a propósito: aquel analiza un PREDIO y pide la ficha normativa con su
+     matrícula inmobiliaria; este analiza un RADIO y pide el certificado de
+     uso del suelo de una dirección, que es más liviano y es el que un
+     negocio necesita antes de firmar un arriendo.
+
+     `mientras` y `ojo` son DOS campos y no uno: el sustituto y su límite.
+     La v880 lo dejó escrito —«el mientras llega NO es un permiso para
+     suponer»— y con un solo campo el límite se cae al redactar sin que
+     nada lo diga. */
+  const VACIOS_AIA = [
+    { id: 'uso-del-suelo', t: 'Uso del suelo permitido', panel: 'recomendaciones',
+      falta: 'el certificado de uso del suelo de esta dirección, o un concepto de norma urbanística: es lo que dice si la norma permite el uso que el informe recomienda.',
+      hay: 'los usos que OpenStreetMap trae alrededor son lo que de hecho OPERA hoy, y eso no es lo que la norma permite: un local puede estar funcionando sin licencia, y un uso ausente puede estar perfectamente permitido.',
+      que: 'certificado de uso del suelo, o concepto de norma urbanística, para la dirección exacta',
+      quien: 'curaduría urbana del municipio; donde no hay curaduría, la Secretaría de Planeación',
+      como: 'solicitud en la ventanilla de la curaduría o de planeación; varios municipios la reciben en línea',
+      llevar: 'la dirección exacta, la cédula catastral si se tiene, y el uso que se piensa abrir',
+      tarda: 'entre 5 y 15 días hábiles según el municipio, y tiene costo en la mayoría de curadurías',
+      mientras: 'el POT publicado en la página del municipio dice qué tratamiento tiene el sector',
+      ojo: 'un tratamiento de sector NO es el uso de una dirección: dentro del mismo tratamiento hay ejes donde el comercio se permite y manzanas donde no.' },
+    { id: 'registro-mercantil', t: 'Competencia formalmente registrada', panel: 'competencia',
+      falta: 'el registro mercantil por actividad económica: es lo que dice cuántos negocios del mismo rubro están MATRICULADOS en el sector.',
+      hay: 'el informe cuenta lo que alguien subió a OpenStreetMap, así que un cero no dice «no hay competencia»: dice «nadie lo mapeó». Y lo mapeado no distingue un negocio formal de uno que no lo es.',
+      que: 'listado del registro mercantil por código de actividad (CIIU) y por barrio o dirección',
+      quien: 'la Cámara de Comercio de la jurisdicción',
+      como: 'se pide en la sede o por su portal de servicios empresariales; hay versión gratuita agregada y versión detallada de pago',
+      llevar: 'el código CIIU del rubro, el barrio o el rango de direcciones, y los datos de quien lo solicita',
+      tarda: 'de un día a una semana según la cámara y el detalle que se pida',
+      mientras: 'los competidores mapeados sirven como PISO de cuántos hay',
+      ojo: 'es un piso y nunca un total: la cifra solo puede subir cuando llegue el registro, nunca bajar.' },
+    { id: 'aforo-transito', t: 'Aforo de tránsito y de peatones', panel: 'movilidad',
+      falta: 'un conteo con su fecha, su hora y su punto: es lo único que dice cuánta gente y cuántos vehículos pasan de verdad.',
+      hay: 'el flujo del informe es un potencial MODELADO a partir de los usos y la jerarquía de las vías mapeadas. Nadie contó nada en esa esquina.',
+      que: 'conteos de tránsito y de peatones del corredor, con fecha, franja y punto de medición',
+      quien: 'Secretaría de Movilidad o de Tránsito del municipio; en corredores nacionales, el INVÍAS',
+      como: 'petición escrita de información pública, que por ley tiene respuesta en 10 días hábiles',
+      llevar: 'el corredor o la intersección por su nombre, y el periodo que se quiere',
+      tarda: '10 días hábiles el derecho de petición; un conteo propio son dos días de campo',
+      mientras: 'se cuenta a mano en la acera, en las dos franjas que decidan el negocio',
+      ojo: 'media hora en una franja no es el día: dice lo que pasó en esa media hora, y así hay que escribirlo.' },
+    { id: 'estratificacion', t: 'Estratificación vigente', panel: 'indicadores',
+      falta: 'el certificado de estratificación, o el acto del municipio que la adopta: es lo que dice qué estrato rige HOY en las manzanas del radio.',
+      hay: 'el estrato que el informe imprime viene del censo, así que puede llevar años sin actualizarse — y un sector que se renovó cambia de estrato antes de que el censo lo recoja.',
+      que: 'certificado de estratificación de las manzanas del sector, o el decreto vigente que la adopta',
+      quien: 'oficina de estratificación del municipio, o la Secretaría de Planeación',
+      como: 'solicitud en la ventanilla; el decreto suele estar publicado en la página del municipio',
+      llevar: 'la dirección o el barrio, y los datos de quien lo solicita',
+      tarda: 'de inmediato a 10 días hábiles según el municipio',
+      mientras: 'una factura de servicios públicos de un predio del sector trae el estrato vigente de ESE predio',
+      ojo: 'es de un predio y no del sector: en la misma manzana puede haber dos estratos.' }
+  ];
+
+  function bloqueVaciosAIA(){
+    const fila = (etq, val) => val
+      ? '<div class="vq"><i>' + esc(etq) + '</i><span>' + esc(val) + '</span></div>' : '';
+    return '<div class="tarjeta"><h2>Lo que este informe NO tiene, y cómo se consigue</h2>' +
+      escalaAIA('vacios') +
+      '<p class="nota-pie">Cada uno cierra un límite que este informe declara en su propia tabla ' +
+        'de método, y por eso está acá: no porque una lista lo pida. El trámite va en verde y el ' +
+        'vacío en ámbar, que son dos cosas distintas — «esto no lo tenemos» y «así se consigue».</p>' +
+      VACIOS_AIA.map((v) => '<div class="vacio-aia">' +
+        '<p class="vacio-t">' + esc(v.t) + '</p>' +
+        '<p class="vacio-tag">Sin dato oficial en este informe</p>' +
+        '<p class="vacio-falta"><b>Haría falta</b> ' + esc(v.falta) + '</p>' +
+        '<p class="vacio-hay"><b>Lo que hay no es eso</b> ' + esc(v.hay) + '</p>' +
+        '<p class="vacio-tag vacio-tag-ok">Cómo se consigue</p>' +
+        '<div class="comoq">' +
+          fila('Qué se pide', v.que) + fila('Ante quién', v.quien) + fila('Cómo', v.como) +
+          fila('Qué hay que llevar', v.llevar) + fila('Cuánto tarda', v.tarda) +
+        '</div>' +
+        '<p class="vacio-mientras"><b>Mientras llega</b> ' + esc(v.mientras) +
+          ' <em>' + esc(v.ojo) + '</em></p>' +
+        '</div>').join('') +
+      '</div>';
+  }
 
   /* Los dos paneles que no llevan título propio en el papel: su nombre no
      se puede leer del `<h2>` porque no hay ninguno, así que se declara. Es
@@ -333,7 +421,13 @@
      tiene hojas de tamaño FIJO: no bisecta como el pliego educativo, así que
      lo que no cabe se sale sin que nada lo diga. Un método que revienta la
      maquetación no es un método declarado, es una hoja rota. */
+  /* Las dos hojas de anexo —el método y los vacíos— son SIEMPRE las dos
+     últimas del informe de empresas, así que su número se deriva de
+     `N_HOJAS` en vez de escribirse: una hoja de análisis nueva sube el total
+     y los dos anexos siguen cerrando el documento, sin que nadie tenga que
+     acordarse de correrlos. */
   function hojaMetodoAIA(cuerpoHTML, titulo, fecha, autor, r){
+    const nHoja = N_HOJAS - 1;
     /* El nombre del panel NO se escribe en una tercera lista: se lee del
        propio título, que el rótulo sigue por construcción —`escalaAIA` se
        emite pegado detrás del `</h2>`—. Una tabla de nombres al lado sería
@@ -386,7 +480,7 @@
         '<td class="met-l">' + esc(d.l) + '</td></tr>';
     };
     return '<div class="hoja"><div class="contenido">' +
-      cabecera(titulo, 'Cómo se midió cada panel', 'de dónde sale cada cifra y qué no es', fecha, N_HOJAS) +
+      cabecera(titulo, 'Cómo se midió cada panel', 'de dónde sale cada cifra y qué no es', fecha, nHoja) +
       seccion(0, 'Cómo se midió cada panel', 'una fila por panel de este informe, en el orden en que salen') +
       '<table class="tbl-met"><thead><tr><th>Panel</th><th>De dónde sale</th>' +
       '<th>Cómo se calcula</th><th>Lo que NO es</th></tr></thead><tbody>' +
@@ -395,6 +489,32 @@
       'su regla no se publica, que es lo que distingue este análisis de un conteo. Lo que sí ' +
       'está en el navegador —el reparto por grupo, la proyección de población, la ficha de ' +
       'campo— va con su cuenta escrita, para que cualquiera la rehaga.</p>' +
+      pie(nHoja, r, autor) +
+      '</div></div>';
+  }
+
+  /* La hoja de los vacíos, la última: cierra el informe con lo que le falta
+     y en qué ventanilla se pide.
+
+     Va en hoja PROPIA y en una columna, y las dos cosas se midieron. Con la
+     tabla de método en la misma hoja, el contenido daba 927 px de los 756
+     que da el papel; a dos columnas bajaba a 758, que sigue siendo dos por
+     encima —y recortar un renglón para que cierre es el arreglo que este
+     proyecto deshizo en la v882, la v886 y la v901—. A dos columnas en su
+     propia hoja cabría de sobra y dejaría media hoja en blanco, que es lo
+     que la v853 llama una hoja a medio terminar. En una columna y sola
+     mide 510 px, que es el 67 % del papel: como la hoja 2, que ya se
+     publica así. */
+  function hojaVaciosAIA(titulo, fecha, autor, r){
+    return '<div class="hoja"><div class="contenido">' +
+      cabecera(titulo, 'Lo que este informe no tiene', 'y en qué ventanilla se pide', fecha, N_HOJAS) +
+      /* El conteo se CALCULA: escrito a mano dentro de un texto fijo es una
+         cifra que envejece sola el día que entre o salga un vacío (v903). */
+      seccion(0, 'Lo que este informe NO tiene, y cómo se consigue',
+        numEs(VACIOS_AIA.length) +
+          (VACIOS_AIA.length === 1 ? ' dato que no sale' : ' datos que no salen') +
+          ' de OpenStreetMap ni del censo') +
+      bloqueVaciosAIA() +
       pie(N_HOJAS, r, autor) +
       '</div></div>';
   }
@@ -407,7 +527,8 @@
     'como-leer': 'define las cifras del informe; no publica ninguna',
     'como-leer-edu': 'define las cifras del informe; no publica ninguna',
     'falta': 'lista lo que queda por levantar; es una tarea, no una medición',
-    'compatibilidad': 'cruza los usos que el cliente declaró; no mide el entorno'
+    'compatibilidad': 'cruza los usos que el cliente declaró; no mide el entorno',
+    'vacios': 'lista lo que el informe no tiene y cómo se pide; es una tarea, no una medición'
   };
   /* El rótulo va FUERA del `<h2>` y pegado debajo, por lo que el pliego
      aprendió en la v854: el título de un panel se extrae con un patrón que
@@ -2139,7 +2260,7 @@
     function cuerpoEmpresa(){
       /* La hoja del método es la quinta y sale del cuerpo YA compuesto, así
          que no puede listar un panel que no salió ni olvidar uno que sí. */
-      N_HOJAS = 5;
+      N_HOJAS = 6;
       const cuerpo = [
 // ══ HOJA 1 · la conclusión y lo que el cliente necesita para decidir ══
 '<div class="hoja"><div class="contenido">',
@@ -2226,15 +2347,17 @@ bloqueHorariosInforme(r),
 
 seccion(fichaCampo(r) ? 11 : 10, 'FODA para presentar la decisión', 'qué favorece, qué exige y qué revisar'),
 bloqueFodaAncho(r),
-'<div class="paso">SIGUIENTE PASO RECOMENDADO · Verificar norma urbanística (POT) y ' +
-  'prefactibilidad financiera antes de avanzar a diseño.</div>',
+'<div class="paso">SIGUIENTE PASO RECOMENDADO · Verificar el uso del suelo permitido y la ' +
+  'prefactibilidad financiera antes de avanzar a diseño. La última hoja dice en qué ventanilla ' +
+  'se piden esos datos.</div>',
 
 pie(4, r, autor),
 '</div></div>',
 
 '</div>',
       ].join('');
-      return cuerpo + hojaMetodoAIA(cuerpo, titulo, fecha, autor, r);
+      return cuerpo + hojaMetodoAIA(cuerpo, titulo, fecha, autor, r) +
+        hojaVaciosAIA(titulo, fecha, autor, r);
     }
 
     /* ── El informe del curso ─────────────────────────────────────────────
@@ -2772,6 +2895,23 @@ pie(4, r, autor, true),
 '.tbl-met .met-l{color:', T.tinta, '}',
 /* Un panel compuesto sin método lo dice en rojo, no falta de la tabla. */
 '.tbl-met .met-sin td{color:', T.bad, ';font-weight:700}',
+'.vacio-aia{border:.6px dashed ', T.warn, ';border-radius:3px;padding:4px 5px;margin-top:4px;',
+  'break-inside:avoid}',
+'.vacio-aia .vacio-t{font-size:7.4px;font-weight:800;color:', T.tinta, ';margin:0 0 2px}',
+'.vacio-aia .vacio-tag{font-size:6.2px;text-transform:uppercase;letter-spacing:.5px;font-weight:800;',
+  'color:', T.warn, ';margin:0 0 2px}',
+'.vacio-aia .vacio-tag-ok{color:', T.ok, ';margin-top:3px}',
+'.vacio-aia .vacio-falta,.vacio-aia .vacio-hay,.vacio-aia .vacio-mientras{font-size:6.9px;',
+  'line-height:1.35;color:', T.txt3, ';margin:0 0 2px}',
+'.vacio-aia b{color:', T.tinta, '}',
+'.vacio-aia .vacio-mientras{color:', T.ok, '}',
+'.vacio-aia .vacio-mientras b{color:', T.ok, '}',
+'.vacio-aia .vacio-mientras em{color:', T.txt3, ';font-style:normal;display:block}',
+'.comoq{display:grid;grid-template-columns:1fr 1fr;gap:1px 6px}',
+'.comoq .vq{display:flex;gap:3px;align-items:baseline}',
+'.comoq .vq i{font-size:6.2px;text-transform:uppercase;letter-spacing:.4px;font-weight:800;',
+  'color:', T.ok, ';font-style:normal;flex:0 0 auto}',
+'.comoq .vq span{font-size:6.9px;line-height:1.3;color:', T.txt3, '}',
 '.nota-pie{font-size:6.9px;line-height:1.4;color:', T.txt3, ';margin-top:5px}',
 /* El aro vive en una caja de tamaño fijo que nada puede invadir: ese es el
    defecto que se venía repitiendo —una barra de ancho completo cruzándolo—. */

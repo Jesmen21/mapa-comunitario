@@ -5754,15 +5754,173 @@ console.log('\n  -- de donde sale la cifra de cada panel del informe (v1045) --'
   /* El informe de empresas compone su hoja de metodo, y el del curso no la
      necesita: declara el suyo en la lectura del grupo. Las dos hojas se
      cuentan aparte para que la paginacion no mienta. */
+  /* La paginacion se comprueba CONTANDO las hojas que el informe compone, no
+     contra un numero escrito en la guarda: asi una hoja nueva sin subir
+     `N_HOJAS` sale en rojo, y subir las dos juntas no cuesta tocar esto.
+     Son las cuatro de `cuerpoEmpresa` mas las dos de anexo —metodo y
+     vacios—, que van en funciones aparte. */
   const iEmp = j63.indexOf('function cuerpoEmpresa()');
   const cuerpoEmp = iEmp < 0 ? '' : j63.slice(iEmp, j63.indexOf('function cuerpoEdu()', iEmp));
   const iEdu = j63.indexOf('function cuerpoEdu()');
   const cuerpoEdu3 = iEdu < 0 ? '' : j63.slice(iEdu, iEdu + 400);
-  const ok5 = /N_HOJAS = 5/.test(cuerpoEmp) && /hojaMetodoAIA\(/.test(cuerpoEmp) && /N_HOJAS = 4/.test(cuerpoEdu3);
-  comprobar('el informe de empresas compone su hoja de metodo y la pagina',
+  const cuenta = (txt) => (txt.match(/<div class="hoja">/g) || []).length;
+  const iMet = j63.indexOf('function hojaMetodoAIA(');
+  const iVac = j63.indexOf('function hojaVaciosAIA(');
+  const anexos = (iMet < 0 ? 0 : cuenta(j63.slice(iMet, j63.indexOf('\n  }', iMet)))) +
+                 (iVac < 0 ? 0 : cuenta(j63.slice(iVac, j63.indexOf('\n  }', iVac))));
+  const nDeclara = (/N_HOJAS = (\d+)/.exec(cuerpoEmp) || [])[1];
+  const nCompone = cuenta(cuerpoEmp) + anexos;
+  const llama = /hojaMetodoAIA\(/.test(cuerpoEmp) && /hojaVaciosAIA\(/.test(cuerpoEmp);
+  const ok5 = String(nCompone) === String(nDeclara) && llama && anexos === 2 &&
+    /N_HOJAS = 4/.test(cuerpoEdu3);
+  comprobar('el informe de empresas compone sus dos anexos y los pagina',
     ok5,
-    ok5 ? 'cinco hojas en el de empresas, cuatro en el del curso'
-        : 'o no la compone, o la pagina diria «de 4» con cinco hojas impresas');
+    ok5 ? nCompone + ' hojas compuestas y ' + nDeclara + ' declaradas en el de empresas, ' +
+            'con el metodo y los vacios de anexo; cuatro en el del curso'
+        : !llama
+          ? 'no compone alguno de los dos anexos: el metodo o los vacios con su tramite'
+          : anexos !== 2
+            ? 'los anexos no son dos hojas, son ' + anexos
+            : String(nCompone) !== String(nDeclara)
+              ? 'compone ' + nCompone + ' hojas y pagina «de ' + nDeclara + '»'
+              : 'el informe del curso dejo de declarar sus cuatro hojas');
+}
+
+console.log('\n  -- los vacios del informe, con su tramite (v1046) --');
+{
+  const j63 = soloCodigo(leer('js/63-analisis-ia-informe.js'));
+  const cssI = leer('js/63-analisis-ia-informe.js');
+
+  /* La lista de vacios, leida del codigo: un vacio nuevo queda vigilado sin
+     que su autor se acuerde (v867), y la guarda no comprueba que una lista
+     escrita aca sea igual a si misma (v957). */
+  const iV = j63.indexOf('const VACIOS_AIA = [');
+  const cV = iV < 0 ? '' : j63.slice(iV, j63.indexOf('\n  ];', iV));
+  /* Se parte por el `{ id:` de cada entrada y no por su llave de cierre: la
+     sangria del cierre es lo primero que cambia al reformatear, y un ancla
+     por forma envejece (v935). */
+  const VAC = [];
+  cV.split(/\n    \{ id: /).slice(1).forEach((trozo) => {
+    const enc = /^'([^']+)',\s*t:\s*'([^']*)',\s*panel:\s*'([^']*)'/.exec(trozo);
+    if (!enc) return;
+    const campos = {};
+    let mc;
+    const reC = /\n\s+(falta|hay|que|quien|como|llevar|tarda|mientras|ojo):\s*'((?:[^'\\]|\\.)*)'/g;
+    while ((mc = reC.exec(trozo)) !== null) campos[mc[1]] = mc[2];
+    VAC.push({ id: enc[1], t: enc[2], panel: enc[3], c: campos });
+  });
+
+  /* Y la tabla de metodo, que es contra la que se comprueba que el limite de
+     cada vacio lo declare de verdad un panel del informe. */
+  const iM = j63.indexOf('const METODO_AIA = {');
+  const cM = iM < 0 ? '' : j63.slice(iM, j63.indexOf('\n  };', iM));
+  const IDS_MET = [];
+  let mm2;
+  const reM = /'([^']+)':\s*\{\s*\n\s*f:/g;
+  while ((mm2 = reM.exec(cM)) !== null) IDS_MET.push(mm2[1]);
+
+  /* Cuantos vacios hay de verdad, contados por OTRA marca: cada entrada trae
+     exactamente un `mientras:`. Con un solo criterio, una entrada que el
+     lector no sepa parsear —un `id:` renombrado— se cae de TODAS las
+     comprobaciones de abajo sin que nada lo diga, y eso se lee igual que un
+     aprobado. Lo encontro una inyeccion que no imprimio nada: una salida
+     vacia no es una salida buena (v880). */
+  const nMarcas = (cV.match(/\n\s+mientras:/g) || []).length;
+
+  if (!VAC.length || IDS_MET.length < 20 || VAC.length !== nMarcas) {
+    comprobar('los vacios del informe se dejan leer',
+      false,
+      'NO PUDO CORRER: el lector ve ' + VAC.length + ' de ' + nMarcas + ' vacios · metodos=' +
+        IDS_MET.length + ' — los que no ve se caen de todas las comprobaciones de abajo');
+  } else {
+    /* Falla CERRADO: un vacio nuevo sin su ventanilla sale en rojo. Nombrar
+       el documento y callar el tramite es lo que la v880 llamo un muro: con
+       el tramite escrito es una tarea de una tarde. */
+    const CAMPOS = ['falta', 'hay', 'que', 'quien', 'como', 'llevar', 'tarda'];
+    const cojos = VAC.filter((v) => CAMPOS.some((k) => String(v.c[k] || '').trim().length < 15));
+    comprobar('todo vacio dice que se pide, ante quien, como, que llevar y cuanto tarda',
+      cojos.length === 0,
+      cojos.length === 0
+        ? 'los ' + VAC.length + ' con su ventanilla escrita'
+        : 'nombran el documento y callan el tramite, que es un muro: ' +
+          cojos.map((v) => v.id).join(' · '));
+
+    /* `mientras` y `ojo` son DOS campos y no uno, para que el limite del
+       sustituto no se pueda perder al redactar: la v880 lo dejo escrito —«el
+       mientras llega NO es un permiso para suponer»— y su suite persigue
+       justamente que ninguno nombre el sustituto a secas. */
+    const sueltos = VAC.filter((v) => String(v.c.mientras || '').trim().length < 15 ||
+                                      String(v.c.ojo || '').trim().length < 15);
+    comprobar('y el sustituto va con su limite escrito en su propio campo',
+      sueltos.length === 0,
+      sueltos.length === 0
+        ? 'los ' + VAC.length + ' dicen que sirve mientras llega Y hasta donde'
+        : 'nombran el sustituto a secas, que es un permiso para suponer: ' +
+          sueltos.map((v) => v.id).join(' · '));
+
+    /* Cada vacio cierra un limite que el informe DECLARA, y lo dice con el id
+       de ese panel. Sin esto se puede inventar un vacio sin nada medido
+       detras, que es justo lo que este modulo no hace. */
+    const huerfanos = VAC.filter((v) => IDS_MET.indexOf(v.panel) < 0);
+    comprobar('y cada uno cierra un limite que un panel del informe declara',
+      huerfanos.length === 0,
+      huerfanos.length === 0
+        ? 'los ' + VAC.length + ' apuntan a su panel: ' + VAC.map((v) => v.panel).join(' · ')
+        : 'apuntan a un panel que no existe: ' +
+          huerfanos.map((v) => v.id + '→' + v.panel).join(' · '));
+
+    /* El tramite en VERDE y el vacio en AMBAR, leidos de los tokens del
+       modulo: dos cosas distintas con el mismo color se leen como una sola
+       (v880). Los tokens no se escriben aca, se leen — si el modulo mueve su
+       paleta, la regla tiene que seguirla (v890). */
+    const rg = (sel) => {
+      const i = cssI.indexOf("'" + sel + "{");
+      if (i < 0) return '';
+      const j = cssI.indexOf("}'", i);
+      return j < 0 ? '' : cssI.slice(i, j);
+    };
+    const rVac = rg('.vacio-aia .vacio-tag');
+    const rOk = rg('.vacio-aia .vacio-tag-ok');
+    const dosColores = /T\.warn/.test(rVac) && /T\.ok/.test(rOk) && !/T\.warn/.test(rOk);
+    comprobar('y el tramite va en verde y el vacio en ambar, de los tokens del modulo',
+      dosColores,
+      dosColores
+        ? 'el vacio con T.warn y el tramite con T.ok, sin un color escrito al lado'
+        : 'los dos del mismo color, o con un hex escrito en la hoja: «esto no lo tenemos» ' +
+          'y «asi se consigue» se leerian como una sola cosa');
+
+    /* Y el conteo se CALCULA. Escrito a mano dentro del subtitulo es una
+       cifra que envejece sola el dia que entre o salga un vacio (v903). */
+    const iH = j63.indexOf('function hojaVaciosAIA(');
+    const cH = iH < 0 ? '' : j63.slice(iH, j63.indexOf('\n  }', iH));
+    comprobar('y el subtitulo cuenta los vacios en vez de llevar el numero escrito',
+      /VACIOS_AIA\.length/.test(cH),
+      /VACIOS_AIA\.length/.test(cH)
+        ? 'sale de VACIOS_AIA.length'
+        : 'lleva el numero escrito: el dia que entre o salga un vacio, el subtitulo miente');
+
+    /* La linea de «siguiente paso» de la hoja 4 manda a la hoja del tramite.
+       Sin eso, quien pare ahi sigue contra el muro que esta tanda vino a
+       quitar: nombraba el POT y callaba la ventanilla. */
+    const iP = j63.indexOf('SIGUIENTE PASO RECOMENDADO');
+    const cP = iP < 0 ? '' : j63.slice(iP, iP + 420);
+    comprobar('y la linea de siguiente paso manda a la hoja del tramite',
+      /ltima hoja/.test(cP),
+      /ltima hoja/.test(cP)
+        ? 'nombra la hoja donde estan las ventanillas'
+        : 'nombra el documento y calla la ventanilla, que es el muro de la v880');
+
+    /* La guarda de la guarda: el bloque sigue saliendo de la lista. Sin esto,
+       una lista escrita al lado dejaria todo lo de arriba en verde sobre algo
+       que el papel no imprime (v878). */
+    const iB = j63.indexOf('function bloqueVaciosAIA(');
+    const cB = iB < 0 ? '' : j63.slice(iB, j63.indexOf('\n  }', iB));
+    comprobar('y el bloque sigue componiendose de esa lista',
+      /VACIOS_AIA\.map/.test(cB),
+      /VACIOS_AIA\.map/.test(cB)
+        ? 'recorre VACIOS_AIA'
+        : 'dejo de recorrerla: lo de arriba vigilaria una lista que el papel no imprime');
+  }
 }
 
 console.log('\n  -- la foto del panel de Pro City se ve entera, y a su tamano (v1039) --');

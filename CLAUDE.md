@@ -22128,6 +22128,175 @@ del motor no se puede comprobar desde acá, y decirlo es la única cosa honesta
 que se puede hacer con ella.
 `pendiente`
 
+## Lo que el informe no tiene, y en qué ventanilla se pide (v1046)
+
+Peldaño 6, el último del orden que el usuario fijó. Hasta la v1045 el informe
+de empresas cerraba con **una línea**:
+
+> SIGUIENTE PASO RECOMENDADO · Verificar norma urbanística (POT) y
+> prefactibilidad financiera antes de avanzar a diseño.
+
+Y eso es exactamente lo que la v880 llamó un muro: **nombrar el documento y
+callar el trámite** deja a quien lee sin saber a qué ventanilla ir. Con el
+trámite escrito es una tarea de una tarde.
+
+    v1045   una línea nombra el POT · ningún vacío con su ventanilla
+    v1046   4 vacíos con sus 20 renglones de trámite, en su propia hoja
+
+### Los cuatro salen de límites que el informe YA declara
+
+No de una lista de lo que a un análisis así suele faltarle, que es cómo
+nacieron las cinco carencias falsas de la v861 a la v888. Cada vacío nombra el
+**id del panel** cuyo límite cierra, y la guarda lo comprueba contra
+`METODO_AIA`:
+
+| Vacío | El límite que el informe declara | Ventanilla |
+|---|---|---|
+| Uso del suelo permitido | ninguno lo declaraba: la línea de arriba lo nombraba sin decir cómo | curaduría urbana, o Planeación |
+| Competencia registrada | «solo cuenta lo mapeado: cero no es «no hay»» | Cámara de Comercio |
+| Aforo de tránsito y peatones | «es un potencial estimado por tipo de uso; no es un aforo» | Secretaría de Movilidad · INVÍAS |
+| Estratificación vigente | «el estrato es del censo de 2018» | oficina de estratificación |
+
+Así no se puede inventar un vacío sin nada medido detrás — y la guarda falla
+cerrado: uno que apunte a un panel que no existe sale en rojo.
+
+#### No se copió del educativo, y el de la norma pide OTRO documento
+
+`js/68` **no se carga en esta página** —medido: la lista de `analisis-ia.html`
+son doce archivos y ninguno es el 68—, así que escribir el texto acá no es la
+clase B: es la única opción.
+
+Y el único que se solapa por tema pide un documento distinto a propósito.
+Aquel analiza un **PREDIO** y pide la ficha normativa, que exige matrícula
+inmobiliaria; este analiza un **RADIO** y pide el **certificado de uso del
+suelo** de una dirección, que es más liviano y es el que un negocio necesita
+antes de firmar un arriendo.
+
+### `mientras` y `ojo` son dos campos, y por eso el límite no se cae
+
+La v880 lo dejó escrito: *«el "mientras llega" NO es un permiso para
+suponer»*. Con un solo campo el límite se pierde al redactar sin que nada lo
+diga, así que el sustituto y su límite van separados y los dos se comprueban:
+
+> **Mientras llega** los competidores mapeados sirven como PISO de cuántos hay
+> · *es un piso y nunca un total: la cifra solo puede subir cuando llegue el
+> registro, nunca bajar.*
+
+El trámite va en **verde** y el vacío en **ámbar** —«así se consigue» contra
+«esto no lo tenemos», que son dos cosas y con un color se leen como una
+(v880)— y los dos colores **se leen de los tokens del módulo**, no se escriben
+en la regla: si la paleta se mueve, la hoja tiene que seguirla (v890).
+
+### La hoja propia, y las tres composiciones que se midieron
+
+La regla de la v919 —una decisión de espacio se juzga midiendo las
+composiciones, no leyendo la lista—:
+
+| Dónde | Contenido de esa hoja |
+|---|---|
+| en la hoja del método, una columna | **927 px** de los 756 que da el papel |
+| en la hoja del método, dos columnas | **758 px** — dos por encima |
+| en su propia hoja, dos columnas | cabría, y dejaría **media hoja en blanco** |
+| **en su propia hoja, una columna** | **608 px**, el 80 % del papel |
+
+Los dos píxeles de la segunda fila son justo el caso donde la salida barata es
+recortar un renglón, y eso es el arreglo que este proyecto deshizo en la v882,
+la v886 y la v901. Y la tercera la descarta la v853: media hoja vacía no es
+aire, es una hoja a medio terminar.
+
+Así que el informe de empresas pasa a **seis hojas** —cuatro de análisis y dos
+de anexo— y el del curso se queda en cuatro. El número de cada anexo **se
+deriva de `N_HOJAS`** en vez de escribirse: son siempre las dos últimas, así
+que una hoja de análisis nueva sube el total y los anexos siguen cerrando el
+documento sin que nadie tenga que acordarse de correrlos.
+
+#### El muro seguía en pie para quien parara en la hoja 4
+
+La línea de «siguiente paso» manda ahora a la hoja del trámite. Sin eso, quien
+cierra el informe en la FODA ve nombrado el documento y no llega nunca a la
+ventanilla — es el defecto de esta tanda sobreviviendo dentro de ella.
+
+Y **cuesta cero**: la primera redacción subió la hoja 4 de 761 a 770 px, sobre
+una hoja que ya va cinco por encima de las 756 —eso es anterior a esta tanda—,
+así que se escribió más corta hasta que volvió a 761. Añadirle nueve píxeles a
+un desborde que ya existe es empeorarlo, no heredarlo.
+
+### Y la guarda de la paginación pasó a CONTAR
+
+La de la v1045 exigía `N_HOJAS = 5` literal, así que subir a seis la puso en
+rojo por un cambio legítimo. Ahora **cuenta las hojas que el informe compone**
+—las de `cuerpoEmpresa` más las dos de anexo— y las compara con lo que pagina:
+una hoja nueva sin subir `N_HOJAS` sale en rojo, y subir las dos juntas no
+cuesta tocar la guarda. Una prueba que falla por un cambio legítimo se hace
+más precisa, no más laxa.
+
+De paso, el subtítulo de la hoja **cuenta** los vacíos en vez de llevar el
+número escrito: una cifra a mano dentro de un texto fijo envejece sola el día
+que entre o salga uno (v903).
+
+### Una inyección que no imprimió NADA, y el hueco que enseñó
+
+El hallazgo de la tanda, y es sobre mi propia guarda. La última inyección
+renombraba el `id:` de **una** entrada para dejar al lector sin material… y la
+corrida salió **muda**: ni un rojo ni un `?`.
+
+No era que la guarda estuviera bien. Era que el lector encontraba las otras
+tres, `VAC.length` daba 3, y con 3 > 0 la comprobación de material pasaba —así
+que la entrada que el lector no supo parsear **se cayó de las siete
+comprobaciones de abajo sin que nada lo dijera**. Es la exención silenciosa de
+la v966 dentro de la guarda escrita para perseguirla.
+
+**Un material contado por un solo criterio no distingue «las leí todas» de
+«leí las que pude».** Ahora los vacíos se cuentan por una SEGUNDA marca —cada
+entrada trae exactamente un `mientras:`— y la comprobación exige que los dos
+números cuadren. Con eso la inyección muerde, y también la que pierde la lista
+entera.
+
+Y la lección de lectura es la de la v880: **una salida vacía no es una salida
+buena.** Leerla como «no hay nada que reportar» habría dejado el hueco puesto.
+
+### Demostrado contra la v1045
+
+Once inyecciones fieles, una por aserción (v993), contra copias guardadas y no
+con `git checkout --` sobre trabajo sin confirmar (v973):
+
+```
+✗ todo vacio dice que se pide, ante quien, como, que llevar y cuanto tarda
+    — nombran el documento y callan el tramite, que es un muro: registro-mercantil
+✗ y el sustituto va con su limite escrito en su propio campo
+    — nombran el sustituto a secas, que es un permiso para suponer: registro-mercantil
+✗ y cada uno cierra un limite que un panel del informe declara
+    — apuntan a un panel que no existe: registro-mercantil→competencia-vieja
+✗ y el tramite va en verde y el vacio en ambar, de los tokens del modulo
+    — los dos del mismo color
+✗ y el subtitulo cuenta los vacios en vez de llevar el numero escrito  — lleva el numero escrito
+✗ y la linea de siguiente paso manda a la hoja del tramite
+    — nombra el documento y calla la ventanilla, que es el muro de la v880
+✗ y el bloque sigue componiendose de esa lista  — dejo de recorrerla
+✗ el informe de empresas compone sus dos anexos y los pagina  — no compone alguno de los dos anexos
+✗ …  — compone 6 hojas y pagina «de 5»
+✗ los vacios del informe se dejan leer  — NO PUDO CORRER: el lector ve 3 de 4 vacios
+✗ …  — NO PUDO CORRER: el lector ve 0 de 0 vacios
+```
+
+Las dos últimas **fallan en rojo y no salen con su `?`**, por la frontera de la
+v1026: el material es la lista de un archivo servido y no puede quedarse vacía
+por una mejora, así que perderla —entera o de a una entrada— es un defecto.
+
+### Lo que NO se pudo correr
+
+**Ninguna suite de navegador**, por lo mismo que la v973 en adelante. Corrió
+`revisar.js` entero con sus siete comprobaciones nuevas, y se midió el papel
+—las seis hojas con su alto, la paginación, los cuatro vacíos con sus veinte
+renglones de trámite y el texto entero de la hoja—.
+
+Lo que **no** se pudo comprobar es que los trámites sean los de hoy en cada
+municipio: los plazos y las ventanillas se escribieron de lo que la ley fija
+—los diez días hábiles del derecho de petición— y de lo que el módulo
+educativo ya tenía medido para la curaduría. El resto va con su «según el
+municipio» escrito, que es lo honesto cuando no se puede comprobar contra
+cada alcaldía del país. `pendiente`
+
 ## La lista viva: lo que al pliego educativo todavía le falta (v866)
 
 Esta lista se quedó vieja **cinco veces**. Cuatro dentro de la hoja —la

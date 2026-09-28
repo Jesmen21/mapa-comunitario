@@ -1,4 +1,4 @@
-const URBIS_CACHE = 'urbis-v1045-el-metodo-de-cada-panel-del-informe';
+const URBIS_CACHE = 'urbis-v1046-los-vacios-del-informe-con-su-tramite';
 const URBIS_ASSETS = [
   './',
   './index.html',
