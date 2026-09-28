@@ -1058,14 +1058,39 @@
   }
 
   /* ═══ Panel compacto al seleccionar un punto ═══ */
+  /* `top:0` no es para que el panel ocupe la pantalla: es para que su
+     tarjeta tenga CONTRA QUE topar. Sin el, el panel mide lo que mida su
+     contenido y un `max-height:100%` no resuelve, asi que una foto alta lo
+     empujaba fuera por arriba —medido, 182 px de cabecera fuera de la
+     pantalla con una foto 9:16: el defecto de la v896—. Con `flex-end` la
+     tarjeta se queda pegada abajo, donde estaba, y con `pointer-events`
+     repartidos el mapa sigue recibiendo el toque en todo lo que la tarjeta
+     no ocupa. */
   #urbis-mobile-app .u52-procity-selpanel{
     position:absolute; left:0; right:0;
+    /* Debajo de la barra de arriba, no en el borde de la pantalla: con
+       `top:0` la tarjeta llegaba hasta arriba y la barra —que va en un
+       z-index MAS ALTO— le tapaba el titulo y la X, que es lo unico que
+       cierra el panel. Se vio mirando el papel, no midiendo la caja: la
+       medida decia que la X estaba dentro de la tarjeta y lo estaba, con
+       la barra encima. Los 102 px salen de medir la barra en tres
+       telefonos (390, 360 y 430 px de ancho): arranca en
+       env(safe-area-inset-top) + 12 px —css/99, linea 874— y mide 82 de
+       alto, asi que cierra en env + 94; los 8 que faltan son el aire. */
+    top:calc(env(safe-area-inset-top,0px) + 102px);
     bottom:calc(100px + env(safe-area-inset-bottom,0px));
-    z-index:2147483240; display:flex; justify-content:center; padding:0 14px;
+    z-index:2147483240; display:flex; justify-content:center; align-items:flex-end;
+    padding:0 14px; pointer-events:none;
   }
   #urbis-mobile-app .u52-procity-selpanel[hidden]{ display:none !important; }
+  /* `box-sizing` explicito porque el techo se cuenta CON el relleno: sin el,
+     los 26 px de padding y los 3 del borde se suman al 100 % y la tarjeta
+     se sale 29 px —medido—. Y el recorrido, que es lo que hace que un techo
+     no esconda nada (v896). */
   #urbis-mobile-app .u52-procity-selpanel-card{
-    position:relative; width:100%; max-width:420px;
+    position:relative; width:100%; max-width:420px; box-sizing:border-box;
+    max-height:100%; overflow-y:auto; overscroll-behavior:contain;
+    pointer-events:auto;
     background:linear-gradient(180deg,#ffffff,#fbfcff);
     border:1.5px solid var(--pc-sky-line); border-radius:22px;
     padding:14px 14px 12px; box-shadow:0 18px 40px rgba(51,53,122,.24);
@@ -1105,8 +1130,16 @@
      (#ffffff → #fbfcff), así que el ámbar del vacío es el mismo tono que usa
      el globo sobre papel claro y no el de la ficha, que va sobre oscuro —el
      color se mide en su sitio y no se copia del de al lado (v979). */
+  /* La foto de un mapeo es EVIDENCIA, asi que se ve entera. Con
+     `object-fit:cover` y un techo de 190 px se tiraba el 57,1 % del alto de
+     una foto 3:4 y el 67,8 % de una 9:16 —medido en el panel de verdad— y
+     lo que se tira es justo lo que se fotografio: la copa de la palma
+     sobre el cableado, el poste inclinado entero. No lleva techo propio
+     porque el que hace falta lo pone la tarjeta, que ademas se recorre: un
+     techo aqui volveria a decidir por el lector que parte de su foto le
+     toca ver. */
   #urbis-mobile-app .u52-procity-selpanel-foto{
-    display:block; width:100%; max-height:190px; object-fit:cover;
+    display:block; width:100%; height:auto; object-fit:contain;
     margin:11px 0 0; border-radius:13px; cursor:zoom-in;
     box-shadow:inset 0 0 0 1px var(--pc-sky-line);
   }

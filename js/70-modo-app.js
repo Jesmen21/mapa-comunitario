@@ -76,10 +76,20 @@
      manifiesto, para que un Chrome que entre con el parámetro ofrezca
      instalar URBIS_CO y no la aplicación completa.
 
-     El modo educativo no tiene juego de iconos propio: su APK ya está
-     firmado con el suyo y nadie instala Pro City desde Safari. Si algún día
-     lo necesita, es añadirle una `identidad` aquí. */
+     El modo educativo comparte los iconos de URBIS —comprobado: su manifiesto
+     declara los mismos once archivos que el general— así que lo que gana con
+     su propia entrada no es el dibujo: es el NOMBRE y la puerta de arranque.
+     Sin ella, instalar Pro City ofrecía «URBIS» y el icono instalado abría
+     «/», o sea la aplicación ciudadana, no el modo educativo. */
   var IDENTIDADES = {
+    educativo: {
+      nombre: 'Pro City',
+      titulo: 'URBIS Pro City · Educativo',
+      manifiesto: 'manifest-educativo.json',
+      icono: 'assets/icons/icon-192.png',
+      iconoApple: 'assets/icons/icon-180.png',
+      tema: '#34CCFE'
+    },
     ciudadano: {
       nombre: 'URBIS_CO',
       titulo: 'URBIS_CO · reportes y eventos',

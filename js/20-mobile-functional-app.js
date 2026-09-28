@@ -4942,9 +4942,17 @@
     const mapScreen = app.querySelector('[data-u52-screen="map"]');
     if(!mapScreen) return;
     proCity.selPoint = p;
-    // Para poder mostrar el nombre de la carpeta cooperativa vinculada (si
-    // aplica) — si aún no se cargaron, se vuelve a pintar el panel al llegar.
-    if(!proCity.foldersLoaded) loadProCityFolders().then(()=>{ if(proCity.selPoint === p) showProCitySelectedPanel(p); });
+    /* Para poder mostrar el nombre de la carpeta cooperativa vinculada (si
+       aplica) — si aún no se cargaron, se vuelve a pintar el panel al llegar.
+       Y solo SI LLEGARON: `loadProCityFolders` sale por su puerta temprana
+       sin poner `foldersLoaded` cuando no hay usuario, y se traga el fallo
+       de red sin ponerlo tampoco, así que repintar «cuando termine» era
+       volver a llamarse a sí mismo para siempre. Medido: sin sesión, y con
+       sesión pero sin red, tocar un punto CONGELA la pestaña —que es el caso
+       de quien mapea en la calle sin señal—. Repintar sin las carpetas no
+       agrega nada: ese repintado existe para enseñar el nombre de la
+       carpeta, y sin ellas no hay nombre que enseñar. */
+    if(!proCity.foldersLoaded) loadProCityFolders().then(()=>{ if(proCity.foldersLoaded && proCity.selPoint === p) showProCitySelectedPanel(p); });
     const d = String(p.descripcion || '').split(' | ');
     const dim = String(p.tipo || '');
     // Si es de la Matriz de Usos, el ícono/etiqueta correctos vienen del USO
