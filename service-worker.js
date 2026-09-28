@@ -1,4 +1,4 @@
-const URBIS_CACHE = 'urbis-v1037-seguimiento-presidencial-cholo-plan-salud-cepeda';
+const URBIS_CACHE = 'urbis-v1038-seguimiento-presidencial-fmi-mineria-ilegal-corrupcion-onu';
 const URBIS_ASSETS = [
   './',
   './index.html',
