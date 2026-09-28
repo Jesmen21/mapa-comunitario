@@ -1,4 +1,4 @@
-const URBIS_CACHE = 'urbis-v1040-seguimiento-presidencial-y-foto-del-mapeo-completa';
+const URBIS_CACHE = 'urbis-v1041-seguimiento-presidencial-y-foto-del-mapeo-completa';
 const URBIS_ASSETS = [
   './',
   './index.html',
