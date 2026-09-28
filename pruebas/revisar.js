@@ -257,6 +257,63 @@ console.log('\n  -- el modo sin conexión --');
     PAGINAS.length >= 3
       ? 'son ' + PAGINAS.length + ' y se leen del disco, así que una página nueva queda vigilada sin que su autor se acuerde'
       : 'se está mirando ' + PAGINAS.length + ': las demás quedarían sin comprobar');
+
+  /* Un manifiesto declara su propia PUERTA DE ARRANQUE, y la superficie que lo
+     usa tiene que alcanzarlo: sin eso, instalar la app abre OTRA. Medido, dos
+     lo estaban — `manifest-empresarial.json` declara `/analisis-ia.html` y esa
+     página enlazaba el general, que arranca en «/», así que quien instalaba
+     URBIS Empresas terminaba en la aplicación ciudadana; y el educativo igual.
+     Es la clase C: el archivo existe, el mecanismo para usarlo existe, y nada
+     los conecta — desde afuera se ve igual que si el manifiesto no existiera.
+
+     Se alcanza por DOS caminos y los dos cuentan: el `<link>` de una página, o
+     la tabla de identidades de js/70-modo-app.js, que lo intercambia cuando
+     index.html arranca en un modo. La lista de manifiestos se lee del disco,
+     así que uno nuevo queda vigilado sin que su autor se acuerde (v867). */
+  const MANIFIESTOS = fs.readdirSync(RAIZ)
+    .filter((f) => /^manifest.*\.json$/.test(f)).sort();
+  const alcanzados = new Set();
+  PAGINAS.concat(['vision-territorial.html']).forEach(function (h) {
+    [...leer(h).matchAll(/rel="manifest"[^>]*href="([^"?]+)"/g)]
+      .forEach((m) => alcanzados.add(m[1].replace(/^\.\//, '')));
+  });
+  const modoApp = soloCodigo(leer('js/70-modo-app.js'));
+  const IDENTS = [...modoApp.matchAll(/\{[^{}]*manifiesto:\s*'([^']+)'[^{}]*\}/g)];
+  IDENTS.forEach((m) => alcanzados.add(m[1]));
+  const sinAlcanzar = MANIFIESTOS.filter((m) => !alcanzados.has(m));
+  comprobar('todo manifiesto lo alcanza una página o la tabla de identidades',
+    sinAlcanzar.length === 0 && MANIFIESTOS.length >= 3,
+    sinAlcanzar.length
+      ? 'no lo alcanza nadie: ' + sinAlcanzar.join(' · ') +
+        ' — instalar esa app abriría otra, porque su página enlaza un manifiesto cuyo start_url no es el suyo'
+      : MANIFIESTOS.length < 3
+        ? 'NO PUDO CORRER: solo ' + MANIFIESTOS.length + ' manifiesto(s) leído(s)'
+        : 'los ' + MANIFIESTOS.length + ' se alcanzan: ' + MANIFIESTOS.join(', '));
+
+  /* Y lo que la tabla de identidades escribe SALE del manifiesto, no de
+     memoria: el nombre y el color de la app están declarados en dos sitios, y
+     al escribir la entrada del modo educativo puse un tema y un nombre que el
+     manifiesto no dice. Es la clase B cometida en la tanda que la cita, y la
+     cazó medir el archivo en vez de leer el renglón. */
+  const desajuste = [];
+  IDENTS.forEach(function (m) {
+    let j;
+    try { j = JSON.parse(leer(m[1])); } catch (e) { desajuste.push(m[1] + ': no se pudo leer'); return; }
+    const nom = /nombre:\s*'([^']*)'/.exec(m[0]);
+    const tem = /tema:\s*'([^']*)'/.exec(m[0]);
+    if (nom && j.short_name && nom[1] !== j.short_name) {
+      desajuste.push(m[1] + ': nombre «' + nom[1] + '» contra short_name «' + j.short_name + '»');
+    }
+    if (tem && j.theme_color && tem[1].toLowerCase() !== String(j.theme_color).toLowerCase()) {
+      desajuste.push(m[1] + ': tema ' + tem[1] + ' contra theme_color ' + j.theme_color);
+    }
+  });
+  comprobar('y el nombre y el color de cada identidad salen de SU manifiesto',
+    desajuste.length === 0 && IDENTS.length >= 2,
+    desajuste.length ? 'escritos de memoria: ' + desajuste.join(' · ')
+      : IDENTS.length < 2
+        ? 'NO PUDO CORRER: la tabla de identidades trae ' + IDENTS.length + ' entrada(s), así que no habría dos hechos que atar'
+        : 'las ' + IDENTS.length + ' coinciden con su manifiesto');
 }
 
 // ── 2. una sola puerta al servidor ───────────────────────────────────────

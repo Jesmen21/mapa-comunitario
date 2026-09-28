@@ -1,4 +1,4 @@
-const URBIS_CACHE = 'urbis-v1035-la-letra-de-los-dibujos-en-el-papel';
+const URBIS_CACHE = 'urbis-v1038-cada-app-abre-su-propia-puerta';
 const URBIS_ASSETS = [
   './',
   './index.html',
@@ -36,6 +36,8 @@ const URBIS_ASSETS = [
      la dirección de arranque que el APK lleva grabada y no se puede quitar
      (v780): abrirla sin red tiene que traer su manifiesto y sus iconos. */
   './manifest-reportes.json',
+  './manifest-empresarial.json',
+  './manifest-educativo.json',
   './assets/icons/reportes/icon-192.png',
   './assets/icons/reportes/icon-180.png',
   './assets/icons/llegada.png',

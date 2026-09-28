@@ -21042,6 +21042,174 @@ directorio de trabajo (v973):
 trece dibujos, ochenta y un rótulos, cero fuera de caja, cero pisados, cero
 defectos de las cuatro reglas del papel y la misma lista de cesión que antes.
 
+## Cada app abre su propia puerta, y el módulo de empresas medido (v1038)
+
+Salió de una pregunta: el enlace del análisis de empresas solo, y si la
+arquitectura que el módulo educativo tiene hoy se puede llevar allá de golpe.
+Las dos mitades se midieron antes de contestar (v863/v916), y la primera
+destapó un defecto que nadie había mirado.
+
+### El enlace, y por qué no llevaba al análisis
+
+Es `https://urbispro.city/analisis-ia.html`, y tiene **portón**: sin una sesión
+con rol de administrador o con permisos, un `location.replace('index.html')` en
+la cabecera devuelve a la aplicación general. Eso no es un defecto — es lo que
+cerró el agujero de `localStorage.setItem('urbis_admin','1')` — y hay que
+decirlo, porque abrir ese enlace sin sesión se ve exactamente igual que un
+enlace roto. Medido en el navegador, con y sin sesión:
+
+| | Termina en | Sirve |
+|---|---|---|
+| sin sesión | `index.html` | `manifest.json`, que arranca en «/» |
+| con sesión de administrador | `analisis-ia.html` | su propio manifiesto |
+
+### El defecto: un manifiesto que declara su puerta y nadie lo enlaza
+
+`manifest-empresarial.json` existe, está completo, sus once iconos existen y
+declara `/analisis-ia.html` como puerta de arranque. **No lo enlazaba nadie**:
+la página enlazaba `manifest.json`, que arranca en «/», así que quien instalaba
+*URBIS Empresas* terminaba con un icono que abre la aplicación ciudadana.
+
+Y no era uno: `manifest-educativo.json` estaba igual —declara `/?app=educativo`,
+tiene los MISMOS once iconos que el general (comprobado, no supuesto) y la tabla
+`IDENTIDADES` de `js/70-modo-app.js`, que es el mecanismo para intercambiarlo,
+solo traía `ciudadano`—.
+
+Es la **clase C** en su forma más limpia: el archivo existe, el mecanismo para
+usarlo existe, y nada los conecta, así que desde afuera se ve igual que si el
+manifiesto no existiera. Y la v1005 no podía verlo: su barrido de huérfanos
+mira `js/` y `css/`, y un manifiesto no está en ninguna de las dos.
+
+**Lo que el modo educativo gana con su entrada no es el dibujo** —los iconos son
+los mismos— **es el nombre y la puerta de arranque**. El comentario que decía
+que no le hacía falta se corrigió: afirmaba una propiedad que el código ya
+contradice, que es la forma de la v926.
+
+### Y escribí el tema y el nombre de memoria
+
+Al escribir la entrada del modo educativo puse `nombre: 'URBIS Pro City'` y
+`tema: '#075E88'`. El manifiesto dice `short_name: 'Pro City'` y
+`theme_color: '#34CCFE'`. O sea que **creé la clase B en la tanda que la cita**:
+dos sitios declarando un mismo hecho —cómo se llama la app y de qué color es—
+con dos valores distintos.
+
+Lo cazó ir a leer el archivo en vez de releer el renglón, y el arreglo no fue
+corregir los dos valores: fue que la guarda los **compare contra el manifiesto**,
+así que no pueden separarse. La convención que la entrada de `ciudadano` ya
+cumplía y nadie había escrito: `nombre` es el `short_name` y `tema` es el
+`theme_color`.
+
+### Las dos guardas, y sus dos caminos
+
+Falla **cerrado** (v880): un manifiesto nuevo sin alcanzar sale en rojo en su
+primera corrida. Y se alcanza por dos caminos, los dos válidos —el `<link>` de
+una página, o la tabla de identidades— porque `index.html` sirve tres apps y
+las intercambia en tiempo de ejecución. La lista de manifiestos se lee **del
+disco**, así que uno nuevo queda vigilado sin que su autor se acuerde (v867).
+
+### El módulo de empresas contra la arquitectura educativa, medido
+
+Sobre el papel ya compuesto —`AIA_INFORME.construirHTMLEjecutivo`, trece
+paneles— y contra las tablas del educativo contadas del código:
+
+| | educativo | empresas |
+|---|---|---|
+| paneles con su método declarado | 78 entradas en `METODO_PANEL` | **0** |
+| paneles con su escala declarada | 30 en `ESCALA_PANEL` | **0** |
+| vacíos obligatorios con su trámite | 4 | **0** |
+| orden de cesión por peldaño | 43 en `PELDANO_PLIEGO` | — (no compone pliego) |
+| chequeos de coherencia impresos | 7 | **0** |
+| chequeos cruzados entre hojas | 12 | **0** |
+| «SIN MEDIR» donde va la cifra | 22 sitios | **0** |
+| cero mapeado ≠ cero existente (v875) | sí | **0** |
+| aviso de escala del análisis (v890) | sí | **0** |
+| regla de neutralidad impresa | sí | **0** |
+| coma decimal y separador de miles | 180 `conComa` | **0** en js/62 · 2 en js/63, con 48 % crudos |
+| concordancia, rama de singular | sí | **hecho** (v1018, v1019) |
+
+Lo que el módulo de empresas **sí** tiene y conviene no volver a escribir:
+`bloqueBaseInforme` declara con cuántos puntos se hizo el análisis y avisa por
+debajo de 25 —«con tan pocos puntos el resultado es un ejercicio, no un
+diagnóstico»—, `bloqueComoLeer` define cada indicador, y el bloque de horarios
+se rotula «declarado en el mapa, no estimado». No está desnudo: le falta la
+parte **enumerable y guardable**.
+
+### Por qué NO se puede de golpe, medido y no opinado
+
+Tres razones, y ninguna es de ritmo:
+
+* **`METODO_PANEL` son 78 entradas escritas una por una**, con su fórmula, su
+  fuente, su confiabilidad, su referencia y su error típico. Copiarlas al
+  módulo de empresas sería inventar trece métodos que nadie midió, que es
+  exactamente lo que la v863 prohíbe. El método de un panel se escribe leyendo
+  de dónde sale su cifra.
+* **Un reemplazo masivo rompe en silencio.** La v909 cambió `classList.toggle('activa')`
+  por `'active'` y dejó Visión Territorial sin una sola pantalla visible, y un
+  `value="TI"` por `"USTED"` en el tipo de documento que viaja al servidor.
+  Ninguno de los dos da error.
+* **Y la regla de entrada a la guarda de concordancia** (v1019, v1020) vale
+  igual para todo lo demás: **un archivo entra con su papel medido, no con una
+  promesa.**
+
+### El orden que sí se puede, con su razón
+
+1. **El manifiesto** — hecho en esta versión: instalar cada app abría otra.
+2. **La coma y el separador de miles**, con UN formateador en js/63 y los 48
+   sitios por él. Se puede hacer con guarda exacta, como la v1027 en js/26,
+   justamente porque el módulo tendría un solo formateador y un solo contador.
+3. **La escala de cada panel.** Es el error más caro de un análisis urbano y no
+   se ve (v854): la temperatura de una celda de reanálisis que cubre media
+   ciudad, impresa al lado del área del lote, se lee como si fuera del lote.
+4. **El discriminante de la v875.** El informe publica un **score de viabilidad**
+   sobre `competidores`, `usos` y `locales`, y cierra en una recomendación de
+   inversión. Con la capa vacía esas cifras no miden el sector: miden una capa
+   vacía, y ahí el salto entre la cifra y la conclusión es el mismo que aquella
+   tanda llamó «el error más grave de la lámina».
+5. **El método por panel**, trece entradas medidas una por una.
+6. **Los vacíos con su trámite y el aviso de escala**, que es lo que convierte
+   un hueco en una tarea de una tarde (v880).
+
+### Lo que esta versión NO hace
+
+* **Los peldaños 2 a 6 de arriba**, cada uno con su medición sobre el papel de
+  empresas, su guarda y su demostración en rojo. El barrido de este módulo
+  —`s1036.js` en el borrador— ya compone sus trece paneles y cuenta lo que
+  declara cada uno, así que la tanda que lo tome no empieza por medir. `pendiente`
+* **Si los porcentajes del informe pueden salir fraccionarios.** `h.cobertura` y
+  `h.pct.*` los calcula el MOTOR, que vive en el repositorio privado y no está
+  en este contenedor, así que no se pudo medir si vienen redondeados. Lo que sí
+  está medido es lo estructural: **48 porcentajes concatenados en crudo y ningún
+  convertidor de coma en js/62**, de modo que el día que el motor devuelva un
+  decimal, el informe que se le entrega a un cliente lo imprime con punto — que
+  en castellano es el separador de miles. `pendiente`
+
+### Lo que NO se pudo correr
+
+**Ninguna suite de navegador**, por lo mismo que la v973 en adelante: este
+contenedor no tiene `../urbis-motor` ni el `node_modules` del banco de pruebas.
+Corrió `revisar.js` entero con sus dos comprobaciones nuevas, y se midió el
+papel con la sonda: el manifiesto servido en las cuatro superficies, con y sin
+sesión, y los trece paneles del informe de empresas con lo que cada uno declara.
+
+### Demostrado contra la v1035
+
+Cinco inyecciones, cada una con su aserción (v993), contra copias guardadas en
+el borrador y no con `git checkout --` sobre trabajo sin confirmar (v973). La
+primera es el estado exacto de la v1035:
+
+```
+✗ todo manifiesto lo alcanza una página o la tabla de identidades
+    — no lo alcanza nadie: manifest-empresarial.json — instalar esa app abriría
+      otra, porque su página enlaza un manifiesto cuyo start_url no es el suyo
+✗ …  — no lo alcanza nadie: manifest-educativo.json   (sin su identidad)
+✗ y el nombre y el color de cada identidad salen de SU manifiesto
+    — escritos de memoria: manifest-educativo.json: tema #075E88 contra theme_color #34CCFE
+✗ …  — escritos de memoria: nombre «URBIS Pro City» contra short_name «Pro City»
+✗ …  — NO PUDO CORRER: la tabla de identidades trae 0 entrada(s)
+```
+
+Las dos del tema y el nombre son el error que esta misma tanda cometió.
+
 ## La lista viva: lo que al pliego educativo todavía le falta (v866)
 
 Esta lista se quedó vieja **cinco veces**. Cuatro dentro de la hoja —la
