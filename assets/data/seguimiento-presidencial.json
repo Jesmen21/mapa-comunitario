@@ -3,8 +3,8 @@
  "presidente": "Abelardo de la Espriella",
  "periodo": "2026 – 2030",
  "posesion": "2026-08-07",
- "actualizado": "2026-09-28",
- "proximaActualizacion": "2026-09-29",
+ "actualizado": "2026-09-29",
+ "proximaActualizacion": "2026-09-30",
  "categorias": {
   "gobierno": {
    "nombre": "Gobierno y decretos",
@@ -73,6 +73,152 @@
   }
  },
  "entradas": [
+  {
+   "fecha": "2026-09-29",
+   "precision": "exacta",
+   "categoria": "gobierno",
+   "titulo": "De la Espriella confirma en Tibú la captura de alias 'El Pollo', señalado cabecilla de una subestructura de disidencias de las Farc vinculado al reclutamiento y homicidio de una menor y a ataques con drones explosivos en el Catatumbo",
+   "categoriaProbatoria": "hecho-probado",
+   "tipoMedicion": "actividad",
+   "nivelGobierno": "nacional",
+   "detalle": "El 29 de septiembre el presidente Abelardo de la Espriella confirmó la captura de alias 'El Pollo' en el barrio Villa Paz del municipio de Tibú (Norte de Santander), en una operación de la Segunda División del Ejército con apoyo de la Fuerza Aérea Colombiana y la Policía Nacional. Según la Fuerza Pública, alias 'El Pollo' es señalado cabecilla de la comisión «Estructura 33» —también identificada como Subestructura Jorge Suárez Briceño— de las disidencias de las Farc que opera en el Catatumbo, estructura en la que llevaría más de cuatro años. Las autoridades lo investigan por su presunta responsabilidad en el reclutamiento forzado y el homicidio de una estudiante, Mónica Liseth Beltrán, en esa región, y lo señalan también de coordinar ataques con drones cargados de explosivos contra la Fuerza Pública en el Catatumbo.",
+   "contrapunto": "Se trata de señalamientos de la Fuerza Pública y la Fiscalía: no hay, al cierre de esta entrada, una condena que establezca la responsabilidad penal de alias 'El Pollo' en el homicidio de la menor ni en los ataques con drones que se le atribuyen.",
+   "tipoFuente": "verificado",
+   "fuentes": [
+    {
+     "n": "El Tiempo · Resultados hoy 29 de septiembre de operaciones militares ordenadas por presidente De La Espriella: ofensiva del Ejército al narcotráfico y sicariato",
+     "u": "https://www.eltiempo.com/colombia/otras-ciudades/operaciones-de-la-fuerza-publica-contra-los-grupos-criminales-hoy-29-de-septiembre-el-presidente-de-la-espriella-confirmo-captura-de-alias-el-pollo-3589721",
+     "rol": "acto"
+    },
+    {
+     "n": "El Tiempo · Capturan a alias 'Pollo' en Tibú por el presunto reclutamiento y asesinato de la menor Mónica Liseth Beltrán en el Catatumbo",
+     "u": "https://www.eltiempo.com/colombia/otras-ciudades/capturan-a-alias-pollo-en-tibu-por-el-presunto-reclutamiento-y-asesinato-de-la-menor-monica-liseth-beltran-de-14-anos-en-el-catatumbo-3589698",
+     "rol": "acto"
+    },
+    {
+     "n": "Infobae · Capturan en Tibú a alias 'El Pollo', señalado de coordinar ataques con drones explosivos en el Catatumbo",
+     "u": "https://www.infobae.com/colombia/2026/09/29/capturan-en-tibu-a-alias-el-pollo-senalado-de-coordinar-ataques-con-drones-explosivos-en-el-catatumbo/",
+     "rol": "acto"
+    },
+    {
+     "n": "Semana · Alias El Pollo sería uno de los cerebros de los ataques de drones con explosivos en el Catatumbo",
+     "u": "https://www.semana.com/nacion/articulo/alias-el-pollo-seria-uno-de-los-cerebros-de-los-ataques-de-drones-con-explosivos-en-el-catatumbo/202614/",
+     "rol": "acto"
+    }
+   ]
+  },
+  {
+   "fecha": "2026-09-28",
+   "precision": "exacta",
+   "categoria": "gobierno",
+   "titulo": "De la Espriella ordena gestionar un vuelo humanitario para repatriar desde Nueva York a Henry Camargo, exsoldado que necesita un trasplante doble de pulmón",
+   "categoriaProbatoria": "hecho-probado",
+   "tipoMedicion": "actividad",
+   "nivelGobierno": "nacional",
+   "detalle": "El presidente Abelardo de la Espriella ordenó al Consulado de Colombia en Nueva York adelantar las gestiones para un vuelo humanitario que traiga de regreso al país a Henry Camargo, un exsoldado que sirvió 22 años en el Ejército Nacional y que se encuentra en esa ciudad con una afección pulmonar grave que requiere un trasplante de ambos pulmones. El caso llegó a conocimiento del mandatario después de que Camargo publicara un video pidiendo apoyo para poder regresar a Colombia y continuar allí su proceso médico. De la Espriella sostuvo una videollamada con Camargo, le confirmó el respaldo del Gobierno nacional para el vuelo y para el trasplante, y encargó la coordinación al cónsul general, Camilo Naman Louis Castaño.",
+   "contrapunto": "Al cierre de esta entrada lo confirmado es la orden presidencial y la videollamada con Camargo; no se encontró todavía una fuente que confirme que el vuelo se realizó o que el trasplante tuvo lugar.",
+   "tipoFuente": "verificado",
+   "fuentes": [
+    {
+     "n": "Vanguardia · De La Espriella ordenó vuelo humanitario para traer a Colombia a exsoldado que necesita un trasplante pulmonar",
+     "u": "https://www.vanguardia.com/colombia/2026/09/29/de-la-espriella-ordeno-vuelo-humanitario-para-traer-a-colombia-a-exsoldado-que-necesita-un-trasplante-pulmonar/",
+     "rol": "acto"
+    },
+    {
+     "n": "Infobae · De la Espriella ordenó un vuelo humanitario desde Nueva York para exsoldado que necesita un trasplante de pulmones",
+     "u": "https://www.infobae.com/colombia/2026/09/29/de-la-espriella-ordeno-un-vuelo-humanitario-desde-nueva-york-para-exsoldado-que-necesita-un-trasplante-de-pulmones-te-vamos-a-traer-a-colombia/",
+     "rol": "acto"
+    },
+    {
+     "n": "El Tiempo · Presidente Abelardo De La Espriella ordenó repatriar al soldado Henry Camargo, quien se encuentra en Nueva York padeciendo una afección pulmonar",
+     "u": "https://www.eltiempo.com/politica/abelardo-de-la-espriella/presidente-abelardo-de-la-espriella-ordeno-repatriar-al-soldado-henry-camargo-quien-se-encuentra-en-nueva-york-padeciendo-una-afeccion-pulmonar-3589708",
+     "rol": "acto"
+    },
+    {
+     "n": "El Heraldo · De la Espriella ordena vuelo humanitario para trasladar desde Nueva York a soldado que requiere trasplante pulmonar",
+     "u": "https://www.elheraldo.co/colombia/2026/09/28/de-la-espriella-ordena-vuelo-humanitario-para-trasladar-desde-nueva-york-a-soldado-que-requiere-trasplante-pulmonar/",
+     "rol": "acto"
+    }
+   ]
+  },
+  {
+   "fecha": "2026-09-28",
+   "precision": "exacta",
+   "categoria": "gobierno",
+   "titulo": "El Gobierno expide el Decreto 1446, que devuelve al Consejo de Estado el reparto en primera instancia de las tutelas contra el presidente y revierte la regla fijada en el gobierno de Petro",
+   "categoriaProbatoria": "hecho-probado",
+   "tipoMedicion": "actividad",
+   "nivelGobierno": "nacional",
+   "detalle": "El presidente Abelardo de la Espriella y el ministro de Justicia, Iván Cancino, firmaron el 28 de septiembre el Decreto 1446 de 2026, que modifica las reglas de reparto de las acciones de tutela fijadas en el Decreto 1069 de 2015. Con el cambio, las tutelas relacionadas con acciones u omisiones del presidente en ejercicio de sus funciones se repartirán en primera instancia al Consejo de Estado, y no a los jueces de circuito. El Gobierno justificó la medida en que las decisiones del presidente tienen un alcance nacional e internacional, por lo que su reparto debería quedar en manos de un tribunal de ese nivel. El decreto mantiene la regla especial para las tutelas contra autoridades relacionadas con la erradicación de cultivos ilícitos, que siguen repartiéndose a los jueces de circuito o de igual categoría.",
+   "contrapunto": "El cambio revierte una decisión que había tomado el gobierno de Gustavo Petro, cuando ordenó que esas tutelas se repartieran a los jueces de circuito en lugar del Consejo de Estado; según los medios que cubrieron el decreto, es la tercera modificación de esta regla de reparto en diez años. El Gobierno sostiene que el cambio no crea un fuero especial para el presidente ni modifica las reglas constitucionales de la tutela, y que se limita a las reglas de reparto entre despachos judiciales.",
+   "tipoFuente": "verificado",
+   "fuentes": [
+    {
+     "n": "El Universal · Tutelas contra Abelardo de la Espriella volverán al Consejo de Estado",
+     "u": "https://www.eluniversal.com.co/colombia/2026/09/28/tutelas-contra-abelardo-de-la-espriella-volveran-al-consejo-de-estado/",
+     "rol": "acto"
+    },
+    {
+     "n": "Infobae · El Gobierno cambia el reparto de tutelas contra el Presidente: ahora llegarán al Consejo de Estado",
+     "u": "https://www.infobae.com/colombia/2026/09/28/el-gobierno-cambia-el-reparto-de-tutelas-contra-el-presidente-ahora-llegaran-al-consejo-de-estado/",
+     "rol": "acto"
+    },
+    {
+     "n": "Semana · MinJusticia emite decreto para que el Consejo de Estado vuelva a asumir las tutelas contra la Presidencia",
+     "u": "https://www.semana.com/nacion/articulo/minjusticia-emite-decreto-para-que-el-consejo-de-estado-vuelva-a-asumir-las-tutelas-contra-la-presidencia/202633/",
+     "rol": "acto"
+    },
+    {
+     "n": "Portafolio · ¿A dónde llegan las tutelas contra el presidente? Gobierno De La Espriella expide decreto para cambiar su rumbo",
+     "u": "https://www.portafolio.co/economia/gobierno/a-donde-llegan-las-tutelas-contra-el-presidente-gobierno-de-la-espriella-expide-decreto-para-cambiar-su-rumbo-503457",
+     "rol": "acto"
+    },
+    {
+     "n": "El Nuevo Siglo · Jueces de circuito no podrán ocuparse más de tutelas contra el presidente De la Espriella",
+     "u": "https://www.elnuevosiglo.com.co/politica/jueces-de-circuito-no-decidiran-mas-tutelas-contra-el-presidente-sino-el-consejo-de-estado",
+     "rol": "acto"
+    }
+   ]
+  },
+  {
+   "fecha": "2026-09-28",
+   "precision": "exacta",
+   "categoria": "gobierno",
+   "titulo": "Joaquín Gutiérrez Caballero, exgerente de la campaña presidencial de De la Espriella, asume la presidencia de Ecopetrol",
+   "categoriaProbatoria": "hecho-probado",
+   "tipoMedicion": "actividad",
+   "nivelGobierno": "nacional",
+   "detalle": "El 28 de septiembre Joaquín Gutiérrez Caballero asumió de manera permanente la presidencia de Ecopetrol, cargo para el que la junta directiva de la petrolera —con mayoría de personas cercanas al presidente Abelardo de la Espriella, entre ellas su presidente, el también exestratega de campaña Carlos Suárez— lo había elegido por unanimidad el 24 de septiembre. Gutiérrez es administrador de empresas de la Universidad del Norte, con especialización en gerencia de servicios de salud; trabajó como asesor de la Fiscalía General durante la gestión de Mario Iguarán y fue subgerente de la firma De la Espriella Abogados entre 2006 y 2009. Antes de este nombramiento se desempeñó como gerente de la campaña presidencial de Abelardo de la Espriella. Ecopetrol presentó el nombramiento como el inicio de una etapa de «renacer» de la compañía.",
+   "contrapunto": "Gutiérrez no tiene experiencia profesional ni técnica en la industria de hidrocarburos, algo que varios medios señalan como llamativo porque el propio Gobierno había cuestionado la pérdida de conocimiento técnico en Ecopetrol durante la gerencia de Ricardo Roa, designado en el gobierno de Petro con un patrón de cercanía política similar. La Silla Vacía tituló la elección de Gutiérrez como la designación «del amigo de Abelardo» al frente de la petrolera.",
+   "tipoFuente": "verificado",
+   "fuentes": [
+    {
+     "n": "Ecopetrol · Joaquín Gutiérrez Caballero asume el control de Ecopetrol y liderará su renacer",
+     "u": "https://www.ecopetrol.com.co/wps/portal/Home/es/noticias/detalle/joaquin-gutierrez-caballero-asume-el-control-de-ecopetrol-y-liderara-su-renacer",
+     "rol": "acto"
+    },
+    {
+     "n": "Semana · Joaquín Gutiérrez asume la presidencia de Ecopetrol este lunes 28 de septiembre",
+     "u": "https://www.semana.com/economia/empresas/articulo/joaquin-gutierrez-asume-la-presidencia-de-ecopetrol-este-lunes-28-de-septiembre/202629/",
+     "rol": "acto"
+    },
+    {
+     "n": "Infobae · Joaquín Gutiérrez fue elegido como el nuevo presidente de Ecopetrol: este es su perfil y trayectoria",
+     "u": "https://www.infobae.com/colombia/2026/09/24/joaquin-gutierrez-fue-elegido-como-el-nuevo-presidente-de-ecopetrol-este-es-su-perfil-y-trayectoria/",
+     "rol": "contexto"
+    },
+    {
+     "n": "El Tiempo · Joaquín Gutiérrez, mano derecha de Abelardo de la Espriella, es el nuevo presidente de Ecopetrol",
+     "u": "https://www.eltiempo.com/economia/joaquin-gutierrez-mano-derecha-de-abelardo-de-la-espriella-es-el-nuevo-presidente-de-ecopetrol-3586960",
+     "rol": "contexto"
+    },
+    {
+     "n": "La Silla Vacía · La Junta elegirá al amigo de Abelardo como nuevo presidente de Ecopetrol",
+     "u": "https://www.lasillavacia.com/silla-nacional/la-junta-elegira-al-amigo-de-abelardo-como-nuevo-presidente-de-ecopetrol/",
+     "rol": "efecto"
+    }
+   ]
+  },
   {
    "fecha": "2026-09-28",
    "precision": "exacta",
@@ -146,7 +292,7 @@
    "nivelGobierno": "nacional",
    "detalle": "En una alocución televisada el domingo 27 de septiembre, el presidente Abelardo de la Espriella anunció que ordenó al ministro de Hacienda, Miguel Gómez Martínez, y a su equipo económico iniciar conversaciones con el Fondo Monetario Internacional (FMI) para buscar una salida negociada a la situación fiscal del país. El mandatario calificó el panorama fiscal como «la más crítica de toda nuestra historia» y dijo que el Estado tiene dificultades para responder al mismo tiempo por el pago de la deuda pública —que según cifras oficiales del cierre del primer semestre de 2026 asciende al 60 % del PIB— y por sus gastos de funcionamiento: «las finanzas públicas ya no aguantan más» y «el saldo está en rojo». Atribuyó la situación a la administración de Gustavo Petro: «se robaron todo».",
    "tipoFuente": "verificado",
-   "contrapunto": "Es un giro frente a lo que el propio Gobierno había dicho tres semanas antes: el 28 de agosto, en la 60ª Convención Bancaria de Asobancaria, el mismo ministro Gómez Martínez había dicho que el Gobierno no buscaría un acuerdo con el FMI para respaldar el ajuste fiscal. El caso queda documentado en la sección de contradicciones de este seguimiento. Ni el presidente ni el ministro han explicado públicamente, al cierre de esta entrada, la razón del cambio de posición.",
+   "contrapunto": "Es un giro frente a lo que el propio Gobierno había dicho tres semanas antes: el 28 de agosto, en la 60ª Convención Bancaria de Asobancaria, el mismo ministro Gómez Martínez había dicho que el Gobierno no buscaría un acuerdo con el FMI para respaldar el ajuste fiscal. El caso queda documentado en la sección de contradicciones de este seguimiento. Ni el presidente ni el ministro han explicado públicamente, al cierre de esta entrada, la razón del cambio de posición. El expresidente Gustavo Petro respondió el 28 de septiembre calificando el anuncio de «excusa de un estafador» y atribuyendo el déficit fiscal al subsidio a los combustibles y no a su gestión; acusó a De la Espriella de querer «entregar a Colombia al Fondo Monetario Internacional» y de endeudar al país «para pagarle la deuda a los ricos».",
    "fuentes": [
     {
      "n": "La República · De la Espriella ordenó a MinHacienda iniciar conversaciones con el FMI por crisis fiscal",
