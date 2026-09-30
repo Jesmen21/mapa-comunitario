@@ -606,7 +606,7 @@ a.sp-fuente:hover svg{ color:var(--verde-hi); }
   background:var(--verde-suave); border-color:#A9DCC9; color:var(--petroleo); font-weight:600;
 }
 
-/* v1049 · iba en --t-8 (13,4 px) sobre una prosa de --t-7 (14,4): el
+/* v1050 · iba en --t-8 (13,4 px) sobre una prosa de --t-7 (14,4): el
    subtítulo medía MENOS que los párrafos que encabeza. Lo encontró la guarda
    estática de los pares título/cuerpo, no el papel. Pasa a --t-5, que es el
    mismo escalón que el título de un gráfico y el de los bloques de balance:
@@ -1328,7 +1328,7 @@ a.sp-fuente:hover svg{ color:var(--verde-hi); }
    deuda NUESTRA, no un hallazgo sobre el gobierno. Es la regla de los dos
    rojos, aplicada al veredicto.
 
-   `.sp-fi-v-sin-nivel` se retiró en la v1049 con la rama que lo producía:
+   `.sp-fi-v-sin-nivel` se retiró en la v1050 con la rama que lo producía:
    con el techo indeterminado la ficha publica ahora el peldaño que sostiene
    lo confirmado, marcado como provisional, así que ese id no lo emite nadie
    y una regla que ninguna clase alcanza es código que no llama nadie
@@ -1787,7 +1787,7 @@ a.sp-fuente:hover svg{ color:var(--verde-hi); }
 .sp-c2-crit > p{ margin:5px 0 9px; font-size:var(--t-8); line-height:1.55; color:#44515E; }
 .sp-c2-lista{ margin-top:7px; }
 .sp-c2-lista > span{ display:block; font-size:var(--t-9); text-transform:uppercase;
-                     /* v1049 · era #6B7885, que sobre este fondo da 4,17 de contraste y el
+                     /* v1050 · era #6B7885, que sobre este fondo da 4,17 de contraste y el
                         mínimo de un texto pequeño son 4,5. El token que el módulo ya tiene
                         para texto secundario da 5,06, así que el color estaba escrito a mano
                         y peor que el que había. */
@@ -1804,7 +1804,7 @@ a.sp-fuente:hover svg{ color:var(--verde-hi); }
 .sp-c2-fuera li b{ display:block; font-weight:600; color:#7A5A0B; }
 .sp-c2-fuera > p{ margin:8px 0 0; font-size:var(--t-8); line-height:1.55; color:#5B6873; }
 /* v963 · cuántos hechos entraron por cada renglón del criterio. */
-/* v1049 · el verde era #2E7D52 y sobre su propio fondo daba 4,30, por debajo
+/* v1050 · el verde era #2E7D52 y sobre su propio fondo daba 4,30, por debajo
    del 4,5 que pide un texto de este tamaño. #1F7A4B da 4,55 y NO es un color
    nuevo: es el mismo que la hoja ya declara para el peldaño «Fiable». */
 .sp-c2-via{ display:inline-block; margin-left:7px; padding:1px 7px; border-radius:999px;

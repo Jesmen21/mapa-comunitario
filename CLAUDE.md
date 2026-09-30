@@ -20,7 +20,7 @@ Medido el 21 de septiembre de 2026 sobre los dos registros —180 entradas del
 gobierno actual y 32 de Petro—:
 
 1. **Decidir la identidad de objeto de las contradicciones documentadas.**
-   Desde la v1049 esto **ya no bloquea** la publicación del veredicto: la ficha
+   Desde la v1050 esto **ya no bloquea** la publicación del veredicto: la ficha
    publica el peldaño que sostiene lo confirmado, marcado como provisional, y
    nombra las que faltan bajo su rótulo. Lo que sigue decidiendo es si ese
    peldaño es **firme o provisional**, y hasta dónde puede bajar — hoy, entre
@@ -35,7 +35,7 @@ llega a eso, y conviene que se lea como lo que es: quién decide si lo prometido
 y lo hecho son el mismo objeto no es una cuestión de código. Endurecer guardas
 alrededor no la adelanta ni un día.
 
-Y una corrección que la v1049 midió: **son CINCO, no ocho.** Las documentadas
+Y una corrección que la v1050 midió: **son CINCO, no ocho.** Las documentadas
 que cuentan son cinco —la sexta lleva `cuenta: false` con su motivo— y una de
 ellas, la del FMI, la entró la otra sesión después de que este renglón se
 escribiera. El número de esta lista se lee del registro, no de acá.
@@ -22305,7 +22305,7 @@ educativo ya tenía medido para la curaduría. El resto va con su «según el
 municipio» escrito, que es lo honesto cuando no se puede comprobar contra
 cada alcaldía del país. `pendiente`
 
-## El peldaño que sostiene lo confirmado, y la barra que tapa (v1049)
+## El peldaño que sostiene lo confirmado, y la barra que tapa (v1050)
 
 Pedido con el teléfono en la mano y en dos mitades: *«que quede funcional, que
 no haya superposición de textos, y buena paleta de colores, buena proporción de
@@ -22315,7 +22315,7 @@ confirmado algunas cosas, pues omita esas cosas, guárdelas o déjelas públicas
 pero un título de que aún no se confirma»*.
 
     v1048   Sin nivel · la barra deja leer el texto de debajo · el héroe repetido
-    v1049   Fiable · con lo confirmado hasta hoy · la barra tapa · −812 px
+    v1050   Fiable · con lo confirmado hasta hoy · la barra tapa · −812 px
 
 ### El veredicto: se publica el extremo que sostiene lo confirmado
 
@@ -22576,6 +22576,22 @@ guarda medía menos de lo que decía— y las dos arregladas: la de la marca
 buscaba UN uso donde la placa tiene dos, y la del héroe no devolvía la función.
 Cuando una inyección fiel no consigue poner algo en rojo, lo que falta no es la
 inyección: es lo que la aserción mide (v1029).
+
+### Y una de numeración
+
+Esto se escribió como v1049 y se midió contra la v1048, que es lo que las
+tablas de arriba comparan. Al ir a subir, `origin/main` ya iba en
+**1049-seguimiento-presidencial-visas-fmi-magneto-comision-acusaciones**: las
+dos sesiones llamaron v1049 a lo suyo y ninguna hizo nada mal —cada una miró el
+último commit de su rama y sumó uno—. Los nueve archivos de versión salieron en
+conflicto por una sola cosa, el token, **comprobado con `git diff` antes de
+resolver**. Se sube por encima de las dos, nunca bajando la propia: es la
+**v1050**, la regla del 7 de septiembre.
+
+Y el registro se fusionó solo con los cuatro hechos que la otra sesión entró.
+Medido después de fusionar: 206 entradas, cinco contradicciones documentadas
+que cuentan y las cinco sin identidad declarada, o sea el mismo estado con el
+que se hizo la medición.
 
 ## La lista viva: lo que al pliego educativo todavía le falta (v866)
 

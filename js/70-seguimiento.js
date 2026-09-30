@@ -5512,7 +5512,7 @@
 
     // 1 · La plata: presupuesto, deuda y déficit.
     if (p) {
-      /* `grafDeudaInversion` se retiró en la v1049 y no se sustituyó: dibujaba
+      /* `grafDeudaInversion` se retiró en la v1050 y no se sustituyó: dibujaba
          las MISMAS dos barras del mismo `p.heroe`, con la misma fuente y la
          misma nota entera, dos dedos debajo del héroe. Medido sobre el papel
          a 390 px, eran dos paneles idénticos seguidos y 598 px de repetición.

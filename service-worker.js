@@ -1,4 +1,4 @@
-const URBIS_CACHE = 'urbis-v1049-fiabilidad-provisional-y-la-barra-que-tapa';
+const URBIS_CACHE = 'urbis-v1050-fiabilidad-provisional-y-la-barra-que-tapa';
 const URBIS_ASSETS = [
   './',
   './index.html',

@@ -1562,7 +1562,7 @@ console.log('\n  -- la ficha del gobernante --');
       /TECHOS\.palabra\.f\(ea\.conIdentidad \+ ea\.sinDeclarar\)/.test(j70c1),
       'palMin y palMax salen de ejeA(dd): una sola cuenta para las dos lecturas');
 
-    /* LA AFIRMACIÓN SE DIO VUELTA EN LA v1049, y lo que tiene que fallar es
+    /* LA AFIRMACIÓN SE DIO VUELTA EN LA v1050, y lo que tiene que fallar es
        justo lo que antes tenía que pasar —la misma vuelta que dieron las dos
        de la v876 y las dos de la v887—.
 
@@ -1572,7 +1572,7 @@ console.log('\n  -- la ficha del gobernante --');
        extremos se publica y cómo se rotula: `peorMin` es el que sostiene lo
        confirmado, y como los tres techos solo empeoran con más material, ese
        extremo es un PISO. Lo pendiente no se esconde: va con su nombre bajo
-       su propio rótulo. Las siete comprobaciones del bloque v1049, al final
+       su propio rótulo. Las siete comprobaciones del bloque v1050, al final
        de este archivo, son las que vigilan que no se publique la mitad. */
     comprobar('con el techo indeterminado el peldaño se publica marcado, no se calla',
       tramoV2.length > 0 &&
@@ -1604,7 +1604,7 @@ console.log('\n  -- la ficha del gobernante --');
        GRIS y no en rojo —que falte material es deuda nuestra, no un hallazgo
        sobre el gobierno—.
 
-       v1049 · `sp-fi-v-sin-nivel` se retiró con la rama que lo emitía, así
+       v1050 · `sp-fi-v-sin-nivel` se retiró con la rama que lo emitía, así
        que lo que se vigila es el gris que SÍ queda vivo más las dos clases
        del texto de lo pendiente. */
     comprobar('el peldaño gris tiene su regla en la hoja de estilo, y las de lo pendiente',
@@ -10464,7 +10464,7 @@ console.log('\n  -- el marcado que vive dentro del JavaScript (v1025) --');
 }
 
 /* ═══════════════════════════════════════════════════════════════════════
-   EL PELDAÑO PROVISIONAL, Y LA INTERFAZ DEL MÓDULO PRESIDENCIAL (v1049)
+   EL PELDAÑO PROVISIONAL, Y LA INTERFAZ DEL MÓDULO PRESIDENCIAL (v1050)
 
    Hasta la v1048 la ficha imprimía «Sin nivel» cuando la identidad de objeto
    de las contradicciones no estaba declarada. Ahora publica el extremo del
