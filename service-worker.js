@@ -1,4 +1,4 @@
-const URBIS_CACHE = 'urbis-v1048-alertas-enjambre-sismico-chaparral-29-sep';
+const URBIS_CACHE = 'urbis-v1049-seguimiento-presidencial-visas-fmi-magneto-comision-acusaciones';
 const URBIS_ASSETS = [
   './',
   './index.html',

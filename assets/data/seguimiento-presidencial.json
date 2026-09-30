@@ -3,8 +3,8 @@
  "presidente": "Abelardo de la Espriella",
  "periodo": "2026 – 2030",
  "posesion": "2026-08-07",
- "actualizado": "2026-09-29",
- "proximaActualizacion": "2026-09-30",
+ "actualizado": "2026-09-30",
+ "proximaActualizacion": "2026-10-01",
  "categorias": {
   "gobierno": {
    "nombre": "Gobierno y decretos",
@@ -73,6 +73,135 @@
   }
  },
  "entradas": [
+  {
+   "fecha": "2026-09-30",
+   "precision": "exacta",
+   "categoria": "eeuu",
+   "titulo": "La Comisión de Acusaciones de la Cámara incorpora al expediente 7686 las quejas contra De la Espriella por la presencia de personal militar de EE. UU. en Tumaco sin aval del Senado, tras la adhesión de Colombia al Escudo de las Américas",
+   "categoriaProbatoria": "hecho-probado",
+   "tipoMedicion": "contexto-estructural",
+   "detalle": "La Comisión de Acusaciones de la Cámara de Representantes confirmó el 30 de septiembre que incorporará al expediente 7686 las quejas radicadas contra el presidente Abelardo de la Espriella por la presencia y actividad de personal militar de EE. UU. en el país, en el marco de la adhesión de Colombia a la Coalición de las Américas contra los Cárteles del Escudo de las Américas. El caso gira en torno al sobrevuelo, el 27 de agosto, de helicópteros UH-1Y Venom del Cuerpo de Marines sobre Tumaco (Nariño) —hecho ya registrado en este seguimiento el 21 de septiembre a propósito de la tutela anunciada por el senador Iván Cepeda—, y sobre si el Ejecutivo cumplió el artículo 173, numeral 4, de la Constitución, que reserva al Senado la facultad de autorizar el tránsito de tropas extranjeras, con una excepción presidencial solo cuando el Congreso está en receso y previo concepto del Consejo de Estado. La Comisión, que responde a un derecho de petición del abogado Wálter Aguirre Mazo, precisó que los documentos y anexos se sumarán al proceso y que, hecho el reparto, un representante investigador asumirá el conocimiento del caso. Un juez ya había dado, el 23 de septiembre, un plazo de 48 horas al Ministerio de Defensa para explicar los hechos de Tumaco.",
+   "contrapunto": "Esta es apenas la etapa de incorporación de las quejas al expediente, no una acusación formal ni un llamado a indagatoria: la Comisión de Acusaciones aún debe decidir si el material documental y testimonial recaudado amerita citar a declarar al presidente De la Espriella o, por el contrario, archivar la queja por falta de mérito. Según reportó El Tiempo el 21 de septiembre, fuentes del Gobierno sostienen que los helicópteros transportaban al comandante del Comando Sur, general Francis Donovan, y a su equipo en una visita oficial, y no correspondían a una operación militar autónoma que exigiera el aval previo del Senado o del Consejo de Estado; esa lectura contraria no ha sido resuelta por ninguna autoridad al cierre de esta entrada.",
+   "tipoFuente": "verificado",
+   "fuentes": [
+    {
+     "n": "Infobae · Avanza proceso contra el presidente Abelardo de la Espriella en la Comisión de Acusaciones de la Cámara por adhesión de Colombia al Escudo de las Américas",
+     "u": "https://www.infobae.com/colombia/2026/09/30/avanza-proceso-contra-el-presidente-abelardo-de-la-espriella-en-la-comision-de-acusaciones-de-la-camara-por-adhesion-de-colombia-al-escudo-de-las-americas/",
+     "rol": "acto"
+    },
+    {
+     "n": "La Veintitrés · Comisión de Acusaciones investigará al presidente por tropas de EE. UU. en Tumaco, Nariño",
+     "u": "https://laveintitres.com/comisin-de-acusaciones-investigar-al-presidente-por-tropas-de-ee-uu-en-tumaco-nario/",
+     "rol": "acto"
+    },
+    {
+     "n": "Euronews · Colombia: la Justicia pide explicaciones al ministro de Defensa por la presencia de tropas de EE. UU. en Tumaco",
+     "u": "https://es.euronews.com/2026/09/24/colombia-justicia-pide-explicaciones-ministro-defensa-presencia-tropas-eeuu-tumaco",
+     "rol": "contexto"
+    }
+   ]
+  },
+  {
+   "fecha": "2026-09-30",
+   "precision": "exacta",
+   "categoria": "corrupcion",
+   "titulo": "El Dapre tramita una contratación directa por $773,5 millones con Magneto Empleos, la firma que operó el Banco de Talentos de la «Patria Milagro» durante el empalme, sin que los documentos del proceso mencionen ese antecedente",
+   "categoriaProbatoria": "hecho-probado",
+   "tipoMedicion": "actividad",
+   "nivelGobierno": "nacional",
+   "detalle": "Según documentos conocidos por la revista Cambio, el Departamento Administrativo de la Presidencia de la República (Dapre) adelanta una contratación directa con Magneto Empleos por $773,5 millones, pagaderos en tres cuotas de $257,8 millones ($650 millones más $123,5 millones de IVA), por un plazo de tres meses que no puede exceder el 31 de diciembre de 2026. El objeto es «prestar servicios profesionales especializados... para apoyar la gestión del talento humano y generar insumos para la toma de decisiones institucionales»: Magneto deberá montar un portal de vacantes para la Presidencia, hacer tres campañas de atracción en redes y mantener un asesor de tiempo completo en las instalaciones del Dapre, con un alcance de hasta 6.000 hojas de vida y 300 perfiles (escenario base: 3.000 y 150). El Dapre recibió una sola propuesta, presentada por Magneto el 22 de septiembre, la misma fecha en que se hicieron el análisis de mercado y la consulta previa en Secop II. Magneto Empleos y Marble Headhunter fueron las firmas que operaron la plataforma del Banco Nacional de Talentos de la «Patria Milagro» durante el empalme de gobierno, por la que llegaron más de 270.000 hojas de vida según prensa de agosto.",
+   "contrapunto": "Cambio señala que ninguno de los tres documentos del proceso de contratación directa menciona expresamente el Banco de Talentos de la «Patria Milagro», el convenio de empalme ni las más de 270.000 hojas de vida recibidas entonces, lo que deja sin explicar públicamente la relación entre ese antecedente y esta nueva contratación con la misma empresa. Esto es un hallazgo periodístico sobre el proceso de contratación —no una declaratoria de irregularidad por parte de un ente de control—, y la Presidencia y el Dapre no habían respondido públicamente al reporte de Cambio al cierre de esta entrada.",
+   "tipoFuente": "verificado",
+   "fuentes": [
+    {
+     "n": "Cambio · Presidencia pagará más de 700 millones para buscar talentos",
+     "u": "https://cambiocolombia.com/poder/articulo/2026/9/primicia-presidencia-le-pagara-773-millones-a-la-empresa-que-opero-el-banco-de-talentos-de-la-patria-milagro",
+     "rol": "acto"
+    },
+    {
+     "n": "Infobae · Gobierno de Abelardo de la Espriella prepara contrato de $773 millones con empresa que operó el Banco de Talentos de la Patria Milagro",
+     "u": "https://www.infobae.com/colombia/2026/09/30/gobierno-de-abelardo-de-la-espriella-prepara-contrato-de-773-millones-con-empresa-que-opero-el-banco-de-talentos-de-la-patria-milagro/",
+     "rol": "acto"
+    },
+    {
+     "n": "La Veintitrés · Dapre contrata a Magneto Empleos por $773 millones para talento humano",
+     "u": "https://laveintitres.com/dapre-contrata-a-magneto-empleos-por-773-millones-para-talento-humano/",
+     "rol": "acto"
+    }
+   ]
+  },
+  {
+   "fecha": "2026-09-29",
+   "precision": "exacta",
+   "categoria": "creditos",
+   "titulo": "Colombia y el FMI acuerdan una hoja de ruta de apoyo financiero, tras la visita a Bogotá del subdirector gerente Nigel Clarke, que pide reducir el desequilibrio fiscal a cambio del respaldo",
+   "categoriaProbatoria": "hecho-probado",
+   "tipoMedicion": "actividad",
+   "nivelGobierno": "nacional",
+   "detalle": "El subdirector gerente del FMI, Nigel Clarke, encabezó una delegación que visitó Bogotá entre el 25 y el 28 de septiembre y se reunió con el vicepresidente José Manuel Restrepo, el ministro de Hacienda, Miguel Gómez Martínez, y el gerente del Banco de la República, Leonardo Villar, tres días después de que De la Espriella ordenara a Hacienda abrir conversaciones con el organismo (alocución del 27 de septiembre, ya registrada en este seguimiento). El 29 de septiembre las partes anunciaron que acordaron una hoja de ruta para el apoyo financiero: Clarke dijo que una acción «oportuna y creíble» para reducir los desequilibrios fiscales del país puede fortalecer la confianza, reducir el costo del endeudamiento y crear condiciones más favorables para la inversión privada y el empleo, y señaló las reformas que el FMI pedirá a cambio del respaldo: reducir barreras a la inversión, mejorar la seguridad, cerrar brechas de infraestructura e informalidad, y fortalecer el Estado de derecho y la previsibilidad regulatoria. La siguiente reunión entre delegados de Hacienda y el Fondo está prevista la semana siguiente en Washington.",
+   "contrapunto": "El Pacto Histórico rechazó el acercamiento del Gobierno al FMI y atribuyó la crisis fiscal a una deuda heredada «en la pandemia», es decir, a la administración de Iván Duque y no a la de Gustavo Petro, contradiciendo la versión de De la Espriella («se robaron todo», 27 de septiembre). Sobre el giro del propio Gobierno frente al FMI —el ministro Gómez Martínez había descartado un acuerdo con el organismo el 28 de agosto en la Convención Bancaria— ya hay un caso documentado en la sección de contradicciones de este seguimiento.",
+   "tipoFuente": "verificado",
+   "fuentes": [
+    {
+     "n": "Infobae · Colombia y el FMI acuerdan la hoja de ruta del apoyo financiero",
+     "u": "https://www.infobae.com/america/agencias/2026/09/29/colombia-y-el-fmi-acuerdan-la-hoja-de-ruta-del-apoyo-financiero/",
+     "rol": "acto"
+    },
+    {
+     "n": "El Tiempo · Los cinco puntos que el FMI propone al gobierno de Abelardo De la Espriella para estabilizar las finanzas de Colombia tras visita clave a Bogotá",
+     "u": "https://www.eltiempo.com/economia/sector-financiero/los-cinco-puntos-que-el-fmi-propone-al-gobierno-de-abelardo-de-la-espriella-para-estabilizar-las-finanzas-de-colombia-tras-visita-clave-a-bogota-3589676",
+     "rol": "acto"
+    },
+    {
+     "n": "El Universal · FMI inicia diálogos con el Gobierno de De la Espriella para definir apoyo financiero al país",
+     "u": "https://www.eluniversal.com.co/colombia/2026/09/29/fmi-inicia-dialogos-con-el-gobierno-de-de-la-espriella-para-definir-apoyo-financiero-al-pais/",
+     "rol": "acto"
+    },
+    {
+     "n": "Infobae · Pacto Histórico rechazó el acercamiento del gobierno de Abelardo de la Espriella al FMI: «Nos dejó una deuda en la pandemia»",
+     "u": "https://www.infobae.com/colombia/2026/09/29/pacto-historico-rechazo-el-acercamiento-del-gobierno-de-abelardo-de-la-espriella-al-fmi-nos-dejo-una-deuda-en-la-pandemia/",
+     "rol": "efecto"
+    }
+   ]
+  },
+  {
+   "fecha": "2026-09-28",
+   "precision": "exacta",
+   "categoria": "eeuu",
+   "titulo": "EE. UU. revoca las visas de la senadora opositora Martha Peralta y del empresario Euclides Torres, de una lista de dirigentes afines al petrismo que De la Espriella entregó como candidato al Departamento de Estado; el presidente celebra la medida y anuncia que «se ampliará»",
+   "categoriaProbatoria": "hecho-probado",
+   "tipoMedicion": "contexto-estructural",
+   "detalle": "El Departamento de Estado de EE. UU. revocó el 28 de septiembre las visas de la senadora Martha Peralta (Pacto Histórico–MAIS, lideresa indígena wayuu) y del empresario Euclides Torres (cabeza del llamado «Clan Torres», con negocios en energía, señalización vial y alumbrado público en el Caribe), junto con las de sus familiares. Los dos nombres estaban en una lista de cerca de 26 dirigentes afines al petrismo —entre ellos congresistas de Córdoba, Sucre, Cesar, La Guajira, Bolívar, Magdalena y Atlántico, además de figuras como Daniel Quintero y Carlos Caicedo— que el entonces candidato Abelardo de la Espriella entregó, en una transmisión en vivo durante la campaña, al subsecretario de Estado de EE. UU., Christopher Landau, conocido como «el Quitavisas», señalando sin aportar pruebas que compraban votos en el Caribe y Antioquia. Ya como presidente, De la Espriella respaldó la revocatoria el 28 de septiembre —«no pueden seguir disfrutando de sus pillajes»— y el 29 advirtió que la lista de sancionados «se ampliará», dijo que «la lucha apenas empieza» y anunció que buscará además que EE. UU. incluya a más señalados en la lista OFAC.",
+   "contrapunto": "La lista fue elaborada y entregada por De la Espriella cuando era candidato, antes de su posesión el 7 de agosto, así que el hecho que aquí se registra como acto de su gobierno es la celebración y el anuncio de ampliación que hizo ya como presidente, no el envío original de la lista. Las acusaciones de compra de votos contra los señalados fueron presentadas por De la Espriella sin evidencia pública, según reportó El Colombiano, y ningún proceso judicial en Colombia ha establecido responsabilidad de Peralta o Torres en delito alguno. Martha Peralta es una senadora de oposición en ejercicio: que un presidente colombiano celebre y busque ampliar sanciones de un gobierno extranjero contra opositores políticos, sin que medie un proceso judicial en Colombia, plantea dudas sobre el uso de presión de un gobierno extranjero contra la oposición interna que esta entrada deja consignadas sin resolver.",
+   "tipoFuente": "verificado",
+   "fuentes": [
+    {
+     "n": "El Tiempo · La lista que Abelardo De La Espriella recomendó al ‘quitavisas’ en Estados Unidos: a dos de ellos ya les revocaron la visa ¿siguen más?",
+     "u": "https://www.eltiempo.com/politica/abelardo-de-la-espriella/la-lista-que-el-presidente-de-la-espriella-recomendo-al-quitavisas-en-estados-unidos-a-dos-de-ellos-ya-les-revocaron-la-visa-siguen-mas-3589727",
+     "rol": "acto"
+    },
+    {
+     "n": "Infobae · De la Espriella respaldó a EE. UU. tras revocatoria de visas de Euclides Torres y Martha Peralta: «No pueden seguir disfrutando de sus pillajes»",
+     "u": "https://www.infobae.com/colombia/2026/09/28/de-la-espriella-respaldo-a-ee-uu-tras-revocatoria-de-visas-de-euclides-torres-y-martha-peralta-no-pueden-seguir-disfrutando-de-sus-pillajes/",
+     "rol": "acto"
+    },
+    {
+     "n": "El Espectador · De la Espriella advierte más retiro de visas tras Torres y Peralta: «se ampliará el número»",
+     "u": "https://www.elespectador.com/politica/de-la-espriella-celebro-revocatoria-de-visa-de-martha-peral-y-euclides-torres-anuncio-mas-medidas-del-gobierno-de-donald-trump/",
+     "rol": "acto"
+    },
+    {
+     "n": "Infobae · Abelardo de la Espriella habría enviado a Washington un listado de a quienes les deberían quitar las visas, incluyendo a Marta Peralta y Euclides Torres: estos son los otros políticos en la lista",
+     "u": "https://www.infobae.com/colombia/2026/09/29/marta-peralta-y-euclides-torres-estaban-en-un-listado-para-que-les-revocaran-su-visa-otros-politicos-tambien-estarian-en-la-mira-gracias-a-una-peticion-de-abelardo-de-la-espriella/",
+     "rol": "contexto"
+    },
+    {
+     "n": "La Silla Vacía · Con Torres y Peralta, Abelardo estrena lista de visas revocadas en EE. UU.",
+     "u": "https://www.lasillavacia.com/en-vivo/con-torres-y-peralta-abelardo-estrena-lista-de-visas-revocadas-en-ee-uu/",
+     "rol": "contexto"
+    }
+   ]
+  },
   {
    "fecha": "2026-09-29",
    "precision": "exacta",
