@@ -30,7 +30,27 @@ gobierno actual y 32 de Petro—:
    de ser provisional solo.
    `hecho cuando: identidad-declarada`
 
-**Queda UN renglón, y no es de esta sesión.** Es la primera vez que esta lista
+2. **Correr los criterios escritos sobre el resto del registro.** La v961
+   escribió los criterios de I-04, I-05, I-07 y I-13 con su `incluye` y su
+   `excluye`, y dejó dicho que escribirlos no clasifica: los hace
+   clasificables. **La v1051 midió lo que cuesta no hacerlo**: el eje B
+   publica «I-05 · Choques con órganos autónomos · 0 / 100 d» al lado de un
+   gobierno que relevó a un director técnico y le puso autorización previa a
+   la prensa, y ese cero **no dice que no hubo choques**: dice que 191 de 197
+   hechos del mandato no declaran qué indicador alimentan. Es lo que deja
+   mudo el eje que lleva el deterioro institucional — o sea siete de los
+   nueve puntos del reclamo que produjo la v1051.
+   **Sí es de esta sesión**, y no pide la firma de nadie: el criterio está
+   escrito y es público, así que aplicarlo no es una opinión sustituyendo a
+   otra. Y la v961 midió la dirección del error: el criterio escrito produce
+   MENOS señalamientos, no más.
+   El denominador honesto son los hechos con `tipoMedicion: 'actividad'`, no
+   las 212: a una cifra del país o a un hecho de otro actor no se le declara
+   un indicador sin mentir, que es lo que la v999 corrigió con el nivel de
+   gobierno.
+   `hecho cuando: indicador-declarado`
+
+**Quedan DOS renglones, y solo uno es de esta sesión.** Es la primera vez que esta lista
 llega a eso, y conviene que se lea como lo que es: quién decide si lo prometido
 y lo hecho son el mismo objeto no es una cuestión de código. Endurecer guardas
 alrededor no la adelanta ni un día.
@@ -22592,6 +22612,174 @@ Y el registro se fusionó solo con los cuatro hechos que la otra sesión entró.
 Medido después de fusionar: 206 entradas, cinco contradicciones documentadas
 que cuentan y las cinco sin identidad declarada, o sea el mismo estado con el
 que se hizo la medición.
+
+## El peldaño dice qué mide, y qué no (v1051)
+
+Llegó como un reclamo sobre el veredicto: *«Se está endeudando con el FMI
+otra vez. Despidió al tipo del DANE porque dice que los datos del gobierno
+Petro están bien. Analiza bien lo de fiable. El tipo está censurando medios
+de comunicación. Amenaza directamente sobre someter… Ojo con eso, te pido que
+te replantees eso.»* Con nueve puntos en total.
+
+Medido antes de contestar —la regla de la v863 y la v916—, **el veredicto no
+estaba mal: el rótulo sí**. «Fiabilidad · Fiable» mide UN eje de tres, y los
+otros dos, que son donde vive siete de esos nueve puntos, **no publican
+nivel** y la placa no lo decía.
+
+    v1050   FIABILIDAD · Fiable
+    v1051   FIABILIDAD DE LA PALABRA · Fiable · «un peldaño alto aquí NO dice
+            que el gobierno esté bien»
+
+### La aritmética, y por qué «Fiable» es correcto
+
+Sobre los 197 hechos del mandato de un registro de 206 entradas:
+
+| Techo | Cifra | Peldaño |
+|---|---|---|
+| Casos de corrupción | 0 confirmados · 0 en investigación (4 señalamientos, 3 archivados) | 0 |
+| Cambios de postura | 5 documentadas que cuentan · **0 con identidad de objeto** · 5 sin declarar | entre **0 y 3** |
+| Registro verificado | **78 %** (153 verificados, 22 disputados, 22 declaraciones) | 1 |
+
+El veredicto es el **peor** de los tres, así que el piso es 1 = «Fiable» y el
+techo 3 = «Poco fiable». Y el piso es publicable porque los tres techos son
+monótonos: más material solo puede bajarlos (v1050).
+
+**Nada de eso está mal.** Lo que estaba mal es que se leía como otra cosa.
+
+### Los nueve puntos, y qué palanca mueve cada uno
+
+Esta es la medición que decide la tanda, y hay que leerla entera porque el
+resultado es que **siete de los nueve no pueden mover esa escalera por
+construcción**:
+
+| Lo que el reclamo nombra | En el registro | Qué palanca |
+|---|---|---|
+| **El FMI otra vez** | **SÍ, y es la contradicción nº 1**: «dijo que el Gobierno no buscaría un acuerdo y un mes después ordenó abrir las conversaciones», documentada, cuenta | **el techo de la palabra** — es una de las cinco que esperan la declaración |
+| El despido del director del DANE | sí (14 sep, `disputado`), y el acto de difusión que lo rodea declara I-13 | eje B, que **no publica nivel** |
+| Censura a medios | sí, seis entradas: las 20 emisoras de paz (18 ago), la Directiva Presidencial 01 (3 sep, I-13), la hoja de ruta que limitaría ruedas de prensa (1 sep, `en-circulacion`) | eje B |
+| «así terminarán los que no se sometan» | sí (6 sep, verificado, hecho probado) | `contexto-estructural`: **ningún techo** |
+| Los falsos positivos | el caso que describe **no está**. Lo que hay: El Peñol con siete muertos (`disputado`) y los tres menores del bombardeo de la Operación Amón (verificado) | ninguno es un `caso` de corrupción: no tocan la escalera |
+| El dólar | no hay entrada de TRM; sí la prima de riesgo a 142 pb (`correlacion`) | eje C, **sin fuente entera** |
+| Inestabilidad · turismo | **cero entradas** | — |
+| La desalinizadora | **cero menciones** | — |
+
+Y no es un descuido del módulo: es la regla de oro del pliego, que él mismo
+imprime dos pantallas más abajo —*«un gobernante puede ser muy sincero sobre
+su intención de concentrar poder: confiabilidad alta, deterioro alto»*—.
+
+### El defecto: un rótulo que nombra la familia y mide una parte
+
+Es la clase de la v879, con la exención silenciosa de la v966 encima. La
+placa es lo primero de la portada y **es lo que viaja recortado en una
+captura**; el bloque de los tres ejes está a seis pantallas de ahí. Así que
+«Fiable» en verde a 32 px, bajo un rótulo que dice «Fiabilidad» a secas, se
+lee como un veredicto sobre el gobierno — que es exactamente cómo se leyó.
+
+Tres cosas, y las tres en la placa:
+
+* el rótulo dice **«Fiabilidad de la palabra»**;
+* debajo del peldaño, separado por un hilo, **qué NO mide**: el deterioro
+  institucional y el rumbo del gasto van en sus propios ejes, y hoy ninguno
+  publica nivel — *«un peldaño alto aquí NO dice que el gobierno esté bien»*;
+* y lo mismo en el `aria-label` y en el enlace a la ficha, que decían
+  «Fiabilidad: Fiable» a un lector de pantalla.
+
+**Cuántos de los otros dos publican nivel se CALCULA** de `ejesDe` y no se
+escribe (v903): baja sola el día que llegue la media histórica del eje B. Y
+van **las dos redacciones**, la de ninguno y la de alguno, que es la regla de
+la v970: la que hace falta es justo la que se necesita el día que el material
+vuelva.
+
+Va en el mismo gris y al mismo tamaño que las otras dos líneas de acotación
+de la placa: con un color propio sería una cuarta señal sobre lo mismo, y una
+alarma repetida deja de significar algo (v886).
+
+### Y el cero del eje B tenía dos causas, con una sola escrita
+
+El hallazgo de fondo, y salió leyendo el papel del eje. Decía:
+
+> **I-05 · Choques con órganos autónomos — 0 / 100 d**
+> Falta para poder publicarlo: la media histórica de I-04 a I-07 para Petro,
+> Duque y Santos…
+
+Esa razón es cierta y es la mitad. La otra, medida: **191 de los 197 hechos
+del mandato no declaran qué indicador alimentan.** Así que ese cero, al lado
+de un gobierno que relevó a un director técnico y le puso autorización previa
+a la prensa, se lee como «no hubo choques» cuando lo que pasa es que **nadie
+los ha clasificado**.
+
+Es la v875 —cero clasificado y cero ocurrido son cosas distintas— en el eje
+que lleva siete de los nueve puntos del reclamo. Y el discriminante estaba en
+el mismo objeto sin que el eje lo mirara: `ind.sinDeclarar` ya viajaba en lo
+que `indicadoresDe` devuelve, y la ficha ya lo imprime en su bloque de
+indicadores desde la v961 — **clase A y clase C a la vez**.
+
+El eje B declara ahora sus **dos** razones, dichas aparte porque piden
+trabajos distintos: la primera es de archivo y la segunda de registro. La
+cifra se calcula y baja sola al clasificar, con sus dos redacciones.
+
+### Lo que NO se hizo, y por qué
+
+**No se bajó el peldaño a mano.** Las cinco declaraciones de
+`mismoObjetoVerificado` son las que lo mueven, y siguen siendo de quien firma
+el módulo (v959, v972): leer si «no buscaremos acuerdo con el FMI» y «ordeno
+abrir conversaciones con el FMI» hablan del mismo objeto cambia en público el
+juicio sobre una persona real. Lo que la aritmética dice, medido, es que una
+declarada deja el peldaño en «Fiable», dos lo bajan a «Dudosa» y tres a «Poco
+fiable».
+
+**Y no se entraron los hechos que faltan** —el dólar, el turismo, la
+desalinizadora, el caso del muchacho—: entrar una entrada sobre una persona
+real pide su fuente con dirección, y desde esta máquina el proxy bloquea todo
+menos la búsqueda (v967). Quedan nombrados arriba con lo que hay y lo que no.
+
+### Demostrado contra la v1050
+
+Ocho inyecciones, una por aserción (v993), contra copias guardadas y no con
+`git checkout --` sobre trabajo sin confirmar (v973):
+
+```
+✗ el rótulo del peldaño dice QUÉ mide  — volvió a «Fiabilidad» a secas
+✗ y la placa dice qué NO mide          — el alcance solo estaría en el bloque de los ejes
+✗ y cuántos publican nivel se calcula  — lo lleva escrito a mano
+✗ y están escritas las dos redacciones — solo está la de hoy
+✗ el eje B dice que su cero puede ser falta de clasificación  — nombra la clasificación sin decir qué significa el cero
+✗ y esa cifra se calcula del registro  — falta la redacción del día que llegue a cero
+✗ y la clase del alcance tiene su regla — sin regla
+? MATERIAL · la placa deja de poder leerse
+```
+
+**Dos no mordieron a la primera, y las dos por lo mismo**: mi inyección no
+era el estado real de la v1050. Un `if (0)` delante del bloque del alcance lo
+deja en verde —una comprobación estática cuenta menciones y no
+alcanzabilidad, que es la lección de la v976— y quitarle al eje B solo los
+dos campos del objeto deja el `falta` usándolos igual. **La inyección fiel es
+el bloque AUSENTE**, y con ella las siete muerden.
+
+### Y una de mis aserciones, por sexta vez en este proyecto
+
+Las siete imprimían **el texto del rojo estando en verde** —`comprobar` pinta
+su detalle pase lo que pase— así que la corrida decía «✓ el rótulo dice qué
+mide — el rótulo cambió de forma y ya no dice qué mide». Es el defecto que
+esta serie lleva cazado en la v1019, la v1021, la v1025, la v1027 y la v1042,
+y esta vez lo cometí en las siete de una vez. Cada una cierra ahora en una
+frase de éxito y una causa por rama.
+
+### Medido sobre el papel
+
+La placa a 360, 390 y 430 px: el rótulo en **un solo renglón** en las tres,
+sin huérfanos, y la placa pasa de 501 a 619 px a 390 — cinco renglones, que
+en una pantalla de 800 siguen cabiendo en el primer pantallazo. Y el eje B
+imprime sus dos razones con «191 hechos del mandato no declaran qué indicador
+alimentan, de 197».
+
+### Lo que NO se pudo correr
+
+**Ninguna suite de navegador**, por lo mismo que la v973 en adelante: este
+contenedor no tiene `../urbis-motor` ni el `node_modules` del banco de
+pruebas. Corrió `revisar.js` entero con sus siete comprobaciones nuevas, y se
+midió el papel con la sonda: la placa en tres anchuras, su captura, y el
+bloque de los tres ejes de la ficha.
 
 ## La lista viva: lo que al pliego educativo todavía le falta (v866)
 

@@ -8612,6 +8612,24 @@ console.log('\n  -- una lista de prioridades también se queda vieja (v997) --')
     'identidad-declarada': (m) => {
       const sin = m.contr.filter(c => !('mismoObjetoVerificado' in c));
       return { hecho: sin.length === 0, cuanto: sin.length + ' de ' + m.contr.length + ' documentadas sin identidad' };
+    },
+    /* CORRER LOS CRITERIOS SOBRE EL REGISTRO (v1051).
+       La v961 lo dejó declarado —«escribir los criterios no los clasifica:
+       los hace clasificables»— y la v1051 midió lo que cuesta no hacerlo: el
+       eje B publica «I-05 · 0 / 100 d» y ese cero no dice que no hubo
+       choques, dice que casi ninguna entrada declara qué indicador alimenta.
+       Es lo que deja mudo el eje que lleva el deterioro institucional.
+
+       La condición NO son «todas las entradas», que es el error que la v999
+       corrigió con el nivel de gobierno: a una cifra del país o a un hecho de
+       otro actor no se le declara un indicador sin mentir. El denominador
+       honesto son los hechos que registran un ACTO del Ejecutivo, que es lo
+       que `tipoMedicion: 'actividad'` ya separa en las 212. */
+    'indicador-declarado': (m) => {
+      const actos = m.ents.filter(e => e.tipoMedicion === 'actividad');
+      const sin = actos.filter(e => !e.indicadores || !e.indicadores.length);
+      return { hecho: actos.length > 0 && sin.length === 0,
+               cuanto: sin.length + ' de ' + actos.length + ' actos de gobierno sin indicador declarado' };
     }
   };
 
@@ -8683,7 +8701,12 @@ console.log('\n  -- una lista de prioridades también se queda vieja (v997) --')
        es la regla de la v970: la rama con material se mide contra un caso
        fabricado y no contra el registro. */
     const LIMPIO = {
-      ents: [{ fuentes: [{ rol: 'acto' }], nivelGobierno: 'nacional' }],
+      /* «Todo declarado» crece con la tabla: el dia que entra una medicion
+         nueva, este caso tiene que traer SU material o la guarda de la guarda
+         la denuncia por muda —que es exactamente lo que paso al entrar
+         `indicador-declarado` en la v1051, y es lo que tenia que pasar—. */
+      ents: [{ fuentes: [{ rol: 'acto' }], nivelGobierno: 'nacional',
+               tipoMedicion: 'actividad', indicadores: ['I-04'] }],
       contr: [{ estado: 'documentada', mismoObjetoVerificado: true }],
       pend: []
     };
@@ -10675,6 +10698,82 @@ console.log('\n  -- el marcado que vive dentro del JavaScript (v1025) --');
         : 'ninguno: el héroe es el único que dibuja esas dos barras');
   }
 }
+
+  /* ── EL PELDAÑO DICE QUÉ MIDE, Y QUÉ NO (v1051) ───────────────────────
+     La placa se fotografía y la captura circula sola. Con el rótulo
+     diciendo «Fiabilidad» a secas, un «Fiable» en verde a 32 px se lee
+     como un veredicto sobre el gobierno entero — y no lo es: mide UN eje
+     de tres, y los otros dos no publican nivel. Es la clase de la v879
+     (un rótulo que nombra la familia y mide una parte) con la exención
+     silenciosa de la v966 encima (lo que no se publica no se dice). */
+  (function () {
+    const j70 = leer('js/70-seguimiento.js'), c70 = leer('css/70-seguimiento.css');
+    const cod = soloCodigo(j70);
+    const trozo = function (a, b) {
+      const i = cod.indexOf(a); if (i < 0) return '';
+      const j = cod.indexOf(b, i); return j < 0 ? cod.slice(i) : cod.slice(i, j);
+    };
+    const placa = trozo('function placaDe(', 'function pintarPlacaPortada');
+    const ejeb  = trozo('function ejeB(', 'EJE C');
+
+    // MATERIAL primero (v920): sin la placa y sin el eje B no hay nada que mirar.
+    if (!placa || !ejeb) {
+      anotarSinMaterial('el peldaño dice qué mide y qué no',
+        'no se pudieron leer placaDe o ejeB');
+    } else {
+      // 1 · El rótulo nombra lo que mide, no la familia.
+      const r1 = /'sp-fi-vlabel',\s*'Fiabilidad de la palabra'/.test(placa);
+      comprobar('el rótulo del peldaño dice QUÉ mide, no la familia entera', r1,
+        r1 ? 'dice «Fiabilidad de la palabra», no la familia entera'
+           : (/'sp-fi-vlabel',\s*'Fiabilidad'\s*\)/.test(placa)
+              ? 'volvió a «Fiabilidad» a secas: una captura del peldaño se lee como un veredicto sobre el gobierno entero'
+              : 'el rótulo cambió de forma y ya no dice qué mide'));
+
+      // 2 · Y la placa dice qué NO mide.
+      const r2 = /sp-fi-alcance/.test(placa) && /deterioro institucional/.test(placa) &&
+                 /rumbo del gasto/.test(placa);
+      comprobar('y la placa dice qué NO mide, donde se lee la cifra', r2,
+        r2 ? 'nombra los otros dos ejes en la placa misma'
+           : (!/sp-fi-alcance/.test(placa)
+              ? 'no lo dice: el alcance solo estaría en el bloque de los ejes, a seis pantallas de la placa'
+              : 'lo dice sin nombrar los otros dos ejes, así que el lector no sabe qué queda fuera'));
+
+      // 3 · Y cuántos de los otros dos publican nivel se CALCULA (v903).
+      const r3 = /ejesDe\([^)]*\)[\s\S]{0,160}?publicable/.test(placa);
+      comprobar('y cuántos de los otros ejes publican nivel se calcula, no se escribe', r3,
+        r3 ? 'sale de ejesDe y de su propio publicable'
+           : 'lo lleva escrito a mano: el día que el eje B publique nivel, la placa seguiría diciendo que no');
+
+      // 4 · Las DOS redacciones escritas (v970): la de hoy y la del día que vuelva.
+      const r4 = /ninguno[\s\S]{0,80}publica nivel/.test(placa) && /cada uno con/.test(placa);
+      comprobar('y están escritas las dos redacciones, la de ninguno y la de alguno', r4,
+        r4 ? 'las dos escritas: la de hoy y la del día que un eje publique el suyo'
+           : 'solo está la de hoy: el día que un eje publique su nivel, la frase no existiría');
+
+      // 5 · El eje B declara su SEGUNDA razón, y sale del registro.
+      const r5 = /sinDeclarar/.test(ejeb) && /NADIE LO HA CLASIFICADO/.test(ejeb);
+      comprobar('el eje B dice que su cero puede ser falta de clasificación, no de hechos', r5,
+        r5 ? 'declara sus dos razones: la media histórica y lo que falta por clasificar'
+           : (!/sinDeclarar/.test(ejeb)
+              ? 'solo declara la media histórica: un «I-05 · 0» se leería como que no hubo choques, cuando casi ninguna entrada declara indicador'
+              : 'nombra la clasificación sin decir qué significa el cero'));
+
+      // 6 · …y la cifra se calcula, con sus dos redacciones (v970).
+      const r6 = /ind\.sinDeclarar[\s\S]{0,400}?ind\.hechos/.test(ejeb) &&
+                 /todos los hechos del mandato declaran/.test(ejeb);
+      comprobar('y esa cifra se calcula del registro, con sus dos redacciones', r6,
+        r6 ? 'sale de ind.sinDeclarar sobre ind.hechos, y baja sola al clasificar'
+           : (/ind\.sinDeclarar[\s\S]{0,400}?ind\.hechos/.test(ejeb)
+              ? 'falta la redacción del día que llegue a cero: la frase no existiría'
+              : 'la cifra está escrita a mano y envejecería sola'));
+
+      // 7 · La regla de CSS existe, o el párrafo sale sin pintar (v895).
+      const r7 = /\.sp-fi-alcance\s*\{/.test(c70);
+      comprobar('y la clase del alcance tiene su regla', r7,
+        r7 ? 'pintada, con el hilo y el gris de acotación de la placa'
+           : 'sin regla: el párrafo saldría sin el hilo ni el color de acotación de la placa');
+    }
+  })();
 
 /* Las dos cuentas van APARTE porque piden cosas distintas: una fallada hay
    que arreglarla, una sin material hay que mirarla —o se quedó sin él porque

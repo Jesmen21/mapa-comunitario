@@ -1431,6 +1431,18 @@ a.sp-fuente:hover svg{ color:var(--verde-hi); }
 .sp-fi-cuentas{ margin:0; font-size:var(--t-8); color:#C9D2DA; font-variant-numeric:tabular-nums; line-height:1.5; }
 .sp-fi-vfalta{ margin:0 0 6px; font-size:var(--t-8); line-height:1.5; color:#C9D2DA; }
 
+/* EL ALCANCE DEL PELDAÑO, EN LA PLACA Y NO SOLO EN EL BLOQUE DE LOS EJES.
+   Va en el mismo gris y al mismo tamaño que las otras dos líneas de
+   acotación de la placa —lo que falta y las cuentas— porque es la misma
+   clase de cosa: acota la cifra de encima. Con un color propio sería una
+   cuarta señal sobre lo mismo, y una alarma que se repite deja de
+   significar algo (v886). Se separa con un hilo y no con un recuadro:
+   un borde diría «otro objeto» y esto es el pie de lo de arriba. */
+.sp-fi-alcance{
+  margin:8px 0 6px; padding-top:8px; border-top:1px solid rgba(201,210,218,.22);
+  font-size:var(--t-8); line-height:1.5; color:#C9D2DA;
+}
+
 /* UN PELDAÑO PROVISIONAL SE VE COMO TAL, Y NO EN ROJO.
    El rojo de este módulo es para un hallazgo verificado con fuente; lo que
    falta por declarar es deuda NUESTRA y va en el gris de la placa (v971).

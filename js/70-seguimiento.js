@@ -2494,9 +2494,30 @@
       pregunta: '¿qué le está pasando a las reglas del juego?',
       dias: ind.dias, poder: ind.poder, filas: filas,
       nivel: null, publicable: false,
-      falta: 'La media histórica de I-04 a I-07 para Petro, Duque y Santos, calculada con los mismos ' +
-             'criterios y por 100 días. Sin ella los cuatro indicadores no tienen contra qué compararse ' +
-             'y el nivel no se puede calcular. Es trabajo de archivo, no de opinión.',
+      sinDeclarar: ind.sinDeclarar, hechos: ind.hechos,
+      /* DOS razones, y no son la misma, así que se dicen aparte.
+         La primera es de ARCHIVO: sin la media histórica no hay contra qué
+         comparar. La segunda es de REGISTRO y es la que se veía en la cara
+         del eje sin estar escrita: un «I-05 · 0 / 100 d» al lado de un
+         gobierno que relevó a un director técnico y le puso autorización
+         previa a la prensa se lee como «no hubo choques», y lo que pasa es
+         que casi ninguna entrada declara qué indicador alimenta. Cero
+         clasificado y cero ocurrido son cosas distintas (v875), y la cifra
+         que las separa ya estaba en el mismo objeto —`ind.sinDeclarar`—
+         sin que este eje la mirara: clase A y clase C a la vez.
+         Se CALCULA, nunca se escribe: baja sola a medida que el registro
+         se clasifica (v903), y las dos redacciones van escritas para que
+         el día que llegue a cero la frase exista (v970). */
+      falta: 'Dos cosas, y piden trabajos distintos. La primera es de archivo: la media histórica de ' +
+             'I-04 a I-07 para Petro, Duque y Santos, con los mismos criterios y por 100 días; sin ella ' +
+             'los cuatro indicadores no tienen contra qué compararse. La segunda es de registro: ' +
+             (ind.sinDeclarar
+               ? cn(ind.sinDeclarar, 'hecho del mandato no declara qué indicador alimenta',
+                                    'hechos del mandato no declaran qué indicador alimentan') +
+                 ', de ' + ind.hechos + ', así que un 0 en cualquiera de estos ' +
+                 'cuatro dice que NADIE LO HA CLASIFICADO y no que no haya ocurrido.'
+               : 'todos los hechos del mandato declaran ya qué indicador alimentan, así que los cuatro ' +
+                 'conteos son del registro entero.'),
       lectura: 'Este eje describe la FRECUENCIA con la que se usan mecanismos institucionales, y se lee en ' +
                'las dos direcciones: un uso intensivo de figuras excepcionales puede indicar una respuesta ' +
                'eficaz a una emergencia real, o una concentración de poder. El módulo muestra el número; no ' +
@@ -3215,7 +3236,16 @@
       cn(f.ritmo.hechos, 'hecho registrado', 'hechos registrados')));
     cab.appendChild(pt);
     placa.appendChild(cab);
-    placa.appendChild(el('p', 'sp-fi-vlabel', 'Fiabilidad'));
+    /* EL ROTULO DICE QUE MIDE, NO LA FAMILIA.
+       Decia «Fiabilidad» a secas, y esta placa se fotografia y circula
+       sola: «Fiable» en verde a 32 px se lee como un veredicto sobre el
+       gobierno entero. No lo es. Mide UN eje —si lo que dice coincide con
+       lo que hace— y el modulo lo tiene escrito desde la v959: un
+       gobernante puede ser muy sincero sobre su intencion de concentrar
+       poder, que es confiabilidad alta con deterioro alto.
+       Es la clase de la v879: un rotulo que solo nombra la familia deja
+       que el lector suponga que mide todo lo de esa familia. */
+    placa.appendChild(el('p', 'sp-fi-vlabel', 'Fiabilidad de la palabra'));
     /* El rótulo de provisional va ANTES del peldaño y no después, y el orden
        es la mitad que hace el trabajo: el peldaño se pinta en el color de su
        escalón —«Fiable» sale en verde a 32 px— y en una captura ese color
@@ -3235,6 +3265,35 @@
         ', si las dos frases hablan del mismo objeto verificado. Si todas resultaran serlo, el ' +
         'peldaño bajaría a «' + f.veredicto.hasta.t + '»; lo que falta no puede subirlo.'));
     }
+    /* QUE NO MIDE, y por que va en la PLACA y no solo en el bloque de los
+       tres ejes del final de la ficha.
+       La placa es lo primero de la portada y es lo que viaja recortado en
+       una captura; el bloque de los ejes esta a seis pantallas de ahi. Sin
+       esta linea, un peldano alto se lee como «el gobierno esta bien»
+       mientras el eje que llevaria el deterioro institucional —el despido
+       de un director tecnico, la autorizacion previa para hablar con
+       prensa, una emisora publica intervenida— no publica nivel ninguno.
+       Es la exencion silenciosa de la v966 a escala de placa.
+
+       La segunda mitad se CALCULA de `ejesDe` y no se escribe (v903): una
+       cifra a mano dentro de un texto fijo envejece sola, y esta tiene que
+       cambiar el dia que llegue la media historica del eje B. Las DOS
+       redacciones van escritas —la de ninguno y la de alguno—, que es la
+       regla de la v970: la que hace falta es justo la que se necesita el
+       dia que el material vuelva. */
+    var otrosEjes = ejesDe(reg, f.corte).filter(function (x) { return x.eje !== 'A'; });
+    var mudos = otrosEjes.filter(function (x) { return !x.publicable; });
+    placa.appendChild(el('p', 'sp-fi-alcance',
+      'Mide solo si lo que dice coincide con lo que hace. ' +
+      (mudos.length === otrosEjes.length
+        ? 'El deterioro institucional y el rumbo del gasto van en sus propios ejes, y hoy ninguno ' +
+          'de los dos publica nivel: un peldaño alto aquí NO dice que el gobierno esté bien.'
+        : (mudos.length
+            ? 'El deterioro institucional y el rumbo del gasto van en sus propios ejes, y ' +
+              cn(mudos.length, 'uno de ellos todavía no publica nivel', 'ninguno de ellos publica nivel todavía') +
+              ': un peldaño alto aquí no resume los tres.'
+            : 'El deterioro institucional y el rumbo del gasto van en sus propios ejes, cada uno con ' +
+              'su nivel: este peldaño no los resume.'))));
     placa.appendChild(el('p', 'sp-fi-cuentas', cuentasDe(f)));
     return placa;
   }
@@ -3245,7 +3304,7 @@
     vaciar(host);
     var f = fichaHasta(null);
     var b = el('button', 'sp-placa-btn'); b.type = 'button';
-    b.setAttribute('aria-label', 'Ficha del gobernante: ' + f.veredicto.t + '. ' + cuentasDe(f) + '. Abrir la ficha completa.');
+    b.setAttribute('aria-label', 'Ficha del gobernante. Fiabilidad de la palabra: ' + f.veredicto.t + '. ' + cuentasDe(f) + '. Abrir la ficha completa.');
     b.appendChild(placaDe(f));
     var pie = el('span', 'sp-placa-pie');
     pie.appendChild(el('span', null, 'Abrir la ficha del gobernante: casos, contradicciones y rasgos'));
@@ -3269,7 +3328,7 @@
     t.appendChild(el('b', null, 'Abrir la ficha completa del gobernante'));
     t.appendChild(el('span', 'sp-irficha-d',
       'Casos de corrupción con su estado probatorio, contradicciones, los tres ejes y el método. ' +
-      'Hoy, fiabilidad: ' + f.veredicto.t + '.'));
+      'Hoy, fiabilidad de la palabra: ' + f.veredicto.t + '.'));
     b.appendChild(t);
     b.appendChild(flechaIr());
     b.addEventListener('click', function () { ir({ v: 'ficha' }); });
