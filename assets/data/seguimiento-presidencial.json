@@ -73,6 +73,87 @@
   }
  },
  "entradas": [
+{
+   "fecha": "2026-09-28",
+   "precision": "exacta",
+   "categoria": "economia",
+   "titulo": "El primer crucero de la temporada cancela su escala en Santa Marta tras una semana de ataques atribuidos a las ACSN y una alerta de la embajada de Estados Unidos",
+   "categoriaProbatoria": "correlacion",
+   "tipoMedicion": "resultado",
+   "detalle": "El lunes 28 de septiembre de 2026 el crucero Freewinds, que debía llegar a Santa Marta desde Cartagena para abrir la temporada de cruceros 2026-2027, canceló su escala. La decisión se conoció después de una semana de hechos en Santa Marta y en el Magdalena que las autoridades atribuyeron a las Autodefensas Conquistadoras de la Sierra Nevada (ACSN): intimidaciones a comerciantes, quema de vehículos, afectaciones al transporte y restricciones en corredores viales. A eso se sumó una recomendación de la embajada de Estados Unidos en Bogotá a sus ciudadanos para evitar desplazamientos a Santa Marta y a zonas cercanas del Magdalena y La Guajira. Los operadores turísticos quedaron a la espera de las próximas escalas y, según ANATO, no hay nuevos arribos confirmados antes de noviembre de 2026.",
+   "contrapunto": "Lo que consta es la cancelación y lo que la rodea: los hechos de orden público de la semana anterior, la alerta de la embajada y que la temporada no se inauguró. Lo que NO consta es un comunicado de la naviera declarando la seguridad como su motivo, así que la relación entre las dos cosas la establecen los operadores y la prensa, no un documento de quien decidió — y por eso esta entrada entra como correlación y no como hecho probado de causa. Tampoco declara ningún indicador: la cancelación la decide una empresa privada, no el Gobierno nacional, así que es un resultado del país y no un acto de gobierno al que se le pueda declarar un nivel (v999). Y el registro no sostiene que la inseguridad del Magdalena sea atribuible a una decisión de este gobierno: eso sería una atribución causal que ninguna fuente establece.",
+   "tipoFuente": "verificado",
+   "fuentes": [
+    {
+     "n": "El Tiempo · cancelación del crucero Freewinds tras la crisis de seguridad en Santa Marta",
+     "rol": "acto",
+     "u": "https://www.eltiempo.com/colombia/otras-ciudades/cancelacion-del-crucero-freewinds-tras-la-crisis-de-seguridad-registrada-en-santa-marta-hay-preocupacion-por-otros-arribos-de-la-temporada-2026-3589935"
+    },
+    {
+     "n": "La FM · el crucero canceló su visita por la situación de seguridad",
+     "rol": "acto",
+     "u": "https://www.lafm.com.co/actualidad/crucero-cancelo-visita-santa-marta-inseguridad-paro-armado-orden-publico-412358"
+    },
+    {
+     "n": "Seguimiento.co · cancelan la llegada del Freewinds y crece la preocupación por los próximos arribos",
+     "rol": "acto",
+     "u": "https://seguimiento.co/la-samaria/cancelan-llegada-del-crucero-freewinds-santa-marta-y-crece-la-preocupacion-por-proximos"
+    },
+    {
+     "n": "Radio Hoy · la situación de seguridad generó temor entre las navieras de cruceros",
+     "rol": "efecto",
+     "u": "https://www.radiohoy.com/2026/09/28/situacion-de-seguridad-genero-temor-entre-las-navieras-de-cruceros/820780/"
+    },
+    {
+     "n": "Infobae · el crucero no llegará a Santa Marta y Petro lo usó contra el presidente",
+     "rol": "efecto",
+     "u": "https://www.infobae.com/colombia/2026/09/29/crucero-no-llegara-a-santa-marta-por-situacion-de-seguridad-y-gustavo-petro-aprovecho-para-lanzarle-pullas-a-abelardo-de-la-espriella-asi-se-destruye-desde-el-gobierno/"
+    }
+   ]
+  },
+{
+   "fecha": "2026-09-22",
+   "precision": "exacta",
+   "categoria": "informacion",
+   "titulo": "Dos juzgados ordenan a Presidencia y a la fundación de la primera dama informar cuánto recaudaron para el terremoto; tres días después el senador que entuteló dice que no le respondieron de fondo",
+   "categoriaProbatoria": "hecho-probado",
+   "tipoMedicion": "contexto-estructural",
+   "detalle": "El 22 de septiembre de 2026 el Juzgado 38 de Familia de Bogotá admitió una acción de tutela del vicepresidente del Senado, Alejandro Ocampo, contra el Departamento Administrativo de la Presidencia (DAPRE), el Ministerio de Hacienda y la Fundación Colombia Luz y Sonrisas, cuya representante legal es la primera dama Ana Lucía Pineda, y les dio 48 horas para informar cuánto recibió la fundación en donaciones tras el terremoto del 10 de agosto, en qué se gastó, qué bienes adquirió o entregó y qué saldo queda en sus cuentas. El 24 de septiembre se conoció que la fundación debe responder ante dos juzgados —el de Bogotá y uno de Barranquilla—, que admitieron tutelas por el mismo asunto. El derecho de petición que originó la tutela llevaba cerca de un mes sin respuesta. El 25 de septiembre el senador Ocampo afirmó públicamente que la Presidencia no respondió de fondo: según él, remitió la solicitud a otras entidades en vez de entregar las cifras. La fundación se constituyó el 7 de julio de 2026, un mes antes de la posesión, y fue presentada como uno de los canales de la campaña oficial «Colombia, un solo corazón».",
+   "contrapunto": "Esta entrada NO declara ningún indicador, y conviene decir por qué con los criterios en la mano, porque parece que debería. No es I-07 —información obtenida por tutela—: ese criterio exige que el documento se haya ENTREGADO tras la tutela, y lo que consta a la fecha de corte es lo contrario, que el senador sostiene que no le respondieron de fondo. Es el antecedente de un I-07, no un I-07: si las cifras se entregan a raíz de estas tutelas, la declaración entra con su base. Y tampoco es I-05 —choque con un órgano autónomo—: ese criterio pide una decisión judicial que resuelva EN CONTRA del Ejecutivo en la controversia, y admitir una tutela y pedir un informe en 48 horas es trámite, no fallo de fondo. Lo que sí queda registrado es el hecho: dos juzgados pidieron las cifras y, tres días después, quien las pidió sostiene que no las tiene. Que la fundación sea de la primera dama ya estaba registrado desde el 20 de agosto como señalamiento, sin hallazgo de ningún organismo de control, y eso no cambia con esta entrada.",
+   "tipoFuente": "verificado",
+   "fuentes": [
+    {
+     "n": "Infobae · Juzgado de Bogotá le lanzó ultimátum a la primera dama: tendrá que revelar cuánto dinero recaudó su fundación",
+     "rol": "acto",
+     "u": "https://www.infobae.com/colombia/2026/09/22/juzgado-de-bogota-le-lanzo-ultimatum-a-la-esposa-de-abelardo-de-la-espriella-la-primera-dama-ana-lucia-pineda-tendra-que-revelar-cuanto-dinero-recaudo-su-fundacion-para-damnificados-del-terremoto/"
+    },
+    {
+     "n": "Prensa Latina · admiten recurso legal para conocer el uso de los fondos tras el sismo",
+     "rol": "acto",
+     "u": "https://www.prensa-latina.cu/2026/09/22/colombia-admiten-recurso-legal-para-conocer-uso-de-fondos-tras-sismo/"
+    },
+    {
+     "n": "El Universal · la primera dama deberá informar sobre las donaciones recaudadas",
+     "rol": "acto",
+     "u": "https://www.eluniversal.com.co/colombia/2026/09/24/primera-dama-debera-informar-sobre-donaciones-recaudadas-para-victimas-del-terremoto/"
+    },
+    {
+     "n": "Vanguardia · la fundación deberá responder ante dos juzgados por las donaciones",
+     "rol": "acto",
+     "u": "https://www.vanguardia.com/colombia/2026/09/24/fundacion-de-la-primera-dama-debera-responder-ante-dos-juzgados-por-donaciones/"
+    },
+    {
+     "n": "La Silla Vacía · al vicepresidente del Senado le tocó entutelar para que Presidencia le dé información",
+     "rol": "acto",
+     "u": "https://www.lasillavacia.com/en-vivo/al-vice-del-senado-le-toco-entutelar-para-que-presidencia-le-de-informacion/"
+    },
+    {
+     "n": "Infobae · el senador afirmó que Presidencia no respondió de fondo la tutela",
+     "rol": "efecto",
+     "u": "https://www.infobae.com/colombia/2026/09/25/senador-afirmo-que-presidencia-no-respondio-de-fondo-tutela-por-donaciones-para-el-terremoto-canalizadas-por-la-fundacion-de-la-primera-dama/"
+    }
+   ]
+  },
   {
    "fecha": "2026-09-24",
    "precision": "exacta",

@@ -2433,7 +2433,7 @@
       else if (id.k === 'no') { sinId++; retoricas.push(c.tema || ''); }
       else { sinDeclarar++; pendientes.push(c.tema || ''); }
     });
-    var r = { eje: 'A', t: 'Confiabilidad',
+    var r = { eje: 'A', t: 'Confiabilidad', enLista: 'la confiabilidad',
               pregunta: '¿lo que dice coincide con lo que hace?',
               documentadas: doc.length, conIdentidad: conId, sinIdentidad: sinId,
               sinDeclarar: sinDeclarar, tensionRetorica: retoricas,
@@ -2490,7 +2490,7 @@
     var ind = indicadoresDe(dd, corte);
     var filas = ind.filas.filter(function (f) { return IND_EJE_B.indexOf(f.id) >= 0; });
     return {
-      eje: 'B', t: 'Deterioro institucional',
+      eje: 'B', t: 'Deterioro institucional', enLista: 'el deterioro institucional',
       pregunta: '¿qué le está pasando a las reglas del juego?',
       dias: ind.dias, poder: ind.poder, filas: filas,
       nivel: null, publicable: false,
@@ -2525,32 +2525,145 @@
     };
   }
 
-  /* ── EJE C · ORIENTACIÓN DEL GASTO ─────────────────────────────────────
-     «¿Hacia dónde se mueve el dinero público, en términos reales?» El pliego
-     le pone siete reglas de cálculo y sin ellas el eje no sirve: deflactar
-     siempre, declarar si «gasto militar» es Defensa sola o Defensa+Policía,
-     separar aprobado de ejecutado, usar % del PIB y del presupuesto, separar
-     lo inflexible de lo discrecional y el servicio de deuda, y calcular la
-     misma serie para los gobiernos anteriores.
+  /* ── EJE C · ORIENTACIÓN DEL GASTO ─────────────────────────
+     «Hacia dónde se mueve el dinero público, en términos reales?» El pliego
+     le pone siete reglas de cálculo: deflactar siempre, declarar si «gasto
+     militar» es Defensa sola o Defensa+Policía, separar aprobado de
+     ejecutado, usar % del PIB y del presupuesto, separar lo inflexible de lo
+     discrecional y el servicio de deuda, y calcular la misma serie para los
+     gobiernos anteriores.
 
-     Este módulo no tiene una sola de las cifras que eso pide. Y la diferencia
-     con los otros dos ejes es que acá no falta una media: falta la fuente
-     entera. Se declara con lo que haría falta, en vez de sacar un eje de las
-     menciones presupuestales que hay en la línea de tiempo — que serían
-     titulares, no ejecución. */
-  function ejeC() {
-    return {
-      eje: 'C', t: 'Orientación del gasto',
+     ── LA DECLARACIÓN DE AUSENCIA QUE ERA FALSA (v1055) ──
+     Hasta la v1054 este eje decía que «el módulo no tiene ninguna de esas
+     cifras» y que «las menciones presupuestales de la línea de tiempo son
+     titulares, no ejecución». Medido contra el registro, es FALSO: desde la
+     v972 hay un bloque `presupuesto` ESTRUCTURADO —no menciones— con su
+     deflactor del DANE, su corte, su estado procesal y sus fuentes con rol,
+     que los gráficos del tablero dibujan. Cinco de las siete reglas están
+     cubiertas ahí: el deflactor (IPC de agosto del DANE, registrado en este
+     mismo seguimiento), la agregación de Defensa en sus dos formas, el
+     estado procesal del aprobado, el % del PIB y del presupuesto, y el
+     servicio de deuda partido en intereses y amortizaciones.
+
+     Es la sexta declaración de ausencia falsa de este proyecto (v861, v863,
+     v864, v884, v888, y esta) y la primera del módulo presidencial. Y es
+     clase A y clase C a la vez: el dato estaba en el MISMO registro que los
+     otros dos ejes reciben, `ejeC()` no recibía ni el parámetro, y ninguna
+     superficie del eje lo alcanzaba — así que un recorte real del 4,4 % en
+     salud y del 43,5 % en deporte estaba medido, con su fuente, y el eje que
+     responde «hacia dónde se mueve el dinero» decía no tener nada.
+
+     EL EJE SIGUE SIN NIVEL, y eso no cambia: las dos reglas que faltan son
+     el EJECUTADO —hoy solo hay aprobado en trámite legislativo— y la misma
+     serie para los gobiernos anteriores, que es la misma condición de
+     validez de archivo que bloquea el eje B. Lo que cambia es que publica
+     sus cifras, como el eje B publica sus cuatro números desde la v958. */
+  function ejeC(dd) {
+    var P = ((dd || D) || {}).presupuesto || {};
+    var lista = (P.sectores && P.sectores.lista) || [];
+    /* Solo los sectores con variación REAL medida. Uno sin deflactar al lado
+       de seis deflactados invita a compararlos, y deflactar siempre es la
+       primera regla del pliego. Los que quedan fuera se CUENTAN y se dicen,
+       en vez de desaparecer (v966). */
+    var conReal = lista.filter(function (s) { return s.realPct != null; });
+    var sinReal = lista.filter(function (s) { return s.realPct == null; });
+    /* Ordenados por variación real ascendente: lo que más baja primero, que
+       es lo que la pregunta del eje pide contestar. */
+    var sec = conReal.slice().sort(function (a, b) { return a.realPct - b.realPct; });
+    var bajan = sec.filter(function (s) { return s.realPct < 0; });
+
+    var r = {
+      eje: 'C', t: 'Orientación del gasto', enLista: 'el rumbo del gasto',
       pregunta: '¿hacia dónde se mueve el dinero público, en términos reales?',
       nivel: null, publicable: false,
-      falta: 'La ejecución presupuestal por sector, deflactada por el IPC del DANE, con el aprobado, el ' +
-             'radicado y el ejecutado separados y con su fecha de corte; la agregación de «gasto militar» ' +
-             'declarada en sus dos formas —Defensa sola y Defensa más Policía—; el porcentaje del PIB y del ' +
-             'presupuesto; y la misma serie para los gobiernos anteriores. El módulo no tiene ninguna de ' +
-             'esas cifras: las menciones presupuestales de la línea de tiempo son titulares, no ejecución.',
-      lectura: 'Este eje NO mide confiabilidad ni deterioro. Un gobierno puede reorientar el gasto ' +
-               'exactamente como lo prometió: eso es confiabilidad ALTA con una política que se puede ' +
-               'criticar, y son preguntas distintas.'
+      anio: P.anio || null, corte: P.corte || null,
+      estadoTexto: P.estadoTexto || '', deflactorPct: P.deflactorPct != null ? P.deflactorPct : null,
+      totalBn: P.totalBn != null ? P.totalBn : null,
+      sectores: sec, sinDeflactar: sinReal.map(function (s) { return s.t; }),
+      bajan: bajan.length, suben: sec.length - bajan.length,
+      falta: '', lectura: '', unidades: '', reglas: null
+    };
+
+    if (!sec.length) {
+      /* Sin bloque de presupuesto el eje vuelve a no tener nada, y lo dice
+         por lo que es. Lo que NO vuelve es la afirmación de que las cifras no
+         existen: la diferencia entre «no las tenemos» y «no las leímos» es
+         la que esta versión vino a arreglar. */
+      r.falta = 'El bloque `presupuesto` del registro, con el reparto por sector y su variación real ' +
+                'deflactada por el IPC del DANE. Sin él este eje no tiene ninguna cifra que publicar.';
+    } else {
+      r.falta = 'Dos de las siete reglas del pliego, y las dos son de fuente. La primera: el EJECUTADO ' +
+                'por sector —' + (r.estadoTexto ? 'lo que hay es el aprobado, y su propio estado lo dice: ' +
+                /* sin su punto final: la frase sigue y una puntuación doble «.—.» se lee
+                   como un descuido de quien firma la ficha (v874) */
+                r.estadoTexto.replace(/\.\s*$/, '') : 'lo que hay es el aprobado y no la ejecución') + '—. La segunda: la misma ' +
+                'serie para los gobiernos anteriores, deflactada con los mismos criterios, que es la misma ' +
+                'condición de archivo que bloquea el eje B. Sin ella estas variaciones no tienen contra ' +
+                'qué compararse y el nivel no sale.';
+      r.unidades = 'Billones de pesos del presupuesto de ' + (r.anio || '') + ' y variación REAL frente al ' +
+                   'año anterior, descontada una inflación de ' +
+                   (r.deflactorPct != null ? miles(r.deflactorPct, 2) + ' %' : 'la publicada por el DANE') +
+                   '. Un porcentaje grande sobre un monto pequeño mueve pocos pesos, así que las dos ' +
+                   'cifras van juntas y ninguna ordena sola' +
+                   (r.sinDeflactar.length
+                     ? '. ' + cn(r.sinDeflactar.length, 'sector queda fuera de esta lista porque su ' +
+                       'variación real no está medida', 'sectores quedan fuera de esta lista porque su ' +
+                       'variación real no está medida') + ': ' + r.sinDeflactar.join(', ') + '.'
+                     : '.');
+      r.lectura = 'Este eje NO mide confiabilidad ni deterioro, y un recorte no es por sí mismo un ' +
+                  'incumplimiento: un gobierno puede reorientar el gasto exactamente como lo prometió, y ' +
+                  'eso es confiabilidad ALTA con una política que se puede criticar. Son preguntas ' +
+                  'distintas y el módulo no las suma. Lo que sí publica son las cifras, deflactadas y con ' +
+                  'su fecha de corte, para que la discusión sea sobre ellas.';
+    }
+    return r;
+  }
+
+  /* ── EJE D · USO DE LA FUERZA Y DERECHOS ───────────────────────
+     El cuarto eje, y el que este módulo no tenía. El pliego lo prevé como
+     «bloque D de alerta temprana» y la v959 lo dejó declarado pendiente con
+     su razón: pide series de Medicina Legal, la Procuraduría y la
+     Defensoría, y sin serie histórica de gobiernos anteriores esos
+     indicadores no significan nada.
+
+     Que estuviera pendiente no era el defecto. El defecto es que su AUSENCIA
+     no se veía. Los tres ejes de arriba miden la palabra, las reglas del
+     juego y el dinero, y NINGUNO mide el uso de la fuerza — así que un
+     registro con seis menores muertos en operaciones aéreas, piso forense
+     confirmado por Medicina Legal en tres entradas, publicaba esos hechos en
+     la línea de tiempo y ningún eje los recogía, mientras la placa decía
+     «el deterioro institucional y el rumbo del gasto van en sus propios
+     ejes» sin nombrar que hay una tercera cosa que no va en ninguno. Es la
+     exención silenciosa de la v966 a escala de módulo: desde afuera, un eje
+     que no existe y un eje que no publica nivel se leen igual — no se leen.
+
+     NO PUBLICA NIVEL, y las dos razones se dicen aparte porque piden cosas
+     distintas: no hay FUENTE —las tres series oficiales— y no hay
+     INDICADOR —ninguno de los criterios escritos del módulo cuenta un uso
+     de la fuerza, así que ni con las series habría qué clasificar—. Y no se
+     inventa uno de paso: un criterio escrito mirando este registro nacería
+     `construida-para-el-caso` y sin validar (v965), y el pliego es explícito
+     en que el nivel se calcula y no se asigna. */
+  function ejeD(dd) {
+    var reg = (dd || D) || {};
+    var man = hechosDelMandato(reg);
+    var sinEje = man.filter(function (e) { return !(e.indicadores || []).length; });
+    return {
+      eje: 'D', t: 'Uso de la fuerza y derechos', enLista: 'el uso de la fuerza',
+      pregunta: '¿qué le está pasando a la gente en las operaciones del Estado?',
+      nivel: null, publicable: false,
+      hechos: man.length, sinEje: sinEje.length,
+      falta: 'Dos cosas, y ninguna es de código. La primera es la FUENTE: las series de Medicina Legal, ' +
+             'la Procuraduría y la Defensoría que el pliego pide para este bloque, con la misma serie de ' +
+             'los gobiernos anteriores —sin ella una cifra de hoy no tiene contra qué compararse—. La ' +
+             'segunda es el INDICADOR: ninguno de los criterios escritos de este módulo cuenta un uso de ' +
+             'la fuerza, así que ni con las series habría qué clasificar. Y no se escribe de paso: un ' +
+             'criterio redactado mirando este registro nacería construido para el caso y sin validar, y ' +
+             'el nivel de un eje se calcula, no se asigna.',
+      lectura: 'Mientras este eje no publique nivel, los hechos de este tipo que el registro sí tiene —' +
+               'bombardeos, muertes confirmadas por Medicina Legal, desplazamientos— están en la línea ' +
+               'de tiempo con sus fuentes y NO los mide ningún eje. Que no aparezcan en un peldaño no ' +
+               'significa que no ocurrieran: significa que este módulo todavía no los cuenta.'
     };
   }
 
@@ -2559,7 +2672,7 @@
      alguien quiere un número único, tiene que escribirlo a mano y esa línea
      se ve en el diff. */
   function ejesDe(dd, corte) {
-    return [ejeA(dd), ejeB(dd, corte), ejeC()];
+    return [ejeA(dd), ejeB(dd, corte), ejeC(dd), ejeD(dd)];
   }
 
   /* ═══ CAPA 4 DEL PLIEGO PRESIDENCIAL ══════════════════════════════════
@@ -2588,7 +2701,8 @@
   var MARCO_MIDE = [
     'coincidencia entre lo dicho y lo hecho (eje A)',
     'frecuencia de uso de mecanismos institucionales excepcionales (eje B)',
-    'orientación real del gasto público por sector (eje C)'
+    'orientación real del gasto público por sector (eje C)',
+    'uso de la fuerza y derechos (eje D, sin nivel: le falta la fuente y el indicador)'
   ];
   var MARCO_NO_MIDE = [
     'si una política es buena o mala',
@@ -3068,7 +3182,7 @@
                              // agrega acá en vez de alcanzarlo por un lado (v871).
                              indicadores: indicadoresDe, comparabilidad: comparabilidad,
                              catalogoIndicadores: INDICADORES, capaUno: capaUnoDe_conjunto,
-                             ejes: ejesDe, ejeA: ejeA, ejeB: ejeB, ejeC: ejeC,
+                             ejes: ejesDe, ejeA: ejeA, ejeB: ejeB, ejeC: ejeC, ejeD: ejeD,
                              marco: marcoDeclarado, editorial: editorialDe,
                              control: controlDeCalidad,
                              // La puerta de publicación y su censo: lo que una prueba
@@ -3282,18 +3396,53 @@
        regla de la v970: la que hace falta es justo la que se necesita el
        dia que el material vuelva. */
     var otrosEjes = ejesDe(reg, f.corte).filter(function (x) { return x.eje !== 'A'; });
-    var mudos = otrosEjes.filter(function (x) { return !x.publicable; });
+    var conNivel = otrosEjes.filter(function (x) { return x.publicable; });
+    /* `ejeFuerza` y no `ejeD`: ese nombre es de la FUNCIÓN del módulo, y una
+       local con el mismo nombre la sombrea dentro de este ámbito. No rompe
+       nada hoy porque acá no se la llama, y es la homonimia que la v885
+       persigue: dos nombres para dos cosas en el mismo sitio. */
+    var ejeFuerza = otrosEjes.filter(function (x) { return x.eje === 'D'; })[0] || null;
+    /* La lista de los otros ejes se CALCULA y no se escribe, y por eso el
+       cuarto entró sin tocar esta frase: la v1054 decía «el deterioro
+       institucional y el rumbo del gasto» a mano, que son dos, y con el eje D
+       la frase se habría quedado vieja nombrando dos de tres. Es la cifra
+       tecleada de la v903 dicha sobre una enumeración. */
+    /* El nombre de lista y NO el título en minúsculas: el título no trae
+       artículo, y una enumeración sin él sale «el deterioro institucional,
+       orientación del gasto y uso de la fuerza». Derivar el artículo del
+       título sería adivinar el género, así que cada eje lo declara. Lo vio
+       el papel compuesto, no el código. */
+    var nombres = otrosEjes.map(function (x) { return x.enLista || x.t.toLowerCase(); });
+    var listaN = nombres.length > 1
+      ? nombres.slice(0, -1).join(', ') + ' y ' + nombres[nombres.length - 1]
+      : (nombres[0] || '');
     placa.appendChild(el('p', 'sp-fi-alcance',
       'Mide solo si lo que dice coincide con lo que hace. ' +
-      (mudos.length === otrosEjes.length
-        ? 'El deterioro institucional y el rumbo del gasto van en sus propios ejes, y hoy ninguno ' +
-          'de los dos publica nivel: un peldaño alto aquí NO dice que el gobierno esté bien.'
-        : (mudos.length
-            ? 'El deterioro institucional y el rumbo del gasto van en sus propios ejes, y ' +
-              cn(mudos.length, 'uno de ellos todavía no publica nivel', 'ninguno de ellos publica nivel todavía') +
-              ': un peldaño alto aquí no resume los tres.'
-            : 'El deterioro institucional y el rumbo del gasto van en sus propios ejes, cada uno con ' +
-              'su nivel: este peldaño no los resume.'))));
+            /* Sin «El » delante: el nombre de lista YA trae su artículo, y con los
+         dos salía «El el deterioro institucional». Lo vio el papel compuesto,
+         no el código. */
+      (nombres.length ? mayus(listaN) + ' van en sus propios ejes, y ' : '') +
+      (!conNivel.length
+        ? 'hoy ninguno de ellos publica nivel: un peldaño alto aquí NO dice que el gobierno esté bien.'
+        : (conNivel.length < otrosEjes.length
+            ? cn(otrosEjes.length - conNivel.length, 'uno de ellos todavía no publica nivel',
+                 'algunos todavía no publican nivel') + ': un peldaño alto aquí no resume los ' +
+              enLetra(otrosEjes.length + 1) + '.'
+            : 'cada uno con su nivel: este peldaño no los resume.'))));
+    /* Y la cifra que hacía falta para que «no lo resume» se pueda comprobar.
+       Sin ella, un lector no tiene manera de saber CUÁNTO del registro queda
+       fuera de los ejes — y lo que queda fuera son los bombardeos, las
+       muertes confirmadas y los desplazamientos, que es justo lo que un
+       peldaño alto parece desmentir. Se calcula del registro (v903) y lleva
+       sus dos redacciones escritas (v970). */
+    if (ejeFuerza && ejeFuerza.hechos) {
+      placa.appendChild(el('p', 'sp-fi-alcance sp-fi-alcance-2',
+        ejeFuerza.sinEje
+          ? 'De ' + cn(ejeFuerza.hechos, 'hecho registrado de este mandato',
+                       'hechos registrados de este mandato') + ', ' + miles(ejeFuerza.sinEje) +
+            ' no los mide ningún eje: están publicados con sus fuentes y no entran en ningún nivel.'
+          : 'Todos los hechos registrados de este mandato alimentan algún eje.'));
+    }
     placa.appendChild(el('p', 'sp-fi-cuentas', cuentasDe(f)));
     return placa;
   }
@@ -3913,14 +4062,26 @@
     izq.appendChild(s2);
 
     // ── 1d · Capa 3: los tres ejes, lado a lado ────────────────────────────
-    var s3 = seccionFicha('sp-fi-secc sp-fi-c3', 'Los tres ejes, lado a lado',
-      'Confiabilidad, deterioro institucional y orientación del gasto. Van separados y NUNCA combinados ' +
-      'en un número único, y eso no es una preferencia de diseño: un gobernante puede ser muy sincero ' +
-      'sobre su intención de concentrar poder —confiabilidad alta, deterioro alto— y puede mentir mucho ' +
-      'sin tocar una sola institución. Metidos en la misma escala, el módulo deja de servir para ' +
-      'cualquiera de las dos preguntas.');
-
+    /* El título y la lista se CALCULAN. Iban escritos a mano —«Los tres ejes»
+       y «Confiabilidad, deterioro institucional y orientación del gasto»— y con
+       el cuarto eje las dos frases se habrían quedado viejas nombrando tres de
+       cuatro, encima de una lista que enseña cuatro. Es la cifra tecleada de la
+       v903 dicha sobre un título. */
     var ejes = ejesDe(D, f.corte);
+    var nEj = ejes.map(function (x) { return (x.enLista || x.t.toLowerCase()); });
+    var s3 = seccionFicha('sp-fi-secc sp-fi-c3',
+      /* Sin el número: «Los ' + enLetra(n) + ' ejes» imprimiría «Los un eje»
+         con uno solo, y ramificar un título para un caso degenerado es más
+         ruido que el número que se gana — que además lo dice la lista de
+         abajo, entera. Lo cazó la guarda de concordancia, no el papel. */
+      'Los ejes, lado a lado',
+      mayus(nEj.slice(0, -1).join(', ') + ' y ' + nEj[nEj.length - 1]) +
+      '. Van separados y NUNCA combinados en un n\u00famero \u00fanico, y eso no es una preferencia de ' +
+      'dise\u00f1o: un gobernante puede ser muy sincero sobre su intenci\u00f3n de concentrar poder ' +
+      '\u2014confiabilidad alta, deterioro alto\u2014 y puede mentir mucho sin tocar una sola ' +
+      'instituci\u00f3n. Metidos en la misma escala, el m\u00f3dulo deja de servir para cualquiera de ' +
+      'las preguntas.');
+
     var ul3 = el('ul', 'sp-c3-lista');
     ejes.forEach(function (ej) {
       var li = el('li', 'sp-c3-eje' + (ej.publicable ? '' : ' sin'));
@@ -3952,6 +4113,31 @@
         });
         li.appendChild(ub);
       }
+      /* El eje C publica sus cifras aunque no publique nivel, igual que el B
+         publica sus cuatro números desde la v958. La unidad va ARRIBA de la
+         lista y no al pie: un porcentaje sin su unidad al lado se lee como
+         nominal, y la primera regla del pliego es que todo va deflactado. */
+      if (ej.eje === 'C' && ej.sectores && ej.sectores.length) {
+        li.appendChild(el('p', 'sp-c3-dato', ej.unidades));
+        var uc = el('ul', 'sp-c3-ind sp-c3-sec');
+        ej.sectores.forEach(function (sc) {
+          var lc = el('li', sc.realPct < 0 ? 'baja' : null);
+          lc.appendChild(el('span', null, sc.t));
+          var vv = el('b', null, (sc.realPct > 0 ? '+' : '\u2212') +
+            miles(Math.abs(sc.realPct), 1) + ' %');
+          lc.appendChild(vv);
+          lc.appendChild(el('span', 'sp-c3-bn', miles(sc.bn, 2) + ' bn'));
+          uc.appendChild(lc);
+        });
+        li.appendChild(uc);
+      }
+      if (ej.eje === 'D' && ej.hechos) {
+        li.appendChild(el('p', 'sp-c3-dato',
+          ej.sinEje
+            ? miles(ej.sinEje) + ' de ' + cn(ej.hechos, 'hecho del mandato no lo mide ning\u00fan eje',
+                'hechos del mandato no los mide ning\u00fan eje') + ' \u2014 este incluido'
+            : 'todos los hechos del mandato alimentan alg\u00fan eje'));
+      }
       if (!ej.publicable) {
         var fa = el('p', 'sp-c3-falta');
         fa.appendChild(el('b', null, 'Falta para poder publicarlo: '));
@@ -3968,9 +4154,12 @@
        escalera fuera el resumen de los tres, que es justo lo que la regla de
        oro prohíbe. */
     s3.appendChild(el('p', 'sp-c3-pie',
-      'Ninguno de los tres ejes alimenta el veredicto de arriba, y el veredicto no es su promedio. La ' +
-      'escalera de fiabilidad sale de los casos, las contradicciones y el registro verificado; estos ejes ' +
-      'son la lectura que el pliego del módulo define, y hoy ninguno tiene con qué publicar un nivel.'));
+      'Ninguno de estos ejes alimenta el veredicto de arriba, y el veredicto no es su ' +
+      'promedio. La escalera de fiabilidad sale de los casos, las contradicciones y el registro ' +
+      'verificado; estos ejes son la lectura que el pliego del m\u00f3dulo define, y ' +
+      (ejes.filter(function (x) { return x.publicable; }).length
+        ? 'no todos tienen con qu\u00e9 publicar un nivel.'
+        : 'hoy ninguno tiene con qu\u00e9 publicar un nivel.')));
     izq.appendChild(s3);
 
     // ── 1e · Capa 4: el marco declarado, el editorial y el control ─────────
@@ -4310,8 +4499,30 @@
     Object.keys(attrs || {}).forEach(function (k) { n.setAttribute(k, attrs[k]); });
     return n;
   }
-  function miles(n) {
-    return Number(n).toLocaleString('es-CO', { maximumFractionDigits: 0 });
+  /* El ÚNICO formateador del módulo. Toma `dec` —y eso no es comodidad: es
+     lo que quita la razón de escribir `toFixed(1).replace('.', ',')` a un
+     lado, que es como nacen las cuatro copias que la v1042 tuvo que unificar
+     en el otro módulo. Con él, «cuántos decimales» y «cómo se escribe un
+     número en castellano» siguen viviendo en el mismo sitio.
+
+     Y conserva la precisión que se le pide: miles(1.2, 2) da «1,20» y no
+     «1,2», que es lo que un `toLocaleString` a secas se com­a. */
+  /* Una frase armada de una lista empieza por su primer elemento, que viene
+     en minúscula porque es un nombre de eje. Capitalizar es del TEXTO y no
+     del dato: el nombre se guarda una vez y en minúscula. */
+  function mayus(t) { return t ? t.charAt(0).toUpperCase() + t.slice(1) : t; }
+
+  /* Un número pequeño en prosa va en LETRA y no en cifra: «Los 4 ejes», en
+     un título, se lee como un identificador y no como una cantidad. Hasta
+     nueve, que es donde el castellano cambia de costumbre; de ahí en
+     adelante devuelve la cifra formateada, que es lo correcto. */
+  var EN_LETRA = ['cero', 'un', 'dos', 'tres', 'cuatro', 'cinco', 'seis', 'siete', 'ocho', 'nueve'];
+  function enLetra(n) { return (n >= 0 && n < EN_LETRA.length) ? EN_LETRA[n] : miles(n); }
+
+  function miles(n, dec) {
+    var d = dec || 0;
+    return Number(n).toLocaleString('es-CO',
+      { minimumFractionDigits: d, maximumFractionDigits: d });
   }
 
   // Línea del dólar. Una sola serie: sin caja de leyenda, el título la nombra.

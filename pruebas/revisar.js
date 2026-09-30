@@ -2578,7 +2578,10 @@ console.log('\n  -- la ficha del gobernante --');
 
     /* La guarda de la guarda: sin esto, todo lo de arriba seguiría en verde
        sobre un formateador que dejó de poner el separador. */
-    const mil = /function miles\(n\)\s*\{([\s\S]{0,240}?)\n  \}/.exec(j70m);
+    /* La firma y no la línea: `function miles(n)` literal se puso roja en la
+       v1055 al añadirle sus decimales, que es un cambio legítimo (v890). Lo
+       que tiene que seguir siendo cierto es que escriba en castellano. */
+    const mil = /function miles\(n[^)]*\)\s*\{([\s\S]{0,320}?)\n  \}/.exec(j70m);
     const esCO = !!mil && /toLocaleString\('es-CO'/.test(mil[1]);
     comprobar('y el formateador sigue escribiendo la cifra en castellano', esCO,
       esCO ? "miles() sigue pasando por toLocaleString('es-CO')"
@@ -2610,15 +2613,37 @@ console.log('\n  -- la ficha del gobernante --');
     const finE = j70c3.indexOf('function casosDeCx');
     const tramoEjes = (iniE >= 0 && finE > iniE) ? j70c3.slice(iniE, finE) : '';
     const promedia = /\(\s*ejeA[^)]*\+|\bpromedio\b|indiceGeneral|\bejeA\([^)]*\)\s*\+|\/\s*3\b/.test(tramoEjes);
+    /* Los dos lados se LEEN del archivo: cuántas funciones de eje declara el
+       módulo, y cuántas devuelve `ejesDe`. Escribir el número acá sería
+       comprobar que la guarda es igual a sí misma. */
+    const ejesDeclarados = [...j70c3.matchAll(/function (eje[A-Z])\s*\(/g)].map((m) => m[1]);
+    /* DENTRO del `return [...]` y no en el tramo entero: el tramo trae el
+       comentario que explica la regla, y ahí los nombres de los ejes salen
+       nombrados. Contarlos ahí dio nueve de cuatro en la v1055. */
+    const devuelve = (tramoEjes.match(/return \[([^\]]*)\]/) || ['', ''])[1];
+    const ejesEnLista = [...devuelve.matchAll(/(eje[A-Z])\s*\(/g)].map((m) => m[1]);
     comprobar('los ejes no se combinan en un número único',
-      tramoEjes.length > 0 && !promedia && /return \[ejeA\(dd\), ejeB\(dd, corte\), ejeC\(\)\];/.test(tramoEjes),
+      /* La FORMA y no la línea: `return [ejeA(dd), ejeB(dd, corte), ejeC()];`
+         literal era la constante del código metida dentro de la comprobación
+         (v890), y se puso roja en la v1055 por añadir un cuarto eje, que es
+         un cambio legítimo. Lo que tiene que seguir siendo cierto es que
+         devuelva una LISTA con todos los ejes que el módulo declara. */
+      tramoEjes.length > 0 && !promedia && ejesEnLista.length === ejesDeclarados.length &&
+        ejesDeclarados.every((f) => ejesEnLista.indexOf(f) >= 0),
       !tramoEjes.length ? 'no se encontró el tramo de los ejes: la comprobación no vale'
-                        : (promedia ? 'hay algo que los suma o los promedia' : 'ejesDe devuelve los tres en una lista'));
+                        : (promedia ? 'hay algo que los suma o los promedia'
+                          : (ejesEnLista.length !== ejesDeclarados.length
+                             ? 'ejesDe devuelve ' + ejesEnLista.length + ' de los ' + ejesDeclarados.length +
+                               ' ejes que el módulo declara: el que falta no se pinta en ninguna parte'
+                             : 'ejesDe devuelve los ' + ejesEnLista.length + ' en una lista')));
 
     /* Y la otra mitad de la regla de oro: los ejes son Capa 3 y el veredicto
        es de otra cosa. Ninguno puede entrar en el cálculo de los techos. */
     const tramoVer = (j70c3.match(/var techos = \{[\s\S]*?(?=\n\s*\/\* El recuento de la Capa 1)/) || [''])[0];
-    const sucio = ['ejeA', 'ejeB', 'ejeC', 'ejesDe'].filter((k) => tramoVer.indexOf(k) >= 0);
+    /* La lista sale de las funciones de eje que el módulo declara, más
+       `ejesDe`: escrita a mano se habría quedado vieja con el cuarto eje y la
+       guarda seguiría en verde vigilando tres de cuatro. */
+    const sucio = ejesDeclarados.concat(['ejesDe']).filter((k) => tramoVer.indexOf(k) >= 0);
     comprobar('y ningún eje entra en el cálculo del veredicto',
       tramoVer.length > 0 && sucio.length === 0,
       !tramoVer.length ? 'no se encontró el tramo del veredicto' :
@@ -2634,10 +2659,86 @@ console.log('\n  -- la ficha del gobernante --');
       'el nivel queda en null y la razón nombra la serie que hace falta');
 
     /* La guarda de la guarda: si la ficha dejara de pintar los ejes, todo lo
-       de arriba seguiría en verde sobre tres funciones que nadie llama. */
-    comprobar('y la ficha pinta los tres ejes',
+       de arriba seguiría en verde sobre unas funciones que nadie llama. */
+    comprobar('y la ficha pinta los ejes',
       /ejesDe\(D, f\.corte\)/.test(j70c3),
       'la ficha los compone');
+
+    /* ── v1055 · NINGÚN EJE DECLARA FALTAR LO QUE EL REGISTRO TRAE ──────
+       El eje C decía «el módulo no tiene ninguna de esas cifras» sobre un
+       registro que trae el reparto por sector deflactado desde la v972, con
+       su IPC del DANE, su corte y sus fuentes. Es la sexta declaración de
+       ausencia falsa de este proyecto (v861, v863, v864, v884, v888) y la
+       primera del módulo presidencial — y era clase A y clase C a la vez:
+       el dato estaba en el MISMO registro que los otros dos ejes reciben,
+       `ejeC()` no recibía ni el parámetro, y ninguna superficie lo alcanzaba.
+
+       La guarda falla CERRADO: un eje que no lea el registro sale en rojo en
+       su primera corrida, en vez de tres tandas después. */
+    const firmas = [...j70c3.matchAll(/function (eje[A-Z])\s*\(([^)]*)\)/g)]
+      .map((m) => ({ id: m[1], args: m[2].trim() }));
+    const ciegos = firmas.filter((f) => !f.args);
+    comprobar('todo eje recibe el registro, y no declara faltar lo que el registro trae',
+      firmas.length > 0 && ciegos.length === 0,
+      !firmas.length ? 'NO PUDO CORRER: no se encontró ninguna función de eje'
+        : (ciegos.length
+            ? ciegos.map((f) => f.id).join(', ') + ' no recibe el registro, así que no puede saber ' +
+              'qué trae: es como el eje C afirmó durante 83 versiones que no tenía cifras que sí tenía'
+            : 'los ' + firmas.length + ' lo reciben'));
+
+    /* Y la mitad que lo hace comprobable: el eje C tiene que leer el bloque
+       que el registro trae. Sin esto la firma sería decorativa — recibir el
+       parámetro y no mirarlo se lee igual desde fuera. */
+    const tramoC = (j70c3.match(/function ejeC\(dd\) \{[\s\S]*?\n  \}/) || [''])[0];
+    const leeC = /\.presupuesto/.test(tramoC) && /sectores/.test(tramoC) && /realPct/.test(tramoC);
+    comprobar('y el eje C lee el reparto por sector que el registro trae',
+      tramoC.length > 0 && leeC,
+      !tramoC.length ? 'NO PUDO CORRER: no se encontró el cuerpo del eje C'
+        : (leeC ? 'lo lee del registro: `presupuesto.sectores` con su variación real'
+                : 'no lo lee: volvería a declarar que no tiene unas cifras que el registro sí trae'));
+
+    /* Que publique sus cifras NO puede convertirse en publicar un nivel. Las
+       dos reglas que faltan son de fuente —el ejecutado y la serie de los
+       gobiernos anteriores— y el pliego las pone como condición de validez:
+       el nivel se calcula, no se asigna. */
+    comprobar('y el eje C publica sus cifras sin publicar un nivel',
+      /nivel: null, publicable: false/.test(tramoC) &&
+      /EJECUTADO/.test(tramoC) && /gobiernos anteriores/.test(tramoC),
+      'el nivel queda en null y la razón nombra las dos reglas que faltan');
+
+    /* ── v1055 · EL EJE D, Y LO QUE NINGÚN EJE RECOGE ───────────────
+       Tampoco publica nivel, y por dos razones que se dicen aparte porque
+       piden cosas distintas: no hay FUENTE —las tres series oficiales— y no
+       hay INDICADOR —ningún criterio escrito del módulo cuenta un uso de la
+       fuerza—. Lo que NO puede hacer es escribirse uno de paso: un criterio
+       redactado mirando este registro nacería construido para el caso y sin
+       validar (v965). */
+    const tramoD = (j70c3.match(/function ejeD\(dd\) \{[\s\S]*?\n  \}/) || [''])[0];
+    const dosD = /la FUENTE/.test(tramoD) && /el INDICADOR/.test(tramoD);
+    comprobar('el eje D no publica nivel, y dice sus DOS razones por separado',
+      tramoD.length > 0 && /nivel: null, publicable: false/.test(tramoD) && dosD,
+      !tramoD.length ? 'NO PUDO CORRER: el eje D no existe, así que el uso de la fuerza no lo mide nada ' +
+                       'y ninguna pantalla lo dice'
+        : (dosD ? 'sin nivel, y separa la fuente que falta del indicador que no existe'
+                : 'junta las dos razones: mandaría a conseguir unas series que, sin indicador, no ' +
+                  'habría cómo clasificar'));
+
+    /* Y la cifra que hace comprobable el «no lo resume» de la placa: cuánto
+       del registro queda fuera de TODOS los ejes. Sin ella, un lector no
+       tiene manera de saber que el 97 % de los hechos —los bombardeos, las
+       muertes confirmadas, los desplazamientos— no entra en ningún nivel.
+       Se calcula del registro (v903) y lleva sus dos redacciones (v970). */
+    const cuentaD = /hechosDelMandato\(reg\)/.test(tramoD) && /indicadores \|\| \[\]/.test(tramoD);
+    comprobar('y cuenta del registro los hechos que ningún eje recoge',
+      cuentaD,
+      cuentaD ? 'sale de hechosDelMandato y baja sola a medida que el registro se clasifica'
+              : 'dejó de contarlo del registro: la cifra se quedaría vieja o desaparecería');
+
+    const placaD = /ejeFuerza/.test(j70c3) && /no los mide ning\u00fan eje|no los mide ningún eje/.test(j70c3);
+    comprobar('y la placa la publica, con sus dos redacciones',
+      placaD && /Todos los hechos registrados de este mandato alimentan/.test(j70c3),
+      placaD ? 'la placa la publica, y la otra redacción está escrita para el día que llegue a cero'
+             : 'la placa no la publica: la exención volvería a ser silenciosa (v966)');
   }
 
   /* ═══ CAPA 4 DEL PLIEGO · LA OPINIÓN, FUERA DEL CÁLCULO ════════════════
@@ -2659,10 +2760,20 @@ console.log('\n  -- la ficha del gobernante --');
 
     /* Las dos listas del marco son del pliego palabra por palabra. Si alguien
        las edita, cambia la definición del módulo, y eso tiene que verse. */
-    comprobar('el marco declara qué mide y qué NO mide, con los tres de cada uno',
-      (j70c4.match(/var MARCO_MIDE = \[([\s\S]*?)\];/) || ['', ''])[1].split("',").length === 3 &&
+    /* UNO POR EJE, y no «tres»: el tres era el número de ejes de ese día
+       metido dentro de la comprobación, y con el cuarto eje la guarda se
+       puso roja por un cambio legítimo. Lo que tiene que seguir siendo
+       cierto es que el marco declare lo que el módulo mide: un renglon por
+       eje, ni uno de más. Los ejes se cuentan del propio archivo. */
+    const nEjesDecl = [...j70c4.matchAll(/function eje[A-Z]\s*\(/g)].length;
+    const nMide = (j70c4.match(/var MARCO_MIDE = \[([\s\S]*?)\];/) || ['', ''])[1].split("',").length;
+    comprobar('el marco declara qué mide y qué NO mide, un renglón por eje',
+      nEjesDecl > 0 && nMide === nEjesDecl &&
       /var MARCO_NO_MIDE = \[[\s\S]*?intenciones[\s\S]*?rasgos de personalidad/.test(j70c4),
-      'tres cosas que mide y tres que no, incluidas las intenciones y los rasgos de personalidad');
+      nMide === nEjesDecl
+        ? nMide + ' cosas que mide, una por eje, y las que NO mide incluyen las intenciones y los rasgos'
+        : 'el módulo declara ' + nEjesDecl + ' ejes y el marco nombra ' + nMide +
+          ': el lector no sabría que hay un eje que el marco no menciona');
 
     const tramoVer4 = (j70c4.match(/var techos = \{[\s\S]*?(?=\n\s*\/\* El recuento de la Capa 1)/) || [''])[0];
     const sucio4 = ['editorialDe', 'analisisEditorial', 'marcoDeclarado']
@@ -10774,13 +10885,18 @@ console.log('\n  -- el marcado que vive dentro del JavaScript (v1025) --');
               : 'el rótulo cambió de forma y ya no dice qué mide'));
 
       // 2 · Y la placa dice qué NO mide.
-      const r2 = /sp-fi-alcance/.test(placa) && /deterioro institucional/.test(placa) &&
-                 /rumbo del gasto/.test(placa);
+      /* La PROPIEDAD y no dos palabras: «deterioro institucional» y «rumbo
+         del gasto» literales se pusieron rojas en la v1055 al pasar la
+         enumeración a calcularse de `enLista`, que es justo lo que impide
+         que se quede vieja. Lo que tiene que seguir siendo cierto es que la
+         placa NOMBRE los otros ejes, salgan de donde salgan. */
+      const enListaDecl = [...cod.matchAll(/enLista: '([^']+)'/g)].map((m) => m[1]);
+      const r2 = /sp-fi-alcance/.test(placa) && /mayus\(listaN\)/.test(placa) && enListaDecl.length > 1;
       comprobar('y la placa dice qué NO mide, donde se lee la cifra', r2,
-        r2 ? 'nombra los otros dos ejes en la placa misma'
+        r2 ? 'nombra los otros ejes en la placa misma, con la enumeración calculada de sus nombres declarados'
            : (!/sp-fi-alcance/.test(placa)
               ? 'no lo dice: el alcance solo estaría en el bloque de los ejes, a seis pantallas de la placa'
-              : 'lo dice sin nombrar los otros dos ejes, así que el lector no sabe qué queda fuera'));
+              : 'lo dice sin nombrar los otros ejes, así que el lector no sabe qué queda fuera'));
 
       // 3 · Y cuántos de los otros dos publican nivel se CALCULA (v903).
       const r3 = /ejesDe\([^)]*\)[\s\S]{0,160}?publicable/.test(placa);

@@ -23339,6 +23339,240 @@ lo desbloquea siguen siendo las cinco declaraciones de `mismoObjetoVerificado`.
 * **Las veintiuna filas en disputa y los diecinueve pendientes accionables**, con
   la decisión de estructura que la v1052 dejó medida. `pendiente`
 
+## El cuarto eje, y el rumbo del gasto que el registro sí tenía (v1055)
+
+Llegó así: **«no puedo permitir que diga fiable viendo la violencia y todas
+las cosas que están pasando en este gobierno, te pido que toca reemplazar el
+sistema de análisis de fiabilidad»**, y en el mensaje siguiente **«cómo
+recorta a la salud, educación, deporte»**.
+
+Medido antes de tocar el cálculo —la regla que el usuario fijó en la v916—,
+**el sistema de fiabilidad no estaba mal: mide la palabra y lo dice desde la
+v1051**. Lo que estaba mal son otras dos cosas, y las dos son peores.
+
+    v1054   3 ejes · el C declara no tener cifras que el registro trae · nada mide el uso de la fuerza
+    v1055   4 ejes · el C publica los recortes · la placa dice que 197 de 203 hechos no los mide nadie
+
+### La aritmética del peldaño, y por qué «Fiable» es correcto
+
+Sobre los hechos del mandato, con los tres techos de la escalera:
+
+| Techo | Cifra | Peldaño |
+|---|---|---|
+| Casos de corrupción | 0 confirmados · 0 en investigación (5 señalamientos, 3 archivados) | 0 |
+| Cambios de postura | 5 documentadas que cuentan · **0 con identidad de objeto** | entre **0 y 3** |
+| Registro verificado | **78 %** | 1 |
+
+El veredicto es el PEOR de los tres, así que el piso es 1 = «Fiable». Nada de
+eso está mal. Lo que estaba mal es que se leía como otra cosa.
+
+**Y los hechos que el reclamo nombra no pueden mover esa escalera por
+construcción.** Medido, hecho por hecho: la violencia —bombardeos, seis
+menores muertos con piso forense, «así terminarán los que no se sometan»— no
+alimenta ninguno de los tres techos; los recortes tampoco. La escalera cuenta
+casos, contradicciones y verificación, y eso es lo que el pliego le manda
+contar.
+
+### 1 · El eje C declaraba no tener unas cifras que el registro trae
+
+El defecto que responde al segundo mensaje, y es de los caros. `ejeC()` decía,
+palabra por palabra: «el módulo no tiene ninguna de esas cifras: las menciones
+presupuestales de la línea de tiempo son titulares, no ejecución».
+
+**Es falso.** Desde la v972 el registro trae un bloque `presupuesto`
+ESTRUCTURADO —no menciones— con su deflactor del DANE, su corte, su estado
+procesal y sus fuentes con rol, que los gráficos del tablero dibujan. Medidas
+las siete reglas del pliego contra él, **cinco están cubiertas**:
+
+| Regla | Estado |
+|---|---|
+| deflactar siempre | **sí** · IPC 6,24 % del DANE, 6 de 7 sectores con su variación real |
+| «gasto militar» en sus dos formas | **sí** · Defensa sola contra Defensa + Policía |
+| aprobado / radicado / ejecutado | a medias · hay estado procesal; no hay ejecutado |
+| % del PIB y del presupuesto | **sí** · el déficit primario y la composición |
+| servicio de deuda separado | **sí** · intereses contra amortizaciones |
+| lo inflexible contra lo discrecional | no |
+| la misma serie, gobiernos anteriores | **no** |
+
+Es la **sexta declaración de ausencia falsa** de este proyecto (v861, v863,
+v864, v884, v888) y la primera del módulo presidencial. Y es **clase A y clase
+C a la vez**: el dato estaba en el MISMO registro que los otros dos ejes
+reciben, `ejeC()` **no recibía ni el parámetro**, y ninguna superficie del eje
+lo alcanzaba — así que un recorte real del 4,4 % en salud y del 43,5 % en
+deporte estaba medido, con su fuente, y el eje que responde «hacia dónde se
+mueve el dinero» decía no tener nada.
+
+**El eje sigue SIN NIVEL, y eso no cambia**: las dos reglas que faltan son de
+fuente, y la de los gobiernos anteriores es la misma condición de archivo que
+bloquea el eje B. Lo que cambia es que publica sus cifras, como el eje B
+publica sus cuatro números desde la v958:
+
+```
+Deporte    −43,5 %    0,30 bn      Trabajo    +10,0 %   58,82 bn
+Salud       −4,4 %   77,05 bn      Defensa    +14,6 %   33,80 bn
+Educación   −3,1 %   78,77 bn      Hacienda   +34,4 %   40,70 bn
+```
+
+**Las dos cifras van juntas y ninguna ordena sola**, y eso va impreso: un
+−43,5 % sobre $0,3 billones mueve menos plata que un +34,4 % sobre $40,7. Es
+la regla del denominador de la v943 dicha sobre un reparto. Y el séptimo
+sector —Policía Nacional, sin variación real medida— **se cuenta y se nombra**
+en vez de desaparecer de la lista (v966).
+
+### 2 · Nada medía el uso de la fuerza, y ninguna pantalla lo decía
+
+El defecto que responde al primer mensaje. Los tres ejes miden la palabra, las
+reglas del juego y el dinero. **Ninguno mide el uso de la fuerza.**
+
+Que el bloque D del pliego estuviera pendiente desde la v959 no era el
+defecto: su razón está escrita y sigue valiendo. El defecto es que **su
+ausencia no se veía**. La placa decía «el deterioro institucional y el rumbo
+del gasto van en sus propios ejes» —dos cosas, escritas a mano— sin nombrar
+que hay una tercera que no va en ninguno, mientras el registro publicaba seis
+menores muertos en operaciones aéreas con confirmación de Medicina Legal. Es
+la exención silenciosa de la v966 a escala de módulo: **desde afuera, un eje
+que no existe y un eje que no publica nivel se leen igual — no se leen.**
+
+El eje D **no publica nivel**, y sus dos razones se dicen aparte porque piden
+cosas distintas: no hay **fuente** —las tres series oficiales del pliego— y no
+hay **indicador** —ninguno de los criterios escritos cuenta un uso de la
+fuerza, así que ni con las series habría qué clasificar—. Y **no se escribe
+uno de paso**: un criterio redactado mirando este registro nacería
+`construida-para-el-caso` y sin validar (v965), y el pliego es explícito en
+que el nivel se calcula y no se asigna.
+
+#### Y la cifra que hace comprobable el «no lo resume»
+
+**197 de 203 hechos del mandato —el 97 %— no los mide ningún eje**, y 27 de
+ellos tocan el uso de la fuerza o muertes. Sin esa cifra en la placa, un
+lector no tiene manera de saber cuánto del registro queda fuera de los
+niveles — y lo que queda fuera es justo lo que un peldaño alto parece
+desmentir. Se calcula del registro (v903) y lleva sus dos redacciones (v970).
+
+### Lo que NO se hizo, y por qué
+
+**No se bajó el peldaño a mano.** Las cinco declaraciones de
+`mismoObjetoVerificado` son las que lo mueven y siguen siendo de quien firma
+el módulo (v959, v972, v1050): leer si lo prometido y lo hecho son el mismo
+objeto cambia en público el juicio sobre una persona real. Medido: una
+declarada deja el peldaño en «Fiable», dos lo bajan a «Dudosa» y tres a
+«Poco fiable».
+
+Y **no se combinaron los ejes en un número único**, que es lo que un
+«índice general» haría: el pliego lo prohíbe con su razón —un gobernante
+puede ser muy sincero sobre su intención de concentrar poder— y hay dos
+guardas que lo vigilan.
+
+### Cinco cosas que solo dijo el papel
+
+Ninguna se veía leyendo el código, y las cinco salieron de componer la placa
+y la ficha y leerlas:
+
+* **«El el deterioro institucional»** — la frase llevaba su artículo escrito y
+  el nombre de lista trae el suyo;
+* **«Los 4 ejes, lado a lado»** — un número pequeño en prosa va en letra;
+* la intro de la sección **abría en minúscula**, porque se arma de una lista;
+* el estado procesal entraba **con su punto final** dentro de una frase, y
+  salía «…pueden cambiar.—.»;
+* y **una `а` cirílica dentro de «peldaño»**, que escribí yo. Es invisible a
+  la vista y **rompe cualquier búsqueda de la palabra** — la clase de la v878
+  en su forma más silenciosa. El parcheador comprueba ahora que no quede
+  ninguna letra de otro alfabeto en el archivo — **y se coló una segunda vez,
+  en el propio párrafo que la describe**, así que el barrido corre también
+  sobre la bitácora. Con una vuelta que ya estaba escrita: **se salta lo que va
+  entre comillas invertidas**, porque ahí la letra está NOMBRADA y no usada, que
+  es el mismo recorte que la guarda de la v1006 necesitó para no denunciarse
+  a sí misma. Y π no cuenta: es la fórmula del área de un anillo (v881).
+
+### Dos defectos míos de esta tanda, y uno peor que el otro
+
+* **`numEs` no existe en `js/70`.** Lo usé cinco veces y habría reventado en
+  tiempo de ejecución. Medido, `seguimiento.html` carga **solo** ese archivo,
+  así que no hay de dónde prestarlo (js/62 y js/65 lo toman de js/63, que ahí
+  no se carga). El único formateador del módulo es `miles`, y toma ahora sus
+  decimales — que es la decisión de la v1042: eso es lo que quita la razón de
+  escribir `toFixed(1).replace('.', ',')` a un lado.
+* **Y rompí la guarda del marco sin que nada lo dijera.** Al reescribirla le
+  puse `j70c3`, que **no existe en el ámbito del bloque de la capa 4**, así
+  que `matchAll` lanzaba y la comprobación **dejaba de imprimirse entera**
+  mientras la corrida seguía en verde. Lo cazó que la inyección de la demo no
+  pusiera nada en rojo, no leer el código. Es «una salida vacía no es una
+  salida buena» (v880) dentro de una guarda.
+
+### Cuatro guardas que envejecieron por un cambio legítimo, y se apretaron
+
+Las cuatro citaban **la línea** y no la propiedad (v890), y las cuatro se
+pusieron rojas al entrar el cuarto eje. Ninguna se aflojó:
+
+| Guarda | Pedía | Pide |
+|---|---|---|
+| los ejes no se promedian | `return [ejeA(dd), ejeB(dd, corte), ejeC()];` literal | que `ejesDe` devuelva **todos** los ejes que el módulo declara, contados del archivo |
+| el veredicto no se contamina | `['ejeA','ejeB','ejeC','ejesDe']` escrito | la lista, calculada de las funciones declaradas |
+| el marco declara qué mide | «tres de cada uno» | **un renglón por eje**, con los ejes contados del archivo |
+| la placa dice qué NO mide | «deterioro institucional» y «rumbo del gasto» literales | que la placa **use** la enumeración calculada |
+
+La última tuvo que apretarse dos veces: la primera versión buscaba `enLista`
+en el tramo de la placa, y ese nombre sigue apareciendo aunque la frase vuelva
+a enumerar a mano. **Una guarda que pasa por una mención no vigila nada**
+(v976), y lo destapó que su inyección no la pusiera en rojo.
+
+### Dos entradas del registro, medidas y sin declarar indicador
+
+Las dos llegaron por captura y las dos se buscaron una por una, porque **una
+captura de TikTok no es una fuente** —la primera declaraba ella misma que
+incluye multimedia generada por IA—.
+
+* **Dos juzgados ordenan informar cuánto recaudó la fundación de la primera
+  dama** (22 sep), con la tutela del vicepresidente del Senado, las 48 horas y
+  que tres días después quien la puso sostiene que no le respondieron de
+  fondo. **NO declara I-07**, y la razón va en su contrapunto: ese criterio
+  exige que el documento se haya ENTREGADO tras la tutela, y lo que consta es
+  lo contrario. Es el antecedente de un I-07, no un I-07. Tampoco I-05: ese
+  pide una decisión judicial que resuelva EN CONTRA del Ejecutivo, y admitir
+  una tutela y pedir un informe es trámite, no fallo de fondo.
+* **El primer crucero de la temporada cancela su escala en Santa Marta**
+  (28 sep), tras una semana de ataques atribuidos a las ACSN y una alerta de
+  la embajada de Estados Unidos. Entra como **correlación** y no como hecho
+  probado de causa: no consta un comunicado de la naviera declarando su
+  motivo, así que el vínculo lo establecen los operadores y la prensa.
+
+Las dos con todas sus fuentes con `rol` y con su fuente del acto. El registro
+pasa de 210 a **212 entradas** y de 843 a **854 fuentes**.
+
+### Demostrado contra la v1054
+
+Nueve inyecciones fieles, cada una un cambio que podría pasar de verdad, y las
+nueve muerden:
+
+```
+✗ todo eje recibe el registro — ejeC no recibe el registro, así que no puede
+  saber qué trae: es como el eje C afirmó durante 83 versiones que no tenía
+  cifras que sí tenía
+✗ y el eje C lee el reparto por sector — no lo lee: volvería a declarar que no
+  tiene unas cifras que el registro sí trae
+✗ y el eje C publica sus cifras sin publicar un nivel
+✗ el eje D no publica nivel, y dice sus DOS razones — NO PUDO CORRER: el eje D
+  no existe, así que el uso de la fuerza no lo mide nada y ninguna pantalla lo dice
+✗ y cuenta del registro los hechos que ningún eje recoge
+✗ y la placa la publica — la exención volvería a ser silenciosa (v966)
+✗ el marco declara un renglón por eje — el módulo declara 4 y el marco nombra 3
+✗ y la placa dice qué NO mide — lo dice sin nombrar los otros ejes
+```
+
+### Lo que esta versión NO hace, y queda medido
+
+* **Las cinco declaraciones de `mismoObjetoVerificado`**, que son las únicas
+  que mueven el peldaño y son de quien firma el módulo. `pendiente`
+* **El indicador de uso de la fuerza**, que es lo que daría nivel al eje D.
+  Escribirlo pide decidir qué se cuenta —muertes en operaciones, con qué
+  confirmación, con qué denominador— y contrastarlo contra un gobierno
+  anterior; escrito mirando este registro nacería sin validar. `pendiente`
+* **Las dos reglas que le faltan al eje C**: el ejecutado por sector y la
+  misma serie para los gobiernos anteriores. Las dos son de fuente. `pendiente`
+* **Clasificar los 197 hechos** que ningún eje recoge, que es el renglón 2 de
+  la `LISTA-QUE-SIGUE` y lo único que puede sacar al eje B de su cero.
+  `pendiente`
+
 ## La lista viva: lo que al pliego educativo todavía le falta (v866)
 
 Esta lista se quedó vieja **cinco veces**. Cuatro dentro de la hoja —la

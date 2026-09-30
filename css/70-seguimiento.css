@@ -1442,6 +1442,12 @@ a.sp-fuente:hover svg{ color:var(--verde-hi); }
   margin:8px 0 6px; padding-top:8px; border-top:1px solid rgba(201,210,218,.22);
   font-size:var(--t-8); line-height:1.5; color:#C9D2DA;
 }
+/* La segunda línea de acotación —cuánto del registro no lo mide ningún
+   eje— es el mismo gris y el mismo tamaño: es la cifra que hace
+   comprobable la frase de encima, no una advertencia aparte. Lo único que
+   cambia es que no repite el hilo, o la placa cerraría con dos rayas
+   seguidas para separar dos mitades de una misma acotación. */
+.sp-fi-alcance-2{ margin-top:-2px; padding-top:0; border-top:0; }
 
 /* UN PELDAÑO PROVISIONAL SE VE COMO TAL, Y NO EN ROJO.
    El rojo de este módulo es para un hallazgo verificado con fuente; lo que
@@ -1848,6 +1854,23 @@ a.sp-fuente:hover svg{ color:var(--verde-hi); }
   font-size:var(--t-8); line-height:1.6; color:#7A5310;
 }
 .sp-c3-lect{ margin:0; font-size:var(--t-8); line-height:1.6; color:var(--ink-2); }
+
+/* LOS SECTORES DEL EJE C, que publica sus cifras aunque no publique nivel.
+   Tres columnas y no dos: el nombre, la variación real y los pesos. Las dos
+   cifras van juntas porque ninguna ordena sola —un −43 % sobre $0,3
+   billones mueve menos plata que un +34 % sobre $40,7— y esa es justamente
+   la lectura que una sola columna escondió durante toda la vida del eje.
+   `tabular-nums` para que la columna se lea en vertical, que es como se lee
+   una lista de recortes. */
+.sp-c3-sec li{ display:grid; grid-template-columns:1fr auto auto; gap:6px 12px; align-items:baseline; }
+.sp-c3-sec b{ text-align:right; }
+/* El recorte se marca, y en el ámbar de este módulo y no en rojo: el rojo es
+   para un hallazgo verificado sobre el gobierno, y una variación
+   presupuestal es una cifra, no un hallazgo (v971). Que baje o suba lo dice
+   el signo; el color solo lleva el ojo. */
+.sp-c3-sec li.baja b{ color:#8A5D12; }
+.sp-c3-bn{ font-size:var(--t-9); color:var(--ink-3, #6B7885); font-variant-numeric:tabular-nums;
+  white-space:nowrap; text-align:right; min-width:5.5em; }
 .sp-c3-pie{ margin:0; font-size:var(--t-8); line-height:1.6; color:var(--ink-2); }
 
 /* ── Capa 4 del pliego: marco declarado, editorial y control ────────────── */
