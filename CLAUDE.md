@@ -23160,6 +23160,185 @@ vigilaría, que es el mismo hueco cometido dentro de la frase que lo describe.
   uno que no, que es la discriminación que la v1007 midió y para la que el
   título es la única señal fiable. `pendiente`
 
+## El hilo de Alex Saab, y la premisa partida en tres (v1054)
+
+Llegó así: «Daniel Coronel está exigiendo documentos sobre el pasado de
+Abelardo y sus conexiones con el narcotraficante y dineros». Medida antes de
+entrar nada —la regla que el usuario fijó en la v916— la premisa se parte en
+tres, y **una parte ya estaba, otra no es lo que parece, y la que falta faltaba
+entera**.
+
+    v1053   208 entradas · 7 casos · 0 menciones de Saab
+    v1054   210 entradas · 8 casos · el hilo entero, y el veredicto sin moverse
+
+### El narcotraficante ya estaba, y está ARCHIVADO
+
+`casos.lista` trae desde antes `lavado-tuso-sierra`: la Corte Suprema pidió
+investigarlo por lavado de activos a partir del testimonio del narcotraficante
+Juan Carlos «El Tuso» Sierra, **la Fiscalía precluyó a su favor en 2014 y
+archivó el proceso en 2021**, con el texto de la orden citado. Y su `_nota`
+dice por qué está ahí: *«este caso está en el registro porque lo favorece, no
+porque lo señale»*. Hay un segundo archivado —la oferta de soborno a un
+testigo— **que salió de una columna de Coronell de febrero de 2026**, así que
+Coronell ya estaba en el registro como fuente.
+
+De haber creído el enunciado, la tanda habría empezado buscando desde cero lo
+que ya estaba documentado y con su desenlace favorable escrito.
+
+### Y no está exigiendo documentos: los MOSTRÓ
+
+Lo confirmó el usuario en la vuelta siguiente. Son documentos **judiciales
+desclasificados** y correos, publicados en cuatro columnas de *Cambio* —dos de
+Coronell en mayo de 2026, «Abelardo Saabía» de Yohir Akerman en septiembre y
+«La mentira de Abelardo» el 20 de septiembre—. Lo que exige no son documentos:
+es **una rectificación**, y de ahí sale la mitad de esta tanda.
+
+Es la segunda vez en tres tandas que el síntoma está bien visto y la causa que
+se le supone no: la v1053 midió lo mismo con «el hecho que falta», que eran
+tres.
+
+### Lo que faltaba entera: cero menciones de Saab
+
+```
+Saab           0 menciones
+Maduro         0
+desclasific    0
+Akerman        0
+```
+
+Cero, en 208 entradas. Así que el hilo que está vivo ahora era el único hueco,
+y **no es uno sino tres cosas con tres consecuencias distintas** —que es lo que
+decide qué entra y qué no—:
+
+| | Estado | ¿Mueve el veredicto? |
+|---|---|---|
+| **el dinero** — los giros de Saab | `senalamiento` | **no**, por construcción |
+| **las columnas y la rectificación** | dos entradas de línea de tiempo | no |
+| **la mentira** — su versión contra la cronología | ¿sexta contradicción documentada? | **sí** — es el eje de la palabra |
+
+Las dos primeras entran. **La tercera no**, y es la misma frontera de la v959 y
+la v972: leer si «defendí a un cliente honesto injustamente acusado» y «sabía
+desde 2015 de dónde venía su plata» hablan del mismo objeto verificado decide
+en público el juicio sobre un presidente en ejercicio, y lo decide quien firma
+el módulo.
+
+### El señalamiento separa lo que los documentos registran de lo que concluyen
+
+Es la distinción que sostiene la entrada entera, y va escrita dentro: **que los
+giros existan es lo que los documentos desclasificados registran; que su origen
+fuera ilícito y que él lo supiera es la conclusión de los columnistas**, y
+ninguna autoridad la ha establecido. Comprobado: no consta que la Fiscalía, la
+Corte Suprema ni ningún otro organismo colombiano haya abierto actuación por
+estos giros; lo único reportado es la pregunta abierta de si existe una
+investigación en Estados Unidos, **publicada como pregunta y no como hecho**.
+
+Por eso entra como `senalamiento`, que es el estado por omisión del registro y
+**no pesa en el veredicto**. Y su `_nota` dice la otra mitad, que es la que lo
+vuelve un registro y no una acusación: este es OTRO caso que los dos que la
+misma lista tiene archivados a su favor, y **leer los tres como uno solo es
+injusto con el señalado en las dos direcciones**.
+
+Y la aritmética va escrita para que se pueda comprobar, que es la práctica de
+la v1052: los tres giros de la carta de mayo de 2014 —199.950, 99.950 y
+74.950— suman **374.850**, de ahí el «más de 370.000» que publica la prensa.
+
+### Las dos entradas se fechan en el hecho que cada una registra
+
+Es el criterio de la v1053, y acá separa dos cosas que era tentador juntar en
+una:
+
+* **2026-09-20** · `corrupcion` · **disputada** — los documentos y la confesión
+  de Saab contra su versión pública. Lo que la entrada sostiene es la
+  **cronología** —el correo del 29 de abril de 2015, la entrevista del 25 de
+  agosto de 2017, la confesión de septiembre de 2026— y por eso es
+  `hecho-probado`; que mintiera **a sabiendas** es la conclusión de los
+  columnistas, y por eso la entrada va DISPUTADA y **no se publica como
+  hallazgo**. Su `contrargumentoOficial` es el cuarto del registro: su equipo
+  jurídico sostiene que los artículos contienen información falsa, y se dice qué
+  **no** responde —el correo de 2015 frente a lo que sostuvo desde 2017—.
+* **2026-09-24** · `informacion` · **verificada** — la FLIP rechaza que el
+  presidente use solicitudes de rectificación contra medios a través de su
+  firma. Se une al hilo de prensa que el registro ya tenía —la Directiva
+  Presidencial 01, las veinte emisoras de paz, la hoja de ruta de las ruedas de
+  prensa— y **no estaba**.
+
+Ninguna de las dos declara indicador, y la segunda dice **por qué** en su
+contrapunto para que no se lea como un descuido: una solicitud de rectificación
+no es una directiva que altere el régimen de difusión —el `incluye` de I-04— ni
+un choque con un órgano de autonomía constitucional —el de I-05—. Y por lo mismo
+ninguna lleva `nivelGobierno`: las dos son `contexto-estructural`, y a lo que no
+es un acto de gobierno no se le inventa un nivel (v999).
+
+De paso, la segunda dice lo que **no** se afirma: pedir una rectificación es un
+derecho y cualquiera puede ejercerlo. Lo que la FLIP objeta —y va **atribuido a
+la FLIP**, porque no es una determinación judicial— es que las pida el jefe de
+Estado por una firma privada, con la fórmula ya escrita y el anuncio de acciones
+penales al lado.
+
+### El defecto que destapó el barrido: «Monto: 282585333»
+
+No es de esta tanda ni de este caso. Barriendo la ficha compuesta con las cuatro
+reglas del papel salió, en el caso del FENOGE, una cifra de nueve dígitos sin
+separador —que en castellano es lo que vuelve ilegible una cifra grande (v885)—.
+
+La causa es de la clase B: **el campo `monto` lleva dos tipos** y el impresor los
+concatenaba igual.
+
+| | Qué trae |
+|---|---|
+| `nova-soportes` | `'1.299 millones de pesos'` — cadena ya formateada |
+| `fenoge-puerta-giratoria` | `282585333` — **un número** |
+
+**No se arregla en el registro**, y la razón es concreta: ahí un número es una
+forma legítima del dato, y lo escribe una rutina diaria que no lee esta
+bitácora. Se arregla en el **único sitio que lo imprime**, que es donde no puede
+olvidarse, y pasa por `miles()` —el formateador que el módulo ya tenía y que no
+se usaba para esto—: un formateador nuevo habría sido la clase B en la tanda que
+la cita.
+
+Y **no se le inventa la unidad**: la prosa del propio caso dice «282.585.333
+pesos incluido IVA», así que el campo se imprime como lo que el registro tiene.
+
+La guarda falla cerrado y va en las dos direcciones —que pase por el formateador
+**y** que distinga el número de la cadena, porque formatear una cadena daría
+«NaN»— con su MATERIAL primero y su guarda de la guarda. El MATERIAL falla en
+**rojo** y no con su `?`: por la frontera de la v1026, que el impresor deje de
+pintar el monto no es una mejora del dato sino una regresión.
+
+### Lo que no se movió, medido
+
+| | v1053 | v1054 |
+|---|---|---|
+| Entradas · fuentes | 208 · 831 | **210 · 843**, todas con su `rol` |
+| Casos | 7 | **8** — el nuevo, señalamiento |
+| Registro verificado | 78 % | **78 %** |
+| Veredicto | Fiable · con lo confirmado hasta hoy | **el mismo** |
+| Contradicciones sin identidad | 5 de 5 | **5 de 5** |
+
+El veredicto no se mueve y **tiene que no moverse**: un `senalamiento` no pesa
+por construcción, y de las dos entradas una es verificada y otra disputada, así
+que el techo del registro verificado se queda en el mismo peldaño. Lo único que
+lo desbloquea siguen siendo las cinco declaraciones de `mismoObjetoVerificado`.
+
+### Lo que esta versión NO hace, y queda medido
+
+* **La sexta contradicción**, que es la decisión del usuario descrita arriba.
+  Medido lo que costaría: entra como sexta documentada y el peldaño publicado
+  **no se mueve** hoy —el techo del registro verificado lo fija en 1—, pero el
+  intervalo pasa de «5 de 5» a «5 de 6» pendientes, y con identidad declarada el
+  techo de la palabra empieza a contar. `pendiente`
+* **El conteo del reporte de 2024 sobre acciones judiciales contra periodistas**
+  se cita como lo que ese reporte contabilizó, y **no se verificó expediente por
+  expediente**: desde esta máquina el proxy bloquea todos los dominios y el
+  único canal es la búsqueda (v967). Va dicho en el propio contrapunto.
+  `pendiente`
+* **Las cinco entradas nuevas prioritarias del balance** —subsidios de energía y
+  gas, el recorte a la JEP desde su propio presupuesto, el DANE con su causal
+  textual, la objeción a la ley de mérito derrotada, y la aprobación 51,8 /
+  43,2—. `pendiente`
+* **Las veintiuna filas en disputa y los diecinueve pendientes accionables**, con
+  la decisión de estructura que la v1052 dejó medida. `pendiente`
+
 ## La lista viva: lo que al pliego educativo todavía le falta (v866)
 
 Esta lista se quedó vieja **cinco veces**. Cuatro dentro de la hoja —la

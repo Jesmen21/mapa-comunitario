@@ -2541,6 +2541,50 @@ console.log('\n  -- la ficha del gobernante --');
     }
   }
 
+  /* ═══ UNA CIFRA DEL REGISTRO NO SE CONCATENA EN CRUDO (v1054) ══════
+     Salió barriendo la ficha compuesta: «Monto: 282585333». El registro
+     escribe `monto` de dos maneras —un NÚMERO en el caso del FENOGE y una
+     cadena ya formateada («1.299 millones de pesos») en el de Nova— y el
+     impresor los concatenaba igual, así que el número salía sin separador de
+     miles, que en castellano es lo que vuelve ilegible una cifra grande
+     (v885). No se arregla en el registro: ahí un número es una forma
+     legítima del dato y lo escribe una rutina diaria que no lee esta
+     bitácora. Se arregla en el ÚNICO sitio que lo imprime, que es donde no
+     puede olvidarse —y de qué NO responde esta guarda va dicho: vigila el
+     monto, no los demás campos del caso; los otros los escribe el registro
+     como prosa ya formateada. */
+  {
+    const j70m = soloCodigo(leer('js/70-seguimiento.js'));
+    const sitio = /'Monto: '\s*\+\s*([^;]{0,200})/.exec(j70m);
+
+    /* MATERIAL · falla en ROJO y no con su `?`: es código servido, y que el
+       impresor deje de pintar el monto no es una mejora del dato sino una
+       regresión —la frontera que la v1026 dejó escrita—. */
+    comprobar('MATERIAL · el impresor de casos pinta el monto', !!sitio,
+      sitio ? 'lo pinta, y se puede leer con qué lo formatea'
+            : 'NO PUDO CORRER: no se encontró el sitio que imprime el monto, así que lo de abajo no vigila nada');
+
+    if (sitio) {
+      const pasa = /miles\s*\(/.test(sitio[1]);
+      comprobar('la cifra del monto pasa por el formateador, no se concatena en crudo', pasa,
+        pasa ? 'un número sale con su separador de miles'
+             : 'se concatena en crudo: un monto numérico saldría «Monto: 282585333»');
+
+      const dist = /typeof\s+c\.monto\s*===\s*'number'/.test(sitio[1]);
+      comprobar('y distingue el número de la cadena ya formateada', dist,
+        dist ? 'una cadena se imprime tal cual y no se vuelve a formatear'
+             : 'formatearía también la cadena, y «1.299 millones de pesos» saldría «NaN»');
+    }
+
+    /* La guarda de la guarda: sin esto, todo lo de arriba seguiría en verde
+       sobre un formateador que dejó de poner el separador. */
+    const mil = /function miles\(n\)\s*\{([\s\S]{0,240}?)\n  \}/.exec(j70m);
+    const esCO = !!mil && /toLocaleString\('es-CO'/.test(mil[1]);
+    comprobar('y el formateador sigue escribiendo la cifra en castellano', esCO,
+      esCO ? "miles() sigue pasando por toLocaleString('es-CO')"
+           : 'miles() dejó de escribir en es-CO: el monto volvería a salir sin separador');
+  }
+
   /* ═══ CAPA 3 DEL PLIEGO · LOS EJES, NUNCA EN UN SOLO NÚMERO ════════════
      La regla que sostiene la capa entera: «se muestran lado a lado, nunca
      combinados en un número único». Es la invariante más fácil de romper sin

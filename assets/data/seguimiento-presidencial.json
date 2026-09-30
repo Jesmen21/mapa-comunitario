@@ -74,6 +74,93 @@
  },
  "entradas": [
   {
+   "fecha": "2026-09-24",
+   "precision": "exacta",
+   "categoria": "informacion",
+   "titulo": "La FLIP rechaza que el presidente use solicitudes de rectificación contra medios a través de su firma de abogados: «uso indebido»",
+   "categoriaProbatoria": "hecho-probado",
+   "tipoMedicion": "contexto-estructural",
+   "detalle": "El 24 de septiembre de 2026 la Fundación para la Libertad de Prensa (FLIP) rechazó públicamente el uso de solicitudes de rectificación contra medios de comunicación por parte del presidente Abelardo de la Espriella, y lo calificó de «uso indebido» de esa figura. Las solicitudes se tramitan a través de su firma de abogados y llegan con fórmulas de rectificación ya redactadas y con la advertencia de que se podrían promover acciones constitucionales, civiles y penales. El detonante inmediato fueron las columnas de Cambio sobre su relación profesional con Alex Saab: tras ellas, su equipo jurídico anunció acciones legales contra el periodista y sostuvo que los textos contienen información falsa. No es la primera vez: en enero de 2026, todavía en campaña, ya había anunciado una «avalancha de acciones judiciales» contra un periodista si no se rectificaba, y la FLIP se pronunció entonces por lo mismo. Un reporte de 2024 que cita La Silla Vacía contabilizó acciones judiciales contra cinco periodistas que investigaban su relación con Saab y con David Murcia Guzmán.",
+   "contrapunto": "Acá no se afirma que pedir una rectificación sea ilegítimo: es un derecho, está en la ley y cualquiera puede ejercerlo. Lo que la FLIP objeta, y es lo que queda registrado, es otra cosa y conviene decirla exacta: que quien las pide es el jefe de Estado, que llegan por una firma privada de abogados con la fórmula ya escrita y con el anuncio de acciones penales al lado, y que el efecto de ese conjunto sobre un medio no es el mismo que el de una petición ciudadana. La calificación de «uso indebido» es de la FLIP y va atribuida a la FLIP; no es una determinación judicial y ninguna autoridad la ha establecido. Y el conteo del reporte de 2024 se cita como lo que es —lo que ese reporte contabilizó—: este registro no verificó expediente por expediente. Esta entrada NO declara indicador, y conviene decir por qué para que no se lea como un descuido: una solicitud de rectificación no es una directiva que altere el régimen ordinario de difusión de información pública, que es lo que describe el criterio de I-04, ni un choque con un órgano de autonomía constitucional, que es lo de I-05. Por la misma razón no lleva nivel de gobierno: quien pide la rectificación lo hace por medio de su firma privada y no por un acto del Ejecutivo.",
+   "tipoFuente": "verificado",
+   "fuentes": [
+    {
+     "n": "Infobae · la FLIP rechaza el uso de solicitudes de rectificación contra medios: «uso indebido»",
+     "u": "https://www.infobae.com/colombia/2026/09/24/la-flip-rechazo-el-uso-de-solicitudes-de-rectificacion-contra-medios-por-parte-del-presidente-abelardo-de-la-espriella-uso-indebido/",
+     "rol": "acto"
+    },
+    {
+     "n": "El País · tras columna crítica anuncia acciones legales contra el periodista; la FLIP llama a respetar la libertad de prensa",
+     "u": "https://www.elpais.com.co/politica/tras-columna-critica-de-la-espriella-anuncia-acciones-legales-contra-periodista-flip-llama-a-respetar-la-libertad-de-prensa-1800.html",
+     "rol": "acto"
+    },
+    {
+     "n": "La Silla Vacía · la FLIP advierte sobre «acoso judicial» contra periodistas",
+     "u": "https://www.lasillavacia.com/en-vivo/la-flip-advierte-sobre-acoso-judicial-de-abelardo-contra-periodistas/",
+     "rol": "contexto"
+    },
+    {
+     "n": "La Silla Vacía · así funciona la estrategia judicial contra periodistas",
+     "u": "https://www.lasillavacia.com/silla-nacional/asi-funciona-la-estrategia-judicial-de-de-la-espriella-contra-periodistas/",
+     "rol": "contexto"
+    },
+    {
+     "n": "Infobae · enero de 2026: anuncia una «avalancha de acciones judiciales» y la FLIP se pronuncia",
+     "u": "https://www.infobae.com/colombia/2026/01/17/abelardo-de-la-espriella-anuncio-avalancha-de-acciones-judiciales-si-periodista-no-se-rectifica-la-flip-se-pronuncio/",
+     "rol": "contexto"
+    }
+   ]
+  },
+  {
+   "fecha": "2026-09-20",
+   "precision": "exacta",
+   "categoria": "corrupcion",
+   "titulo": "Documentos judiciales desclasificados y una confesión de Alex Saab contradicen la versión pública del presidente sobre su antiguo cliente",
+   "categoriaProbatoria": "hecho-probado",
+   "tipoMedicion": "contexto-estructural",
+   "detalle": "El 20 de septiembre de 2026 Daniel Coronell publicó en Cambio la columna «La mentira de Abelardo», que pone en una sola línea de tiempo documentos judiciales desclasificados, correos y una confesión reciente de Alex Saab. La cronología que arma es esta. El 29 de abril de 2015, Saab le envió a Abelardo de la Espriella un correo avisándole del envío de dos giros de Group Grand Limited, la sociedad creada en Hong Kong que se usó para venderle al régimen venezolano 350 millones de dólares en alimentos vencidos y alterados para las bolsas CLAP. En el registro público de Hong Kong, uno de los directores de esa sociedad fue Shadi Nain Saab Certain, hijo de Saab, hasta febrero de 2017. El 25 de agosto de 2017 se publicó la entrevista en la que Saab negó su vínculo con esa misma sociedad, y De la Espriella, su abogado, sostuvo públicamente por esos años que su cliente no hacía parte del Gobierno venezolano y que era un contratista que había cumplido las obras que ejecutó. En septiembre de 2026 Saab confesó la relación con la sociedad que había negado. La columna de Yohir Akerman «Abelardo Saabía», de los mismos días, agrega que los documentos desclasificados muestran que De la Espriella supo de las actividades ilícitas de Saab y de su conexión con el régimen de Maduro desde agosto de 2016, por boca de su propio cliente, y que en 2016 y 2017 lo acompañó a reuniones con la DEA. Todo esto se apoya en la investigación que Coronell publicó en mayo de 2026 —«La huella de Alex Saab» y «Los giros de Alex Saab»—, que documentó giros por más de 370.000 dólares desde dos empresas de Saab hacia cuentas fiduciarias en Miami y que está en la lista de casos de esta misma ficha, como señalamiento.",
+   "contrapunto": "Lo que esta entrada sostiene es la cronología, no la conclusión. Que los documentos existan, que el correo sea del 29 de abril de 2015, que la entrevista sea del 25 de agosto de 2017 y que Saab haya confesado en septiembre de 2026 es lo que los documentos y las publicaciones registran, y por eso la entrada entra como hecho probado. Que mintiera A SABIENDAS es la conclusión de los columnistas: ninguna autoridad la ha establecido, y por eso esta entrada va como DISPUTADA y no se publica como hallazgo. La defensa que el propio implicado invoca también va dicha: un abogado sostiene en público la tesis de su cliente, y eso no equivale por sí mismo a afirmar un hecho propio; su versión es que representó a Saab entre 2013 y 2019, que sus honorarios fueron «de seis cifras» y que no supo del origen del dinero. Y dos precisiones de registro. La primera: esto es OTRO caso que los dos que esta ficha ya tiene ARCHIVADOS a su favor —el del dinero del narcotraficante Juan Carlos «El Tuso» Sierra, que la Fiscalía precluyó en 2014 y archivó en 2021, y el de la oferta de soborno a un testigo, que la Fiscalía archivó por no encontrar prueba que lo vinculara—; leerlos como uno solo es injusto con el señalado en las dos direcciones. La segunda: los hechos son de 2014 a 2017, anteriores al mandato y a la campaña, y el mandato empezó el 7 de agosto de 2026, así que esta entrada queda por fuera de las cuentas del mandato por su fecha, como debe ser.",
+   "contrargumentoOficial": "Su equipo jurídico —el abogado Germán Calderón España— sostuvo públicamente que los artículos contienen información falsa, pidió rectificación formal y anunció acciones civiles y penales, y calificó los textos de «instrumentos de propaganda». Sobre el fondo, la versión que De la Espriella ha dado en entrevistas es que representó a Alex Saab entre 2013 y 2019 —hasta que fue procesado en Miami y sancionado por la Oficina de Control de Activos Extranjeros del Tesoro— y que sus honorarios fueron «de seis cifras», muy por debajo de las cifras que han circulado. No responde la pieza que la columna pone en el centro: el correo del 29 de abril de 2015 frente a lo que sostuvo en público a partir de 2017.",
+   "tipoFuente": "disputado",
+   "fuentes": [
+    {
+     "n": "Cambio · «La mentira de Abelardo», la cronología (20 de septiembre de 2026)",
+     "u": "https://cambiocolombia.com/los-danieles/articulo/2026/9/la-mentira-de-abelardo",
+     "rol": "acto"
+    },
+    {
+     "n": "Cambio · «Abelardo Saabía», de Yohir Akerman: los documentos desclasificados",
+     "u": "https://cambiocolombia.com/opinion/puntos-de-vista/abelardo-saabia",
+     "rol": "acto"
+    },
+    {
+     "n": "La Silla Vacía · la cronología que no cuadra en la relación de Saab y De la Espriella",
+     "u": "https://www.lasillavacia.com/silla-nacional/la-cronologia-que-no-cuadra-en-la-relacion-de-saab-y-de-la-espriella/",
+     "rol": "acto"
+    },
+    {
+     "n": "Cambio · «Los giros de Alex Saab», la investigación de mayo de 2026",
+     "u": "https://cambiocolombia.com/los-danieles/articulo/2026/5/los-giros-de-alex-saab",
+     "rol": "contexto"
+    },
+    {
+     "n": "Infobae · los documentos con consignaciones y correos que revelarían el entramado",
+     "u": "https://www.infobae.com/colombia/2026/05/24/abelardo-de-la-espriella-se-habria-beneficiado-de-las-empresas-de-alex-saab-documentos-con-consignaciones-y-correos-revelarian-el-entramado/",
+     "rol": "contexto"
+    },
+    {
+     "n": "Vanguardia · la relación, del despacho de abogados a la controversia política",
+     "u": "https://www.vanguardia.com/colombia/2026/02/04/la-relacion-entre-abelardo-de-la-espriella-y-alex-saab-del-despacho-de-abogados-a-la-controversia-politica/",
+     "rol": "contexto"
+    },
+    {
+     "n": "Infobae · la respuesta: acciones judiciales y solicitud de rectificación",
+     "u": "https://www.infobae.com/colombia/2026/09/24/la-flip-rechazo-el-uso-de-solicitudes-de-rectificacion-contra-medios-por-parte-del-presidente-abelardo-de-la-espriella-uso-indebido/",
+     "rol": "efecto"
+    }
+   ]
+  },
+  {
    "fecha": "2026-09-04",
    "precision": "exacta",
    "categoria": "gobierno",
@@ -7871,6 +7958,53 @@
      {
       "n": "Radio Nacional · el porcentaje anulado y la queja de Fonseca",
       "u": "https://www.radionacional.co/"
+     }
+    ]
+   },
+   {
+    "id": "giros-saab",
+    "titulo": "Documentos judiciales desclasificados registran giros por más de 370.000 dólares de dos empresas de Alex Saab a cuentas fiduciarias en Miami, entre 2014 y 2015",
+    "estado": "senalamiento",
+    "nivelGobierno": "nacional",
+    "queSeConfirmo": "Nada todavía. La investigación que Daniel Coronell publicó en Cambio en mayo de 2026, sobre documentos judiciales desclasificados, registra transferencias por más de 370.000 dólares entre 2014 y 2015 desde dos sociedades vinculadas a Alex Saab: Group Grand Limited, creada en Hong Kong y usada para venderle al régimen venezolano 350 millones de dólares en alimentos vencidos y alterados para las bolsas CLAP, y Consorcio Estructuras Metálicas, por la que Saab y su socio cobraron cerca de 700 millones de dólares en proyectos de vivienda de los que ejecutaron menos del 5 %. Una carta de mayo de 2014 que la investigación atribuye a De la Espriella detalla tres giros internacionales a cuentas fiduciarias administradas por abogados en Miami: 199.950, 99.950 y 74.950 dólares, que suman 374.850 —de ahí el «más de 370.000»; la suma se escribe para que se pueda comprobar—, enviados desde cuentas de esas sociedades en Antigua y en Hong Kong. Según la misma investigación, parte de esos recursos se usó para comprar un apartamento en Bristol Tower, en Miami, y otra parte se entregó a una persona identificada como Rafael Mora. En septiembre de 2026 una columna de Yohir Akerman en la misma revista sumó un correo del 29 de abril de 2015 en el que Saab le avisa de dos giros de Group Grand Limited.",
+    "quienLoConfirmo": "Ninguna autoridad. No consta que la Fiscalía, la Corte Suprema ni ningún otro organismo colombiano haya abierto actuación por estos giros; lo único reportado sobre el punto es la pregunta abierta de si existe una investigación en Estados Unidos, publicada como pregunta y no como hecho. El presidente no niega la relación profesional —ha dicho que representó a Saab entre 2013 y 2019 y que sus honorarios fueron «de seis cifras»—; niega haber sabido del origen del dinero, y su equipo jurídico pidió rectificación y anunció acciones civiles y penales.",
+    "fecha": "2026-05-24",
+    "monto": "más de 370.000 dólares (tres giros de 199.950, 99.950 y 74.950 documentados en la carta de mayo de 2014)",
+    "implicados": [
+     "Abelardo de la Espriella",
+     "Alex Saab",
+     "Group Grand Limited",
+     "Consorcio Estructuras Metálicas"
+    ],
+    "_nota": "Entra como SEÑALAMIENTO y no pesa en el veredicto, que es el estado por omisión cuando lo dice un medio y ninguna autoridad se ha pronunciado. Hay dos cosas que conviene no juntar: que los giros existan es lo que los documentos desclasificados registran; que su origen fuera ilícito y que él lo supiera es la conclusión de los columnistas, y ninguna autoridad la ha establecido. Y este es OTRO caso que los dos que esta misma lista tiene ARCHIVADOS a su favor: el del dinero del narcotraficante Juan Carlos «El Tuso» Sierra y el de la oferta de soborno a un testigo. Leer los tres como uno solo es injusto con el señalado en las dos direcciones.",
+    "fuentes": [
+     {
+      "n": "Cambio · «Los giros de Alex Saab», la investigación de Daniel Coronell",
+      "u": "https://cambiocolombia.com/los-danieles/articulo/2026/5/los-giros-de-alex-saab"
+     },
+     {
+      "n": "Cambio · «La huella de Alex Saab»",
+      "u": "https://cambiocolombia.com/los-danieles/articulo/2026/5/la-huella-de-alex-saab"
+     },
+     {
+      "n": "Infobae · los documentos con consignaciones y correos que revelarían el entramado",
+      "u": "https://www.infobae.com/colombia/2026/05/24/abelardo-de-la-espriella-se-habria-beneficiado-de-las-empresas-de-alex-saab-documentos-con-consignaciones-y-correos-revelarian-el-entramado/"
+     },
+     {
+      "n": "Radio Nacional · transferencias por más de 370 mil dólares",
+      "u": "https://www.radionacional.co/actualidad/investigacion-periodistica-revela-transferencias-de-alex-saab-por-us370-mil-abelardo-de"
+     },
+     {
+      "n": "RTVC Noticias · los giros de Alex Saab",
+      "u": "https://www.rtvcnoticias.com/politica/abelardo-de-la-espriella-giros-alex-saab"
+     },
+     {
+      "n": "La Silla Vacía · entre 2014 y 2015 se benefició de transacciones de Alex Saab",
+      "u": "https://www.lasillavacia.com/en-vivo/entre-2014-y-2015-de-la-espriella-se-beneficio-de-transacciones-de-alex-saab/"
+     },
+     {
+      "n": "Infobae · si existe o no una investigación en Estados Unidos, publicado como pregunta",
+      "u": "https://www.infobae.com/colombia/2026/07/26/por-su-relacion-con-alex-saab-revelan-si-abelardo-de-la-espriella-podria-tener-una-investigacion-en-su-contra-en-estados-unidos/"
      }
     ]
    }

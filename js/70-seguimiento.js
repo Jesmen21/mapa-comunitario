@@ -3360,7 +3360,14 @@
       w.appendChild(document.createTextNode(c.quienLoConfirmo));
       art.appendChild(w);
     }
-    if (c.monto) art.appendChild(el('p', 'sp-fi-cc-monto', 'Monto: ' + c.monto));
+    /* El registro escribe `monto` de dos maneras: como NUMERO (fenoge, 282585333)
+       o como cadena ya formateada («1.299 millones de pesos»). Concatenado en
+       crudo, el numero salia «Monto: 282585333» — sin separador de miles, que en
+       castellano es lo que vuelve ilegible una cifra grande (v885). Pasa por el
+       formateador que el modulo ya tiene, y una cadena se imprime tal cual: la
+       unidad la lleva la prosa del caso, y aqui no se inventa ninguna. */
+    if (c.monto) art.appendChild(el('p', 'sp-fi-cc-monto',
+      'Monto: ' + (typeof c.monto === 'number' ? miles(c.monto) : c.monto)));
     if (Array.isArray(c.implicados) && c.implicados.length) {
       art.appendChild(el('p', 'sp-fi-cc-imp', 'Implicados: ' + c.implicados.join(', ')));
     }
