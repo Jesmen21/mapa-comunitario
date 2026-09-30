@@ -1,4 +1,4 @@
-const URBIS_CACHE = 'urbis-v1047-seguimiento-presidencial-decreto-1446-ecopetrol-el-pollo-camargo';
+const URBIS_CACHE = 'urbis-v1048-alertas-enjambre-sismico-chaparral-29-sep';
 const URBIS_ASSETS = [
   './',
   './index.html',

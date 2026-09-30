@@ -1,6 +1,6 @@
 {
   "_comentario": "Alertas EDITORIALES del equipo URBIS (desastres verificados). Se publican editando este archivo — no requieren la hoja de cálculo ni credenciales. El mapa las dibuja junto a las que ya están en la base; si coinciden las coordenadas, se muestra una sola. Reglas: solo desastres naturales de fuente oficial, nunca violencia ni homicidios; coordenadas geocodificadas, jamás estimadas a ojo; sin fuente no se publica.",
-  "actualizado": "2026-09-29",
+  "actualizado": "2026-09-30",
   "alertas": [
     {
       "tipo": "Sismo",
@@ -70,19 +70,19 @@
     },
     {
       "tipo": "Sismo",
-      "titulo": "Enjambre sísmico en Chaparral, Tolima — más de 979 sismos desde el 20 de septiembre, magnitud máxima 4,2, 20-28 de septiembre de 2026",
+      "titulo": "Enjambre sísmico en Chaparral, Tolima — más de 1.046 sismos desde el 20 de septiembre, magnitud máxima 4,2, 20-29 de septiembre de 2026",
       "lat": 3.84,
       "lng": -75.61,
       "desde": "2026-09-20",
-      "expira": "2026-10-12",
+      "expira": "2026-10-14",
       "lineas": [
-        "📅 El enjambre sísmico empezó el domingo 20 de septiembre de 2026 a las 4:52 a. m. (hora de Colombia) y seguía activo la madrugada del lunes 28 de septiembre. Según el boletín del Servicio Geológico Colombiano (SGC), van 979 sismos de magnitud igual o mayor a 2,0 ML desde el inicio de la secuencia, 22 de ellos de magnitud igual o mayor a 4,0 ML; el máximo diario se alcanzó el 22-23 de septiembre, con 186 sismos en un solo día.",
-        "📊 Magnitud máxima 4,2, alcanzada varias veces: el 22 de septiembre a las 2:35 a. m., el 27 de septiembre a las 7:57 a. m. (sentido en Ibagué, Cali, Yumbo, Sevilla y Armenia) y el 28 de septiembre a las 3:39 a. m. (epicentro a 17 km de Roncesvalles, Tolima, 3,85° N / 75,65° O). Todos con profundidad superficial (menos de 30 km), característica de sismicidad cortical según el SGC.",
+        "📅 El enjambre sísmico empezó el domingo 20 de septiembre de 2026 a las 4:52 a. m. (hora de Colombia) y seguía activo la tarde del martes 29 de septiembre. Según el boletín del Servicio Geológico Colombiano (SGC) consolidado al 28 de septiembre, van 1.046 sismos de magnitud igual o mayor a 2,0 ML desde el inicio de la secuencia, 23 de ellos de magnitud igual o mayor a 4,0 ML (cifra revisada al alza frente al boletín anterior, que reportaba 979 y 22); el máximo diario se alcanzó el 22-23 de septiembre, con 186 sismos en un solo día.",
+        "📊 Magnitud máxima 4,2, alcanzada varias veces: el 22 de septiembre a las 2:35 a. m., el 27 de septiembre a las 7:57 a. m., el 28 de septiembre a las 3:39 a. m. (epicentro a 17 km de Roncesvalles, Tolima, 3,85° N / 75,65° O) y de nuevo el 29 de septiembre a las 4:50 p. m. (3,87° N / 75,61° O, a 15 km de San Antonio y de Roncesvalles y 22 km de Chaparral, Tolima), esta última sentida con intensidades de hasta 5 en Ibagué, Armenia, Pereira, Cali, Bogotá, Soacha, Sevilla y Yumbo. Todos con profundidad superficial (menos de 30 km), característica de sismicidad cortical según el SGC; el SGC no reportó daños por ninguno de estos eventos.",
         "🌎 El sismo de las 9:48 a. m. del 21 de septiembre obligó a evacuar preventivamente la sede de la Gobernación del Tolima en Ibagué; una inspección posterior no halló grietas ni daños estructurales. A través de la app Sismo Sentido, el SGC ha recibido más de 14.600 reportes ciudadanos sobre 458 sismos de la secuencia, con intensidad entre 2 (apenas sentido) y 5 (sentido fuerte); no se han recibido reportes de daños.",
-        "ℹ️ Alerta informativa del equipo URBIS con base en el Servicio Geológico Colombiano y prensa nacional (El Tiempo, Semana, Pulzo, El País, PYC Noticias). No es un reporte ciudadano."
+        "ℹ️ Alerta informativa del equipo URBIS con base en el Servicio Geológico Colombiano y prensa nacional (El Tiempo, Semana, Pulzo, El País, El Heraldo, PYC Noticias). No es un reporte ciudadano."
       ],
       "fuente": "Servicio Geológico Colombiano (SGC) / prensa nacional",
-      "url": "https://canalpyc.com/sismos-en-chaparral-tolima-el-servicio-geologico-colombiano-reporta-979-eventos-y-mas-de-14-600-reportes-de-temblores-sentidos/"
+      "url": "https://www.elheraldo.co/colombia/2026/09/30/sismo-de-magnitud-42-sacudio-a-chaparral-tolima-este-29-de-septiembre/"
     },
     {
       "tipo": "Sismo",

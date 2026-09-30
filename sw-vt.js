@@ -13,7 +13,7 @@
 
    La versión va acá y en vision-territorial.html, idéntica, como en los
    otros siete archivos de versión del sitio: revisar.js lo comprueba. */
-const VT_CACHE = 'urbis-vt-v1047-seguimiento-presidencial-decreto-1446-ecopetrol-el-pollo-camargo';
+const VT_CACHE = 'urbis-vt-v1048-alertas-enjambre-sismico-chaparral-29-sep';
 const VT_ASSETS = [
   './vision-territorial.html',
   './css/90-vt.css',
