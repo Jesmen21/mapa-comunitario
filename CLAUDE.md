@@ -22910,11 +22910,14 @@ cadena de prosa— y salió leyendo el detalle compuesto en la sonda, que es el
 método que encontró los defectos de la v874, la v882, la v885, la v887 y la
 v974.
 
-### Lo que sigue del informe, y no se hizo acá
+### Lo que sigue del informe, y esta versión NO hace
 
 * **El hecho que falta**: los **dos menores muertos** en el bombardeo de
   Azarías, que el registro no tiene y que son distintos de los dos menores
-  RESCATADOS que sí registra. `pendiente`
+  RESCATADOS que sí registra. `cerrado en v1053` — y medido resultó no ser un
+  hecho sino tres: faltaba también el menor del primer bombardeo en el
+  Catatumbo, que es el que cierra la disputa «cinco o seis», y la frase de la
+  moción de censura se había quedado vieja.
 * **Las cinco entradas nuevas prioritarias** —subsidios de energía y gas
   desfinanciados en 69 %, el recorte a la JEP visto desde su presupuesto
   propio, el DANE con su causal textual, la objeción a la ley de mérito
@@ -22928,6 +22931,234 @@ v974.
 * **El detalle RE 409 / Cortés González** del estado de excepción, que el
   registro ya tiene bien clasificado como Emergencia Económica del art. 215 y
   no como conmoción interior. `pendiente`
+
+## Los menores muertos que el registro no tenía (v1053)
+
+El renglón siguiente del balance verificado, y **medido antes de escribir
+nada** —la regla de la v916, que el usuario fijó para las premisas de ese
+informe— resultó no ser un hecho sino tres. El informe pedía «los dos menores
+muertos de Azarías»; lo que faltaba era la respuesta entera a la pregunta
+*cuántos menores han muerto en operaciones de este gobierno*.
+
+    v1052   el registro sostiene TRES menores muertos (los de Amón)
+    v1053   sostiene los SEIS del piso forense, cada uno con su entrada
+
+### Lo que la medición encontró, y las tres cosas que eran
+
+| | Estado en la v1052 |
+|---|---|
+| Los **tres de la Operación Amón** (El Retorno, 27 ago) | registrados, con su moción de censura |
+| Los **dos de la Operación Azarías** (Miraflores, 30 ago) | **no estaban** |
+| El **del primer bombardeo en el Catatumbo** (11 ago) | **no estaba, y el bombardeo tampoco** |
+
+La entrada del 2 de septiembre —el presidente caminando entre los cuerpos de
+Azarías— registra «dos personas rescatadas que se identificaron como menores
+de edad, **aún sin verificar**». O sea que quien leyera el registro y oyera
+después «los dos menores de Azarías» **confundiría los rescatados con los
+muertos**, que son cuatro menores y dos hechos distintos. Esa confusión es lo
+primero que había que cerrar, y no se cierra con una entrada nueva: se cierra
+corrigiendo la que ya estaba.
+
+### La causa que el informe supone para la disputa no se sostiene
+
+El informe cierra su tabla de disputas así: *«5 es el piso forense verificado;
+6 es un agregado que **probablemente** incluye un caso adicional no
+correspondiente a estas dos operaciones»*.
+
+Medido, ese «probablemente» sobra: **el desglose de los seis está publicado y
+su tercer caso tiene nombre** —uno en el Catatumbo, tres en El Retorno, dos en
+Azarías—, y el del Catatumbo es el primer bombardeo del gobierno, de la
+madrugada del 11 de agosto, cuatro días después de la posesión y uno después
+del terremoto. Así que la disputa **no se carga: se resuelve**, y con la regla
+que el propio informe se puso en su BLUF —«sin escoger ganador **salvo cuando
+la evidencia lo resuelve**»—.
+
+Y lo que la resuelve es que **son dos denominadores distintos**, no dos
+cuentas del mismo: cinco es el piso de esas dos operaciones, seis es el piso
+del primer mes contando todas las operaciones aéreas. Conflar los dos es lo
+que produce la disputa, y es la distinción de la v943 dicha sobre una cifra de
+muertos: el denominador viaja con el número o el número no se puede leer.
+
+Es la segunda vez en dos tandas que el informe acierta el síntoma y no la
+causa. Y es exactamente lo que el usuario dejó escrito como método: *«mi
+diagnóstico del síntoma suele servir y mi diagnóstico de la causa no
+siempre»*.
+
+### Las dos entradas, y por qué se fechan por criterios distintos
+
+* **Catatumbo, 2026-08-11.** La Operación Beta entre Tibú y San Calixto contra
+  el ELN, con el menor confirmado por Medicina Legal, tres campesinos heridos
+  —entre ellos una mujer de 44 años— en la vereda El Sinaí y unas 40 familias
+  desplazadas, denunciado por la Defensoría del Pueblo. El bombardeo no estaba
+  registrado, así que la entrada ES el bombardeo y se fecha en él. Es la forma
+  de la entrada de Amón, cuyo título empieza «Se confirma que…» y se fecha en
+  la operación y no en el informe forense.
+* **Azarías, 2026-09-04.** Acá la operación **ya está registrada** en la
+  entrada del 2 de septiembre, así que lo que esta entrada registra es el
+  BALANCE FORENSE, y se fecha en él. Fecharla el 30 de agosto habría puesto dos
+  entradas de la misma operación sin manera de saber cuál es cuál.
+
+No es un criterio nuevo: **la fecha es la del hecho que la entrada registra**,
+y las dos registran clases de hecho distintas —un bombardeo y una
+identificación—. Lo que sí es nuevo es decirlo, porque un registro con dos
+entradas de la misma operación necesita que se lea.
+
+#### La clasificación, y una que no sigue el precedente
+
+Azarías entra como `resultado` sin `nivelGobierno`, igual que Amón: su sujeto
+es una medición, no un acto. Catatumbo entra como `actividad` con
+`nivelGobierno: nacional`, **que es distinto de lo que hizo Amón**, y la razón
+va dicha para que no se lea como un descuido: el sujeto de esa entrada es la
+ORDEN —el primer bombardeo de este gobierno— con sus resultados dentro, igual
+que las demás operaciones del registro; el de Amón es la confirmación forense.
+Medido, eso mueve la cuenta de actividad de 134 a 135 y la de resultado de 21 a
+22, y las dos cifras son correctas.
+
+Ninguna de las dos declara indicador, y también va dicho: ni un bombardeo ni
+una identificación forense caen en el `incluye` de I-04, I-05, I-07 o I-13, así
+que declararlos sería lo que la v961 prohíbe.
+
+### Las dos correcciones, y la que se había quedado vieja
+
+* **La del 2 de septiembre** dice ahora que la verificación llegó el 4, que los
+  dos RESCATADOS quedaron en restablecimiento de derechos y que aparte de ellos
+  Medicina Legal identificó DOS MENORES MÁS entre los cuerpos. Son cuatro
+  menores y dos hechos distintos, y la frase lo dice con esas palabras.
+* **La del 27 de agosto** cerraba con «Hasta la fecha de este registro, el
+  Congreso no ha votado la moción de censura». **Ya se votó y se hundió**: el
+  Senado la negó el 23 de septiembre —El País reportó 17 votos a favor y 65 en
+  contra— y el ministro Mora se mantiene. La Cámara adelantó su propio debate
+  el 22, pese a que el trámite del Senado ya estaba en curso, y el registro no
+  establece su desenlace.
+
+La segunda es la clase de la v864 —una afirmación que nació bien y la dejó
+obsoleta un hecho posterior— **dentro del registro**, que es donde más cuesta:
+la frase se lee como una comprobación al día. La corrección deja escrito que la
+frase decía otra cosa, porque un registro que reescribe su pasado en silencio
+no se puede auditar.
+
+### La respuesta oficial, que es la cuarta del registro
+
+El ministro de Defensa defendió el bombardeo ante la Cámara el 23 de
+septiembre sosteniendo que hubo verificación previa de combatientes en función
+permanente de combate. Entra como `contrargumentoOficial` —de 3 a 4 en todo el
+registro— y con la convención que las otras tres ya tienen: **dice también qué
+NO responde**, que acá es qué esfuerzos reforzados se hicieron para descartar
+la presencia de menores, que es la pregunta que el propio criterio del DIH
+plantea.
+
+Y la tesis del Gobierno se registra por lo que es: **una tesis jurídica de
+Derecho Internacional Humanitario, no una determinación judicial**. A la fecha
+de corte no consta imputación ni investigación penal formal por ninguna de las
+dos operaciones, así que el registro publica un hecho forense y no un hallazgo
+de responsabilidad.
+
+### Lo que NO se afirma, con su razón
+
+* **La edad del menor del Catatumbo.** Las coberturas coinciden en que era
+  menor de edad y no en un número, y escribir uno sería inventarlo — que es la
+  decisión de la v970 con la fecha que ninguna fuente publica.
+* **El «falso positivo».** Líderes sociales de la región, citados por Revista
+  RAYA, sostuvieron que el bombardeo podría serlo. Es una afirmación de una
+  parte, ninguna autoridad se ha pronunciado, y se registra con su etiqueta y
+  no como hallazgo: lo verificado es el bombardeo, el menor y la denuncia de la
+  Defensoría.
+* **Cuántos murieron en Azarías.** El balance presidencial dijo 23 abatidos;
+  Medicina Legal recibió 24 cuerpos e identificó 20; y hay coberturas que
+  titulan 20 y otras 24. No se promedian y no se elige: lo único que el
+  registro sostiene es lo forense —24 recibidos, 20 identificados, cuatro en
+  análisis, dos menores entre los identificados—, y los tres números se
+  imprimen porque **no cuentan lo mismo**.
+
+### Y el barrido del papel denunció dos cifras que estaban BIEN
+
+La sonda que barre las cuatro reglas del papel sobre la página compuesta marcó
+un punto decimal y una cifra de cinco dígitos sin separador. Medidas contra el
+registro, **las dos son correctas**: el «237.3» es el **artículo 237, numeral
+3** de la Constitución, y el «12189» es el **número de una Resolución**.
+Corregirlas habría roto una cita legal.
+
+Barrido el resto de la prosa de los tres registros con la misma regla, los diez
+hallazgos son los diez falsos positivos: dos colores hexadecimales de las
+categorías, un número de resolución, un numeral de la Constitución, el titular
+textual de un medio extranjero —«Terremoto de 7.4 grados»— y tres «Paramilitarismo 2.0».
+
+De ahí sale la razón por la que **las cuatro reglas del papel no se pueden
+llevar a la prosa de los registros**, y queda escrita en vez de intentada: un
+registro cita números de resolución, numerales de artículos, colores y
+titulares textuales, y cada uno de ellos lleva legítimamente un punto o cinco
+dígitos. Una guarda así sería la lista de excepciones que envejece hasta no
+significar nada (v895). Es la sexta vez que un barrido propio se equivoca
+donde el material tenía razón (v878, v891, v897, v903, v1000, y esta).
+
+### Lo que no se movió, medido
+
+| | v1052 | v1053 |
+|---|---|---|
+| Entradas · fuentes | 206 · 813 | **208 · 831**, todas con su `rol` |
+| Publican como hallazgo | 155 | **157** — las dos nuevas publican |
+| Registro verificado | 78 % | **78 %** |
+| Veredicto | Fiable · con lo confirmado hasta hoy | **el mismo** |
+| Contradicciones sin identidad | 5 de 5 | **5 de 5** |
+
+El veredicto no se mueve y eso es lo correcto: los tres techos siguen donde
+estaban, y lo único que lo desbloquea son las cinco declaraciones de
+`mismoObjetoVerificado`, que son de quien firma el módulo (v959, v972).
+
+Lo que sí se movió es el renglón del eje B: **193 de 199 hechos no declaran qué
+indicador alimentan**, contra 191 de 197. Sube porque el registro creció y las
+dos entradas nuevas no declaran indicador, y la cifra **se calcula** (v1051),
+así que baja sola el día que alguien las clasifique.
+
+### El parche abortó dos veces y no escribió nada, que es lo correcto
+
+Las dos por un ancla que escribí de memoria: la primera con escapes
+`\uXXXX` sobre un archivo que guarda **acentos literales** —cero escapes en
+sus 831 fuentes—, y la segunda con el nombre de una fuente que no existe. Las
+dos veces `git status` quedó limpio y la corrida imprimió sus `ok` parciales
+**sin** el `ok parcheado` final, que es lo que separa «no entró» de «la prueba
+sigue roja». Y de paso queda una comprobación más en el parcheador: que no se
+cuele un escape, porque dos maneras de escribir el mismo acento se separan y
+la que se separa es la que nadie relee.
+
+### Ocho renglones que la guarda no estaba mirando
+
+Lo encontró medir el recuento antes y después de escribir esta sección, no
+leerla. La guarda de la v1008 vigila los renglones de toda sección titulada con
+una de **cinco formas canónicas**, y la v1052 y esta habían titulado la suya
+«Lo que sigue del informe, y no se hizo acá» —que no es ninguna de las cinco—.
+Medido: **70 renglones vigilados antes y 70 después**, con ocho `pendiente`
+dentro que nadie estaba mirando.
+
+Es exactamente el fallo que la v1008 dejó descrito y su propio piso NO caza: el
+piso baja cuando alguien SACA una sección del convenio, y acá la sección nunca
+entró. Y se arregla como aquella lo prescribió —**renombrando a la forma
+canónica, no aflojando la expresión**—, porque una guarda que acepta cualquier
+título vuelve a ser una que adivina. Con los dos encabezados corregidos:
+**78 renglones**.
+
+Queda lo que la medición dice y no más, y el renglón que lo deja abierto va
+**abajo, en la sección canónica** y no acá: puesto en este párrafo tampoco se
+vigilaría, que es el mismo hueco cometido dentro de la frase que lo describe.
+
+### Lo que sigue del informe, y esta versión NO hace
+
+* **Las cinco entradas nuevas prioritarias** —subsidios de energía y gas
+  desfinanciados en 69 %, el recorte a la JEP visto desde su presupuesto
+  propio, el DANE con su causal textual, la objeción a la ley de mérito
+  derrotada en el Congreso, y la aprobación 51,8 / 43,2—. `pendiente`
+* **Las veintiuna filas en disputa y los diecinueve pendientes accionables**,
+  con la decisión de estructura que la v1052 dejó medida: `valores_en_disputa`
+  no existe como campo y darles uno cambia la forma del registro. `pendiente`
+* **El detalle RE 409 / Cortés González** del estado de excepción. `pendiente`
+* **El desenlace de la moción de censura de la CÁMARA**, que se debatió el 22
+  de septiembre y cuyo resultado este registro no establece. `pendiente`
+* **Que el piso de la v1008 cace una sección ESTRENADA con un título fuera del
+  convenio**, no solo una sacada de él. Pediría comparar los encabezados de
+  nivel tres contra las cinco formas y denunciar el que declare trabajo
+  aplazado sin estar en ellas — o sea distinguir un encabezado que aplaza de
+  uno que no, que es la discriminación que la v1007 midió y para la que el
+  título es la única señal fiable. `pendiente`
 
 ## La lista viva: lo que al pliego educativo todavía le falta (v866)
 

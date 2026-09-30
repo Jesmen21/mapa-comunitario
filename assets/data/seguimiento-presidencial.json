@@ -74,6 +74,109 @@
  },
  "entradas": [
   {
+   "fecha": "2026-09-04",
+   "precision": "exacta",
+   "categoria": "gobierno",
+   "titulo": "Medicina Legal confirma que dos de los cuerpos de la Operación Azarías en Guaviare eran menores de edad",
+   "categoriaProbatoria": "hecho-probado",
+   "tipoMedicion": "resultado",
+   "detalle": "El Instituto Nacional de Medicina Legal y Ciencias Forenses publicó el 4 de septiembre de 2026 el balance forense de los cuerpos entregados tras la Operación Azarías, ejecutada la noche del 30 de agosto en la vereda Lagos del Dorado, zona rural de Miraflores (Guaviare), contra el frente Carolina Ramírez de las disidencias de las FARC. Recibió 24 cuerpos el 1 de septiembre; de ellos identificó 20 —ocho mujeres y doce hombres— y dejó cuatro en análisis por las condiciones en que fueron entregados. Entre los identificados hay DOS MENORES DE EDAD. Es la segunda operación de este gobierno con menores confirmados forensemente entre los muertos, después de los tres de la Operación Amón en El Retorno el 27 de agosto, y la tercera si se cuenta el menor del primer bombardeo en el Catatumbo el 11 de agosto: con las tres, el piso forense del primer mes del mandato es de SEIS menores muertos en operaciones aéreas o militares.",
+   "contrapunto": "Tres precisiones que hacen falta para leer esta entrada sin equivocarse. PRIMERA: estos dos menores MURIERON y no son los dos menores RESCATADOS que la misma operación reporta y que quedaron en proceso de restablecimiento de derechos —son cuatro menores en total y dos hechos distintos, y confundirlos es el error más fácil de cometer con este registro—. SEGUNDA: las cifras de esta operación no cuadran entre sí y no se promedian, porque no cuentan lo mismo: el balance presidencial habló de 23 «terroristas» abatidos y seis capturados; Medicina Legal recibió 24 cuerpos e identificó 20; y hay coberturas que titulan 20 y otras que titulan 24. Lo único que este registro sostiene es lo forense: 24 recibidos, 20 identificados, cuatro en análisis, dos menores entre los identificados. TERCERA: la tesis del Gobierno —que los menores estaban en «función continua de combate» y fueron instrumentalizados por el grupo armado— es una tesis jurídica de Derecho Internacional Humanitario, no una determinación judicial; el experto Javier Rincón Salcedo, del Observatorio de Derecho Militar de la Universidad Javeriana, precisa que las restricciones operacionales no prohíben bombardear, sino que exigen esfuerzos reforzados para asegurar que no mueran menores cuando se sospecha su presencia. A la fecha de este registro no consta ninguna imputación ni investigación penal formal contra miembros de la Fuerza Pública por esta operación, así que URBIS registra un hecho forense y no un hallazgo de responsabilidad.",
+   "contrargumentoOficial": "El ministro de Defensa, general (r) Jorge Eduardo Mora, defendió el bombardeo ante la Cámara de Representantes el 23 de septiembre de 2026 sosteniendo que hubo verificación previa de que en el objetivo había combatientes en función permanente de combate, y que la actuación de la Fuerza Pública se orienta por informes de inteligencia que establecen esa condición. No responde qué esfuerzos reforzados se hicieron para descartar la presencia de menores antes de atacar, que es la pregunta que el propio criterio del DIH plantea.",
+   "tipoFuente": "verificado",
+   "fuentes": [
+    {
+     "n": "Infobae · Medicina Legal confirmó que dos menores murieron entre los 23 disidentes abatidos en la Operación Azarías en Guaviare",
+     "u": "https://www.infobae.com/colombia/2026/09/04/medicina-legal-confirmo-los-resultados-de-la-operacion-azarias-en-guaviare-en-la-que-murieron-23-disidentes-dos-eran-menores-de-edad/",
+     "rol": "acto"
+    },
+    {
+     "n": "Blu Radio · Medicina Legal confirma dos menores entre cuerpos de la operación Azarías en Guaviare",
+     "u": "https://www.bluradio.com/nacion/medicina-legal-confirma-dos-menores-entre-cuerpos-de-la-operacion-azarias-en-guaviare-rg10",
+     "rol": "acto"
+    },
+    {
+     "n": "El Espectador · Dos menores murieron en operativo militar contra alias «Mordisco» en Guaviare",
+     "u": "https://www.elespectador.com/judicial/dos-menores-murieron-en-operativo-militar-contra-alias-mordisco-en-guaviare/",
+     "rol": "acto"
+    },
+    {
+     "n": "Diario del Norte · Medicina Legal confirma dos menores entre los 20 cuerpos identificados tras operativo militar en Guaviare",
+     "u": "https://diariodelnorte.net/nacion/medicina-legal-confirma-dos-menores-entre-los-20-cuerpos-identificados-tras-operativo-militar-en-guaviare/",
+     "rol": "acto"
+    },
+    {
+     "n": "El Diario · Seis menores muertos en menos de un mes: Medicina Legal confirma dos más tras bombardeo en Guaviare",
+     "u": "https://www.eldiario.com.co/actualidad/seis-menores-muertos-en-menos-de-un-mes-medicina-legal-confirma-dos-mas-tras-bombardeo-en-guaviare/",
+     "rol": "acto"
+    },
+    {
+     "n": "La Nación (Costa Rica) · Bombardeos del gobierno dejan seis menores muertos en Colombia en un mes",
+     "u": "https://www.nacion.com/el-mundo/bombardeos-del-gobierno-dejan-seis-menores-muertos/QHT4JXKLC5HXZJFZBZDJ2HIZAU/story/",
+     "rol": "acto"
+    },
+    {
+     "n": "El Heraldo · Mindefensa defendió ante la Cámara el bombardeo en Guaviare contra disidencias de las Farc",
+     "u": "https://www.elheraldo.co/colombia/2026/09/23/mindefensa-defendio-ante-la-camara-el-bombardeo-en-guaviare-contra-disidencias-de-las-farc/",
+     "rol": "efecto"
+    },
+    {
+     "n": "Infobae · «Siempre hay menores de edad»: la realidad detrás de las operaciones militares en Colombia y la muerte de niños reclutados",
+     "u": "https://www.infobae.com/colombia/2026/09/20/siempre-hay-menores-de-edad-la-realidad-detras-de-las-operaciones-militares-en-colombia-y-la-muerte-de-ninos-reclutados/",
+     "rol": "contexto"
+    }
+   ]
+  },
+  {
+   "fecha": "2026-08-11",
+   "precision": "exacta",
+   "categoria": "gobierno",
+   "titulo": "El primer bombardeo del gobierno —la Operación Beta, contra el ELN entre Tibú y San Calixto— deja un menor de edad muerto, tres campesinos heridos y 40 familias desplazadas",
+   "categoriaProbatoria": "hecho-probado",
+   "tipoMedicion": "actividad",
+   "nivelGobierno": "nacional",
+   "detalle": "En la madrugada del martes 11 de agosto de 2026 —cuatro días después de la posesión y uno después del terremoto— las Fuerzas Militares ejecutaron el primer bombardeo de este gobierno, la Operación Beta, en zonas rurales entre los municipios de Tibú y San Calixto (Norte de Santander), contra estructuras del Ejército de Liberación Nacional. Medicina Legal confirmó después que uno de los integrantes del grupo armado muertos en la operación era MENOR DE EDAD. La Defensoría del Pueblo denunció además afectación a la población civil: al menos tres campesinos heridos —entre ellos una mujer de 44 años— en la vereda El Sinaí, jurisdicción de San Calixto, y unas 40 familias desplazadas por los ataques aéreos y terrestres. Este es el primero de los tres hechos que forman el piso forense de seis menores muertos en operaciones del primer mes: uno acá, tres en la Operación Amón (El Retorno, 27 de agosto) y dos en la Operación Azarías (Miraflores, 30 de agosto).",
+   "contrapunto": "La edad exacta del menor no se afirma acá: las coberturas coinciden en que era menor de edad y no en un número, y escribir uno sería inventarlo. Y hay un señalamiento que este registro no da por probado: líderes sociales de la región, citados por Revista RAYA, sostuvieron que el bombardeo podría ser un «falso positivo». Eso es una afirmación de una parte, ninguna autoridad se ha pronunciado sobre ella, y se registra con su etiqueta y no como hallazgo: lo verificado es el bombardeo, la muerte del menor confirmada por Medicina Legal y la denuncia de la Defensoría; el «falso positivo» no lo está. A la fecha de este registro no consta imputación ni investigación penal formal por esta operación.",
+   "tipoFuente": "verificado",
+   "fuentes": [
+    {
+     "n": "El Espectador · Un menor de edad murió durante el primer bombardeo de De la Espriella en Catatumbo",
+     "u": "https://www.elespectador.com/judicial/un-menor-de-edad-murio-durante-el-primer-bombardeo-de-de-la-espriella-en-catatumbo/",
+     "rol": "acto"
+    },
+    {
+     "n": "El Tiempo · Un menor de edad murió en el primer bombardeo del gobierno de De La Espriella contra el Eln en Catatumbo",
+     "u": "https://www.eltiempo.com/justicia/conflicto-y-narcotrafico/un-menor-de-edad-murio-en-el-primer-bombardeo-del-gobierno-de-de-la-espriella-contra-el-eln-en-catatumbo-3582392",
+     "rol": "acto"
+    },
+    {
+     "n": "La FM · Medicina Legal confirma muerte de menor de edad tras bombardeo en el Catatumbo",
+     "u": "https://www.lafm.com.co/actualidad/bombardeo-catatumbo-muerto-menor-de-edad-confirma-medicina-legal-389977",
+     "rol": "acto"
+    },
+    {
+     "n": "El Colombiano · Así fue el primer bombardeo de las Fuerzas Militares durante el gobierno De la Espriella: el Eln fue el blanco",
+     "u": "https://www.elcolombiano.com/colombia/abelardo-de-la-espriella-primer-bombardeo-eln-cuales-son-los-resultados-DB39832010",
+     "rol": "acto"
+    },
+    {
+     "n": "Colombia.com · «No era carreta»: Abelardo de la Espriella ordenó su primer bombardeo sobre el ELN en zona del Catatumbo en Norte de Santander",
+     "u": "https://www.colombia.com/actualidad/nacionales/abelardo-de-la-espriella-ordeno-el-primer-bombardeo-de-su-gobierno-595738",
+     "rol": "acto"
+    },
+    {
+     "n": "Infobae · Primer bombardeo en el Catatumbo bajo el mando de Abelardo de la Espriella: la Defensoría del Pueblo denunció afectación a civiles",
+     "u": "https://www.infobae.com/colombia/2026/08/12/primer-bombardeo-en-el-catatumbo-bajo-el-mando-de-abelardo-de-la-espriella-la-defensoria-del-pueblo-denuncio-afectacion-a-civiles/",
+     "rol": "efecto"
+    },
+    {
+     "n": "Revista RAYA · El primer bombardeo del gobierno De la Espriella podría ser un «falso positivo» en el Catatumbo, aseguran líderes sociales",
+     "u": "https://revistaraya.com/el-primer-bombardeo-del-gobierno-de-la-espriella-podria-ser-un-falso-positivo-en-el-catatumbo-aseguran-lideres-sociales.html",
+     "rol": "efecto"
+    }
+   ]
+  },
+  {
    "fecha": "2026-09-30",
    "precision": "exacta",
    "categoria": "eeuu",
@@ -3510,7 +3613,7 @@
    "categoriaProbatoria": "hecho-probado",
    "tipoMedicion": "actividad",
    "nivelGobierno": "nacional",
-   "detalle": "La Operación Azarías, ejecutada en la noche del 30 de agosto en la vereda Lagos del Dorado, municipio de Miraflores (Guaviare), contra el frente Carolina Ramírez —estructura de las disidencias de las FARC comandada por alias Iván Mordisco—, fue anunciada inicialmente el 31 de agosto con un saldo de ocho muertos, tres capturados y dos personas rescatadas que se identificaron como menores de edad, aún sin verificar. En los días siguientes el presidente Abelardo de la Espriella actualizó el balance a 23 \"terroristas\" muertos y seis capturados, entre ellos alias \"Víctor\", señalado como tercero al mando de la estructura, y calificó la operación como \"el golpe más contundente que ha dado nuestra Fuerza Pública en los últimos 12 años\", afirmando: \"Yo mismo autoricé esa operación hace dos semanas como comandante en jefe de nuestra Fuerza Pública\". El 2 de septiembre el presidente recorrió, ante las cámaras, un batallón militar en Guaviare donde los 23 cuerpos estaban dispuestos en el piso, envueltos en bolsas plásticas blancas, junto a armamento incautado, en un video que confirmó los resultados de la operación.",
+   "detalle": "La Operación Azarías, ejecutada en la noche del 30 de agosto en la vereda Lagos del Dorado, municipio de Miraflores (Guaviare), contra el frente Carolina Ramírez —estructura de las disidencias de las FARC comandada por alias Iván Mordisco—, fue anunciada inicialmente el 31 de agosto con un saldo de ocho muertos, tres capturados y dos personas rescatadas que se identificaron como menores de edad, aún sin verificar en ese momento —la verificación llegó el 4 de septiembre, cuando Medicina Legal publicó su balance forense: esos dos menores RESCATADOS quedaron en proceso de restablecimiento de derechos, y aparte de ellos identificó DOS MENORES MÁS entre los cuerpos, que murieron en la operación y tienen su propia entrada en este registro. Son cuatro menores y dos hechos distintos—. En los días siguientes el presidente Abelardo de la Espriella actualizó el balance a 23 \"terroristas\" muertos y seis capturados, entre ellos alias \"Víctor\", señalado como tercero al mando de la estructura, y calificó la operación como \"el golpe más contundente que ha dado nuestra Fuerza Pública en los últimos 12 años\", afirmando: \"Yo mismo autoricé esa operación hace dos semanas como comandante en jefe de nuestra Fuerza Pública\". El 2 de septiembre el presidente recorrió, ante las cámaras, un batallón militar en Guaviare donde los 23 cuerpos estaban dispuestos en el piso, envueltos en bolsas plásticas blancas, junto a armamento incautado, en un video que confirmó los resultados de la operación.",
    "contrapunto": "El expresidente Gustavo Petro, en gira por México, criticó la difusión de las imágenes: \"Esto se llama hacer de la muerte un trofeo, solo gente sin alma puede hacer esto. Cuál Cristo Rey, aquí está el señor que se esconde entre la muerte, lo contrario de Jesús que pregonaba la luz y la vida\", y agregó que \"solo los asesinos acostumbrados a matar pueden pasear orondos y felices entre los caídos\". El senador y excandidato presidencial Iván Cepeda escribió que el presidente \"dice ser cristiano, pero en realidad es un ser sin escrúpulos y sin el menor sentido de humanidad\". Ambas críticas vincularon la escena con \"Viva Cristo Rey\", el lema religioso con el que De la Espriella cierra habitualmente sus discursos desde su posesión del 7 de agosto —y por el que un juzgado laboral de Bogotá ya le había ordenado disculparse por vulnerar la neutralidad religiosa del Estado—, para cuestionar la coherencia entre esa invocación religiosa y recorrer sin mostrar emoción los cuerpos expuestos. Medios citaron además críticas de que el derecho internacional humanitario no distingue entre \"muertos buenos y malos\" —el combatiente dado de baja es persona protegida— y prohíbe exponerlo a la curiosidad pública o instrumentalizar su dignidad con fines propagandísticos. El Ministerio de Defensa defendió la legalidad de la operación y sostuvo que se ajustó a los protocolos del DIH; un analista consultado por la prensa defendió el operativo calificándolo de acto de disuasión y respaldo a la Fuerza Pública, y no de \"un espectáculo\".",
    "tipoFuente": "verificado",
    "fuentes": [
@@ -4463,7 +4566,7 @@
    "categoriaProbatoria": "hecho-probado",
    "tipoMedicion": "resultado",
    "detalle": "En la noche del 27 de agosto, un operativo militar —Operación Amón— contra una estructura del frente de alias Calarcá, del Estado Mayor de Bloques y Frentes de las disidencias de las FARC, dejó un saldo de diez muertos en zona rural de El Retorno (Guaviare). El Instituto Nacional de Medicina Legal confirmó, tras el análisis de los cuerpos, que tres de los fallecidos eran menores de edad (dos de 15 años y uno de 16); también fue capturada una persona y un menor fue recuperado y puesto bajo el proceso de restablecimiento de derechos. El ministro de Defensa, general (r) Jorge Eduardo Mora, atribuyó la muerte de los menores a que los grupos armados \"los instrumentalizaron\", y el Ministerio anunció una mesa con la Fiscalía y la Rama Judicial para reforzar la protección frente al reclutamiento.",
-   "contrapunto": "El 1 de septiembre, 19 representantes a la Cámara, en su mayoría del Pacto Histórico, radicaron una moción de censura contra el ministro Mora con cuatro cargos: falta de inteligencia previa sobre la presencia de menores, deficiencia en el análisis de medidas alternativas menos letales, cuestionamiento a la figura de \"función de combate continuo\" invocada por el Gobierno, y críticas a voceros oficiales por trasladar la responsabilidad al grupo armado sin explicar el deber de protección del Estado. El congresista Óscar Benavides, impulsor de la moción, acusó al Gobierno de \"lavarse las manos\". La Defensoría del Pueblo advirtió por separado, el 1 de septiembre, un aumento del reclutamiento forzado de menores por grupos armados (1.173 casos reportados entre 2024 y 2026). Hasta la fecha de este registro, el Congreso no ha votado la moción de censura.",
+   "contrapunto": "El 1 de septiembre, 19 representantes a la Cámara, en su mayoría del Pacto Histórico, radicaron una moción de censura contra el ministro Mora con cuatro cargos: falta de inteligencia previa sobre la presencia de menores, deficiencia en el análisis de medidas alternativas menos letales, cuestionamiento a la figura de \"función de combate continuo\" invocada por el Gobierno, y críticas a voceros oficiales por trasladar la responsabilidad al grupo armado sin explicar el deber de protección del Estado. El congresista Óscar Benavides, impulsor de la moción, acusó al Gobierno de \"lavarse las manos\". La Defensoría del Pueblo advirtió por separado, el 1 de septiembre, un aumento del reclutamiento forzado de menores por grupos armados (1.173 casos reportados entre 2024 y 2026). La moción ya se votó, y se hundió: el Senado la negó el 23 de septiembre de 2026 —El País reportó la votación en 17 votos a favor y 65 en contra—, así que el ministro Mora se mantiene en el cargo. La Cámara de Representantes adelantó por separado su propio debate el 22 de septiembre, pese a que el trámite del Senado ya estaba en curso, y este registro no establece su desenlace. Esta frase decía antes que el Congreso no la había votado: era cierta cuando se escribió y la dejó vieja la votación, que es justo lo que un registro no puede dejar en pie.",
    "tipoFuente": "verificado",
    "fuentes": [
     {
@@ -4484,6 +4587,21 @@
     {
      "n": "La Silla Vacía · 19 firmas de la oposición apoyan moción de censura contra el mindefensa",
      "u": "https://www.lasillavacia.com/en-vivo/19-firmas-de-la-oposicion-apoyan-mocion-de-censura-contra-el-mindefensa/",
+     "rol": "efecto"
+    },
+    {
+     "n": "El País · Moción de censura contra el ministro de Defensa Jorge Mora fue hundida en el Senado",
+     "u": "https://www.elpais.com.co/politica/senado-rechaza-mocion-de-censura-contra-el-ministro-de-defensa-por-bombardeo-en-guaviare-2303.html",
+     "rol": "efecto"
+    },
+    {
+     "n": "El Heraldo · Se cae en el Senado la moción de censura contra el ministro Jorge Eduardo Mora",
+     "u": "https://www.elheraldo.co/colombia/2026/09/23/se-cae-en-el-senado-la-mocion-de-censura-contra-el-ministro-jorge-eduardo-mora/",
+     "rol": "efecto"
+    },
+    {
+     "n": "Infobae · La Cámara de Representantes realizará moción de censura contra el ministro de Defensa Jorge Mora a pesar de que ya hay un trámite igual en el Senado",
+     "u": "https://www.infobae.com/colombia/2026/09/22/camara-de-representantes-realizara-mocion-de-censura-contra-el-ministro-de-defensa-jorge-mora-a-pesar-de-que-ya-hay-un-tramite-igual-en-el-senado/",
      "rol": "efecto"
     },
     {
