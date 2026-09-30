@@ -103,9 +103,21 @@ svg{ width:20px; height:20px; fill:none; stroke:currentColor; stroke-width:1.9; 
   display:flex; align-items:center; gap:10px;
   height:calc(var(--bar) + env(safe-area-inset-top,0px));
   padding:env(safe-area-inset-top,0px) 16px 0;
-  background:rgba(247,246,241,.88);
-  -webkit-backdrop-filter:saturate(1.6) blur(12px);
-  backdrop-filter:saturate(1.6) blur(12px);
+  /* LA BARRA TAPA. Hasta la v1048 iba en rgba(…,.88) con un blur de 12 px, y
+     medido sobre el papel el texto de la página se leía A TRAVÉS: al bajar,
+     el título del gráfico quedaba montado con el contenido de la barra. Un
+     12 % de un texto oscuro sobre blanco es un gris perfectamente visible, y
+     el blur lo emborrona sin quitarlo.
+
+     Y el efecto empeoraba lo que venía a disimular: medida la franja hueca
+     de la barra —donde no hay nada suyo— comprimida en PNG, pesa 4.898 bytes
+     con el blur puesto, 4.661 sin él y 2.927 opaca. El `saturate(1.6)` sube
+     la saturación de lo que pasa por debajo, así que lo hace MÁS visible.
+
+     Opaca cuesta el efecto de vidrio y ahorra el filtro, que en un teléfono
+     se paga en batería (v870). El trabajo de esta barra es dar el botón de
+     volver y la fecha, no dar profundidad. */
+  background:var(--marfil);
   border-bottom:1px solid var(--linea);
 }
 .sp-back{
@@ -594,8 +606,13 @@ a.sp-fuente:hover svg{ color:var(--verde-hi); }
   background:var(--verde-suave); border-color:#A9DCC9; color:var(--petroleo); font-weight:600;
 }
 
+/* v1049 · iba en --t-8 (13,4 px) sobre una prosa de --t-7 (14,4): el
+   subtítulo medía MENOS que los párrafos que encabeza. Lo encontró la guarda
+   estática de los pares título/cuerpo, no el papel. Pasa a --t-5, que es el
+   mismo escalón que el título de un gráfico y el de los bloques de balance:
+   tres títulos del mismo nivel al mismo tamaño. */
 .sp-prose h3{
-  font-size:var(--t-8); font-weight:700; color:var(--petroleo);
+  font-size:var(--t-5); font-weight:700; color:var(--petroleo);
   margin:20px 0 8px; letter-spacing:0;
 }
 .sp-prose p, .sp-prose li{ font-size:var(--t-7); line-height:1.6; color:var(--ink-2); }
@@ -723,7 +740,13 @@ a.sp-fuente:hover svg{ color:var(--verde-hi); }
   background:var(--sup); border:1px solid var(--linea); border-radius:var(--r);
   padding:18px 18px 16px;
 }
-.sp-graf-h{ margin-bottom:3px; font-size:var(--t-6); font-weight:600; color:var(--petroleo); }
+/* El título de un gráfico tiene que separarse de su cuerpo. Medido a 390 px
+   iba en --t-6 (16 px) sobre un cuerpo de 13,4: una relación de 1,19:1, o
+   sea un título que se lee como un párrafo en negrita. Con --t-5 sube a
+   1,27:1 y el peso a 700 lo separa sin costar un píxel. Lo que cuesta el
+   tamaño está medido: 130 px en un cuerpo de 14.019 —el 0,9 %— y ningún
+   título queda con una palabra suelta en su último renglón. */
+.sp-graf-h{ margin-bottom:3px; font-size:var(--t-5); font-weight:700; color:var(--petroleo); }
 .sp-graf-u{
   font-size:var(--t-8); color:var(--ink-2); text-transform:uppercase;
   letter-spacing:.07em; font-weight:600; margin-bottom:14px;
@@ -1020,8 +1043,13 @@ a.sp-fuente:hover svg{ color:var(--verde-hi); }
   margin-top:22px; padding:15px 16px;
   background:var(--marfil); border:1px solid var(--linea); border-radius:var(--r);
 }
+/* UN TÍTULO NO SE PINTA MÁS CHICO QUE EL CUERPO QUE ENCABEZA. Iba en --t-8
+   (13,4 px) sobre una lista de --t-7 (14,4): el título medía menos que sus
+   propios renglones. No se veía porque el registro no trae hoy el bloque
+   `balance` que lo pinta, así que es un defecto latente y no uno impreso —
+   y lo encontró la guarda estática, no el papel. */
 .sp-falta h4, .sp-metodo h4{
-  margin:0 0 9px; font-size:var(--t-8); font-weight:650; color:var(--petroleo);
+  margin:0 0 9px; font-size:var(--t-5); font-weight:700; color:var(--petroleo);
 }
 .sp-falta ul{ margin:0; padding-left:19px; display:grid; gap:6px; }
 .sp-falta li{ font-size:var(--t-7); color:var(--ink-2); line-height:1.5; }
@@ -1296,11 +1324,17 @@ a.sp-fuente:hover svg{ color:var(--verde-hi); }
 .sp-fi-v-dudosa{         --vc-claro:#875F00; --vc-oscuro:#F2C75C; }
 .sp-fi-v-poco-fiable{    --vc-claro:#A8471D; --vc-oscuro:#F7A876; }
 .sp-fi-v-nada-fiable{    --vc-claro:#B0302B; --vc-oscuro:#F79A95; }
+/* «Sin datos suficientes» va en GRIS y no en rojo: que falte material es una
+   deuda NUESTRA, no un hallazgo sobre el gobierno. Es la regla de los dos
+   rojos, aplicada al veredicto.
+
+   `.sp-fi-v-sin-nivel` se retiró en la v1049 con la rama que lo producía:
+   con el techo indeterminado la ficha publica ahora el peldaño que sostiene
+   lo confirmado, marcado como provisional, así que ese id no lo emite nadie
+   y una regla que ninguna clase alcanza es código que no llama nadie
+   (v885). Lo que marca el peldaño provisional es `.sp-fi-vprov`, más
+   abajo, y NO un color propio: el peldaño se pinta en el de su escalón. */
 .sp-fi-v-sin-datos{      --vc-claro:var(--ink-2); --vc-oscuro:#C9D2DA; }
-/* «Sin nivel» va en GRIS y no en rojo: un peldaño que no se puede
-   calcular es una lectura pendiente NUESTRA, no un hallazgo sobre el
-   gobierno. Es la regla de los dos rojos, aplicada al veredicto. */
-.sp-fi-v-sin-nivel{      --vc-claro:var(--ink-2); --vc-oscuro:#C9D2DA; }
 
 /* La placa de un mandato CERRADO: el mismo diseño, un punto más apagado y con
    el filete gris en vez de dorado. Se nota de un vistazo que no es el de
@@ -1322,10 +1356,17 @@ a.sp-fuente:hover svg{ color:var(--verde-hi); }
    analizado. Discreta pero legible: si hay que forzar la vista en una
    captura de teléfono, no sirve. */
 .sp-fi-firma{
-  display:flex; align-items:center; gap:8px;
+  display:flex; align-items:center; gap:8px; flex-wrap:wrap; row-gap:4px;
   margin:-4px 0 14px; padding-bottom:12px;
   border-bottom:1px solid rgba(234,240,246,.14);
 }
+/* LAS TRES PIEZAS DE LA FIRMA NO SE PARTEN POR DENTRO. Son tres unidades
+   —quién analiza, dónde, y cuándo— y lo que tiene que ceder cuando no caben
+   es la FILA, no la palabra. Medido a 360 px sin esto, «Analizado por
+   URBIS_CO» salía en tres renglones y la fecha en dos: «29 sep» arriba y
+   «2026» debajo. Una fecha partida se lee como un descuido de quien firma,
+   que es justo lo que esta firma existe para no parecer. */
+.sp-fi-firma-t, .sp-fi-firma-w, .sp-fi-firma-f{ white-space:nowrap; }
 .sp-fi-firma-logo{
   flex:0 0 auto; width:20px; height:20px; border-radius:5px; display:block;
 }
@@ -1366,12 +1407,18 @@ a.sp-fuente:hover svg{ color:var(--verde-hi); }
   border:1px solid rgba(217,180,106,.55); box-shadow:inset 0 0 0 3px rgba(217,180,106,.14);
 }
 .sp-fi-placat{ min-width:0; }
+/* El cargo y los días reparten sus renglones en vez de dejar el último con
+   una palabra suelta. Medido a 360 y 390 px, sin esto «Día 54 de gobierno ·
+   193 hechos registrados» dejaba «registrados» solo, y el cargo dejaba
+   colgando «· 2026 – 2030» encima del nombre. Cuesta cero: la placa mide lo
+   mismo. Es el mismo `balance` que el veredicto ya usa dos reglas más
+   abajo. */
 .sp-fi-cargo{
   margin:0; font-size:var(--t-9); font-weight:700; letter-spacing:.09em; text-transform:uppercase;
-  color:#D9B46A;
+  color:#D9B46A; text-wrap:balance;
 }
 .sp-fi-nombre{ margin:2px 0 3px; font-size:var(--t-4); font-weight:700; line-height:1.2; color:#fff; letter-spacing:-.017em; }
-.sp-fi-dias{ margin:0; font-size:var(--t-8); color:#AFBCC9; font-variant-numeric:tabular-nums; }
+.sp-fi-dias{ margin:0; font-size:var(--t-8); color:#AFBCC9; font-variant-numeric:tabular-nums; text-wrap:balance; }
 .sp-fi-vlabel{
   margin:18px 0 0; padding-top:14px; border-top:1px solid rgba(217,180,106,.22);
   font-size:var(--t-9); font-weight:700; letter-spacing:.09em; text-transform:uppercase; color:#AFBCC9;
@@ -1383,6 +1430,18 @@ a.sp-fuente:hover svg{ color:var(--verde-hi); }
 }
 .sp-fi-cuentas{ margin:0; font-size:var(--t-8); color:#C9D2DA; font-variant-numeric:tabular-nums; line-height:1.5; }
 .sp-fi-vfalta{ margin:0 0 6px; font-size:var(--t-8); line-height:1.5; color:#C9D2DA; }
+
+/* UN PELDAÑO PROVISIONAL SE VE COMO TAL, Y NO EN ROJO.
+   El rojo de este módulo es para un hallazgo verificado con fuente; lo que
+   falta por declarar es deuda NUESTRA y va en el gris de la placa (v971).
+   Lo que lo distingue de un peldaño firme es el rótulo de encima, que va
+   pegado al peldaño y con la misma versalita del «FIABILIDAD» de arriba:
+   quien mira la captura lee las dos líneas juntas o no lee ninguna. */
+.sp-fi-vprov{
+  margin:3px 0 0; font-size:var(--t-9); font-weight:700; letter-spacing:.07em;
+  text-transform:uppercase; color:#D9B46A;
+}
+.sp-fi-prov .sp-fi-vval{ margin-top:1px; }
 
 /* En la portada la placa es un botón: sin borde propio, con un pie que dice
    a dónde lleva. Es lo primero del módulo y ocupa el ancho de la columna. */
@@ -1728,10 +1787,14 @@ a.sp-fuente:hover svg{ color:var(--verde-hi); }
 .sp-c2-crit > p{ margin:5px 0 9px; font-size:var(--t-8); line-height:1.55; color:#44515E; }
 .sp-c2-lista{ margin-top:7px; }
 .sp-c2-lista > span{ display:block; font-size:var(--t-9); text-transform:uppercase;
-                     letter-spacing:.06em; color:#6B7885; }
+                     /* v1049 · era #6B7885, que sobre este fondo da 4,17 de contraste y el
+                        mínimo de un texto pequeño son 4,5. El token que el módulo ya tiene
+                        para texto secundario da 5,06, así que el color estaba escrito a mano
+                        y peor que el que había. */
+                     letter-spacing:.06em; color:var(--ink-2); }
 .sp-c2-lista ul{ margin:3px 0 0; padding-left:17px; }
 .sp-c2-lista li{ font-size:var(--t-8); line-height:1.5; color:#33404C; }
-.sp-c2-si li::marker{ color:#2E7D52; }
+.sp-c2-si li::marker{ color:#1F7A4B; }
 .sp-c2-no li::marker{ color:#9A3C38; }
 .sp-c2-fuera{ margin-top:11px; padding:10px 12px; border-radius:9px;
               border:1px dashed #C9A227; background:#FDF7E6; }
@@ -1741,8 +1804,11 @@ a.sp-fuente:hover svg{ color:var(--verde-hi); }
 .sp-c2-fuera li b{ display:block; font-weight:600; color:#7A5A0B; }
 .sp-c2-fuera > p{ margin:8px 0 0; font-size:var(--t-8); line-height:1.55; color:#5B6873; }
 /* v963 · cuántos hechos entraron por cada renglón del criterio. */
+/* v1049 · el verde era #2E7D52 y sobre su propio fondo daba 4,30, por debajo
+   del 4,5 que pide un texto de este tamaño. #1F7A4B da 4,55 y NO es un color
+   nuevo: es el mismo que la hoja ya declara para el peldaño «Fiable». */
 .sp-c2-via{ display:inline-block; margin-left:7px; padding:1px 7px; border-radius:999px;
-            background:#E4F0E8; color:#2E7D52; font-size:var(--t-9); font-weight:600; }
+            background:#E4F0E8; color:#1F7A4B; font-size:var(--t-9); font-weight:600; }
 .sp-c2-unavia{ margin:9px 0 0; font-size:var(--t-8); line-height:1.55; color:#5B6873; }
 .sp-c2-nocomp{ padding:12px 14px; border-radius:10px; border:1px dashed #E2A6A3; background:#FBEDEC; }
 .sp-c2-nocomp b{ display:block; font-size:var(--t-8); color:#9A3C38; }
@@ -1888,6 +1954,13 @@ a.sp-fuente:hover svg{ color:var(--verde-hi); }
   color:var(--rojo); font-variant-numeric:tabular-nums;
 }
 .sp-heroe-u{ font-size:var(--t-6); font-weight:600; color:var(--ink); max-width:26ch; }
+/* La unidad y el eje del héroe: la misma forma que `.sp-graf-u` de las
+   tarjetas, porque es la misma declaración. Va debajo de la cifra, que es
+   donde se lee el «billones» que la acompaña. */
+.sp-heroe-u{
+  margin:6px 0 0; font-size:var(--t-8); color:var(--ink-2); text-transform:uppercase;
+  letter-spacing:.07em; font-weight:600;
+}
 .sp-heroe-frase{ margin:12px 0 0; font-size:var(--t-5); line-height:1.45; color:var(--ink); }
 
 /* ── Los dibujos ─────────────────────────────────────────────────────────── */

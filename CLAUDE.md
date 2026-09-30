@@ -19,18 +19,26 @@ prioridades también se queda vieja (v997)»**, más abajo.
 Medido el 21 de septiembre de 2026 sobre los dos registros —180 entradas del
 gobierno actual y 32 de Petro—:
 
-1. **Decidir la identidad de objeto de las 8 contradicciones documentadas.**
-   Es lo único que bloquea el veredicto de fiabilidad (v972), y **no es de esta
-   sesión**: leer si lo prometido y lo hecho son el mismo objeto cambia en
-   público el juicio sobre una persona real, y lo decide quien firma el módulo.
-   Declarada cualquiera, el peldaño se calcula solo.
+1. **Decidir la identidad de objeto de las contradicciones documentadas.**
+   Desde la v1049 esto **ya no bloquea** la publicación del veredicto: la ficha
+   publica el peldaño que sostiene lo confirmado, marcado como provisional, y
+   nombra las que faltan bajo su rótulo. Lo que sigue decidiendo es si ese
+   peldaño es **firme o provisional**, y hasta dónde puede bajar — hoy, entre
+   «Fiable» y «Poco fiable». **No es de esta sesión**: leer si lo prometido y
+   lo hecho son el mismo objeto cambia en público el juicio sobre una persona
+   real, y lo decide quien firma el módulo. Declaradas todas, el peldaño deja
+   de ser provisional solo.
    `hecho cuando: identidad-declarada`
 
 **Queda UN renglón, y no es de esta sesión.** Es la primera vez que esta lista
-llega a eso, y conviene que se lea como lo que es: lo que bloquea el veredicto
-de fiabilidad de una persona real es una lectura —si lo prometido y lo hecho
-son el mismo objeto— y esa la toma quien firma el módulo. Endurecer guardas
+llega a eso, y conviene que se lea como lo que es: quién decide si lo prometido
+y lo hecho son el mismo objeto no es una cuestión de código. Endurecer guardas
 alrededor no la adelanta ni un día.
+
+Y una corrección que la v1049 midió: **son CINCO, no ocho.** Las documentadas
+que cuentan son cinco —la sexta lleva `cuenta: false` con su motivo— y una de
+ellas, la del FMI, la entró la otra sesión después de que este renglón se
+escribiera. El número de esta lista se lee del registro, no de acá.
 
 Una precisión que la lista vieja traía y sigue valiendo: si al declarar el rol
 aparece una entrada cuyas fuentes **ninguna documenta el acto**, no se inventa
@@ -22296,6 +22304,278 @@ municipio: los plazos y las ventanillas se escribieron de lo que la ley fija
 educativo ya tenía medido para la curaduría. El resto va con su «según el
 municipio» escrito, que es lo honesto cuando no se puede comprobar contra
 cada alcaldía del país. `pendiente`
+
+## El peldaño que sostiene lo confirmado, y la barra que tapa (v1049)
+
+Pedido con el teléfono en la mano y en dos mitades: *«que quede funcional, que
+no haya superposición de textos, y buena paleta de colores, buena proporción de
+títulos, tipografías»*, y *«necesito que ya pues esto me fuerce ya que me diga
+el nivel de fiabilidad de Abelardo… Si no lo ha analizado porque no se ha
+confirmado algunas cosas, pues omita esas cosas, guárdelas o déjelas públicas,
+pero un título de que aún no se confirma»*.
+
+    v1048   Sin nivel · la barra deja leer el texto de debajo · el héroe repetido
+    v1049   Fiable · con lo confirmado hasta hoy · la barra tapa · −812 px
+
+### El veredicto: se publica el extremo que sostiene lo confirmado
+
+La v972 dejó de publicar peldaño cuando el techo `palabra` es un intervalo, y
+su razonamiento era correcto para lo que entonces se sabía decir: publicar
+«Poco fiable» sobre un presidente en ejercicio con un insumo sin declarar no se
+sostiene si alguien pregunta. **Lo que faltaba no era el nivel: era la manera
+de decir cuál de los dos extremos se publica y por qué.**
+
+Se publica `peorMin`, y lo que lo hace publicable es una propiedad del cálculo
+y no una preferencia: **los tres techos son monótonos** —más material solo puede
+bajar el peldaño, nunca subirlo— y `peorMin` sale de `conIdentidad`, que es lo
+que YA está declarado. Así que la frase es verdadera hoy y seguirá siéndolo:
+*con lo confirmado, este gobierno no puede estar mejor que esto.* Es un **piso**,
+no una estimación optimista — la misma forma que el «mientras llega» de la v1046,
+que es un piso y nunca un total.
+
+Y lo pendiente no se esconde ni se cuenta como si estuviera:
+
+| Dónde | Qué dice |
+|---|---|
+| la placa | **CON LO CONFIRMADO HASTA HOY** encima del peldaño, y debajo: aún no se confirma en 5 de 5, si todas resultaran serlo bajaría a «Poco fiable», y lo que falta no puede subirlo |
+| la nota de la escalera | el intervalo entero, y por qué el extremo publicado es un piso |
+| el bloque de lo que falta | «Aún no se confirma, y por eso el peldaño es provisional», con las **cinco nombradas** |
+
+Es la decisión de la v886 con los mapas de 6,5 cm y la de la v890 con el aviso
+de escala: **se declara, no se topa ni se rechaza.**
+
+#### El rótulo va ANTES del peldaño, y eso lo decidió el papel
+
+El peldaño se pinta en el color de su escalón: «Fiable» sale en **verde a 32 px**
+y en una captura ese color domina. Con el rótulo detrás, el color afirma antes
+de que el texto acote. Leído en orden —FIABILIDAD → CON LO CONFIRMADO HASTA HOY
+→ Fiable— quien llega al verde ya sabe que es condicional. Tiene su aserción
+sobre el orden, no solo sobre la presencia.
+
+Y **no se atenúa el color**, que fue la otra salida que consideré: el texto ya
+lo acota tres veces —el rótulo, la frase del techo y la nota de la ficha— y una
+cuarta señal sobre lo mismo es la alarma que muere por repetida (v886).
+
+#### El `id` se conserva y la marca va aparte
+
+Con un id propio, un «Fiable» provisional y uno firme se pintarían igual; con el
+id cambiado se perderían los dos. El id da el color y `provisional` da la marca.
+Y la marca **viaja con el veredicto**, no la deduce la pantalla: con la pantalla
+decidiendo, la placa y la ficha se separan a la tanda siguiente (v879).
+
+De paso, `.sp-fi-v-sin-nivel` se retiró con la rama que lo emitía: una regla que
+ninguna clase alcanza es código que no llama nadie (v885).
+
+#### Y la bitácora decía 4 de 4 donde el registro dice 5 de 5
+
+La otra sesión entró la contradicción del FMI después de que la
+`LISTA-QUE-SIGUE` se escribiera. Medirlo antes de tocar —la regla de la v916—
+evitó escribir el número de memoria, que es lo que la v1038 sí hizo con los
+trece paneles y costó una corrección.
+
+### La superposición era la barra, y el blur la empeoraba
+
+Lo que el lector ve como «superposición de textos» **no es un solapamiento de
+cajas**: es que la barra pegajosa, con `rgba(247,246,241,.88)` y un blur de
+12 px, deja leer el texto de la página por debajo. Al bajar, el título de un
+gráfico queda montado con el contenido de la barra.
+
+Medida la franja hueca de la barra —donde no hay nada suyo— comprimida en PNG:
+
+| | bytes |
+|---|---|
+| como estaba (.88 con blur) | **4.898** |
+| .88 sin blur | 4.661 |
+| .94 con blur | 4.166 |
+| .97 con blur | 3.783 |
+| **opaca** | **2.927** |
+
+**El blur lo EMPEORABA.** El `saturate(1.6)` sube la saturación de lo que pasa
+por debajo, así que el efecto que existe para disimular hacía lo contrario.
+Opaca cuesta el vidrio y ahorra el filtro, que en un teléfono se paga en batería
+(v870); el trabajo de esta barra es dar el botón de volver y la fecha.
+
+#### El token que escribí no existía, y la barra habría quedado transparente
+
+Puse `var(--papel)` y **no hay ningún `--papel` en la hoja**: el token es
+`--marfil`, que es exactamente el `rgb(247,246,241)` que la barra escribía a
+mano. O sea que la barra ya tenía la clase B —el mismo color como token y como
+literal— y mi arreglo, sin comprobar, la habría dejado **sin fondo**: un defecto
+mucho peor que el que venía a quitar. Lo salvó comprobar el token antes de
+creerle, que es la regla de la v863 en su forma más barata.
+
+### Cinco falsos positivos de mis propias sondas, y qué medía mal cada una
+
+Vale enumerarlos porque los cinco tienen la misma forma —**la sonda mide algo
+más simple que lo que dice medir**— y porque cuatro de ellos me habrían llevado
+a «arreglar» algo que está bien, que es lo que la v882 y la v886 tuvieron que
+deshacer.
+
+| Lo que denunció | Qué medía mal |
+|---|---|
+| «el nombre del presidente se pisa con su periodo» | `getBoundingClientRect` de un **inline multilínea** devuelve la caja que ENCIERRA sus líneas, así que dos hermanos de la misma línea se «pisan» sin pisarse. Se mide por NODO DE TEXTO con un `Range`, que da la caja de cada línea |
+| «33 colores de texto, y 13 con contraste bajo» | un fondo `linear-gradient` devuelve `backgroundColor: rgba(0,0,0,0)`, así que la búsqueda ingenua lo salta y sube al fondo de la página: **la placa oscura se medía contra el marfil**. Con la pila de fondos compuesta quedan 17 y 25, y dos contrastes bajos |
+| «`sp-fi-cargo` es texto corrido a 12,48 px» | es una **versalita**, y la hoja declara que `--t-9` son etiquetas en mayúsculas. La guarda estática del módulo lo deja pasar con razón |
+| «dos títulos de la ficha no superan a su cuerpo» | lo mismo: `sp-fi-grupo-t` va en versalitas |
+| «14 elementos se salen por la derecha en la ficha» | los catorce están dentro de un **carrusel** con `overflow-x`, y el documento mide exactamente 390 px en una ventana de 390 |
+
+Medido por nodo de texto y en cuatro anchuras: **cero superposiciones**, antes y
+después. La que el lector ve es la de la barra.
+
+### Los dos contrastes que sí eran reales
+
+Con el fondo compuesto de verdad quedan dos, los dos anteriores a esta tanda y
+los dos rozando el mínimo de 4,5 de un texto pequeño:
+
+* `#6B7885` sobre `#F4F6F8` daba **4,17**. Pasa a `var(--ink-2)`, que es 5,06 —
+  o sea que el color estaba escrito a mano y **peor que el token que la hoja ya
+  tenía** para lo mismo;
+* `#2E7D52` sobre `#E4F0E8` daba **4,30**. Pasa a `#1F7A4B`, que es 4,55 y **no
+  es un color nuevo**: es el que la hoja ya declara para el peldaño «Fiable».
+
+Medido después: **cero contrastes bajos** en las dos vistas, y la ficha baja de
+27 a 25 colores. Y dentro de la placa, las trece piezas pasan con holgura —lo
+más justo es 5,20 contra un mínimo de 4,5—, incluido el rótulo nuevo.
+
+### La proporción de títulos, y el título más chico que su propio cuerpo
+
+Medida la escala, la **ficha** está bien —H2 24/32 → H3 20 → H4 17/16— y la
+**portada** no: H1 32 → H3 16 ×16, con el título de un gráfico al mismo tamaño
+que el texto corrido por omisión y **1,19:1** contra su propio cuerpo de 13,4.
+
+`.sp-graf-h` pasa a `--t-5` con peso 700. El tamaño se midió antes de elegirlo:
+
+| | renglones a 390 px | cuerpo |
+|---|---|---|
+| `--t-6` (16 px) | 23 | 14.019 px |
+| **`--t-5` (17 px)** | 28 | 14.149 px |
+| `--t-4` (20 px) | 30 | 14.311 px |
+
+Cero huérfanos en las tres, y `--t-5` cuesta 130 px de 14.019 —el 0,9 %—. El
+peso sube el contraste de jerarquía sin costar un píxel.
+
+#### Y la guarda encontró dos títulos por debajo de su cuerpo
+
+La regla es exacta y se puede comprobar sin navegador: **un título no se pinta
+más chico que el cuerpo que encabeza**, sobre los pares que el CSS declara
+juntos —`.X h4` contra `.X li` o `.X p`—. Encontró dos:
+
+* `.sp-falta h4` en `--t-8` sobre una lista de `--t-7`;
+* `.sp-prose h3` en `--t-8` sobre párrafos de `--t-7`.
+
+Los dos con el título midiendo **menos que sus propios renglones**, y ninguno
+visible hoy: el primero porque el registro no trae el bloque `balance` que lo
+pinta. **Los encontró la guarda, no el papel**, y es la primera de esta serie que
+lo hace.
+
+**De qué NO responde, dicho:** del ORDEN, no de la proporción. Un título que
+supera a su cuerpo por un píxel pasa, y eso no tiene vara medible en este
+módulo.
+
+##### El extractor se tragaba reglas por culpa de los comentarios
+
+Lo destapó una inyección que se quedó en verde. Una línea intermedia de un
+comentario de varias líneas empieza por espacios, así que casa como selector y
+**consume la regla que viene detrás**: al escribirle un comentario a
+`.sp-prose h3` su par desapareció de la lista y la comprobación pasó a mirar
+cinco pares en vez de seis, **sin decir nada**. Quitando los comentarios antes de
+trocear aparecen **siete** — o sea que ya se tragaba dos desde antes. Es la
+lección de la v926 en CSS, y es la razón por la que una guarda se demuestra en
+rojo y no se da por buena porque pase.
+
+### El héroe y el primer gráfico eran el mismo panel
+
+Salió mirando el papel. `pintarHeroe` y `grafDeudaInversion` dibujan el **mismo
+`p.heroe`**: las mismas dos barras, la misma fuente y la misma nota entera, dos
+dedos una debajo de la otra. Y los dos dependen de la misma `p`, así que **nunca
+había uno sin el otro**: la repetición era total.
+
+Se retira el gráfico —el héroe tiene todo lo suyo más la cifra a 5,2 rem— y el
+héroe hereda la única cosa que el gráfico decía y él no: **«Billones de pesos.
+Eje desde cero.»**, que es una de las cinco reglas de los gráficos de la v971.
+
+Medido: la portada baja de **19.082 a 18.270 px** a 390 px de ancho.
+
+La guarda persigue la clase: ningún gráfico del bloque puede dibujar el mismo
+`p.heroe`. Y su inyección tuvo que **devolver la función además de la llamada**:
+con solo la llamada, el barrido no encuentra `function grafDeudaInversion(` y la
+salta — la guarda se quedaba en verde por una inyección que no era el estado
+real (v993).
+
+### La firma no se parte por dentro, y el cargo reparte
+
+Medidas las roturas de línea de la placa a 360, 390 y 430 px:
+
+| | antes | ahora |
+|---|---|---|
+| «Analizado por URBIS_CO» | **3 renglones** a 360 | 1 |
+| «29 sep 2026» | **2 renglones** («29 sep» / «2026») | 1 |
+| «Día 54 de gobierno · 193 hechos registrados» | último renglón de 66 px («registrados» solo) | 140 px |
+
+Las tres piezas de la firma son unidades —quién analiza, dónde y cuándo— y lo
+que tiene que ceder cuando no caben es **la fila, no la palabra**: `flex-wrap` en
+la fila y `nowrap` en cada pieza. Una fecha partida se lee como un descuido de
+quien firma, que es justo lo que esa firma existe para no parecer.
+
+Y el cargo y los días reparten con `text-wrap: balance`, que es el mismo que el
+veredicto ya usa dos reglas más abajo. Medido: **cero roturas huérfanas** en las
+tres anchuras, y la placa mide lo mismo.
+
+### Lo que esta versión NO hace, y queda medido
+
+* **Los 26 objetivos de toque por debajo de 44 px**, el más chico
+  `sp-iconbtn` a 34 × 34. Este módulo **no declara un piso de toque** como el
+  educativo declara sus 28 px con su razón escrita, así que ponerle uno sería el
+  número a ojo de la v869. Es lo mismo que la v1015 dejó medido y declarado, y
+  sigue sin vara propia. `pendiente`
+* **El H1 llega a los 12.006 px y no hay ningún H2 en la portada**: el primer
+  encabezado de la página es un H3, y para quien navega por encabezados la
+  página empieza en una sub-sub-sección de nada. La causa está identificada —la
+  v972 movió el bloque de gráficos arriba del título y el H1 se quedó donde
+  estaba—, y **el orden visual lo fijó el lector** en esa misma tanda: ficha ·
+  gráficos · enlace · muro · título. Las tres salidas —subir el H1, darle un H2
+  al bloque, o dejarlo— cambian contenido que nadie pidió, así que se mide y se
+  declara. `pendiente`
+* **La identidad visual de la muestra** (Archivo + Source Serif 4, señal
+  `#B8112E`, modo oscuro completo) sigue sin adoptarse, por lo que la v971 dejó
+  escrito: la decide quien la escribió. `pendiente`
+
+### Lo que NO se pudo correr
+
+**Ninguna suite de navegador**, por lo mismo que la v973 en adelante: este
+contenedor no tiene `../urbis-motor` ni el `node_modules` del banco de pruebas.
+Corrió `revisar.js` entero con sus nueve comprobaciones nuevas —una de ellas
+dada vuelta— y se midió el papel con la sonda: la portada y la ficha a 360, 390,
+768 y 1.200 px, con las capturas de la placa y de la barra sobre texto.
+
+### Demostrado contra la v1048
+
+Doce inyecciones fieles, una por aserción (v993), contra copias guardadas y no
+con `git checkout --` sobre trabajo sin confirmar (v973). Diez en rojo con su
+causa propia y dos en `?` de MATERIAL:
+
+```
+✗ se publica el peldaño que sostiene lo confirmado  — vuelve a no publicar nivel
+✗ el peldaño se publica marcado, no se calla        — volvió a callar el peldaño
+✗ y es el extremo mínimo…  — publica el PEOR caso: afirmaría lo que nadie ha leído
+✗ y es el extremo mínimo…  — no declara hasta dónde puede bajar
+✗ la marca de provisional viaja con el veredicto
+    — 1 de 2 deciden por su cuenta si el peldaño es firme, en vez de leer la marca
+✗ y el rótulo va ANTES del peldaño  — va detrás: el color afirma antes de que el texto acote
+✗ la placa dice que es provisional y hasta dónde baja  — no dice hasta dónde puede bajar
+✗ y el intervalo sigue saliendo de las dos cotas  — dejaron de calcularse
+✗ la barra pegajosa tapa  — vuelve a ser translúcida (rgba(247,246,241,.88))
+✗ ningún título se pinta más chico que el cuerpo  — .sp-prose h3 en --t-8 sobre .sp-prose p en --t-7
+✗ ningún gráfico del bloque repite el héroe  — 1 dibujan el mismo p.heroe: grafDeudaInversion
+? MATERIAL · el veredicto y la placa se dejan leer
+? MATERIAL · el bloque de gráficos se deja leer
+```
+
+Y dos inyecciones que **no mordieron a la primera**, las dos por lo mismo —la
+guarda medía menos de lo que decía— y las dos arregladas: la de la marca
+buscaba UN uso donde la placa tiene dos, y la del héroe no devolvía la función.
+Cuando una inyección fiel no consigue poner algo en rojo, lo que falta no es la
+inyección: es lo que la aserción mide (v1029).
 
 ## La lista viva: lo que al pliego educativo todavía le falta (v866)
 

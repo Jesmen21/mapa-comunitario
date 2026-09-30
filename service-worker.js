@@ -1,4 +1,4 @@
-const URBIS_CACHE = 'urbis-v1048-alertas-enjambre-sismico-chaparral-29-sep';
+const URBIS_CACHE = 'urbis-v1049-fiabilidad-provisional-y-la-barra-que-tapa';
 const URBIS_ASSETS = [
   './',
   './index.html',

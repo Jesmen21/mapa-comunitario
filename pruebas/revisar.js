@@ -1562,13 +1562,27 @@ console.log('\n  -- la ficha del gobernante --');
       /TECHOS\.palabra\.f\(ea\.conIdentidad \+ ea\.sinDeclarar\)/.test(j70c1),
       'palMin y palMax salen de ejeA(dd): una sola cuenta para las dos lecturas');
 
-    comprobar('la ficha NO publica peldaño mientras el techo sea un intervalo',
+    /* LA AFIRMACIÓN SE DIO VUELTA EN LA v1049, y lo que tiene que fallar es
+       justo lo que antes tenía que pasar —la misma vuelta que dieron las dos
+       de la v876 y las dos de la v887—.
+
+       Lo que la v972 guardaba sigue guardado y no se aflojó: el intervalo se
+       sigue calculando de las dos cotas, y el peldaño que se publica sigue
+       siendo el que el cálculo respalda. Lo que cambió es cuál de los dos
+       extremos se publica y cómo se rotula: `peorMin` es el que sostiene lo
+       confirmado, y como los tres techos solo empeoran con más material, ese
+       extremo es un PISO. Lo pendiente no se esconde: va con su nombre bajo
+       su propio rótulo. Las siete comprobaciones del bloque v1049, al final
+       de este archivo, son las que vigilan que no se publique la mitad. */
+    comprobar('con el techo indeterminado el peldaño se publica marcado, no se calla',
       tramoV2.length > 0 &&
       /var determinado = peorMin === peorMax;/.test(tramoV2) &&
       /\} else if \(!determinado\) \{/.test(tramoV2) &&
-      /id: 'sin-nivel'/.test(tramoV2),
+      !/id: 'sin-nivel'/.test(tramoV2),
       !tramoV2.length ? 'no se encontró el tramo del veredicto: la comprobación no vale'
-        : 'con peorMin ≠ peorMax el veredicto es «Sin nivel» y dice entre qué dos peldaños queda');
+        : /id: 'sin-nivel'/.test(tramoV2)
+          ? 'volvió a callar el peldaño: hay uno que lo confirmado sí sostiene'
+          : 'con peorMin ≠ peorMax publica peorMin marcado como provisional');
 
     /* La guarda de la guarda: si `ejeA` dejara de devolver las dos cuentas,
        todo lo de arriba seguiría en verde sobre `undefined` —y `TECHOS.palabra.f`
@@ -1585,13 +1599,21 @@ console.log('\n  -- la ficha del gobernante --');
       /sin identidad de objeto declarada/.test(j70c1),
       'cuentasDe nombra los que están sin declarar');
 
-    /* Y que el peldaño nuevo esté pintado: una clase que ninguna regla pinta
-       es HTML válido y no lo dice nadie (v895). Va en GRIS y no en rojo —una
-       lectura pendiente nuestra no es un hallazgo sobre el gobierno—. */
-    comprobar('el peldaño «Sin nivel» tiene su regla en la hoja de estilo, y en gris',
-      /\.sp-fi-v-sin-nivel\{[^}]*--vc-claro:var\(--ink-2\)/.test(c70niv) &&
+    /* Y que el peldaño esté pintado: una clase que ninguna regla pinta es
+       HTML válido y no lo dice nadie (v895). «Sin datos suficientes» va en
+       GRIS y no en rojo —que falte material es deuda nuestra, no un hallazgo
+       sobre el gobierno—.
+
+       v1049 · `sp-fi-v-sin-nivel` se retiró con la rama que lo emitía, así
+       que lo que se vigila es el gris que SÍ queda vivo más las dos clases
+       del texto de lo pendiente. */
+    comprobar('el peldaño gris tiene su regla en la hoja de estilo, y las de lo pendiente',
+      /\.sp-fi-v-sin-datos\{[^}]*--vc-claro:var\(--ink-2\)/.test(c70niv) &&
+      !/\.sp-fi-v-sin-nivel\{/.test(c70niv) &&
       /\.sp-fi-vfalta\{/.test(c70niv) && /\.sp-fi-falta\{/.test(c70niv),
-      'sp-fi-v-sin-nivel, sp-fi-vfalta y sp-fi-falta pintadas');
+      /\.sp-fi-v-sin-nivel\{/.test(c70niv)
+        ? 'sp-fi-v-sin-nivel sigue en la hoja y ya no la emite nadie'
+        : 'sp-fi-v-sin-datos, sp-fi-vfalta y sp-fi-falta pintadas');
 
     /* ── v977 · CUÁLES bloquean el veredicto, no solo cuántas ───────────
        El módulo sabía exactamente qué contradicciones dejan la fiabilidad sin
@@ -10439,6 +10461,219 @@ console.log('\n  -- el marcado que vive dentro del JavaScript (v1025) --');
     sinRazon.length
       ? sinRazon.length + ' sin motivo escrito: «' + sinRazon[0][0] + '» — una excepcion sin razon envejece hasta no significar nada'
       : DECLARADOS.length + ' declarado(s), cada uno con el motivo por el que no llega al papel');
+}
+
+/* ═══════════════════════════════════════════════════════════════════════
+   EL PELDAÑO PROVISIONAL, Y LA INTERFAZ DEL MÓDULO PRESIDENCIAL (v1049)
+
+   Hasta la v1048 la ficha imprimía «Sin nivel» cuando la identidad de objeto
+   de las contradicciones no estaba declarada. Ahora publica el extremo del
+   intervalo que sostiene lo confirmado, y lo pendiente va con su nombre bajo
+   su propio rótulo. Lo que estas comprobaciones impiden es que se publique
+   la MITAD: un peldaño sin decir que es provisional, o un «aún no se
+   confirma» sin decir hasta dónde puede bajar.
+   ═══════════════════════════════════════════════════════════════════════ */
+{
+  const j70 = leer('js/70-seguimiento.js');
+  const c70 = leer('css/70-seguimiento.css');
+
+  /* El tramo del veredicto: del cálculo del peor techo al `return` de la
+     ficha. Se corta por contenido y no a N caracteres, que es un ancla que
+     envejece (v935). */
+  const iVer = j70.indexOf('var peorMin = Math.max(');
+  const iFin = j70.indexOf('capa1: capa1', iVer);
+  const ver = iVer >= 0 && iFin > iVer ? j70.slice(iVer, iFin) : '';
+
+  const iPlaca = j70.indexOf('function placaDe(');
+  const fPlaca = iPlaca >= 0 ? j70.indexOf('\n  }', iPlaca) : -1;
+  const placa = iPlaca >= 0 && fPlaca > iPlaca ? j70.slice(iPlaca, fPlaca) : '';
+
+  if (!ver || !placa) {
+    anotarSinMaterial('MATERIAL - el veredicto y la placa se dejan leer',
+      'no se encontró ' + (!ver ? 'el cálculo del peor techo' : 'placaDe') +
+      ': las comprobaciones de abajo no vigilarían nada');
+  } else {
+    comprobar('MATERIAL - el veredicto y la placa se dejan leer', true,
+      ver.length + ' y ' + placa.length + ' caracteres');
+
+    /* 1 · CON EL TECHO INDETERMINADO SE PUBLICA PELDAÑO. Es lo que el lector
+       pidió: que la ficha diga el nivel. La rama que antes devolvía
+       «sin-nivel» tiene que salir de la ESCALERA. */
+    const iRama = ver.indexOf('} else if (!determinado) {');
+    const rama = iRama >= 0 ? ver.slice(iRama, ver.indexOf('} else {', iRama)) : '';
+    comprobar('con el techo indeterminado se publica el peldaño que sostiene lo confirmado',
+      /ESCALERA\[peorMin\]/.test(rama) && !/'sin-nivel'/.test(rama),
+      /'sin-nivel'/.test(rama)
+        ? 'vuelve a no publicar nivel: la ficha diría «Sin nivel» donde hay un peldaño que sí se sostiene'
+        : !/ESCALERA\[peorMin\]/.test(rama)
+          ? 'no sale de la escalera: publicaría un peldaño que el cálculo no respalda'
+          : 'sale de ESCALERA[peorMin], que es el extremo que lo confirmado sostiene');
+
+    /* 2 · Y EL EXTREMO ES EL MÍNIMO, NO EL MÁXIMO. Publicar `peorMax` sería
+       publicar el peor caso como si estuviera medido: afirmar sobre una
+       persona real algo que depende de una lectura que nadie hizo. Y el
+       mínimo solo es defendible porque los tres techos son monótonos —más
+       material nunca sube el peldaño—, así que es un PISO. */
+    comprobar('y es el extremo mínimo, con su techo declarado al lado',
+      /ESCALERA\[peorMin\]/.test(rama) && /hasta: ESCALERA\[peorMax\]/.test(rama) &&
+      !/id: ESCALERA\[peorMax\]/.test(rama),
+      !/hasta: ESCALERA\[peorMax\]/.test(rama)
+        ? 'no declara hasta dónde puede bajar: un piso sin su techo se lee como firme'
+        : /id: ESCALERA\[peorMax\]/.test(rama)
+          ? 'publica el PEOR caso: afirmaría lo que nadie ha leído'
+          : 'publica el mínimo y declara el máximo');
+
+    /* 3 · LA MARCA VIAJA CON EL VEREDICTO, no la deduce la pantalla. Con la
+       pantalla decidiendo, la placa y la ficha se separarían a la tanda
+       siguiente y la que se quedaría vieja sería la que nadie mira (v879). */
+    /* Se CUENTAN los sitios de la placa que deciden si el peldaño es firme,
+       no se busca uno: la placa lo usa dos veces —el rótulo y el bloque de
+       lo que falta— y con un solo `test` uno de los dos podía pasar a
+       decidir por su cuenta sin que nada lo dijera. Lo destapó una
+       inyección que dejó la guarda en verde. */
+    const decidePlaca = (placa.match(/if \(([^)]*)\)/g) || [])
+      .filter((c) => /sp-fi-vprov|veredicto\.hasta|sp-fi-vfalta/.test(placa.slice(placa.indexOf(c), placa.indexOf(c) + 220)));
+    const porMarca = decidePlaca.filter((c) => /f\.veredicto\.provisional/.test(c)).length;
+    comprobar('la marca de provisional viaja con el veredicto',
+      /provisional: true/.test(rama) && decidePlaca.length > 0 && porMarca === decidePlaca.length,
+      !/provisional: true/.test(rama) ? 'el veredicto no la lleva'
+        : !decidePlaca.length ? 'la placa no decide en ninguna parte si el peldaño es firme'
+          : porMarca < decidePlaca.length
+            ? (decidePlaca.length - porMarca) + ' de ' + decidePlaca.length +
+              ' deciden por su cuenta si el peldaño es firme, en vez de leer la marca'
+            : 'el veredicto la lleva y los ' + decidePlaca.length + ' sitios de la placa la leen');
+
+    /* 4 · LA PLACA DICE LAS DOS COSAS. Esta placa se fotografía y la captura
+       circula sola: un peldaño sin su rótulo se lee como firme, y un rótulo
+       sin el techo deja al lector sin saber qué está en juego. Las dos
+       mitades o la marca es un adorno. */
+    const iProv = placa.indexOf("'sp-fi-vprov'");
+    const iVval = placa.indexOf("'sp-fi-vval'");
+    comprobar('la placa dice que es provisional y hasta dónde baja',
+      iProv > 0 && /sp-fi-vfalta/.test(placa) && /veredicto\.hasta\.t/.test(placa),
+      iProv < 0 ? 'no imprime el rótulo de provisional'
+        : !/veredicto\.hasta\.t/.test(placa) ? 'no dice hasta dónde puede bajar'
+          : 'imprime el rótulo y el techo');
+
+    /* 5 · Y EL RÓTULO VA ANTES DEL PELDAÑO. El peldaño se pinta en el color
+       de su escalón —«Fiable» sale en verde a 32 px— y en una captura ese
+       color domina. Leído en orden, quien llega al verde ya sabe que es con
+       lo confirmado; detrás, el color afirma antes de que el texto acote. */
+    comprobar('y el rótulo va ANTES del peldaño, no después',
+      iProv > 0 && iVval > 0 && iProv < iVval,
+      iProv > iVval ? 'va detrás: el color del peldaño afirma antes de que el texto lo acote'
+        : 'va antes, así que el color se lee ya acotado');
+
+    /* 6 · LA GUARDA DE LA GUARDA: que el intervalo se siga calculando de las
+       dos cotas. Con `palMax` sin usar, todo lo de arriba seguiría en verde
+       sobre un veredicto que volvió a ser un número solo (v878). */
+    const dosCotas = /peorMin = Math\.max\(techos\.casos\.i, palMin/.test(ver) &&
+                     /peorMax = Math\.max\(techos\.casos\.i, palMax/.test(ver);
+    comprobar('y el intervalo sigue saliendo de las dos cotas', dosCotas,
+      dosCotas ? 'peorMin y peorMax salen de palMin y palMax'
+        : 'dejaron de calcularse: el peldaño provisional sería un peldaño firme mal rotulado');
+  }
+
+  /* 7 · LA BARRA PEGAJOSA TAPA. Medido sobre el papel, con rgba(…,.88) el
+     texto de la página se leía A TRAVÉS y al bajar quedaba montado con el
+     contenido de la barra. Y el blur lo empeoraba: la franja hueca pesa
+     4.898 bytes comprimida con él, 4.661 sin él y 2.927 opaca. */
+  const iBar = c70.indexOf('.sp-bar{');
+  const bar = iBar >= 0 ? c70.slice(iBar, c70.indexOf('}', iBar)) : '';
+  const fondoBar = /background:\s*([^;]+);/.exec(bar);
+  comprobar('la barra pegajosa tapa lo que pasa por debajo',
+    !!bar && !!fondoBar && !/rgba|hsla|transparent/.test(fondoBar[1]),
+    !bar ? 'no se encontró la regla de la barra'
+      : !fondoBar ? 'la barra no declara fondo: la página se leería entera a través'
+        : /rgba|hsla|transparent/.test(fondoBar[1])
+          ? 'vuelve a ser translúcida (' + fondoBar[1].trim() + '): el texto de debajo se lee'
+          : 'opaca: ' + fondoBar[1].trim());
+
+  /* 8 · UN TÍTULO NO SE PINTA MÁS CHICO QUE EL CUERPO QUE ENCABEZA.
+     Se miden los pares que el CSS declara juntos —`.X h4` contra `.X li` o
+     `.X p`—, que es donde un descuido de escala se puede ver sin navegador.
+     Encontró `.sp-falta h4` en --t-8 sobre una lista de --t-7: el título
+     medía menos que sus propios renglones, y no se veía porque el registro
+     no trae hoy el bloque que lo pinta.
+
+     DE QUÉ NO RESPONDE: del ORDEN, no de la proporción. Un título que supera
+     a su cuerpo por un píxel pasa, y eso no tiene vara medible en este
+     módulo. Y solo ve los pares que comparten prefijo en la misma hoja. */
+  const ESC = {};
+  const mEsc = /--t-(\d):\s*(?:clamp\([^)]*\)|([\d.]+)rem)/g;
+  let me;
+  while ((me = mEsc.exec(c70))) if (me[2]) ESC['--t-' + me[1]] = parseFloat(me[2]);
+
+  /* SIN LOS COMENTARIOS, y esto costó una inyección que se quedó en verde.
+     Una línea intermedia de un comentario de varias líneas empieza por
+     espacios, así que casa como selector y se TRAGA la regla que viene
+     detrás: al escribirle un comentario a `.sp-prose h3` su par desapareció
+     de la lista y la comprobación pasó a mirar cinco pares en vez de seis,
+     sin decir nada. Es la lección de la v926 en CSS. Se sustituyen por
+     espacios de la misma longitud para no mover las posiciones. */
+  const c70s = c70.replace(/\/\*[\s\S]*?\*\//g, (m) => m.replace(/[^\n]/g, ' '));
+
+  const TIT = {}, CUE = {};
+  const mR = /^([^{}@\/\n][^{}]*)\{([^}]*)\}/gm;
+  let mr;
+  while ((mr = mR.exec(c70s))) {
+    const sel = mr[1].trim(), cuerpo = mr[2];
+    const ft = /font-size:\s*var\((--t-\d)\)/.exec(cuerpo);
+    if (!ft) continue;
+    if (/text-transform:\s*uppercase/.test(cuerpo)) continue;   // una versalita es un rótulo, no un título
+    sel.split(',').forEach((uno) => {
+      const t = uno.trim();
+      const mt = /^(\.[\w-]+)\s+(h[1-6])$/.exec(t);
+      const mc = /^(\.[\w-]+)\s+(li|p|dd)$/.exec(t);
+      if (mt) TIT[mt[1]] = { px: ESC[ft[1]], tok: ft[1], sel: t };
+      if (mc && (!CUE[mc[1]] || ESC[ft[1]] > CUE[mc[1]].px)) CUE[mc[1]] = { px: ESC[ft[1]], tok: ft[1], sel: t };
+    });
+  }
+  const pares = Object.keys(TIT).filter((k) => CUE[k] && TIT[k].px != null && CUE[k].px != null);
+  const chicos = pares.filter((k) => TIT[k].px < CUE[k].px);
+  if (!Object.keys(ESC).length || pares.length < 2) {
+    anotarSinMaterial('MATERIAL - la hoja declara su escala y pares de título y cuerpo',
+      Object.keys(ESC).length + ' tamaños y ' + pares.length + ' pares: no habría casi nada que comparar');
+  } else {
+    comprobar('MATERIAL - la hoja declara su escala y pares de título y cuerpo', true,
+      Object.keys(ESC).length + ' tamaños y ' + pares.length + ' pares de título/cuerpo');
+    comprobar('ningún título se pinta más chico que el cuerpo que encabeza',
+      chicos.length === 0,
+      chicos.length
+        ? chicos.length + ' con el título por debajo de su cuerpo: ' +
+          chicos.map((k) => TIT[k].sel + ' en ' + TIT[k].tok + ' sobre ' + CUE[k].sel + ' en ' + CUE[k].tok).join(' · ')
+        : 'los ' + pares.length + ' pares tienen el título por encima de su cuerpo');
+  }
+
+  /* 9 · NINGÚN GRÁFICO REPITE EL HÉROE. Hasta la v1048 `grafDeudaInversion`
+     dibujaba las MISMAS dos barras del mismo `p.heroe`, con la misma fuente
+     y la misma nota, dos dedos debajo del héroe: 598 px de repetición a
+     390 px de ancho, y los dos dependían de la misma `p`, así que nunca
+     había uno sin el otro. */
+  const iBloq = j70.indexOf('function bloqueDeGraficos(');
+  const bloq = iBloq >= 0 ? j70.slice(iBloq, j70.indexOf('\n  }\n', iBloq)) : '';
+  const repiten = [];
+  (bloq.match(/poner\((\w+)\(p\)\)/g) || []).forEach((ll) => {
+    const nom = /poner\((\w+)\(p\)\)/.exec(ll)[1];
+    const i = j70.indexOf('function ' + nom + '(');
+    if (i < 0) return;
+    const cuerpo = j70.slice(i, j70.indexOf('\n  }', i));
+    if (/p\.heroe/.test(cuerpo) && /interesesBn/.test(cuerpo) && /inversionBn/.test(cuerpo))
+      repiten.push(nom);
+  });
+  if (!bloq) {
+    anotarSinMaterial('MATERIAL - el bloque de gráficos se deja leer',
+      'no se encontró bloqueDeGraficos: no se vigilaría la repetición del héroe');
+  } else {
+    comprobar('MATERIAL - el bloque de gráficos se deja leer', true,
+      (bloq.match(/poner\(/g) || []).length + ' llamadas a poner()');
+    comprobar('ningún gráfico del bloque repite el héroe',
+      repiten.length === 0,
+      repiten.length
+        ? repiten.length + ' dibujan el mismo p.heroe que el héroe: ' + repiten.join(' · ') +
+          ' — dos paneles idénticos seguidos'
+        : 'ninguno: el héroe es el único que dibuja esas dos barras');
+  }
 }
 
 /* Las dos cuentas van APARTE porque piden cosas distintas: una fallada hay

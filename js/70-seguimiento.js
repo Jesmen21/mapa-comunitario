@@ -2954,18 +2954,35 @@
             d: 'Hacen falta al menos ' + FICHA_MIN_CASOS + ' casos de postura revisados y ' +
                FICHA_MIN_HECHOS + ' hechos registrados. Todavía no los hay.' };
     } else if (!determinado) {
-      /* No se publica peldaño. Publicar «Poco fiable» sobre un presidente en
-         ejercicio con un insumo sin declarar es exactamente lo que no se
-         puede sostener si alguien pregunta — y la mentira no estaría en la
-         cuenta, que está bien hecha, sino en presentar como medido un
-         peldaño que depende de una lectura que nadie ha hecho. */
-      v = { id: 'sin-nivel', t: 'Sin nivel',
-            d: 'No se publica peldaño de fiabilidad. Un cambio de postura baja el peldaño solo cuando ' +
-               'las dos frases hablan del MISMO objeto verificado, y eso está sin declarar en ' +
-               ea.sinDeclarar + ' de ' + cn(ea.documentadas, 'contradicción documentada', 'contradicciones documentadas') +
-        '. Según cómo se ' +
-               'resuelvan, el veredicto queda entre «' + ESCALERA[peorMin].t + '» y «' +
-               ESCALERA[peorMax].t + '»: publicar uno de los dos ahora sería publicar un nivel sin sus insumos.' };
+      /* SE PUBLICA EL PELDAÑO QUE LO CONFIRMADO SOSTIENE, no el intervalo.
+
+         Hasta la v1048 acá no salía nivel, y el razonamiento era correcto
+         para lo que entonces se sabía decir: publicar «Poco fiable» sobre un
+         presidente en ejercicio con un insumo sin declarar no se sostiene si
+         alguien pregunta. Lo que faltaba no era el nivel: era la manera de
+         decir cuál de los dos se publica y por qué.
+
+         La publica una propiedad del cálculo, y por eso es un PISO y no una
+         estimación optimista: los tres techos son monótonos —más material
+         solo puede bajar el peldaño, nunca subirlo— y `peorMin` sale de
+         `conIdentidad`, que es lo que YA está declarado. Así que la frase que
+         se publica es verdadera hoy y seguirá siéndolo: con lo confirmado,
+         este gobierno no puede estar mejor que esto.
+
+         Lo pendiente no se esconde ni se cuenta como si estuviera: va con su
+         nombre, su recuento y hasta dónde llevaría el peldaño si todo
+         resultara serlo. Es la decisión de la v886 con los mapas de 6,5 cm y
+         la de la v890 con el aviso de escala: se declara, no se topa ni se
+         rechaza, y quien lee decide qué hacer con lo que falta.
+
+         El `id` del peldaño se conserva —es el que da el color— y la marca
+         va aparte: con un id propio, un «Fiable» provisional y uno firme se
+         pintarían igual, y con el id cambiado se perderían los dos. */
+      v = { id: ESCALERA[peorMin].id, t: ESCALERA[peorMin].t, d: ESCALERA[peorMin].d,
+            provisional: true, hasta: ESCALERA[peorMax],
+            sinDeclarar: ea.sinDeclarar, documentadas: ea.documentadas,
+            piso: 'Es el peldaño que sostiene lo confirmado hasta hoy. Lo que falta por declarar solo ' +
+                  'puede bajarlo, nunca subirlo: los tres techos únicamente empeoran con más material.' };
     } else {
       v = ESCALERA[peor];
     }
@@ -3147,7 +3164,8 @@
   function placaDe(f, reg) {
     reg = reg || D;
     var cerrado = !!reg.cerrado;
-    var placa = el('div', 'sp-fi-placa sp-fi-v-' + f.veredicto.id + (cerrado ? ' sp-fi-placa-cerrada' : ''));
+    var placa = el('div', 'sp-fi-placa sp-fi-v-' + f.veredicto.id +
+      (f.veredicto.provisional ? ' sp-fi-prov' : '') + (cerrado ? ' sp-fi-placa-cerrada' : ''));
 
     /* ── La firma ────────────────────────────────────────────────────────
        Esta placa se fotografía y la captura circula sola: en un comentario
@@ -3198,16 +3216,24 @@
     cab.appendChild(pt);
     placa.appendChild(cab);
     placa.appendChild(el('p', 'sp-fi-vlabel', 'Fiabilidad'));
+    /* El rótulo de provisional va ANTES del peldaño y no después, y el orden
+       es la mitad que hace el trabajo: el peldaño se pinta en el color de su
+       escalón —«Fiable» sale en verde a 32 px— y en una captura ese color
+       domina. Leído en orden, quien llega al verde ya sabe que es con lo
+       confirmado. Detrás, el color afirmaría antes de que el texto acote. */
+    if (f.veredicto.provisional) placa.appendChild(el('p', 'sp-fi-vprov', 'Con lo confirmado hasta hoy'));
     placa.appendChild(el('p', 'sp-fi-vval', f.veredicto.t));
-    /* Un veredicto que NO se publica dice, en la placa misma, qué falta para
-       calcularlo. Esta placa se fotografía y la captura circula sola: un
-       «Sin nivel» pelado se lee como que el módulo no supo, cuando lo que
-       pasa es que hay una lectura pendiente y se sabe exactamente cuál. */
-    if (f.veredicto.id === 'sin-nivel' && f.ejeA) {
+    /* Un peldaño PROVISIONAL lo dice en la placa misma, y dice hasta dónde
+       puede bajar. Esta placa se fotografía y la captura circula sola: un
+       peldaño pelado se leería como firme, y uno sin su techo dejaría al
+       lector sin saber qué está en juego. Las dos mitades hacen falta —lo
+       que sostiene y lo que falta— o la marca es un adorno. */
+    if (f.veredicto.provisional) {
       placa.appendChild(el('p', 'sp-fi-vfalta',
-        'Falta declarar, en ' + f.ejeA.sinDeclarar + ' de ' +
-        cn(f.ejeA.documentadas, 'contradicción documentada', 'contradicciones documentadas') +
-        ', si las dos frases hablan del mismo objeto verificado.'));
+        'Aún no se confirma, en ' + f.veredicto.sinDeclarar + ' de ' +
+        cn(f.veredicto.documentadas, 'contradicción documentada', 'contradicciones documentadas') +
+        ', si las dos frases hablan del mismo objeto verificado. Si todas resultaran serlo, el ' +
+        'peldaño bajaría a «' + f.veredicto.hasta.t + '»; lo que falta no puede subirlo.'));
     }
     placa.appendChild(el('p', 'sp-fi-cuentas', cuentasDe(f)));
     return placa;
@@ -3576,7 +3602,9 @@
     ver.appendChild(el('p', 'sp-fi-vnota', f.determinado === false
       ? 'El veredicto es el peor de los tres techos, y uno de ellos todavía no es un número: ' +
         'mientras la identidad de objeto no esté declarada, los cambios de postura marcan un intervalo ' +
-        'y no un peldaño. Por eso no se publica nivel.'
+        'entre «' + ESCALERA[f.peorMin].t + '» y «' + ESCALERA[f.peorMax].t + '». Se publica el ' +
+        'extremo que sostiene lo confirmado, y lo que falta va nombrado debajo: como los tres techos ' +
+        'solo empeoran con más material, ese extremo es un piso y no una estimación.'
       : (f.manda.length
           ? 'El veredicto es el peor de los tres techos. Aquí manda: ' +
             f.manda.map(function (k) { return f.techos[k].t.toLowerCase(); }).join(' y ') + '.'
@@ -3585,10 +3613,11 @@
        dice cómo se consigue es la mitad del trabajo (v880). */
     if (f.determinado === false && f.ejeA && f.ejeA.falta) {
       var fal = el('p', 'sp-fi-falta');
-      fal.appendChild(el('b', null, 'Qué falta para calcularlo: '));
+      fal.appendChild(el('b', null, 'Aún no se confirma, y por eso el peldaño es provisional: '));
       fal.appendChild(document.createTextNode(f.ejeA.falta +
         ' Se declara con `mismoObjetoVerificado` en cada contradicción documentada del registro; ' +
-        'en cuanto estén las ' + f.ejeA.sinDeclarar + ', el peldaño se calcula solo.'));
+        'en cuanto estén las ' + f.ejeA.sinDeclarar + ', el peldaño deja de ser provisional y se ' +
+        'calcula solo.'));
       ver.appendChild(fal);
       /* Y CUÁLES son. Contarlas sin nombrarlas deja la instrucción sin poder
          seguirse: el módulo sabe exactamente qué casos bloquean el veredicto
@@ -5043,6 +5072,11 @@
     fila.appendChild(el('span', 'sp-heroe-u', 'billones de pesos en intereses de la deuda'));
     caja.appendChild(fila);
 
+    /* El eje desde cero es una de las cinco reglas de los gráficos de la
+       v971, y hasta la v1048 el héroe no la declaraba: la decía el gráfico
+       de abajo, que era el mismo panel repetido. Al retirarlo, la
+       declaración se queda con el dibujo que sobrevive. */
+    caja.appendChild(el('p', 'sp-heroe-u', 'Billones de pesos. Eje desde cero.'));
     caja.appendChild(el('p', 'sp-heroe-frase', h.titulo + ': $' + bn(h.interesesBn) +
       ' billones en intereses contra $' + bn(h.inversionBn) + ' billones de inversión pública, ' +
       '$' + bn(Math.round((h.interesesBn - h.inversionBn) * 100) / 100) + ' billones de diferencia.'));
@@ -5314,20 +5348,6 @@
   /* El mismo par del héroe, dibujado. El héroe lo dice en palabras y en una
      cifra grande; acá se ve la proporción, que es otra lectura del mismo
      dato —no otra cuenta: las dos salen de `presupuesto.heroe`—. */
-  function grafDeudaInversion(p) {
-    var h = p && p.heroe;
-    if (!h || !h.interesesBn || !h.inversionBn) return null;
-    return grafBarras({
-      titulo: 'Intereses de la deuda contra inversión pública · ' + p.anio,
-      unidad: 'Billones de pesos. Eje desde cero.',
-      barras: [{ t: 'Intereses de la deuda', v: h.interesesBn, alerta: true },
-               { t: 'Inversión pública total', v: h.inversionBn }],
-      fmt: function (v) { return '$' + dos(v); },
-      trama: enTramite(p), corte: corteTexto(p), fuentes: h.fuentes,
-      nota: h.nota
-    });
-  }
-
   /* ── El bloque fiscal: lo que no es un acto del gobierno ────────────────
      Vive en `D.fiscal` y no en `entradas` a propósito: es el contexto contra
      el que se leen las decisiones, no una decisión. Metido como hecho del
@@ -5492,7 +5512,14 @@
 
     // 1 · La plata: presupuesto, deuda y déficit.
     if (p) {
-      poner(grafDeudaInversion(p));
+      /* `grafDeudaInversion` se retiró en la v1049 y no se sustituyó: dibujaba
+         las MISMAS dos barras del mismo `p.heroe`, con la misma fuente y la
+         misma nota entera, dos dedos debajo del héroe. Medido sobre el papel
+         a 390 px, eran dos paneles idénticos seguidos y 598 px de repetición.
+         Los dos dependían de la misma `p`, así que nunca había uno sin el
+         otro: la repetición era total. El héroe se queda —su cifra a 5,2 rem
+         no la da ningún gráfico— y hereda la declaración del eje, que era lo
+         único que el gráfico decía y él no. */
       poner(grafTorta(p));
       poner(grafDivergentes(p));
       poner(grafAgrupadas(p));
