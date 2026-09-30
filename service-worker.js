@@ -1,4 +1,4 @@
-const URBIS_CACHE = 'urbis-v1051-el-peldano-dice-que-mide-y-que-no';
+const URBIS_CACHE = 'urbis-v1052-dos-correcciones-medidas-del-registro';
 const URBIS_ASSETS = [
   './',
   './index.html',

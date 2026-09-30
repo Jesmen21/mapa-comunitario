@@ -13,7 +13,7 @@
 
    La versión va acá y en vision-territorial.html, idéntica, como en los
    otros siete archivos de versión del sitio: revisar.js lo comprueba. */
-const VT_CACHE = 'urbis-vt-v1051-el-peldano-dice-que-mide-y-que-no';
+const VT_CACHE = 'urbis-vt-v1052-dos-correcciones-medidas-del-registro';
 const VT_ASSETS = [
   './vision-territorial.html',
   './css/90-vt.css',

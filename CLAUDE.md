@@ -22781,6 +22781,154 @@ pruebas. Corrió `revisar.js` entero con sus siete comprobaciones nuevas, y se
 midió el papel con la sonda: la placa en tres anchuras, su captura, y el
 bloque de los tres ejes de la ficha.
 
+## Dos correcciones medidas del registro (v1052)
+
+Las dos primeras del informe de balance que el usuario subió, en el orden que
+él fijó —«arranca por esas dos correcciones»— y con su instrucción de método
+delante: **«antes de entrar nada, mide»**. Medirlas cambió las dos.
+
+    v1051   $170.000 M «a la justicia ordinaria y a salud» · el faltante con UNA causa
+    v1052   el reparto del ponente, con su aritmética dicha · las dos causas y tres cifras
+
+### La corrección del informe sobre la CAUSA no se sostenía, y la del destino sí
+
+El informe pedía corregir la cifra del faltante pensional **y su causa**, con
+esta razón: *«ninguna fuente atribuye el faltante al alza del 23 % del salario
+mínimo; las fuentes lo atribuyen a recursos presupuestados y no girados»*.
+
+Medido con búsqueda —que es el único canal que este contenedor tiene (v967)—
+**la mitad de la causa es falsa**: Portafolio titula la atribución al alza del
+mínimo, y la **Contraloría General** la sostiene con su propia cifra, $4,2
+billones. Lo que no existe es un documento primario de MinTrabajo o de
+Colpensiones que establezca el vínculo, que es otra cosa.
+
+Así que la corrección entró **sumando** la segunda causa y no sustituyendo la
+primera, con la frase que el registro necesitaba y ninguna de las dos partes
+había escrito: *«las dos causas circulan juntas y no como alternativas: las
+mismas notas nombran el alza del mínimo y el crecimiento del número de
+pensionados al lado de los recursos no girados»*. Y con la tercera medición al
+lado —la de la Contraloría, que **no es un error de las otras sino otro
+perímetro**, y URBIS no la promedia con ninguna—.
+
+Es la regla de la v916 aplicada a material que llega del usuario: **su
+diagnóstico del síntoma suele servir y su diagnóstico de la causa no
+siempre.** Vale decirlo porque la tentación era la contraria: el informe está
+verificado y venía con la corrección escrita, así que aplicarla tal cual era
+el camino corto — y habría borrado una atribución que un órgano de control
+sostiene.
+
+### La cifra se movió sin que el criterio cambiara, y las dos se quedan
+
+El 17 de septiembre el cubrimiento mayoritario daba **$5,1 billones** y esa es
+la cifra que la ministra llevó al Congreso; entre el 26 y el 29 la cobertura se
+consolidó en **$5,4**. No se borra la primera: **lo que se midió el 17 se
+midió el 17**, y reescribirla escondería que la cifra se movió.
+
+Es la distinción que este proyecto ya tenía escrita para el módulo
+presidencial —`fecha` es cuándo una autoridad se pronunció y no cuándo pasó el
+hecho (v941)— dicha ahora sobre una magnitud: **el registro fecha sus cifras,
+no las actualiza.** El título lleva las dos, y el contrapunto dice que el
+criterio no cambió.
+
+### Y NINGUNA de las dos partes tenía razón sobre el destino de los $170.000 M
+
+La quinta contradicción, que el usuario no nombró y salió al medir. El
+registro decía que el recorte a la JEP iba «principalmente a fortalecer la
+justicia ordinaria **y a salud**», y el informe decía que ~$100.000 M se
+reasignaban **a deporte**.
+
+Medido, el reparto lo da el ponente coordinador —el senador Carlos Meisel— y
+son dos destinos: **$100.000 millones a la justicia ordinaria** a través del
+Consejo Superior de la Judicatura, y **algo más de $99.000 millones a deporte
+y recreación**. «Salud» no aparece en una sola de las fuentes localizadas —y
+sí en el TITULAR de una de ellas, que es cómo se cuela un dato falso con
+aspecto de fuente—.
+
+**Y la aritmética no cuadra, así que va dicha**: $100.000 más $99.000 no salen
+de los $170.000 del recorte, y el propio ponente explica que el deporte los
+recibe combinando recortes de varios sectores. Atribuirle al recorte de la JEP
+el aumento entero del deporte sería una cuenta que las cifras no sostienen —y
+es exactamente la lectura que las dos versiones anteriores invitaban a hacer.
+
+De paso quedó enlazada hacia atrás la entrada del 14 de septiembre: la cifra
+que ella registra es la del proyecto **radicado**, y el primer debate devolvió
+~$99.000 M. Es la separación ANUNCIADO / EJECUTADO que el informe pide
+respetar, escrita entre dos entradas en vez de dentro de una.
+
+### Las dos disputas se dejan escritas, sin elegir
+
+La votación es la otra: esta entrada registra **59 a favor y 19 en contra** el
+23 de septiembre, y otras coberturas reportan **56 y 11**, con la ponencia
+conocida el 22 y un choque público con el tribunal el 28. No hay acta pública
+que las concilie, así que van las dos series.
+
+Es lo que el informe pide para sus veintiuna filas en disputa —«entran con las
+dos lecturas, sin elegir»— y lo que este registro ya hacía con los $22 y los
+$44 billones de la Ley de Rescate (v970).
+
+### Ocho fuentes más, todas con su rol
+
+805 → **813**, y las ocho con su `rol` declarado (v965), que es lo que la regla
+de todas-o-ninguna de la v998 exige. La entrada de pensiones pasa a doce
+fuentes con los tres roles —`acto`, `efecto` y `contexto`— y sigue teniendo su
+fuente del acto, así que no cae en `sin-acto`.
+
+### Lo que NO se mueve, medido
+
+| | v1051 | v1052 |
+|---|---|---|
+| entradas | 206 | 206 |
+| se publican como hallazgo | 155 | **155** |
+| registro verificado | 76,7 % | **76,7 %** |
+| veredicto | Fiable · con lo confirmado hasta hoy | **el mismo** |
+
+Ninguna de las dos correcciones toca la naturaleza de una fuente, ni un caso,
+ni una contradicción, así que **ninguna cifra pública se mueve**. Lo que cambia
+es con qué se sostiene cada una — y eso también hay que decirlo, porque una
+tanda de registro que no mueve ningún número se lee como una tanda que no hizo
+nada.
+
+#### Y la entrada de pensiones SÍ llega a la pantalla
+
+Lo había anotado al revés antes de medirlo. `sePublica` la retiene como
+`no-verificado` —su naturaleza es `declaracion`, que es lo correcto: lo que
+consta es lo que la ministra dijo ante el Congreso— y **eso no la saca de la
+línea de tiempo**: sale con su etiqueta DECLARACIÓN, su detalle entero y, en su
+ficha, el aviso «No se publica como hallazgo · su naturaleza no está declarada
+como verificada». Lo que la puerta de la v971 gobierna son los RECUENTOS, no la
+cronología.
+
+Reclasificarla a `verificado` —que con la Contraloría involucrada la vara del
+propio vocabulario ya admitiría— **movería el techo de claridad, que decide un
+veredicto público**, así que no se hace de paso: es del usuario.
+
+### Y un acento que solo vio el papel
+
+«otra medición con otro **perimetro**», en el contrapunto que acabo de
+escribir. No lo caza ninguna guarda —es una palabra sin tilde dentro de una
+cadena de prosa— y salió leyendo el detalle compuesto en la sonda, que es el
+método que encontró los defectos de la v874, la v882, la v885, la v887 y la
+v974.
+
+### Lo que sigue del informe, y no se hizo acá
+
+* **El hecho que falta**: los **dos menores muertos** en el bombardeo de
+  Azarías, que el registro no tiene y que son distintos de los dos menores
+  RESCATADOS que sí registra. `pendiente`
+* **Las cinco entradas nuevas prioritarias** —subsidios de energía y gas
+  desfinanciados en 69 %, el recorte a la JEP visto desde su presupuesto
+  propio, el DANE con su causal textual, la objeción a la ley de mérito
+  derrotada en el Congreso, y la aprobación 51,8 / 43,2—. `pendiente`
+* **Las veintiuna filas en disputa y los diecinueve pendientes
+  accionables.** Y con una decisión de estructura que no es mía: medido,
+  **`valores_en_disputa` no existe como campo** —las disputas viven como prosa
+  dentro de `contrapunto`— y `_pendientesFuente` está vacío. Meter veintiuna
+  filas en prosa es distinto de darles un campo, y lo segundo cambia la forma
+  del registro. `pendiente`
+* **El detalle RE 409 / Cortés González** del estado de excepción, que el
+  registro ya tiene bien clasificado como Emergencia Económica del art. 215 y
+  no como conmoción interior. `pendiente`
+
 ## La lista viva: lo que al pliego educativo todavía le falta (v866)
 
 Esta lista se quedó vieja **cinco veces**. Cuatro dentro de la hoja —la
