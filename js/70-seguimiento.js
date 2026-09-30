@@ -60,7 +60,14 @@
      cifra va delante, `pl` cuando ya está puesta o cuando lo que concuerda es
      el verbo y no el sustantivo. */
   function pl(n, sing, plur) { return Number(n) === 1 ? sing : plur; }
-  function cn(n, sing, plur) { return n + ' ' + pl(n, sing, plur); }
+  /* `cn` FORMATEA su cifra, que es la decision de la v1027 en el otro modulo.
+     Medido sobre el papel: el unico sitio de esta pagina donde una cuenta pasa
+     de mil es el recuento de fuentes, y salia «1003 fuentes» —el punto de
+     miles es lo que vuelve legible una cifra grande (v885)—. Los otros siete
+     numeros de cuatro digitos de la pagina son de ley, de resolucion, de
+     decreto y de expediente, y esos se escriben seguidos a proposito, asi que
+     no pasan por aqui: no son cuentas. */
+  function cn(n, sing, plur) { return miles(n) + ' ' + pl(n, sing, plur); }
   function fechaCorta(iso) {
     var p = String(iso || '').split('-');
     if (p.length !== 3) return String(iso || '');
@@ -69,6 +76,18 @@
   function diasDesde(iso) {
     var t = new Date(iso + 'T00:00:00').getTime();
     return isNaN(t) ? 0 : Math.max(0, Math.floor((Date.now() - t) / 86400000));
+  }
+  /* `diasDesde` mide contra HOY y `diasEntre` mide entre dos fechas del
+     registro. No son la misma cuenta y la diferencia decide qué se
+     afirma: contra hoy, un gráfico se pone viejo solo aunque nadie haya
+     tocado nada; contra el corte del propio registro, lo que se dice es
+     que el registro se revisó y esa serie no trajo un dato nuevo, que es
+     una afirmación sobre nuestra propia diligencia y no sobre el reloj. */
+  function diasEntre(desde, hasta) {
+    var a = new Date(desde + 'T00:00:00').getTime();
+    var b = new Date(hasta + 'T00:00:00').getTime();
+    if (isNaN(a) || isNaN(b)) return 0;
+    return Math.round((b - a) / 86400000);
   }
   /* El registro del gobierno anterior trae sus propias categorías —Paz Total,
      Reformas— que no existen en el vivo. Sin el segundo parámetro, la ficha
@@ -81,6 +100,50 @@
     if (Array.isArray(e.fuentes) && e.fuentes.length) return e.fuentes;
     if (e.fuente || e.url) return [{ n: e.fuente, u: e.url }];
     return [];
+  }
+
+  /* ══ QUIÉNES SON LOS TERCEROS QUE VERIFICAN ════════════════════
+     El techo de claridad dice «registro verificado por terceros: 78 %» y
+     hasta la v1055 no decía por QUIÉNES. Medido, cuatro medios son la mitad
+     de las fuentes del registro y uno solo es una de cada cinco.
+
+     Es la clase C: el dato está en la dirección de cada una de las mil y
+     pico fuentes, y ninguna pantalla lo alcanzaba, así que desde afuera se
+     veía igual que si no existiera. Y es la misma vara que este módulo le
+     aplica a las cifras que mide: un porcentaje sin denominador no se puede
+     leer, y «por terceros» sin saber cuántos terceros son tampoco.
+
+     El dominio se saca de la dirección y no de un campo nuevo: escribirlo a
+     mano sería una segunda codificación de un hecho que ya está en el dato
+     (clase B), y la que se separaría es la escrita, porque nadie la relee. */
+  function dominioDe(u) {
+    var m = /^https?:\/\/([^\/]+)/i.exec(String(u || ''));
+    if (!m) return null;
+    return m[1].toLowerCase().replace(/^www\./, '');
+  }
+  function composicionDeFuentes(dd) {
+    var reg = (dd || D) || {}, cuenta = {}, n = 0;
+    /* Se recorre el registro ENTERO y no solo las entradas: los casos, las
+       contradicciones y los indicadores también citan, y una composición
+       que mirara una parte declararía la de otra cosa. */
+    (function ver(o) {
+      if (!o || typeof o !== 'object') return;
+      if (Array.isArray(o)) { o.forEach(ver); return; }
+      var d = typeof o.u === 'string' ? dominioDe(o.u) : null;
+      if (d) { cuenta[d] = (cuenta[d] || 0) + 1; n++; }
+      Object.keys(o).forEach(function (k) { ver(o[k]); });
+    })(reg);
+    var lista = Object.keys(cuenta).map(function (k) { return { d: k, n: cuenta[k] }; })
+      .sort(function (a, b) { return b.n - a.n || (a.d < b.d ? -1 : 1); });
+    /* CUÁNTOS medios hacen la mitad se CALCULA, no se fija en cuatro: con
+       un número escrito, la frase se queda vieja el día que el registro se
+       ensanche y seguiría pareciendo medida (v903). */
+    var acum = 0, mitad = 0;
+    for (var i = 0; i < lista.length && acum * 2 < n; i++) { acum += lista[i].n; mitad = i + 1; }
+    return { n: n, dominios: lista.length, lista: lista, mitad: mitad,
+             pctMitad: n ? Math.round(100 * acum / n) : 0,
+             pctTope: n && lista.length ? Math.round(100 * lista[0].n / n) : 0,
+             unaSola: lista.filter(function (x) { return x.n === 1; }).length };
   }
 
   var TIPOS = {
@@ -3130,7 +3193,11 @@
     return { corte: hasta, palabra: palabra, casos: casos, claridad: claridad, ritmo: ritmo,
              alcance: alcance, techos: techos, manda: manda, veredicto: v,
              ejeA: ea, determinado: determinado, peorMin: peorMin, peorMax: peorMax,
-             capa1: capa1, rasgos: rasgosDe(dd, ent) };
+             capa1: capa1, rasgos: rasgosDe(dd, ent),
+             /* Pegada a la ficha y no leída desde el panel: una ficha
+                rehecha a una fecha anterior tiene que traer la composición
+                de ESE registro y no la de hoy (v890). */
+             fuentesComp: composicionDeFuentes(dd) };
   }
 
   function fichaHasta(corte) { return fichaDe(D, corte); }
@@ -3183,6 +3250,7 @@
                              indicadores: indicadoresDe, comparabilidad: comparabilidad,
                              catalogoIndicadores: INDICADORES, capaUno: capaUnoDe_conjunto,
                              ejes: ejesDe, ejeA: ejeA, ejeB: ejeB, ejeC: ejeC, ejeD: ejeD,
+                             fuentesComp: composicionDeFuentes,
                              marco: marcoDeclarado, editorial: editorialDe,
                              control: controlDeCalidad,
                              // La puerta de publicación y su censo: lo que una prueba
@@ -3807,6 +3875,52 @@
       cn(f.claridad.conTipo, 'hecho con naturaleza declarada', 'hechos con naturaleza declarada');
         if (f.claridad.sinTipo) det += ' · ' + f.claridad.sinTipo + ' sin declarar, fuera de la cuenta';
         li.appendChild(el('span', 'sp-fi-techo-den', det));
+        /* QUIÉNES son los terceros, al lado del porcentaje y no en otra
+           pantalla. La vara de «verificado» es «dos o más medios
+           INDEPENDIENTES cuentan el mismo hecho», y con la mitad del
+           registro en unos pocos medios esa palabra hace menos trabajo
+           del que parece.
+
+           Lo que se publica es la CONCENTRACIÓN, que cualquiera rehace
+           dividiendo. Lo que NO se publica es que esos medios tengan una
+           línea editorial ni un dueño común: eso sería otra medición y
+           este registro no la tiene, así que afirmarlo sería pasar de un
+           hecho a una conclusión sin decirlo. */
+        var fc = f.fuentesComp;
+        if (fc && fc.n) {
+          li.appendChild(el('span', 'sp-fi-techo-den sp-fi-terceros',
+            'Los terceros son ' + cn(fc.dominios, 'medio', 'medios') + ' distintos en ' +
+            cn(fc.n, 'fuente', 'fuentes') + ' con enlace, y ' +
+            (fc.mitad === 1 ? 'uno solo es' : cn(fc.mitad, 'medio hace', 'medios hacen')) +
+            ' la mitad: ' + fc.lista[0].d + ' es el ' + fc.pctTope +
+            ' % de todas. La vara de «verificado» pide dos medios independientes, y eso ' +
+            'se mide por ser medios distintos y nada más: el registro no clasifica la ' +
+            'línea editorial ni el país de ninguna fuente.'));
+          var dt = el('details', 'sp-fi-terceros-det');
+          dt.appendChild(el('summary', null, 'De qué medios sale el ' +
+            (f.claridad.pct == null ? '' : f.claridad.pct + ' % ') + 'verificado'));
+          var ul = el('ul', 'sp-fi-terceros-l');
+          /* Se listan los que hacen la mitad y el resto se resume: la lista
+             entera son más de cien renglones, y el que hace una sola cita
+             no dice nada de la concentración. */
+          fc.lista.slice(0, fc.mitad).forEach(function (x) {
+            var li2 = el('li');
+            li2.appendChild(el('span', null, x.d));
+            li2.appendChild(el('b', null, Math.round(100 * x.n / fc.n) + ' %'));
+            li2.appendChild(el('small', null, cn(x.n, 'fuente', 'fuentes')));
+            ul.appendChild(li2);
+          });
+          var resto = fc.dominios - fc.mitad;
+          if (resto > 0) {
+            var li3 = el('li', 'resto');
+            li3.appendChild(el('span', null, cn(resto, 'medio más', 'medios más') +
+              ', de los que ' + cn(fc.unaSola, 'cita una sola vez', 'citan una sola vez')));
+            li3.appendChild(el('b', null, (100 - fc.pctMitad) + ' %'));
+            ul.appendChild(li3);
+          }
+          dt.appendChild(ul);
+          li.appendChild(dt);
+        }
       }
       tl.appendChild(li);
     });
@@ -4622,7 +4736,14 @@
       }
       cont.appendChild(bloque);
     });
-    return cont;
+    /* El corte de una comparación entre fuentes es su medida MÁS RECIENTE,
+       y se calcula sobre TODOS los grupos y no sobre los visibles: en la
+       portada solo se pinta el primero, y declarar el corte de lo que cupo
+       sería declarar el de otra cosa. */
+    var fs = grupos.reduce(function (a, g) {
+      return a.concat((g.medidas || []).map(function (m) { return m.f; }));
+    }, []).filter(Boolean).sort();
+    return conCorte(cont, fs.length ? fs[fs.length - 1] : null);
   }
   function r0(v) { return String(v).replace('.', ','); }
 
@@ -4646,7 +4767,7 @@
       caja.appendChild(el('span', null, fechaCorta(pts[0].f)));
       if (pts[0].e) caja.appendChild(el('small', null, pts[0].e));
       caja.appendChild(el('em', null, 'Una sola medición · aún no hay serie'));
-      return caja;
+      return conCorte(caja, pts[0].f);
     }
 
     /* Mismo motivo que en la familia `sp-g`: el texto de un SVG con viewBox
@@ -4714,7 +4835,7 @@
         svg.appendChild(v);
       }
     });
-    return svg;
+    return conCorte(svg, pts[pts.length - 1].f);
   }
 
   // Composición de las contradicciones. Los estados son ESTADO, no series
@@ -4764,7 +4885,11 @@
       leg.appendChild(s);
     });
     cont.appendChild(leg);
-    return cont;
+    /* Esto no es una serie: es un recuento del propio registro, así que su
+       corte ES el del registro y la diferencia sale cero. Se anota igual,
+       porque callarlo lo dejaría en «no declara» junto a los que de verdad
+       no lo declaran. */
+    return conCorte(cont, D.actualizado);
   }
 
   // Deuda: medidor por entidad. Es una razón contra un techo (desembolsado
@@ -4797,7 +4922,69 @@
       ap.appendChild(el('span', null, d.aparte.e || ''));
       cont.appendChild(ap);
     }
-    return cont;
+    /* Medido: sus líneas traen `comprometido` y `desembolsado` y ninguna
+       trae fecha —lo único fechado es la prosa de `e`, «200 girados el 13
+       de agosto»—. Deducir el corte de esa frase sería inventarlo, así que
+       se declara lo que falta. */
+    return sinFechaPropia(cont, 'Haría falta la fecha de cada desembolso, que hoy solo ' +
+      'consta en la prosa de cada línea y no como dato.');
+  }
+
+  /* ══ TODO GRÁFICO DECLARA HASTA CUÁNDO LLEGAN SUS CIFRAS ═══════════
+     El registro se sella «actualizado» con la fecha de hoy y sus series
+     pueden llevar semanas sin un dato nuevo: medido al escribir esto, la
+     deuda llevaba 48 días, los bombardeos 50 y la serie de cocaína 638.
+     Una línea que sube y se detiene en su último punto se lee como la de
+     hoy, y ahí no hace falta que nadie mienta: basta que nadie lo diga.
+
+     El corte va ANOTADO EN EL NODO que devuelve el dibujo, y lo pinta
+     `tarjetaGrafica`, que es la única puerta por la que pasan los nueve
+     gráficos. Así una serie nueva lo hereda sin que su autor se acuerde
+     (v867); declarado en cada sitio de llamada, el décimo es el que se
+     olvida.
+
+     TRES marcas y no una, porque son tres situaciones que piden cosas
+     distintas (v899):
+       · `data-sp-corte`        el dibujo sabe hasta cuándo llegan sus cifras
+       · `data-sp-corte-dentro` el SVG ya lo imprime adentro, con `pieDentro`
+       · `data-sp-sin-fecha`    sus cifras NO traen fecha, y se dice qué falta
+     Y un cuerpo sin ninguna de las tres NO se calla: la tarjeta declara
+     que ese gráfico no dice hasta cuándo llega, que es fallar cerrado
+     (v880) — con el silencio, «nadie lo declaró» se leería igual que «no
+     hacía falta». */
+  function conCorte(nodo, iso) {
+    if (nodo && nodo.setAttribute && iso) nodo.setAttribute('data-sp-corte', iso);
+    return nodo;
+  }
+  function sinFechaPropia(nodo, queFalta) {
+    if (nodo && nodo.setAttribute) nodo.setAttribute('data-sp-sin-fecha', queFalta || '');
+    return nodo;
+  }
+  /* La diferencia contra el corte del propio registro NO lleva umbral: el
+     registro declara su fecha y el gráfico la suya, así que se dice cuando
+     no son la misma. Un corte a ojo —«avisa si pasa de N días»— sería el
+     número que nadie puede defender de la v869. */
+  function lineaDeCorte(cuerpo, reg) {
+    if (!cuerpo || !cuerpo.getAttribute) return null;
+    if (cuerpo.getAttribute('data-sp-corte-dentro')) return null;
+    if (cuerpo.hasAttribute('data-sp-sin-fecha')) {
+      return el('p', 'sp-graf-corte sp-graf-corte-falta',
+        'Sus cifras no traen fecha. ' + (cuerpo.getAttribute('data-sp-sin-fecha') || ''));
+    }
+    var iso = cuerpo.getAttribute('data-sp-corte');
+    if (!iso) {
+      return el('p', 'sp-graf-corte sp-graf-corte-falta',
+        'Este gráfico no declara hasta cuándo llegan sus cifras.');
+    }
+    var sello = ((reg || D) || {}).actualizado;
+    var dias = sello ? diasEntre(iso, sello) : 0;
+    var t = 'Datos hasta el ' + fechaLarga(iso) + '.';
+    if (dias > 0) {
+      t += ' El registro se cerró el ' + fechaLarga(sello) + ', ' +
+           cn(dias, 'día', 'días') + ' después: en ese tramo esta serie no ' +
+           'recibió un dato nuevo.';
+    }
+    return el('p', dias > 0 ? 'sp-graf-corte sp-graf-corte-atras' : 'sp-graf-corte', t);
   }
 
   function tarjetaGrafica(titulo, unidad, cuerpo, nota, fuentes, extra) {
@@ -4806,6 +4993,9 @@
     if (unidad) c.appendChild(el('p', 'sp-graf-u', unidad));
     if (extra) c.appendChild(extra);
     if (cuerpo) c.appendChild(cuerpo);
+    /* Debajo del dibujo y antes de la nota: es la procedencia de lo que se
+       acaba de mirar, y la nota es la leyenda. */
+    if (cuerpo) { var lc = lineaDeCorte(cuerpo); if (lc) c.appendChild(lc); }
     if (nota) c.appendChild(el('p', 'sp-graf-nota', nota));
     if (fuentes && fuentes.length) {
       /* LAS TARJETAS DE FUENTE VAN PLEGADAS, y esto resuelve dos instrucciones
@@ -5171,6 +5361,10 @@
     return 6 + pieLineas(W, fuenteTxt, corteTxt).length * ALTO_ROTULO;
   }
   function pieDentro(svg, w, y, fuenteTxt, corteTxt) {
+    /* La marca va DONDE se imprime el corte y no en cada sitio de llamada:
+       un gráfico nuevo que use este pie la hereda sin que su autor se
+       acuerde (v867), y la tarjeta no lo repite afuera. */
+    if (svg && svg.setAttribute) svg.setAttribute('data-sp-corte-dentro', '1');
     var g = svgEl('g', { class: 'sp-g-pie' });
     g.appendChild(svgEl('line', { x1: 0, y1: y, x2: w, y2: y, class: 'sp-g-rule' }));
     pieLineas(w, fuenteTxt, corteTxt).forEach(function (t, i) {

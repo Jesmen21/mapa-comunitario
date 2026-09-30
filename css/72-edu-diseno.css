@@ -1694,7 +1694,7 @@ html body.u52-real-map #urbis-mobile-app .u52-jac-mapcentric .u52-mapcentric-rou
 .pcr-int-nota{
   width:100%; box-sizing:border-box; font:inherit; font-size:.76rem;
   padding:5px 7px; border-radius:var(--edu-r-s);
-  border:1px solid var(--edu-line); background:var(--edu-paper);
+  border:1px solid var(--edu-line); background:var(--edu-ground);
   color:var(--edu-ink);
 }
 /* El texto de ayuda del campo lo pinta la misma regla global. Sin esto, la
@@ -1749,7 +1749,7 @@ html body.u52-real-map #urbis-mobile-app .u52-jac-mapcentric .u52-mapcentric-rou
 .pcr-medir-p{
   display:inline-flex; align-items:center; gap:5px;
   padding:4px 9px; border-radius:999px; font-size:.74rem;
-  border:1px solid var(--edu-line); background:var(--edu-paper);
+  border:1px solid var(--edu-line); background:var(--edu-ground);
   color:var(--edu-ink-3);
 }
 .pcr-medir-p svg{ flex:0 0 auto; }
@@ -1795,7 +1795,7 @@ html body.u52-real-map #urbis-mobile-app .u52-jac-mapcentric .u52-mapcentric-rou
 .pcr-cabe-c input{
   width:100%; box-sizing:border-box; font:inherit; font-size:.95rem; font-weight:700;
   padding:6px 8px; border-radius:var(--edu-r-s);
-  border:1px solid var(--edu-line); background:var(--edu-paper);
+  border:1px solid var(--edu-line); background:var(--edu-ground);
 }
 .pcr-hoja .pcr-cabe-c input, .pcr-pestana .pcr-cabe-c input{
   color:var(--edu-ink) !important; -webkit-text-fill-color:var(--edu-ink) !important;
@@ -2016,7 +2016,12 @@ html body.u52-real-map #urbis-mobile-app .u52-jac-mapcentric .u52-mapcentric-rou
 }
 .pcr-hoja .pcr-trazo-datos{ display:flex; flex-direction:column; gap:2px; min-width:0; }
 .pcr-hoja .pcr-trazo-datos b{ font-size:1.05rem; color:var(--edu-accent-deep); }
-.pcr-hoja .pcr-trazo-datos small{ font-size:.82rem; color:var(--edu-tinta-2); }
+/* Estos tres tokens estaban escritos con su nombre a medio traducir
+   —`--edu-paper` por `--edu-ground`, `--edu-tinta-2` por `--edu-ink-2`,
+   `--edu-accent-suave` por `--edu-accent-soft`— y ninguno se declara, asi que
+   el fondo salia transparente y el color se heredaba. Son la misma cosa con
+   dos nombres (clase B) y el que no existia es el que se usaba. */
+.pcr-hoja .pcr-trazo-datos small{ font-size:.82rem; color:var(--edu-ink-2); }
 
 /* Las dos escalas, una al lado de la otra: la forma dibujada y un radio
    alrededor del centro. Se pintan como lo que son —dos opciones del mismo
@@ -2029,10 +2034,10 @@ html body.u52-real-map #urbis-mobile-app .u52-jac-mapcentric .u52-mapcentric-rou
   border-radius:var(--edu-r-m); color:inherit;
 }
 .pcr-hoja .pcr-escala-op b{ font-size:.95rem; }
-.pcr-hoja .pcr-escala-op small{ font-size:.78rem; color:var(--edu-tinta-2); line-height:1.25; }
+.pcr-hoja .pcr-escala-op small{ font-size:.78rem; color:var(--edu-ink-2); line-height:1.25; }
 .pcr-hoja .pcr-escala-op.pcr-escala-on{
   border-color:var(--edu-accent-deep); border-width:2px; padding:8px 9px;
-  background:var(--edu-accent-suave);
+  background:var(--edu-accent-soft);
 }
 .pcr-hoja .pcr-escala-op.pcr-escala-on b{ color:var(--edu-accent-deep); }
 

@@ -23573,6 +23573,297 @@ nueve muerden:
   la `LISTA-QUE-SIGUE` y lo único que puede sacar al eje B de su cero.
   `pendiente`
 
+## Toda serie declara hasta cuándo llega, y quiénes son los terceros (v1056)
+
+Salió de dos renglones del reclamo, y **los dos se midieron y los dos eran
+defectos reales**: *«a día de hoy el dólar ya está subiendo»* y *«usted busca
+puras fuentes en las que sé perfectamente que son medios manipulados»*.
+
+    v1055   4 series congeladas —48, 50 y 638 días— y ninguna declara su corte
+    v1056   las 16 tarjetas dicen hasta cuándo llegan sus cifras, o por qué no
+
+### La serie se detenía en su último punto, y el registro decía «actualizado hoy»
+
+Medido antes de tocar nada, con el registro sellado el 30 de septiembre:
+
+| Serie | Último dato | Días |
+|---|---|---|
+| El dólar | 2026-09-30 | 0 |
+| Deuda comprometida | 2026-08-13 | **48** |
+| Bombardeos autorizados | 2026-08-11 | **50** |
+| Aprobación del presidente | 2026-08-11 | **50** |
+| Cocaína incautada | 2024-12-31 | **638** |
+
+Una línea que sube y se detiene en su último punto **se lee como la de hoy**, y
+ahí no hace falta que nadie mienta: basta que nadie lo diga. Es la exención
+silenciosa de la v966 en una serie temporal — y con el sello «actualizado el 30
+de septiembre» dos dedos más arriba, la lectura falsa es la que el propio
+módulo invita a hacer.
+
+Del dólar el reclamo tenía razón por partida doble: la serie se había quedado
+en **3.204,51**, su mínimo de siete años, rotulada «Último dato». La TRM de hoy
+es **3.341,23** — un 7,8 % por encima de ese mínimo y por encima del valor de
+la víspera de la posesión. Los tres puntos que faltaban entraron con sus cinco
+fuentes.
+
+### El corte va ANOTADO EN EL NODO, no declarado en cada llamada
+
+`tarjetaGrafica` es la única puerta por la que pasan los dieciséis gráficos, y
+el cuerpo es lo único que siempre recibe. Así que el dibujo anota su corte en
+el nodo que devuelve y la tarjeta lo pinta: **una serie nueva lo hereda sin que
+su autor se acuerde** (v867). Declarado en cada sitio de llamada, el décimo es
+el que se olvida.
+
+Tres marcas y no una, porque son tres situaciones que piden cosas distintas
+(v899):
+
+| | Qué significa |
+|---|---|
+| `data-sp-corte` | el dibujo sabe hasta cuándo llegan sus cifras |
+| `data-sp-corte-dentro` | el SVG ya lo imprime adentro, con `pieDentro` |
+| `data-sp-sin-fecha` | sus cifras NO traen fecha, y se dice qué falta |
+
+Y un cuerpo **sin ninguna de las tres no se calla**: la tarjeta declara que ese
+gráfico no dice hasta cuándo llega. Con el silencio, «nadie lo declaró» se
+leería igual que «no hacía falta», que es el defecto entero.
+
+La segunda marca la pone **`pieDentro`, donde el corte se imprime**, y no cada
+sitio de llamada: los cinco gráficos del presupuesto y el organigrama la
+heredan sin una línea propia, y la tarjeta no repite afuera lo que el SVG ya
+trae dentro.
+
+#### La diferencia NO lleva umbral, y eso también se derivó
+
+«Avisa si pasa de N días» sería el número que nadie puede defender de la v869.
+El registro declara su fecha y el gráfico la suya, así que **la diferencia se
+dice cuando no son la misma**:
+
+> Datos hasta el 31 de diciembre de 2024. El registro se cerró el 30 de
+> septiembre de 2026, 638 días después: en ese tramo esta serie no recibió un
+> dato nuevo.
+
+Y se mide contra el **sello del registro** y no contra hoy, que son dos cuentas
+distintas y la diferencia decide qué se afirma: contra hoy, un gráfico se pone
+viejo solo aunque nadie haya tocado nada; contra el corte del propio registro,
+lo que se dice es que el registro se revisó y esa serie no trajo un dato nuevo
+— una afirmación sobre nuestra propia diligencia y no sobre el reloj.
+
+#### Los créditos no traen fecha, y se declara en vez de deducirla
+
+Medido: `deuda.lineas` trae `comprometido` y `desembolsado` y **ninguna trae
+fecha**. Lo único fechado es la prosa de `e` —«200 girados el 13 de agosto»— y
+deducir el corte de esa frase sería inventarlo. Se declara qué falta: la fecha
+de cada desembolso, como dato y no como prosa.
+
+#### Y la comparación entre fuentes se mide sobre TODOS sus grupos
+
+En la portada solo se pinta el primero, así que sacar el corte de los visibles
+declararía el de otra cosa. Tiene su guarda, y es una de las cuatro que hubo
+que apretar.
+
+### Quiénes son los terceros que verifican
+
+El techo de claridad dice **«Registro verificado por terceros · 78 %»** y no
+decía por quiénes. Medido sobre las 1.003 fuentes con dirección del registro:
+
+| | |
+|---|---|
+| medios distintos | **133** |
+| `infobae.com` | **22 %** de todas |
+| los cinco primeros | **la mitad** |
+| medios que citan una sola vez | 76 |
+
+Es la **clase C** en su forma más limpia: el dato está en la dirección de cada
+una de las mil y pico fuentes, y ninguna pantalla lo alcanzaba, así que desde
+afuera se veía igual que si no existiera.
+
+Y es la misma vara que este módulo le aplica a las cifras que mide. Su propio
+comentario del denominador lo dice desde la v1050: *«Este módulo le reprocha a
+otras cifras andar sin denominador… y su propia cifra principal salía sola»*.
+Lo que faltaba es la otra mitad: un porcentaje sin denominador no se puede
+leer, y **«por terceros» sin saber cuántos terceros son tampoco**.
+
+#### Lo que se publica es la CONCENTRACIÓN, y lo que no, se dice
+
+El reclamo dice que esos medios están manipulados para lavarle la cara al
+presidente. **Eso no se publica**, y no por prudencia: es una afirmación sobre
+la línea editorial de unos medios reales, y este registro **no clasifica la
+línea editorial ni el país de ninguna fuente**. Publicarla sería pasar de un
+hecho a una conclusión sin decirlo, que es exactamente lo que el módulo le
+reprocha a los demás.
+
+Lo que sí se publica es comprobable dividiendo, y acota la cifra de al lado:
+
+> Los terceros son 133 medios distintos en 1.003 fuentes con enlace, y 5 medios
+> hacen la mitad: infobae.com es el 22 % de todas. La vara de «verificado» pide
+> dos medios independientes, y eso se mide por ser medios distintos y nada más:
+> el registro no clasifica la línea editorial ni el país de ninguna fuente.
+
+Con la lista de medios **plegada** y la acotación visible, que es la decisión de
+la v972: se pliega la evidencia, nunca lo que acota.
+
+Tres decisiones más, cada una con su razón:
+
+* **el medio se saca de la DIRECCIÓN** y no de un campo nuevo: escribirlo a
+  mano sería una segunda codificación de un hecho que ya está en el dato (clase
+  B), y la que se separaría es la escrita, porque nadie la relee;
+* **cuántos medios hacen la mitad se CALCULA**, no se fija en cinco: con el
+  número escrito, la frase se queda vieja el día que el registro se ensanche y
+  seguiría pareciendo medida (v903);
+* y **viaja con la ficha** y no se lee del panel: una ficha rehecha a una fecha
+  anterior tiene que traer la composición de ESE registro y no la de hoy (v890).
+
+### El token que no existe no pinta nada, y me cazó dos veces
+
+Escribí `color:var(--tinta)` y **el token de este módulo es `--ink`**. Es el
+mismo descuido de la v1050 con `--papel` por `--marfil`, y las dos veces lo
+salvó comprobar el token antes de creerle.
+
+Medido, **había siete más de antes**, y uno en la ficha presidencial:
+`.sp-c1-n` —la cifra de hechos del eje A, «183»— pedía `var(--ink-1)`, que no
+se declara en ninguna parte. Medido en el navegador: **heredaba el gris de la
+prosa de al lado** en vez de la tinta fuerte que su autor escribió. Los otros
+seis son de `css/72-edu-diseno.css` y son el mismo token con el nombre a medio
+traducir —`--edu-paper` por `--edu-ground`, `--edu-tinta-2` por `--edu-ink-2`,
+`--edu-accent-suave` por `--edu-accent-soft`—: **clase B en un nombre**, y el
+que no existía es el que se usaba, así que tres fondos salían transparentes.
+
+#### El discriminante es el RESPALDO, y se midió antes de escribirlo
+
+| Regla candidata | Denuncias | Falsos |
+|---|---|---|
+| todo `var()` declarado en el CSS | 44 | **33** — los pone el JS con `setProperty` |
+| … ni declarado ni puesto por el JS | 13 | **6** — llevan su respaldo literal al lado |
+| **… y SIN respaldo** | **7** | **cero** |
+
+Sobre **3.001 usos de `var()`**, y sin una sola excepción escrita, que es la
+lista que envejece hasta no significar nada (v895). Un `var(--x, #fff)` pinta
+aunque `--x` no exista, así que no es el defecto; y un token que el JS pone con
+`setProperty` no se declara en el CSS y es correcto — es como este módulo le
+pasa el color de cada serie a su dibujo.
+
+La guarda lleva su guarda de la guarda: que **los dos filtros sigan teniendo
+material que descartar**. Si uno se quedara sin nada, ya no acota y puede
+haberse vuelto vacuo.
+
+### Cuatro guardas mías que medían menos de lo que decían
+
+Y las cuatro las cazó **demostrar en rojo**, que es para lo que esa práctica
+existe. Tres son el mismo defecto: **un ancla por distancia envejece** (v935).
+
+* **«todo dibujo declara su corte»** aceptaba un `conCorte(` en cualquier parte
+  del cuerpo, y `grafSerie` tiene DOS salidas —la serie y el punto único—: al
+  quitarle la anotación a una, la guarda seguía en verde por la otra. Se mide
+  cada salida, y el nodo **se reconoce por cómo se construye** (`el(` o
+  `svgEl(`): sin eso el barrido tomaba los `return` de los callbacks de `.map`
+  y denunciaba once sitios sanos.
+* **«el corte de la comparación sale de todos sus grupos»** miraba 120
+  caracteres detrás de la palabra `visibles`. Se mira **la asignación de la
+  variable que alimenta a `conCorte`**, que es la única forma de que cambiar
+  `grupos` por `visibles` salga en rojo.
+* **«se publica al lado de la cifra»** aceptaba «hay un `sp-fi-techo-den` a
+  menos de 2.000 caracteres». Colgando el bloque de otro nodo seguía pasando,
+  porque el denominador seguía estando cerca. Se exige que cuelgue del **mismo
+  `li`** del techo.
+* Y **el MATERIAL de las dos familias fallaba con su `?`** en vez de en rojo:
+  por la frontera de la v1026, el material es código de un archivo servido y no
+  puede quedarse vacío por una mejora.
+
+Más una del patrón: **mi primera guarda del umbral daba rojo sobre lo
+correcto.** Buscaba `dias > <número>` y cazaba `dias > 0`, que es justamente la
+versión SIN umbral — comparar contra cero es «las dos fechas no son la misma».
+
+### Lo que el papel enseñó, y el código no
+
+Cuatro cosas, y ninguna se veía leyendo:
+
+* **la línea de corte salía a 12,48 px**, que es el tamaño que este módulo
+  reserva a las etiquetas, y es una frase de cuatro renglones. **La cazó la
+  guarda de la v1015** —tercera vez en esta serie que una guarda anterior
+  muerde a su autor (v981, v1000, v1043)— y se corrige el tamaño, no la guarda;
+* **y mi corrección no ganó.** `.sp-fi-terceros{font-size:var(--t-8)}` escrita
+  ANTES de `.sp-fi-techo-den{--t-9}` pierde: las dos son una sola clase, así
+  que manda el orden. La regla se **mueve** a donde vive la que tiene que
+  ganar, en vez de subirle la especificidad;
+* **«1003 fuentes»**, sin separador de miles. Medido sobre el papel, de las
+  ocho cifras de cuatro dígitos de la página **siete son legítimas** —números
+  de ley, de resolución, de decreto y de expediente, que se escriben seguidos a
+  propósito (v885)— y la única mala era la mía. Así que el arreglo va donde no
+  puede volver: **`cn` formatea su cifra**, que es la decisión de la v1027 en
+  el otro módulo;
+* y **dos reglas de los ejes en tamaño de etiqueta**, de mis propias v1051 y
+  v1055: la definición de cada indicador y la pregunta que abre cada eje son
+  prosa. La que **sí se queda** en `--t-9` es «validado: no · gobiernos
+  anteriores probados: 0», que es un sello técnico en monoespaciada y no una
+  frase — y va dicho, porque sin la razón escrita se lee como la que se olvidó.
+
+### Demostrado contra la v1055
+
+Doce inyecciones fieles, una por aserción (v993), contra copias guardadas y no
+con `git checkout --` sobre trabajo sin confirmar (v973):
+
+```
+✗ la tarjeta pinta la linea de corte  — cada serie tendria que declararlo en su sitio de llamada
+✗ y el pie que imprime el corte adentro pone su propia marca  — no la pone
+✗ todo dibujo declara su corte  — grafSerie (return svg)
+✗ todo dibujo declara su corte  — grafSerie (return caja)
+✗ y la diferencia sale del corte del registro, no de un umbral  — compara contra un numero escrito
+✗ y el corte de la comparacion sale de todos sus grupos  — lo saca de los visibles
+✗ la composicion viaja con la ficha  — una ficha de hace un mes traeria la de hoy
+✗ y el medio se saca de la direccion  — lo lee de otro campo
+✗ y cuantos medios hacen la mitad se calcula  — lleva el numero escrito
+✗ y dice que el registro NO clasifica la linea editorial  — se leeria como una afirmacion
+✗ y se publica al lado del porcentaje  — el lector veria el 78 % sin saber de cuantos terceros
+✗ ningun var() sin respaldo apunta a un token que no existe  — css/70:1621 var(--tinta)
+```
+
+La décima es la guarda contra pasarse: sin ella, la concentración se leería
+como una afirmación sobre el encuadre de esos medios, que es justo lo que esta
+versión se niega a publicar.
+
+Y una inyección **no muerde su propia aserción y hay que decirlo**: retirar el
+filtro del respaldo del discriminante deja la guarda de la guarda en verde
+—mide que los dos filtros tengan material, no que se apliquen— y lo que sale en
+rojo es la aserción de al lado, con veintidós denuncias más. Queda dicho por lo
+que es.
+
+### Lo que esta versión NO hace, y queda medido
+
+* **Las cinco declaraciones de `mismoObjetoVerificado`** siguen siendo de quien
+  firma el módulo: leer si «no buscaremos acuerdo con el FMI» y «ordeno abrir
+  conversaciones con el FMI» hablan del mismo objeto decide en público el juicio
+  sobre un presidente en ejercicio (v959, v972, v1050). Medido: una declarada
+  deja el peldaño en «Fiable», dos lo bajan a «Dudosa» y tres a «Poco fiable».
+  `pendiente`
+* **Las tres series congeladas siguen congeladas.** Esta versión hace que se
+  vea, no las actualiza: la deuda, los bombardeos y la cocaína piden su fuente
+  con dirección, y desde esta máquina el proxy bloquea todos los dominios y el
+  único canal es la búsqueda (v967). `pendiente`
+* **`fuentes[].pais` y la clasificación del encuadre** son lo que permitiría
+  decir algo más que la concentración — y son los mismos pendientes que el motor
+  de referencia nombró en la v961 y la v962 para
+  `solidezPorTriangulacion`. Esta medición es la razón por la que importan.
+  `pendiente`
+* **Las 53 fuentes de los casos no llevan `rol`**, mientras las 926 de las
+  entradas sí, y ninguna guarda lo vigila. Medido en esta tanda y no tocado:
+  declararlas es trabajo de registro sobre casos que señalan a personas.
+  `pendiente`
+* **La guarda de la v1015 no ve el tamaño heredado.** Cazó mi regla porque
+  declaraba `--t-9`; no habría cazado la versión que lo hereda de la clase que
+  la envuelve, y eso es lo que la medición del navegador encontró. Cerrarlo pide
+  medir el tamaño COMPUESTO, que es una medición de navegador y esas suites no
+  corren en este contenedor. `pendiente`
+
+### Lo que NO se pudo correr
+
+**Ninguna suite de navegador**, por lo mismo que la v973 en adelante: este
+contenedor no tiene `../urbis-motor` ni el `node_modules` del banco de pruebas.
+Corrió `revisar.js` entero con sus trece comprobaciones nuevas, y se midió el
+papel con la sonda —las dieciséis tarjetas con su marca y su línea, el techo de
+claridad con la lista abierta, las cifras de cuatro dígitos de las dos vistas y
+los tamaños de todo el texto corrido—, que es lo que encontró las cuatro cosas
+que no se veían leyendo.
+
 ## La lista viva: lo que al pliego educativo todavía le falta (v866)
 
 Esta lista se quedó vieja **cinco veces**. Cuatro dentro de la hoja —la

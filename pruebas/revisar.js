@@ -9327,6 +9327,96 @@ console.log('\n  -- el piso de texto vale en toda la pagina, no solo en la ficha
         ? dePagina.length + ' clases de parrafo vienen solo del HTML, entre ellas .' + dePagina[0]
         : 'ninguna: se estaria leyendo solo el JS, y asi se escapaba .sp-nextup');
   }
+
+  /* ══ UN TOKEN QUE NO EXISTE NO PINTA NADA ═════════════════════════
+     `color: var(--tinta)` con `--tinta` declarado en ninguna parte es CSS
+     valido y no pinta nada: la propiedad queda invalida al calcular, asi que
+     un color se hereda y un fondo sale transparente. En el codigo se lee
+     perfecto, y nadie lo dice.
+
+     Lo cometí dos veces —la v1050 con `--papel` por `--marfil` y la v1056 con
+     `--tinta` por `--ink`— y al medirlo había SIETE mas de antes, entre ellos
+     una cifra de la ficha presidencial que heredaba el gris de la prosa de al
+     lado en vez de la tinta fuerte, medido en el navegador.
+
+     EL DISCRIMINANTE ES EL RESPALDO, y eso se midio antes de escribirlo:
+       · «todo var() declarado en css»            → 44 denuncias, casi todas
+         legitimas: 33 tokens los pone el JS con `setProperty`
+       · «… ni declarado ni puesto por el JS»      → 13, y la mayoria llevan su
+         respaldo literal al lado, que es defensivo y correcto
+       · «… y SIN respaldo»                       → 7, cero falsos positivos
+     Sobre 3.001 usos de `var()`, y sin una sola excepcion escrita —que es la
+     lista que envejece hasta no significar nada (v895)—. */
+  {
+    const sincom = (t) => t.replace(/\/\*[\s\S]*?\*\//g, ' ');
+    const hojas = fs.readdirSync(path.join(RAIZ, 'css')).filter((f) => f.endsWith('.css')).sort();
+    const declarados = new Set();
+    const usos = [];
+    hojas.forEach((f) => {
+      const t = sincom(leer(path.join('css', f)));
+      let m;
+      const reD = /(--[A-Za-z0-9_-]+)\s*:/g;
+      while ((m = reD.exec(t))) declarados.add(m[1]);
+      /* El respaldo se reconoce por la coma que sigue al nombre: `var(--x, #fff)`
+         pinta aunque `--x` no exista, asi que no es el defecto. */
+      const reU = /var\(\s*(--[A-Za-z0-9_-]+)\s*(,?)/g;
+      while ((m = reU.exec(t))) {
+        usos.push({ f: f, v: m[1], resp: !!m[2], ln: t.slice(0, m.index).split('\n').length });
+      }
+    });
+    /* Un token que el JS pone con `setProperty` no se declara en el CSS y es
+       correcto: es como este modulo le pasa el color de cada serie a su
+       dibujo. Se leen los dos caminos o la guarda denunciaria 33 sitios
+       sanos. */
+    const puestos = new Set();
+    fs.readdirSync(path.join(RAIZ, 'js')).filter((f) => f.endsWith('.js')).forEach((f) => {
+      const t = leer(path.join('js', f));
+      let m;
+      const reP = /setProperty\(\s*['"](--[A-Za-z0-9_-]+)/g;
+      while ((m = reP.exec(t))) puestos.add(m[1]);
+      const reI = /(--[A-Za-z0-9_-]+)\s*:/g;
+      while ((m = reI.exec(t))) puestos.add(m[1]);
+    });
+    /* Las paginas se listan del disco y no de una lista escrita, para que una
+       nueva quede vigilada sin que su autor se acuerde (v867). */
+    fs.readdirSync(RAIZ).filter((f) => f.endsWith('.html')).forEach((f) => {
+      const t = sincom(leer(f));
+      let m; const reD = /(--[A-Za-z0-9_-]+)\s*:/g;
+      while ((m = reD.exec(t))) declarados.add(m[1]);
+    });
+
+    comprobar('MATERIAL · las hojas se dejan leer, con sus tokens y sus usos',
+      hojas.length > 10 && declarados.size > 50 && usos.length > 500,
+      hojas.length > 10 && declarados.size > 50 && usos.length > 500
+        ? hojas.length + ' hojas · ' + declarados.size + ' tokens declarados · ' +
+          usos.length + ' usos de var(), de los que ' + usos.filter((u) => u.resp).length +
+          ' llevan respaldo'
+        : 'NO PUDO CORRER: ' + hojas.length + ' hojas · ' + declarados.size +
+          ' tokens · ' + usos.length + ' usos, asi que no vigilaria nada');
+
+    const huerfanos = usos.filter((u) => !u.resp && !declarados.has(u.v) && !puestos.has(u.v));
+    comprobar('ningun var() sin respaldo apunta a un token que no existe',
+      huerfanos.length === 0,
+      huerfanos.length === 0
+        ? 'los ' + usos.filter((u) => !u.resp).length + ' usos sin respaldo apuntan a un token ' +
+          'declarado en el CSS o puesto por el JS'
+        : huerfanos.length + ' no pintan nada, y en el codigo se leen bien: ' +
+          huerfanos.slice(0, 6).map((u) => 'css/' + u.f + ':' + u.ln + ' var(' + u.v + ')').join(' · '));
+
+    /* La guarda de la guarda: si se dejara de leer lo que el JS pone, la de
+       arriba seguiria en verde y denunciaria 33 sitios sanos —o, al reves,
+       quitando el respaldo del discriminante denunciaria 13 mas—. Se mide que
+       los dos filtros sigan teniendo material que descartar. */
+    const porJs = usos.filter((u) => !u.resp && !declarados.has(u.v) && puestos.has(u.v));
+    const porResp = usos.filter((u) => u.resp && !declarados.has(u.v) && !puestos.has(u.v));
+    comprobar('y los dos filtros que la acotan siguen descartando algo',
+      porJs.length > 0 && porResp.length > 0,
+      porJs.length > 0 && porResp.length > 0
+        ? porJs.length + ' los pone el JS y ' + porResp.length + ' llevan su respaldo literal: ' +
+          'sin esos dos filtros la guarda daria rojo sobre lo que esta bien'
+        : 'un filtro se quedo sin nada que descartar (js=' + porJs.length +
+          ', respaldo=' + porResp.length + '), asi que ya no acota y puede haberse vuelto vacuo');
+  }
 }
 
 console.log('\n  -- un plural no se fabrica pegando «es» (v1018) --');
@@ -10932,6 +11022,175 @@ console.log('\n  -- el marcado que vive dentro del JavaScript (v1025) --');
       comprobar('y la clase del alcance tiene su regla', r7,
         r7 ? 'pintada, con el hilo y el gris de acotación de la placa'
            : 'sin regla: el párrafo saldría sin el hilo ni el color de acotación de la placa');
+    }
+
+    /* ══ v1056 · TODO GRÁFICO DECLARA HASTA CUÁNDO LLEGAN SUS CIFRAS ══════
+       El registro se sella «actualizado» con la fecha de hoy y sus series
+       pueden llevar meses sin un dato nuevo —medido: la deuda 48 días, los
+       bombardeos 50, la cocaína 638—. Una línea que se detiene en su último
+       punto se lee como la de hoy, y ahí no hace falta que nadie mienta:
+       basta que nadie lo diga. */
+    {
+      const trozo = (n) => {
+        const i = j70.indexOf('function ' + n + '(');
+        return i < 0 ? '' : j70.slice(i, j70.indexOf('\n  }', i));
+      };
+      const tTar = trozo('tarjetaGrafica');
+      const tLin = trozo('lineaDeCorte');
+      const tPie = trozo('pieDentro');
+      const hay = /function conCorte\(/.test(j70) && /function sinFechaPropia\(/.test(j70) &&
+                  tTar && tLin && tPie;
+      /* Falla en ROJO y no con su `?`: el material es codigo de un archivo
+         servido, que no puede quedarse vacio por una mejora (v1026). */
+      comprobar('MATERIAL · las tres marcas de corte y la tarjeta se dejan leer', !!hay,
+        hay ? 'conCorte · sinFechaPropia · lineaDeCorte · tarjetaGrafica · pieDentro'
+            : 'NO PUDO CORRER: falta alguna de las marcas o de las dos funciones');
+      if (hay) {
+        /* La tarjeta es la ÚNICA puerta por la que pasan los nueve gráficos, y
+           por eso el corte lo pinta ella y no cada sitio de llamada: con la
+           declaración repartida, el décimo es el que se olvida (v867). */
+        const pinta = /lineaDeCorte\(cuerpo\)/.test(tTar);
+        comprobar('la tarjeta pinta la linea de corte de lo que acaba de dibujar', pinta,
+          pinta ? 'la pinta debajo del cuerpo, que es donde va la procedencia de lo que se miró'
+                : 'no la pinta: cada serie tendria que declararlo en su sitio de llamada, y ahi se olvida');
+
+        /* Y la marca de «ya lo imprime el pie» va DONDE se imprime, no en cada
+           llamada: un grafico nuevo que use ese pie la hereda solo. */
+        const heredada = /data-sp-corte-dentro/.test(tPie);
+        comprobar('y el pie que imprime el corte adentro pone su propia marca', heredada,
+          heredada ? 'pieDentro la pone, asi que los cinco graficos del presupuesto la heredan'
+                   : 'no la pone: la tarjeta repetiria afuera el corte que el SVG ya trae dentro');
+
+        /* Falla CERRADO: un dibujo nuevo que no declare su corte sale en rojo
+           en su primera corrida, no cuando alguien mire el papel (v880). */
+        /* Se mide CADA salida y no «que el cuerpo mencione conCorte en alguna
+           parte». Mi primera version hacia lo segundo, y `grafSerie` tiene DOS
+           returns —la serie y el punto unico—: quitandole la anotacion a uno
+           la guarda seguia en verde por el otro. Lo cazo la inyeccion. */
+        const mudos = [];
+        let m; const reG = /\n  function (graf[A-Za-z]+)\(/g;
+        while ((m = reG.exec(j70))) {
+          const cuerpo = trozo(m[1]);
+          if (!cuerpo) continue;
+          if (/pieDentro\(/.test(cuerpo)) continue;      // lo hereda del pie
+          if (/sp-graf-falta/.test(cuerpo)) continue;     // no dibuja cifras: nada que fechar
+          /* Solo los `return` que devuelven un NODO, y el nodo se reconoce
+             por como se construye: `el(...)` o `svgEl(...)`. Sin eso, el
+             barrido tomaba los `return` de los callbacks de `.map` y `.filter`
+             —«return p.v», «return x.n»— y denunciaba once sitios sanos, que
+             es la lista de excepciones que envejece (v895). */
+          const nodos = new Set();
+          let a2; const reA = /\b(?:var|const|let)\s+(\w+)\s*=\s*(?:el|svgEl)\(/g;
+          while ((a2 = reA.exec(cuerpo))) nodos.add(a2[1]);
+          let r; const reR = /return\s+([^;]+);/g;
+          while ((r = reR.exec(cuerpo))) {
+            const q = r[1].trim();
+            const base = (/^(\w+)/.exec(q) || [])[1];
+            if (!base || !nodos.has(base)) continue;      // no devuelve un nodo
+            mudos.push(m[1] + ' (return ' + q.slice(0, 26) + ')');
+          }
+        }
+        comprobar('todo dibujo declara su corte, o de donde lo hereda', mudos.length === 0,
+          mudos.length === 0
+            ? 'los dibujos de este modulo declaran su corte, lo heredan del pie o no dibujan cifras'
+            : mudos.join(' · ') + ' — su tarjeta saldria diciendo que no declara hasta cuando llega');
+
+        /* La diferencia contra el corte del propio registro NO lleva umbral:
+           el registro declara su fecha y el grafico la suya, asi que se dice
+           cuando no son la misma. Un corte a ojo seria el numero que nadie
+           puede defender (v869). */
+        /* Comparar contra CERO no es un umbral: es «las dos fechas no son la
+           misma», que es justo la version sin numero a ojo. Lo que se denuncia
+           es una comparacion contra un numero de dias de VERDAD. Mi primer
+           patron cazaba `dias > 0` y daba rojo sobre lo correcto. */
+        const sinUmbral = /actualizado/.test(tLin) &&
+                          !/dias\s*[<>]=?\s*[1-9]/.test(tLin);
+        comprobar('y la diferencia sale del corte del registro, no de un umbral de dias', sinUmbral,
+          sinUmbral ? 'compara contra `actualizado` y se dice cuando no coinciden, sin numero a ojo'
+                    : 'compara contra un numero de dias escrito: un umbral que nadie puede defender');
+
+        /* El corte de una comparacion entre fuentes es su medida MAS RECIENTE,
+           y sobre TODOS los grupos: en la portada solo se pinta el primero, y
+           declarar el corte de lo que cupo seria declarar el de otra cosa. */
+        /* Se mide el trozo que ALIMENTA a conCorte y no una ventana de
+           caracteres detras de la palabra `visibles`: con la ventana, cambiar
+           `grupos.reduce` por `visibles.reduce` pasaba en verde porque la
+           distancia era mayor. Un ancla por distancia envejece (v935). */
+        const tPF = trozo('grafPorFuente');
+        const iCC = tPF.indexOf('conCorte(');
+        /* Se mira la ASIGNACION de la variable que alimenta a conCorte, no una
+           ventana de caracteres: es la unica forma de que cambiar `grupos` por
+           `visibles` salga en rojo. */
+        const arg = iCC < 0 ? '' : (/conCorte\([^,]+,\s*(\w+)/.exec(tPF.slice(iCC)) || [])[1] || '';
+        const asig = arg ? (new RegExp('(?:var|const|let)\\s+' + arg +
+          '\\s*=([\\s\\S]*?);\\n').exec(tPF) || [])[1] || '' : '';
+        const todos = iCC > 0 && /\bgrupos\b/.test(asig) && !/\bvisibles\b/.test(asig);
+        comprobar('y el corte de la comparacion entre fuentes sale de todos sus grupos', todos,
+          todos ? 'de grupos y no de `visibles`, que en la portada es solo el primero'
+                : 'lo saca de los grupos visibles: en la portada declararia el corte de lo que cupo');
+      }
+    }
+
+    /* ══ v1056 · QUIÉNES SON LOS TERCEROS QUE VERIFICAN ══════════════════
+       El techo de claridad dice «registro verificado por terceros: 78 %» y no
+       decía por QUIÉNES. Medido, cuatro medios son la mitad de las mil y pico
+       fuentes y uno solo es una de cada cinco. Es la clase C: el dato está en
+       la dirección de cada fuente y ninguna pantalla lo alcanzaba. */
+    {
+      const iC = j70.indexOf('function composicionDeFuentes(');
+      const tC = iC < 0 ? '' : j70.slice(iC, j70.indexOf('\n  }', iC));
+      const iF = j70.indexOf('function fichaDe(');
+      const tF = iF < 0 ? '' : j70.slice(iF, j70.indexOf('\n  }\n', iF));
+      const hay = tC && tF && /function dominioDe\(/.test(j70);
+      comprobar('MATERIAL · la composicion de fuentes y la ficha se dejan leer', !!hay,
+        hay ? 'composicionDeFuentes · dominioDe · fichaDe'
+            : 'NO PUDO CORRER: falta la composicion, el lector de dominios o la ficha');
+      if (hay) {
+        /* Pegada a la ficha y no leida del panel: una ficha rehecha a una
+           fecha anterior trae la composicion de ESE registro (v890). */
+        const viaja = /fuentesComp:\s*composicionDeFuentes\(dd\)/.test(tF);
+        comprobar('la composicion viaja con la ficha, no se lee de la pantalla', viaja,
+          viaja ? 'sale de composicionDeFuentes(dd) dentro de la ficha, con el registro que se mira'
+                : 'la pantalla la calcularia por su cuenta: una ficha de hace un mes traeria la de hoy');
+
+        /* El dominio se saca de la DIRECCION y no de un campo nuevo: un campo
+           escrito a mano seria una segunda codificacion de un hecho que ya
+           esta en el dato (clase B), y la que se separa es la escrita. */
+        const delDato = /dominioDe\(o\.u\)/.test(tC);
+        comprobar('y el medio se saca de la direccion de cada fuente', delDato,
+          delDato ? 'de `u`, que es donde ya esta, y no de un campo que alguien tenga que escribir'
+                  : 'lo lee de otro campo: dos codificaciones de un hecho se separan a la tanda siguiente');
+
+        /* CUANTOS medios hacen la mitad se CALCULA: con un numero escrito, la
+           frase se queda vieja el dia que el registro se ensanche y seguiria
+           pareciendo medida (v903). */
+        const calcula = /acum \* 2 < n/.test(tC) && !/mitad\s*=\s*[1-9]\b/.test(tC);
+        comprobar('y cuantos medios hacen la mitad se calcula, no va escrito', calcula,
+          calcula ? 'sale de acumular hasta pasar la mitad, asi que baja solo si el registro se ensancha'
+                  : 'lleva el numero escrito: la frase quedaria vieja y seguiria pareciendo medida');
+
+        /* Se publica AL LADO de la cifra que acota, no en otra pantalla. */
+        /* Cuelga del MISMO `li` del techo. Medirlo como «hay un
+           sp-fi-techo-den cerca» pasaba en verde al colgarlo de otro nodo:
+           el denominador seguia estando cerca. */
+        const alLado = /li\.appendChild\(el\('span', 'sp-fi-techo-den sp-fi-terceros'/.test(j70) &&
+                       /li\.appendChild\(dt\)/.test(j70);
+        comprobar('y se publica al lado del porcentaje que acota', alLado,
+          alLado ? 'en el mismo renglon del techo de claridad, con la lista de medios plegada'
+                 : 'no esta junto al techo: el lector veria el 78 % sin saber de cuantos terceros sale');
+
+        /* Y la guarda contra pasarse: lo que se publica es la CONCENTRACION,
+           que cualquiera rehace dividiendo. Que esos medios tengan una linea
+           editorial o un dueno comun seria OTRA medicion y el registro no la
+           tiene, asi que afirmarlo seria pasar de un hecho a una conclusion
+           sin decirlo. */
+        const iT = j70.indexOf("'sp-fi-techo-den sp-fi-terceros'");
+        const frase = iT < 0 ? '' : j70.slice(iT, iT + 1400);
+        const acota = /no clasifica la/.test(frase) && /l\u00ednea editorial|línea editorial/.test(frase);
+        comprobar('y dice que el registro NO clasifica la linea editorial de nadie', acota,
+          acota ? 'publica la concentracion, que es comprobable, y nombra lo que no mide'
+                : 'no lo dice: la concentracion se leeria como una afirmacion sobre el encuadre de esos medios');
+      }
     }
   })();
 

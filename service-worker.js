@@ -1,4 +1,4 @@
-const URBIS_CACHE = 'urbis-v1055-el-cuarto-eje-y-el-rumbo-del-gasto-que-el-registro-si-tenia';
+const URBIS_CACHE = 'urbis-v1056-toda-serie-declara-hasta-cuando-llega-y-quienes-son-los-terceros';
 const URBIS_ASSETS = [
   './',
   './index.html',

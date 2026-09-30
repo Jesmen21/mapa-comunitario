@@ -7309,7 +7309,7 @@
    "formato": "miles",
    "sentido": "neutro",
    "color": "#0E86BC",
-   "leyenda": "La TRM la mueven muchos factores a la vez —tasas de la Reserva Federal, precio del petróleo, riesgo global—, así que este movimiento acompaña a la gestión pero no se puede atribuir solo a ella.",
+   "leyenda": "Bajó hasta un mínimo de siete años el 19 de agosto y desde ahí subió: el cierre de septiembre queda 242,44 pesos por encima de ese mínimo (+7,8 %) y 136,72 por encima de los 3.204,51 de dos días antes de la posesión. La TRM la mueven muchos factores a la vez —tasas de la Reserva Federal, precio del petróleo, riesgo global—, así que este movimiento acompaña a la gestión pero no se puede atribuir solo a ella: ni la bajada ni la subida.",
    "puntos": [
     {
      "f": "2026-08-05",
@@ -7330,10 +7330,51 @@
     {
      "f": "2026-08-19",
      "v": 3098.79,
-     "e": "Último dato"
+     "e": "Mínimo de la serie"
+    },
+    {
+     "f": "2026-09-01",
+     "v": 3213.97,
+     "e": "Arranca septiembre"
+    },
+    {
+     "f": "2026-09-29",
+     "v": 3349.63,
+     "e": "Máximo de la serie"
+    },
+    {
+     "f": "2026-09-30",
+     "v": 3341.23,
+     "e": "Último dato · TRM de la Superintendencia Financiera",
+     "hito": true
     }
    ],
    "fuentes": [
+{
+     "n": "El Espectador · el precio del dólar este 30 de septiembre",
+     "rol": "acto",
+     "u": "https://www.elespectador.com/economia/finanzas-personales/precio-del-dolar-hoy-en-colombia-30-de-septiembre/"
+    },
+    {
+     "n": "Colombia.com · cotización del miércoles 30 de septiembre de 2026",
+     "rol": "acto",
+     "u": "https://www.colombia.com/actualidad/economia/precio-del-dolar-hoy-en-colombia-miercoles-30-de-septiembre-de-2026-604957"
+    },
+    {
+     "n": "El Montemariano · el dólar cierra un mes de fuerte volatilidad: de 3.213,97 a 3.341,23",
+     "rol": "acto",
+     "u": "https://www.elmontemariano.com/dolar-abre-este-30-de-septiembre-en-3-34123-y-cierra-un-mes-de-fuerte-volatilidad-en-colombia/"
+    },
+    {
+     "n": "Noticias Caracol · la TRM del lunes 28 de septiembre de 2026",
+     "rol": "acto",
+     "u": "https://www.noticiascaracol.com/economia/dolar-hoy-28-de-septiembre-de-2026-como-esta-la-trm-lunes-en-colombia-so35"
+    },
+    {
+     "n": "Pulzo · la TRM se volvió a disparar (23 de septiembre)",
+     "rol": "efecto",
+     "u": "https://www.pulzo.com/amp/economia/dolar-hoy-colombia-23092026-trm-volvio-disparar-e-ilusiona-PP5310848"
+    },
     {
      "n": "El Tiempo · TRM antes de la posesión",
      "u": "https://www.eltiempo.com/amp/economia/sector-financiero/dolar-en-colombia-asi-quedo-la-tasa-representativa-del-mercado-antes-de-la-posesion-del-presidente-electo-abelardo-de-la-espriella-3576816"
@@ -8048,7 +8089,7 @@
     "estado": "senalamiento",
     "nivelGobierno": "nacional",
     "queSeConfirmo": "Nada todavía. La investigación que Daniel Coronell publicó en Cambio en mayo de 2026, sobre documentos judiciales desclasificados, registra transferencias por más de 370.000 dólares entre 2014 y 2015 desde dos sociedades vinculadas a Alex Saab: Group Grand Limited, creada en Hong Kong y usada para venderle al régimen venezolano 350 millones de dólares en alimentos vencidos y alterados para las bolsas CLAP, y Consorcio Estructuras Metálicas, por la que Saab y su socio cobraron cerca de 700 millones de dólares en proyectos de vivienda de los que ejecutaron menos del 5 %. Una carta de mayo de 2014 que la investigación atribuye a De la Espriella detalla tres giros internacionales a cuentas fiduciarias administradas por abogados en Miami: 199.950, 99.950 y 74.950 dólares, que suman 374.850 —de ahí el «más de 370.000»; la suma se escribe para que se pueda comprobar—, enviados desde cuentas de esas sociedades en Antigua y en Hong Kong. Según la misma investigación, parte de esos recursos se usó para comprar un apartamento en Bristol Tower, en Miami, y otra parte se entregó a una persona identificada como Rafael Mora. En septiembre de 2026 una columna de Yohir Akerman en la misma revista sumó un correo del 29 de abril de 2015 en el que Saab le avisa de dos giros de Group Grand Limited.",
-    "quienLoConfirmo": "Ninguna autoridad. No consta que la Fiscalía, la Corte Suprema ni ningún otro organismo colombiano haya abierto actuación por estos giros; lo único reportado sobre el punto es la pregunta abierta de si existe una investigación en Estados Unidos, publicada como pregunta y no como hecho. El presidente no niega la relación profesional —ha dicho que representó a Saab entre 2013 y 2019 y que sus honorarios fueron «de seis cifras»—; niega haber sabido del origen del dinero, y su equipo jurídico pidió rectificación y anunció acciones civiles y penales.",
+    "quienLoConfirmo": "Ninguna autoridad COLOMBIANA: no consta que la Fiscalía, la Corte Suprema ni ningún otro organismo del país haya abierto actuación por estos giros. Sobre Estados Unidos hay MÁS que una pregunta, y hasta el 30 de septiembre de 2026 este registro lo decía como si no lo hubiera: The New York Times publicó el 26 de julio de 2026, con cinco fuentes, que EXISTIÓ una investigación sobre él relacionada con transferencias de fondos de Saab destinadas al pago de abogados; Univisión documentó, con tres fuentes, que en 2021 se reunió con un fiscal federal en Miami para preguntar si el Gobierno lo estaba investigando; y un memorando de la fiscalía de Nueva York describe ese circuito de pagos con intermediarios que ocultaban la identidad de los beneficiarios finales. Aun así el caso NO sube a «en investigación», y la razón es la vara escrita y no una preferencia: ese estado exige una autoridad con RADICADO o FECHA DE APERTURA, y lo que hay son reportes periodísticos sobre una investigación en PASADO, sin número de caso, sin imputación y sin constancia de que siga abierta. La misma vara dejó cuatro casos del gobierno anterior en «en investigación», y los cuatro con su acto: acusación de la Fiscalía, acusación de la Corte Suprema, juzgado de control de garantías. Con un radicado, este sube solo. La Presidencia le respondió al New York Times que el presidente «nunca fue investigado ni acusado» de estos asuntos y que su conducta como abogado fue «absolutamente impecable».",
     "fecha": "2026-05-24",
     "monto": "más de 370.000 dólares (tres giros de 199.950, 99.950 y 74.950 documentados en la carta de mayo de 2014)",
     "implicados": [
@@ -8060,6 +8101,22 @@
     "_nota": "Entra como SEÑALAMIENTO y no pesa en el veredicto, que es el estado por omisión cuando lo dice un medio y ninguna autoridad se ha pronunciado. Hay dos cosas que conviene no juntar: que los giros existan es lo que los documentos desclasificados registran; que su origen fuera ilícito y que él lo supiera es la conclusión de los columnistas, y ninguna autoridad la ha establecido. Y este es OTRO caso que los dos que esta misma lista tiene ARCHIVADOS a su favor: el del dinero del narcotraficante Juan Carlos «El Tuso» Sierra y el de la oferta de soborno a un testigo. Leer los tres como uno solo es injusto con el señalado en las dos direcciones.",
     "fuentes": [
      {
+     "n": "Univisión · el presidente electo temía estar bajo investigación en EE. UU., según fuentes",
+     "u": "https://www.univision.com/noticias/america-latina/el-presidente-electo-de-colombia-abelardo-de-la-espriella-temia-que-estuviera-bajo-investigacion-en-eeuu-segun-fuentes"
+    },
+    {
+     "n": "Univisión · la fiscalía de EE. UU. deberá entregar el historial de un exinformante federal que fue su asistente legal en Miami",
+     "u": "https://www.univision.com/noticias/estados-unidos/fiscalia-de-ee-uu-debera-entregar-el-historial-completo-de-un-exinformante-federal-que-fue-asistente-legal-en-miami-del-candidato-presidencial-abelardo-de-la-espriella"
+    },
+    {
+     "n": "Infobae · revelan si podría tener una investigación en su contra en Estados Unidos (sobre el reportaje del NYT)",
+     "u": "https://www.infobae.com/colombia/2026/07/26/por-su-relacion-con-alex-saab-revelan-si-abelardo-de-la-espriella-podria-tener-una-investigacion-en-su-contra-en-estados-unidos/"
+    },
+    {
+     "n": "El Espectador · Cecilia Orozco: lo que sabe The New York Times sobre el mandatario electo",
+     "u": "https://www.elespectador.com/opinion/columnistas/cecilia-orozco-tascon/lo-que-sabe-the-new-york-times-sobre-el-mandatario-electo/"
+    },
+    {
       "n": "Cambio · «Los giros de Alex Saab», la investigación de Daniel Coronell",
       "u": "https://cambiocolombia.com/los-danieles/articulo/2026/5/los-giros-de-alex-saab"
      },

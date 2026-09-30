@@ -759,6 +759,41 @@ a.sp-fuente:hover svg{ color:var(--verde-hi); }
   margin-top:13px; padding-top:12px; border-top:1px solid var(--linea-2);
   font-size:var(--t-8); color:var(--ink-2); line-height:1.5;
 }
+/* Hasta cuándo llegan las cifras de un gráfico (v1056). Va debajo del
+   dibujo porque es la procedencia de lo que se acaba de mirar.
+
+   En --t-8 y no en --t-9, y me lo cazó la guarda de la v1015: escribí
+   «es una etiqueta de frescura» y esto es una FRASE ENTERA de cuatro
+   renglones, o sea texto corrido, y --t-9 son etiquetas en mayúsculas y
+   sellos. Se corrige el tamaño, no la guarda.
+   Tres estados y tres tratamientos, porque piden cosas distintas: al día,
+   un hecho en gris; atrasada, el ámbar que en este tablero significa «ojo
+   con esto» y no el rojo de un hallazgo (v971); y sin declarar, el mismo
+   ámbar, porque es deuda nuestra igual. */
+/* Quiénes son los terceros que verifican (v1056). La acotación va VISIBLE
+   —es lo que cambia cómo se lee el porcentaje de al lado— y la lista de
+   medios plegada, que es la decisión de la v972: se pliega la evidencia,
+   nunca lo que acota. */
+.sp-fi-terceros-det{ margin-top:8px; }
+.sp-fi-terceros-det > summary{
+  cursor:pointer; font-size:var(--t-9); font-weight:700; letter-spacing:.04em;
+  text-transform:uppercase; color:var(--ink-2);
+}
+.sp-fi-terceros-l{ list-style:none; margin:8px 0 0; padding:0; }
+.sp-fi-terceros-l li{
+  display:grid; grid-template-columns:1fr auto; align-items:baseline; gap:2px 10px;
+  padding:5px 0; border-top:1px solid var(--linea-2);
+  font-size:var(--t-8); color:var(--ink-2);
+}
+.sp-fi-terceros-l li b{ font-variant-numeric:tabular-nums; color:var(--ink); }
+.sp-fi-terceros-l li small{ grid-column:1 / -1; font-size:var(--t-9); }
+.sp-fi-terceros-l li.resto{ color:var(--ink-2); font-style:italic; }
+
+.sp-graf-corte{
+  margin-top:10px; font-size:var(--t-8); color:var(--ink-2); line-height:1.45;
+}
+.sp-graf-corte-atras,
+.sp-graf-corte-falta{ color:var(--amarillo-hi); font-weight:600; }
 .sp-graf-src{ margin-top:12px; }
 
 /* Cifra destacada dentro de una gráfica */
@@ -1579,6 +1614,14 @@ a.sp-fuente:hover svg{ color:var(--verde-hi); }
 /* El denominador del porcentaje, debajo del techo que fija. Este módulo le
    reprocha a otras cifras andar sin denominador; la suya no puede. */
 .sp-fi-techo-den{ grid-column:1 / -1; font-size:var(--t-9); opacity:.78; }
+/* En --t-8 y DESPUÉS de la regla del denominador, no antes: las dos son una
+   sola clase, así que la de abajo gana y la primera versión de esto —escrita
+   arriba, junto a las tarjetas de gráfico— no pintaba nada. Leyendo el CSS se
+   veía bien; lo dijo medir el papel, igual que el ámbar de la v979.
+   Y va en --t-8 porque el denominador es un renglón corto —«158 de 203
+   hechos»— y esto es una frase de cuatro líneas, o sea texto corrido: --t-9
+   son etiquetas y sellos. */
+.sp-fi-terceros{ margin-top:6px; font-size:var(--t-8); }
 .sp-fi-techo.manda{ background:color-mix(in srgb, var(--vc-claro,var(--ink-2)) 10%, var(--sup)); color:var(--ink); }
 .sp-fi-techo.manda b, .sp-fi-techo.manda .sp-fi-techo-p, .sp-fi-techo.manda .sp-fi-techo-den{ color:var(--vc-claro,var(--ink)); }
 .sp-fi-vnota{ margin:0; font-size:var(--t-8); line-height:1.55; color:var(--ink-2); }
@@ -1768,7 +1811,13 @@ a.sp-fuente:hover svg{ color:var(--verde-hi); }
 .sp-c1-linea > b{ font-size:var(--t-8); }
 .sp-c1-lista{ margin:0; padding:0; list-style:none; display:flex; flex-wrap:wrap; gap:8px 16px; }
 .sp-c1-lista li{ display:inline-flex; align-items:baseline; gap:6px; font-size:var(--t-8); color:var(--ink-2); }
-.sp-c1-n{ font-weight:700; font-variant-numeric:tabular-nums; color:var(--ink-1); }
+/* Un `var()` SIN respaldo cuyo token no se declara en ninguna parte no pinta
+   nada: la propiedad queda invalida al calcular, asi que un color se hereda y
+   un fondo sale transparente, y en el codigo se lee perfecto. Medido en el
+   navegador antes de tocarlo: esta cifra heredaba el gris de la prosa de al
+   lado en vez de la tinta fuerte. El token que su autor queria existe con
+   otro nombre. */
+.sp-c1-n{ font-weight:700; font-variant-numeric:tabular-nums; color:var(--ink); }
 .sp-c1-mal{ margin:0; font-size:var(--t-8); line-height:1.55; color:#9A3C38; }
 .sp-tag-tm-na{ color:#5B5F6B; border-color:#D8DAE0; background:#F1F2F5; }
 .sp-tag-tm-na::before{ content:"—"; }
@@ -1788,7 +1837,11 @@ a.sp-fuente:hover svg{ color:var(--verde-hi); }
 }
 .sp-c2-mid{ display:grid; gap:3px; min-width:0; }
 .sp-c2-mid b{ font-size:var(--t-8); }
-.sp-c2-mid span{ font-size:var(--t-9); line-height:1.5; color:var(--ink-2); }
+/* Prosa y no etiqueta: aquí va la definición de cada indicador —«Emergencias,
+   decretos de conmoción, aplazamientos de plazos legales…»— y la razón de por
+   qué un eje no publica nivel. Medido en el papel a --t-9 salían a 12,48 px,
+   por debajo del texto corrido más pequeño que este módulo declara. */
+.sp-c2-mid span{ font-size:var(--t-8); line-height:1.5; color:var(--ink-2); }
 .sp-c2-razon{ color:#8A5D12 !important; }
 .sp-c2-cif{ display:grid; justify-items:end; gap:1px; text-align:right; }
 .sp-c2-cif b{ font-size:var(--t-5); font-variant-numeric:tabular-nums; line-height:1.1; }
@@ -1842,7 +1895,8 @@ a.sp-fuente:hover svg{ color:var(--verde-hi); }
   font-size:var(--t-9); font-weight:700; letter-spacing:.07em; text-transform:uppercase; color:var(--ink-2);
 }
 .sp-c3-cab b{ font-size:var(--t-7); display:block; }
-.sp-c3-preg{ display:block; font-size:var(--t-9); color:var(--ink-2); font-style:italic; }
+/* La pregunta que abre cada eje es una frase, no un rótulo. */
+.sp-c3-preg{ display:block; font-size:var(--t-8); color:var(--ink-2); font-style:italic; }
 .sp-c3-nivel{ font-size:var(--t-8) !important; white-space:nowrap; }
 .sp-c3-eje.sin .sp-c3-nivel{ color:#8A5D12; }
 .sp-c3-dato{ margin:0; font-size:var(--t-8); line-height:1.55; color:var(--ink-2); font-variant-numeric:tabular-nums; }
@@ -1932,6 +1986,9 @@ a.sp-fuente:hover svg{ color:var(--verde-hi); }
 }
 .sp-c2-noval > b { display: block; font-size:var(--t-7); color: var(--sp-amb, #b26a00); }
 .sp-c2-noval > p { margin: 5px 0 0; font-size:var(--t-8); line-height: 1.45; }
+/* Esta SÍ se queda en --t-9: «validado: no · gobiernos anteriores probados: 0»
+   es un sello técnico en monoespaciada, no una frase, y --t-9 es justo lo que
+   este módulo reserva para las etiquetas y los sellos. */
 .sp-c2-novalc {
   display: inline-block;
   margin-top: 4px;
