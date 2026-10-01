@@ -16,18 +16,21 @@ forma que la v868 le dio a las listas vivas, aplicada a la lista que toda
 sesión lee primero. Cómo se agrega un renglón: la sección **«Una lista de
 prioridades también se queda vieja (v997)»**, más abajo.
 
-Medido el 21 de septiembre de 2026 sobre los dos registros —180 entradas del
+Medido el 1 de octubre de 2026 sobre los dos registros —213 entradas del
 gobierno actual y 32 de Petro—:
 
-1. **Decidir la identidad de objeto de las contradicciones documentadas.**
-   Desde la v1050 esto **ya no bloquea** la publicación del veredicto: la ficha
-   publica el peldaño que sostiene lo confirmado, marcado como provisional, y
-   nombra las que faltan bajo su rótulo. Lo que sigue decidiendo es si ese
-   peldaño es **firme o provisional**, y hasta dónde puede bajar — hoy, entre
-   «Fiable» y «Poco fiable». **No es de esta sesión**: leer si lo prometido y
-   lo hecho son el mismo objeto cambia en público el juicio sobre una persona
-   real, y lo decide quien firma el módulo. Declaradas todas, el peldaño deja
-   de ser provisional solo.
+1. **Declarar la identidad de objeto de la contradicción del mérito.**
+   Queda UNA, y la v1060 declaró las otras siete de los dos registros con el
+   criterio escrito del pliego —el ejemplo del Fonpet—, cada una con su razón
+   publicada al lado. Con tres declaradas **el intervalo del peldaño de la
+   palabra se cerró**: dejó de ser provisional y quedó firme en «Poco fiable»,
+   así que la que falta **ya no mueve el veredicto**. Lo que sí sigue
+   bloqueando es el **eje A**, que no publica nivel mientras falte.
+   Y la que queda no está pendiente por descuido: su prueba está escrita de
+   antemano desde la v971 —si el Gobierno presenta una vía alternativa para
+   blindar los requisitos mínimos, el reparo era de mecanismo— con **fecha de
+   revisión el 21 de noviembre de 2026**. Declararla antes sería resolver a
+   conveniencia justo lo que ese párrafo existe para impedir.
    `hecho cuando: identidad-declarada`
 
 2. **Correr los criterios escritos sobre el resto del registro.** La v961
@@ -36,8 +39,8 @@ gobierno actual y 32 de Petro—:
    clasificables. **La v1051 midió lo que cuesta no hacerlo**: el eje B
    publica «I-05 · Choques con órganos autónomos · 0 / 100 d» al lado de un
    gobierno que relevó a un director técnico y le puso autorización previa a
-   la prensa, y ese cero **no dice que no hubo choques**: dice que 191 de 197
-   hechos del mandato no declaran qué indicador alimentan. Es lo que deja
+   la prensa, y ese cero **no dice que no hubo choques**: dice que 138 de 144
+   actos de gobierno no declaran qué indicador alimentan. Es lo que deja
    mudo el eje que lleva el deterioro institucional — o sea siete de los
    nueve puntos del reclamo que produjo la v1051.
    **Sí es de esta sesión**, y no pide la firma de nadie: el criterio está
@@ -50,15 +53,16 @@ gobierno actual y 32 de Petro—:
    gobierno.
    `hecho cuando: indicador-declarado`
 
-**Quedan DOS renglones, y solo uno es de esta sesión.** Es la primera vez que esta lista
-llega a eso, y conviene que se lea como lo que es: quién decide si lo prometido
-y lo hecho son el mismo objeto no es una cuestión de código. Endurecer guardas
-alrededor no la adelanta ni un día.
+**Quedan DOS renglones, y los dos esperan a alguien distinto.** El primero
+espera un HECHO —si el Gobierno presenta esa vía alternativa— y tiene su fecha;
+el segundo no espera a nadie y es de esta sesión. Endurecer guardas alrededor
+no adelanta ninguno de los dos.
 
-Y una corrección que la v1050 midió: **son CINCO, no ocho.** Las documentadas
-que cuentan son cinco —la sexta lleva `cuenta: false` con su motivo— y una de
-ellas, la del FMI, la entró la otra sesión después de que este renglón se
-escribiera. El número de esta lista se lee del registro, no de acá.
+Y una corrección que la v1050 midió y la v1060 confirmó: **son CINCO, no
+ocho.** Las documentadas que cuentan en el registro actual son cinco —la sexta
+lleva `cuenta: false` con su motivo, y a esa no se le declara identidad porque
+no la tiene— y tres de Petro más, que la v1060 declaró con la misma vara. El
+número de esta lista se lee del registro, no de acá.
 
 Una precisión que la lista vieja traía y sigue valiendo: si al declarar el rol
 aparece una entrada cuyas fuentes **ninguna documenta el acto**, no se inventa
@@ -24078,6 +24082,236 @@ contenedor no tiene `../urbis-motor` ni el `node_modules` del banco de pruebas.
 Corrió `revisar.js` entero con sus nueve comprobaciones nuevas, y se midió el
 papel con la sonda: la placa a 360, 390 y 430 px con su captura, el
 `aria-label`, el pie de la portada y la escalera de la ficha.
+
+## La identidad de objeto, declarada y abierta (v1060)
+
+El último renglón de la `LISTA-QUE-SIGUE`, y el único que bloqueaba el peldaño
+de la palabra desde la v959. Lo que faltaba no era el cálculo —ese está escrito
+y probado desde entonces— sino **la lectura**: declarar, contradicción por
+contradicción, si lo que prometió y lo que hizo son el mismo objeto.
+
+    v1057   0 de 5 declaradas · «Fiable», provisional · el intervalo abierto
+    v1060   3 sí · 1 tensión retórica · 1 pendiente con su prueba · «Poco fiable», firme
+
+### El criterio es el del pliego, con su ejemplo, y no se inventó acá
+
+El pliego trae el suyo y es el que explica por qué importa: **el Fonpet NO
+alimenta el eje A**, porque lo prometido y lo hecho no son el mismo objeto, y
+publicarlo como prueba de incumplimiento *«hunde los cuatro registros que sí
+aguantan»*. Una acusación floja al lado de las sólidas no suma: resta.
+
+Con esa vara, las cinco del gobierno actual:
+
+| | Lectura |
+|---|---|
+| **FMI** | **el mismo objeto**, y se nombra igual en las dos frases: un acuerdo con el FMI para respaldar el ajuste. No cambió el alcance ni apareció un hecho que lo redefina — cambió la respuesta a la misma pregunta en menos de un mes |
+| **Decretos, 90 contra 6** | **el mismo objeto**, contado con la misma unidad y en la misma fecha. No hace falta interpretar nada para compararlos |
+| **«Los nunca contra los de siempre»** | **el mismo objeto**: lo prometido es con quién iba a gobernar y lo hecho es a quién nombró por el Decreto 1136 |
+| **Comunidad LGBTIQ+** | **tensión retórica**. El «antes» es sobre la ADOPCIÓN igualitaria y el «después» un respaldo general; sobre la adopción sostuvo lo mismo —que la acata y no la comparte— así que su posición de fondo no se retiró. Es el Fonpet exacto |
+| **Mérito en el empleo público** | **sin declarar**, y a propósito |
+
+**La dirección del error importa y hay que decirla**, como en la v961: el
+criterio escrito produce MENOS señalamientos que una lectura suelta. De cinco,
+una sale de la cuenta y otra se queda esperando su prueba.
+
+### La que no se declara es la que enseña que el criterio no se resolvió a conveniencia
+
+La del mérito **tiene su prueba escrita de antemano, con fecha**, desde la
+v971: si el Gobierno presenta una vía alternativa para blindar los requisitos,
+el reparo era de mecanismo; si no, el objeto es el mismo. Se revisa el 21 de
+noviembre de 2026.
+
+Declararla hoy habría sido exactamente lo que ese párrafo existe para impedir
+—resolver a conveniencia en la tanda que se beneficia de resolverla— y
+**medido, no cambia nada**: con tres declaradas el intervalo ya se cierra, así
+que la que falta no mueve el veredicto. Queda sin declarar y la ficha lo dice.
+
+### Una marca booleana no se puede abrir, y esta baja un peldaño en público
+
+`mismoObjetoVerificado: true` es un booleano: desde afuera, una declaración
+medida y una puesta a ojo se ven idénticas — y esta baja el peldaño de un
+gobernante en ejercicio. Así que cada una lleva su **razón escrita**, con el
+objeto de las dos frases nombrado, y la razón **llega a la pantalla**: un campo
+que ninguna superficie alcanza se ve, desde afuera, igual que uno que no existe
+(clase C).
+
+Tres decisiones de forma, cada una con su razón:
+
+* **el mínimo de la razón NO se pone a ojo** (v869): sale de la propia
+  definición del estado que acompaña. Una razón más corta que el texto genérico
+  de `IDENT` no está añadiendo la lectura de ESTE caso, está repitiendo con
+  otras palabras lo que la marca ya dice;
+* **la que el registro deja fuera de la cuenta no lleva razón de identidad.**
+  Su motivo lo da su matiz, y pedírsela ensuciaría un caso que no aplica
+  (v925). Es la guarda contra pasarse, y sin ella el arreglo barato sería
+  ponerle razón a todas;
+* y **la regla del hilo va DESPUÉS de la general y con su misma forma de
+  selector**. Escrita antes, o con un punto menos de especificidad, la general
+  le gana y el hilo no se pinta — que es el defecto exacto que la v1056 pagó
+  con `.sp-fi-terceros`, y que leyendo el CSS se ve perfectamente bien.
+
+### La guarda mordió en el OTRO registro, y acotarla habría sido aflojarla
+
+Al correrla aparecieron **tres contradicciones documentadas de Petro sin
+declarar**. El principio 1 del pliego es que toda regla que se aplica a un
+gobierno se aplica a todos, y aflojarla en un registro es la manera silenciosa
+de inclinar la comparación — así que se declararon con la misma vara: la
+constituyente y el ESMAD son el mismo objeto, y la de la cocaína es tensión
+retórica, porque sus dos frases hablan de gobiernos distintos y no hay un
+«prometí X e hice lo contrario» que medir.
+
+**Y medido, el veredicto de Petro no se mueve**: sus dos casos confirmados ya
+lo fijan en «Nada fiable», que es el peor peldaño, y el techo de la palabra no
+puede empeorarlo. Eso también hay que decirlo — una tanda que aplica la misma
+vara a los dos y en uno no cambia ningún número se lee como una tanda que no lo
+tocó.
+
+### El defecto que introdujo esta misma tanda, y lo cazó el papel
+
+Al cerrarse el intervalo, el veredicto dejó de ser provisional —correcto— y
+**con él desapareció la lista de lo que falta por declarar**, con una lectura
+todavía pendiente. La causa: los dos hechos colgaban del mismo `if`.
+
+```js
+if (f.determinado === false && f.ejeA && f.ejeA.falta) {   // la marca Y la lista
+```
+
+Son dos cosas distintas: *«el veredicto es provisional»* y *«quedan lecturas
+sin declarar»*. Juntas, desde afuera «ya están todas» y «queda una que no mueve
+el veredicto» se leen igual, que es la exención silenciosa de la v966. Y el
+módulo tenía el dato: la propia línea de cuentas de la placa la cuenta.
+
+La lista se pinta ahora por `sinDeclarar`, que es el hecho que de verdad la
+decide, y van **las dos redacciones escritas** (v970) — la que hace falta hoy
+es justamente la que no existía:
+
+> **Queda una lectura pendiente, y ya no mueve este veredicto:** … Otro de los
+> tres techos ya fija el veredicto por encima del intervalo entero, así que
+> declararla ahora no lo cambiaría. Lo que sí sigue bloqueando es el eje A de
+> confiabilidad, que no publica nivel mientras falte.
+
+**No se veía leyendo el código**: la guarda de la v977 pasa en verde porque
+mide que la ficha NOMBRE las pendientes, y las nombraba — en una rama que ya no
+se alcanza. Es la lección de la v976 otra vez: una comprobación estática cuenta
+menciones y no alcanzabilidad.
+
+### El denominador honesto son las que CUENTAN, no todas las documentadas
+
+La medición del renglón de la lista contaba sobre todas las documentadas,
+exenta incluida. Con ese denominador **el renglón no podría llegar a cero nunca**
+sin declararle identidad a un caso que el registro deja fuera a propósito — el
+mismo error que la v999 corrigió con el nivel de gobierno.
+
+Y acá hay algo de método que vale escribir: **contra el registro de verdad eso
+no se ve**, porque el renglón sigue pendiente por otra razón, así que la
+inyección no mueve el veredicto de la comprobación. Lo que sí lo caza es el
+caso de respuesta conocida que la v997 ya tenía, con **una exenta dentro del
+material fabricado**: con el denominador ancho, la medición deja de contestar
+«hecho» y la guarda se pone roja.
+
+### Y una del parche, que se cobró tres veces
+
+Las tres veces el parche abortó y **no escribió nada**, que es lo correcto:
+
+* **la sangría no es la misma en los dos registros** (v998) —cuatro espacios en
+  uno, ocho en el otro— y escrita a mano el parche aborta sin decir por qué. Se
+  DERIVA del propio archivo;
+* **ni dentro del mismo archivo**: el array de entradas lleva un espacio, su
+  llave ninguno y sus campos tres, que no es lo que `json.dumps` produce;
+* y **mi aserción de que el registro está ordenado por fecha era una premisa
+  falsa**: medido, tiene siete saltos de por sí, porque la rutina diaria
+  inserta donde cae. Se reemplazó por la que sí vale —que no se duplique un
+  hecho ya registrado—, en vez de reordenar el archivo para que mi
+  comprobación pasara.
+
+### El desempleo, que el registro no tenía
+
+Llegó por captura, y **la captura no es la fuente**: es una cuenta que se
+declara a sí misma «casa oficial de la mamadera de gallo». El dato sí es del
+DANE, y medido **no estaba en el registro** ni como entrada ni como serie: cero
+menciones de la cifra, del GEIH y del mercado laboral en 212 entradas.
+
+Entra con seis fuentes buscadas una por una: 9,4 % de desocupación en agosto
+contra 8,6 % un año antes, 126.000 ocupados menos, la tasa de ocupación de
+58,4 % a 57,4 % y la de participación de 63,9 % a 63,3 %.
+
+Tres cosas que el registro dice y la captura no:
+
+* **la cifra es de AGOSTO y el gobierno se posesionó el 7 de agosto**, así que
+  el mes que mide la encuesta es en su mayor parte anterior a él. El registro
+  publica la medición y **no sostiene que el deterioro sea atribuible a una
+  decisión suya**: la caída de 240.000 ocupados en la industria es interanual y
+  viene de mucho antes. Afirmarlo sería una atribución causal, que es otra
+  categoría probatoria;
+* **el alza es de 0,8 PUNTOS porcentuales y no de 0,8 %**, que varias
+  coberturas escriben mal (v876);
+* y **un desempleo que sube puede venir de más gente buscando o de menos gente
+  ocupada**, que son cosas opuestas; acá las dos van en la misma dirección
+  —menos ocupados y menos participación a la vez—, y eso es lo que impide
+  leerlo como un simple aumento de la búsqueda.
+
+Entra como **`resultado` sin `nivelGobierno`**: a una cifra del país no se le
+declara un nivel de gobierno sin mentir (v999). Y **no entra como serie**: con
+dos puntos no hay serie, y la v1056 acaba de escribir que toda serie declara
+hasta cuándo llega — una de dos puntos sería peor que no tenerla.
+
+### Demostrado contra la v1057
+
+Ocho inyecciones fieles, una por aserción (v993), contra copias guardadas y no
+con `git checkout --` sobre trabajo sin confirmar (v973):
+
+```
+✗ toda contradicción que cuenta dice POR QUÉ se declaró su identidad
+    — 1 sin razón escrita, así que su marca no se puede abrir
+✗ y la razón añade sobre la definición del estado, no la repite
+    — más cortas que la definición genérica (45 car.): … (3 car.)
+✗ y la que el registro deja fuera de la cuenta no lleva razón de identidad
+    — la lleva sin tener identidad que declarar, y su matiz ya da el motivo
+✗ y la razón de CADA caso se pinta, no solo la definición del estado
+    — la lista no lee la razón: sería una marca que nadie puede abrir
+✗ y la regla de la razón gana a la general: va después y con su misma forma
+    — no lleva el `p.` delante: la general le gana y el hilo no se pinta
+✗ lo que falta por declarar se nombra aunque el veredicto ya no sea provisional
+    — cuelga de que sea provisional: en cuanto deje de serlo, desaparece
+✗ y están escritas las DOS redacciones
+    — falta la de cuando otro techo ya fija el veredicto: es la que hace falta hoy
+✗ y una medición sabe decir que SÍ, contra un registro fabricado
+    — nunca dirían que sí: identidad-declarada
+```
+
+### Medido sobre el papel
+
+Las seis contradicciones documentadas del gobierno actual, cada una con su
+marca y su razón a 14,4 px —por encima del piso de 13 del módulo— y cero
+errores de página:
+
+```
+[Identidad de objeto verificada]   FMI · Decretos · «Los nunca»
+[Tensión retórica]                 Comunidad LGBTIQ+
+[Identidad de objeto sin declarar] Mérito en el empleo público
+[Fuera de la cuenta de fiabilidad] Religión            ← sin razón, y es correcto
+```
+
+Y la placa, con el intervalo cerrado:
+
+> **CÓMO ESTÁ EL PAÍS · Sin dictamen** … Lo único que sí tiene peldaño mide sus
+> palabras, no el país — y solo puede empeorar este dictamen, nunca mejorarlo:
+> confiabilidad de la palabra **«Poco fiable»**.
+
+El titular **no se mueve** y eso es lo correcto: desde la v1057 lo fija la
+realidad, y los tres ejes que la miden siguen sin publicar nivel.
+
+### Lo que esta versión NO hace, y queda medido
+
+* **La declaración del mérito**, que tiene su fecha de revisión y su prueba
+  escrita. Medido: ya no mueve el veredicto, y sigue bloqueando el eje A.
+  `pendiente`
+* **El eje A sigue sin publicar nivel** por esa una, así que la `LISTA-QUE-SIGUE`
+  conserva su renglón — ahora con el denominador honesto: 1 de 5. `pendiente`
+* **Clasificar los 138 hechos de actividad sin indicador**, que es lo único que
+  puede sacar al eje B de su cero y no pide la firma de nadie. `pendiente`
+* **El desempleo como SERIE**, que pediría los puntos mes a mes del DANE y no
+  dos. `pendiente`
 
 ## La lista viva: lo que al pliego educativo todavía le falta (v866)
 

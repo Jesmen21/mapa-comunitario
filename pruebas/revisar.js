@@ -1663,6 +1663,66 @@ console.log('\n  -- la ficha del gobernante --');
       /identidadDe\(c\)/.test(cuerpoEjeA),
       'identidadDe y cuentaEnEjeA, leídas por ejeA y por la lista');
 
+    /* ── v1060 · lo pendiente se nombra aunque ya no mueva el veredicto ──
+       Son dos hechos distintos y la v1057 los tenía colgados del mismo `if`:
+       «el veredicto es provisional» y «quedan lecturas sin declarar». Al
+       declarar tres identidades el intervalo se cerró y la lista de lo que
+       falta desapareció con la marca de provisional, con una lectura todavía
+       pendiente — y desde afuera «ya están todas» y «queda una que no mueve el
+       veredicto» se leen igual (v966).
+
+       Y van las DOS redacciones escritas (v970): la que hace falta es
+       justamente la que no existía, la del día en que otro techo ya fija el
+       veredicto por encima del intervalo entero. */
+    comprobar('lo que falta por declarar se nombra aunque el veredicto ya no sea provisional',
+      /if \(f\.ejeA && f\.ejeA\.sinDeclarar\) \{/.test(j70c1) &&
+      !/if \(f\.determinado === false && f\.ejeA && f\.ejeA\.falta\)/.test(j70c1),
+      /if \(f\.determinado === false && f\.ejeA && f\.ejeA\.falta\)/.test(j70c1)
+        ? 'la lista cuelga de que el veredicto sea provisional: en cuanto deje de serlo, lo que falte desaparece sin que nada lo diga'
+        : 'se pinta por `sinDeclarar`, que es el hecho que de verdad la decide');
+
+    comprobar('y están escritas las DOS redacciones, la de hoy y la del día que deje de bloquear',
+      /y por eso el peldaño es provisional/.test(j70c1) &&
+      /y ya no mueve este veredicto/.test(j70c1) &&
+      /sigue bloqueando es el eje A/.test(j70c1),
+      !/y ya no mueve este veredicto/.test(j70c1)
+        ? 'falta la redacción de cuando otro techo ya fija el veredicto: es la que hace falta hoy'
+        : !/y por eso el peldaño es provisional/.test(j70c1)
+          ? 'falta la redacción de cuando sí lo bloquea: es la que hace falta el día que entre una contradicción nueva'
+          : 'las dos escritas, y la segunda dice qué sigue bloqueando el eje A');
+
+    /* ── v1060 · la razón de cada caso llega a la pantalla ─────────────
+       El campo lo vigila una guarda de registro más abajo; esta vigila la otra
+       mitad, que es la que lo vuelve útil: un campo que ninguna superficie
+       alcanza se ve, desde afuera, igual que uno que no existe (clase C). */
+    comprobar('y la razón de CADA caso se pinta, no solo la definición del estado',
+      /x\.identidadRazon/.test(cuerpoCx) && /sp-cx-ident-r/.test(cuerpoCx) &&
+      /\.sp-cx-ident-r\{/.test(c70niv.replace(/\s+/g, '')) ,
+      !/x\.identidadRazon/.test(cuerpoCx)
+        ? 'la lista no lee la razón: declarar que dos frases hablan del mismo objeto sería una marca que nadie puede abrir'
+        : !/\.sp-cx-ident-r\{/.test(c70niv.replace(/\s+/g, ''))
+          ? 'la razón se imprime y ninguna regla la pinta (v895)'
+          : 'la lista pinta la razón del caso, con su regla en la hoja');
+
+    /* Y gana la del hilo: escrita antes de `.sp-cx-ident p`, o con un punto
+       menos de especificidad, la regla general le pasa por encima y el hilo no
+       se pinta — que es el defecto exacto que la v1056 pagó con
+       `.sp-fi-terceros`, y que leyendo el CSS se ve perfectamente bien. */
+    {
+      const plano = c70niv.replace(/\s+/g, '');
+      const iGen = plano.indexOf('.sp-cx-identp{');
+      const iRaz = plano.indexOf('.sp-cx-identp.sp-cx-ident-r{');
+      comprobar('y la regla de la razón gana a la general: va después y con su misma forma',
+        iGen >= 0 && iRaz > iGen,
+        iGen < 0
+          ? 'NO PUDO CORRER: no se encontró la regla general de los párrafos del bloque'
+          : iRaz < 0
+            ? 'la regla no lleva el `p.` delante: la general le gana por especificidad y el hilo no se pinta'
+            : iRaz < iGen
+              ? 'va ANTES que la general: con la misma especificidad manda el orden, y el hilo no se pinta'
+              : 'declarada después de la general y con un punto más de especificidad');
+    }
+
     /* ── v977 · lo que no se dibuja se pliega, PERO se cuenta a la vista ───
        Plegar un vacío está bien mientras el recuento se lea sin abrir nada: si
        tres gráficos desaparecen y nada lo dice, la exención se lee igual que
@@ -2849,6 +2909,64 @@ console.log('\n  -- la ficha del gobernante --');
     });
     comprobar('toda contradicción que CUENTA trae las dos declaraciones y su fuente',
       flojas.length === 0, flojas.length ? flojas.join(' · ') : 'ninguna cuenta con medio expediente');
+  }
+
+  /* ── v1060 · declarar la identidad de objeto es una lectura, y se abre ──
+     `mismoObjetoVerificado: true` baja en público el peldaño de un gobernante
+     en ejercicio, y como booleano no se puede ni abrir ni discutir: desde
+     afuera, una declaración medida y una puesta a ojo se ven idénticas. Así
+     que la declaración va con su razón escrita, y la razón nombra el objeto
+     de las dos frases — que es lo único que el criterio del pliego mira.
+
+     Falla CERRADO (v880): una contradicción nueva que cuente sale en rojo
+     hasta que alguien escriba por qué. Y vale también para la que se deja SIN
+     declarar: ahí la razón dice por qué está pendiente y qué la decide, que
+     es la distinción de la v899 —«sin dato» y «panel fuera» piden cosas
+     distintas— dicha sobre una lectura en vez de sobre un panel. */
+  {
+    const sinRazon = [], flacas = [], sobran = [];
+    /* El mínimo NO se pone a ojo (v869): sale de la propia definición del
+       estado que la razón acompaña. Una razón más corta que el texto genérico
+       de `IDENT` no está añadiendo la lectura de ESTE caso — está repitiendo
+       con otras palabras lo que la marca ya dice. */
+    const minimo = Math.min.apply(null,
+      (soloCodigo(leer('js/70-seguimiento.js')).match(/d: '[^']{40,}'/g) || ['d: \'' + 'x'.repeat(80) + '\''])
+        .map(t => t.length));
+    REGISTROS.forEach((ruta) => {
+      const quien = ruta.split('-').pop().replace('.json', '');
+      const cx = ((JSON.parse(leer(ruta)).contradicciones || {}).casos) || [];
+      cx.forEach((c, i) => {
+        if (c.estado !== 'documentada') return;
+        const nom = quien + '/' + (c.tema || ('#' + i)).slice(0, 44);
+        const r = (c.identidadRazon || '').trim();
+        /* Contra pasarse (v879, v882, v890): la que el registro deja FUERA de
+           la cuenta a propósito no tiene identidad que declarar, y su motivo
+           ya lo da su matiz. Pedirle una razón de identidad ensuciaría un caso
+           que no aplica (v925) y dejaría dos explicaciones del mismo hecho. */
+        if (c.cuenta === false) { if (r) sobran.push(nom); return; }
+        if (!r) sinRazon.push(nom + (('mismoObjetoVerificado' in c) ? ' (declarada y muda)' : ' (pendiente y muda)'));
+        else if (r.length < minimo) flacas.push(nom + ' (' + r.length + ' car.)');
+      });
+    });
+    comprobar('toda contradicción que cuenta dice POR QUÉ se declaró su identidad',
+      sinRazon.length === 0,
+      sinRazon.length
+        ? sinRazon.length + ' sin razón escrita, así que su marca no se puede abrir: ' + sinRazon.join(' · ')
+        : 'cada una con su razón, declarada o pendiente');
+
+    comprobar('y la razón añade sobre la definición del estado, no la repite',
+      flacas.length === 0 && minimo > 40,
+      minimo <= 40
+        ? 'NO PUDO CORRER: no se pudo leer la definición de los estados de IDENT, así que el mínimo sale de la nada'
+        : flacas.length
+          ? 'más cortas que la definición genérica (' + minimo + ' car.): ' + flacas.join(' · ')
+          : 'todas por encima de los ' + minimo + ' caracteres de la definición genérica');
+
+    comprobar('y la que el registro deja fuera de la cuenta no lleva razón de identidad',
+      sobran.length === 0,
+      sobran.length
+        ? 'la lleva sin tener identidad que declarar, y su matiz ya da el motivo: ' + sobran.join(' · ')
+        : 'la exenta se explica por su matiz, como estaba');
   }
 
   /* La nota de cobertura del registro cerrado dice tres números a mano —cuántos
@@ -8764,9 +8882,17 @@ console.log('\n  -- una lista de prioridades también se queda vieja (v997) --')
        gobierno en la v999: lo que queda no es un pendiente sino un INVARIANTE
        —ninguna entrada se queda sin naturaleza de fuente declarada— y vive en
        su propia comprobación, arriba, con TECHO_SIN_TIPO en cero. */
+    /* El denominador son las que CUENTAN en el eje A, no todas las
+       documentadas: a una que el registro deja fuera a propósito —`cuenta:
+       false`, una conversión religiosa— no se le declara identidad de objeto
+       sin ensuciar un caso que no aplica (v925). Con el denominador ancho este
+       renglón no podría llegar a cero nunca, que es el mismo error que la v999
+       corrigió con el nivel de gobierno. */
     'identidad-declarada': (m) => {
-      const sin = m.contr.filter(c => !('mismoObjetoVerificado' in c));
-      return { hecho: sin.length === 0, cuanto: sin.length + ' de ' + m.contr.length + ' documentadas sin identidad' };
+      const cuentan = m.contr.filter(c => c.cuenta !== false);
+      const sin = cuentan.filter(c => !('mismoObjetoVerificado' in c));
+      return { hecho: cuentan.length > 0 && sin.length === 0,
+               cuanto: sin.length + ' de ' + cuentan.length + ' documentadas que cuentan, sin identidad' };
     },
     /* CORRER LOS CRITERIOS SOBRE EL REGISTRO (v1051).
        La v961 lo dejó declarado —«escribir los criterios no los clasifica:
@@ -8862,7 +8988,14 @@ console.log('\n  -- una lista de prioridades también se queda vieja (v997) --')
          `indicador-declarado` en la v1051, y es lo que tenia que pasar—. */
       ents: [{ fuentes: [{ rol: 'acto' }], nivelGobierno: 'nacional',
                tipoMedicion: 'actividad', indicadores: ['I-04'] }],
-      contr: [{ estado: 'documentada', mismoObjetoVerificado: true }],
+      /* Con una EXENTA sin declarar dentro, que es el caso real: a la que el
+         registro deja fuera de la cuenta a propósito no se le declara identidad
+         de objeto. Sin ella, el día que alguien ensanche el denominador a todas
+         las documentadas, este renglón no podría llegar a cero nunca y nada lo
+         diría — contra el registro de verdad eso no se ve, porque el renglón
+         sigue pendiente por otra razón (v970). */
+      contr: [{ estado: 'documentada', mismoObjetoVerificado: true },
+              { estado: 'documentada', cuenta: false }],
       pend: []
     };
     const mudas = Object.keys(MEDIDAS).filter(k => !MEDIDAS[k](LIMPIO).hecho);

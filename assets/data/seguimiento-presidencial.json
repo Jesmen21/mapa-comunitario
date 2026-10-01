@@ -74,6 +74,49 @@
  },
  "entradas": [
 {
+   "fecha": "2026-09-30",
+   "precision": "exacta",
+   "categoria": "economia",
+   "titulo": "El desempleo sube a 9,4 % en agosto y hay 126.000 ocupados menos que un año antes, según el DANE",
+   "categoriaProbatoria": "hecho-probado",
+   "tipoMedicion": "resultado",
+   "detalle": "El 30 de septiembre de 2026 el DANE publicó los resultados de la Gran Encuesta Integrada de Hogares para agosto. La tasa de desocupación nacional fue de 9,4 %, frente a 8,6 % en agosto de 2025: 0,8 puntos porcentuales más. La población ocupada cayó en 126.000 personas en el mismo periodo, la tasa de ocupación bajó de 58,4 % a 57,4 % —1,1 puntos menos— y la tasa global de participación pasó de 63,9 % a 63,3 %. En las 13 ciudades y áreas metropolitanas principales la desocupación fue de 9,1 %, frente a 7,8 % un año antes. Por ramas, la mayor pérdida la concentró la industria manufacturera, que pasó de unos 2,60 a 2,36 millones de ocupados —cerca de 240.000 personas menos—, seguida de actividades artísticas y de entretenimiento y del sector agropecuario. En sentido contrario, los obreros y empleados del Gobierno pasaron de 835.000 a 959.000 personas, 124.000 más en un año.",
+   "contrapunto": "LA CIFRA ES DE AGOSTO Y ESTE GOBIERNO SE POSESIONÓ EL 7 DE AGOSTO, así que el mes que mide la encuesta es en su mayor parte anterior a él. El registro publica la medición y NO sostiene que el deterioro sea atribuible a una decisión suya: la caída de 240.000 ocupados en la industria manufacturera es interanual y viene de mucho antes de la posesión, y ninguna fuente establece esa causa. Afirmarlo sería una atribución causal, que es otra categoría probatoria y no la de esta entrada.\n\nDos precisiones de lectura. La primera: el alza es de 0,8 PUNTOS PORCENTUALES y no de 0,8 %, que es una diferencia distinta y que varias coberturas escriben mal. La segunda: un desempleo que sube puede venir de más gente buscando trabajo o de menos gente ocupada, y son cosas opuestas; acá las dos van en la misma dirección —menos ocupados y menos participación a la vez—, que es lo que impide leerlo como un simple aumento de la búsqueda.\n\nAl cierre de esta entrada no consta una respuesta del Gobierno nacional a estas cifras, y ese vacío no se declara como ausente porque no se buscó expresamente.",
+   "tipoFuente": "verificado",
+   "fuentes": [
+      {
+         "n": "Infobae · 126.000 ocupados menos que en agosto de 2025, según el DANE",
+         "rol": "acto",
+         "u": "https://www.infobae.com/colombia/2026/09/30/subio-el-desempleo-en-colombia-subio-mas-del-9-en-agosto-hubo-126000-ocupados-menos-que-en-el-mismo-mes-de-2025-segun-el-dane/"
+      },
+      {
+         "n": "Portafolio · la tasa de desocupación nacional llegó al 9,4 %",
+         "rol": "acto",
+         "u": "https://www.portafolio.co/economia/vuelve-a-subir-el-desempleo-en-colombia-en-agosto-del-2026-la-tasa-de-desocupacion-nacional-llego-al-9-503574"
+      },
+      {
+         "n": "El Universal · desempleo en Colombia subió al 9,4 % en agosto de 2026",
+         "rol": "acto",
+         "u": "https://www.eluniversal.com.co/colombia/2026/09/30/desempleo-en-colombia-subio-al-94-en-agosto-de-2026-segun-el-dane/"
+      },
+      {
+         "n": "Cambio · tasa sube a 9,4 por ciento, según el DANE",
+         "rol": "acto",
+         "u": "https://cambiocolombia.com/economia/articulo/2026/9/desempleo-en-colombia-aumento-a-94-por-ciento-en-agosto-de-2026"
+      },
+      {
+         "n": "El Espectador · la industria pierde terreno y el empleo público avanza",
+         "rol": "contexto",
+         "u": "https://www.elespectador.com/economia/desempleo-en-colombia-sube-a-94-la-industria-pierde-terreno-y-el-empleo-publico-avanza/"
+      },
+      {
+         "n": "El Cronista · la cifra más alta en 20 meses",
+         "rol": "contexto",
+         "u": "https://www.cronista.com/colombia/actualidad-co/aumento-el-desempleo-en-colombia-y-llego-al-94-en-agosto-la-cifra-mas-alta-en-20-meses/"
+      }
+   ]
+},
+{
    "fecha": "2026-09-28",
    "precision": "exacta",
    "categoria": "economia",
@@ -7640,9 +7683,11 @@
    {
     "estado": "documentada",
     "tema": "Crisis fiscal y el FMI: dijo que el Gobierno no buscaría un acuerdo, y un mes después ordenó abrir las conversaciones",
+    "mismoObjetoVerificado": true,
+    "identidadRazon": "El objeto es el mismo en las dos frases y se nombra igual: un acuerdo con el FMI para respaldar el ajuste fiscal. No cambió el alcance de lo ofrecido ni apareció un hecho nuevo que lo redefina: cambió la respuesta a la misma pregunta —si el Gobierno lo buscaría o no— en menos de un mes, y el presidente se la ordenó al mismo ministro que lo había descartado.",
     "antes": "28 de agosto de 2026, 60ª Convención Bancaria de Asobancaria (Cartagena): el ministro de Hacienda, Miguel Gómez Martínez, dijo que el Gobierno no buscaría un acuerdo con el Fondo Monetario Internacional (FMI) para respaldar el ajuste fiscal, y presentó los pilares del ajuste —entre ellos un recorte de gasto público cercano a $21,9 billones— como la vía propia del Gobierno.",
     "despues": "El domingo 27 de septiembre de 2026, en alocución televisada, el presidente Abelardo de la Espriella anunció que ordenó al propio ministro Gómez Martínez y a su equipo económico iniciar conversaciones con el FMI para buscar una «salida negociada» a la crisis fiscal, que calificó como «la más crítica de toda nuestra historia»: «el saldo está en rojo».",
-    "matiz": "Ni el presidente ni el ministro han explicado públicamente, al cierre de esta entrada, la razón del cambio de posición en menos de un mes. Las dos declaraciones son del mismo funcionario y sobre el mismo asunto —si el Gobierno buscaría o no un acuerdo con el FMI—, lo que distingue este caso de una simple evolución de la coyuntura fiscal.",
+    "matiz": "Ni el presidente ni el ministro han explicado públicamente, al cierre de esta entrada, la razón del cambio de posición en menos de un mes. Las dos son del mismo Gobierno y sobre el mismo asunto —si buscaría o no un acuerdo con el FMI—, lo que distingue este caso de una simple evolución de la coyuntura fiscal. No son del mismo funcionario: la primera es del ministro y la segunda es el presidente ordenándole a ese mismo ministro lo contrario.",
     "fuentes": [
      {
       "n": "Valora Analitik · Esta es la estrategia fiscal que presenta el ministro de Hacienda en la Convención Bancaria",
@@ -7669,6 +7714,7 @@
    {
     "estado": "documentada",
     "tema": "Mérito en el empleo público: prometió blindarlo y objetó la ley que lo blindaba",
+    "identidadRazon": "SIN DECLARAR a propósito, y no por falta de lectura. El Gobierno objetó por mecanismo —constitucionalidad e inconveniencia— y no por el fondo, así que de si presenta o no una vía alternativa para blindar los requisitos depende que lo prometido y lo objetado sean el mismo objeto. Esa prueba quedó escrita de antemano, con su fecha, para que no se resuelva a conveniencia: se revisa el 21 de noviembre de 2026 y hasta entonces este caso no baja el peldaño.",
     "antes": "Cuatro piezas con fecha. (1) Programa de gobierno «País Milagro», mayo de 2026: meritocracia estricta con estándares internacionales de eficiencia, y una reforma integral del Estado que promete eliminar «la burocracia clientelista». (2) 4 de julio de 2026: «Aquí no hay cuotas políticas ni favores que pagar», al prometer que los cargos los ocuparía gente con capacidad técnica y resultados probados. (3) 13 de julio de 2026, presentación del Banco Nacional de Talentos: «por primera vez en la historia de Colombia» un presidente electo lanza «una plataforma nacional digital de reclutamiento basada exclusivamente en el mérito». (4) Agosto de 2026, el «Libro de la Verdad» entregado a los organismos de control: entre las conductas que le denuncia al gobierno anterior está haber BAJADO LOS REQUISITOS de distintos cargos, afectando la gobernabilidad y la eficacia del aparato estatal.",
     "despues": "El 21 de agosto de 2026 objetó el Proyecto de Ley 056 de 2024 Cámara — 345 de 2024 Senado, que prohibía disminuir los requisitos mínimos de los cargos directivos del sector público y que había superado los cuatro debates. Es la primera objeción presidencial de su gobierno, y recayó sobre una ley de su propia coalición: su autor, el senador Hernán Cadavid (Centro Democrático), dijo haberse enterado por los medios y la calificó de «desconcertante».",
     "matiz": "El Gobierno da una explicación de mecanismo y no de fondo: Andrés Barreto, secretario jurídico de la Presidencia, sostuvo que el Gobierno «no está en contra del mérito» y objetó por constitucionalidad —la norma volvería obligatorias unas competencias consultivas del Consejo de Estado e invadiría la facultad exclusiva del Gobierno de organizar los empleos públicos— y por inconveniencia —tres trámites previos por nombramiento, redundancia con el Decreto Ley 770 de 2005, y una barrera para jóvenes profesionales, mujeres y personas de regiones apartadas—. Esa respuesta está publicada junto al hecho, en la entrada del 21 de agosto.\n\nPOR ESO LA IDENTIDAD DE OBJETO NO ESTÁ RESUELTA, y este caso NO alimenta todavía el eje A. La prueba que la decide está escrita de antemano para que no se resuelva a conveniencia: si el Gobierno presenta una vía alternativa para blindar los requisitos, el reparo era de mecanismo y lo prometido y lo hecho no son el mismo objeto; si no la presenta, el objeto es el mismo. Revisión a los 90 días: 21 de noviembre de 2026.",
@@ -7739,6 +7785,8 @@
    {
     "estado": "documentada",
     "tema": "Comunidad LGBTIQ+: de negar la adopción a prometer respaldo",
+    "mismoObjetoVerificado": false,
+    "identidadRazon": "Las dos frases NO hablan del mismo objeto. Lo que dijo el 27 de enero es sobre la ADOPCIÓN igualitaria; lo que prometió el 3 de junio es un respaldo general a la comunidad, y sobre la adopción sostuvo lo mismo que antes: que acata la sentencia de 2015 aunque no la comparte. Su posición de fondo no se retiró, así que no hay un incumplimiento que medir — hay un giro de tono, que se publica y no pesa. Contarla junto a las que sí son el mismo objeto restaría en vez de sumar, que es el ejemplo que el pliego trae con el Fonpet.",
     "antes": "El 27 de enero de 2026 advirtió que no permitiría la adopción de parejas del mismo sexo, con el argumento de que “un niño necesita un padre y una madre”. Daniel Quintero le respondió “vuelve a mentir”.",
     "despues": "El 3 de junio de 2026 negó ser homofóbico y prometió respaldar a la comunidad LGBTI+ en un eventual gobierno suyo. En abril había dicho que acata la sentencia de la Corte Constitucional de 2015 que permite la adopción igualitaria, aunque no la comparte. En su discurso de posesión prometió gobernar para “todos los colombianos”.",
     "matiz": "La tensión es real: pasó de “no lo permitiría” a “los respaldaré”, sin retirar su posición de fondo. Organizaciones LGBTIQ+ advierten riesgo de retroceso; él sostiene que respetará lo que diga la Corte.",
@@ -7764,6 +7812,8 @@
    {
     "estado": "documentada",
     "tema": "Decretos: prometió cerca de 90 el primer día, firmó 6",
+    "mismoObjetoVerificado": true,
+    "identidadRazon": "Es el caso más limpio de los cinco: el mismo objeto, contado con la misma unidad y en la misma fecha. Prometió cerca de 90 decretos el día de la posesión y el 7 de agosto expidió 6. No hace falta interpretar nada para compararlos.",
     "antes": "Anunció que su gobierno arrancaría con cerca de 90 decretos el mismo día de la posesión.",
     "despues": "El 7 de agosto expidió 6 decretos (1133 a 1138).",
     "matiz": "Es la primera promesa suya medible con números, y la distancia es grande. No implica que las medidas no lleguen después, pero el anuncio no se cumplió como fue formulado.",
@@ -7836,6 +7886,8 @@
    {
     "estado": "documentada",
     "tema": "«Los nunca contra los de siempre»: prometió gobernar sin los políticos de siempre y les dio la mayor cuota del gabinete",
+    "mismoObjetoVerificado": true,
+    "identidadRazon": "El objeto prometido es CON QUIÉN iba a gobernar —«los nunca», los que nunca han hecho politiquería— y el objeto hecho es a quién nombró en su gabinete por el Decreto 1136, que es exactamente eso. La mayor cuota fue para Cambio Radical, con dos carteras en manos de políticos de carrera larga, y el vicepresidente fue ministro de Duque. No se juzga el gabinete ni se le imputa nada a quien lo integra: se mide la distancia entre lo que prometió y a quién nombró.",
     "antes": "Fue el eje de su campaña, dicho por él y publicado por su propio movimiento: «Nosotros somos los nunca. Los que nunca hemos vivido de la teta del Estado, los que nunca nos hemos robado un peso, los que nunca nos rendimos ni nos quedamos en la queja. Los que nunca hemos hecho politiquería». Y: «A Colombia no la sacan adelante los de siempre; la transformación viene con los nunca». La noche del triunfo lo repitió: «Vencimos a los de siempre».",
     "despues": "El gabinete que nombró el día de la posesión, por el Decreto 1136, le dio a Cambio Radical la mayor cuota burocrática: el Ministerio del Interior (Rodrigo Lara, dos veces senador de ese partido), el de Transporte (Elsa Noguera, exgobernadora del Atlántico y exministra de Vivienda de Santos, cercana al clan Char) y el ICA (Lina María Garrido). El vicepresidente, José Manuel Restrepo, fue ministro de Comercio y de Hacienda de Iván Duque. La Silla Vacía ya había documentado durante la campaña la presencia de «los políticos de siempre» en su equipo.",
     "matiz": "Nombrar políticos con trayectoria no es un delito ni es corrupción, y no se registra como tal: acá no se juzga el gabinete, se mide la distancia entre lo que prometió y lo que hizo cuatro meses después. La contradicción tampoco la construyó URBIS: la documentaron Cambio, El Colombiano, La Silla Vacía y Río Grande antes y después de la posesión, con nombres y carteras. Este caso estaba desde la v791 en la lista de casos de corrupción como «por documentar», y era el lugar equivocado: no es un caso de corrupción, es un cambio de postura. Acá sí cuenta.",

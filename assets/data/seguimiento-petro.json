@@ -1034,6 +1034,8 @@
       {
         "estado": "documentada",
         "tema": "Constituyente: de defender la Constitución de 1991 a proponer cambiarla",
+        "mismoObjetoVerificado": true,
+        "identidadRazon": "El objeto es el mismo y se nombra igual en las dos frases: convocar una Asamblea Nacional Constituyente. Que después sostuviera que no sería para cambiar la Constitución sino para implementarla es una justificación del propósito, no un objeto distinto: lo que se comprometió a no hacer es convocarla, y propuso convocarla.",
         "antes": "Se comprometió en 2018 y en 2022 a respetar la Constitución de 1991 —que él ayudó a escribir como constituyente— y a no convocar una asamblea constituyente.",
         "despues": "En 2024 propuso convocar una Asamblea Nacional Constituyente y, ante las críticas, sostuvo que no sería para cambiar la Constitución sino para implementarla.",
         "matiz": "La constituyente nunca se convocó. Sus defensores la leen como presión política sobre un Congreso que le había frenado las reformas; sus críticos, como una promesa rota. El giro está documentado con las dos declaraciones.",
@@ -1051,6 +1053,8 @@
       {
         "estado": "documentada",
         "tema": "ESMAD: del desmonte prometido al escuadrón que siguió operando",
+        "mismoObjetoVerificado": true,
+        "identidadRazon": "El objeto es el mismo cuerpo, y la promesa fue desmontarlo. Que cambiara de nombre y de doctrina —a Unidad de Diálogo y Mantenimiento del Orden— es un grado distinto de la misma acción sobre el mismo objeto, no otro objeto: transformar no es eliminar, y el desmonte prometido no ocurrió ni en el plazo anunciado.",
         "antes": "Prometió en campaña desmontar el ESMAD, señalado por los abusos durante el paro nacional de 2021.",
         "despues": "En los primeros seis meses de gobierno el ESMAD no se desmontó y siguió operando; más adelante fue transformado, no eliminado.",
         "matiz": "El cuerpo sí cambió de nombre y de doctrina, pasando a Unidad de Diálogo y Mantenimiento del Orden. Lo que no ocurrió fue el desmonte que se prometió, ni en el plazo anunciado.",
@@ -1064,6 +1068,8 @@
       {
         "estado": "documentada",
         "tema": "Incautación de cocaína: del logro propio al «desplome» ajeno",
+        "mismoObjetoVerificado": false,
+        "identidadRazon": "Las dos frases NO hablan del mismo objeto. La primera es una afirmación sobre el desempeño de SU gobierno y la segunda sobre el del siguiente, usando la misma cifra como vara: no hay un «prometí X e hice lo contrario» que medir. Lo que sí hay es un problema de método —extrapolar tres semanas a un año entero— que está registrado y calificado por un verificador, y que se publica sin bajar el peldaño.",
         "antes": "Presentó como logro de su gobierno haber llegado a un ritmo de 1.000 toneladas de cocaína incautadas al año.",
         "despues": "Usó esa misma cifra en septiembre de 2026 para decir que con el gobierno siguiente la incautación «se desplomó», extrapolando tres semanas a un año entero.",
         "matiz": "El Detector de La Silla Vacía ya había calificado de engañoso su logro en incautaciones antes de que lo usara como vara para medir al sucesor. La caída existe; la magnitud que él le puso, no.",

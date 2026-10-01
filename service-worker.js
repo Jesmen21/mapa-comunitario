@@ -1,4 +1,4 @@
-const URBIS_CACHE = 'urbis-v1057-la-realidad-pesa-mas-que-la-palabra';
+const URBIS_CACHE = 'urbis-v1060-la-identidad-de-objeto-declarada-y-abierta';
 const URBIS_ASSETS = [
   './',
   './index.html',

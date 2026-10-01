@@ -1321,6 +1321,18 @@
         ih.appendChild(tag(idt.cls, idt.t));
         ib.appendChild(ih);
         ib.appendChild(el('p', null, idt.d));
+
+        /* LA RAZÓN DE ESTE CASO, que es otra cosa que la definición del estado.
+           `idt.d` explica qué significa la marca y vale igual para todos los
+           casos que la lleven; `identidadRazon` dice por qué se declaró ASÍ este
+           caso, con su objeto nombrado.
+
+           Sin ella, declarar que lo prometido y lo hecho son el mismo objeto es
+           una marca que nadie puede abrir ni discutir — y esa marca baja en
+           público el peldaño de un presidente en ejercicio. Va en la pantalla y
+           no solo en el registro, porque un campo que ninguna superficie alcanza
+           se ve, desde afuera, igual que uno que no existe (clase C). */
+        if (x.identidadRazon) ib.appendChild(el('p', 'sp-cx-ident-r', x.identidadRazon));
         if (idt.k === 'falta') {
           ib.appendChild(el('p', 'sp-h-meta',
             'Se declara con `mismoObjetoVerificado: true` o `false` en este caso del registro. ' +
@@ -4193,13 +4205,37 @@
           : 'Ninguna de las tres cuentas baja el veredicto.')));
     /* Y qué hay que hacer para que vuelva. Un «no se puede calcular» que no
        dice cómo se consigue es la mitad del trabajo (v880). */
-    if (f.determinado === false && f.ejeA && f.ejeA.falta) {
+    /* La condición es que QUEDEN lecturas pendientes, no que el veredicto sea
+       provisional. Son dos hechos distintos y la v1060 los tenía colgados del
+       mismo `if`: al declarar tres identidades el intervalo se cerró, el
+       veredicto dejó de ser provisional —correcto— y con él desapareció la
+       lista de lo que falta, con una lectura todavía sin declarar.
+
+       Desde afuera, «ya están todas» y «queda una que no mueve el veredicto»
+       se leían igual, que es la exención silenciosa de la v966. Y el dato lo
+       tenía el módulo: la propia línea de cuentas de la placa la cuenta.
+
+       Van las DOS redacciones escritas (v970): la de cuando bloquean el
+       veredicto, y la de cuando otro techo ya lo fija por encima del intervalo
+       entero. La segunda es la que hace falta el día que la primera deja de
+       aplicar — que es hoy. */
+    if (f.ejeA && f.ejeA.sinDeclarar) {
       var fal = el('p', 'sp-fi-falta');
-      fal.appendChild(el('b', null, 'Aún no se confirma, y por eso el peldaño es provisional: '));
-      fal.appendChild(document.createTextNode(f.ejeA.falta +
-        ' Se declara con `mismoObjetoVerificado` en cada contradicción documentada del registro; ' +
-        'en cuanto estén las ' + f.ejeA.sinDeclarar + ', el peldaño deja de ser provisional y se ' +
-        'calcula solo.'));
+      if (f.determinado === false) {
+        fal.appendChild(el('b', null, 'Aún no se confirma, y por eso el peldaño es provisional: '));
+        fal.appendChild(document.createTextNode(f.ejeA.falta +
+          ' Se declara con `mismoObjetoVerificado` en cada contradicción documentada del registro; ' +
+          'en cuanto estén las ' + f.ejeA.sinDeclarar + ', el peldaño deja de ser provisional y se ' +
+          'calcula solo.'));
+      } else {
+        fal.appendChild(el('b', null, pl(f.ejeA.sinDeclarar,
+          'Queda una lectura pendiente, y ya no mueve este veredicto: ',
+          'Quedan lecturas pendientes, y ya no mueven este veredicto: ')));
+        fal.appendChild(document.createTextNode(f.ejeA.falta +
+          ' Otro de los tres techos ya fija el veredicto por encima del intervalo entero, así que ' +
+          'declararla ahora no lo cambiaría. Lo que sí sigue bloqueando es el eje A de confiabilidad, ' +
+          'que no publica nivel mientras falte.'));
+      }
       ver.appendChild(fal);
       /* Y CUÁLES son. Contarlas sin nombrarlas deja la instrucción sin poder
          seguirse: el módulo sabe exactamente qué casos bloquean el veredicto

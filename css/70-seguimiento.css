@@ -2170,6 +2170,16 @@ a.sp-fuente:hover svg{ color:var(--verde-hi); }
 .sp-cx-ident-h b{ font-size:var(--t-8); letter-spacing:.06em; text-transform:uppercase; color:var(--ink-2); }
 .sp-cx-ident p{ margin:8px 0 0; font-size:var(--t-7); line-height:1.5; color:var(--ink); }
 .sp-cx-ident p.sp-h-meta{ color:var(--ink-2); }
+/* La razón de ESTE caso, separada de la definición del estado por un hilo: la
+   de arriba explica qué significa la marca y vale para todos, y esta dice por
+   qué se declaró así este caso. Es prosa y va al tamaño de la prosa de al lado
+   (v1015); lo que la distingue es el hilo, no un color nuevo.
+   Va DESPUÉS de `.sp-cx-ident p` y con su misma forma de selector: escrita
+   antes, o con un punto menos de especificidad, la de arriba le gana y el hilo
+   no se pinta — que es el defecto que la v1056 pagó con `.sp-fi-terceros`. */
+.sp-cx-ident p.sp-cx-ident-r{
+  margin-top:10px; padding-left:12px; border-left:3px solid var(--linea); color:var(--ink);
+}
 
 /* Las contradicciones que bloquean el veredicto, nombradas en la ficha. */
 .sp-fi-pend{ margin:10px 0 0; padding-left:20px; }
