@@ -3,8 +3,8 @@
  "presidente": "Abelardo de la Espriella",
  "periodo": "2026 – 2030",
  "posesion": "2026-08-07",
- "actualizado": "2026-09-30",
- "proximaActualizacion": "2026-10-01",
+ "actualizado": "2026-10-01",
+ "proximaActualizacion": "2026-10-02",
  "categorias": {
   "gobierno": {
    "nombre": "Gobierno y decretos",
@@ -113,6 +113,145 @@
          "n": "El Cronista · la cifra más alta en 20 meses",
          "rol": "contexto",
          "u": "https://www.cronista.com/colombia/actualidad-co/aumento-el-desempleo-en-colombia-y-llego-al-94-en-agosto-la-cifra-mas-alta-en-20-meses/"
+      }
+   ]
+},
+{
+   "fecha": "2026-09-30",
+   "precision": "exacta",
+   "categoria": "gobierno",
+   "titulo": "El presidente nombra, mediante el Decreto 1479, a Nicolás Gómez Arenas —jefe de su despacho— como alcalde ad hoc de Cali para las decisiones sobre el Plan de Ordenamiento Territorial, tras el impedimento que el alcalde Alejandro Eder tiene declarado desde 2024",
+   "categoriaProbatoria": "hecho-probado",
+   "tipoMedicion": "actividad",
+   "nivelGobierno": "nacional",
+   "estadoProcesal": "en-firme",
+   "tipoEvidencia": "documento-primario",
+   "detalle": "La Presidencia de la República expidió el 30 de septiembre de 2026 el Decreto 1479, que designa a Nicolás Gómez Arenas, jefe de despacho del presidente Abelardo de la Espriella, como alcalde ad hoc de Cali para asumir, de forma exclusiva, las competencias del alcalde en las decisiones relacionadas con el Plan de Ordenamiento Territorial (POT) de la ciudad y sus instrumentos derivados. El mecanismo responde a un impedimento que el propio alcalde Alejandro Eder radicó desde el 11 de octubre de 2024 para no intervenir en trámites del POT, por actividades económicas de familiares suyos en construcción, ingeniería civil, bienes raíces y hotelería que el Municipio de Cali hizo constar en los documentos del caso. El Decreto 1479 precisa que la designación no implica la salida de Eder de la Alcaldía ni el traslado del gobierno de la ciudad al funcionario designado: su competencia se limita a las decisiones sobre el POT.",
+   "contrapunto": "Gómez Arenas tiene, según reportó Minuto60, relación política y familiar con el senador electo Enrique Gómez Martínez, director del movimiento Salvación Nacional, y varios medios lo describen como un hombre de confianza cercana al presidente. El impedimento que activa este nombramiento es anterior al gobierno de De la Espriella —lo radicó Eder en 2024— y es un mecanismo previsto en la ley para estos casos, no una decisión unilateral del Gobierno nacional contra la administración municipal de Cali; no se encontró, al cierre de esta entrada, un pronunciamiento de la Alcaldía ni del Concejo de Cali sobre la designación.",
+   "tipoFuente": "verificado",
+   "fuentes": [
+      {
+         "n": "Infobae · Abelardo de la Espriella nombró a Nicolás Gómez como alcalde ‘ad hoc’ de Cali: esto pasó con Alejandro Eder",
+         "rol": "acto",
+         "u": "https://www.infobae.com/colombia/2026/10/01/abelardo-de-la-espriella-nombro-a-nicolas-gomez-como-alcalde-ad-hoc-de-cali-esto-paso-con-alejandro-eder/"
+      },
+      {
+         "n": "El Tiempo · Presidente Abelardo De La Espriella nombra a Nicolás Gómez Arenas como alcalde ad hoc de Cali para el Plan de Ordenamiento Territorial",
+         "rol": "acto",
+         "u": "https://www.eltiempo.com/colombia/cali/presidente-abelardo-de-la-espriella-nombra-a-nicolas-gomez-arenas-como-alcalde-ad-hoc-de-cali-para-el-plan-de-ordenamiento-territorial-3590363"
+      },
+      {
+         "n": "Publimetro · Cali tiene nuevo alcalde ad hoc para asuntos del POT: esta es la razón por la que Eder no puede intervenir",
+         "rol": "contexto",
+         "u": "https://www.publimetro.co/noticias/2026/10/01/cali-tiene-nuevo-alcalde-ad-hoc-para-asuntos-del-pot-esta-es-la-razon-por-la-que-eder-no-puede-intervenir/"
+      },
+      {
+         "n": "Minuto60 · Nicolás Gómez, jefe de despacho de Abelardo, fue designado alcalde ad hoc de Cali: ¿por qué?",
+         "rol": "efecto",
+         "u": "https://www.minuto60.com/politica/por-que-nicolas-gomez-fue-designado-alcalde-cali-ad-hoc/16339"
+      }
+   ]
+},
+{
+   "fecha": "2026-09-30",
+   "precision": "exacta",
+   "categoria": "gobierno",
+   "titulo": "De la Espriella ordena el traslado de Juan Guillermo Monsalve —testigo clave del proceso contra el expresidente Álvaro Uribe Vélez— de la cárcel La Picota a la de máxima seguridad de Cómbita; su abogado invoca una protección judicial previa",
+   "categoriaProbatoria": "hecho-probado",
+   "tipoMedicion": "actividad",
+   "nivelGobierno": "nacional",
+   "detalle": "El presidente Abelardo de la Espriella ordenó el 30 de septiembre de 2026 el traslado de Juan Guillermo Monsalve, recluido en la cárcel La Picota de Bogotá y testigo clave en el proceso contra el expresidente Álvaro Uribe Vélez por el caso de la hacienda Guacharacas, a la cárcel de máxima seguridad de Cómbita, en Boyacá. El presidente justificó la orden en reiteradas violaciones al régimen disciplinario carcelario atribuidas a Monsalve —entre ellas, según un informe reservado conocido por Semana, el ingreso de licor y celulares y visitas irregulares a su celda—: «En la Patria Milagro, ningún preso tendrá privilegios, y mucho menos un delincuente aguerrido como Juan Guillermo Monsalve, que ha violado sistemáticamente el régimen penitenciario». Durante el operativo, Monsalve reportó un dolor en el pecho y fue llevado a un centro médico de Bogotá para evaluación antes de continuar el viaje; llegó a Cómbita el 1 de octubre.",
+   "contrapunto": "El abogado de Monsalve, Miguel Ángel del Río, calificó la orden de desacato a la Corte Suprema de Justicia, invocando decisiones previas de la Sala de Instrucción de ese tribunal —entre ellas un oficio de 2020 que respondió a una solicitud del Inpec— que mantuvieron a Monsalve en una casa fiscal dentro de La Picota citando riesgo documentado para su vida, y sostuvo que la Corte vetó tácitamente moverlo a otro centro. El Gobierno mantuvo la orden. No se encontró, al cierre de esta entrada, un pronunciamiento de 2026 de la Sala de Instrucción que autorice o rechace específicamente este traslado a Cómbita, así que la caracterización de desacato la hace la defensa de Monsalve y no un documento judicial de esta fecha. Monsalve es el testigo cuyo relato sostiene buena parte del proceso contra Uribe Vélez, y este registro deja consignado, sin que ninguna autoridad lo haya determinado todavía, el hecho de que se lo trasladó a un centro más distante sobre la objeción de su defensa.",
+   "tipoFuente": "verificado",
+   "fuentes": [
+      {
+         "n": "El Tiempo · De La Espriella ordena el traslado de Juan Guillermo Monsalve a la cárcel de Cómbita: «en la Patria Milagro, ningún preso tendrá privilegios»",
+         "rol": "acto",
+         "u": "https://www.eltiempo.com/politica/abelardo-de-la-espriella/de-la-espriella-ordena-el-traslado-de-juan-guillermo-monsalve-a-la-carcel-de-combita-en-la-patria-milagro-ningun-preso-tendra-privilegios-3590118"
+      },
+      {
+         "n": "El Universal · Abelardo de la Espriella ordena traslado de Juan Guillermo Monsalve a Cómbita",
+         "rol": "acto",
+         "u": "https://www.eluniversal.com.co/colombia/2026/09/30/abelardo-de-la-espriella-ordena-traslado-de-juan-guillermo-monsalve-a-combita/"
+      },
+      {
+         "n": "Infobae · Miguel Ángel del Río, abogado de Juan Guillermo Monsalve, criticó la orden de Abelardo de la Espriella de trasladar al exparamilitar a la cárcel de Cómbita: «La Corte Suprema de Justicia lo prohibió»",
+         "rol": "efecto",
+         "u": "https://www.infobae.com/colombia/2026/09/30/miguel-angel-del-rio-abogado-de-juan-guillermo-monsalve-critico-la-orden-de-abelardo-de-la-espriella-de-trasladar-al-exparamilitar-a-la-carcel-de-combita-la-corte-suprema-de-justicia-lo-prohibio/"
+      },
+      {
+         "n": "Infobae · Juan Guillermo Monsalve ya llegó a la cárcel de Cómbita tras orden presidencial",
+         "rol": "acto",
+         "u": "https://www.infobae.com/colombia/2026/10/01/juan-guillermo-monsalve-ya-llego-a-la-carcel-de-combita-tras-orden-presidencial/"
+      },
+      {
+         "n": "Semana · «Conducta desviada»: el escandaloso informe que revela la vida de excesos y lujos de Juan Guillermo Monsalve en la cárcel La Picota",
+         "rol": "contexto",
+         "u": "https://www.semana.com/nacion/articulo/conducta-desviada-el-escandaloso-informe-que-revela-la-vida-de-excesos-y-lujos-de-juan-guillermo-monsalve-en-la-carcel-la-picota/202628/"
+      }
+   ]
+},
+{
+   "fecha": "2026-09-30",
+   "precision": "exacta",
+   "categoria": "gobierno",
+   "titulo": "El Ministerio del Interior publica un borrador de decreto de 24 artículos para regular el derecho a la protesta y la intervención de la Fuerza Pública ante actos violentos, abierto a comentarios hasta el 4 de octubre",
+   "categoriaProbatoria": "hecho-probado",
+   "tipoMedicion": "actividad",
+   "nivelGobierno": "nacional",
+   "estadoProcesal": "anunciado-sin-acto",
+   "tipoEvidencia": "reporte-periodistico",
+   "detalle": "El Ministerio del Interior dio a conocer el 30 de septiembre de 2026 un borrador de decreto de 24 artículos para regular el ejercicio del derecho a la protesta y precisar en qué casos puede intervenir la Policía Nacional ante hechos de violencia. El proyecto mantiene el diálogo, la prevención y la mediación como herramientas centrales frente a las manifestaciones, pero propone que ante conductas como el uso de armas de fuego, armas blancas, explosivos o elementos incendiarios, la toma de rehenes, ataques contra terceros, servidores públicos, policías, misiones médicas o periodísticas, o la destrucción de infraestructura pública o privada, la autoridad pueda intervenir directamente contra quienes participen en esos actos sin agotar antes todas las etapas de diálogo, mientras ese diálogo puede continuar con el resto de los manifestantes. El Ministerio abrió el documento a comentarios de la ciudadanía hasta el 4 de octubre de 2026. El 1 de octubre el ministro del Interior, Rodrigo Lara, defendió el proyecto: «ni un derecho menos para quien marcha, ni un espacio más para quien destruye».",
+   "contrapunto": "Esta entrada registra la publicación de un borrador abierto a comentarios, no un decreto expedido: según el criterio de este registro, un anuncio sin acto administrativo no cuenta como mecanismo excepcional (I-04), así que mientras el proyecto siga en esta etapa no declara ningún indicador. No se encontró, al cierre de esta entrada, un pronunciamiento de organizaciones de derechos humanos sobre el texto específico de este borrador.",
+   "tipoFuente": "verificado",
+   "fuentes": [
+      {
+         "n": "Infobae · Gobierno de Abelardo de la Espriella publicó borrador de decreto para regular protestas en Colombia: estos serían los cambios",
+         "rol": "acto",
+         "u": "https://www.infobae.com/colombia/2026/09/30/gobierno-de-abelardo-de-la-espriella-publico-borrador-de-decreto-para-regular-protestas-en-colombia-estos-serian-los-cambios/"
+      },
+      {
+         "n": "El Universal · Gobierno De la Espriella prepara decreto que modifica el derecho a la protesta",
+         "rol": "acto",
+         "u": "https://www.eluniversal.com.co/colombia/2026/09/30/gobierno-de-la-espriella-prepara-decreto-que-modifica-el-derecho-a-la-protesta/"
+      },
+      {
+         "n": "El Heraldo · Gobierno prepara decreto para regular la protesta y detalla en cuáles casos puede intervenir la fuerza pública",
+         "rol": "acto",
+         "u": "https://www.elheraldo.co/colombia/2026/09/30/adle-prepara-decreto-para-regular-la-protesta-y-detalla-en-cuales-casos-puede-intervenir-la-fuerza-publica/"
+      },
+      {
+         "n": "Infobae · Rodrigo Lara defendió proyecto del Gobierno de Abelardo de la Espriella para enfrentar la protesta social en Colombia: «ni un derecho menos para quien marcha, ni un espacio más para quien destruye»",
+         "rol": "efecto",
+         "u": "https://www.infobae.com/colombia/2026/10/01/rodrigo-lara-defendio-proyecto-del-gobierno-de-abelardo-de-la-espriella-para-enfrentar-la-protesta-social-en-colombia-ni-un-derecho-menos-para-quien-marcha-ni-un-espacio-mas-para-quien-destruye/"
+      }
+   ]
+},
+{
+   "fecha": "2026-09-29",
+   "precision": "exacta",
+   "categoria": "gobierno",
+   "titulo": "El presidente reporta 105 extradiciones firmadas en los primeros 53 días de mandato",
+   "categoriaProbatoria": "hecho-probado",
+   "tipoMedicion": "actividad",
+   "nivelGobierno": "nacional",
+   "detalle": "El presidente Abelardo de la Espriella anunció el 29 de septiembre de 2026, en un video publicado en sus redes, que ha firmado 105 extradiciones en 53 días de gobierno, principalmente hacia Estados Unidos por delitos de narcotráfico. Afirmó: «el número seguirá creciendo porque en la Era del Tigre no hay contemplación para quienes han herido y atacado a nuestros hermanos». La cifra se suma a los reportes previos de 41 extradiciones al 28 de agosto, 70 al 9 de septiembre y 85 al 16 de septiembre, ya registrados en este seguimiento.",
+   "tipoFuente": "verificado",
+   "fuentes": [
+      {
+         "n": "El Heraldo · Presidente Abelardo De la Espriella ha firmado 105 extradiciones en 53 días de gobierno: «No hay contemplación»",
+         "rol": "acto",
+         "u": "https://www.elheraldo.co/colombia/2026/09/30/presidente-abelardo-de-la-espriella-ha-firmado-105-extradiciones-en-53-dias-de-gobierno-no-hay-contemplacion/"
+      },
+      {
+         "n": "Semana · El presidente Abelardo De La Espriella reportó 105 extradiciones en 53 días de gobierno: «Vamos por más»",
+         "rol": "acto",
+         "u": "https://www.semana.com/politica/articulo/el-presidente-abelardo-de-la-espriella-reporto-105-extradiciones-en-53-dias-de-gobierno-vamos-por-mas/202623/"
+      },
+      {
+         "n": "Infobae · Abelardo de la Espriella aseguró que firmó 105 extradiciones en 53 días como presidente de Colombia: «El número seguirá creciendo»",
+         "rol": "acto",
+         "u": "https://www.infobae.com/colombia/2026/09/30/abelardo-de-la-espriella-aseguro-que-firmo-105-extradiciones-en-53-dias-como-presidente-de-colombia-el-numero-seguira-creciendo/"
       }
    ]
 },
