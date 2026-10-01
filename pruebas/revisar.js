@@ -10799,26 +10799,66 @@ console.log('\n  -- el marcado que vive dentro del JavaScript (v1025) --');
        lo que falta— y con un solo `test` uno de los dos podía pasar a
        decidir por su cuenta sin que nada lo dijera. Lo destapó una
        inyección que dejó la guarda en verde. */
-    const decidePlaca = (placa.match(/if \(([^)]*)\)/g) || [])
-      .filter((c) => /sp-fi-vprov|veredicto\.hasta|sp-fi-vfalta/.test(placa.slice(placa.indexOf(c), placa.indexOf(c) + 220)));
-    const porMarca = decidePlaca.filter((c) => /f\.veredicto\.provisional/.test(c)).length;
+    /* Se mide por CONTENIDO y no por cercanía: la versión de antes cogía
+       los `if` cuya ventana de 220 caracteres rozara un `sp-fi-vfalta`, y en
+       la v1057 eso empezó a contar dos que no deciden nada de la marca —el
+       que parte las dos ramas del titular y el que nombra los ejes que
+       faltan—. Un ancla por distancia envejece; una por contenido no (v935).
+
+       Lo que tiene que seguir siendo cierto: TODO bloque que diga hasta
+       dónde puede bajar el peldaño va guardado por un `if` que LEE la marca.
+       Se cuentan los bloques y los que están guardados. */
+    const bloquesHasta = (placa.match(/\.hasta\.t/g) || []).length;
+    const guardados = [...placa.matchAll(/\.hasta\.t/g)].filter((m) =>
+      /if \([^)]*\.provisional\b[^)]*\)/.test(placa.slice(Math.max(0, m.index - 700), m.index))).length;
+    const decidePlaca = new Array(bloquesHasta);
+    const porMarcaN = guardados;
+    /* La marca se LEE del objeto del veredicto, venga por el nombre que
+       venga: desde la v1057 la placa la lee dos veces de `f.veredicto` y una
+       de `vg.palabra`, que es el mismo peldaño viajando dentro del veredicto
+       general. Lo que tiene que seguir siendo cierto no es el nombre sino
+       que la marca venga del veredicto y no se calcule acá — por eso el
+       patrón pide `.provisional` leído de algo, y la mitad de abajo rechaza
+       que la placa la deduzca por su cuenta. Es la lección de la v890: una
+       guarda que cita la línea envejece con el primer cambio legítimo. */
+    const porMarca = porMarcaN;
+    /* Y la placa NO recalcula si el peldaño es firme: con `peorMin`,
+       `peorMax` o `determinado` acá, la marca sería una segunda ruta y las
+       dos se separarían a la tanda siguiente (v879). */
+    const deduce = /peorMin|peorMax|\bdeterminado\b/.test(placa);
     comprobar('la marca de provisional viaja con el veredicto',
-      /provisional: true/.test(rama) && decidePlaca.length > 0 && porMarca === decidePlaca.length,
+      /provisional: true/.test(rama) && decidePlaca.length > 0 &&
+        porMarca === decidePlaca.length && !deduce,
       !/provisional: true/.test(rama) ? 'el veredicto no la lleva'
-        : !decidePlaca.length ? 'la placa no decide en ninguna parte si el peldaño es firme'
+        : !decidePlaca.length ? 'la placa no dice en ninguna parte hasta dónde puede bajar el peldaño'
+          : deduce ? 'la placa recalcula si el peldaño es firme en vez de leer la marca: dos rutas ' +
+                     'para un mismo hecho, y la que se quedaría vieja es la de la placa'
           : porMarca < decidePlaca.length
             ? (decidePlaca.length - porMarca) + ' de ' + decidePlaca.length +
-              ' deciden por su cuenta si el peldaño es firme, en vez de leer la marca'
-            : 'el veredicto la lleva y los ' + decidePlaca.length + ' sitios de la placa la leen');
+              ' bloques dicen hasta dónde baja el peldaño sin leer la marca: se pintarían sobre un ' +
+              'peldaño firme'
+            : 'los ' + decidePlaca.length + ' bloques de «hasta dónde baja» van guardados por la marca, ' +
+              'y la placa no la recalcula');
 
     /* 4 · LA PLACA DICE LAS DOS COSAS. Esta placa se fotografía y la captura
        circula sola: un peldaño sin su rótulo se lee como firme, y un rótulo
        sin el techo deja al lector sin saber qué está en juego. Las dos
        mitades o la marca es un adorno. */
-    const iProv = placa.indexOf("'sp-fi-vprov'");
-    const iVval = placa.indexOf("'sp-fi-vval'");
+    /* DENTRO de la rama que pinta el peldaño y no en la placa entera: desde
+       la v1057 el primer `sp-fi-vval` de la placa es el del titular («Sin
+       dictamen»), que va antes de esta rama y no lleva rótulo de
+       provisional. Medido sobre la placa entera, el orden salía al revés y
+       la guarda daba rojo sobre lo que está bien. Es la v854: se busca
+       dentro de la caja. */
+    const ramaPeldano = (function () {
+      const i = placa.indexOf("'Fiabilidad de la palabra'");
+      return i < 0 ? '' : placa.slice(i);
+    }());
+    const iProv = ramaPeldano.indexOf("'sp-fi-vprov'");
+    const iVval = ramaPeldano.indexOf("'sp-fi-vval'");
     comprobar('la placa dice que es provisional y hasta dónde baja',
-      iProv > 0 && /sp-fi-vfalta/.test(placa) && /veredicto\.hasta\.t/.test(placa),
+      iProv > 0 && /sp-fi-vfalta/.test(placa) && /veredicto\.hasta\.t/.test(placa) &&
+        !!ramaPeldano,
       iProv < 0 ? 'no imprime el rótulo de provisional'
         : !/veredicto\.hasta\.t/.test(placa) ? 'no dice hasta dónde puede bajar'
           : 'imprime el rótulo y el techo');
@@ -11023,6 +11063,141 @@ console.log('\n  -- el marcado que vive dentro del JavaScript (v1025) --');
         r7 ? 'pintada, con el hilo y el gris de acotación de la placa'
            : 'sin regla: el párrafo saldría sin el hilo ni el color de acotación de la placa');
     }
+
+    /* ══ v1057 · LA REALIDAD MANDA, Y LA PALABRA NO FIJA NADA ════════════
+       Hasta la v1056 el titular de la página era el peldaño de la escalera
+       de fiabilidad, y esa escalera cuenta casos con proceso abierto,
+       cambios de postura y qué parte de NUESTRO registro está verificada.
+       Ninguna de las tres mide cómo está el país, así que la página
+       publicaba «Fiable» en verde a 32 px sobre un gobierno cuyos tres ejes
+       de realidad no publican nivel ninguno.
+
+       Y no era solo de lectura: `ejeA.publicable` es false desde la v959
+       —«la confiabilidad no se puede dictaminar»— y la v1050 publicó su
+       peldaño igual, once versiones después. Las dos rutas daban respuestas
+       opuestas sobre el mismo hecho: la clase B en el sitio más caro. */
+    (function () {
+      const j70 = leer('js/70-seguimiento.js'), c70 = leer('css/70-seguimiento.css');
+      const cod = soloCodigo(j70);
+      const trozo = function (a, b) {
+        const i = cod.indexOf(a); if (i < 0) return '';
+        const j = cod.indexOf(b, i); return j < 0 ? cod.slice(i) : cod.slice(i, j);
+      };
+      const vg    = trozo('function veredictoGeneral(', 'function ejesDe(');
+      /* El corte es `dichoDelVeredicto` y no `pintarPlacaPortada`: esa
+         función vive entre las dos y nombra «Cómo está el país» por su
+         cuenta, así que con el corte de abajo el trozo la incluía y la
+         comprobación del titular pasaba en verde con el titular devuelto al
+         peldaño. Lo destapó la inyección fiel, no leer el patrón — es la
+         v854: el trozo no era el que se creía. */
+      const placa = trozo('function placaDe(', 'function dichoDelVeredicto(');
+      const tabla = trozo('var PESO_EJE = {', '};');
+      /* Los ejes que el módulo compone de verdad, leídos de `ejesDe` y no de
+         una lista escrita acá: con dos listas, la guarda acabaría
+         comprobando que es igual a sí misma (v957). */
+      const compone = (trozo('function ejesDe(', '}').match(/eje([A-Z])\(/g) || [])
+        .map((s) => s.replace(/eje|\(/g, ''));
+      const declara = [...tabla.matchAll(/^\s*([A-Z]):\s*\{([^}]*)\}/gm)]
+        .map((m) => ({ eje: m[1], cuerpo: m[2] }));
+
+      // MATERIAL primero (v920): sin la tabla, sin el cálculo o sin los ejes
+      // compuestos no hay nada que mirar, y todo lo de abajo pasaría solo.
+      if (!vg || !placa || !declara.length || !compone.length) {
+        anotarSinMaterial('la realidad manda sobre la palabra',
+          'no se pudieron leer PESO_EJE (' + declara.length + '), veredictoGeneral o ejesDe (' +
+          compone.length + ')');
+      } else {
+        // 1 · El veredicto de la página sale de los ejes de REALIDAD.
+        const g1 = /mide\s*===\s*'realidad'/.test(vg);
+        comprobar('el veredicto de la página sale de los ejes que miden la realidad', g1,
+          g1 ? 'filtra por mide === realidad: la palabra no entra en el cálculo'
+             : 'no filtra por lo que mide cada eje: el peldaño de la palabra volvería a ser el veredicto ' +
+               'de la página, que es lo que publicaba «Fiable» sobre tres ejes de realidad sin nivel');
+
+        // 2 · Y la PALABRA no puede fijarlo ni subirlo: ni siquiera se
+        //     consulta para decidir el estado, solo viaja para publicarse.
+        const g2 = g1 && !/mide\s*===\s*'palabra'/.test(vg) && /palabra:\s*palabra/.test(vg);
+        comprobar('y la palabra viaja con él, pero no decide su estado', g2,
+          g2 ? 'el estado sale solo de los ejes de realidad; la palabra se pasa para publicarla debajo'
+             : (/mide\s*===\s*'palabra'/.test(vg)
+                ? 'la palabra entró en la decisión: podría fijar o subir el veredicto, y lo que dice un ' +
+                  'gobernante no mejora el país'
+                : 'la palabra no viaja con el veredicto: la placa tendría que ir a buscarla por su cuenta'));
+
+        // 3 · Todo eje que el módulo compone declara su peso. Falla CERRADO
+        //     (v880): un eje nuevo sin declararlo no puede colarse de
+        //     «realidad» ni de «palabra» por omisión.
+        const sinPeso = compone.filter((e) => !declara.some((d) => d.eje === e));
+        const sobra   = declara.filter((d) => compone.indexOf(d.eje) === -1).map((d) => d.eje);
+        const g3 = !sinPeso.length && !sobra.length;
+        comprobar('y los cuatro ejes que se componen declaran su peso, sin sobrar ninguno', g3,
+          g3 ? compone.length + ' ejes compuestos y los mismos ' + declara.length + ' en la tabla'
+             : (sinPeso.length
+                ? 'sin declarar su peso: ' + sinPeso.join(' · ') + ' — no se sabría si fija el veredicto'
+                : 'declarados y sin componerse: ' + sobra.join(' · ') + ' — la tabla vigila un eje que no existe'));
+
+        // 4 · Cada uno declara los TRES campos, y la dirección de su escala
+        //     no se omite: las dos que existen van al revés una de la otra
+        //     —A sube a mejor, B sube a peor— y comparar niveles crudos
+        //     publicaría un «B5 · Crítico» como el mejor de los dos.
+        const flojos = declara.filter((d) =>
+          !/mide:\s*'(realidad|palabra)'/.test(d.cuerpo) ||
+          !/dir:\s*[+-]?1/.test(d.cuerpo) ||
+          !/escala:\s*(true|false)/.test(d.cuerpo)).map((d) => d.eje);
+        const g4 = !flojos.length;
+        comprobar('y cada uno declara qué mide, hacia dónde va su escala y si la tiene', g4,
+          g4 ? 'los ' + declara.length + ' con sus tres campos: mide, dir y escala'
+             : 'incompletos: ' + flojos.join(' · ') + ' — sin la dirección, comparar niveles crudos ' +
+               'publicaría un B5 crítico como si fuera el mejor de los dos');
+
+        // 5 · Y la escala de gravedad común NO se inventa: con los tres
+        //     publicando nivel el módulo se para y lo dice, en vez de sacar
+        //     un máximo a ojo sobre escalas que van al revés.
+        const g5 = /sin-escala-comun/.test(vg) && !/Math\.max/.test(vg);
+        comprobar('y con todos publicando nivel se para en vez de sacar un máximo a ojo', g5,
+          g5 ? 'declara que falta la escala de gravedad común y no compara'
+             : (/Math\.max/.test(vg)
+                ? 'compara niveles de ejes distintos: sus escalas van al revés y el eje C y el D no ' +
+                  'tienen ninguna, así que el máximo sería inventado'
+                : 'no declara que falta la escala común: el día que los tres publiquen, el módulo ' +
+                  'callaría sin decir por qué'));
+
+        // 6 · La placa lee ESE veredicto y no el peldaño.
+        const g6 = /f\.general/.test(placa) && /Cómo está el país/.test(placa);
+        comprobar('la placa titula con el veredicto de la página, no con el peldaño', g6,
+          g6 ? 'el titular sale de f.general y dice de qué habla'
+             : 'la placa volvió a titular con el peldaño de la palabra, que es lo que publicaba ' +
+               '«Fiable» sobre un país sin medir');
+
+        // 7 · Y el COLOR no se pone cuando no hay dictamen. Es la mitad que
+        //     de verdad hace el trabajo: el ojo llega al verde antes que al
+        //     texto, así que un «Fiable» acotado en tres líneas pero pintado
+        //     de verde a pantalla completa sigue afirmando (lo vio el papel).
+        const g7 = /sp-fi-v-sin-dictamen/.test(placa) && /\.sp-fi-v-sin-dictamen\s*\{/.test(c70);
+        comprobar('y no se pinta con el color de un peldaño que no publica', g7,
+          g7 ? 'clase propia en gris, del mismo token que «sin datos»: es deuda nuestra, no un hallazgo'
+             : (!/sp-fi-v-sin-dictamen/.test(placa)
+                ? 'la placa se sigue pintando con el color del peldaño: saldría en verde bajo un ' +
+                  '«Sin dictamen»'
+                : 'sin regla de CSS: la clase no pintaría nada y el valor saldría casi en blanco'));
+
+        // 8 · La escalera de la ficha dice de qué es antes de su color.
+        const ficha = trozo("var ver = el('section', 'sp-fi-ver-box", 'var esc =');
+        const g8 = /sp-fi-ver-rot/.test(ficha) && /\.sp-fi-ver-rot\s*\{/.test(c70);
+        comprobar('y la escalera de la ficha dice de qué es antes de su color', g8,
+          g8 ? 'lleva su rótulo, y dice que no fija el veredicto de la página'
+             : 'arranca sin rótulo: la escalera con «Fiable» marcado en verde sale sin decir de qué es');
+
+        // 9 · LA GUARDA DE LA GUARDA. Sin esto, `veredictoGeneral` podría
+        //     dejar de leer la tabla y todo lo de arriba seguiría en verde
+        //     sobre una tabla que es documentación (v878).
+        const g9 = /PESO_EJE\[/.test(vg);
+        comprobar('y el cálculo sigue leyendo la tabla de peso', g9,
+          g9 ? 'la lee: cambiar un eje de lado en la tabla mueve el veredicto'
+             : 'dejó de leerla: la tabla sería documentación y el reparto entre realidad y palabra ' +
+               'volvería a estar escrito dentro del cálculo');
+      }
+    })();
 
     /* ══ v1056 · TODO GRÁFICO DECLARA HASTA CUÁNDO LLEGAN SUS CIFRAS ══════
        El registro se sella «actualizado» con la fecha de hoy y sus series

@@ -1370,6 +1370,13 @@ a.sp-fuente:hover svg{ color:var(--verde-hi); }
    (v885). Lo que marca el peldaño provisional es `.sp-fi-vprov`, más
    abajo, y NO un color propio: el peldaño se pinta en el de su escalón. */
 .sp-fi-v-sin-datos{      --vc-claro:var(--ink-2); --vc-oscuro:#C9D2DA; }
+/* «Sin dictamen» comparte ese gris, y no es pereza: es la MISMA clase de
+   cosa. Que los tres ejes de realidad no publiquen nivel es una deuda de
+   fuente y de clasificación —nuestra—, no un hallazgo sobre el gobierno, así
+   que va en el gris de la placa y nunca en el rojo de un hallazgo (v971). Y
+   comparte el token en vez de estrenar un hex propio: dos grises para un
+   mismo significado se separan a la tanda siguiente. */
+.sp-fi-v-sin-dictamen{   --vc-claro:var(--ink-2); --vc-oscuro:#C9D2DA; }
 
 /* La placa de un mandato CERRADO: el mismo diseño, un punto más apagado y con
    el filete gris en vez de dorado. Se nota de un vistazo que no es el de
@@ -1483,6 +1490,38 @@ a.sp-fuente:hover svg{ color:var(--verde-hi); }
    cambia es que no repite el hilo, o la placa cerraría con dos rayas
    seguidas para separar dos mitades de una misma acotación. */
 .sp-fi-alcance-2{ margin-top:-2px; padding-top:0; border-top:0; }
+
+/* LOS EJES QUE FALTAN, NOMBRADOS.
+   Mismo gris y mismo tamaño que las demás acotaciones de la placa: acota el
+   «Sin dictamen» de encima, no es una advertencia aparte (v886). En negrita
+   media porque es la única de las acotaciones que el lector puede convertir
+   en tarea — son tres cosas medibles sin medir, y cuáles. */
+.sp-fi-vfaltan{
+  margin:0 0 8px; font-size:var(--t-8); line-height:1.5; font-weight:600; color:#C9D2DA;
+}
+/* EL PELDAÑO DE LA PALABRA, CUANDO NO ES EL TITULAR.
+   Va detrás de un hilo porque SÍ es otro objeto: el titular habla del país y
+   esto de sus palabras. Y va en el gris de la placa y no en el color de su
+   escalón: el verde de «Fiable» a pantalla completa es justamente lo que esta
+   versión vino a quitar, y con el color aquí volvería por la puerta de atrás,
+   más pequeño pero igual de afirmativo. */
+.sp-fi-vpal{
+  margin:10px 0 6px; padding-top:10px; border-top:1px solid rgba(217,180,106,.22);
+  font-size:var(--t-8); line-height:1.5; color:#C9D2DA;
+}
+/* La continuación de esa acotación no repite el hilo, igual que
+   `.sp-fi-alcance-2`: son dos mitades de una misma cosa y con dos rayas
+   seguidas la placa cerraría partida en trozos que no significan nada. */
+.sp-fi-vfalta-2{ margin-top:-2px; }
+
+/* EL ROTULO DE LA ESCALERA, EN LA FICHA.
+   La caja va en el color del peldaño, asi que el rotulo tiene que leerse
+   ANTES que el color: va arriba del todo y en el gris de texto de la ficha,
+   no en `--vc-claro`. Con el color del peldaño diria lo contrario de lo que
+   dice — que esto es el veredicto. */
+.sp-fi-ver-rot{
+  margin:0 0 10px; font-size:var(--t-8); line-height:1.5; color:var(--ink-2);
+}
 
 /* UN PELDAÑO PROVISIONAL SE VE COMO TAL, Y NO EN ROJO.
    El rojo de este módulo es para un hallazgo verificado con fuente; lo que

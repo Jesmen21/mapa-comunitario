@@ -22327,6 +22327,18 @@ cada alcaldía del país. `pendiente`
 
 ## El peldaño que sostiene lo confirmado, y la barra que tapa (v1050)
 
+> **Corregido en la v1057, y no por un cambio de criterio sino porque esta
+> tanda no midió su propia contradicción.** El peldaño que publicó acá era el
+> de la escalera de fiabilidad, y `ejeA.publicable` es false desde la v959 —«la
+> confiabilidad no se puede dictaminar»—: once versiones con las dos rutas
+> diciendo lo contrario sobre el mismo hecho, y nadie lo vio porque el eje y la
+> placa viven en dos sitios. Lo que esta sección razonó sigue valiendo para su
+> propia pregunta —publicar nada deja al lector sin nada— y la respuesta era
+> otra: publicar el veredicto de la REALIDAD, que hoy no existe, y bajar el
+> peldaño de la palabra a su eje. Ver «La realidad manda, y la palabra no fija
+> nada».
+
+
 Pedido con el teléfono en la mano y en dos mitades: *«que quede funcional, que
 no haya superposición de textos, y buena paleta de colores, buena proporción de
 títulos, tipografías»*, y *«necesito que ya pues esto me fuerce ya que me diga
@@ -23863,6 +23875,209 @@ papel con la sonda —las dieciséis tarjetas con su marca y su línea, el techo
 claridad con la lista abierta, las cifras de cuatro dígitos de las dos vistas y
 los tamaños de todo el texto corrido—, que es lo que encontró las cuatro cosas
 que no se veían leyendo.
+
+## La realidad manda, y la palabra no fija nada (v1057)
+
+Pedido con estas palabras: **«ajústalo de manera que aunque el presidente diga
+que es correcto, cómo esté el país o cómo avance el país es el peso más
+fuerte… si Colombia está destruida él no puede decir que es fiable. Una cosa
+son sus palabras y medios y otra cosa es la realidad.»**
+
+    v1056   FIABILIDAD DE LA PALABRA · Fiable          ← verde, 32 px, el titular
+    v1057   CÓMO ESTÁ EL PAÍS · Sin dictamen           ← gris, y el peldaño abajo
+
+### No era filosofía: el módulo se contradecía consigo mismo
+
+Medido antes de replantear nada —la regla de la v916, también cuando el que
+razona soy yo—:
+
+```
+ejeA.publicable  = false      ← «la confiabilidad no se puede dictaminar»
+ejeA.nivel       = null
+los cuatro ejes  = 0 publican nivel
+la placa publica = «Fiable»   ← y lo publicaba igual
+```
+
+El eje A y el techo de la palabra cuentan **las mismas cinco contradicciones**
+con el mismo `conIdentidad: 0`. Uno concluye que no se puede dictaminar y el
+otro publicaba un peldaño. `publicable` nació en la **v959** y el piso
+publicado en la **v1050**: once versiones con las dos rutas diciendo lo
+contrario sobre un mismo hecho, y nadie lo vio porque el eje y la placa viven
+en dos sitios. Es la **clase B** en el sitio más caro del módulo.
+
+### Lo que NO se tocó, y por qué
+
+**Los tres techos y la escalera se quedan exactamente como están.** Escribir un
+criterio para que este gobierno dé «no fiable» hace dos cosas: el próximo que
+le caiga mal dará «no fiable» por construcción y no por medición, y el primero
+que le discuta un número tumba las 212 entradas de golpe. Es la mentira más
+pequeña que este proyecto lleva veinte tandas rechazando (v875, v881, v889).
+
+Y no hacía falta: **la contradicción ya daba la respuesta que el pedido
+pide.**
+
+### La desproporción, medida
+
+| Eje | Se alimenta de | ¿Publica nivel? |
+|---|---|---|
+| **A · la palabra** | **5 contradicciones** | **no** — y aun así fijaba el titular |
+| B · deterioro institucional | 135 hechos de actividad, **6 clasificados** | no |
+| C · rumbo del gasto | el reparto por sector | no |
+| **D · uso de la fuerza y derechos** | **46 hechos** del registro | no |
+
+Cinco hechos fijaban el titular de la página. Cuarenta y seis hechos de
+bombardeos, muertes confirmadas por Medicina Legal, desplazamiento e informes
+de la Defensoría no fijaban nada.
+
+### La regla: `PESO_EJE`
+
+Cada eje declara qué mide, y con eso **la realidad fija el veredicto y la
+palabra solo puede empeorarlo**: que un gobernante sea coherente con lo que
+prometió no mejora el país. Los cuatro ejes siguen lado a lado y ninguna
+función los promedia — la regla de oro del pliego está intacta, y lo que esta
+tabla declara es otra cosa: cuál puede FIJAR el titular.
+
+#### No hay escala común, y NO se inventa
+
+«El peor de los ejes de realidad» pide comparar un B4 con un C2. Medido, **el
+eje C y el eje D no tienen ninguna escala** —nadie ha escrito qué significaría
+un C3— y redactarla mirando este registro la haría nacer `construida-para-el-caso`
+y sin validar, que es la marca que la v965 le pone a lo que no se contrastó.
+
+Lo que sí se sostiene sin inventar nada es la regla que la escalera ya usa por
+dentro con un techo indeterminado, **subida un nivel**: con un eje de realidad
+sin nivel, el veredicto general es indeterminado. Hoy los tres lo están.
+`veredictoGeneral` devuelve siempre un objeto con su estado y nunca un null
+(v876), y la rama de «todos publican» **se para y lo dice** en vez de sacar un
+máximo a ojo — con su guarda, que se pone roja ante un `Math.max`.
+
+#### Y la dirección de cada escala va declarada aunque hoy nadie compare
+
+Las dos que existen van al **revés** una de la otra:
+
+```
+eje A:  5 = Alta      … 1 = No confiable    → más alto es MEJOR
+eje B:  1 = Estable   … 5 = Crítico         → más alto es PEOR
+```
+
+Comparar niveles crudos publicaría un «B5 · Crítico» como el mejor de los dos.
+Esa rama hoy no se alcanza, y `dir` se declara igual: es el defecto que muerde
+el día que el eje B publique nivel y alguien escriba el máximo a ojo.
+
+### El color es lo que afirma primero
+
+La mitad que de verdad hace el trabajo, y la vio el papel. Con
+`sp-fi-v-fiable` la placa sale en **verde a pantalla completa**, y eso desmiente
+las tres líneas de acotación de debajo por más literales que sean: el ojo llega
+al color antes que al texto. Con «Sin dictamen» la clase del peldaño no se
+pone, y el gris que entra es **el mismo token que «sin datos»** y por la misma
+razón: que la realidad no esté medida es deuda nuestra, no un hallazgo sobre el
+gobierno (v971).
+
+### Tres superficies más que publicaban el peldaño, y una la oye un lector de pantalla
+
+* el **`aria-label`** del botón de la portada decía «Fiabilidad de la palabra:
+  Fiable» — nadie lo ve, que es como la v1031 encontró un «undefined gal» leído
+  en voz alta durante versiones;
+* el **pie del enlace** a la ficha, lo mismo;
+* y la **escalera de la ficha** arrancaba **sin rótulo**: los cinco peldaños con
+  «Fiable» marcado en verde, sin decir de qué. Es la clase de la v879 que la
+  v1051 corrigió en la placa y aquí quedó viva.
+
+Los dos primeros leen ahora **una sola frase** (`dichoDelVeredicto`): con dos
+redacciones se separan, y la que se quedaría vieja es la del `aria-label`.
+
+De paso, el pie decía **«los tres ejes»** escrito a mano y son cuatro desde la
+v1055 — la cifra que envejece sola de la v903, que aquella tanda corrigió en la
+placa y dejó viva aquí. Ahora se cuenta.
+
+### Cuatro defectos míos de concordancia, y uno que costó acercar la rama
+
+«N ejes» sin rama de singular, en cuatro sitios. Los cazó la guarda de la
+v1019, y el último no bastó con ramificarlo: el `=== 1` quedaba a **190
+caracteres** del plural y la ventana del detector es de 160. **No se aflojó el
+detector** — se acercó la rama, que además deja la frase más corta.
+
+Y un quinto que es un falso positivo del barrido: **«compararlos»** es un
+infinitivo con enclítico y no un plural contado. Meterlo en la lista de
+invariables sería ensancharla por un verbo (v895), así que se reescribió la
+frase. Y un comentario en medio **no sirve**: `soloCodigo` lo quita y las dos
+cadenas vuelven a quedar pegadas.
+
+### Dos guardas que envejecieron por un cambio legítimo, y se apretaron
+
+Las dos citaban la línea y no la propiedad (v890):
+
+* **la marca de provisional** contaba los `if` cuya ventana de 220 caracteres
+  rozara un `sp-fi-vfalta`, y empezó a contar dos que no deciden nada de la
+  marca. Ahora mide por contenido: **todo bloque que diga hasta dónde baja el
+  peldaño va guardado por un `if` que LEE la marca**, y la placa no la
+  recalcula. Un ancla por distancia envejece (v935);
+* **el orden del rótulo** comparaba el primer `sp-fi-vval` de la placa, que
+  desde esta versión es el del titular. Se mide **dentro de la rama del
+  peldaño**, que es la v854.
+
+### Y la guarda más importante no mordía, por el trozo
+
+El hallazgo de la tanda, y es sobre mi propia guarda. «La placa titula con el
+veredicto de la página» **pasó en verde con el titular devuelto al peldaño** —
+o sea, con el defecto exacto que esta versión vino a quitar.
+
+La causa: `dichoDelVeredicto` quedó escrita entre `placaDe` y
+`pintarPlacaPortada`, que eran los dos cortes del trozo, **así que la guarda la
+leía como parte de la placa** y encontraba ahí la frase que buscaba. Es la v854
+otra vez, y solo lo destapó **la inyección fiel**: leyendo el patrón se ve
+correcto.
+
+### Demostrado contra la v1056
+
+Nueve inyecciones fieles, una por aserción (v993), contra copias guardadas y no
+con `git checkout --` sobre trabajo sin confirmar (v973):
+
+```
+✗ el veredicto de la página sale de los ejes que miden la realidad
+    — no filtra por lo que mide cada eje: el peldaño de la palabra volvería a
+      ser el veredicto de la página
+✗ y la palabra viaja con él, pero no decide su estado
+    — la palabra entró en la decisión: podría fijar o subir el veredicto, y lo
+      que dice un gobernante no mejora el país
+✗ y los cuatro ejes que se componen declaran su peso  — sin declarar: E
+✗ y cada uno declara qué mide, hacia dónde va su escala y si la tiene  — incompletos: B
+✗ y con todos publicando nivel se para en vez de sacar un máximo a ojo
+    — compara niveles de ejes distintos: sus escalas van al revés
+✗ la placa titula con el veredicto de la página, no con el peldaño
+    — volvió a titular con el peldaño de la palabra
+✗ y no se pinta con el color de un peldaño que no publica  — saldría en verde bajo un «Sin dictamen»
+✗ y no se pinta con el color … (sin la regla de CSS)  — la clase no pintaría nada
+✗ y la escalera de la ficha dice de qué es antes de su color  — arranca sin rótulo
+✗ y el cálculo sigue leyendo la tabla de peso  — dejó de leerla: sería documentación
+```
+
+### Lo que esta versión NO hace, y queda medido
+
+* **La escala de gravedad común**, que es lo que permitiría publicar «el peor de
+  los ejes de realidad» el día que los tres tengan nivel. Pide escribir las
+  escalas del eje C y del eje D, que hoy no existen, y contrastarlas contra un
+  gobierno anterior; escritas mirando este registro nacerían sin validar.
+  `pendiente`
+* **Las cinco declaraciones de `mismoObjetoVerificado`**, que son de quien firma
+  el módulo (v959, v972, v1050). Medido: una deja el peldaño de la palabra en
+  «Fiable», dos lo bajan a «Dudosa» y **tres lo dejan en «Poco fiable» y firme**,
+  sin hacer falta las cinco. `pendiente`
+* **Clasificar los 129 hechos de actividad sin indicador**, que es lo único de
+  los tres bloqueos del eje B que no pide fuente y es mío. `pendiente`
+* **El eje D publicando su CIFRA sin publicar nivel**, como el C publica sus
+  recortes desde la v1055: el registro ya trae seis menores muertos con
+  confirmación de Medicina Legal. No pide fuente nueva, pide contar lo que ya
+  está. `pendiente`
+
+### Lo que NO se pudo correr
+
+**Ninguna suite de navegador**, por lo mismo que la v973 en adelante: este
+contenedor no tiene `../urbis-motor` ni el `node_modules` del banco de pruebas.
+Corrió `revisar.js` entero con sus nueve comprobaciones nuevas, y se midió el
+papel con la sonda: la placa a 360, 390 y 430 px con su captura, el
+`aria-label`, el pie de la portada y la escalera de la ficha.
 
 ## La lista viva: lo que al pliego educativo todavía le falta (v866)
 

@@ -2730,6 +2730,145 @@
     };
   }
 
+  /* ═══ EL PESO DE CADA EJE ══════════════════════════════════════════════
+     Los cuatro ejes van lado a lado y NINGUNA función los promedia: esa es
+     la regla de oro del pliego y sigue intacta. Lo que esta tabla declara es
+     otra cosa: cuál de ellos puede FIJAR el veredicto de la página.
+
+     Hasta la v1056 el titular de la placa era el peldaño de la escalera de
+     fiabilidad, y esa escalera cuenta tres cosas: casos de corrupción con
+     proceso abierto, cambios de postura, y qué parte de NUESTRO registro
+     está verificada por terceros. Ninguna de las tres mide cómo está el
+     país. Así que la página publicaba «Fiable» en verde a 32 px sobre un
+     gobierno cuyos tres ejes de realidad no publican nivel ninguno.
+
+     Y no era solo un defecto de lectura: era una CONTRADICCIÓN del propio
+     módulo. `ejeA.publicable` es false desde la v959 —«la confiabilidad no
+     se puede dictaminar»— y la v1050 publicó su peldaño igual, once
+     versiones después, sin medir que el eje ya decía lo contrario. El eje y
+     la placa viven en dos sitios, así que nadie lo vio: es la clase B en el
+     sitio más caro del módulo, y las dos rutas daban respuestas opuestas
+     sobre el mismo hecho —las mismas cinco contradicciones, el mismo
+     `conIdentidad: 0`—.
+
+     ── LA REGLA ──
+     Una cosa son sus palabras y otra es la realidad. Así que:
+
+       · los ejes de REALIDAD —qué le pasa a las reglas del juego, a dónde va
+         el dinero, qué le pasa a la gente en las operaciones del Estado— son
+         los que fijan el veredicto;
+       · el de la PALABRA solo puede EMPEORARLO. Nunca fijarlo y nunca
+         subirlo: que un gobernante sea coherente con lo que prometió no
+         mejora el país.
+
+     La desproporción que esto corrige está medida sobre el registro: el eje A
+     se alimenta de 5 contradicciones y fijaba el titular; el eje D se
+     alimenta de 46 hechos —bombardeos, muertes confirmadas por Medicina
+     Legal, desplazamiento, informes de la Defensoría— y no fija nada.
+
+     ── POR QUÉ NO HAY ESCALA COMÚN, Y NO SE INVENTA ──
+     «El peor de los ejes de realidad» pide comparar un B4 con un C2, y para
+     eso haría falta una escala de gravedad común. No se escribe acá: el eje C
+     y el eje D no tienen NINGUNA escala —nadie ha escrito qué significaría un
+     C3— y redactarla mirando este registro la haría nacer construida para el
+     caso y sin validar, que es la marca que la v965 le pone a lo que no se
+     contrastó contra ningún otro gobierno.
+
+     Lo que sí se sostiene sin inventar nada es la misma regla que la escalera
+     ya usa por dentro con un techo indeterminado, subida un nivel: **con un
+     eje de realidad sin nivel, el veredicto general es indeterminado.** Hoy
+     los tres lo están, así que no hay veredicto — y eso es lo correcto y no
+     un hueco: publicar el de la palabra en su lugar es exactamente lo que
+     esta tabla vino a impedir.
+
+     ── LA DIRECCIÓN DE CADA ESCALA, DECLARADA AUNQUE HOY NADIE COMPARE ──
+     Las dos escalas que existen van al REVÉS una de la otra:
+
+       eje A:  5 = Alta      … 1 = No confiable    → más alto es MEJOR
+       eje B:  1 = Estable   … 5 = Crítico         → más alto es PEOR
+
+     Comparar niveles crudos publicaría un «B5 · Crítico» como si fuera el
+     mejor de los dos. Hoy esa rama no se alcanza —no hay comparación— pero
+     la dirección se declara igual, porque es el defecto que muerde el día
+     que el eje B publique nivel y alguien escriba el máximo a ojo. */
+  var PESO_EJE = {
+    /* mide:   'realidad' fija el veredicto · 'palabra' solo lo empeora
+       dir:    +1 si un número mayor es PEOR · -1 si es MEJOR
+       escala: false mientras el eje no tenga una escrita */
+    A: { mide: 'palabra',  dir: -1, escala: true  },
+    B: { mide: 'realidad', dir: +1, escala: true  },
+    C: { mide: 'realidad', dir: +1, escala: false },
+    D: { mide: 'realidad', dir: +1, escala: false }
+  };
+
+  /* El veredicto de la PÁGINA, que no es el peldaño de la escalera.
+
+     Devuelve SIEMPRE un objeto con su estado y nunca un null: «no hay
+     dictamen porque falta medir la realidad» y «no hay dictamen porque
+     ningún eje la mide» piden cosas distintas a quien lee, y un null las
+     juntaría en una (v876). */
+  function veredictoGeneral(ejes, palabra) {
+    var real = (ejes || []).filter(function (e) {
+      var p = e && PESO_EJE[e.eje]; return !!p && p.mide === 'realidad';
+    });
+
+    if (!real.length) {
+      return { estado: 'sin-ejes', t: 'Sin dictamen', palabra: palabra || null,
+               porque: 'Ningún eje de este módulo mide la realidad del país, así que no hay nada que ' +
+                       'dictaminar sobre cómo está.' };
+    }
+
+    var sin = real.filter(function (e) { return !e.nivel; });
+    if (sin.length) {
+      return {
+        estado: 'sin-dictamen', t: 'Sin dictamen', palabra: palabra || null,
+        deCuantos: real.length,
+        faltan: sin.map(function (e) { return { eje: e.eje, t: e.t, falta: e.falta || '' }; }),
+        /* Las DOS redacciones van escritas y no solo la de hoy: la de «alguno»
+           es justo la que hace falta el día que uno de los tres se desbloquee
+           y los otros no, y sin ella ese día la placa diría lo de «ninguno»
+           sobre un eje que sí publica (v970). */
+        porque: sin.length === real.length
+          /* Sin la segunda frase del borrador —«el peldaño de la palabra no lo
+             sustituye»—, que el bloque de la palabra ya dice tres renglones
+             más abajo y al lado del peldaño donde aplica. Dicha dos veces en
+             la misma placa es el método repetido de la v877, y lo vio el
+             papel compuesto y no el código. */
+          /* Con UN solo eje de realidad la frase cambia de forma y no solo de
+             plural —«Ninguno de los 1 ejes» no es castellano—, así que las dos
+             se escriben enteras. Es la concordancia de la v874. */
+          ? (real.length === 1
+              ? 'El único eje que mide la realidad del país no publica nivel'
+              : 'Ninguno de los ' + real.length + ' ejes que miden la realidad del país publica nivel') +
+            ' todavía, así que no hay con qué dictaminar cómo está el país.'
+          : sin.length + ' de los ' + cn(real.length, 'eje que mide la realidad',
+                                             'ejes que miden la realidad') + ' todavía no ' +
+            pl(sin.length, 'publica', 'publican') + ' nivel, así que el veredicto queda ' +
+            'indeterminado: lo que falta por medir podría ser peor que lo que ya está medido, y ' +
+            'nunca mejor.'
+      };
+    }
+
+    /* Con los tres publicando nivel hace falta la escala de gravedad común
+       para compararlos, y esa NO se inventa acá — ver PESO_EJE. Se declara y
+       se para, que es lo que este módulo hace con todo lo que no puede medir
+       todavía. */
+    return { estado: 'sin-escala-comun', t: 'Sin dictamen', palabra: palabra || null,
+             niveles: real.map(function (e) { return { eje: e.eje, t: e.t, nivel: e.nivel }; }),
+             porque: (real.length === 1
+                       ? 'El único eje que mide la realidad ya publica nivel, y '
+                       : 'Los ' + real.length + ' ejes que miden la realidad ya publican nivel, y ') +
+                     /* «para» y no «compararlos»: el barrido de prosa ve una palabra en -s
+                        detrás de una concatenación y no distingue un infinitivo con enclítico de
+                        un plural contado. Meterlo en la lista de invariables sería ensanchar esa
+                        lista por un verbo (v895); reescribir la frase no cuesta nada y dice lo
+                        mismo. Un comentario en medio NO sirve: `soloCodigo` lo quita y las dos
+                        cadenas vuelven a quedar pegadas. */
+                     'para sacar el peor hace falta una escala de gravedad común que este ' +
+                     'módulo todavía no declara. Escribirla es una decisión de quien firma el ' +
+                     'módulo, no un ajuste de código.' };
+  }
+
   /* Los tres juntos, y NINGUNA función que los promedie. Devolver una lista
      y no un objeto con un total es parte de la regla: si el día de mañana
      alguien quiere un número único, tiene que escribirlo a mano y esa línea
@@ -3190,8 +3329,19 @@
        veredicto a propósito, para que se vea en el código que no lo toca. */
     var capa1 = capaUnoDe_conjunto(ent);
 
+    /* El veredicto de la PAGINA, y va DESPUES del peldaño a proposito: lee
+       los niveles de los cuatro ejes y no toca ni `techos` ni `peor` ni `v`,
+       igual que `capa1`. Que se calcule aca, al final, es lo que deja ver en
+       el codigo que la Capa 3 no escribe en la escalera — la regla de oro
+       del pliego, que sigue intacta.
+
+       Lo que SI decide es cual de los dos se publica como titular, y por eso
+       vive en la ficha y no en la placa: con la pantalla decidiendo, la placa
+       y la ficha se separarian a la tanda siguiente (v879). */
+    var general = veredictoGeneral(ejesDe(dd, hasta), v);
+
     return { corte: hasta, palabra: palabra, casos: casos, claridad: claridad, ritmo: ritmo,
-             alcance: alcance, techos: techos, manda: manda, veredicto: v,
+             alcance: alcance, techos: techos, manda: manda, veredicto: v, general: general,
              ejeA: ea, determinado: determinado, peorMin: peorMin, peorMax: peorMax,
              capa1: capa1, rasgos: rasgosDe(dd, ent),
              /* Pegada a la ficha y no leída desde el panel: una ficha
@@ -3250,6 +3400,7 @@
                              indicadores: indicadoresDe, comparabilidad: comparabilidad,
                              catalogoIndicadores: INDICADORES, capaUno: capaUnoDe_conjunto,
                              ejes: ejesDe, ejeA: ejeA, ejeB: ejeB, ejeC: ejeC, ejeD: ejeD,
+                             pesoEje: PESO_EJE, general: veredictoGeneral,
                              fuentesComp: composicionDeFuentes,
                              marco: marcoDeclarado, editorial: editorialDe,
                              control: controlDeCalidad,
@@ -3367,8 +3518,16 @@
   function placaDe(f, reg) {
     reg = reg || D;
     var cerrado = !!reg.cerrado;
-    var placa = el('div', 'sp-fi-placa sp-fi-v-' + f.veredicto.id +
-      (f.veredicto.provisional ? ' sp-fi-prov' : '') + (cerrado ? ' sp-fi-placa-cerrada' : ''));
+    /* EL COLOR ES LO QUE AFIRMA PRIMERO, y por eso la clase del peldaño no
+       se pone cuando el titular no es el peldaño. Con `sp-fi-v-fiable` la
+       placa sale en verde, y un verde a pantalla completa desmiente las tres
+       líneas de acotación que van debajo por más literales que sean: el ojo
+       llega al color antes que al texto. Lo vio el papel, no el código. */
+    var sinDictamen = !!(f.general && f.general.estado !== 'ok');
+    var placa = el('div', 'sp-fi-placa ' +
+      (sinDictamen ? 'sp-fi-v-sin-dictamen' : 'sp-fi-v-' + f.veredicto.id) +
+      (!sinDictamen && f.veredicto.provisional ? ' sp-fi-prov' : '') +
+      (cerrado ? ' sp-fi-placa-cerrada' : ''));
 
     /* ── La firma ────────────────────────────────────────────────────────
        Esta placa se fotografía y la captura circula sola: en un comentario
@@ -3427,25 +3586,72 @@
        poder, que es confiabilidad alta con deterioro alto.
        Es la clase de la v879: un rotulo que solo nombra la familia deja
        que el lector suponga que mide todo lo de esa familia. */
-    placa.appendChild(el('p', 'sp-fi-vlabel', 'Fiabilidad de la palabra'));
-    /* El rótulo de provisional va ANTES del peldaño y no después, y el orden
-       es la mitad que hace el trabajo: el peldaño se pinta en el color de su
-       escalón —«Fiable» sale en verde a 32 px— y en una captura ese color
-       domina. Leído en orden, quien llega al verde ya sabe que es con lo
-       confirmado. Detrás, el color afirmaría antes de que el texto acote. */
-    if (f.veredicto.provisional) placa.appendChild(el('p', 'sp-fi-vprov', 'Con lo confirmado hasta hoy'));
-    placa.appendChild(el('p', 'sp-fi-vval', f.veredicto.t));
-    /* Un peldaño PROVISIONAL lo dice en la placa misma, y dice hasta dónde
-       puede bajar. Esta placa se fotografía y la captura circula sola: un
-       peldaño pelado se leería como firme, y uno sin su techo dejaría al
-       lector sin saber qué está en juego. Las dos mitades hacen falta —lo
-       que sostiene y lo que falta— o la marca es un adorno. */
-    if (f.veredicto.provisional) {
-      placa.appendChild(el('p', 'sp-fi-vfalta',
-        'Aún no se confirma, en ' + f.veredicto.sinDeclarar + ' de ' +
-        cn(f.veredicto.documentadas, 'contradicción documentada', 'contradicciones documentadas') +
-        ', si las dos frases hablan del mismo objeto verificado. Si todas resultaran serlo, el ' +
-        'peldaño bajaría a «' + f.veredicto.hasta.t + '»; lo que falta no puede subirlo.'));
+    /* ── EL TITULAR ES CÓMO ESTÁ EL PAÍS, NO CÓMO HABLA EL PRESIDENTE ──
+       Hasta la v1056 el titular era el peldaño de la escalera de fiabilidad,
+       y esa escalera no mide el país: mide casos con proceso abierto, cambios
+       de postura y qué parte de NUESTRO registro está verificada. Con los
+       tres ejes de realidad sin nivel, la página publicaba «Fiable» en verde
+       a 32 px sobre un gobierno cuyo deterioro institucional, rumbo del gasto
+       y uso de la fuerza no tienen dictamen ninguno.
+
+       Una cosa son sus palabras y otra es la realidad, así que la realidad
+       manda: `veredictoGeneral` sale de los ejes de realidad y la palabra
+       solo puede empeorarlo. Ver PESO_EJE.
+
+       El peldaño de la palabra NO se pierde: baja a donde le corresponde, con
+       su rótulo y sin el verde de titular. */
+    var vg = f.general || null;
+    var vgSin = !!(vg && vg.estado !== 'ok');
+
+    if (vgSin) {
+      placa.appendChild(el('p', 'sp-fi-vlabel', 'Cómo está el país'));
+      placa.appendChild(el('p', 'sp-fi-vval', vg.t));
+      placa.appendChild(el('p', 'sp-fi-vfalta', vg.porque));
+      /* Los ejes que faltan van NOMBRADOS. Un «sin dictamen» pelado se lee
+         como que el módulo no supo; con los tres nombrados, lo que se lee es
+         que hay tres cosas medibles sin medir, y cuáles. Es la exención que
+         deja de ser silenciosa (v966). */
+      if (vg.faltan && vg.faltan.length) {
+        placa.appendChild(el('p', 'sp-fi-vfaltan',
+          'Falta medir: ' + vg.faltan.map(function (x) { return x.t.toLowerCase(); }).join(' · ') + '.'));
+      }
+      /* Y el peldaño de la palabra, abajo, con lo que mide dicho delante.
+         Va DESPUÉS del titular a propósito: leído en orden, quien llega a
+         «Fiable» ya sabe que eso son sus palabras y no el país. */
+      if (vg.palabra && vg.palabra.t) {
+        placa.appendChild(el('p', 'sp-fi-vpal',
+          'Lo único que sí tiene peldaño mide sus palabras, no el país — y solo puede empeorar este ' +
+          'dictamen, nunca mejorarlo: ' + (vg.palabra.provisional ? 'con lo confirmado hasta hoy, ' : '') +
+          'confiabilidad de la palabra «' + vg.palabra.t + '».'));
+        if (vg.palabra.provisional) {
+          placa.appendChild(el('p', 'sp-fi-vfalta sp-fi-vfalta-2',
+            'Aún no se confirma, en ' + vg.palabra.sinDeclarar + ' de ' +
+            cn(vg.palabra.documentadas, 'contradicción documentada', 'contradicciones documentadas') +
+            ', si las dos frases hablan del mismo objeto verificado. Si todas resultaran serlo, ese ' +
+            'peldaño bajaría a «' + vg.palabra.hasta.t + '»; lo que falta no puede subirlo.'));
+        }
+      }
+    } else {
+      placa.appendChild(el('p', 'sp-fi-vlabel', 'Fiabilidad de la palabra'));
+      /* El rótulo de provisional va ANTES del peldaño y no después, y el orden
+         es la mitad que hace el trabajo: el peldaño se pinta en el color de su
+         escalón —«Fiable» sale en verde a 32 px— y en una captura ese color
+         domina. Leído en orden, quien llega al verde ya sabe que es con lo
+         confirmado. Detrás, el color afirmaría antes de que el texto acote. */
+      if (f.veredicto.provisional) placa.appendChild(el('p', 'sp-fi-vprov', 'Con lo confirmado hasta hoy'));
+      placa.appendChild(el('p', 'sp-fi-vval', f.veredicto.t));
+      /* Un peldaño PROVISIONAL lo dice en la placa misma, y dice hasta dónde
+         puede bajar. Esta placa se fotografía y la captura circula sola: un
+         peldaño pelado se leería como firme, y uno sin su techo dejaría al
+         lector sin saber qué está en juego. Las dos mitades hacen falta —lo
+         que sostiene y lo que falta— o la marca es un adorno. */
+      if (f.veredicto.provisional) {
+        placa.appendChild(el('p', 'sp-fi-vfalta',
+          'Aún no se confirma, en ' + f.veredicto.sinDeclarar + ' de ' +
+          cn(f.veredicto.documentadas, 'contradicción documentada', 'contradicciones documentadas') +
+          ', si las dos frases hablan del mismo objeto verificado. Si todas resultaran serlo, el ' +
+          'peldaño bajaría a «' + f.veredicto.hasta.t + '»; lo que falta no puede subirlo.'));
+      }
     }
     /* QUE NO MIDE, y por que va en la PLACA y no solo en el bloque de los
        tres ejes del final de la ficha.
@@ -3484,7 +3690,13 @@
     var listaN = nombres.length > 1
       ? nombres.slice(0, -1).join(', ') + ' y ' + nombres[nombres.length - 1]
       : (nombres[0] || '');
-    placa.appendChild(el('p', 'sp-fi-alcance',
+    /* Con el titular ya diciendo que no hay dictamen y nombrando los tres
+       ejes que faltan, esta frase repetiría lo mismo por tercera vez en la
+       misma placa —el método repetido de la v877—, y su cierre («un peldaño
+       alto aquí NO dice que el gobierno esté bien») hablaba de un titular que
+       ya no es un peldaño. Se calla cuando no hay dictamen; la CIFRA de abajo
+       no, porque es la única de las dos que se puede comprobar dividiendo. */
+    if (!sinDictamen) placa.appendChild(el('p', 'sp-fi-alcance',
       'Mide solo si lo que dice coincide con lo que hace. ' +
             /* Sin «El » delante: el nombre de lista YA trae su artículo, y con los
          dos salía «El el deterioro institucional». Lo vio el papel compuesto,
@@ -3515,13 +3727,33 @@
     return placa;
   }
 
+  /* Lo que la portada dice del veredicto, en UN solo sitio: lo leen el
+     `aria-label` del botón y el pie del enlace a la ficha. Con dos
+     redacciones se separan a la tanda siguiente (v879), y la que se
+     quedaría vieja es la del `aria-label` — la que nadie ve, que es
+     justamente como la v1031 encontró un «undefined gal» leído en voz alta
+     durante versiones. */
+  function dichoDelVeredicto(f) {
+    var vg = f.general;
+    if (vg && vg.estado !== 'ok') {
+      return 'Cómo está el país: sin dictamen todavía, porque ' +
+        (vg.faltan && vg.faltan.length
+          ? cn(vg.faltan.length, 'eje de realidad no publica nivel', 'ejes de realidad no publican nivel')
+          : 'ningún eje mide la realidad') +
+        '. Lo que sí tiene peldaño mide sus palabras y no el país: confiabilidad de la palabra ' +
+        (vg.palabra && vg.palabra.t ? '«' + vg.palabra.t + '»' : 'sin calcular') + '.';
+    }
+    return 'Fiabilidad de la palabra: ' + f.veredicto.t + '.';
+  }
+
   // La portada abre en el perfil: la placa es lo primero, dentro de un botón.
   function pintarPlacaPortada() {
     var host = $('sp-hero-ficha'); if (!host) return;
     vaciar(host);
     var f = fichaHasta(null);
     var b = el('button', 'sp-placa-btn'); b.type = 'button';
-    b.setAttribute('aria-label', 'Ficha del gobernante. Fiabilidad de la palabra: ' + f.veredicto.t + '. ' + cuentasDe(f) + '. Abrir la ficha completa.');
+    b.setAttribute('aria-label', 'Ficha del gobernante. ' + dichoDelVeredicto(f) + ' ' +
+      cuentasDe(f) + '. Abrir la ficha completa.');
     b.appendChild(placaDe(f));
     var pie = el('span', 'sp-placa-pie');
     pie.appendChild(el('span', null, 'Abrir la ficha del gobernante: casos, contradicciones y rasgos'));
@@ -3544,8 +3776,15 @@
     var t = el('span', 'sp-irficha-t');
     t.appendChild(el('b', null, 'Abrir la ficha completa del gobernante'));
     t.appendChild(el('span', 'sp-irficha-d',
-      'Casos de corrupción con su estado probatorio, contradicciones, los tres ejes y el método. ' +
-      'Hoy, fiabilidad de la palabra: ' + f.veredicto.t + '.'));
+      /* «los N ejes» se CUENTA y no se teclea: decía «los tres» y son cuatro
+         desde la v1055, o sea que llevaba una versión entera nombrando tres
+         de cuatro. Es la cifra que envejece sola de la v903, que aquella
+         tanda corrigió en la placa y dejó viva aquí. */
+      'Casos de corrupción con su estado probatorio, contradicciones, ' +
+      (function (k) {
+        return k === 1 ? 'el eje' : 'los ' + enLetra(k) + ' ejes';
+      }(ejesDe(D, f.corte).length)) + ' y el método. Hoy, ' +
+      dichoDelVeredicto(f).charAt(0).toLowerCase() + dichoDelVeredicto(f).slice(1)));
     b.appendChild(t);
     b.appendChild(flechaIr());
     b.addEventListener('click', function () { ir({ v: 'ficha' }); });
@@ -3834,6 +4073,20 @@
     izq.appendChild(placaDe(f, reg));
 
     var ver = el('section', 'sp-fi-ver-box sp-fi-v-' + f.veredicto.id);
+    /* LA ESCALERA ARRANCABA SIN ROTULO, con «Fiable» marcado en verde y sin
+       decir de que. Es la clase de la v879 que la v1051 corrigio en la placa
+       —un rotulo que nombra la familia y mide una parte— viva en la ficha,
+       donde ademas la caja entera va en el color del peldaño.
+       El rotulo dice las dos cosas que el lector necesita antes del color:
+       que mide la palabra, y que la palabra no fija el veredicto de la
+       pagina. La segunda se CALCULA de la tabla de peso (v903) para que el
+       dia que un eje cambie de lado no se quede vieja. */
+    ver.appendChild(el('p', 'sp-fi-ver-rot',
+      'Fiabilidad de la palabra — mide si lo que dice coincide con lo que hace. ' +
+      'No fija el veredicto de la página: eso lo ' +
+      pl(Object.keys(PESO_EJE).filter(function (k) { return PESO_EJE[k].mide === 'realidad'; }).length,
+         'hace el eje que mide la realidad', 'hacen los ejes que miden la realidad') +
+      ', y este solo puede empeorarlo.'));
     var esc = el('div', 'sp-fi-esc');
     esc.setAttribute('aria-label', 'Escalera: ' + ESCALERA.map(function (x) { return x.t; }).join(', '));
     ESCALERA.forEach(function (x) {
