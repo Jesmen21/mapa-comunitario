@@ -2109,6 +2109,172 @@ console.log('\n  -- la ficha del gobernante --');
                           : 'no hay bloque de rectificaciones');
   }
 
+
+  /* ═══ CADA PENDIENTE PROPIO, SOBRE SU PROPIO DENOMINADOR (v1064) ════════
+     El bloque «Lo que nos falta a nosotros» publicaba «Entradas sin nivel de
+     gobierno declarado · 75 de 218». De esas 75 ni una era un acto: 50 son
+     contexto estructural y 25 resultados, y a una cifra del país no se le
+     puede declarar de qué nivel es «la decisión» porque no es una decisión.
+     Medido sobre los actos —el denominador honesto que la v999 ya había
+     escrito dos mil líneas antes, en la puerta del indicador— el pendiente
+     era CERO: hecho, y publicado como falta durante sesenta y cinco
+     versiones.
+
+     Es la cuarta vez. v999 con `nivelGobierno`, v1060 con la identidad,
+     v1061 con el indicador, y esta. La regla está en CLAUDE.md: todo
+     recuento de lo que FALTA declarar corre sobre las entradas a las que ese
+     campo se les puede exigir, y ninguna más. Un pendiente que nadie puede
+     bajar nunca es el trinquete que la v965 prohibió, dicho al revés: no
+     crece solo, es que nace arriba y no baja.
+
+     Y el de los criterios tenía el mismo defecto LATENTE: contaba «tiene
+     criterio escrito» en vez de «su criterio no está validado». El día que
+     uno valide contra un gobierno anterior el renglón seguiría diciendo
+     cuatro, porque la cifra estaba escrita en el predicado y no calculada
+     (v903) — teniendo `validacionDe` al lado, que ya la calcula.
+
+     Las cuatro mitades, porque cada una falla por su lado:
+       1 · las cinco comprobaciones existen y cada una trae su DENOMINADOR;
+       2 · la del nivel se mide sobre los actos y no sobre las entradas;
+       3 · la de los criterios lee el estado CALCULADO;
+       4 · y las dos redacciones (v970) LLEGAN a la pantalla: sin la de cero
+           un renglón que desaparece deja «ya está hecho» con la misma cara
+           que «nadie lo ha mirado». */
+  {
+    const j70q = soloCodigo(leer('js/70-seguimiento.js'));
+    const iQ = j70q.indexOf('function comprobacionesPropias(dd) {');
+    const trozoQ = iQ < 0 ? '' : j70q.slice(iQ, j70q.indexOf('\n  function pendientesPropios(', iQ));
+    const claves = [...trozoQ.matchAll(/\{ k: '([a-zA-Z]+)', n: /g)].map((m) => m[1]);
+
+    comprobar('MATERIAL · las comprobaciones propias son una lista de objetos con su clave',
+      claves.length >= 5 && trozoQ.length > 400,
+      claves.length ? claves.join(' · ') : 'no se encontró comprobacionesPropias');
+
+    /* El denominador es obligatorio en TODAS, no solo en la que falló: se
+       persigue la clase y no el caso (v874, v885). Una comprobación sin `de`
+       no se puede leer como fracción, y es por donde volvería a entrar un
+       recuento sobre el conjunto equivocado. */
+    /* Cada comprobación se trocea por SU PROPIO BORDE —el `{ k: '…'` de la
+       siguiente— y no por un terminador de indentación: la primera versión de
+       esta guarda buscaba `\n      }` y ninguna de las cinco cierra así, así
+       que las cinco salieron «no encontradas» y las aserciones imprimieron el
+       texto del verde estando en rojo. Es la clase de la v973 (v1051), y la
+       cazó la corrida, no la lectura. */
+    const piezas = trozoQ.split(/\n      \{ k: '/).slice(1)
+      .map((t) => ({ k: (t.match(/^([a-zA-Z]+)'/) || [, ''])[1], t: t }));
+    const conDe = piezas.map((x) => ({ k: x.k, ok: /, de: /.test(x.t.split('\n')[0]) }));
+    const sinDe = conDe.filter((x) => !x.ok).map((x) => x.k);
+    comprobar('las cinco traen su denominador escrito, no solo su numerador',
+      conDe.length >= 5 && sinDe.length === 0,
+      sinDe.length ? 'sin `de`: ' + sinDe.join(', ') : conDe.length + ' con numerador y denominador');
+
+    /* LAS DOS REDACCIONES (v970). La de cero es justo la que hace falta el
+       día que el material se arregle, y es la que faltaba acá. */
+    const sinCero = piezas.filter((x) => !/\n\s+cero: /.test(x.t)).map((x) => x.k);
+    comprobar('cada una lleva SUS DOS REDACCIONES: la de N y la de cero',
+      conDe.length >= 5 && sinCero.length === 0,
+      sinCero.length ? 'sin redacción de cero: ' + sinCero.join(', ')
+                     : 'las ' + conDe.length + ' tienen `cero:` escrita');
+
+    /* La del nivel, sobre los ACTOS. Se mide dentro del trozo y no sobre el
+       archivo (v854): `tipoMedicion` aparece en veinte sitios más. */
+    const pieza = (k) => (piezas.filter((x) => x.k === k)[0] || { t: '' }).t;
+    const tramoNivel = pieza('nivel');
+    /* EL DETALLE DICE QUÉ MITAD FALLÓ (v973, v1051). Las tres se miden
+       aparte: sin eso, el rojo imprime el texto del verde y la tanda
+       siguiente no sabe por dónde empezar. */
+    const mitadesNivel = [
+      ['`actos` se define por tipoMedicion',
+       /var actos = ent\.filter\(function \(e\) \{ return e\.tipoMedicion === 'actividad'; \}\);/.test(trozoQ)],
+      ['el numerador sale de `actos`',
+       /n: actos\.filter\(function \(e\) \{ return !e\.nivelGobierno; \}\)\.length/.test(tramoNivel)],
+      ['el denominador sale de `actos`', /de: actos\.length/.test(tramoNivel)]
+    ];
+    const malNivel = mitadesNivel.filter((x) => !x[1]).map((x) => x[0]);
+    comprobar('el pendiente de nivel de gobierno se cuenta sobre los ACTOS',
+      !!tramoNivel && malNivel.length === 0,
+      !tramoNivel ? 'no se encontró la comprobación de nivel en la lista'
+                  : malNivel.length ? 'falla: ' + malNivel.join(' · ')
+                                    : 'numerador y denominador salen de `actos`, no de `ent`');
+
+    const razonNivel = /no se le puede declarar de qu[eé] nivel es la decisi[oó]n/.test(tramoNivel);
+    const porqueNivel = /no es una decisi[oó]n/.test(tramoNivel);
+    comprobar('y dice en pantalla POR QUÉ ese es el denominador y no las entradas',
+      razonNivel && porqueNivel,
+      razonNivel && porqueNivel
+        ? 'la razón viaja con la cifra: quien la lee no tiene que buscarla en la bitácora'
+        : 'falta' + (razonNivel ? '' : ' qué no se le puede exigir') +
+          (porqueNivel ? '' : ' por qué no se le puede exigir'));
+
+    /* La de los criterios, sobre el estado CALCULADO (v903). */
+    const tramoCrit = pieza('criterios');
+    const mitadesCrit = [
+      ['se le pregunta a `validacionDe` con el registro anterior',
+       /validacionDe\(k, d0 === D \? DA : null\)/.test(trozoQ)],
+      ['y se filtra por `validado`', /return !v \|\| !v\.validado;/.test(trozoQ)],
+      ['y la cifra sale de ese filtro', /n: sinVal\.length/.test(tramoCrit)]
+    ];
+    const malCrit = mitadesCrit.filter((x) => !x[1]).map((x) => x[0]);
+    comprobar('el pendiente de criterios lee la validación CALCULADA, no «tiene criterio»',
+      !!tramoCrit && malCrit.length === 0,
+      !tramoCrit ? 'no se encontró la comprobación de criterios en la lista'
+                 : malCrit.length ? 'falla: ' + malCrit.join(' · ')
+                                  : 'baja sola el día que un criterio se valide contra el gobierno anterior');
+
+    /* UNA SOLA CODIFICACIÓN (clase B). `pendientesPropios` se DERIVA de la
+       lista en vez de armar la suya: con dos listas, la que se quedaría
+       vieja es la que nadie mira. */
+    const tramoPend = (j70q.match(/function pendientesPropios\(dd\) \{[\s\S]*?\n  \}/) || [''])[0];
+    const deriva = /comprobacionesPropias\(dd\)\.filter/.test(tramoPend);
+    const propia = /out\.push/.test(tramoPend);
+    comprobar('`pendientesPropios` se DERIVA de la lista, no arma la suya',
+      !!tramoPend && deriva && !propia,
+      !tramoPend ? 'no se encontró pendientesPropios'
+                 : propia ? 'volvió a armar su propia lista con `out.push`: son dos codificaciones'
+                 : !deriva ? 'ya no deriva de `comprobacionesPropias`'
+                 : 'una sola codificación: las dos no pueden separarse');
+
+    /* LA GUARDA DE LA GUARDA (v878): que la redacción de cero LLEGUE a la
+       pantalla. Sin esto todo lo de arriba queda en verde sobre un campo que
+       ningún lector alcanza, que es la clase C de CLAUDE.md. */
+    const tramoBloque = (j70q.match(/function bloquePendientes\(dd\) \{[\s\S]*?\n    return s;/) || [''])[0];
+    const mitadesOk = [
+      ['bloquePendientes llama a comprobadasEnCero', /comprobadasEnCero\(dd\)/.test(tramoBloque)],
+      ['y le pone su clase', /sp-pend-ok/.test(tramoBloque)],
+      ['y la clase tiene regla en el css', /\.sp-pend-ok\{/.test(leer('css/70-seguimiento.css'))]
+    ];
+    const malOk = mitadesOk.filter((x) => !x[1]).map((x) => x[0]);
+    comprobar('y la redacción de cero LLEGA a la pantalla, con su regla que la pinta',
+      !!tramoBloque && malOk.length === 0,
+      !tramoBloque ? 'no se encontró bloquePendientes'
+                   : malOk.length ? 'falla: ' + malOk.join(' · ')
+                                  : 'bloquePendientes la pinta y `.sp-pend-ok` tiene regla');
+
+    comprobar('las dos funciones se publican para que una prueba las pueda leer',
+      /comprobacionesPropias: comprobacionesPropias/.test(j70q) &&
+      /comprobadasEnCero: comprobadasEnCero/.test(j70q),
+      'van en URBIS_SEG_FICHA, no se alcanzan por un lado (v871)');
+
+    /* Y LA MEDICIÓN QUE MOTIVÓ TODO, impresa: de las entradas sin nivel
+       declarado, cuántas son actos. Si alguna vez un acto entra sin nivel,
+       el pendiente del panel lo dice solo —esta línea solo deja escrito el
+       reparto, que es lo que hacía falta para ver que el 75 no era una
+       falta. */
+    const regQ = JSON.parse(leer('assets/data/seguimiento-presidencial.json'));
+    const entQ = regQ.entradas || [];
+    const porTipo = {};
+    entQ.filter((e) => !e.nivelGobierno).forEach((e) => {
+      const k = e.tipoMedicion || '(sin tipo)';
+      porTipo[k] = (porTipo[k] || 0) + 1;
+    });
+    const actosQ = entQ.filter((e) => e.tipoMedicion === 'actividad');
+    comprobar('el reparto de las entradas sin nivel va medido y no supuesto',
+      entQ.length > 0 && actosQ.length > 0,
+      'sin nivel declarado: ' + Object.keys(porTipo).map((k) => porTipo[k] + ' ' + k).join(' · ') +
+      ' · de los ' + actosQ.length + ' actos, ' +
+      actosQ.filter((e) => !e.nivelGobierno).length + ' sin declarar');
+  }
+
   /* ═══ LA VÍA: POR CUÁL RENGLÓN DEL CRITERIO ENTRA CADA HECHO (v963) ════
      La v962 escribió en su bitácora que el caso del DANE entraba por dos
      renglones del `incluye`, y uno de los dos era falso: la remoción que

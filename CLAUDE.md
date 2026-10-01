@@ -1067,8 +1067,21 @@ sección al final de este archivo.
 * **Un dato que ninguna pantalla alcanza se ve igual que uno ausente** — es la
   clase C de arriba, y no tiene guarda a propósito.
 * **Y todo recuento de lo que FALTA declarar corre sobre las entradas a las
-  que ese campo se les puede exigir, y ninguna más** (v999, v1060, v1061).
-  Tres veces se midió un pendiente que nadie podía bajar nunca.
+  que ese campo se les puede exigir, y ninguna más** (v999, v1060, v1061,
+  v1064). **Cuatro veces** se midió un pendiente que nadie podía bajar nunca,
+  y la cuarta estuvo publicada sesenta y cinco versiones: el tablero decía
+  «entradas sin nivel de gobierno declarado · 75 de 218» cuando ni una de
+  esas 75 era un acto —son cifras del país y resultados— y medido sobre los
+  142 actos el pendiente era CERO. El denominador correcto estaba escrito dos
+  mil líneas antes, en la puerta del indicador: dos codificaciones de una
+  regla, que es la clase B. **La señal para buscarla: un pendiente cuyo
+  número sube cuando el registro CRECE y no baja cuando alguien trabaja.**
+* **Y una comprobación que llega a cero se DICE, no desaparece** (v1064). Un
+  renglón que se borra solo deja «ya está hecho» con la misma cara que
+  «nadie lo ha mirado» —la regla de arriba, dicha en una pantalla—. Tres de
+  las cinco comprobaciones del tablero estaban en cero sin que nadie lo
+  supiera. Es la forma de la v970 aplicada al papel: las dos redacciones se
+  escriben, y la de cero LLEGA.
 
 ### Al cerrar una tanda
 

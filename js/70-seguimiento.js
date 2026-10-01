@@ -3504,7 +3504,9 @@
                              publicables: entradasPublicables, retenidas: entradasRetenidas,
                              motivosPublicacion: MOTIVOS_PUB,
                              censoNivel: censoDeNivel, presupuesto: presupuestoDe,
-                             pendientesPropios: pendientesPropios };
+                             pendientesPropios: pendientesPropios,
+                             comprobacionesPropias: comprobacionesPropias,
+                             comprobadasEnCero: comprobadasEnCero };
 
   // ── Piezas de dibujo ──────────────────────────────────────────────────────
   // Barra apilada: cada tramo es una CUENTA, no un porcentaje inventado. Si un
@@ -5505,6 +5507,84 @@
     return { n: ent.length, publica: pub, fuera: ent.length - pub, por: por };
   }
 
+  /* ── LAS COMPROBACIONES DE ESTA LISTA, Y SU DENOMINADOR (v1064) ───────────
+     Cada una se mide sobre las entradas a las que el campo SE LE PUEDE
+     EXIGIR, y ninguna más. Es la regla que este proyecto pagó tres veces
+     —v999 con `nivelGobierno`, v1060 con la identidad, v1061 con el
+     indicador— y que esta pantalla volvió a cobrar: el nivel de gobierno se
+     contaba sobre las 218 entradas y salían 75 pendientes, cuando ni una de
+     ellas es un acto. Son cifras del país y resultados, y a una cifra del
+     país no se le puede declarar de qué nivel es «la decisión» sin mentir.
+     Medido sobre los actos, que es el denominador honesto, el pendiente era
+     CERO: hecho desde la v999 y publicado como falta durante sesenta y cinco
+     versiones.
+
+     Y el de los criterios tenía el mismo defecto latente: contaba «tiene
+     criterio escrito» en vez de «su criterio no está validado», así que el
+     día que uno valide contra un gobierno anterior el renglón seguiría
+     diciendo cuatro. Un estado se CALCULA (v903), y acá ya estaba calculado
+     al lado, en `validacionDe`.
+
+     Por eso cada comprobación lleva ahora su denominador escrito y SUS DOS
+     REDACCIONES (v970): la de N y la de cero. Sin la de cero el renglón
+     simplemente desaparece, y «ya está declarado» se lee igual que «nadie lo
+     ha mirado» — que es justo lo que la v1061 evitó marcando con la lista
+     vacía. */
+  function comprobacionesPropias(dd) {
+    var d0 = dd || D;
+    var ent = (d0.entradas || []);
+    /* Los ACTOS: las únicas entradas a las que se les puede exigir de qué
+       nivel de gobierno es la decisión. */
+    var actos = ent.filter(function (e) { return e.tipoMedicion === 'actividad'; });
+    var conInd = ent.filter(function (e) { return (e.indicadores || []).length; });
+    var c1 = capaUnoDe_conjunto(ent);
+    var cob = coberturaDeRol(conInd);
+    var conCriterio = Object.keys(INDICADORES).filter(function (k) { return !!CRITERIOS[k]; });
+    var sinVal = conCriterio.filter(function (k) {
+      var v = validacionDe(k, d0 === D ? DA : null);
+      return !v || !v.validado;
+    });
+
+    return [
+      { k: 'contrargumento', n: c1.contra.sinRevisar, de: ent.length,
+        t: 'Contrargumento oficial sin revisar',
+        c: c1.contra.sinRevisar + ' de ' + cn(ent.length, 'hecho', 'hechos'),
+        d: 'Nadie ha buscado todavía si el Gobierno respondió. NO significa que no respondiera: mientras no se ' +
+           'busque, el indicador I-06 no se puede calcular y así se publica.',
+        cero: 'si el Gobierno respondió, buscado en ' + cn(ent.length, 'hecho', 'hechos') },
+      { k: 'criterios', n: sinVal.length, de: conCriterio.length,
+        t: 'Criterios de indicador sin contrastar',
+        c: cn(sinVal.length, 'criterio', 'criterios') + ' de ' + conCriterio.length +
+           ' (' + sinVal.join(', ') + ')',
+        d: 'Sus listas de qué incluye y qué excluye se escribieron mirando ESTE registro. Hasta que corran contra ' +
+           'un gobierno anterior con material suficiente, no están validados.',
+        cero: 'los ' + cn(conCriterio.length, 'criterio de indicador', 'criterios de indicador') +
+              ', corridos contra un gobierno anterior' },
+      { k: 'rol', n: cob.sinCorrer, de: cob.n,
+        t: 'Procedencia de fuentes sin comprobar',
+        c: cob.sinCorrer + ' de ' + cn(cob.n, 'entrada que declara indicador', 'entradas que declaran indicador'),
+        d: 'La comprobación de «al menos una fuente documenta el acto» no pudo correr sobre ellas.',
+        cero: 'que al menos una fuente documente el acto, en ' +
+              cn(cob.n, 'entrada que declara indicador', 'entradas que declaran indicador') },
+      { k: 'nivel', n: actos.filter(function (e) { return !e.nivelGobierno; }).length, de: actos.length,
+        t: 'Actos sin nivel de gobierno declarado',
+        c: actos.filter(function (e) { return !e.nivelGobierno; }).length + ' de ' +
+           cn(actos.length, 'acto registrado', 'actos registrados'),
+        d: 'El filtro que saca del score lo municipal, distrital y departamental no los puede separar todavía. ' +
+           'Se cuenta sobre los actos y no sobre las ' + cn(ent.length, 'entrada', 'entradas') +
+           ' del registro: a una cifra del país o a un ' +
+           'resultado no se le puede declarar de qué nivel es la decisión, porque no es una decisión.',
+        cero: 'de qué nivel de gobierno es cada una de las ' +
+              cn(actos.length, 'decisión registrada', 'decisiones registradas') },
+      { k: 'tipoFuente', n: ent.filter(function (e) { return !e.tipoFuente; }).length, de: ent.length,
+        t: 'Entradas sin naturaleza de fuente declarada',
+        c: ent.filter(function (e) { return !e.tipoFuente; }).length + ' de ' + ent.length,
+        d: 'Son las más viejas del registro, escritas sin citar fuente. No están «sin clasificar»: están sin ' +
+           'documentar, y por eso no se publican.',
+        cero: 'la naturaleza de la fuente de ' + cn(ent.length, 'hecho', 'hechos') }
+    ];
+  }
+
   /* ══ LOS DOS ROJOS ═════════════════════════════════════════════════════════
      El rojo queda reservado para el hallazgo verificado con fuente. Lo que
      nos falta a NOSOTROS —contrargumentos sin revisar, criterios sin
@@ -5516,44 +5596,15 @@
      falso. Es la lección de la v886 sobre las alarmas dicha al revés: una
      alarma que también se enciende por lo nuestro deja de señalar lo suyo. */
   function pendientesPropios(dd) {
-    var d0 = dd || D;
-    var out = [];
-    var c1 = capaUnoDe_conjunto((d0.entradas || []));
-    if (c1.contra.sinRevisar) out.push({
-      t: 'Contrargumento oficial sin revisar',
-      n: c1.contra.sinRevisar + ' de ' + cn((d0.entradas || []).length, 'hecho', 'hechos'),
-      d: 'Nadie ha buscado todavía si el Gobierno respondió. NO significa que no respondiera: mientras no se ' +
-         'busque, el indicador I-06 no se puede calcular y así se publica.' });
+    return comprobacionesPropias(dd).filter(function (x) { return x.n > 0; })
+      .map(function (x) { return { t: x.t, n: x.c, d: x.d }; });
+  }
 
-    var sinVal = [];
-    Object.keys(INDICADORES).forEach(function (k) {
-      if (CRITERIOS[k]) sinVal.push(k);
-    });
-    if (sinVal.length) out.push({
-      t: 'Criterios de indicador sin contrastar',
-      n: cn(sinVal.length, 'criterio', 'criterios') + ' (' + sinVal.join(', ') + ')',
-      d: 'Sus listas de qué incluye y qué excluye se escribieron mirando ESTE registro. Hasta que corran contra ' +
-         'un gobierno anterior con material suficiente, no están validados.' });
-
-    var cob = coberturaDeRol((d0.entradas || []).filter(function (e) { return (e.indicadores || []).length; }));
-    if (cob.sinCorrer) out.push({
-      t: 'Procedencia de fuentes sin comprobar',
-      n: cob.sinCorrer + ' de ' + cn(cob.n, 'entrada que declara indicador', 'entradas que declaran indicador'),
-      d: 'La comprobación de «al menos una fuente documenta el acto» no pudo correr sobre ellas.' });
-
-    var sinNivel = (d0.entradas || []).filter(function (e) { return !e.nivelGobierno; }).length;
-    if (sinNivel) out.push({
-      t: 'Entradas sin nivel de gobierno declarado',
-      n: sinNivel + ' de ' + (d0.entradas || []).length,
-      d: 'El filtro que saca del score lo municipal, distrital y departamental no las puede separar todavía.' });
-
-    var sinTipo = (d0.entradas || []).filter(function (e) { return !e.tipoFuente; }).length;
-    if (sinTipo) out.push({
-      t: 'Entradas sin naturaleza de fuente declarada',
-      n: sinTipo + ' de ' + (d0.entradas || []).length,
-      d: 'Son las más viejas del registro, escritas sin citar fuente. No están «sin clasificar»: están sin ' +
-         'documentar, y por eso no se publican.' });
-    return out;
+  /* Las que salieron en CERO. Van dichas y no omitidas: un renglón que
+     desaparece deja «ya está hecho» con la misma cara que «nadie lo ha
+     mirado», que es el defecto que esta tanda vino a arreglar. */
+  function comprobadasEnCero(dd) {
+    return comprobacionesPropias(dd).filter(function (x) { return x.n === 0 && x.de > 0; });
   }
 
   function bloquePendientes(dd) {
@@ -5592,6 +5643,30 @@
       f.appendChild(el('p', null, x.d));
       s.appendChild(f);
     });
+
+    /* LAS DOS REDACCIONES (v970). Una comprobación que sale en cero no deja
+       de existir: se dice que corrió y que salió limpia. Omitirla deja «ya
+       está declarado» con la misma cara que «nadie lo ha mirado», que es
+       exactamente el defecto que esta pantalla publicó durante sesenta y
+       cinco versiones con el nivel de gobierno. */
+    var cero = comprobadasEnCero(dd);
+    if (cero.length) {
+      var ok = el('div', 'sp-pend-ok');
+      ok.appendChild(el('b', null, cn(cero.length, 'comprobación de esta lista salió',
+                                      'comprobaciones de esta lista salieron') + ' en cero'));
+      var uc = el('ul', 'sp-pend-lista');
+      cero.forEach(function (x) { uc.appendChild(el('li', null, x.cero + ': nada pendiente.')); });
+      ok.appendChild(uc);
+      ok.appendChild(el('p', 'sp-h-meta',
+        'Se dice en vez de omitirse: un renglón que desaparece deja «ya está hecho» con la misma cara que ' +
+        '«nadie lo ha mirado».'));
+      s.appendChild(ok);
+    }
+    if (!lista.length) s.appendChild(el('p', 'sp-h-meta',
+      'Hoy ninguna de las ' + cn(comprobacionesPropias(dd).length, 'comprobación', 'comprobaciones') +
+      ' de esta lista tiene nada ' +
+      'pendiente. No quiere decir que al registro no le falte nada: quiere decir que lo que falta no cabe en ' +
+      'la forma de esta lista, que mide campos declarados.'));
     return s;
   }
 
@@ -6284,10 +6359,17 @@
 
   /* ── Organigrama: qué entra al score y qué no ──────────────────────────────
      Este gráfico NO tiene cifras del presupuesto: cuenta el propio registro.
-     Y hay que decir lo que enseña hoy, porque es una medición y no un
-     adorno: la mayoría de las entradas no declara nivel de gobierno, así que
-     lo que el filtro rechaza hoy es cero. Un filtro que no rechaza nada se
-     ve igual que uno que funciona, y por eso el número va impreso. */
+     Y es una medición y no un adorno: un filtro que no rechaza nada se ve
+     igual que uno que funciona, y por eso las tres cuentas van impresas.
+
+     El comentario que estaba acá decía «la mayoría de las entradas no
+     declara nivel de gobierno», y para la v1064 ya era falso —lo declaran
+     dos de cada tres—. Una cifra tecleada dentro de un texto fijo envejece
+     sola (v903), así que acá no va ninguna: el número lo pone el gráfico.
+     Lo que sí hay que saber leyendo las tres filas es que «sin declarar» no
+     es una falta pendiente sobre todas: a una cifra del país no se le puede
+     declarar de qué nivel es la decisión, y el recuento de lo que falta vive
+     en `comprobacionesPropias`, medido sobre los actos. */
   function censoDeNivel(dd) {
     var d0 = dd || D;
     var ent = (d0.entradas || []);

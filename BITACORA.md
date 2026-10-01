@@ -24031,3 +24031,129 @@ esta tanda **no toca una sola línea de lo que se sirve**, así que no hay panta
 ni papel que mirar: lo que se midió es `revisar.js` entero —647 en verde y el `?`
 SIN MATERIAL de la v970, que sigue sin material porque el registro sigue
 limpio— y las dos cifras de la tabla de arriba, antes y después.
+
+## v1064 · cada pendiente, sobre su propio denominador
+
+**La medición que la abrió.** La pantalla del tablero publicaba, en el bloque
+«Lo que nos falta a nosotros», el renglón **«Entradas sin nivel de gobierno
+declarado · 75 de 218»**. Medido contra el registro, el reparto de esas 75:
+
+```
+sin nivelGobierno, por tipoMedicion   50 contexto-estructural · 25 resultado
+de los 142 ACTOS, sin nivelGobierno   0
+```
+
+**Ni una de las 75 es un acto.** Son cifras del país —desempleo, inflación— y
+resultados, y a una cifra del país no se le puede declarar de qué nivel de
+gobierno es «la decisión», porque no es una decisión. El pendiente honesto era
+**cero**, y estaba cerrado desde la v999.
+
+Y el denominador correcto **ya estaba escrito en este mismo archivo**, dos mil
+líneas antes, en la puerta del indicador (`js/70-seguimiento.js:2047`):
+
+> *El nivel: el pliego prohíbe que un hecho subnacional alimente el score
+> presidencial, y sin declararlo no se puede saber. Solo se les exige a las
+> entradas que declaran indicador — pedírselo a las 200 sería un trinquete que
+> no protege nada.*
+
+Dos codificaciones de una sola regla, una correcta y la otra no: la **clase B**
+de CLAUDE.md. Y es la **cuarta vez** del mismo error de denominador —v999 con
+`nivelGobierno`, v1060 con la identidad, v1061 con el indicador—, que es la
+razón de que la regla esté escrita y de que esta tanda la convierta en guarda.
+
+**El segundo defecto, latente.** El renglón de al lado —«Criterios de indicador
+sin contrastar · 4 criterios»— contaba `Object.keys(INDICADORES).filter(k =>
+CRITERIOS[k])`: **«tiene criterio escrito»**, no «su criterio no está
+validado». Hoy coinciden porque ninguno está validado (medido: los cuatro con
+`validado: false`, porque el registro de Petro no pasó por esta clasificación).
+El día que uno valide, el renglón seguiría diciendo cuatro. Una cifra escrita
+en el predicado en vez de calculada —la v903— teniendo `validacionDe` al lado,
+que ya la calcula.
+
+**Y el tercero, que salió al arreglar los otros dos.** Las cinco
+comprobaciones de la lista se empujaban con `if (n) out.push(...)`, así que una
+que llegue a cero **desaparece**. Tres estaban en cero sin que nadie lo
+supiera: la procedencia de fuentes (0 de 7), el nivel (0 de 142) y la
+naturaleza de fuente (0 de 218). Un renglón ausente deja **«ya está hecho» con
+la misma cara que «nadie lo ha mirado»**, que es la regla de arriba de
+CLAUDE.md dicha en una pantalla, y lo que la v1061 evitó marcando con la lista
+vacía.
+
+### Lo que se hizo
+
+* **`comprobacionesPropias(dd)`** — las cinco, cada una con su clave, su
+  numerador, **su denominador** y **sus dos redacciones** (la de N y la de
+  cero). El nivel se mide sobre `actos` (`tipoMedicion === 'actividad'`, 142);
+  los criterios sobre `validacionDe(k, DA).validado`, que es el estado
+  calculado.
+* **`pendientesPropios`** se **deriva** de esa lista (`filter(x => x.n > 0)`)
+  en vez de armar la suya: una sola codificación, que es lo que impide que las
+  dos se separen la tanda siguiente.
+* **`comprobadasEnCero`** y su caja `.sp-pend-ok` en el bloque: las que salen
+  en cero se **dicen**, con el filo en celeste de marca —no en verde, que acá
+  ES el celeste, y no en rojo, que está reservado al hallazgo—.
+* **La razón viaja con la cifra**: el renglón del nivel dice en pantalla por
+  qué se cuenta sobre los actos y no sobre las 218, para que quien lo lea no
+  tenga que buscarlo en la bitácora.
+* Y el comentario de `censoDeNivel`, que decía «la mayoría de las entradas no
+  declara nivel de gobierno» cuando ya lo declaran dos de cada tres: se le
+  quitó la cifra tecleada en vez de corregirla (v903).
+
+### La guarda, y sus siete inyecciones en rojo
+
+Bloque nuevo en `revisar.js`, **«Cada pendiente propio, sobre su propio
+denominador (v1064)»**, con material, las cuatro mitades y la guarda de la
+guarda. Demostrada con el estado real de la v1063 y con seis variantes más;
+las siete en rojo, cada una nombrando **qué mitad** falló:
+
+| Inyección | Qué se puso en rojo |
+|---|---|
+| el nivel contado sobre las 218 (el estado de la v1063) | `falla: el numerador sale de actos · el denominador sale de actos` |
+| una comprobación sin su redacción de cero | `sin redacción de cero: tipoFuente` |
+| los criterios contados por «tiene criterio» | `falla: se le pregunta a validacionDe · y se filtra por validado` |
+| `comprobadasEnCero` deja de llegar a la pantalla | `falla: bloquePendientes llama a comprobadasEnCero` |
+| `.sp-pend-ok` sin regla que la pinte | `falla: y la clase tiene regla en el css` |
+| `pendientesPropios` armando su lista otra vez | `volvió a armar su propia lista con out.push` |
+| un denominador que desaparece | `sin de: rol` |
+
+Y una corrección de la propia tanda, que vale dejar escrita: **la primera
+versión de esta guarda troceaba la lista buscando `\n      }`**, y ninguna de
+las cinco comprobaciones cierra así. Las cinco salieron «no encontradas» y
+cinco aserciones **imprimieron el texto del verde estando en rojo** —la clase
+de la v973 y la v1051, séptima vez—. Lo cazó la corrida y no la lectura. Se
+arregló troceando por el borde de contenido (`\n      { k: '`) y no por
+indentación —medir por contenido y no por distancia, v935— y dándole a las
+cinco aserciones un detalle que dice qué mitad falló.
+
+### Medición en el papel
+
+Con el navegador sobre `seguimiento.html#/tablero`, antes y después:
+
+| | v1063 | v1064 |
+|---|---|---|
+| pendientes impresos | 3 | 2 |
+| el del nivel | «75 de 218» | no está: salió en cero |
+| comprobaciones en cero dichas | 0 de 3 | 3 de 3, con su denominador |
+| denominador impreso en todas | no | sí |
+
+`node pruebas/revisar.js`: **657 verdes, 0 rojos**, un `?` sin material (la
+guarda de rol de la v966, intacta). Versión en los nueve archivos.
+
+### Lo que esta versión NO hace
+
+* **No cierra ninguno de los dos pendientes que siguen vivos.** El
+  contrargumento oficial (213 de 218) pide buscar si el Gobierno respondió,
+  hecho por hecho, y los cuatro criterios piden que el registro de Petro pase
+  por esta clasificación. Las dos son trabajo de archivo y de fuente, no de
+  código. `pendiente`
+* **No toca los cuatro ejes**, que siguen sin publicar nivel: el A espera la
+  identidad de objeto de la contradicción del mérito (revisión el 21 de
+  noviembre de 2026), el B la media histórica, el C el ejecutado por sector y
+  el D su fuente y su indicador. `pendiente`
+* **No persigue la clase en las otras pantallas.** Esta guarda mide los cinco
+  recuentos de `comprobacionesPropias` y nada más; si otro bloque publica un
+  pendiente sobre el conjunto equivocado, no lo ve. Perseguir «todo recuento
+  cuyo denominador sean todas las entradas» daría falsos positivos —hay
+  cuentas que SÍ se miden sobre las 218, como la naturaleza de fuente— y
+  terminaría en la lista de excepciones que la v895 prohíbe. Queda dicho acá
+  con su razón. `pendiente`

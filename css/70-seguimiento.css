@@ -2268,6 +2268,18 @@ a.sp-fuente:hover svg{ color:var(--verde-hi); }
 .sp-pend-n{ display:block; font-size:var(--t-8); font-weight:700; color:var(--ink-2); margin-top:2px; }
 .sp-pend-f p{ margin:6px 0 0; font-size:var(--t-8); line-height:1.5; }
 
+/* Las que salieron en CERO (v1064). Van DICHAS y no omitidas, y por eso
+   necesitan su propia caja: con la misma que las pendientes se leerían como
+   una falta más, y sin caja se perderían dentro del bloque gris. El filo va
+   en celeste y no en verde — el verde de esta hoja ES el celeste de marca— y
+   no compite con el rojo, que acá está reservado al hallazgo. */
+.sp-pend-ok{
+  margin:14px 0 0; padding:10px 14px; background:var(--sup); border-radius:var(--r-s);
+  border-left:3px solid var(--celeste-mark);
+}
+.sp-pend-ok > b{ font-size:var(--t-7); color:var(--ink); }
+.sp-pend-ok .sp-pend-lista{ color:var(--ink-2); }
+
 /* ── Procedencia en la ficha de un hecho ─────────────────────────────────── */
 .sp-proc-f{ margin:0 0 8px; font-size:var(--t-8); line-height:1.45; }
 .sp-proc-f b{ display:block; color:var(--ink-2); font-weight:600; }
