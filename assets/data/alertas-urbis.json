@@ -1,6 +1,6 @@
 {
   "_comentario": "Alertas EDITORIALES del equipo URBIS (desastres verificados). Se publican editando este archivo — no requieren la hoja de cálculo ni credenciales. El mapa las dibuja junto a las que ya están en la base; si coinciden las coordenadas, se muestra una sola. Reglas: solo desastres naturales de fuente oficial, nunca violencia ni homicidios; coordenadas geocodificadas, jamás estimadas a ojo; sin fuente no se publica.",
-  "actualizado": "2026-09-30",
+  "actualizado": "2026-10-01",
   "alertas": [
     {
       "tipo": "Sismo",
@@ -21,32 +21,16 @@
       "url": "https://www.sgc.gov.co/detallesismo/SGC2026pxhbxc/resumen"
     },
     {
-      "tipo": "Sismo",
-      "titulo": "Sismos de magnitud hasta 4,7 — 16 de septiembre de 2026, Istmina y Medio San Juan (Andagoya), Chocó",
-      "lat": 4.5114,
-      "lng": -76.7674,
-      "desde": "2026-09-16",
-      "expira": "2026-09-30",
-      "lineas": [
-        "📅 Ocurrió en la madrugada del miércoles 16 de septiembre de 2026, con el primer y mayor movimiento a la 1:18 a. m. (hora de Colombia).",
-        "📊 Magnitud 4,5 · profundidad 43 km · epicentro a unos 24 km del municipio de Sipí, Chocó (Servicio Geológico Colombiano). Fue el mayor de al menos cinco sismos registrados esa madrugada (magnitudes 4,5, 4,4, 3,4, 2,9 y 2,6), dos de ellos con epicentro cerca de Bahía Solano. El SGC no reportó daños ni heridos hasta el momento.",
-        "🌎 Se sintió en Cali, Pereira, Armenia, Manizales y El Cerrito. Es parte del enjambre sísmico que sigue activo en el Chocó desde el terremoto de magnitud 7,4 del 10 de agosto de 2026: el SGC reportó 26 sismos en menos de 24 horas entre el 14 y el 15 de septiembre, con epicentros en Istmina, Sipí, Medio San Juan, Medio Baudó y El Carmen del Darién.",
-        "🌎 En la tarde del mismo 16 de septiembre el enjambre se reactivó con una secuencia más fuerte: a las 3:12 p. m. un sismo de magnitud 4,7 con epicentro en Medio San Juan (corregimiento de Andagoya), Chocó, a 40 km de profundidad —el mayor sentido ese día—; dos minutos después, uno de magnitud 4,4 en Sipí (37 km de profundidad); a las 3:55 p. m., otro de magnitud 4,4 en Istmina (38 km); y en la noche, uno de magnitud 4,1, también con epicentro en Medio San Juan (Andagoya). Se sintió con fuerza en Cali, Medellín, el Eje Cafetero, Quibdó, Pereira, Buenaventura, Cartago, Yumbo y Manizales, con evacuaciones preventivas de edificaciones en Cali —algunas señaladas por tener daños previos del terremoto de agosto—; el SGC no reportó heridos ni daños materiales por esta secuencia.",
-        "ℹ️ Alerta informativa del equipo URBIS con base en el Servicio Geológico Colombiano y prensa nacional (El Tiempo, Pulzo, Infobae, El País, El Heraldo). No es un reporte ciudadano."
-      ],
-      "fuente": "Servicio Geológico Colombiano (SGC) / prensa nacional",
-      "url": "https://www.eltiempo.com/colombia/otras-ciudades/temblor-hoy-en-colombia-reportan-seguidilla-de-sismos-en-choco-durante-la-madrugada-de-este-16-de-septiembre-el-mayor-fue-de-magnitud-4-5-detalles-3586399"
-    },
-    {
       "tipo": "Incendio forestal",
-      "titulo": "Incendio forestal en el Parque Nacional Natural Las Hermosas — más de 1.000 hectáreas, cerca de 45 días activo, Guadalajara de Buga, Valle del Cauca",
+      "titulo": "Incendio forestal en el Parque Nacional Natural Las Hermosas — más de 1.000 hectáreas, más de 50 días activo, Guadalajara de Buga, Valle del Cauca",
       "lat": 3.9019,
       "lng": -76.3039,
       "desde": "2026-08-03",
-      "expira": "2026-10-05",
+      "expira": "2026-10-08",
       "lineas": [
         "📅 El incendio se originó a comienzos de agosto de 2026 (fecha aproximada) en el sector La Mesa – Río Loro, en la zona rural alta de Guadalajara de Buga, Valle del Cauca, dentro del Parque Nacional Natural Las Hermosas Gloria Valencia de Castaño. Al 27 de septiembre de 2026 cumplía más de 50 días activo: dos focos siguen sin controlar por fuera del área protegida del parque —en el predio Basconia (Buga) y en el municipio de El Cerrito—, mientras otros dos focos registrados fuera del parque ya fueron controlados, según Parques Nacionales Naturales.",
         "📊 Entre 1.500 y 2.000 hectáreas afectadas según los balances más recientes (El Tiempo y El Espectador, 27 de septiembre de 2026), con el fuego avanzando tanto en superficie como en el subsuelo del páramo, lo que dificulta su control. Preocupa el riesgo para el abastecimiento de agua de Tuluá y para el hábitat del oso de anteojos y los frailejones del páramo.",
+        "📈 Un balance adicional (Contexto Ganadero, hacia el 22 de septiembre de 2026) reportó 150 cabezas de ganado afectadas, cerca de 250 personas desplazadas y pérdidas estimadas en $150 millones de pesos en producción láctea entre los ganaderos de la zona rural de Buga.",
         "ℹ️ Alerta informativa del equipo URBIS con base en la UNGRD, Parques Nacionales Naturales y prensa regional y nacional (El Tiempo, El Espectador, LA FM, BluRadio). No es un reporte ciudadano. Coordenadas de referencia: centro del municipio de Guadalajara de Buga; el incendio se ubica en la zona rural alta del municipio, dentro y fuera del parque, no en el casco urbano."
       ],
       "fuente": "UNGRD / Parques Nacionales Naturales / El Tiempo / El Espectador / LA FM",
@@ -106,15 +90,32 @@
       "lat": 11.2422,
       "lng": -74.2056,
       "desde": "2026-09-27",
-      "expira": "2026-10-02",
+      "expira": "2026-10-06",
       "lineas": [
         "📅 Ocurrió en la tarde del domingo 27 de septiembre de 2026 (hora de Colombia), tras una jornada de lluvias intensas sobre Santa Marta, Magdalena.",
         "📊 Afectaciones preliminares en 11 sectores de la ciudad —Pescaíto, Manzanares, Minca, Taganga, Los Alpes A y B, Bonda, Timayuí 1 y 2, Cartagena-Bonda, Bastidas y Parques de Bolívar—: 7 viviendas totalmente destruidas y 29 más con pérdida de enseres, según el balance preliminar de la Alcaldía Distrital de Santa Marta.",
         "⚠️ La Alcaldía activó un Puesto de Mando Unificado (PMU) y mantiene alerta roja por crecientes súbitas en los ríos Piedras y Manzanares y por riesgo de deslizamientos en la ciudad.",
+        "🔄 Al 30 de septiembre de 2026 la Alcaldía mantenía la alerta roja vigente por crecientes súbitas en los ríos Piedras y Manzanares, con vigilancia adicional en los ríos Bonda y Gaira; persiste el riesgo de deslizamientos y de taponamiento del cauce por acumulación de escombros en la confluencia de la quebrada Tamacá con el río Manzanares, mientras el IDEAM prevé más lluvias sobre la Sierra Nevada durante el primer fin de semana de octubre.",
         "ℹ️ Alerta informativa del equipo URBIS con base en la Alcaldía Distrital de Santa Marta (Ogricc) y prensa nacional (Infobae, El Tiempo). No es un reporte ciudadano. Coordenadas de referencia: centro de Santa Marta; las inundaciones afectan a varios sectores de la ciudad, no solo al centro."
       ],
-      "fuente": "Alcaldía de Santa Marta (Ogricc) / El Tiempo / Infobae",
+      "fuente": "Alcaldía de Santa Marta (Ogricc) / El Tiempo / Infobae / Seguimiento.co",
       "url": "https://www.infobae.com/colombia/2026/09/27/fuertes-lluvias-en-santa-marta-dejan-afectaciones-en-11-sectores-y-autoridades-activan-pmu/"
+    },
+    {
+      "tipo": "Derrumbe o deslizamiento",
+      "titulo": "Derrumbe cierra de forma indefinida la vía Bucaramanga-Barrancabermeja — km 42, sector Lisboa y Brisas, Lebrija, Santander, 1 de octubre de 2026",
+      "lat": 7.1131,
+      "lng": -73.2189,
+      "desde": "2026-10-01",
+      "expira": "2026-10-06",
+      "lineas": [
+        "📅 Ocurrió el domingo 1 de octubre de 2026 (hora de Colombia), cuando un movimiento de tierra por una falla geológica destruyó el pavimento de la vía Bucaramanga-Barrancabermeja a la altura del kilómetro 42, en el sector Lisboa y Brisas, zona rural del municipio de Lebrija, Santander.",
+        "📊 El colapso afectó cerca de 200 metros de calzada y dejó un camión atascado en el pavimento hundido. La vía quedó cerrada de manera total e indefinida; se habilitó como ruta alterna el corredor Bucaramanga–Rionegro–San Alberto–La Lizama.",
+        "⚠️ Las autoridades evacuaron preventivamente a 14 familias (unas 40 personas) ante el riesgo de un nuevo deslizamiento por la inestabilidad del terreno y las lluvias recientes, y recomendaron la salida de otras 10 personas que permanecían en la zona.",
+        "ℹ️ Alerta informativa del equipo URBIS con base en prensa nacional (Semana, El País). No es un reporte ciudadano. Coordenadas de referencia: municipio de Lebrija, Santander (el derrumbe se ubica en zona rural sobre la vía, no en el casco urbano; no fue posible geocodificar con mayor precisión el punto exacto del kilómetro 42)."
+      ],
+      "fuente": "Semana / El País",
+      "url": "https://www.semana.com/nacion/bucaramanga/articulo/colapso-de-la-via-barrancabermeja-bucaramanga-obligo-a-la-evacuacion-de-14-familias/202322/"
     }
   ]
 }
