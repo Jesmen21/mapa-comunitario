@@ -8318,7 +8318,81 @@ console.log('\n  -- una declaración de «otra tanda» lleva su estado (v1006) -
      conocidas y sin marca. Una escrita de otra manera —«queda para después»,
      «lo toma quien siga»— se le escapa, y esa mitad se sigue cazando leyendo.
      Lo que sí impide es que las catorce que hay se queden viejas otra vez. */
-  const md = leer('CLAUDE.md');
+  /* ── Y desde la v1063 la bitácora son DOS archivos ───────────────────────
+     Las 172 secciones por versión se mudaron a `BITACORA.md`: eran 24.155 de
+     las 25.092 líneas de `CLAUDE.md`, el 96 %, y se inyectaban enteras en cada
+     sesión —el `/compact` dejó de poder bajar del límite—. La convención no
+     cambió de sitio con ellas, así que esta guarda lee los DOS y el nombre del
+     archivo va en el mensaje, para que se pueda ir a mirar.
+
+     Y el archivo no se puede perder en silencio: si falta, la lectura lo dice
+     con su nombre y en ROJO —no con su `?`—, porque es un archivo del
+     repositorio y no puede quedarse vacío por una mejora (v1026); y si alguien
+     lo renombra, el piso de renglones de más abajo se desploma, que es la misma
+     propiedad con la que la v1008 cazó un encabezado fuera del convenio. */
+  const ARCHIVOS = [];
+  ['CLAUDE.md', 'BITACORA.md'].forEach((nom) => {
+    try { ARCHIVOS.push({ n: nom, t: leer(nom) }); } catch (e) { ARCHIVOS.push({ n: nom, t: null }); }
+  });
+  const faltantes = ARCHIVOS.filter((a) => a.t === null).map((a) => a.n);
+  comprobar('los dos archivos de la bitácora están donde la convención dice',
+    faltantes.length === 0,
+    faltantes.length
+      ? 'falta: ' + faltantes.join(' · ') +
+        ' — las declaraciones que viven ahí dejarían de vigilarse y todo lo de abajo pasaría'
+      : 'CLAUDE.md con las reglas y BITACORA.md con ' +
+        ((ARCHIVOS[1].t || '').match(/^## /gm) || []).length + ' secciones por versión');
+  const md = ARCHIVOS[0].t || '';
+
+  /* ── Y que el reparto no se deshaga solo ────────────────────────────────
+     El archivo existe y hay que poder LLEGAR a él: un archivo al que ninguna
+     lectura alcanza se ve, desde afuera, igual que uno que no está —la clase C
+     de este proyecto, cometida justo en la tanda que lo partió—. Así que
+     `CLAUDE.md` tiene que nombrarlo.
+
+     Y la otra mitad, que es la que impide que vuelva a crecer: **ninguna
+     sección de `CLAUDE.md` lleva número de versión en su título.** Es el
+     discriminante estructural de una entrada de bitácora —una tanda titula
+     `## Lo que sea (vNNNN)`— así que una sección de versión escrita acá por
+     costumbre sale en rojo en su primera corrida, en vez de a las veinte
+     tandas y con el archivo otra vez en 25.000 líneas.
+
+     Dos excepciones, con su razón escrita cada una, que es la regla de la
+     v895: son REGLAS que citan la versión que las pagó y que toda sesión tiene
+     que leer antes de trabajar. */
+  const REGLAS_CON_VERSION = [
+    { t: 'La lista viva: lo que al pliego educativo todavía le falta (v866)',
+      por: 'es la lista que revisar.js lee, y su cláusula ya: es la convención' },
+    { t: 'El sector de prueba tiene que parecerse a uno de verdad (v862)',
+      por: 'es la regla del material de prueba, que se cita en cada tanda' }
+  ];
+  if (md) {
+    comprobar('CLAUDE.md nombra el archivo donde está el resto de la bitácora',
+      /BITACORA\.md/.test(md),
+      /BITACORA\.md/.test(md)
+        ? 'lo nombra, así que una sesión sabe dónde buscar el detalle de una versión'
+        : 'no lo nombra: el archivo estaría en el repositorio y ninguna sesión llegaría a él');
+
+    const conVersion = (md.match(/^## .*\(v\d+\)\s*$/gm) || []).map((x) => x.replace(/^## /, '').trim());
+    const noDeclaradas = conVersion.filter((t) => !REGLAS_CON_VERSION.some((r) => r.t === t));
+    comprobar('y ninguna sección de versión se escribe en CLAUDE.md en vez de en la bitácora',
+      noDeclaradas.length === 0,
+      noDeclaradas.length === 0
+        ? conVersion.length + ' secciones citan su versión y las ' + REGLAS_CON_VERSION.length +
+          ' son reglas declaradas: lo demás vive en BITACORA.md'
+        : noDeclaradas.length + ' sección(es) de versión acá: ' + noDeclaradas.slice(0, 3).join(' · ') +
+          ' — así volvió a 25.092 líneas, y es lo que se inyecta en cada sesión');
+
+    const sinRazon = REGLAS_CON_VERSION.filter((r) => !r.por || r.por.length < 20);
+    const perdidas = REGLAS_CON_VERSION.filter((r) => md.indexOf('## ' + r.t) < 0).map((r) => r.t);
+    comprobar('y las dos excepciones siguen estando, cada una con su razón',
+      !sinRazon.length && !perdidas.length,
+      sinRazon.length ? 'sin razón escrita: ' + sinRazon.map((r) => r.t).join(' · ')
+        : (perdidas.length
+          ? 'declaradas y no están: ' + perdidas.join(' · ') + ' — la lista se quedó vieja'
+          : 'las ' + REGLAS_CON_VERSION.length + ' están y dicen por qué son reglas y no bitácora'));
+  }
+
 
   /* El texto se lee sin lo que NO es una declaración: los bloques de código
      —donde vive el propio grep de la receta—, las líneas de cita `>` y lo que
@@ -8326,7 +8400,8 @@ console.log('\n  -- una declaración de «otra tanda» lleva su estado (v1006) -
      otra tanda. Sin eso, la receta se denunciaría a sí misma, que es el defecto
      que la v926 encontró con una capacidad demostrada por su comentario. */
   const fuera = [];
-  let limpio = md.replace(/```[\s\S]*?```/g, (m) => ' '.repeat(m.length));
+  const recortar = (txt) => {
+  let limpio = txt.replace(/```[\s\S]*?```/g, (m) => ' '.repeat(m.length));
   /* Y el código EN LÍNEA, por lo mismo que el bloque: una frase escrita entre
      acentos graves se está NOMBRANDO, no usando —la lista de frases de esta
      misma guarda está escrita así—. Se vio al documentar la v1006: la sección
@@ -8340,6 +8415,8 @@ console.log('\n  -- una declaración de «otra tanda» lleva su estado (v1006) -
      sobre la misma lista serían dos maneras de decir lo mismo (clase B). */
   const iLV = limpio.indexOf('## La lista viva: lo que al pliego educativo');
   if (iLV > 0) limpio = limpio.slice(0, iLV);
+  return limpio;
+  };
 
   /* Las frases se buscan por su NÚCLEO y no por la fórmula entera: al medirlo,
      «que es otra FUENTE y otra tanda» —la declaración de la v876 sobre la
@@ -8347,7 +8424,11 @@ console.log('\n  -- una declaración de «otra tanda» lleva su estado (v1006) -
      medio. Con el núcleo salen las catorce; con la fórmula, diez. */
   const FRASES = /(otra tanda|su propia tanda|no se hace acá)/g;
   const declaraciones = [];
+  ARCHIVOS.filter((a) => a.t !== null).forEach((A) => {
+  const limpio = recortar(A.t);
+  const md = A.t;
   let m;
+  FRASES.lastIndex = 0;
   while ((m = FRASES.exec(limpio))) {
     /* La frase se DETECTA sobre el texto recortado y la marca se LEE del
        original: los recortes sustituyen por espacios de la misma longitud, así
@@ -8359,14 +8440,28 @@ console.log('\n  -- una declaración de «otra tanda» lleva su estado (v1006) -
     const marca = /`pendiente`|`cerrado en v(\d+)([^`]*)`/.exec(cola);
     const linea = md.slice(0, m.index).split('\n').length;
     declaraciones.push({ linea: linea, frase: m[0], marca: marca });
-    if (!marca) fuera.push('CLAUDE.md:' + linea);
+    if (!marca) fuera.push(A.n + ':' + linea);
   }
+  });
 
   /* MATERIAL primero (v920): sin declaraciones que mirar, todo lo de abajo
-     pasaría por no tener nada delante. */
+     pasaría por no tener nada delante.
+
+     Y acá va en ROJO y no con su `?`, que es la frontera de la v1026: el
+     material es la PROSA de dos archivos del repositorio, y no puede llegar a
+     cero por una mejora —una sección cerrada se queda con su marca, no se
+     borra—. Lo midió la demostración del reparto de la v1063: con la guarda
+     leyendo un solo archivo, las dieciséis declaraciones y los ciento ocho
+     renglones caían a cero y la corrida salía con un `?` que se lee como «no
+     hay nada que reportar», que es justo lo que este proyecto tiene escrito
+     que no se lee así (v880). */
   if (declaraciones.length < 5) {
-    anotarSinMaterial('MATERIAL · la bitácora declara trabajo aplazado',
-      declaraciones.length + ' declaraciones encontradas');
+    comprobar('MATERIAL · la bitácora declara trabajo aplazado',
+      false,
+      'solo ' + declaraciones.length + ' declaraciones en ' +
+        ARCHIVOS.filter((a) => a.t !== null).map((a) => a.n).join(' + ') +
+        ' — o la bitácora se partió y la guarda no siguió al archivo nuevo, ' +
+        'o el recorte se come lo que tenía que detectar: en los dos casos no vigila nada');
   } else {
     comprobar('MATERIAL · la bitácora declara trabajo aplazado',
       true, declaraciones.length + ' declaraciones de «otra tanda», que es contra lo que muerde la de abajo');
@@ -8396,9 +8491,13 @@ console.log('\n  -- una declaración de «otra tanda» lleva su estado (v1006) -
        Queda fuera «Lo que NO se pudo …», que es otra cosa: una limitación de
        medición del contenedor, no trabajo que alguien decidió aplazar. */
     const HSEC = /^#{2,4} Lo que .*(NO hace|NO cierra|sigue pendiente|NO se hace|sigue faltando)/;
-    const lns = md.split('\n');
     const renglones = [];
     const sinEstado = [];
+    /* Los dos archivos, por lo mismo que arriba: casi todas estas secciones
+       viven en `BITACORA.md` desde la v1063, y el nombre del archivo va en el
+       mensaje porque es a dónde hay que ir. */
+    ARCHIVOS.filter((a) => a.t !== null).forEach((A) => {
+    const lns = A.t.split('\n');
     for (let i = 0; i < lns.length; i++) {
       if (!HSEC.test(lns[i]) || /NO se pudo/.test(lns[i])) continue;
       let j = i + 1;
@@ -8410,10 +8509,11 @@ console.log('\n  -- una declaración de «otra tanda» lleva su estado (v1006) -
       trozos.forEach((t) => {
         renglones.push(t);
         if (!/`pendiente`|`cerrado en v\d+/.test(t)) {
-          sinEstado.push('CLAUDE.md:' + (i + 1) + ' → ' + t.trim().replace(/\n/g, ' ').slice(0, 40));
+          sinEstado.push(A.n + ':' + (i + 1) + ' → ' + t.trim().replace(/\n/g, ' ').slice(0, 40));
         }
       });
     }
+    });
     /* La guarda de la guarda, y es de la clase de la v926: el convenio está
        ESCRITO en la bitácora —qué encabezados cuentan— y aplicado acá en una
        expresión regular. Dos sitios para un hecho se separan, y el que se
