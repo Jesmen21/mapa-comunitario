@@ -13,7 +13,7 @@
 
    La versión va acá y en vision-territorial.html, idéntica, como en los
    otros siete archivos de versión del sitio: revisar.js lo comprueba. */
-const VT_CACHE = 'urbis-vt-v1058-alertas-lebrija-santa-marta-y-buga';
+const VT_CACHE = 'urbis-vt-v1059-seguimiento-presidencial-cali-monsalve-protesta';
 const VT_ASSETS = [
   './vision-territorial.html',
   './css/90-vt.css',

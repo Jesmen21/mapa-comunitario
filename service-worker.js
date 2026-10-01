@@ -1,4 +1,4 @@
-const URBIS_CACHE = 'urbis-v1058-alertas-lebrija-santa-marta-y-buga';
+const URBIS_CACHE = 'urbis-v1059-seguimiento-presidencial-cali-monsalve-protesta';
 const URBIS_ASSETS = [
   './',
   './index.html',
