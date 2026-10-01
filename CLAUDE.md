@@ -24064,7 +24064,9 @@ con `git checkout --` sobre trabajo sin confirmar (v973):
 * **El eje D publicando su CIFRA sin publicar nivel**, como el C publica sus
   recortes desde la v1055: el registro ya trae seis menores muertos con
   confirmación de Medicina Legal. No pide fuente nueva, pide contar lo que ya
-  está. `pendiente`
+  está. `cerrado en v1062` — y la cifra no sale de un barrido: sale de un
+  bloque estructurado, porque un barrido por «muertos» mezcla los 331 muertos
+  del terremoto con las muertes en operaciones del Estado.
 
 ### Lo que NO se pudo correr
 
@@ -24573,6 +24575,215 @@ contenedor no tiene `../urbis-motor` ni el `node_modules` del banco de pruebas.
 Corrió `revisar.js` entero con sus seis comprobaciones nuevas, y se midió el
 papel con la sonda —la tabla de indicadores con su conteo por vía, el eje B, la
 placa y el barrido de las cuatro reglas del papel—.
+
+
+## El eje que carga la violencia publica su piso (v1062)
+
+Pedido así: *«continua con la clasificacion y todo con tal de que soluciones lo
+de la fiabilidad y eso»*. La clasificación la cerró la v1061, así que lo que
+seguía es lo que la v1057 dejó medido y declarado con sus palabras: **«el eje D
+publicando su CIFRA sin publicar nivel, como el C publica sus recortes desde la
+v1055. No pide fuente nueva, pide contar lo que ya está.»**
+
+    v1061   Eje D · sin nivel · ninguna cifra · «falta la fuente y el indicador»
+    v1062   Eje D · sin nivel · 6 menores muertos en 3 operaciones y 7 recuperados en 3
+
+### El titular NO se mueve, y eso es la mitad honesta
+
+Publicar una cifra no es publicar un nivel. La placa sigue en **«CÓMO ESTÁ EL
+PAÍS · Sin dictamen»** porque los tres ejes que miden la realidad siguen sin
+nivel, y bajarlo pide un criterio — escribirlo mirando este registro lo haría
+nacer `construida-para-el-caso` y sin validar (v965), que es la mentira más
+pequeña que este proyecto lleva veinte tandas rechazando.
+
+Lo que cambia es que el eje que carga el reclamo del usuario —la violencia—
+deja de estar vacío: hasta la v1061 contestaba su pregunta con dos razones de
+lo que le falta y **ninguna cifra**, mientras el registro ya sostenía seis
+menores muertos con confirmación de Medicina Legal.
+
+### La cifra NO puede salir de un barrido, y eso se midió primero
+
+Es la decisión que sostiene la tanda. Un barrido por las palabras del título
+—el camino corto— devuelve **33 entradas** y mezcla los **331 muertos del
+terremoto** con las muertes en operaciones del Estado: su cifra contaría
+víctimas de un sismo como muertes en operaciones.
+
+Y no hay cómo marcar un hecho como de uso de la fuerza con lo que el registro
+ya declaraba: medidas sus **trece categorías**, ninguna es de seguridad ni de
+conflicto, y los bombardeos viven en `gobierno`, que es la bolsa general.
+`tipoMedicion` separa actividad de resultado y no dice nada del tema.
+
+Así que la cifra sale de un **bloque estructurado**, `fuerza`, hermano de
+`presupuesto` y por el mismo motivo: el eje C publica sus recortes porque lee
+un bloque y no las menciones presupuestales de la línea de tiempo (v1055).
+Cada renglón trae su **`base`** —el id de la entrada que lo documenta, como los
+indicadores desde la v964— y su **`confirma`**.
+
+### Dos listas, nunca una, y nunca su resta
+
+| | Confirma | |
+|---|---|---|
+| **Menores muertos** · Beta 11 ago · Amón 27 ago · Azarías 30 ago | Medicina Legal | **6 en 3 operaciones** |
+| **Menores recuperados vivos** · Amón · Azarías · operativos del 20 sep | el reporte de cada operación | **7 en 3** |
+
+Van separadas por dos razones que piden cosas distintas, y las dos van
+impresas:
+
+* **son dos hechos**, y el propio registro declara que confundirlos es «el
+  error más fácil de cometer con este registro»: la Operación Azarías reporta
+  dos muertos y dos rescatados, que son cuatro menores;
+* y **se apoyan en calidades de evidencia distintas** —confirmación forense
+  contra reporte operacional—, así que publicarlas sumadas sería mezclar las
+  dos. **Y no se restan**: una recuperación no compensa una muerte, y un neto
+  sería una cifra que ninguna fuente sostiene.
+
+Y la otra mitad no es cortesía: publicar solo las muertes sería publicar la
+mitad de lo que el registro sostiene sobre menores en esas operaciones, que es
+lo que la lista de casos ya tiene prohibido con sus `archivado` —«un registro
+que solo publica lo que acusa no es un registro»—.
+
+### El denominador, porque «seis» se lee como el total
+
+«6 menores muertos» sobre un registro con veinte hechos de operaciones se lee
+como el total de muertes, y es falso. El bloque declara por qué el registro
+**no totaliza** los muertos, con las cifras que no se reconcilian: Azarías se
+anunció con ocho el 31 de agosto, exhibió 23 cuerpos el 2 de septiembre,
+Medicina Legal recibió 24 e identificó 20 con cuatro en análisis; y de El Peñol
+las versiones oficiales difieren en si hubo cinco capturados o doce heridos.
+
+Promediarlas o elegir una sería fabricar un total que ninguna fuente sostiene,
+así que se publica lo confirmado una por una y se dice que el resto está en
+disputa. Es la regla del denominador de la v943 sobre una cifra de muertes.
+
+Y la cifra se nombra por lo que es: **un PISO**. Lo que no se pudo confirmar no
+se cuenta, así que solo puede subir cuando llegue la confirmación, nunca bajar
+— la misma forma del «mientras llega» de la v1046.
+
+### Lo que el bloque dejó viejo, y no lo vio nadie leyendo
+
+La placa decía, desde la v1055, «de N hechos registrados de este mandato, M no
+los mide ningún eje». Con el bloque, **cuatro entradas sí las mide el eje D** y
+esa frase dejó de ser exacta — la exención que deja de serlo porque algo mejoró
+(v966), y una cifra que se habría quedado vieja sola cada vez que el bloque
+creciera.
+
+**MEDIR y NIVELAR son dos cosas**, y ahí está la precisión: esas cuatro se
+miden y siguen sin entrar en ningún nivel. Así que `sinEje` descuenta las
+entradas del bloque por su base —baja sola— y la placa dice las dos:
+
+> De 209 hechos registrados de este mandato, 198 no los mide ningún eje: están
+> publicados con sus fuentes y no entran en ningún nivel, y de los 4 que sí se
+> miden tampoco sale un nivel.
+
+### La misma vara en el registro de Petro, medida
+
+Cero: **ninguna operación de aquel registro tiene confirmación forense de
+menores**, así que el bloque falta allá. Y el eje lo **dice** en vez de salir
+vacío —«eso NO quiere decir que no haya hechos: quiere decir que este registro
+no los tiene estructurados»—, porque un vacío sin razón escrita se leería como
+que no hubo nada que contar, y es el principio 1 del pliego: aflojar la vara en
+un registro es la manera silenciosa de inclinar la comparación.
+
+### Una inyección que NO mordió, y lo que medía de menos
+
+El hallazgo de la tanda, y es sobre mi propia guarda. De nueve inyecciones
+fieles, ocho pusieron su aserción en rojo y una se quedó **verde**: la del
+neteo. El patrón era
+
+```js
+/nMuertos\s*[-+]\s*nRecuperados/
+```
+
+y la vista lee sus campos como `ej.nMuertos`, así que entre los dos nombres va
+un `ej.` que `\s*[-+]\s*` no cubre. Es la trampa de la v1019 y la v1020 otra
+vez: **el patrón tiene que casar la forma que el código escribe, no la que uno
+imagina.** El prefijo de objeto va dentro del patrón y lleva su caso de
+respuesta conocida, que es lo que lo habría cazado.
+
+Y dos más de mis guardas, las dos cazadas al demostrar:
+
+* el **MATERIAL imprimía el texto del verde estando en rojo** —«3 renglones en
+  dos listas separadas» sobre un bloque que se había quedado con una—, que es
+  la sexta vez que este proyecto lo caza (v1019, v1021, v1025, v1027, v1042,
+  v1051). Dice ahora cuántos renglones hay de cada lista;
+* y el mensaje de la base floja **nombraba la operación dos veces** —la entrada
+  de Amón es la base de un renglón de cada lista— cuando lo que hay que ir a
+  ver es la entrada. Nombra la base, una vez.
+
+### Y un defecto que solo dijo el papel
+
+**«y de 4 los que sí se miden tampoco sale un nivel»**, impreso en la placa.
+`cn` antepone la cifra y el texto ya llevaba su artículo dentro: es el error que
+la v1027 pagó en el otro módulo —«1 su único elemento mapeado»— y la cura es la
+de allá, `pl` elige el texto y la cifra la pone el llamador. No lo caza ningún
+barrido: «4 los» no es «1 + plural».
+
+### Demostrado contra la v1061
+
+Trece inyecciones fieles, una por aserción (v993), contra copias guardadas y no
+con `git checkout --` sobre trabajo sin confirmar (v973):
+
+```
+✗ MATERIAL · el bloque `fuerza` se deja leer, con sus dos listas
+    — NO PUDO CORRER: 3 renglón(es) de muertos y 0 de recuperados
+✗ todo renglón del bloque nombra una entrada que existe
+    — 1 no se pueden abrir: Operación Beta → «operacion-beta-vieja»
+✗ y la entrada que la documenta está verificada
+    — 2 se apoyan en una entrada no verificada: operacion-amon-tres-menores (declaracion)
+✗ y dice quién lo confirmó, que es lo que separa las dos listas
+    — 1 sin decir quién confirma: Operativos de la Fuerza Pública
+✗ y la cifra sale del bloque, no de un barrido por el título
+    — dejó de leer el bloque: volvería a no publicar ninguna cifra
+✗ y publicar la cifra no le da nivel
+    — publica nivel: un conteo no da dictamen, y el nivel se calcula, no se asigna
+✗ y el bloque dice qué NO totaliza y qué no se debe confundir, y el eje lo pinta
+    — el eje no las pinta: estarían en el registro y ninguna pantalla las alcanzaría
+✗ y las dos listas nunca se suman ni se restan entre sí
+    — las netea: una recuperación no compensa una muerte
+✗ y el patrón del neteo caza la forma que la vista escribe
+    — no caza «ej.nMuertos - ej.nRecuperados»: la de arriba quedaría en verde
+✗ y la nota del registro dice qué entra al bloque y qué no
+    — sin explicarlo: una operación nueva con menores confirmados no entraría
+```
+
+La novena es la que más vale: es la inyección que la primera versión de esa
+guarda dejaba en verde.
+
+### Medido sobre el papel
+
+La ficha compuesta a 390 y 430 px, con **1.058 nodos de texto barridos**: cero
+puntos decimales, cero cifras de cinco dígitos sin separar, cero «1 + plural»,
+cero marcadores sin reemplazar, cero prosa por debajo del piso de 13 px —la
+atribución de cada renglón sale a 13,44— y cero errores de página. Y las dos
+ramas del eje en la misma corrida: con bloque, 6 y 7 sin nivel; sin bloque
+—el registro de Petro—, 0 y 0 con su razón escrita.
+
+### Lo que esta versión NO hace, y queda medido
+
+* **El eje D sigue sin nivel**, y sus dos razones siguen en pie: la FUENTE
+  —las series de Medicina Legal, la Procuraduría y la Defensoría, con la misma
+  serie de los gobiernos anteriores— y el INDICADOR, porque esto es un conteo
+  y no un criterio con `incluye` y `excluye`. `pendiente`
+* **El bloque solo cuenta menores.** Los demás hechos que el registro tiene
+  —los siete muertos de El Peñol, los 20 cuerpos identificados de Azarías, las
+  40 familias desplazadas del Catatumbo, los ataques contra la Fuerza Pública—
+  no entran, y la razón es la misma por la que no hay total: sus cifras están
+  en disputa y el registro no las concilia. Entran el día que una autoridad las
+  concilie, no antes. `pendiente`
+* **La declaración de la contradicción del mérito**, que es el único renglón de
+  la `LISTA-QUE-SIGUE` y espera un hecho con su fecha de revisión del 21 de
+  noviembre de 2026. Es de quien firma el módulo. `pendiente`
+* **La media histórica del eje B y el ejecutado por sector del eje C**, que son
+  las dos condiciones de archivo y de fuente que bloquean sus niveles.
+  `pendiente`
+
+### Lo que NO se pudo correr
+
+**Ninguna suite de navegador**, por lo mismo que la v973 en adelante: este
+contenedor no tiene `../urbis-motor` ni el `node_modules` del banco de pruebas.
+Corrió `revisar.js` entero con sus once comprobaciones nuevas —643 en verde y
+el `?` SIN MATERIAL de la v970, que sigue sin material porque el registro sigue
+limpio— y se midió el papel con la sonda en dos anchuras.
 
 
 ## La lista viva: lo que al pliego educativo todavía le falta (v866)

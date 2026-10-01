@@ -1966,6 +1966,29 @@ a.sp-fuente:hover svg{ color:var(--verde-hi); }
   white-space:nowrap; text-align:right; min-width:5.5em; }
 .sp-c3-pie{ margin:0; font-size:var(--t-8); line-height:1.6; color:var(--ink-2); }
 
+/* ── Eje D: el piso confirmado del uso de la fuerza (v1062) ─────────────
+   Dos listas separadas, cada renglón con quién lo confirmó. El tamaño: la
+   atribución es prosa de noventa caracteres y no un sello, así que va en
+   --t-8 como el resto del texto corrido de la sección y no en --t-9, que
+   este módulo reserva a etiquetas en mayúsculas (v1015). Los dos tokens
+   son los declarados en :root; --ink-3 no existe, y un var() sin respaldo
+   que apunte a un token inexistente no pinta nada (v1056). */
+.sp-c3-fz-t{ margin:0; font-size:var(--t-8); line-height:1.5; color:var(--ink); }
+.sp-c3-fz li{ display:grid; grid-template-columns:1fr auto; gap:2px 12px; align-items:baseline;
+  padding-bottom:4px; }
+.sp-c3-fz-op{ color:var(--ink); }
+.sp-c3-fz li > b{ text-align:right; white-space:nowrap; }
+/* La atribución ocupa las dos columnas en su propio renglón: con el nombre
+   completo del instituto en una tercera columna, la fila se parte sola y la
+   cifra de la derecha deja de alinearse con las de arriba. */
+.sp-c3-fz-c{ grid-column:1 / -1; font-size:var(--t-8); line-height:1.5; color:var(--ink-2); }
+/* En ámbar y no en rojo: lo que dicen estas dos frases es un límite de
+   nuestra propia medición —qué no se totaliza y qué no se debe confundir—,
+   no un hallazgo sobre el gobierno (v971). */
+.sp-c3-fz-d{ margin:0; font-size:var(--t-8); line-height:1.6; color:#8A5D12;
+  border-left:2px solid #8A5D12; padding-left:10px; }
+
+
 /* ── Capa 4 del pliego: marco declarado, editorial y control ────────────── */
 .sp-fi-c4{ display:grid; gap:14px; }
 .sp-c4-marco{ display:grid; gap:12px; }

@@ -2799,6 +2799,175 @@ console.log('\n  -- la ficha del gobernante --');
       placaD && /Todos los hechos registrados de este mandato alimentan/.test(j70c3),
       placaD ? 'la placa la publica, y la otra redacción está escrita para el día que llegue a cero'
              : 'la placa no la publica: la exención volvería a ser silenciosa (v966)');
+
+    /* ── El eje D publica su CIFRA sin publicar nivel (v1062) ────────────
+       La v1057 lo dejó medido: «como el C publica sus recortes desde la
+       v1055: el registro ya trae seis menores muertos con confirmación de
+       Medicina Legal. No pide fuente nueva, pide contar lo que ya está.»
+
+       Lo que hay que guardar no es la cifra: es DE DÓNDE sale. Medido, un
+       barrido por palabras del título devuelve 33 entradas y mezcla los 331
+       muertos del terremoto con las muertes en operaciones del Estado, así
+       que su cifra contaría víctimas de un sismo como muertes en
+       operaciones. Por eso las cifras salen de un bloque ESTRUCTURADO del
+       registro —como el eje C lee `presupuesto` y no las menciones
+       presupuestales de la línea de tiempo— y cada renglón trae su `base`,
+       el id de la entrada que lo documenta (v964), y su `confirma`. */
+    const regF = JSON.parse(leer('assets/data/seguimiento-presidencial.json'));
+    const F = regF.fuerza || {};
+    const filasF = [...(F.menoresMuertos || []), ...(F.menoresRecuperados || [])];
+    const idsF = new Set((regF.entradas || []).map(e => e.id).filter(Boolean));
+    const porId = {};
+    (regF.entradas || []).forEach(e => { if (e.id) porId[e.id] = e; });
+
+    const dosListas = (F.menoresMuertos || []).length > 0 && (F.menoresRecuperados || []).length > 0;
+    comprobar('MATERIAL · el bloque `fuerza` del registro se deja leer, con sus dos listas',
+      filasF.length >= 2 && dosListas,
+      filasF.length >= 2 && dosListas
+        ? filasF.length + ' renglones en dos listas separadas'
+        : 'NO PUDO CORRER: ' + (F.menoresMuertos || []).length + ' renglón(es) de muertos y ' +
+          (F.menoresRecuperados || []).length + ' de recuperados, así que la comprobación de que ' +
+          'las dos listas no se confunden pasaría sin nada que mirar');
+
+    /* La base es obligatoria y tiene que EXISTIR: una cifra sobre menores
+       muertos que apunte a una entrada que el registro no tiene es una cifra
+       que no se puede abrir, y es la falta que la v964 cerró para los
+       indicadores —allá el acto estaba cierto y no registrado, y el
+       indicador contaba 1 sobre nada—. */
+    const sinBaseF = filasF.filter(f => !f.base || !idsF.has(f.base));
+    comprobar('todo renglón del bloque nombra una entrada que existe',
+      filasF.length > 0 && !sinBaseF.length,
+      !filasF.length ? 'sin renglones que mirar'
+        : (sinBaseF.length
+            ? sinBaseF.length + ' no se pueden abrir: ' +
+              sinBaseF.map(f => f.op + ' → «' + (f.base || '(sin base)') + '»').join(' · ')
+            : 'las ' + filasF.length + ' apuntan a una entrada del registro'));
+
+    /* Y la entrada base tiene que ser VERIFICADA. Un piso forense apoyado en
+       una declaración de una parte no es un piso: es la afirmación de esa
+       parte con una cifra delante, y este módulo publica cifras sobre
+       muertes de menores. */
+    const baseFloja = filasF.filter(f => porId[f.base] && porId[f.base].tipoFuente !== 'verificado');
+    comprobar('y la entrada que la documenta está verificada',
+      filasF.length > 0 && !baseFloja.length,
+      !filasF.length ? 'sin renglones que mirar'
+        : (baseFloja.length
+            ? baseFloja.length + ' se apoyan en una entrada no verificada: ' +
+              baseFloja.map(f => f.base + ' (' + porId[f.base].tipoFuente + ')')
+                      .filter((v, i, a) => a.indexOf(v) === i).join(' · ')
+            : 'las ' + filasF.length + ' se apoyan en una entrada verificada')); 
+
+    /* Quién confirmó. Sin ese campo, «seis menores muertos» es un
+       señalamiento sin respaldo —exactamente lo que la v961 le exigió al
+       contrargumento `ausente` con su constancia de búsqueda— y encima las
+       dos listas dejan de distinguirse: lo que las separa no es la cifra,
+       es que una se apoya en confirmación forense y la otra en el reporte
+       de la operación. */
+    const sinConf = filasF.filter(f => !f.confirma || String(f.confirma).trim().length < 12);
+    comprobar('y dice quién lo confirmó, que es lo que separa las dos listas',
+      filasF.length > 0 && !sinConf.length,
+      !filasF.length ? 'sin renglones que mirar'
+        : (sinConf.length
+            ? sinConf.length + ' sin decir quién confirma: ' + sinConf.map(f => f.op).join(' · ')
+            : 'los ' + filasF.length + ' lo dicen, y el eje nunca suma las dos listas'));
+
+    /* La que de verdad guarda: las cifras salen del BLOQUE y no de un
+       barrido por el texto de las entradas. Un `filter` sobre el título o el
+       detalle del eje D es el defecto entero —mezclaría el terremoto— y en
+       el código se lee perfectamente bien. */
+    const barridoD = /(titulo|detalle)[\s\S]{0,80}(test|match|indexOf|includes)/.test(tramoD);
+    const bloqueD = /reg\.fuerza/.test(tramoD) && /menoresMuertos/.test(tramoD);
+    comprobar('y la cifra sale del bloque, no de un barrido por el título',
+      bloqueD && !barridoD,
+      !bloqueD ? 'dejó de leer el bloque: volvería a no publicar ninguna cifra, o a sacarla de otro sitio'
+        : (barridoD ? 'barre el texto de las entradas: un barrido por «muertos» mezcla los 331 muertos ' +
+                      'del terremoto con las muertes en operaciones del Estado'
+                    : 'lee reg.fuerza, como el eje C lee reg.presupuesto'));
+
+    /* Publicar una cifra no es publicar un nivel, y el eje tiene que seguir
+       sin publicarlo: un nivel pide un criterio, y escribirlo mirando este
+       registro nacería construido para el caso (v965). */
+    comprobar('y publicar la cifra no le da nivel',
+      /nivel: null, publicable: false/.test(tramoD),
+      /nivel: null, publicable: false/.test(tramoD)
+        ? 'sigue sin nivel: la cifra es un conteo y no un criterio con incluye y excluye'
+        : 'publica nivel: un conteo no da dictamen, y el nivel de un eje se calcula, no se asigna');
+
+    /* El denominador honesto. «Seis menores muertos» sobre un registro con
+       veinte hechos de operaciones se lee como el total de muertes, que es
+       falso: los totales de cada operación no se reconcilian —Azarías fue 8,
+       23, 24 y 20— así que el registro no los totaliza y lo dice. Es la
+       regla del denominador de la v943 sobre una cifra de muertes. */
+    const denF = (F.noTotaliza || '').length > 200 && (F.distingue || '').length > 200;
+    const pintaF = /ej\.noTotaliza/.test(j70c3) && /ej\.distingue/.test(j70c3);
+    comprobar('y el bloque dice qué NO totaliza y qué no se debe confundir, y el eje lo pinta',
+      denF && pintaF,
+      !denF ? 'el bloque no lo declara: la cifra se leería como el total de muertes en operaciones'
+        : (pintaF ? 'las dos frases están en el bloque y las dos llegan a la pantalla'
+                  : 'el eje no las pinta: estarían en el registro y ninguna pantalla las alcanzaría (clase C)'));
+
+    /* Y las dos listas no se netean. Una recuperación no compensa una
+       muerte, y restarlas publicaría una cifra que ninguna fuente sostiene.
+
+       El prefijo de objeto va DENTRO del patrón, y no es un detalle: la vista
+       lee sus campos como `ej.nMuertos`, así que un patrón que solo acepte
+       los dos nombres pegados al signo no caza la forma que el código
+       escribe de verdad —medido: con `ej.` en medio, la primera versión de
+       esta guarda pasó en verde sobre la inyección—. Es la trampa de la
+       v1019 y la v1020, y por eso lleva su caso de respuesta conocida. */
+    const PRE = '(?:[A-Za-z_$][\\w$]*\\.)?';
+    const RE_NETO = new RegExp(
+      'n(?:Muertos|Recuperados)\\s*[-+]\\s*' + PRE + 'n(?:Recuperados|Muertos)\\b');
+    const neto = RE_NETO.test(j70c3);
+    comprobar('y las dos listas nunca se suman ni se restan entre sí',
+      !neto,
+      neto ? 'las netea: una recuperación no compensa una muerte, y la cifra no la sostiene nadie'
+           : 'cada lista publica su propia cifra, con su propia calidad de evidencia');
+
+    /* La guarda de la guarda: el patrón tiene que cazar el neteo COMO LO
+       ESCRIBE la vista y dejar pasar los dos usos separados, que son los
+       legítimos. Sin este caso, un patrón que no case nada deja la de arriba
+       en verde para siempre (v878). */
+    const cazaNeto = RE_NETO.test("'Saldo: ' + (ej.nMuertos - ej.nRecuperados)") &&
+                     RE_NETO.test('var x = nMuertos + nRecuperados;');
+    const callaSep = !RE_NETO.test("cn(ej.nMuertos, 'menor', 'menores')") &&
+                     !RE_NETO.test('ej.nRecuperados, ej.opsRecuperados];');
+    comprobar('y el patrón del neteo caza la forma que la vista escribe',
+      cazaNeto && callaSep,
+      !cazaNeto ? 'no caza «ej.nMuertos - ej.nRecuperados»: la de arriba quedaría en verde sobre el neteo'
+        : (callaSep ? 'caza el neteo con y sin prefijo de objeto, y deja pasar los dos usos separados'
+                    : 'denuncia los dos usos separados, que son los legítimos: daría rojo sobre lo que está bien'));
+
+    /* MEDIR y NIVELAR son dos cosas, y al entrar el bloque la frase de la
+       placa dejó de ser exacta: cuatro entradas que el eje D ahora SÍ cuenta
+       seguían dentro de «no los mide ningún eje». Es la exención que deja de
+       ser exacta porque algo mejoró (v966), y la cifra se queda vieja sola
+       en cuanto el bloque crezca. Así que `sinEje` descuenta las entradas
+       que el bloque cuenta, y la placa dice las DOS cosas: cuántos no los
+       mide nadie, y que de los que sí se miden tampoco sale un nivel. */
+    const descD = /bases\[e\.id\]/.test(tramoD) && /enFuerza/.test(tramoD);
+    comprobar('y lo que ningún eje mide descuenta lo que este bloque ya cuenta',
+      descD,
+      descD ? 'descuenta por la base de cada renglón, así que la cifra baja sola cuando el bloque crece'
+            : 'no lo descuenta: la placa diría que no mide unos hechos que el eje acaba de contar');
+
+    const dosPl = /tampoco sale un nivel/.test(j70c3) &&
+                  /de ninguno sale todav\u00eda un nivel|de ninguno sale todavía un nivel/.test(j70c3);
+    comprobar('y la placa separa «no lo mide nadie» de «no sale un nivel», con sus dos redacciones',
+      dosPl,
+      dosPl ? 'dice las dos, y la redacción del día que no quede ninguno sin medir está escrita'
+            : 'las junta: un hecho medido sin nivel se leería como un hecho que nadie mide');
+
+    /* Y la nota del registro, que es lo ÚNICO que lee la rutina diaria que
+       escribe las entradas: sin ella, una operación nueva con menores
+       confirmados no entra al bloque y el eje se queda viejo sin que nada lo
+       diga (v998). */
+    const notaF = (F._nota || '');
+    comprobar('y la nota del registro dice qué entra al bloque y qué no',
+      notaF.length > 400 && /base/.test(notaF) && /confirm/i.test(notaF) && /barrido/i.test(notaF),
+      notaF.length > 400 && /base/.test(notaF) && /confirm/i.test(notaF) && /barrido/i.test(notaF)
+        ? 'nombra la base, quién confirma y por qué no se saca de un barrido'
+        : 'sin explicarlo: una operación nueva con menores confirmados no entraría al bloque');
   }
 
   /* ═══ CAPA 4 DEL PLIEGO · LA OPINIÓN, FUERA DEL CÁLCULO ════════════════

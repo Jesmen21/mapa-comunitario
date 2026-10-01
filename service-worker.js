@@ -1,4 +1,4 @@
-const URBIS_CACHE = 'urbis-v1061-el-criterio-corrido-sobre-el-registro';
+const URBIS_CACHE = 'urbis-v1062-el-eje-que-carga-la-violencia-publica-su-piso';
 const URBIS_ASSETS = [
   './',
   './index.html',

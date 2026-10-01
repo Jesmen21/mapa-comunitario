@@ -2753,24 +2753,75 @@
   function ejeD(dd) {
     var reg = (dd || D) || {};
     var man = hechosDelMandato(reg);
-    var sinEje = man.filter(function (e) { return !(e.indicadores || []).length; });
-    return {
-      eje: 'D', t: 'Uso de la fuerza y derechos', enLista: 'el uso de la fuerza',
-      pregunta: '¿qué le está pasando a la gente en las operaciones del Estado?',
-      nivel: null, publicable: false,
-      hechos: man.length, sinEje: sinEje.length,
-      falta: 'Dos cosas, y ninguna es de código. La primera es la FUENTE: las series de Medicina Legal, ' +
-             'la Procuraduría y la Defensoría que el pliego pide para este bloque, con la misma serie de ' +
-             'los gobiernos anteriores —sin ella una cifra de hoy no tiene contra qué compararse—. La ' +
-             'segunda es el INDICADOR: ninguno de los criterios escritos de este módulo cuenta un uso de ' +
-             'la fuerza, así que ni con las series habría qué clasificar. Y no se escribe de paso: un ' +
-             'criterio redactado mirando este registro nacería construido para el caso y sin validar, y ' +
-             'el nivel de un eje se calcula, no se asigna.',
-      lectura: 'Mientras este eje no publique nivel, los hechos de este tipo que el registro sí tiene —' +
-               'bombardeos, muertes confirmadas por Medicina Legal, desplazamientos— están en la línea ' +
-               'de tiempo con sus fuentes y NO los mide ningún eje. Que no aparezcan en un peldaño no ' +
-               'significa que no ocurrieran: significa que este módulo todavía no los cuenta.'
+    /* Las cifras salen del bloque `fuerza` del registro y NO de un barrido por
+       palabras del titulo. Medido: un barrido por «muertos» devuelve 33 entradas
+       y mezcla los 331 muertos del terremoto con las muertes en operaciones del
+       Estado, asi que publicar su cifra seria contar victimas de un sismo como
+       muertes en operaciones. Es la misma razon por la que el eje C lee el
+       bloque `presupuesto` en vez de las menciones presupuestales de la linea
+       de tiempo (v1055). */
+    var F = reg.fuerza || {};
+    var mue = F.menoresMuertos || [], rec = F.menoresRecuperados || [];
+    var suma = function (l) {
+      return l.reduce(function (a, x) { return a + (Number(x.n) || 0); }, 0);
     };
+    /* Lo que ningun eje MIDE descuenta las entradas que este bloque cuenta.
+       Sin ese descuento la cifra se queda vieja en cuanto el bloque crece —y
+       la placa, que es la superficie que la publica, diria que no mide unos
+       hechos que el eje acaba de contar—, que es la exencion que deja de ser
+       exacta porque algo mejoro (v966). Medir y NIVELAR son dos cosas: estas
+       entradas si se miden y siguen sin entrar en ningun nivel, asi que la
+       placa dice las dos. */
+    var bases = {};
+    [].concat(mue, rec).forEach(function (x) { if (x.base) bases[x.base] = 1; });
+    var sinEje = man.filter(function (e) {
+      return !(e.indicadores || []).length && !(e.id && bases[e.id]);
+    });
+    var enFuerza = man.filter(function (e) { return e.id && bases[e.id]; });
+
+    var r = {
+      eje: 'D', t: 'Uso de la fuerza y derechos', enLista: 'el uso de la fuerza',
+      pregunta: '\u00bfqu\u00e9 le est\u00e1 pasando a la gente en las operaciones del Estado?',
+      nivel: null, publicable: false,
+      hechos: man.length, sinEje: sinEje.length, enFuerza: enFuerza.length,
+      corte: F.corte || null,
+      muertos: mue, recuperados: rec,
+      nMuertos: suma(mue), nRecuperados: suma(rec),
+      opsMuertos: mue.length, opsRecuperados: rec.length,
+      noTotaliza: F.noTotaliza || '', distingue: F.distingue || '',
+      falta: '', lectura: '', unidades: ''
+    };
+
+    if (!mue.length && !rec.length) {
+      /* Sin bloque el eje vuelve a no tener ninguna cifra, y lo dice por lo que
+         es. Hace falta decirlo y no callarlo: el registro de Gustavo Petro no
+         trae ninguna operacion con confirmacion forense de menores, asi que
+         este eje sale vacio alla —medido, no supuesto— y un vacio sin razon
+         escrita se leeria como que no hubo nada que contar. */
+      r.falta = 'El bloque `fuerza` del registro, con lo que cada operaci\u00f3n documenta y su base. Sin ' +
+                '\u00e9l este eje no tiene ninguna cifra que publicar, y eso NO quiere decir que no haya ' +
+                'hechos: quiere decir que este registro no los tiene estructurados.';
+    } else {
+      r.unidades = 'Piso confirmado una operaci\u00f3n por una, con su fecha y qui\u00e9n lo confirm\u00f3. Es un ' +
+                   'PISO y no un total: lo que no se pudo confirmar no se cuenta, as\u00ed que la cifra solo ' +
+                   'puede subir cuando llegue la confirmaci\u00f3n, nunca bajar.';
+      r.falta = 'Dos cosas, y ninguna es que falten cifras. La primera es la FUENTE: las series de ' +
+                'Medicina Legal, la Procuradur\u00eda y la Defensor\u00eda que el pliego pide para este bloque, con ' +
+                'la misma serie de los gobiernos anteriores \u2014sin ella estas cifras no tienen contra qu\u00e9 ' +
+                'compararse y un nivel no sale\u2014. La segunda es el INDICADOR: ninguno de los criterios ' +
+                'escritos de este m\u00f3dulo cuenta un uso de la fuerza, y esto es un CONTEO y no un criterio ' +
+                'con incluye y excluye, as\u00ed que no da nivel. Y no se escribe de paso: un criterio ' +
+                'redactado mirando este registro nacer\u00eda construido para el caso y sin validar, y el ' +
+                'nivel de un eje se calcula, no se asigna.';
+      r.lectura = 'Este eje publica sus cifras y NO publica nivel, igual que el eje C publica sus recortes ' +
+                  'desde la v1055: una cifra confirmada no es un dictamen. Y las dos listas no se suman ni ' +
+                  'se restan \u2014una recuperaci\u00f3n no compensa una muerte\u2014 porque se apoyan en calidades de ' +
+                  'evidencia distintas: las muertes en confirmaci\u00f3n forense y las recuperaciones en el ' +
+                  'reporte de la operaci\u00f3n. Los dem\u00e1s hechos de este tipo que el registro tiene \u2014' +
+                  'bombardeos, desplazamientos, ataques contra la Fuerza P\u00fablica\u2014 est\u00e1n en la l\u00ednea de ' +
+                  'tiempo con sus fuentes y este eje todav\u00eda no los cuenta.';
+    }
+    return r;
   }
 
   /* ═══ EL PESO DE CADA EJE ══════════════════════════════════════════════
@@ -3763,8 +3814,18 @@
         ejeFuerza.sinEje
           ? 'De ' + cn(ejeFuerza.hechos, 'hecho registrado de este mandato',
                        'hechos registrados de este mandato') + ', ' + miles(ejeFuerza.sinEje) +
-            ' no los mide ningún eje: están publicados con sus fuentes y no entran en ningún nivel.'
-          : 'Todos los hechos registrados de este mandato alimentan algún eje.'));
+            ' no los mide ningún eje: están publicados con sus fuentes y no entran en ningún nivel' +
+            /* `pl` y no `cn`: el texto ya lleva su artículo, así que un
+               ayudante que antepusiera la cifra imprimiría «y de 4 los que
+               sí se miden», que es el defecto que la v1027 pagó en el otro
+               módulo y que solo se ve leyendo el papel. */
+            (ejeFuerza.enFuerza
+              ? pl(ejeFuerza.enFuerza,
+                   ', y del único que sí se mide tampoco sale un nivel.',
+                   ', y de los ' + miles(ejeFuerza.enFuerza) + ' que sí se miden tampoco sale un nivel.')
+              : '.')
+          : 'Todos los hechos registrados de este mandato alimentan algún eje' +
+            (ejeFuerza.enFuerza ? ', y de ninguno sale todavía un nivel.' : '.')));
     }
     placa.appendChild(el('p', 'sp-fi-cuentas', cuentasDe(f)));
     return placa;
@@ -4565,6 +4626,43 @@
         });
         li.appendChild(uc);
       }
+      /* El eje D publica sus cifras aunque no publique nivel, igual que el C
+         publica sus recortes desde la v1055. Las dos listas van SEPARADAS y con
+         quien confirma cada una: un menor muerto y un menor recuperado son dos
+         hechos distintos —la Operacion Azarias reporta dos de cada clase— y
+         confundirlos es el error que el propio registro declara como el mas
+         facil de cometer con el. */
+      if (ej.eje === 'D' && (ej.muertos.length || ej.recuperados.length)) {
+        if (ej.unidades) li.appendChild(el('p', 'sp-c3-dato', ej.unidades));
+        [['Menores muertos en operaciones del Estado', ej.muertos, ej.nMuertos, ej.opsMuertos],
+         ['Menores recuperados vivos en operaciones del Estado', ej.recuperados, ej.nRecuperados,
+          ej.opsRecuperados]].forEach(function (g) {
+          if (!g[1].length) return;
+          var h = el('p', 'sp-c3-fz-t', null);
+          h.appendChild(el('b', null, g[0]));
+          h.appendChild(document.createTextNode(' \u00b7 ' +
+            cn(g[2], 'menor', 'menores') + ' en ' + cn(g[3], 'operaci\u00f3n', 'operaciones')));
+          li.appendChild(h);
+          var uf = el('ul', 'sp-c3-ind sp-c3-fz');
+          g[1].forEach(function (f) {
+            var lf = el('li', null);
+            var q = el('span', null, null);
+            q.appendChild(el('b', 'sp-c3-fz-op', f.op));
+            q.appendChild(document.createTextNode(' \u00b7 ' + fechaCorta(f.fecha) + ' \u00b7 ' + f.lugar));
+            lf.appendChild(q);
+            lf.appendChild(el('b', null, cn(f.n, 'menor', 'menores')));
+            /* Quien confirma va en el renglon y no en una nota al pie: una
+               cifra de menores muertos sin decir quien la confirmo es un
+               senalamiento sin respaldo, y es el campo que el bloque exige. */
+            lf.appendChild(el('span', 'sp-c3-fz-c',
+              'Confirma: ' + f.confirma + (f.nota ? ' \u00b7 ' + f.nota : '')));
+            uf.appendChild(lf);
+          });
+          li.appendChild(uf);
+        });
+        if (ej.distingue) li.appendChild(el('p', 'sp-c3-fz-d', ej.distingue));
+        if (ej.noTotaliza) li.appendChild(el('p', 'sp-c3-fz-d', ej.noTotaliza));
+      }
       if (ej.eje === 'D' && ej.hechos) {
         li.appendChild(el('p', 'sp-c3-dato',
           ej.sinEje
@@ -4572,6 +4670,7 @@
                 'hechos del mandato no los mide ning\u00fan eje') + ' \u2014 este incluido'
             : 'todos los hechos del mandato alimentan alg\u00fan eje'));
       }
+
       if (!ej.publicable) {
         var fa = el('p', 'sp-c3-falta');
         fa.appendChild(el('b', null, 'Falta para poder publicarlo: '));
