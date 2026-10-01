@@ -16,7 +16,7 @@ forma que la v868 le dio a las listas vivas, aplicada a la lista que toda
 sesión lee primero. Cómo se agrega un renglón: la sección **«Una lista de
 prioridades también se queda vieja (v997)»**, más abajo.
 
-Medido el 1 de octubre de 2026 sobre los dos registros —213 entradas del
+Medido el 1 de octubre de 2026 sobre los dos registros —218 entradas del
 gobierno actual y 32 de Petro—:
 
 1. **Declarar la identidad de objeto de la contradicción del mérito.**
@@ -33,30 +33,15 @@ gobierno actual y 32 de Petro—:
    conveniencia justo lo que ese párrafo existe para impedir.
    `hecho cuando: identidad-declarada`
 
-2. **Correr los criterios escritos sobre el resto del registro.** La v961
-   escribió los criterios de I-04, I-05, I-07 y I-13 con su `incluye` y su
-   `excluye`, y dejó dicho que escribirlos no clasifica: los hace
-   clasificables. **La v1051 midió lo que cuesta no hacerlo**: el eje B
-   publica «I-05 · Choques con órganos autónomos · 0 / 100 d» al lado de un
-   gobierno que relevó a un director técnico y le puso autorización previa a
-   la prensa, y ese cero **no dice que no hubo choques**: dice que 138 de 144
-   actos de gobierno no declaran qué indicador alimentan. Es lo que deja
-   mudo el eje que lleva el deterioro institucional — o sea siete de los
-   nueve puntos del reclamo que produjo la v1051.
-   **Sí es de esta sesión**, y no pide la firma de nadie: el criterio está
-   escrito y es público, así que aplicarlo no es una opinión sustituyendo a
-   otra. Y la v961 midió la dirección del error: el criterio escrito produce
-   MENOS señalamientos, no más.
-   El denominador honesto son los hechos con `tipoMedicion: 'actividad'`, no
-   las 212: a una cifra del país o a un hecho de otro actor no se le declara
-   un indicador sin mentir, que es lo que la v999 corrigió con el nivel de
-   gobierno.
-   `hecho cuando: indicador-declarado`
+**Queda UN renglón, y espera un HECHO que no depende de esta sesión** —si el
+Gobierno presenta esa vía alternativa para blindar los requisitos mínimos—, con
+su fecha de revisión. Endurecer guardas alrededor no lo adelanta ni un día.
 
-**Quedan DOS renglones, y los dos esperan a alguien distinto.** El primero
-espera un HECHO —si el Gobierno presenta esa vía alternativa— y tiene su fecha;
-el segundo no espera a nadie y es de esta sesión. Endurecer guardas alrededor
-no adelanta ninguno de los dos.
+Y conviene decir qué NO es eso: que la lista tenga un solo renglón no quiere
+decir que no quede trabajo. Quiere decir que lo que queda no cabe en la forma
+de esta lista —una condición que se mide contra el registro y baja sola—. Lo
+demás vive en las secciones **«Lo que esta versión NO hace»** de cada tanda,
+que desde la v1008 llevan su estado y `revisar.js` las vigila.
 
 Y una corrección que la v1050 midió y la v1060 confirmó: **son CINCO, no
 ocho.** Las documentadas que cuentan en el registro actual son cinco —la sexta
@@ -69,7 +54,13 @@ aparece una entrada cuyas fuentes **ninguna documenta el acto**, no se inventa
 y no se deja pasar. Se queda en `sin-acto` —que desde la v970 es un estado que
 se cuenta y se nombra, no un fallo— y se sigue. **Es hallazgo, no obstáculo.**
 
-**Lo que ya NO está en la lista, y por qué:** la migración del esquema antiguo
+**Lo que ya NO está en la lista, y por qué:** **correr los criterios escritos
+sobre el resto del registro**, que era el renglón 2, lo hizo la v1061 sobre los
+148 actos de gobierno de los dos registros, y el resultado fue UNO: la carta
+del presidente de la JEP a la Corte Penal Internacional entra por I-05, que
+deja de estar en cero. Los otros 141 pasaron por los cuatro criterios y no caen
+en ninguna vía, y eso también se marca —con la lista vacía— porque «revisado y
+ninguno aplica» y «nadie lo ha mirado» se veían iguales. Y la migración del esquema antiguo
 `fuente` + `url` la hizo la v967 —cero entradas quedan con esa forma en los dos
 registros— y la pantalla del módulo presidencial la implementó la v971, con sus
 diecisiete gráficos. Las dos seguían pedidas acá hasta la v996. Y el **rol de
@@ -24309,9 +24300,280 @@ realidad, y los tres ejes que la miden siguen sin publicar nivel.
 * **El eje A sigue sin publicar nivel** por esa una, así que la `LISTA-QUE-SIGUE`
   conserva su renglón — ahora con el denominador honesto: 1 de 5. `pendiente`
 * **Clasificar los 138 hechos de actividad sin indicador**, que es lo único que
-  puede sacar al eje B de su cero y no pide la firma de nadie. `pendiente`
+  puede sacar al eje B de su cero y no pide la firma de nadie.
+  `cerrado en v1061` — y corridos los criterios, pasa UNO: I-05 deja de estar
+  en cero. El resto se marca como revisado, que no es lo mismo que pendiente.
 * **El desempleo como SERIE**, que pediría los puntos mes a mes del DANE y no
   dos. `pendiente`
+
+## El criterio corrido sobre el registro, y lo que da (v1061)
+
+El renglón 2 de la `LISTA-QUE-SIGUE`, que era el único que no esperaba la firma
+de nadie: *«la v961 escribió los criterios de I-04, I-05, I-07 y I-13 con su
+`incluye` y su `excluye`, y dejó dicho que escribirlos no clasifica: los hace
+clasificables»*.
+
+    v1060   I-05 · Choques con órganos autónomos · 0 / 100 d · 6 de 142 actos declaran
+    v1061   I-05 · 1,8 por 100 días · 1 en total · los 148 actos de los dos registros declarados
+
+### Corridos los cuatro sobre los 136, pasa UNO
+
+Y es el resultado honesto, no una tanda a medias: de los 136 actos de gobierno
+sin declarar, **uno entra por una vía escrita** —la carta del presidente de la
+JEP a la Corte Penal Internacional advirtiendo que iniciativas presupuestales
+del Gobierno afectan la independencia del tribunal, que es el primer renglón
+del `incluye` de I-05: *«el órgano declara formalmente que un acto del Ejecutivo
+afecta su autonomía o competencia»*—.
+
+La JEP está en la lista cerrada de órganos autónomos desde la v962, el acto es
+un documento de una de las partes, y el `requiere` del criterio pide un estado
+procesal de disputa y evidencia que no sea una captura de pantalla: se declara
+`en-disputa-institucional` y `reporte-periodistico`, y cuenta. **La cifra que
+la v1051 nombró como muda deja de estar en cero**, y no porque se aflojara
+nada.
+
+#### El método: una red con el vocabulario de los propios criterios
+
+Marcar 135 entradas como revisadas es una afirmación sobre la propia
+diligencia, así que tenía que ser auditable y no «las leí». La red se arma con
+las palabras de disparo de los cuatro criterios —emergencia, desastre nacional,
+aplazamiento, directiva de difusión; los trece órganos de la lista cerrada,
+tutela, juzgado, medida cautelar; derecho de petición; DANE, CREG, IDEAM,
+difusión— y **se leyó cada una de las 48 que disparan**.
+
+Y la red se equivocó primero, como siempre: sin límites de palabra, `igac`
+casaba dentro de «obligaciones» y `cne` dentro de otras, y daba 58. Es la
+trampa de la v878 en un barrido propio, por sexta vez (v891, v897, v903, v1000,
+v1053). Con los límites puestos, 48.
+
+#### Las siete que parecían entrar y no entran, con su renglón
+
+Vale escribirlas porque son las que la próxima tanda va a volver a mirar:
+
+| | Por qué no |
+|---|---|
+| «Anuncia que decretará una segunda emergencia económica» | `excluye`: anuncio sin acto administrativo expedido |
+| «Colombia declara calamidad pública en el Tolima» | la vía escrita es **desastre nacional (Ley 1523)**, que es otro instrumento — y el detalle de esa entrada no documenta ninguna declaratoria |
+| Decreto 1446, que lleva las tutelas contra el presidente al Consejo de Estado | las tres vías de I-05 son actos del ÓRGANO, y acá el que actúa es el Ejecutivo |
+| «Cumple el fallo que le ordenó disculparse» | acata y lo controvierte por los cauces ordinarios: eso es el sistema funcionando |
+| «Dice que respeta los fallos pero los va a controvertir» | `excluye`: desacuerdo expresado sin acto institucional |
+| Sacerdote delegado en cinco universidades | quien objetó fue una congresista: `excluye` nombra la crítica política |
+| El programa de ahorro de la CREG | el acto es de la CREG, no del Ejecutivo SOBRE la CREG |
+
+**La dirección del error es la de siempre** (v961): el criterio escrito produce
+MENOS señalamientos que una lectura suelta. El Decreto 1446 es el caso que más
+cuesta dejar fuera —cambiar quién juzga las tutelas contra uno mismo tiene toda
+la forma del deterioro institucional— y **no cae en ninguna vía escrita**.
+Escribirle una ahora, mirando este registro, la haría nacer
+`construida-para-el-caso` y sin validar (v965), que es exactamente lo que el
+pliego prohíbe: el nivel se calcula, no se asigna.
+
+### «Revisado y ninguno aplica» ya estaba en el registro, y no lo leía nadie
+
+El hallazgo de la tanda, y es el que convierte 135 marcas en algo que se puede
+sostener: **la marca no se inventó acá.** Cuatro entradas ya traían
+`indicadores: []`, puesto por la v963, la v964 y la v970 al RETIRAR una
+declaración que el criterio no dejaba pasar — el Decreto 1012, el relevo de
+Urdinola, la emergencia anunciada, el DANE.
+
+Y `indicadoresDe` hacía `if (!lista.length) sinDeclarar++`, así que **la lista
+vacía y la ausencia del campo se contaban igual**. Un acto ya revisado se
+contaba como pendiente para siempre: la distinción estaba en el registro y
+ninguna superficie la alcanzaba, que es la clase C.
+
+Son **tres estados** y no dos, con la distinción de la v899:
+
+| | Qué significa | Qué pide |
+|---|---|---|
+| `["I-05"]` | alimenta ese indicador | nada |
+| `[]` | se corrieron los criterios escritos y ninguno aplica | nada |
+| sin el campo | nadie lo ha mirado | el trabajo |
+
+Falla **cerrado** (v880): una entrada nueva de la rutina diaria nace sin el
+campo y sale en rojo en su primera corrida, que es lo único que impide que el
+pendiente vuelva a crecer solo.
+
+#### Y la razón NO se exige, a diferencia de la identidad de objeto
+
+La v1060 obliga a escribir por qué se declaró cada `mismoObjetoVerificado`, y
+acá no se pide ninguna. La vara va dicha porque la próxima tanda la va a
+preguntar: **la razón se exige donde la marca ACUSA.** Aquella baja en público
+el peldaño de un presidente en ejercicio; esta dice que un acto no alimenta
+ningún indicador, que es la dirección conservadora. Pedirle una razón a 135
+entradas sería 135 párrafos escritos de corrido para no afirmar nada.
+
+### El denominador son los ACTOS, y ese era el tercer defecto
+
+`sinDeclarar` se contaba sobre los 199 hechos del mandato, así que el eje B
+decía «193 de 199 hechos del mandato no declaran qué indicador alimentan». Pero
+a una cifra del país o a un hecho de otro actor **no se le puede asignar un
+indicador de gestión sin mentir**, igual que no se le puede declarar un nivel.
+
+O sea que era un pendiente que nadie podía bajar nunca: el mismo error que la
+v999 corrigió para `nivelGobierno` y la v1060 para la identidad de objeto,
+repetido por tercera vez en el mismo módulo. **La tercera vez no es casualidad
+y conviene tener la forma escrita: todo recuento de lo que FALTA declarar tiene
+que correr sobre las entradas a las que ese campo se les puede exigir, y
+ninguna más.**
+
+Con el denominador honesto son 139 actos del mandato, 7 declarantes y 132
+revisados sin vía.
+
+### La misma vara en el registro de Petro, y lo que la marca NO valida
+
+Los seis actos de gobierno de aquel registro se corrieron por los cuatro
+criterios —entrega de la Presidencia, salario mínimo por decreto, sanción de la
+reforma laboral, sanción de la pensional, fracking, posesión— y ninguno
+dispara. Es el principio 1 del pliego: toda regla que se aplica a un gobierno
+se aplica a todos, y aflojarla en un registro es la manera silenciosa de
+inclinar la comparación.
+
+**Y hay que decir qué NO significa eso, porque es la tentación evidente:** no
+valida los criterios. `corridaHaciaAtras` cuenta como clasificada la entrada
+que trae `nivelGobierno`, `estadoProcesal` y `tipoEvidencia`, y estas seis no
+los traen; y aunque los trajeran, **seis actos escogidos de cuatro años en un
+registro que se declara no exhaustivo son evidencia demasiado delgada** para
+concluir que un criterio distingue. Los cuatro siguen con `validado: no` y
+`gobiernos anteriores probados: 0`.
+
+Que marcar la revisión y validar el criterio sean dos cosas separadas **por
+construcción** —y no por acordarse— es lo que impide que esta tanda se compre
+un verde: la marca no toca ninguno de los tres campos que la validación mide.
+Hay una aserción dedicada a eso en el propio parcheador.
+
+### El reclamo de la tasa del Banco de la República
+
+Llegó en dos capturas de una cuenta partidista —la misma cuenta, el mismo pie—
+con dos afirmaciones: que el Banco subió la tasa a 12,25 % y que «en campaña
+prometió el 2 % de interés y se desmarcó de los bancos». **La captura no es la
+fuente** (v1054, v1060): las dos se buscaron una por una.
+
+* **La subida es cierta y entra**: 30 de septiembre, de 12,00 a 12,25 %, por
+  mayoría —cuatro a favor, dos por dejarla igual y uno por subirla 50 puntos—,
+  citando el repunte de la inflación de agosto que este mismo registro ya
+  tiene. Con el comunicado de la propia Junta entre sus fuentes.
+* **Y NO entra como contradicción**, que es la mitad que vale. Lo que la
+  campaña propuso fue un crédito **hipotecario** a 30 años al 2 % anual para
+  vivienda de interés social, negociado con la Junta y con la banca; 12,25 % es
+  la tasa de **política monetaria**. Son dos objetos distintos, así que ponerlos
+  uno frente a otro sería el Fonpet exacto — el ejemplo que el propio pliego
+  trae para decir que una acusación floja al lado de las sólidas **resta en vez
+  de sumar**.
+
+La entrada se registra como `contexto-estructural` y **sin nivel de gobierno**:
+la política monetaria la decide un órgano de autonomía constitucional y el
+presidente no la fija, así que atribuírsela sería una atribución causal que
+ninguna fuente sostiene.
+
+Lo que sí se dice, porque es verificable y es lo que de verdad toca la promesa:
+una tasa de referencia más alta encarece el fondeo de los bancos y **mueve en
+contra de esa promesa sin incumplirla**, y al cierre de la entrada no consta
+ningún acto de gobierno que ponga en marcha el crédito al 2 % — que es lo que
+un día permitirá medir la promesa contra lo hecho.
+
+### La guarda de la v997 se cobró por segunda vez
+
+Al terminar de marcar, `revisar.js` dijo «ya está hecho y la lista lo sigue
+pidiendo: indicador-declarado». Es para lo que se escribió, y es la segunda vez
+que muerde después de la v998.
+
+**Y su medición estaba mal, con el mismo defecto que la tanda vino a
+arreglar**: contaba `!indicadores.length`, así que un acto revisado le salía
+pendiente y el renglón no podría llegar a cero nunca sin declararle un
+indicador a un acto que no lo tiene. Corregida a la condición honesta —que no
+quede ninguno sin revisar— el renglón sale de la lista, y su medición con él:
+lo que queda cuando algo ya no falta es un INVARIANTE, y un invariante vive en
+su propia comprobación (v999).
+
+**La `LISTA-QUE-SIGUE` queda con un renglón**, y espera un hecho que no depende
+de esta sesión.
+
+### Una guarda de la v1051 que citaba la línea
+
+Se puso roja al partir `sinDeclarar` en tres: pedía `ind.sinDeclarar` y
+`ind.hechos` literales. Es la constante del día metida dentro de la
+comprobación (v890), y se apretó en vez de aflojarse — mide ahora que la cifra
+SE CALCULE del registro y que las dos redacciones estén escritas, sea cual sea
+el nombre de la variable.
+
+### Y una del formato del registro, medida
+
+El registro lo escriben dos sesiones y su sangría no es uniforme: la forma
+canónica es `json.dumps(indent=1)` con dos espacios de prefijo, y **210 de 218
+entradas la cumplen**. Las ocho que no son las seis últimas de la otra sesión y
+**las dos mías**, que escribí con las fuentes a nueve espacios.
+
+Se normalizaron **las dos mías y ninguna más**: reformatear las suyas es el
+`json.dumps` sobre el archivo entero que la v998 prohíbe, y es lo que convierte
+una tanda en un conflicto de fusión. El parcheador **mide la forma contra el
+propio archivo** en vez de suponerla —el registro de Petro resultó estar a
+`indent=2` con cuatro de prefijo— que es lo que hizo abortar dos parches en la
+v998 y uno en la v1060.
+
+### Demostrado contra la v1060
+
+Siete inyecciones fieles, una por aserción (v993), contra copias guardadas y no
+con `git checkout --` sobre trabajo sin confirmar (v973):
+
+```
+✗ todo acto de gobierno declara qué indicador alimenta, o que ninguno
+    — 1 sin revisar — mientras falten, un 0 en un indicador se lee como «no hubo»
+✗ y a lo que no es un acto de gobierno no se le asigna indicador
+    — 1 lo llevan sin ser actos: presidencial/2026-09-30 · resultado
+✗ y la nota de cada registro dice las DOS maneras de declararlo
+    — sin explicarlo: seguimiento-petro.json — una entrada nueva nace sin el campo
+✗ y el recuento separa la lista vacía de la ausencia del campo
+    — dejó de separarlos: un acto revisado volvería a contarse como pendiente
+✗ y los cuenta sobre los ACTOS, no sobre todos los hechos del mandato
+    — cuenta sobre todos los hechos: infla un pendiente que nadie puede bajar (v999)
+✗ y el eje B explica su cero con los actos sin revisar
+    — dejó de leerlo: el eje volvería a decir que falta clasificar lo que ya se clasificó
+? MATERIAL · los registros traen actos de gobierno  — SIN MATERIAL HOY: 0 de «actividad»
+```
+
+### Medido sobre el papel
+
+La página compuesta, en un teléfono de 390 px:
+
+```
+Choques con órganos autónomos · 1,8 por 100 días · 1 en total
+   el órgano declara formalmente que un acto del Ejecutivo afecta su autonomía · 1 hecho
+eje B · «los 139 actos de gobierno del mandato ya están clasificados —los criterios
+        escritos se corrieron sobre todos y 132 no caen en ninguna de sus vías—, así
+        que un 0 acá ya NO quiere decir que falte clasificar»
+placa · CÓMO ESTÁ EL PAÍS · Sin dictamen
+```
+
+Cero «1 + plural», cero cifras con punto decimal y cero errores de página. El
+veredicto **no se mueve**, y tiene que no moverse: los tres ejes que miden la
+realidad siguen sin publicar nivel, y lo que esta tanda arregla es con qué se
+sostiene uno de sus cuatro números.
+
+### Lo que esta versión NO hace, y queda medido
+
+* **La declaración de la contradicción del mérito**, que es el único renglón
+  que queda en la lista y espera un hecho con su fecha de revisión. `pendiente`
+* **Validar los cuatro criterios contra un gobierno anterior.** Pide clasificar
+  el registro de Petro con `estadoProcesal` y `tipoEvidencia` —seis actos— y
+  aun así sería evidencia delgada: lo que de verdad lo validaría es un registro
+  anterior exhaustivo, que es trabajo de archivo. `pendiente`
+* **Un criterio para los actos que cambian las reglas del juego sin invocar una
+  facultad excepcional** —el Decreto 1446 es el caso—. Escribirlo mirando este
+  registro lo haría nacer sin validar, así que queda nombrado con su caso para
+  quien lo tome con material de más de un gobierno. `pendiente`
+* **El título de la entrada del Tolima afirma una declaratoria de calamidad
+  pública que su propio detalle no documenta.** Se midió al correr los
+  criterios y no se tocó: corregir el título o conseguir el acto es trabajo de
+  registro sobre una entrada que no escribí. `pendiente`
+
+### Lo que NO se pudo correr
+
+**Ninguna suite de navegador**, por lo mismo que la v973 en adelante: este
+contenedor no tiene `../urbis-motor` ni el `node_modules` del banco de pruebas.
+Corrió `revisar.js` entero con sus seis comprobaciones nuevas, y se midió el
+papel con la sonda —la tabla de indicadores con su conteo por vía, el eje B, la
+placa y el barrido de las cuatro reglas del papel—.
+
 
 ## La lista viva: lo que al pliego educativo todavía le falta (v866)
 

@@ -8827,6 +8827,109 @@ console.log('\n  -- un acto de gobierno declara su nivel (v999) --');
   }
 }
 
+console.log('\n  -- qué indicador alimenta un acto de gobierno (v1061) --');
+{
+  /* Los dos registros, por la misma vara (principio 1 del pliego).
+
+     TRES estados y no dos, que es la distinción de la v899 dicha sobre la
+     clasificación: la lista de indicadores que el acto alimenta, la lista
+     VACÍA —se corrieron los criterios escritos y ninguno aplica— y la
+     AUSENCIA del campo, que es «nadie lo ha mirado». Las dos últimas se
+     veían iguales, así que un acto ya revisado se contaba como pendiente
+     para siempre y el cero de un indicador se leía como «falta clasificar»
+     cuando podía significar «ninguno entra por una vía del criterio».
+
+     Falla CERRADO (v880): una entrada nueva de la rutina diaria nace sin el
+     campo y sale en rojo en su primera corrida, que es como se consigue que
+     el pendiente no vuelva a crecer solo. */
+  const REGISTROS = ['assets/data/seguimiento-presidencial.json', 'assets/data/seguimiento-petro.json'];
+  const actos = [], sinRevisar = [], revisados = [], declaran = [], impropios = [];
+  REGISTROS.forEach((ruta) => {
+    const d = JSON.parse(leer(ruta));
+    const quien = ruta.split('-').pop().replace('.json', '');
+    (d.entradas || []).forEach((e) => {
+      const tiene = Object.prototype.hasOwnProperty.call(e, 'indicadores');
+      if (e.tipoMedicion !== 'actividad') {
+        if (tiene) impropios.push(quien + '/' + (e.fecha || '?') + ' · ' + e.tipoMedicion);
+        return;
+      }
+      actos.push(e);
+      if (!tiene) sinRevisar.push(quien + '/' + (e.fecha || '?'));
+      else if ((e.indicadores || []).length) declaran.push(e);
+      else revisados.push(e);
+    });
+  });
+
+  /* MATERIAL primero (v920). Y mide lo que SOBREVIVE al cero (v1022): no
+     cuántos quedan sin revisar —que es el defecto y baja a cero al
+     arreglarlo— sino que los registros sigan trayendo actos de gobierno. */
+  if (actos.length < 10) {
+    anotarSinMaterial('MATERIAL · los registros traen actos de gobierno',
+      actos.length + ' de tipoMedicion «actividad»');
+  } else {
+    comprobar('MATERIAL · los registros traen actos de gobierno',
+      true, actos.length + ' actos en los dos registros');
+
+    comprobar('todo acto de gobierno declara qué indicador alimenta, o que ninguno',
+      sinRevisar.length === 0,
+      sinRevisar.length === 0
+        ? 'los ' + actos.length + ' lo declaran: ' + declaran.length + ' alimentan alguno y ' +
+          revisados.length + ' pasaron por los criterios y no caen en ninguna vía'
+        : sinRevisar.length + ' sin revisar, los primeros: ' + sinRevisar.slice(0, 4).join(' · ') +
+          ' — mientras falten, un 0 en un indicador se lee como «no hubo» y puede ser «nadie lo miró»');
+
+    /* Guarda contra pasarse (v879, v882, v890): a una cifra del país o a un
+       hecho de otro actor NO se le asigna un indicador de gestión, igual que
+       no se le inventa un nivel (v999). Sin esta, el arreglo barato sería
+       escribirle `[]` a las 218 y el recuento llegaría a cero declarando
+       algo falso sobre las que no son actos. */
+    comprobar('y a lo que no es un acto de gobierno no se le asigna indicador',
+      impropios.length === 0,
+      impropios.length === 0
+        ? 'ninguna cifra del país ni hecho de otro actor declara indicador'
+        : impropios.length + ' lo llevan sin ser actos: ' + impropios.slice(0, 4).join(' · '));
+
+    /* Y la nota de cada registro tiene que decirlo: es la causa que la v998
+       encontró para el rol y la v999 para el nivel —el campo existe, la
+       guarda existe, y la instrucción que lee quien escribe una entrada no
+       lo menciona—, así que cada entrada nueva nacía incumpliéndola. */
+    const sinNota = REGISTROS.filter((ruta) =>
+      String(JSON.parse(leer(ruta))._comentario || '').indexOf('QUÉ INDICADOR ALIMENTA UN ACTO DE GOBIERNO') < 0);
+    comprobar('y la nota de cada registro dice las DOS maneras de declararlo',
+      sinNota.length === 0,
+      sinNota.length === 0
+        ? 'los ' + REGISTROS.length + ' explican la regla a quien escribe'
+        : 'sin explicarlo: ' + sinNota.join(' · ') + ' — una entrada nueva nace sin el campo');
+
+    /* Guarda de la guarda (v878), en sus dos mitades. Si el recuento dejara
+       de separar la lista vacía de la ausencia, o volviera a contar sobre
+       los hechos del mandato en vez de sobre los ACTOS, todo lo de arriba
+       seguiría en verde sobre una distinción que nadie usa. */
+    const j70i = soloCodigo(leer('js/70-seguimiento.js'));
+    const iI = j70i.indexOf('function indicadoresDe');
+    const cI = iI >= 0 ? j70i.slice(iI, j70i.indexOf('\n  }', iI)) : '';
+    const separa = /else if \(e\.indicadores\) revisadosSinInd\+\+;/.test(cI) &&
+                   /else sinRevisar\+\+;/.test(cI);
+    const porActos = /e\.tipoMedicion === 'actividad'/.test(cI) && /actos\+\+;/.test(cI);
+    comprobar('y el recuento separa la lista vacía de la ausencia del campo',
+      separa,
+      separa ? 'indicadoresDe cuenta los tres estados aparte'
+             : 'dejó de separarlos: un acto revisado volvería a contarse como pendiente');
+    comprobar('y los cuenta sobre los ACTOS, no sobre todos los hechos del mandato',
+      porActos,
+      porActos ? 'el denominador son las entradas de «actividad»'
+               : 'cuenta sobre todos los hechos: infla un pendiente que nadie puede bajar (v999)');
+
+    const iB = j70i.indexOf('function ejeB');
+    const cB = iB >= 0 ? j70i.slice(iB, j70i.indexOf('\n  }', iB)) : '';
+    const leeB = /ind\.sinRevisar/.test(cB) && !/ind\.sinDeclarar/.test(cB);
+    comprobar('y el eje B explica su cero con los actos sin revisar',
+      leeB,
+      leeB ? 'ejeB lee ind.sinRevisar'
+           : 'dejó de leerlo: el eje volvería a decir que falta clasificar lo que ya se clasificó');
+  }
+}
+
 /* ── Una lista de prioridades también se queda vieja (v997) ────────────────
    La lista del principio de CLAUDE.md es lo PRIMERO que lee cualquier sesión y
    decide qué se hace, así que una que envejece manda a rehacer trabajo hecho.
@@ -8893,24 +8996,6 @@ console.log('\n  -- una lista de prioridades también se queda vieja (v997) --')
       const sin = cuentan.filter(c => !('mismoObjetoVerificado' in c));
       return { hecho: cuentan.length > 0 && sin.length === 0,
                cuanto: sin.length + ' de ' + cuentan.length + ' documentadas que cuentan, sin identidad' };
-    },
-    /* CORRER LOS CRITERIOS SOBRE EL REGISTRO (v1051).
-       La v961 lo dejó declarado —«escribir los criterios no los clasifica:
-       los hace clasificables»— y la v1051 midió lo que cuesta no hacerlo: el
-       eje B publica «I-05 · 0 / 100 d» y ese cero no dice que no hubo
-       choques, dice que casi ninguna entrada declara qué indicador alimenta.
-       Es lo que deja mudo el eje que lleva el deterioro institucional.
-
-       La condición NO son «todas las entradas», que es el error que la v999
-       corrigió con el nivel de gobierno: a una cifra del país o a un hecho de
-       otro actor no se le declara un indicador sin mentir. El denominador
-       honesto son los hechos que registran un ACTO del Ejecutivo, que es lo
-       que `tipoMedicion: 'actividad'` ya separa en las 212. */
-    'indicador-declarado': (m) => {
-      const actos = m.ents.filter(e => e.tipoMedicion === 'actividad');
-      const sin = actos.filter(e => !e.indicadores || !e.indicadores.length);
-      return { hecho: actos.length > 0 && sin.length === 0,
-               cuanto: sin.length + ' de ' + actos.length + ' actos de gobierno sin indicador declarado' };
     }
   };
 
@@ -11174,7 +11259,10 @@ console.log('\n  -- el marcado que vive dentro del JavaScript (v1025) --');
            : 'solo está la de hoy: el día que un eje publique su nivel, la frase no existiría');
 
       // 5 · El eje B declara su SEGUNDA razón, y sale del registro.
-      const r5 = /sinDeclarar/.test(ejeb) && /NADIE LO HA CLASIFICADO/.test(ejeb);
+      //     Mide la PROPIEDAD y no el nombre de la variable del día (v890):
+      //     la v1061 partió aquel `sinDeclarar` en tres estados y esta
+      //     comprobación se puso roja por un cambio legítimo.
+      const r5 = /sinRevisar/.test(ejeb) && /NADIE LO HA CLASIFICADO/.test(ejeb);
       comprobar('el eje B dice que su cero puede ser falta de clasificación, no de hechos', r5,
         r5 ? 'declara sus dos razones: la media histórica y lo que falta por clasificar'
            : (!/sinDeclarar/.test(ejeb)
@@ -11182,11 +11270,11 @@ console.log('\n  -- el marcado que vive dentro del JavaScript (v1025) --');
               : 'nombra la clasificación sin decir qué significa el cero'));
 
       // 6 · …y la cifra se calcula, con sus dos redacciones (v970).
-      const r6 = /ind\.sinDeclarar[\s\S]{0,400}?ind\.hechos/.test(ejeb) &&
-                 /todos los hechos del mandato declaran/.test(ejeb);
+      const calcula = /ind\.sinRevisar[\s\S]{0,500}?ind\.actos/.test(ejeb);
+      const r6 = calcula && /ya NO quiere decir que falte clasificar/.test(ejeb);
       comprobar('y esa cifra se calcula del registro, con sus dos redacciones', r6,
-        r6 ? 'sale de ind.sinDeclarar sobre ind.hechos, y baja sola al clasificar'
-           : (/ind\.sinDeclarar[\s\S]{0,400}?ind\.hechos/.test(ejeb)
+        r6 ? 'sale de ind.sinRevisar sobre ind.actos, y baja sola al clasificar'
+           : (calcula
               ? 'falta la redacción del día que llegue a cero: la frase no existiría'
               : 'la cifra está escrita a mano y envejecería sola'));
 

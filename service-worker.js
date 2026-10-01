@@ -1,4 +1,4 @@
-const URBIS_CACHE = 'urbis-v1060-la-identidad-de-objeto-declarada-y-abierta';
+const URBIS_CACHE = 'urbis-v1061-el-criterio-corrido-sobre-el-registro';
 const URBIS_ASSETS = [
   './',
   './index.html',

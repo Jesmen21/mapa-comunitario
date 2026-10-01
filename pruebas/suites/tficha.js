@@ -718,7 +718,7 @@ const server = http.createServer((req, res) => {
       i06: (iA.filas.filter(x => x.id === 'I-06')[0] || {}),
       i09: (iA.filas.filter(x => x.id === 'I-09')[0] || {}),
       i10: (iA.filas.filter(x => x.id === 'I-10')[0] || {}),
-      sinDeclarar: iA.sinDeclarar
+      actosClasificados: iA.actos - iA.sinRevisar, actos: iA.actos
     };
 
     /* La comparabilidad, medida sobre los DOS REGISTROS DE VERDAD, que es

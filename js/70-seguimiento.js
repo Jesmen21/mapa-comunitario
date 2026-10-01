@@ -2298,7 +2298,24 @@
     var c1 = capaUnoDe_conjunto(ent);
     var crudo = { 'I-06': c1.contra.ausente, 'I-09': c1.medicion.actividad, 'I-10': c1.medicion.resultado,
                   'I-04': 0, 'I-05': 0, 'I-13': 0, 'I-07': 0 };
-    var sinDeclarar = 0;
+    /* TRES estados y no dos, que es la distinción de la v899 dicha sobre la
+       clasificación: «declara uno», «se corrieron los criterios y ninguno
+       aplica» y «nadie lo ha mirado» piden cosas distintas, y las dos
+       últimas se veían iguales —`!lista.length`— así que un acto revisado
+       se contaba como pendiente para siempre.
+
+       La marca no se inventa acá: `indicadores: []` ya estaba en cuatro
+       entradas, puesta por la v963, la v964 y la v970 al RETIRAR una
+       declaración que el criterio no dejaba pasar. Estaba en el registro y
+       ninguna superficie la alcanzaba, que es la clase C.
+
+       Y EL DENOMINADOR SON LOS ACTOS DE GOBIERNO, no los hechos del
+       mandato: a una cifra del país o a un hecho de otro actor no se le
+       puede asignar un indicador de gestión sin mentir, igual que no se le
+       puede declarar un nivel (v999). Contarlos infla un pendiente que
+       nadie puede bajar — es el error que aquella tanda corrigió para el
+       nivel y que este recuento repetía. */
+    var actos = 0, declaran = 0, revisadosSinInd = 0, sinRevisar = 0;
     /* Lo declarado que NO pasa el criterio no desaparece: se cuenta aparte y
        con su motivo. Un indicador que baja sin decir por qué se lee como que
        el hecho no ocurrió. */
@@ -2309,7 +2326,12 @@
     var porVia = { 'I-04': {}, 'I-05': {}, 'I-13': {}, 'I-07': {} };
     ent.forEach(function (e) {
       var lista = (e && e.indicadores) || [];
-      if (!lista.length) sinDeclarar++;
+      if (e && e.tipoMedicion === 'actividad') {
+        actos++;
+        if (lista.length) declaran++;
+        else if (e.indicadores) revisadosSinInd++;
+        else sinRevisar++;
+      }
       lista.forEach(function (k) {
         if (crudo[k] === undefined || !INDICADORES[k].dec) return;
         var g = pasaElCriterio(e, k, idsReg);
@@ -2348,7 +2370,9 @@
 
     return { coberturaRol: coberturaDeRol(ent),
              dias: dias, hasta: hasta, desde: dd.posesion || null, hechos: ent.length,
-             por100Hechos: por100(ent.length), sinDeclarar: sinDeclarar,
+             por100Hechos: por100(ent.length),
+             actos: actos, declaran: declaran, revisadosSinInd: revisadosSinInd,
+             sinRevisar: sinRevisar,
              poder: poderPredictivo(dias), filas: filas,
              /* La cobertura del registro, tal como el propio archivo la
                 declara. La lee `comparabilidad` para decidir si dos tasas se
@@ -2569,7 +2593,8 @@
       pregunta: '¿qué le está pasando a las reglas del juego?',
       dias: ind.dias, poder: ind.poder, filas: filas,
       nivel: null, publicable: false,
-      sinDeclarar: ind.sinDeclarar, hechos: ind.hechos,
+      actos: ind.actos, declaran: ind.declaran,
+      revisadosSinInd: ind.revisadosSinInd, sinRevisar: ind.sinRevisar, hechos: ind.hechos,
       /* DOS razones, y no son la misma, así que se dicen aparte.
          La primera es de ARCHIVO: sin la media histórica no hay contra qué
          comparar. La segunda es de REGISTRO y es la que se veía en la cara
@@ -2586,13 +2611,19 @@
       falta: 'Dos cosas, y piden trabajos distintos. La primera es de archivo: la media histórica de ' +
              'I-04 a I-07 para Petro, Duque y Santos, con los mismos criterios y por 100 días; sin ella ' +
              'los cuatro indicadores no tienen contra qué compararse. La segunda es de registro: ' +
-             (ind.sinDeclarar
-               ? cn(ind.sinDeclarar, 'hecho del mandato no declara qué indicador alimenta',
-                                    'hechos del mandato no declaran qué indicador alimentan') +
-                 ', de ' + ind.hechos + ', así que un 0 en cualquiera de estos ' +
+             (ind.sinRevisar
+               ? cn(ind.sinRevisar, 'acto de gobierno no declara todavía qué indicador alimenta',
+                                    'actos de gobierno no declaran todavía qué indicador alimentan') +
+                 ', de ' + ind.actos + ', así que un 0 en cualquiera de estos ' +
                  'cuatro dice que NADIE LO HA CLASIFICADO y no que no haya ocurrido.'
-               : 'todos los hechos del mandato declaran ya qué indicador alimentan, así que los cuatro ' +
-                 'conteos son del registro entero.'),
+               : 'los ' + cn(ind.actos, 'acto de gobierno del mandato', 'actos de gobierno del mandato') +
+                 pl(ind.actos, ' ya está clasificado', ' ya están clasificados') +
+                 ' —los criterios escritos se corrieron sobre ' + pl(ind.actos, 'él', 'todos') + ' y ' +
+                 cn(ind.revisadosSinInd, 'no cae', 'no caen') + ' en ninguna de sus vías—, ' +
+                 'así que un 0 acá ya NO quiere decir que falte clasificar. Lo que ' +
+                 'quiere decir es que ningún acto registrado entra por una vía del criterio TAL COMO ESTÁ ' +
+                 'ESCRITO, que es otra cosa: el cero depende de dónde el criterio puso sus bordes y de lo ' +
+                 'que el registro alcanza a cubrir.'),
       lectura: 'Este eje describe la FRECUENCIA con la que se usan mecanismos institucionales, y se lee en ' +
                'las dos direcciones: un uso intensivo de figuras excepcionales puede indicar una respuesta ' +
                'eficaz a una emergencia real, o una concentración de poder. El módulo muestra el número; no ' +
