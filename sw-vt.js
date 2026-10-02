@@ -13,7 +13,7 @@
 
    La versión va acá y en vision-territorial.html, idéntica, como en los
    otros siete archivos de versión del sitio: revisar.js lo comprueba. */
-const VT_CACHE = 'urbis-vt-v1065-el-vacio-con-su-tramite-y-el-intento-fechado';
+const VT_CACHE = 'urbis-vt-v1066-retira-alerta-vencida-sismo-sipi';
 const VT_ASSETS = [
   './vision-territorial.html',
   './css/90-vt.css',

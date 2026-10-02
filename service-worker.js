@@ -1,4 +1,4 @@
-const URBIS_CACHE = 'urbis-v1065-el-vacio-con-su-tramite-y-el-intento-fechado';
+const URBIS_CACHE = 'urbis-v1066-retira-alerta-vencida-sismo-sipi';
 const URBIS_ASSETS = [
   './',
   './index.html',

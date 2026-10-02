@@ -1,6 +1,6 @@
 {
   "_comentario": "Alertas EDITORIALES del equipo URBIS (desastres verificados). Se publican editando este archivo — no requieren la hoja de cálculo ni credenciales. El mapa las dibuja junto a las que ya están en la base; si coinciden las coordenadas, se muestra una sola. Reglas: solo desastres naturales de fuente oficial, nunca violencia ni homicidios; coordenadas geocodificadas, jamás estimadas a ojo; sin fuente no se publica.",
-  "actualizado": "2026-10-01",
+  "actualizado": "2026-10-02",
   "alertas": [
     {
       "tipo": "Sismo",
@@ -35,22 +35,6 @@
       ],
       "fuente": "UNGRD / Parques Nacionales Naturales / El Tiempo / El Espectador / LA FM",
       "url": "https://www.eltiempo.com/colombia/cali/incendio-en-paramo-de-las-hermosas-en-valle-cumple-50-dias-y-destruye-2-000-hectareas-si-dejamos-avanzar-el-fuego-se-afectara-suministro-de-agua-3589166"
-    },
-    {
-      "tipo": "Sismo",
-      "titulo": "Sismo de magnitud 4,6 — 17 de septiembre de 2026, Sipí, Chocó",
-      "lat": 4.58,
-      "lng": -76.69,
-      "desde": "2026-09-17",
-      "expira": "2026-10-01",
-      "lineas": [
-        "📅 Ocurrió el jueves 17 de septiembre de 2026 a las 4:10 p. m. (hora de Colombia).",
-        "📊 Magnitud 4,6 · profundidad 37 km · epicentro a unos 10 km del municipio de Sipí, Chocó (4,58° N / 76,69° O, Servicio Geológico Colombiano). Diez minutos después, a las 4:20 p. m., se registró otro sismo con el mismo epicentro y profundidad, de magnitud 3,3. Se sintió con fuerza en Cali, Buenaventura, Pereira, Ibagué, Manizales y Popayán; el SGC no reportó heridos ni daños estructurales.",
-        "🌎 Es parte del enjambre sísmico que sigue activo en el Chocó desde el terremoto de magnitud 7,4 del 10 de agosto de 2026: esa misma madrugada del 17 de septiembre el SGC ya había reportado una seguidilla de sismos menores (magnitudes de hasta 3,8) en la misma zona.",
-        "ℹ️ Alerta informativa del equipo URBIS con base en el Servicio Geológico Colombiano y prensa nacional (El Tiempo, Semana, Vanguardia, Pulzo, El País). No es un reporte ciudadano."
-      ],
-      "fuente": "Servicio Geológico Colombiano (SGC) / prensa nacional",
-      "url": "https://www.vanguardia.com/colombia/2026/09/17/temblor-de-magnitud-46-sacudio-a-choco-este-jueves-y-tuvo-epicentro-en-sipi/"
     },
     {
       "tipo": "Sismo",
