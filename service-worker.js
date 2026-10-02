@@ -1,4 +1,4 @@
-const URBIS_CACHE = 'urbis-v1066-retira-alerta-vencida-sismo-sipi';
+const URBIS_CACHE = 'urbis-v1067-seguimiento-presidencial-oct-1-2';
 const URBIS_ASSETS = [
   './',
   './index.html',

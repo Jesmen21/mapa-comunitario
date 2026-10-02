@@ -3,8 +3,8 @@
  "presidente": "Abelardo de la Espriella",
  "periodo": "2026 – 2030",
  "posesion": "2026-08-07",
- "actualizado": "2026-10-01",
- "proximaActualizacion": "2026-10-02",
+ "actualizado": "2026-10-02",
+ "proximaActualizacion": "2026-10-03",
  "categorias": {
   "gobierno": {
    "nombre": "Gobierno y decretos",
@@ -73,6 +73,228 @@
   }
  },
  "entradas": [
+{
+   "fecha": "2026-10-01",
+   "precision": "exacta",
+   "categoria": "economia",
+   "titulo": "El presidente ordena revertir el alza de $46 por galón en la gasolina que regía desde el 1 de octubre, y la deja al nivel de septiembre",
+   "categoriaProbatoria": "hecho-probado",
+   "tipoMedicion": "actividad",
+   "indicadores": [],
+   "nivelGobierno": "nacional",
+   "estadoProcesal": "anunciado-sin-acto",
+   "tipoEvidencia": "reporte-periodistico",
+   "detalle": "El 1 de octubre de 2026 entró en vigencia un incremento promedio de $46 por galón en el precio de la gasolina corriente, fijado por los Ministerios de Minas y Energía y de Hacienda. El mismo día, el presidente De la Espriella se reunió con la ministra de Minas y Energía, María Nohemí Arboleda Arango, y le pidió revertir el incremento correspondiente a octubre «mientras buscamos soluciones permanentes» al alza de los precios internacionales del petróleo y su efecto sobre el precio de la gasolina. Como resultado, el precio de la gasolina corriente se mantiene en octubre al nivel que tenía hasta septiembre. El presidente dijo además que su instrucción busca una respuesta coordinada entre las entidades del Gobierno y mejorar la comunicación con la ciudadanía antes de adoptar decisiones con efecto sobre el costo de vida. Es la segunda vez que este gobierno congela el precio de la gasolina: la primera fue en septiembre, tras el terremoto de agosto (registrada en esta misma línea de tiempo el 29 de agosto), por una razón distinta a la de esta entrada.",
+   "contrapunto": "AL CIERRE DE ESTA ENTRADA NO SE IDENTIFICÓ UN DECRETO O RESOLUCIÓN CON NÚMERO que formalice la instrucción: las fuentes consultadas describen una orden verbal del presidente a la ministra durante una reunión, por lo que esta entrada queda como «anunciado sin acto» hasta que se conozca el documento que la ejecute. Y una precisión de contexto que varias coberturas señalan: cuando el precio interno se mantiene por debajo del de referencia internacional, la diferencia la cubre el Fondo de Estabilización de Precios de los Combustibles (FEPC), que según esas mismas coberturas viene con recursos disponibles decrecientes; revertir el alza no resuelve esa presión fiscal, la traslada al Fondo, y varias coberturas leen la decisión como una tensión con la agenda de ajuste fiscal que el propio Gobierno ha dicho que necesita para la crisis heredada.",
+   "tipoFuente": "verificado",
+   "fuentes": [
+    {
+     "n": "Semana · Abelardo De La Espriella ordenó revertir el aumento del precio de la gasolina para octubre: citó a reunión a la ministra de Minas",
+     "rol": "acto",
+     "u": "https://www.semana.com/politica/articulo/abelardo-de-la-espriella-ordeno-revertir-el-aumento-del-precio-de-la-gasolina-para-octubre-cito-a-reunion-a-la-ministra-de-minas/202639/"
+    },
+    {
+     "n": "El Heraldo · Presidente De la Espriella ordenó a la ministra de Minas revertir el aumento del precio de la gasolina para octubre",
+     "rol": "acto",
+     "u": "https://www.elheraldo.co/economia/2026/10/01/presidente-de-la-espriella-ordeno-a-la-ministra-de-minas-revertir-el-aumento-del-precio-de-la-gasolina-para-octubre/"
+    },
+    {
+     "n": "El Tiempo · Presidente Abelardo De La Espriella ordena revertir el aumento de la gasolina correspondiente al mes de octubre",
+     "rol": "acto",
+     "u": "https://www.eltiempo.com/politica/abelardo-de-la-espriella/presidente-abelardo-de-la-espriella-ordena-revertir-el-aumento-de-la-gasolina-correspondiente-al-mes-de-octubre-3590450"
+    },
+    {
+     "n": "Risaralda Hoy · Presidente De la Espriella ordena reversar aumento de $46 en la gasolina para octubre",
+     "rol": "acto",
+     "u": "https://risaraldahoy.com/presidente-de-la-espriella-ordena-reversar-aumento-de-46-en-la-gasolina-para-octubre/"
+    },
+    {
+     "n": "La Silla Vacía · De la Espriella pide revertir el aumento de la gasolina para octubre",
+     "rol": "contexto",
+     "u": "https://www.lasillavacia.com/en-vivo/de-la-espriella-pide-revertir-el-aumento-de-la-gasolina-para-octubre/"
+    }
+   ]
+  },
+{
+   "fecha": "2026-10-01",
+   "precision": "exacta",
+   "categoria": "gobierno",
+   "titulo": "Bruce Mac Master renuncia a la presidencia de la ANDI tras semanas de tensión con el Gobierno, que había instruido a sus ministros no reunirse con el gremio mientras él lo presidiera",
+   "categoriaProbatoria": "hecho-probado",
+   "tipoMedicion": "resultado",
+   "detalle": "El 1 de octubre de 2026 Bruce Mac Master renunció a la presidencia de la Asociación Nacional de Empresarios de Colombia (ANDI), cargo que ocupaba desde hacía casi 13 años. En su carta de renuncia escribió que «múltiples presiones han afectado la capacidad de la ANDI para actuar con libertad y cumplir su misión con autonomía», frase que varios medios asociaron con un veto institucional: una instrucción que, según esas mismas coberturas, los ministros de De la Espriella habían recibido para no reunirse con el gremio empresarial más grande del país mientras Mac Master lo presidiera. La salida se dio después de que empresas afiliadas, entre ellas Femsa —la embotelladora de Coca-Cola en Colombia—, se retiraran voluntariamente de la ANDI.",
+   "contrapunto": "LAS FUENTES CONSULTADAS DESCRIBEN SEMANAS DE TENSIÓN entre Mac Master y el Gobierno, pero no establecen que De la Espriella haya ordenado directamente su salida: el veto a las reuniones con los ministros es un hecho reportado por varios medios, y la decisión personal de renunciar es otro hecho reportado por igual; que el primero haya causado el segundo es una lectura que circula en la cobertura y no una causalidad que este registro pueda dar por probada, así que se consigna como dos hechos documentados y no como una atribución causal.",
+   "tipoFuente": "verificado",
+   "fuentes": [
+    {
+     "n": "Semana · Esta es la carta con la que Bruce Mac Master renunció a la Andi: «No tiene sentido agregar incertidumbre a una tarea esencial»",
+     "rol": "acto",
+     "u": "https://www.semana.com/economia/empresas/articulo/esta-es-la-carta-con-la-que-bruce-macmaster-renuncio-a-la-andi-no-tiene-sentido-agregar-incertidumbre-a-una-tarea-esencial/202602/"
+    },
+    {
+     "n": "Publimetro · Bruce Mac Master renunció a la ANDI tras semanas de tensión con el Gobierno de De La Espriella: ¿salió por presión?",
+     "rol": "acto",
+     "u": "https://www.publimetro.co/noticias/2026/10/01/bruce-mac-master-renuncio-a-la-andi-tras-semanas-de-tension-con-el-gobierno-de-de-la-espriella-salio-por-presion/"
+    },
+    {
+     "n": "La Silla Vacía · Tras pulso con Abelardo, Bruce Mac Master deja la presidencia de la Andi",
+     "rol": "acto",
+     "u": "https://www.lasillavacia.com/en-vivo/tras-pulso-con-abelardo-bruce-mac-master-deja-la-presidencia-de-la-andi/"
+    },
+    {
+     "n": "Cambio Colombia · Bruce Mac Master renuncia a la presidencia de la Andi tras semanas de tensión con el Gobierno",
+     "rol": "acto",
+     "u": "https://cambiocolombia.com/empresas/articulo/2026/10/bruce-mac-master-renuncio-a-la-presidencia-de-la-andi-tras-semanas-de-tensiones-con-el-gobierno-de-de-la-espriella"
+    },
+    {
+     "n": "Infobae · Bruce Mac Master renunció a la Andi: así reaccionó el país político a la salida del dirigente gremial tras desencuentros con Abelardo de la Espriella",
+     "rol": "efecto",
+     "u": "https://www.infobae.com/colombia/2026/10/01/bruce-mac-master-renuncio-a-la-andi-asi-reacciono-el-pais-politico-a-la-salida-del-dirigente-gremial-tras-desencuentros-con-abelardo-de-la-espriella/"
+    }
+   ]
+  },
+{
+   "fecha": "2026-10-01",
+   "precision": "exacta",
+   "categoria": "creditos",
+   "titulo": "El Ministerio de Hacienda completa la primera de tres operaciones de canje de TES previstas para 2026, para aliviar los vencimientos de 2027",
+   "categoriaProbatoria": "hecho-probado",
+   "tipoMedicion": "actividad",
+   "indicadores": [],
+   "nivelGobierno": "nacional",
+   "estadoProcesal": "en-firme",
+   "tipoEvidencia": "reporte-periodistico",
+   "detalle": "El 1 de octubre de 2026 el Ministerio de Hacienda completó la primera de tres operaciones de canje de deuda pública (TES) previstas para este año, dentro de un plan para aliviar el perfil de vencimientos de 2027. En la operación, la Nación recibió TES denominados en UVR con vencimiento el 17 de marzo de 2027 y TES en pesos con vencimiento el 3 de noviembre de 2027 —recibidos a tasas de 4,41 % y 11,65 % respectivamente— y entregó a cambio títulos de plazo más largo. La diferencia entre el costo de los títulos recibidos ($624.595 millones) y los entregados ($600.901 millones) implicó un desembolso de la Nación de $23.694 millones. La operación se da en un año en el que el Gobierno enfrenta vencimientos por más de $149,2 billones en deuda interna, y dentro de un plan más amplio para tomar cerca de US$11.000 millones en operaciones de crédito durante 2026 —unos US$3.000 millones en mercados internacionales y el resto en el mercado local—. Hay otras dos operaciones de canje previstas entre octubre y noviembre.",
+   "contrapunto": "UN CANJE NO ES DEUDA NUEVA. Esta operación cambia el PERFIL de vencimientos de títulos que la Nación ya debía —los cambia por otros de plazo más largo—, y no es lo mismo que el plan de tomar cerca de US$11.000 millones en crédito adicional durante 2026, que sí aumenta el saldo de la deuda; son dos cifras distintas que la cobertura menciona juntas y que conviene no sumar.",
+   "tipoFuente": "verificado",
+   "fuentes": [
+    {
+     "n": "Valora Analitik · Gobierno De La Espriella completa primera operación de canje de deuda",
+     "rol": "acto",
+     "u": "https://www.valoraanalitik.com/gobierno-de-la-espriella-completa-primera-operacion-de-canje-de-deuda/"
+    },
+    {
+     "n": "Diario del Huila · Gobierno De la Espriella completa primer canje de deuda",
+     "rol": "acto",
+     "u": "https://diariodelhuila.com/primer-canje-deuda-gobierno/"
+    },
+    {
+     "n": "La FM · Gobierno de De la Espriella recibirá vencimientos por más de $149 billones en deuda interna durante lo que resta de 2026",
+     "rol": "contexto",
+     "u": "https://www.lafm.com.co/economia/deuda-nuevo-gobierno-abelardo-de-la-espriella-pagos-149-billones-de-pesos-2026-406131"
+    },
+    {
+     "n": "Valora Analitik · Gobierno De La Espriella prevé tomar deuda por US$11.000 millones en 2026 y hacer canjes de TES",
+     "rol": "contexto",
+     "u": "https://www.valoraanalitik.com/de-la-espriella-preve-tomar-deuda-por-us11-000-millones-en-2026-hacer-canjes-tes/"
+    }
+   ]
+  },
+{
+   "fecha": "2026-10-01",
+   "precision": "exacta",
+   "categoria": "emergencia",
+   "titulo": "De la Espriella se reúne en Barranquilla con alcaldes y gobernadores para preparar al país ante el fenómeno de El Niño",
+   "categoriaProbatoria": "hecho-probado",
+   "tipoMedicion": "actividad",
+   "indicadores": [],
+   "nivelGobierno": "nacional",
+   "estadoProcesal": "en-firme",
+   "tipoEvidencia": "reporte-periodistico",
+   "detalle": "El 1 de octubre de 2026 el presidente De la Espriella se reunió en Barranquilla con alcaldes y gobernadores del país para analizar las medidas que deben tomarse en las regiones ante el fenómeno de El Niño, que este Gobierno ya había señalado como motivo de una eventual segunda declaratoria de emergencia económica —anunciada el 22 de septiembre y registrada en esta misma línea de tiempo— y de los recargos al consumo de energía que rigen desde el 1 de septiembre. En el mismo encuentro, el Gobierno nacional y la Alcaldía de Barranquilla anunciaron que liderarán conjuntamente la modernización del Aeropuerto Internacional Ernesto Cortissoz, sin que las fuentes consultadas por este registro coincidan en un monto o un cronograma verificable para esa obra, por lo que esta entrada no lo cifra.",
+   "tipoFuente": "verificado",
+   "fuentes": [
+    {
+     "n": "El Espectador · De la Espriella se reunió con gobernadores y alcaldes por fenómeno de El Niño y aeropuerto de Barranquilla",
+     "rol": "acto",
+     "u": "https://www.elespectador.com/politica/de-la-espriella-con-gobernadores-y-alcaldes-por-fenomeno-de-el-nino-y-aeropuerto-de-barranquilla/"
+    },
+    {
+     "n": "El Heraldo · De La Espriella cita este jueves a alcaldes y gobernadores para afrontar el fenómeno del Niño",
+     "rol": "contexto",
+     "u": "https://www.elheraldo.co/colombia/2026/09/30/de-la-espriella-cita-este-jueves-a-alcaldes-y-gobernadores-para-afrontar-el-fenomeno-del-nino/"
+    },
+    {
+     "n": "Semana · Abelardo De La Espriella se reúne con alcaldes y gobernadores para «blindar» las regiones ante el fenómeno de El Niño",
+     "rol": "acto",
+     "u": "https://www.semana.com/confidenciales/articulo/abelardo-de-la-espriella-se-reune-con-alcaldes-y-gobernadores-para-blindar-las-regiones-ante-el-fenomeno-de-el-nino/202623/"
+    }
+   ]
+  },
+{
+   "fecha": "2026-10-02",
+   "precision": "aproximada",
+   "categoria": "gobierno",
+   "titulo": "Supervigilancia cancela y suspende licencias de empresas de seguridad privada por irregularidades con armas y presuntos nexos criminales, tras el llamado público del presidente",
+   "categoriaProbatoria": "hecho-probado",
+   "tipoMedicion": "actividad",
+   "indicadores": [],
+   "nivelGobierno": "nacional",
+   "estadoProcesal": "en-firme",
+   "tipoEvidencia": "reporte-periodistico",
+   "detalle": "Entre el 1 y el 2 de octubre de 2026 el presidente De la Espriella pidió públicamente investigar a las empresas de seguridad privada que, dijo, sirven de «fachada al crimen», y la Superintendencia de Vigilancia y Seguridad Privada (Supervigilancia) confirmó la cancelación de la licencia de la empresa Maximus y adelantó procesos de cancelación —pendientes de quedar en firme— contra las empresas Blink, Lost Prevention y Atenas; la empresa OL Security Group–Servisecurity permanece suspendida con su cancelación en trámite. Según el Gobierno, las investigaciones responden a irregularidades en el manejo y control de armas y, en algunos casos, a presuntos nexos con estructuras criminales como Los Costeños y el Clan Vega Daza. El balance más reciente de Supervigilancia que reportan las fuentes consultadas cifra en 31 el número de empresas de seguridad privada con licencia suspendida o cancelada por presunta infiltración criminal, lavado de activos e irregularidades administrativas graves, sin que esas fuentes precisen desde cuándo se cuenta ese total.",
+   "contrapunto": "LA CIFRA DE 31 EMPRESAS ES UN BALANCE ACUMULADO de Supervigilancia cuyo periodo exacto no precisan las fuentes consultadas por este registro —no queda claro si corresponde solo a la gestión de este Gobierno o a un periodo más largo—, así que se cita tal como la reportan los medios, sin atribuirla en su totalidad a la actual administración.",
+   "tipoFuente": "verificado",
+   "fuentes": [
+    {
+     "n": "Infobae · Gobierno cancela y suspende licencias de empresas de seguridad por presuntas irregularidades con armas",
+     "rol": "acto",
+     "u": "https://www.infobae.com/colombia/2026/10/02/gobierno-cancela-y-suspende-licencias-de-empresas-de-seguridad-por-presuntas-irregularidades-con-armas/"
+    },
+    {
+     "n": "Noticias RCN · Presidente De la Espriella pide ponerles la lupa a empresas de seguridad privada por presuntos nexos con grupos criminales",
+     "rol": "acto",
+     "u": "https://www.noticiasrcn.com/colombia/presidente-de-la-espriella-pide-ponerles-la-lupa-a-empresas-de-seguridad-privada-por-presuntos-nexos-con-grupos-criminales-1067327"
+    },
+    {
+     "n": "El Universal · De la Espriella pide investigar a empresas de seguridad privada que sirven de «fachada al crimen»",
+     "rol": "acto",
+     "u": "https://www.eluniversal.com.co/colombia/2026/10/01/de-la-espriella-pide-investigar-a-empresas-de-seguridad-privada-que-sirven-de-fachada-al-crimen/"
+    },
+    {
+     "n": "El Heraldo · Presidente de la República vuelve a poner la lupa sobre empresas de vigilancia señaladas de nexos con estructuras criminales",
+     "rol": "contexto",
+     "u": "https://www.elheraldo.co/judicial/2026/10/01/de-la-espriella-vuelve-a-poner-la-lupa-sobre-empresas-de-vigilancia-senaladas-de-nexos-con-estructuras-criminales/"
+    }
+   ]
+  },
+{
+   "fecha": "2026-10-01",
+   "precision": "exacta",
+   "categoria": "exterior",
+   "titulo": "El vicepresidente Restrepo abre una mesa de trabajo con Venezuela para impulsar inversión colombiana en energía, alimentos y medicamentos",
+   "categoriaProbatoria": "hecho-probado",
+   "tipoMedicion": "actividad",
+   "indicadores": [],
+   "nivelGobierno": "nacional",
+   "estadoProcesal": "en-firme",
+   "tipoEvidencia": "reporte-periodistico",
+   "detalle": "El 1 de octubre de 2026 el vicepresidente José Manuel Restrepo anunció una agenda de trabajo para impulsar la inversión de empresas colombianas en Venezuela, dentro de la iniciativa «Misión Crecer». ProColombia liderará las oportunidades en alimentos, medicamentos e insumos con el país vecino, y el Ministerio de Minas y Energía las posibilidades de inversión en infraestructura eléctrica y en los sectores minero y de hidrocarburos. La Cámara de Comercio Colombo Venezolana tiene previsto un encuentro binacional el 14 y 15 de octubre, con muestra comercial y agenda académica, que el Gobierno busca incorporar a la «Milagro Week» —una semana de promoción de inversión con empresarios de Colombia, Venezuela y Estados Unidos que viene preparando—.",
+   "contrapunto": "ES UNA AGENDA DE COOPERACIÓN ECONÓMICA Y NO, POR SÍ SOLA, UN CAMBIO EN LA POSTURA POLÍTICA del Gobierno hacia Caracas: durante su campaña, De la Espriella propuso que cualquier gestión con el chavismo se adelantara a través del Departamento de Estado de Estados Unidos, y las fuentes consultadas por este registro no precisan si esta mesa de trabajo se coordina con Washington o es una gestión bilateral directa.",
+   "tipoFuente": "verificado",
+   "fuentes": [
+    {
+     "n": "El Tiempo · Gobierno De la Espriella abre mesa de trabajo con Venezuela para impulsar inversiones en energía, alimentos y medicamentos",
+     "rol": "acto",
+     "u": "https://www.eltiempo.com/politica/gobierno/gobierno-de-la-espriella-abre-mesa-de-trabajo-con-venezuela-para-impulsar-inversiones-en-energia-alimentos-y-medicamentos-3590416"
+    },
+    {
+     "n": "La República · José Manuel Restrepo impulsa agenda de inversión entre Colombia y Venezuela",
+     "rol": "acto",
+     "u": "https://www.larepublica.co/economia/jose-manuel-restrepo-impulsa-agenda-de-inversion-entre-colombia-y-venezuela-4494249"
+    },
+    {
+     "n": "La Opinión · Gobierno de De la Espriella abre nuevas oportunidades comerciales con Venezuela",
+     "rol": "acto",
+     "u": "https://laopinion.co/economia/gobierno-de-de-la-espriella-abre-nuevas-oportunidades-comerciales-con-venezuela"
+    },
+    {
+     "n": "Valora Analitik · Colombia prepara Milagro Week con EE. UU. y Venezuela para atraer inversión",
+     "rol": "contexto",
+     "u": "https://www.valoraanalitik.com/colombia-prepara-milagro-week-con-ee-uu-y-venezuela-para-atraer-inversion/"
+    }
+   ]
+  },
 {
    "fecha": "2026-09-30",
    "precision": "exacta",
