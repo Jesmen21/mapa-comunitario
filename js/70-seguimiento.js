@@ -2664,6 +2664,19 @@
      serie para los gobiernos anteriores, que es la misma condición de
      validez de archivo que bloquea el eje B. Lo que cambia es que publica
      sus cifras, como el eje B publica sus cuatro números desde la v958. */
+  /* El trámite viaja con el vacío, y se lee del registro. Devuelve null
+     cuando no está escrito: un trámite inventado acá sería peor que
+     ninguno, porque se leería como averiguado. */
+  function tramiteDe(P) {
+    var t = (P && P.tramite) || null;
+    if (!t || !(t.reglas || []).length) return null;
+    var reglas = (t.reglas || []).filter(function (r) {
+      return r && r.que && r.quien && r.como && r.cuando;
+    });
+    if (!reglas.length) return null;
+    return { reglas: reglas, ultimoIntento: t.ultimoIntento || null };
+  }
+
   function ejeC(dd) {
     var P = ((dd || D) || {}).presupuesto || {};
     var lista = (P.sectores && P.sectores.lista) || [];
@@ -2687,7 +2700,13 @@
       totalBn: P.totalBn != null ? P.totalBn : null,
       sectores: sec, sinDeflactar: sinReal.map(function (s) { return s.t; }),
       bajan: bajan.length, suben: sec.length - bajan.length,
-      falta: '', lectura: '', unidades: '', reglas: null
+      falta: '', lectura: '', unidades: '', reglas: null,
+      /* EL TRAMITE DEL VACIO (v1065). Nombrar el documento y callar como se
+         consigue convierte un vacio en un muro (v849, v880): quien lee no
+         sabe si es trabajo de una tarde, de un derecho de peticion o de
+         esperar a que pase un ano. Se LEE del registro y no se escribe acá,
+         para que la rutina diaria lo corrija sin tocar este archivo. */
+      tramite: tramiteDe(P)
     };
 
     if (!sec.length) {
@@ -4127,6 +4146,35 @@
     return nav;
   }
 
+  /* CÓMO SE CONSIGUE LO QUE FALTA. Cuatro campos por regla y ninguno
+     opcional —qué, quién, cómo y cuándo—, porque los cuatro contestan
+     preguntas distintas y faltando el «cuándo» un vacío que se cierra solo
+     con el calendario se lee como trabajo que alguien no hizo. El último
+     intento va con su fecha y su canal: sin eso, «no se ha buscado» y «se
+     buscó y no se pudo» se leen igual, que es la regla de arriba de todo
+     este módulo. */
+  function bloqueTramite(tr) {
+    var d = el('div', 'sp-c3-tram');
+    d.appendChild(el('b', 'sp-c3-tram-h', 'Cómo se consigue'));
+    var ul = el('ul', 'sp-c3-tram-l');
+    tr.reglas.forEach(function (r) {
+      var li = el('li', null, null);
+      li.appendChild(el('b', null, r.que));
+      li.appendChild(el('p', null, 'Quién lo tiene: ' + r.quien));
+      li.appendChild(el('p', null, 'Cómo se pide: ' + r.como));
+      li.appendChild(el('p', 'sp-c3-tram-c', 'Cuándo puede existir: ' + r.cuando));
+      ul.appendChild(li);
+    });
+    d.appendChild(ul);
+    var u = tr.ultimoIntento;
+    if (u && u.fecha && u.resultado) {
+      d.appendChild(el('p', 'sp-c3-tram-i',
+        'Último intento: ' + fechaCorta(u.fecha) +
+        (u.canal ? ' · por ' + u.canal : '') + '. ' + u.resultado));
+    }
+    return d;
+  }
+
   function pintarFicha() {
     var cont = vaciar($('sp-ficha'));
     var tabs = pintarPestanas(cont);
@@ -4678,6 +4726,11 @@
         fa.appendChild(el('b', null, 'Falta para poder publicarlo: '));
         fa.appendChild(document.createTextNode(ej.falta));
         li.appendChild(fa);
+        /* Y EL TRAMITE, si el eje lo trae (v1065). Va por eje y no dentro del
+           eje C: la regla es de todos los vacíos de este módulo, y escribirla
+           para uno dejaría a los otros tres siendo un muro el día que alguien
+           les consiga el suyo. Se persigue la clase y no el caso (v874). */
+        if (ej.tramite) li.appendChild(bloqueTramite(ej.tramite));
       }
       if (ej.lectura) li.appendChild(el('p', 'sp-c3-lect', ej.lectura));
       ul3.appendChild(li);

@@ -2275,6 +2275,114 @@ console.log('\n  -- la ficha del gobernante --');
       actosQ.filter((e) => !e.nivelGobierno).length + ' sin declarar');
   }
 
+
+  /* ═══ UN VACÍO SIN SU TRÁMITE ES UN MURO (v1065) ═══════════════════════
+     El eje C nombraba las dos reglas del pliego que le faltan y callaba
+     cómo se consiguen. Por la regla de este proyecto (v849, v880) eso no es
+     un vacío declarado sino un muro: quien lo lee no puede saber si es
+     trabajo de una tarde, de un derecho de petición, o de esperar a que
+     pase un año — y las tres piden decisiones distintas.
+
+     Lo midió un intento real. El 2 de octubre de 2026 esta sesión salió a
+     buscar la serie histórica, y lo que encontró fue que desde este
+     contenedor no se alcanza NINGUNA fuente: minhacienda.gov.co,
+     dane.gov.co, dnp.gov.co y cinco medios, los nueve sin conexión por
+     política del proxy. Y que la búsqueda sola devuelve cifras
+     contradictorias para el mismo sector y año —Defensa 2023 en 32,9 y en
+     37,2 billones—, que es exactamente el caso que la v1055 ya se negó a
+     dibujar: citar una dirección que no se pudo leer es fabricar una fuente
+     con buena apariencia.
+
+     Así que lo que esta tanda deja no son las cifras: es que el vacío diga
+     su trámite, y que el intento quede FECHADO. Sin esa fecha, «no se ha
+     buscado» y «se buscó y no se pudo» se leen igual, que es la regla de
+     arriba de todo este archivo.
+
+     Cuatro mitades:
+       1 · el trámite existe en el REGISTRO y no tecleado en el código;
+       2 · cada regla trae sus cuatro campos, y el `cuándo` es obligatorio
+           porque es el que separa un vacío que alguien puede cerrar hoy de
+           uno que solo cierra el calendario;
+       3 · un trámite a medias NO se pinta a medias: se descarta entero,
+           porque media instrucción se sigue peor que ninguna;
+       4 · y la guarda de la guarda: que LLEGUE a la pantalla, con su regla
+           en el css. Sin eso es la clase C de CLAUDE.md — un dato correcto
+           que ningún lector alcanza. */
+  {
+    const j70t = soloCodigo(leer('js/70-seguimiento.js'));
+    const regT = JSON.parse(leer('assets/data/seguimiento-presidencial.json'));
+    const tram = ((regT.presupuesto || {}).tramite) || null;
+    const reglasT = (tram && tram.reglas) || [];
+
+    comprobar('MATERIAL · el trámite del eje C vive en el REGISTRO, con sus reglas',
+      !!tram && reglasT.length >= 2,
+      tram ? reglasT.length + ' reglas: ' + reglasT.map((r) => r.k).join(' · ')
+           : 'no hay bloque `presupuesto.tramite` en el registro');
+
+    /* Los cuatro campos, y el detalle dice CUÁL falta en CUÁL regla (v973). */
+    const CAMPOS = ['que', 'quien', 'como', 'cuando'];
+    const incompletas = [];
+    reglasT.forEach((r) => {
+      const fal = CAMPOS.filter((c) => !String((r || {})[c] || '').trim());
+      if (fal.length) incompletas.push((r.k || '?') + ' sin ' + fal.join(' ni '));
+    });
+    comprobar('cada regla dice QUÉ falta, QUIÉN lo tiene, CÓMO se pide y CUÁNDO puede existir',
+      reglasT.length > 0 && incompletas.length === 0,
+      !reglasT.length ? 'no hay reglas que medir'
+                      : incompletas.length ? 'falla: ' + incompletas.join(' · ')
+                      : 'las ' + reglasT.length + ' con sus cuatro campos');
+
+    /* El intento, FECHADO. Es lo que separa «no se ha buscado» de «se buscó
+       y no se pudo», que desde afuera se leen igual. */
+    const ui = (tram && tram.ultimoIntento) || null;
+    comprobar('y el último intento queda fechado, con su canal y su resultado',
+      !!(ui && /^\d{4}-\d{2}-\d{2}$/.test(ui.fecha || '') && ui.canal && (ui.resultado || '').length > 80),
+      ui ? 'intento del ' + ui.fecha + ' por ' + ui.canal
+         : 'sin registro de intento: «nadie lo ha buscado» y «se buscó y no se pudo» se leen igual');
+
+    /* El código lo LEE y no lo teclea: con el trámite escrito en js/70, la
+       rutina diaria no podría corregirlo y la cifra envejecería sola (v903). */
+    const tramoT = (j70t.match(/function tramiteDe\(P\) \{[\s\S]*?\n  \}/) || [''])[0];
+    const leeDelRegistro = /P && P\.tramite/.test(tramoT);
+    const descartaAMedias = /r\.que && r\.quien && r\.como && r\.cuando/.test(tramoT);
+    comprobar('el eje LEE el trámite del registro y descarta el que venga a medias',
+      !!tramoT && leeDelRegistro && descartaAMedias,
+      !tramoT ? 'no se encontró tramiteDe'
+              : !leeDelRegistro ? 'no lo lee del registro: estaría tecleado en el código'
+              : !descartaAMedias ? 'acepta una regla a medias: media instrucción se sigue peor que ninguna'
+              : 'sale del registro, y una regla incompleta no se pinta');
+
+    /* LA GUARDA DE LA GUARDA (v878): que llegue al papel. */
+    const mitadesT = [
+      ['el pintor de ejes lo pinta', /if \(ej\.tramite\) li\.appendChild\(bloqueTramite\(ej\.tramite\)\);/.test(j70t)],
+      ['bloqueTramite imprime los cuatro campos',
+       /Qui[eé]n lo tiene: /.test(j70t) && /C[oó]mo se pide: /.test(j70t) && /Cu[aá]ndo puede existir: /.test(j70t)],
+      ['y el último intento con su fecha', /'[ÚU]ltimo intento: ' \+ fechaCorta\(u\.fecha\)/.test(j70t)],
+      ['y la clase tiene regla en el css', /\.sp-c3-tram\{/.test(leer('css/70-seguimiento.css'))]
+    ];
+    const malT = mitadesT.filter((x) => !x[1]).map((x) => x[0]);
+    comprobar('y el trámite LLEGA a la pantalla, con su regla que lo pinta',
+      malT.length === 0,
+      malT.length ? 'falla: ' + malT.join(' · ') : 'se pinta bajo la caja de lo que falta, y tiene css');
+
+    /* Se persigue la CLASE y no el caso: el pintor es de cualquier eje que
+       traiga trámite, no del eje C. Un `ej.eje === 'C'` acá dejaría a los
+       otros tres siendo un muro el día que alguien les escriba el suyo. */
+    const tramoPint = (j70t.match(/if \(!ej\.publicable\) \{[\s\S]*?\n      \}/) || [''])[0];
+    /* Las dos mitades aparte: en su primera corrida esta aserción se puso
+       roja imprimiendo el texto del verde, que es el defecto que este
+       repositorio lleva contado siete veces (v973, v1051), y lo cazó la
+       demostración y no la lectura. */
+    const pintaAlgo = /if \(ej\.tramite\)/.test(tramoPint);
+    const atadoAC = /ej\.eje === 'C'/.test(tramoPint);
+    comprobar('el trámite se pinta por EJE y no solo para el eje C',
+      !!tramoPint && pintaAlgo && !atadoAC,
+      !tramoPint ? 'no se encontró el trozo que pinta la falta'
+                 : !pintaAlgo ? 'ya no pinta ningún trámite: no hay qué atar a una clase'
+                 : atadoAC ? 'atado al eje C: los otros tres siguen siendo un muro'
+                 : 'cualquier eje que traiga trámite lo publica');
+  }
+
   /* ═══ LA VÍA: POR CUÁL RENGLÓN DEL CRITERIO ENTRA CADA HECHO (v963) ════
      La v962 escribió en su bitácora que el caso del DANE entraba por dos
      renglones del `incluye`, y uno de los dos era falso: la remoción que

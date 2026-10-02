@@ -1948,6 +1948,23 @@ a.sp-fuente:hover svg{ color:var(--verde-hi); }
 }
 .sp-c3-lect{ margin:0; font-size:var(--t-8); line-height:1.6; color:var(--ink-2); }
 
+/* EL TRAMITE DEL VACIO (v1065). Va PEGADO a la caja ámbar de lo que falta y
+   no en una caja ámbar propia: dos ámbares seguidos se leen como dos faltas,
+   y esto es lo contrario —es el camino para cerrar la de arriba—. Por eso
+   hereda el borde y pierde el fondo: mismo hilo, otro peso. */
+.sp-c3-tram{
+  margin:-2px 0 0; padding:9px 11px 10px; border:1px solid #EDD6AC; border-top:0;
+  border-radius:0 0 9px 9px; font-size:var(--t-8); line-height:1.6; color:var(--ink-2);
+}
+.sp-c3-tram-h{ display:block; font-size:var(--t-9); letter-spacing:.06em; text-transform:uppercase; color:#7A5310; }
+.sp-c3-tram-l{ margin:6px 0 0; padding:0 0 0 16px; display:grid; gap:9px; }
+.sp-c3-tram-l > li > b{ color:var(--ink); }
+.sp-c3-tram-l p{ margin:2px 0 0; }
+/* El «cuándo» va marcado: es el campo que distingue un vacío que alguien
+   puede cerrar hoy de uno que solo cierra el calendario. */
+.sp-c3-tram-c{ color:#7A5310; }
+.sp-c3-tram-i{ margin:9px 0 0; padding-top:8px; border-top:1px solid var(--linea); }
+
 /* LOS SECTORES DEL EJE C, que publica sus cifras aunque no publique nivel.
    Tres columnas y no dos: el nombre, la variación real y los pesos. Las dos
    cifras van juntas porque ninguna ordena sola —un −43 % sobre $0,3

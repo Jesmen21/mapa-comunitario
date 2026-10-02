@@ -24157,3 +24157,113 @@ guarda de rol de la v966, intacta). Versión en los nueve archivos.
   cuentas que SÍ se miden sobre las 218, como la naturaleza de fuente— y
   terminaría en la lista de excepciones que la v895 prohíbe. Queda dicho acá
   con su razón. `pendiente`
+
+## v1065 · el vacío con su trámite, y el intento fechado
+
+**Lo que esta tanda salió a hacer, y no pudo.** El usuario pidió destrabar el
+eje C trayendo la serie histórica del gasto por sector. Se intentó el 2 de
+octubre de 2026 y **no se escribió ni una cifra**. La medición de por qué:
+
+```
+minhacienda.gov.co  www.minhacienda.gov.co  dane.gov.co  www.dnp.gov.co
+www.portafolio.co   www.eltiempo.com        es.wikipedia.org
+www.infobae.com     fundacionexe.org.co
+  → los nueve: 000 (el proxy niega el CONNECT por política)
+```
+
+Ninguna página se pudo abrir. Y la búsqueda **sola** —el único canal que este
+contenedor tiene— devolvió cifras **contradictorias para el mismo sector y el
+mismo año**:
+
+| | búsqueda 1 | búsqueda 2 |
+|---|---|---|
+| PGN 2023 · Defensa | $32,9 bn | $37,2 bn |
+| PGN 2023 · total | $405,6 bn (aprobado) | $391,4 bn (radicado) |
+
+Y 8,4 % de 405,6 son 34,07, que no es ninguna de las dos. Sin poder abrir la
+página no hay cómo dirimirlo, y el estándar ya estaba escrito en el propio
+registro desde la v1003, en `_pendientesFuente`: **la búsqueda sostiene QUE un
+hecho ocurrió y no que se leyó cada página.** Una serie numérica deflactada
+cae del otro lado de esa raya — que es exactamente lo que la v1055 ya se negó
+a dibujar con las seis cifras del Huila.
+
+**Así que lo que esta versión deja no son las cifras: es que el vacío deje de
+ser un muro.** El eje C nombraba sus dos reglas faltantes y callaba cómo se
+consiguen, y por la regla de este proyecto (v849, v880) eso es un muro: quien
+lo lee no puede saber si es trabajo de una tarde, de un derecho de petición o
+de esperar a que pase un año. Las tres piden decisiones distintas.
+
+Y había una tercera cosa que el trámite destapó al escribirlo: **el EJECUTADO
+de 2027 no puede existir todavía**, y no por descuido de nadie — el
+presupuesto no es ley y el año no ha empezado. Se publica durante 2027 y
+cierra en 2028. Sin el campo `cuándo`, esa regla se leía como archivo
+pendiente que alguien podría traer hoy.
+
+### Lo que se hizo
+
+* **`presupuesto.tramite` en el registro**, no en el código: dos reglas, cada
+  una con **qué** falta, **quién** lo tiene, **cómo** se pide y **cuándo**
+  puede existir; más `ultimoIntento` con su fecha, su canal y su resultado.
+  Va en el registro para que la rutina diaria lo corrija sin tocar `js/70`,
+  que es la razón por la que el bloque `presupuesto` existe desde la v972.
+* **`tramiteDe(P)`** lo lee y **descarta entero** el que venga a medias: media
+  instrucción se sigue peor que ninguna.
+* **`bloqueTramite`** lo pinta colgado de la caja ámbar de lo que falta —mismo
+  hilo, sin fondo— porque dos ámbares seguidos se leerían como dos faltas, y
+  esto es lo contrario: es el camino para cerrar la de arriba.
+* **Se pinta por EJE y no para el eje C.** Atarlo al caso dejaría a los otros
+  tres siendo un muro el día que alguien les escriba el suyo (v874, v885).
+* Y el `ultimoIntento` **fechado**, que es la mitad que de verdad importa:
+  sin ella, «nadie lo ha buscado» y «se buscó y no se pudo» se leen igual.
+
+### La guarda, y sus ocho inyecciones en rojo
+
+Bloque nuevo en `revisar.js`, **«Un vacío sin su trámite es un muro (v1065)»**,
+con material, los cuatro campos, el intento fechado y la guarda de la guarda.
+Las ocho en rojo:
+
+| Inyección | Qué se puso en rojo |
+|---|---|
+| el estado real de la v1064: sin trámite ninguno | `no hay bloque presupuesto.tramite en el registro` |
+| una regla que calla CUÁNDO puede existir | `falla: serie-anterior sin cuando` |
+| el intento sin fechar | `sin registro de intento: «nadie lo ha buscado» y «se buscó y no se pudo» se leen igual` |
+| el trámite tecleado en el código | `no lo lee del registro: estaría tecleado en el código` |
+| acepta una regla a medias | `acepta una regla a medias` |
+| deja de llegar a la pantalla | `falla: el pintor de ejes lo pinta` |
+| `.sp-c3-tram` sin regla en el css | `falla: y la clase tiene regla en el css` |
+| el pintor atado al eje C | `atado al eje C: los otros tres siguen siendo un muro` |
+
+**Dos correcciones de la propia tanda, las dos cazadas midiendo y no leyendo:**
+
+* **El bloque se escribió SIN TILDES** y el papel lo delató en el acto: en
+  pantalla se leía «ano por ano», «ejecucion», «Credito Publico». En español
+  «ano» no es «año», y esto es un panel publicado sobre una persona real. Lo
+  vio la captura de la ficha, no la corrida. Novena vez que «mirar el papel»
+  encuentra lo que el código no enseña.
+* Y la aserción del pintor **imprimió el texto del verde estando en rojo** en
+  las demos 6 y 8 — séptima vez (v973, v1051). Se partió en sus dos mitades.
+
+### Medición en el papel
+
+Ficha del gobernante (`#/ficha-del-gobernante`): 4 ejes, 4 cajas de «falta», **1
+trámite pintado** —el del eje C—, con sus dos reglas, sus cuatro campos cada
+una y el intento del 2 de octubre al pie. `node pruebas/revisar.js`: **todas
+en verde**, un `?` sin material (la guarda de rol de la v966, intacta).
+Versión en los nueve archivos.
+
+### Lo que esta versión NO hace
+
+* **No trae la serie histórica, que era el encargo.** No se pudo desde este
+  contenedor y la razón queda medida y fechada dentro del propio registro.
+  Pide una máquina que alcance minhacienda.gov.co y dane.gov.co. `pendiente`
+* **El eje C sigue sin publicar nivel**, y el eje B y el D también. Esta
+  versión no mueve ningún veredicto: mueve lo que el lector sabe sobre cómo
+  destrabarlos. `pendiente`
+* **No le escribe su trámite a los ejes B y D.** El pintor ya los admite —se
+  persigue la clase— pero el contenido es trabajo de archivo por eje y
+  escribirlo de memoria sería inventarlo. `pendiente`
+* **Y no toca la escala de gravedad común**, que es la segunda puerta del
+  veredicto y una decisión de quien firma el módulo, no un ajuste de código.
+  Aunque los tres ejes publicaran nivel mañana, la placa seguiría diciendo
+  «Sin dictamen» por `sin-escala-comun` hasta que esa escala se escriba.
+  `pendiente`

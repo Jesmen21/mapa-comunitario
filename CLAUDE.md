@@ -1050,8 +1050,22 @@ sección al final de este archivo.
 
 ### Lo que se declara, y no se calla
 
-* **Un vacío se declara con qué falta y cómo se consigue** (v849, v880).
-  Nombrar el documento y callar el trámite convierte un vacío en un muro.
+* **Un vacío se declara con qué falta y cómo se consigue** (v849, v880,
+  v1065). Nombrar el documento y callar el trámite convierte un vacío en un
+  muro. Son **cuatro campos y ninguno sobra** —qué, quién lo tiene, cómo se
+  pide y **cuándo puede existir**—, y el último es el que más se olvida: sin
+  él, un vacío que solo cierra el calendario (el EJECUTADO de un presupuesto
+  cuyo año no ha empezado) se lee como archivo que alguien no fue a buscar.
+* **Un intento que falla se FECHA, con su canal y su razón** (v1055, v1065).
+  Desde afuera, «nadie lo ha buscado» y «se buscó y no se pudo» se leen
+  igual. Y conviene saberlo antes de salir: **desde este contenedor el proxy
+  niega TODOS los dominios** —medido el 2 de octubre de 2026 sobre
+  minhacienda.gov.co, dane.gov.co, dnp.gov.co y cinco medios—, así que el
+  único canal es la BÚSQUEDA, y su estándar está escrito en
+  `_pendientesFuente` desde la v1003: sostiene **que** un hecho ocurrió, no
+  que se leyó la página. **Una serie numérica cae del otro lado de esa raya**
+  — la v1065 midió por qué: la búsqueda sola devolvió Defensa 2023 en $32,9 y
+  en $37,2 billones, y sin abrir la página no hay cómo dirimirlo.
 * **«Cero medido» y «cero mapeado» son cosas distintas** (v875), y el
   discriminante casi siempre viene en el MISMO objeto —seis veces—.
 * **«Sin dato» y «el panel cedió» piden acciones distintas** (v899), así que

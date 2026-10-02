@@ -9050,7 +9050,30 @@
   "lista": []
  },
  "presupuesto": {
-  "_nota": "CIFRAS ESTRUCTURADAS del Presupuesto General de 2027, para que los gráficos del tablero las LEAN en vez de llevarlas escritas a mano en el código (v903: un número tecleado dentro de un texto es una cifra que envejece sola). Cada bloque trae su `base` —el id de la entrada del registro que documenta el hecho, como los indicadores desde la v964—, su `corte`, su `estadoProcesal` y sus fuentes. Un gráfico que no encuentre su bloque NO se dibuja con cifras supuestas: dice qué le falta. Y una cifra que se corrija acá se corrige en el gráfico y en el texto a la vez, porque es la misma.",
+  "tramite": {
+   "_nota": "EL TRÁMITE DE LO QUE LE FALTA AL EJE C (v1065). El eje nombraba las dos reglas que le faltan y callaba cómo se consiguen, que por la regla de este proyecto (v849, v880) convierte un vacío en un muro: quien lee no sabe si es trabajo de una tarde, de un derecho de petición o de esperar a que pase un año. Va en el registro y no en el código para que la rutina diaria lo pueda actualizar sin tocar js/70, igual que las cifras.",
+   "reglas": [
+    {
+     "k": "ejecutado",
+     "que": "El EJECUTADO por sector, que es otra cifra que el aprobado.",
+     "quien": "Ministerio de Hacienda y Crédito Público: la ejecución presupuestal del SIIF Nación y el decreto de liquidación de cada vigencia. El DNP publica aparte la ejecución de inversión.",
+     "como": "Son documentos públicos y se descargan del portal de Minhacienda; no hace falta derecho de petición. Lo que hace falta es una máquina que alcance el dominio.",
+     "cuando": "Para 2027 NO PUEDE EXISTIR todavía, y eso no es descuido de nadie: el presupuesto no es ley y el año no ha empezado. La ejecución de 2027 se publica durante 2027 y cierra en 2028. Lo que sí existe hoy es la de los años cerrados, que es justamente la que sirve para la comparación histórica de la regla siguiente."
+    },
+    {
+     "k": "serie-anterior",
+     "que": "El mismo reparto por sector, año por año, para Petro, Duque y Santos, con su variación real.",
+     "quien": "Minhacienda para el PGN por sector de cada vigencia, y el DANE para el IPC con el que se deflacta.",
+     "como": "Se arma año por año, y solo vale si cada año usa la MISMA regla de agregación de Defensa y Policía que usa esta ficha, que es la regla 2 de las siete del pliego. Mezclar un año con Defensa sola y otro con Defensa más Policía produce una variación que no existió.",
+     "cuando": "Existe hoy: son documentos ya publicados. Lo único que falta es poder leerlos."
+    }
+   ],
+   "ultimoIntento": {
+    "fecha": "2026-10-02",
+    "canal": "búsqueda",
+    "resultado": "No se escribió ninguna cifra, y la razón va dicha para que la próxima sesión no gaste otra tanda en el mismo callejón. Desde esta máquina el proxy niega todos los dominios: se probaron minhacienda.gov.co, dane.gov.co, dnp.gov.co y cinco medios, y los nueve contestaron sin conexión, así que ninguna página se pudo abrir. La búsqueda sola devolvió cifras CONTRADICTORIAS para el mismo sector y el mismo año: Defensa 2023 en 32,9 y en 37,2 billones, y el total de 2023 como 391,4 (radicado) y 405,6 (aprobado). El estándar de este registro, escrito en _pendientesFuente desde la v1003, es que la búsqueda sostiene QUE un hecho ocurrió y no que se leyó cada página; una serie numérica deflactada cae del otro lado de esa raya."
+   }
+  },
   "anio": 2027,
   "corte": "2026-09-14",
   "estadoProcesal": "en-tramite-legislativo",
