@@ -3,8 +3,8 @@
  "presidente": "Abelardo de la Espriella",
  "periodo": "2026 – 2030",
  "posesion": "2026-08-07",
- "actualizado": "2026-10-02",
- "proximaActualizacion": "2026-10-03",
+ "actualizado": "2026-10-03",
+ "proximaActualizacion": "2026-10-04",
  "categorias": {
   "gobierno": {
    "nombre": "Gobierno y decretos",
@@ -73,6 +73,154 @@
   }
  },
  "entradas": [
+{
+   "fecha": "2026-10-02",
+   "precision": "exacta",
+   "categoria": "israel",
+   "titulo": "El canciller Omar Bula posesiona a Tania Gilinski Bacal como embajadora de Colombia ante Israel",
+   "categoriaProbatoria": "hecho-probado",
+   "tipoMedicion": "actividad",
+   "indicadores": [],
+   "nivelGobierno": "nacional",
+   "estadoProcesal": "en-firme",
+   "tipoEvidencia": "dato-oficial",
+   "detalle": "El 2 de octubre de 2026 el canciller Omar Bula Escobar posesionó, en el Palacio de San Carlos, a Tania Gilinski Bacal como embajadora de Colombia ante el Estado de Israel. Según el comunicado de la Cancillería, Gilinski Bacal tiene una maestría en Estudios de Política Internacional de Stanford University y es licenciada en Historia y Francés por Wellesley College; habla español, inglés y francés, y tiene conocimiento conversacional de hebreo. La Cancillería señaló como prioridades de su misión profundizar la cooperación en seguridad e inteligencia estratégica, el combate al crimen transnacional, el intercambio de información y la ciberseguridad, y promover la cooperación en agricultura, salud, ciencia y tecnología y comercio.",
+   "contrapunto": "ESTA POSESIÓN FORMALIZA UN NOMBRAMIENTO ANUNCIADO DESDE JULIO DE 2026, cuando Israel confirmó con Colombia el restablecimiento de relaciones diplomáticas y el nombramiento recíproco de embajadores, rotos por el gobierno de Gustavo Petro en mayo de 2024. El plan —anunciado por el Gobierno y por Israel desde julio— de trasladar la sede de la embajada de Tel Aviv a Jerusalén no tiene, en las fuentes consultadas para esta entrada, una fecha de ejecución confirmada, y esta entrada no lo declara como hecho cumplido.",
+   "tipoFuente": "verificado",
+   "fuentes": [
+    {
+     "n": "Cancillería de Colombia · Canciller Bula posesionó la embajadora de Colombia en Israel, Tania Gilinski",
+     "rol": "acto",
+     "u": "https://www.cancilleria.gov.co/sala-de-prensa/noticias/canciller-bula-posesiono-la-embajadora-de-colombia-en-israel-tania-gilinski"
+    },
+    {
+     "n": "El Tiempo · Tania Gilinski se posesionó como embajadora de Colombia ante Israel",
+     "rol": "acto",
+     "u": "https://www.eltiempo.com/politica/gobierno/tania-gilinski-se-posesiono-como-embajadora-de-colombia-en-israel-3590890"
+    },
+    {
+     "n": "El Espectador · Gobierno De la Espriella posesionó a Tania Gilinski como embajadora de Colombia en Israel",
+     "rol": "acto",
+     "u": "https://www.elespectador.com/politica/gobierno-de-la-espriella-posesiono-a-tania-gilinski-como-embajadora-de-colombia-en-israel/"
+    },
+    {
+     "n": "Semana · Canciller Omar Bula posesionó a Tania Gilinski Bacal como nueva embajadora de Colombia en Israel; esta será su misión",
+     "rol": "acto",
+     "u": "https://www.semana.com/politica/articulo/canciller-omar-bula-posesiono-a-tania-gilinski-bacal-como-nueva-embajadora-de-colombia-en-israel-esta-sera-su-mision/202632/"
+    },
+    {
+     "n": "El Universal · Tania Gilinski asume como embajadora de Colombia en Israel",
+     "rol": "contexto",
+     "u": "https://www.eluniversal.com.co/colombia/2026/10/02/tania-gilinski-asume-como-embajadora-de-colombia-en-israel/"
+    }
+   ]
+  },
+{
+   "fecha": "2026-10-02",
+   "precision": "exacta",
+   "categoria": "economia",
+   "titulo": "De la Espriella anuncia en Sucre una Zona Económica Especial con un proyecto de aluminio de hasta US$5.200 millones, y $140.000 millones para atender el frente frío",
+   "categoriaProbatoria": "hecho-probado",
+   "tipoMedicion": "actividad",
+   "indicadores": [],
+   "nivelGobierno": "nacional",
+   "estadoProcesal": "anunciado-sin-acto",
+   "tipoEvidencia": "dato-oficial",
+   "detalle": "El 2 de octubre de 2026, durante una jornada de la estrategia «El Milagro de las Regiones» en el departamento de Sucre, el presidente De la Espriella anunció una estrategia para crear una Zona Económica Especial orientada a atraer inversión privada y extranjera. Uno de los proyectos que el Gobierno busca impulsar bajo ese esquema es un complejo de transformación de aluminio, con una inversión que el propio Gobierno estimó entre US$4.800 y US$5.200 millones y el potencial, según esas mismas cifras oficiales, de generar más de 15.000 empleos y unos US$700 millones en exportaciones. El presidente encargó al ministro de Comercio, Industria y Turismo, Mauricio Gómez Amín, incluir la estrategia en el Plan Nacional de Desarrollo. En la misma jornada el Gobierno anunció que Sucre recibirá $140.000 millones —el 14 % de cerca de un billón de pesos destinados a los departamentos afectados— para atender los efectos del frente frío que golpeó la región Caribe a comienzos de 2026.",
+   "contrapunto": "LAS CIFRAS DE INVERSIÓN Y EMPLEO DEL PROYECTO DE ALUMINIO SON ESTIMACIONES DEL PROPIO GOBIERNO sobre un proyecto en etapa de anuncio: las fuentes consultadas no registran un contrato o un compromiso vinculante de la empresa o empresas que lo ejecutarían, ni una fecha de inicio. Tampoco hay, al cierre de esta entrada, un decreto que cree formalmente la Zona Económica Especial: el presidente instruyó incluirla en el Plan Nacional de Desarrollo, que todavía está en formulación, por lo que esta entrada queda como «anunciado sin acto».",
+   "tipoFuente": "verificado",
+   "fuentes": [
+    {
+     "n": "Presidencia de la República · El Milagro de las Regiones: Presidente De La Espriella anunció masiva inversión para impulsar el desarrollo económico y social de Sucre",
+     "rol": "acto",
+     "u": "https://www.presidencia.gov.co/prensa/Paginas/El-Milagro-de-las-Regiones-Presidente-De-La-Espriella-anuncio-masiva-inversion-para-impulsar-el-desarrollo-261002.aspx"
+    },
+    {
+     "n": "La República · Gobierno anunció Zona Especial en Sucre con proyecto de aluminio de hasta US$5.200 millones",
+     "rol": "acto",
+     "u": "https://www.larepublica.co/economia/gobierno-anuncio-zona-especial-en-sucre-con-proyecto-de-aluminio-de-hasta-us-5-200-millones-4496090"
+    },
+    {
+     "n": "Noticias RCN · Presidente De la Espriella anunció la asignación de $140 mil millones para atender el frente frío en Sucre",
+     "rol": "acto",
+     "u": "https://www.noticiasrcn.com/colombia/sucre-recibira-140-mil-millones-para-atender-el-frente-frio-1068000"
+    },
+    {
+     "n": "Diario La Libertad · De La Espriella pone la seguridad en el centro de su agenda en Sucre y anuncia millonarias inversiones",
+     "rol": "contexto",
+     "u": "https://diariolalibertad.com/2026/10/02/seguridad-vias-y-de-la-espriella-pone-la-seguridad-en-el-centro-de-su-agenda-en-sucre-y-anuncia-millonarias-inversiones-de-la-espriella-deja-millonarios-anuncios-tras-su-jornada-en-sucre/"
+    }
+   ]
+  },
+{
+   "fecha": "2026-10-02",
+   "precision": "exacta",
+   "categoria": "economia",
+   "titulo": "El Gobierno presenta los lineamientos y el cronograma del Plan Nacional de Desarrollo 2026-2030, con una meta de crecimiento del PIB de 6 % para entrar al grupo de las 25 economías más fuertes del mundo",
+   "categoriaProbatoria": "hecho-probado",
+   "tipoMedicion": "actividad",
+   "indicadores": [],
+   "nivelGobierno": "nacional",
+   "estadoProcesal": "anunciado-sin-acto",
+   "tipoEvidencia": "reporte-periodistico",
+   "detalle": "El Gobierno dio a conocer el 2 de octubre de 2026 los lineamientos del Plan Nacional de Desarrollo (PND) 2026-2030: seis ejes articuladores —Reconstrucción, Transformación y Resiliencia; Patriotismo Constitucional; Milagro Social; Milagro Económico; Colombia de las Regiones; y Transformación del Estado—, 312 indicadores de producto y resultado, y una meta de crecimiento económico del 6 % del PIB con la que el Gobierno busca ubicar a Colombia entre las 25 economías más fuertes del mundo. El crecimiento se concentraría en seis sectores que el Gobierno llama estratégicos: minero-energético, vivienda e infraestructura, agroindustria, turismo, ciencia, tecnología e innovación, y bioeconomía. El cronograma reportado prevé la presentación de las bases del PND ante el Conpes el 6 de noviembre de 2026, la entrega de esas bases al Consejo Nacional de Planeación el 15 de noviembre de 2026, y la radicación del proyecto de ley ante el Congreso el 7 de febrero de 2027.",
+   "contrapunto": "LA META DE CRECIMIENTO DEL 6 % SE ANUNCIA EN EL MISMO PERIODO en que esta línea de tiempo registra señales de desaceleración: el desempleo subió a 9,4 % en agosto (entrada del 30 de septiembre de 2026) y el Banco de la República subió su tasa de interés al nivel más alto del año por presiones inflacionarias (misma fecha), mientras el propio Gobierno anunció el 27 de septiembre que buscaría financiación externa, incluido el FMI, ante un faltante proyectado de unos $200 billones para el presupuesto de 2027. Las fuentes consultadas para esta entrada no incluyen un análisis técnico independiente sobre la viabilidad de la meta del 6 %: es el objetivo que el propio Gobierno fijó para su plan, no una proyección de un tercero. Y al cierre de esta entrada el PND es un documento en formulación, sin radicar ante el Congreso, por lo que queda como «anunciado sin acto».",
+   "tipoFuente": "verificado",
+   "fuentes": [
+    {
+     "n": "Portafolio · Los ejes y fechas del Plan de Desarrollo de De La Espriella para llegar al Top 25 global de economías más fuertes",
+     "rol": "acto",
+     "u": "https://www.portafolio.co/economia/primicia-estos-son-los-lineamientos-y-el-cronograma-del-plan-nacional-de-desarrollo-de-de-la-espriella-503689"
+    },
+    {
+     "n": "La República · Gobierno plantea crecimiento de 6% para entrar a las 25 economías más fuertes",
+     "rol": "acto",
+     "u": "https://www.larepublica.co/economia/gobierno-plantea-crecimiento-de-6-para-entrar-a-las-25-economias-mas-fuertes-4495033"
+    },
+    {
+     "n": "ABC Economía · Crecimiento de 6%: la meta del PND 2026-2030",
+     "rol": "contexto",
+     "u": "https://abceconomia.co/2026/10/02/gobierno-plantea-crecimiento-de-6-para-entrar-a-las-25-economias-mas-fuertes/"
+    },
+    {
+     "n": "Diario del Huila · Así será el Plan Nacional de Desarrollo de Abelardo De La Espriella: seis ejes, 312 indicadores y una meta de crecimiento del 6 %",
+     "rol": "contexto",
+     "u": "https://diariodelhuila.com/asi-sera-el-plan-nacional-de-desarrollo-de-abelardo-de-la-espriella-seis-ejes-312-indicadores-y-una-meta-de-crecimiento-del-6/"
+    }
+   ]
+  },
+{
+   "fecha": "2026-10-02",
+   "precision": "aproximada",
+   "categoria": "gobierno",
+   "titulo": "El presidente nombra, mediante los decretos 1430 y 1485, a los nuevos directivos de Coljuegos y de la Subdirección General del Sistema General de Regalías del DNP",
+   "categoriaProbatoria": "hecho-probado",
+   "tipoMedicion": "actividad",
+   "indicadores": [],
+   "nivelGobierno": "nacional",
+   "estadoProcesal": "en-firme",
+   "tipoEvidencia": "documento-primario",
+   "detalle": "El Gobierno formalizó, mediante el Decreto 1430 del 1 de octubre de 2026, el nombramiento de Jaime Gregorio Vives Pinedo —empresario samario del sector privado— como presidente de la Empresa Industrial y Comercial del Estado Coljuegos, en remplazo de Marco Emilio Hincapié Ramírez. Mediante el Decreto 1485 nombró a Camilo Ernesto Lloreda Becerra como subdirector general del Sistema General de Regalías del Departamento Nacional de Planeación (DNP). Las fuentes consultadas reportaron los dos nombramientos el 2 de octubre de 2026.",
+   "contrapunto": "LA FECHA EXACTA DE EXPEDICIÓN DEL DECRETO 1485 NO QUEDÓ CONFIRMADA en las fuentes consultadas para esta entrada, que sí precisan la del Decreto 1430 (1 de octubre); por eso esta entrada queda con precisión aproximada. Son dos cargos de libre nombramiento y remoción, del régimen ordinario de la administración.",
+   "tipoFuente": "verificado",
+   "fuentes": [
+    {
+     "n": "Semana (Confidenciales) · Siguen los nombramientos en el Gobierno De La Espriella: ahora es el turno de Coljuegos y el DNP",
+     "rol": "acto",
+     "u": "https://www.semana.com/confidenciales/articulo/siguen-los-nombramientos-en-el-gobierno-de-la-espriella-ahora-es-el-turno-de-coljuegos-y-el-dnp/202626/"
+    },
+    {
+     "n": "La República · Gobierno formalizó el nombramiento de Jaime Vives Pinedo a la presidencia de Coljuegos",
+     "rol": "acto",
+     "u": "https://www.larepublica.co/economia/gobierno-formalizo-el-nombramiento-de-jaime-vives-pinedo-a-la-presidencia-de-coljuegos-4494776"
+    },
+    {
+     "n": "Vanguardia · Jaime Vives Pinedo llega a la presidencia de Coljuegos: así quedó el nuevo nombramiento",
+     "rol": "acto",
+     "u": "https://www.vanguardia.com/colombia/2026/10/02/jaime-vives-pinedo-llega-a-la-presidencia-de-coljuegos-asi-quedo-el-nuevo-nombramiento/"
+    }
+   ]
+  },
 {
    "fecha": "2026-10-01",
    "precision": "exacta",
