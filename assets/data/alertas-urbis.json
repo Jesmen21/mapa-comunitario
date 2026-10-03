@@ -1,6 +1,6 @@
 {
   "_comentario": "Alertas EDITORIALES del equipo URBIS (desastres verificados). Se publican editando este archivo — no requieren la hoja de cálculo ni credenciales. El mapa las dibuja junto a las que ya están en la base; si coinciden las coordenadas, se muestra una sola. Reglas: solo desastres naturales de fuente oficial, nunca violencia ni homicidios; coordenadas geocodificadas, jamás estimadas a ojo; sin fuente no se publica.",
-  "actualizado": "2026-10-02",
+  "actualizado": "2026-10-03",
   "alertas": [
     {
       "tipo": "Sismo",
@@ -100,6 +100,21 @@
       ],
       "fuente": "Semana / El País",
       "url": "https://www.semana.com/nacion/bucaramanga/articulo/colapso-de-la-via-barrancabermeja-bucaramanga-obligo-a-la-evacuacion-de-14-familias/202322/"
+    },
+    {
+      "tipo": "Tormenta",
+      "titulo": "Fuerte vendaval y tormenta eléctrica dejan más de 20 viviendas y el Teatro Tolima afectados — 2 de octubre de 2026, Ibagué, Tolima",
+      "lat": 4.4378,
+      "lng": -75.2006,
+      "desde": "2026-10-02",
+      "expira": "2026-10-05",
+      "lineas": [
+        "📅 Ocurrió en la tarde del viernes 2 de octubre de 2026 (hora de Colombia).",
+        "📊 Más de 12 sectores de Ibagué con árboles y ramas caídas, y 5 de ellos con inundaciones que dejaron más de 20 viviendas afectadas (barrios Nueva Castilla, Independiente, El País y la urbanización Pan de Azúcar), según la alcaldesa Johana Aranda. El Teatro Tolima sufrió filtraciones de agua por el techo del escenario que obligaron a evacuar preventivamente a unas 1.000 personas que asistían a una ceremonia de grado; no se reportaron heridos. También hubo caída de postes y luminarias y fallas eléctricas prolongadas en varios sectores.",
+        "ℹ️ Alerta informativa del equipo URBIS con base en la Alcaldía de Ibagué y prensa nacional (El Tiempo, Infobae, Pulzo, RCN). No es un reporte ciudadano."
+      ],
+      "fuente": "Alcaldía de Ibagué / El Tiempo / Infobae / Pulzo",
+      "url": "https://www.infobae.com/colombia/2026/10/03/fuerte-aguacero-en-ibague-dano-el-teatro-tolima-obligo-a-evacuar-una-graduacion-derribo-arboles-y-afecto-semaforos-asi-esta-el-panorama/"
     }
   ]
 }

@@ -1,4 +1,4 @@
-const URBIS_CACHE = 'urbis-v1067-seguimiento-presidencial-oct-1-2';
+const URBIS_CACHE = 'urbis-v1068-alerta-vendaval-ibague-oct-2';
 const URBIS_ASSETS = [
   './',
   './index.html',
