@@ -1,4 +1,4 @@
-const URBIS_CACHE = 'urbis-v1070-alerta-tumaco-caunapi';
+const URBIS_CACHE = 'urbis-v1071-seguimiento-bomberos-corrupcion-fondo-milagro';
 const URBIS_ASSETS = [
   './',
   './index.html',

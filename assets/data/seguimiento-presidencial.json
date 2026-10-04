@@ -3,8 +3,8 @@
  "presidente": "Abelardo de la Espriella",
  "periodo": "2026 – 2030",
  "posesion": "2026-08-07",
- "actualizado": "2026-10-03",
- "proximaActualizacion": "2026-10-04",
+ "actualizado": "2026-10-04",
+ "proximaActualizacion": "2026-10-05",
  "categorias": {
   "gobierno": {
    "nombre": "Gobierno y decretos",
@@ -73,6 +73,116 @@
   }
  },
  "entradas": [
+{
+   "fecha": "2026-10-04",
+   "precision": "exacta",
+   "categoria": "corrupcion",
+   "titulo": "De la Espriella anuncia una ofensiva contra la corrupción —«a los corruptos se les acabó la fiesta»— y ordena una auditoría forense al contrato Ciberpaz de $14.984 millones entre el extinto MinTIC y la Universidad de Pamplona",
+   "categoriaProbatoria": "hecho-probado",
+   "tipoMedicion": "actividad",
+   "indicadores": [],
+   "detalle": "El 4 de octubre de 2026 el presidente Abelardo de la Espriella publicó un mensaje en el que advirtió que alcaldes, gobernadores, funcionarios, contratistas y personas de su propio círculo cercano estarán sujetos a control en el manejo de los dineros del Estado, bajo la frase «la plata de los colombianos es sagrada». Como ejemplo citó el contrato interadministrativo 1166 de 2026, por $14.984 millones, celebrado entre el entonces Ministerio de Tecnologías de la Información y las Comunicaciones y la Universidad de Pamplona para el programa Ciberpaz Formaciones —sensibilización, formación, inclusión digital y estrategia de comunicación—, y señaló denuncias sobre su manejo contractual y presuntas injerencias externas en los procesos de contratación de esa universidad. Ordenó a la ministra de Educación, Ilva Myriam Hoyos, ejercer vigilancia sobre la institución, y pidió una auditoría forense para establecer si el gasto tuvo una justificación proporcional y verificable, con instrucción de poner en conocimiento de las autoridades cualquier irregularidad que se encuentre.",
+   "contrapunto": "Es un anuncio del propio Gobierno y no el hallazgo de un organismo de control independiente: a la fecha de esta actualización no consta un pronunciamiento de la Universidad de Pamplona ni de los exfuncionarios del extinto MinTIC sobre las denuncias, ni se ha publicado el resultado de la auditoría forense ordenada. Las «denuncias» que el presidente cita no equivalen a una investigación abierta por la Fiscalía o la Contraloría contra una persona identificada, y esta entrada no las trata como tal.",
+   "tipoFuente": "verificado",
+   "fuentes": [
+    {
+     "n": "El Universal · «A los corruptos se les acabó la fiesta»: la fuerte advertencia de De la Espriella",
+     "u": "https://www.eluniversal.com.co/colombia/2026/10/04/a-los-corruptos-se-les-acabo-la-fiesta-la-fuerte-advertencia-de-de-la-espriella/",
+     "rol": "acto"
+    },
+    {
+     "n": "Semana · «Se les acabó la fiesta»: Abelardo De La Espriella lanza ofensiva contra la corrupción",
+     "u": "https://www.semana.com/politica/articulo/se-les-acabo-la-fiesta-el-presidente-abelardo-de-la-espriella-lanza-ofensiva-contra-la-corrupcion/202653/",
+     "rol": "acto"
+    },
+    {
+     "n": "321 Noticias en Acción · A los corruptos se les acabó la fiesta",
+     "u": "https://www.321noticiasenaccion.com/a-los-corruptos-se-les-acabo-la-fiesta/",
+     "rol": "contexto"
+    }
+   ],
+   "nivelGobierno": "nacional"
+  },
+{
+   "fecha": "2026-10-03",
+   "precision": "exacta",
+   "categoria": "gobierno",
+   "titulo": "De la Espriella declara insubsistente al director nacional de Bomberos, Germán Miranda, tras 26 días en el cargo, por audios que lo vinculan con una presunta intermediación ante la Fiscalía",
+   "categoriaProbatoria": "hecho-probado",
+   "tipoMedicion": "actividad",
+   "indicadores": [],
+   "detalle": "El 3 de octubre de 2026 el presidente Abelardo de la Espriella anunció en su cuenta de X que había conocido hechos que consideraba «de la mayor gravedad» sobre el director nacional de Bomberos, el capitán Germán Andrés Miranda Montenegro, y pidió al ministro del Interior, Rodrigo Lara, proceder de inmediato a declarar insubsistente su nombramiento. Miranda había asumido el cargo el 7 de septiembre mediante el Decreto 1353 de 2026, tras 26 días en funciones. El ministro Lara confirmó la decisión y explicó que existían «elementos que podrían indicar un presunto intento de impedir que llegaran al conocimiento de la Fiscalía actuaciones de hechos de años atrás». Varios medios revelaron audios en los que Miranda conversa sobre un proceso judicial, la revisión de archivos y documentos, una posible suma de dinero cercana a los $200 millones y la necesidad de mantener el asunto en reserva; en su hoja de vida consta además una investigación de responsabilidad fiscal de la Contraloría General por un contrato entre la Dirección Nacional de Bomberos y la Red Colombiana de Instituciones de Educación Superior (Edured), con un presunto detrimento patrimonial estimado inicialmente en $115 millones. Miranda es el segundo alto funcionario del Gobierno que sale del cargo sin completar un mes en funciones, después del director del Dane.",
+   "contrapunto": "Lo que consta hasta esta actualización es la filtración de los audios y la decisión administrativa de retirarlo del cargo —una insubsistencia de un cargo de libre nombramiento y remoción, que no exige probar una falta—; ningún juez ni la Fiscalía se han pronunciado todavía sobre el fondo de lo que los audios sugieren, y esta entrada no declara que Miranda haya cometido un delito. No se encontró una declaración pública de Miranda respondiendo a las acusaciones a la fecha de esta actualización.",
+   "tipoFuente": "verificado",
+   "fuentes": [
+    {
+     "n": "Infobae · Abelardo de la Espriella pidió declarar insubsistente al director nacional de Bomberos tras denuncias de presunta corrupción: «No habrá contemplaciones»",
+     "u": "https://www.infobae.com/colombia/2026/10/03/abelardo-de-la-espriella-pidio-declarar-insubsistente-al-director-nacional-de-bomberos-tras-denuncias-de-presunta-corrupcion-no-habra-contemplaciones/",
+     "rol": "acto"
+    },
+    {
+     "n": "El Espectador · De la Espriella declara insubsistente a director de bomberos por presuntas irregularidades",
+     "u": "https://www.elespectador.com/politica/de-la-espriella-declara-insubsistente-a-director-de-bomberos-por-presuntas-irregularidades/",
+     "rol": "acto"
+    },
+    {
+     "n": "Semana · Rodrigo Lara explicó la razón de la salida de Germán Miranda de Bomberos y anticipó «hechos supremamente graves»",
+     "u": "https://www.semana.com/nacion/articulo/rodrigo-lara-explico-la-razon-de-la-salida-de-german-miranda-de-bomberos-y-anticipo-hechos-supremamente-graves/202651/",
+     "rol": "contexto"
+    },
+    {
+     "n": "Infobae · Revelan los audios que salpican al director de Bomberos, Germán Miranda, declarado insubsistente por De la Espriella",
+     "u": "https://www.infobae.com/colombia/2026/10/03/revelan-los-audios-que-salpican-al-director-de-bomberos-german-miranda-declarado-insubsistente-por-de-la-espriella-habria-hecho-una-supuesta-intermediacion-ante-la-fiscalia/",
+     "rol": "contexto"
+    },
+    {
+     "n": "Portafolio · Las presuntas irregularidades que causaron la salida del director de Bomberos, recién nombrado por De La Espriella",
+     "u": "https://www.portafolio.co/economia/gobierno/las-presuntas-irregularidades-que-causaron-la-salida-del-director-de-bomberos-recien-nombrado-por-de-la-espriella-503821",
+     "rol": "contexto"
+    },
+    {
+     "n": "Cambio Colombia · De La Espriella saca al director de Bomberos, Germán Miranda, el segundo alto funcionario que no alcanza a durar un mes en el cargo",
+     "u": "https://cambiocolombia.com/pais/articulo/2026/10/de-la-espriella-saca-al-director-de-bomberos-german-miranda-el-segundo-alto-funcionario-que-no-alcanza-a-durar-un-mes-en-el-cargo",
+     "rol": "contexto"
+    }
+   ],
+   "nivelGobierno": "nacional",
+   "estadoProcesal": "en-firme",
+   "tipoEvidencia": "documento-primario"
+  },
+{
+   "fecha": "2026-10-03",
+   "precision": "exacta",
+   "categoria": "emergencia",
+   "titulo": "A casi dos meses del terremoto, el Fondo Milagro sigue sin operar: el Ministerio de Hacienda no ha firmado el contrato que lo constituye ni ha girado los $624.656 millones para la reconstrucción",
+   "categoriaProbatoria": "hecho-probado",
+   "tipoMedicion": "resultado",
+   "detalle": "El Ministerio de Hacienda respondió por escrito, el 30 de septiembre, que el Fondo Patria Milagro —creado mediante el paquete de 11 decretos del 9 de septiembre de 2026 para administrar los recursos de reconstrucción tras el terremoto del 10 de agosto— no ha recibido ni girado ningún recurso. Según esa respuesta, Hacienda todavía no ha firmado el contrato que debe constituir el patrimonio autónomo del Fondo, paso previo sin el cual no se puede contratar un gerente ni conformar la junta directiva; el manual de contratación y administración del Fondo sigue en elaboración y, a la fecha, no existe ni un borrador. La Unidad Nacional para la Gestión del Riesgo de Desastres (UNGRD) había informado en septiembre que Jaime Andrés Uribe Tamayo fue designado gerente, pero la Presidencia respondió después que no tenía en sus archivos información operativa del Fondo, y Hacienda sostiene que la contratación del gerente depende de que el patrimonio autónomo quede constituido. Mientras tanto, los $624.656 millones destinados a la emergencia permanecen bajo administración directa del Ministerio, sin que se hayan iniciado los desembolsos para las obras de reconstrucción.",
+   "contrapunto": "El relato se apoya en la propia respuesta escrita del Ministerio de Hacienda del 30 de septiembre, no en una denuncia de un tercero; no se encontró, a la fecha de esta actualización, una versión del Ministerio o de la Presidencia que contradiga esos hechos, aunque tampoco una fecha concreta para que el Fondo empiece a girar recursos.",
+   "tipoFuente": "verificado",
+   "fuentes": [
+    {
+     "n": "Infobae · Fondo Milagro anunciado por De la Espriella aún no arranca: crecen interrogantes sobre los $624.600 millones destinados a la reconstrucción tras el terremoto",
+     "u": "https://www.infobae.com/colombia/2026/10/03/fondo-milagro-anunciado-por-de-la-espriella-aun-no-arranca-crecen-interrogantes-sobre-los-624600-millones-destinados-a-la-reconstruccion-tras-el-terremoto/",
+     "rol": "acto"
+    },
+    {
+     "n": "Cambio Colombia · Primicia: el Fondo Milagro sigue en el papel, sin gerente, manual de contratación ni recursos propios para atender la emergencia",
+     "u": "https://cambiocolombia.com/primicia-el-fondo-milagro-sigue-en-el-papel-sin-gerente-manual-de-contratacion-ni-recursos-propios-para-atender-la-emergencia",
+     "rol": "acto"
+    },
+    {
+     "n": "Ciudad Región · A casi dos meses del sismo, el Fondo Milagro sigue sin transferir recursos para la reconstrucción",
+     "u": "https://ciudadregion.com/nacional/fondo-milagro-sin-transferir-recursos-reconstruccion-sismo",
+     "rol": "contexto"
+    },
+    {
+     "n": "La Tapa Oficial · Fondo Milagro sigue sin operar y los $624.656 millones aún no llegan a la reconstrucción",
+     "u": "https://latapaoficial.com/fondo-milagro-sigue-sin-operar-y-los-624-656-millones-aun-no-llegan-a-la-reconstruccion/",
+     "rol": "contexto"
+    }
+   ]
+  },
 {
    "fecha": "2026-10-02",
    "precision": "exacta",
