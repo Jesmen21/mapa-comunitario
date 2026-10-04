@@ -1,4 +1,4 @@
-const URBIS_CACHE = 'urbis-v1069-seguimiento-israel-pnd-sucre-oct-2';
+const URBIS_CACHE = 'urbis-v1070-alerta-tumaco-caunapi';
 const URBIS_ASSETS = [
   './',
   './index.html',

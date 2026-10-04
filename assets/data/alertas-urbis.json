@@ -1,7 +1,22 @@
 {
   "_comentario": "Alertas EDITORIALES del equipo URBIS (desastres verificados). Se publican editando este archivo — no requieren la hoja de cálculo ni credenciales. El mapa las dibuja junto a las que ya están en la base; si coinciden las coordenadas, se muestra una sola. Reglas: solo desastres naturales de fuente oficial, nunca violencia ni homicidios; coordenadas geocodificadas, jamás estimadas a ojo; sin fuente no se publica.",
-  "actualizado": "2026-10-03",
+  "actualizado": "2026-10-04",
   "alertas": [
+    {
+      "tipo": "Zona de inundación activa",
+      "titulo": "Inundación por desbordamiento del río Caunapí en La Espriella — 3 de octubre de 2026, Tumaco, Nariño",
+      "lat": 1.4692,
+      "lng": -78.6406,
+      "desde": "2026-10-03",
+      "expira": "2026-10-08",
+      "lineas": [
+        "📅 Ocurrió en la madrugada del sábado 3 de octubre de 2026, hacia las 2:00 a. m. (hora de Colombia), cuando el río Caunapí se desbordó tras lluvias intensas y obligó a evacuar viviendas en el corregimiento de La Espriella, zona rural de Tumaco, Nariño.",
+        "📊 Entre 3.000 y 5.000 personas afectadas según los balances de prensa; decenas de viviendas inundadas, con agua hasta la cintura en varias de ellas, y pérdida de cultivos de cacao, plátano y yuca y de aves de corral. La UNGRD adelanta la evaluación oficial de daños; no se reportan muertos ni heridos hasta el momento.",
+        "ℹ️ Alerta informativa del equipo URBIS con base en la UNGRD (evaluación de daños en curso) y prensa nacional y regional (El Tiempo, Infobae, Semana, El Colombiano, Diario del Sur, HSB Noticias). No es un reporte ciudadano. Coordenadas de referencia: corregimiento de La Espriella, Tumaco, Nariño (zona rural; Nominatim no fue alcanzable desde este contenedor, así que la ubicación del corregimiento se tomó de fuentes cartográficas halladas por búsqueda)."
+      ],
+      "fuente": "UNGRD / El Tiempo / Infobae / Semana / El Colombiano / Diario del Sur",
+      "url": "https://www.infobae.com/america/agencias/2026/10/03/intensas-lluvias-e-inundaciones-ponen-en-alerta-a-un-corregimiento-del-pacifico-colombiano/"
+    },
     {
       "tipo": "Sismo",
       "titulo": "Terremoto de magnitud 7,4 — 10 de agosto de 2026, San José del Palmar, Chocó",
