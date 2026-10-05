@@ -1,4 +1,4 @@
-const URBIS_CACHE = 'urbis-v1071-seguimiento-bomberos-corrupcion-fondo-milagro';
+const URBIS_CACHE = 'urbis-v1072-seguimiento-corrupcion-bloque-busqueda-dni-huila';
 const URBIS_ASSETS = [
   './',
   './index.html',
