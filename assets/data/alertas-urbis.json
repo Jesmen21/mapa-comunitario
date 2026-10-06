@@ -1,7 +1,22 @@
 {
   "_comentario": "Alertas EDITORIALES del equipo URBIS (desastres verificados). Se publican editando este archivo — no requieren la hoja de cálculo ni credenciales. El mapa las dibuja junto a las que ya están en la base; si coinciden las coordenadas, se muestra una sola. Reglas: solo desastres naturales de fuente oficial, nunca violencia ni homicidios; coordenadas geocodificadas, jamás estimadas a ojo; sin fuente no se publica.",
-  "actualizado": "2026-10-04",
+  "actualizado": "2026-10-06",
   "alertas": [
+    {
+      "tipo": "Tormenta",
+      "titulo": "Granizada y vendaval dejan techos colapsados, árboles caídos y el aeropuerto El Dorado suspendido — 5 de octubre de 2026, Bogotá",
+      "lat": 4.7016,
+      "lng": -74.1469,
+      "desde": "2026-10-05",
+      "expira": "2026-10-09",
+      "lineas": [
+        "📅 Ocurrió en la tarde del lunes 5 de octubre de 2026, con el punto más fuerte hacia las 3:42 p. m. (hora de Colombia), cuando una tormenta eléctrica con granizada y vientos fuertes golpeó el occidente y noroccidente de Bogotá.",
+        "📊 El IDIGER reportó la caída de 5 árboles (en Engativá y Suba), encharcamientos y represamiento de alcantarillado en varias vías, y el colapso de techos livianos y cubiertas de policarbonato en terrazas y parqueaderos, sobre todo en Engativá y Fontibón; también hubo afectaciones en Kennedy. La Aeronáutica Civil suspendió los vuelos en el aeropuerto El Dorado a las 3:42 p. m. por la tormenta y la baja visibilidad, y los restableció hacia las 4:30 p. m.",
+        "ℹ️ Alerta informativa del equipo URBIS con base en el IDIGER, la Aeronáutica Civil y prensa nacional (El Tiempo, Infobae, Pulzo, El Heraldo). No es un reporte ciudadano. Coordenadas de referencia: aeropuerto El Dorado, en el límite de Engativá y Fontibón, el punto conocido más central entre las localidades afectadas (Kennedy, Engativá, Suba y Fontibón); Nominatim no fue alcanzable desde este contenedor para geocodificar un punto más fino."
+      ],
+      "fuente": "IDIGER / Aeronáutica Civil / El Tiempo / Infobae / Pulzo",
+      "url": "https://www.infobae.com/colombia/2026/10/05/en-imagenes-fuerte-granizada-cubrio-de-blanco-algunas-vias-del-occidente-de-bogota-y-afecto-la-movilidad/"
+    },
     {
       "tipo": "Zona de inundación activa",
       "titulo": "Inundación por desbordamiento del río Caunapí en La Espriella — 3 de octubre de 2026, Tumaco, Nariño",
@@ -84,52 +99,21 @@
       "url": "https://www.sgc.gov.co/detallesismo/SGC2026qgfpju/resumen"
     },
     {
-      "tipo": "Zona de inundación activa",
-      "titulo": "Inundaciones tras fuertes lluvias en 11 sectores de Santa Marta — 27 de septiembre de 2026, Magdalena",
-      "lat": 11.2422,
-      "lng": -74.2056,
-      "desde": "2026-09-27",
-      "expira": "2026-10-06",
-      "lineas": [
-        "📅 Ocurrió en la tarde del domingo 27 de septiembre de 2026 (hora de Colombia), tras una jornada de lluvias intensas sobre Santa Marta, Magdalena.",
-        "📊 Afectaciones preliminares en 11 sectores de la ciudad —Pescaíto, Manzanares, Minca, Taganga, Los Alpes A y B, Bonda, Timayuí 1 y 2, Cartagena-Bonda, Bastidas y Parques de Bolívar—: 7 viviendas totalmente destruidas y 29 más con pérdida de enseres, según el balance preliminar de la Alcaldía Distrital de Santa Marta.",
-        "⚠️ La Alcaldía activó un Puesto de Mando Unificado (PMU) y mantiene alerta roja por crecientes súbitas en los ríos Piedras y Manzanares y por riesgo de deslizamientos en la ciudad.",
-        "🔄 Al 30 de septiembre de 2026 la Alcaldía mantenía la alerta roja vigente por crecientes súbitas en los ríos Piedras y Manzanares, con vigilancia adicional en los ríos Bonda y Gaira; persiste el riesgo de deslizamientos y de taponamiento del cauce por acumulación de escombros en la confluencia de la quebrada Tamacá con el río Manzanares, mientras el IDEAM prevé más lluvias sobre la Sierra Nevada durante el primer fin de semana de octubre.",
-        "ℹ️ Alerta informativa del equipo URBIS con base en la Alcaldía Distrital de Santa Marta (Ogricc) y prensa nacional (Infobae, El Tiempo). No es un reporte ciudadano. Coordenadas de referencia: centro de Santa Marta; las inundaciones afectan a varios sectores de la ciudad, no solo al centro."
-      ],
-      "fuente": "Alcaldía de Santa Marta (Ogricc) / El Tiempo / Infobae / Seguimiento.co",
-      "url": "https://www.infobae.com/colombia/2026/09/27/fuertes-lluvias-en-santa-marta-dejan-afectaciones-en-11-sectores-y-autoridades-activan-pmu/"
-    },
-    {
       "tipo": "Derrumbe o deslizamiento",
       "titulo": "Derrumbe cierra de forma indefinida la vía Bucaramanga-Barrancabermeja — km 42, sector Lisboa y Brisas, Lebrija, Santander, 1 de octubre de 2026",
       "lat": 7.1131,
       "lng": -73.2189,
       "desde": "2026-10-01",
-      "expira": "2026-10-06",
+      "expira": "2026-10-11",
       "lineas": [
         "📅 Ocurrió el domingo 1 de octubre de 2026 (hora de Colombia), cuando un movimiento de tierra por una falla geológica destruyó el pavimento de la vía Bucaramanga-Barrancabermeja a la altura del kilómetro 42, en el sector Lisboa y Brisas, zona rural del municipio de Lebrija, Santander.",
         "📊 El colapso afectó cerca de 200 metros de calzada y dejó un camión atascado en el pavimento hundido. La vía quedó cerrada de manera total e indefinida; se habilitó como ruta alterna el corredor Bucaramanga–Rionegro–San Alberto–La Lizama.",
         "⚠️ Las autoridades evacuaron preventivamente a 14 familias (unas 40 personas) ante el riesgo de un nuevo deslizamiento por la inestabilidad del terreno y las lluvias recientes, y recomendaron la salida de otras 10 personas que permanecían en la zona.",
+        "🔄 Al 4 de octubre de 2026 la vía seguía cerrada de forma total e indefinida y el terreno continuaba moviéndose. La comunidad de la zona rural de Lebrija abrió esa tarde, a pico y pala, una trocha provisional para motos, caminantes y habitantes de la zona hacia Barrancabermeja, San Vicente de Chucurí y el área metropolitana de Bucaramanga; las autoridades no habían fijado todavía una fecha de reapertura y advirtieron que el paso improvisado seguía siendo riesgoso por el talud inestable.",
         "ℹ️ Alerta informativa del equipo URBIS con base en prensa nacional (Semana, El País). No es un reporte ciudadano. Coordenadas de referencia: municipio de Lebrija, Santander (el derrumbe se ubica en zona rural sobre la vía, no en el casco urbano; no fue posible geocodificar con mayor precisión el punto exacto del kilómetro 42)."
       ],
       "fuente": "Semana / El País",
-      "url": "https://www.semana.com/nacion/bucaramanga/articulo/colapso-de-la-via-barrancabermeja-bucaramanga-obligo-a-la-evacuacion-de-14-familias/202322/"
-    },
-    {
-      "tipo": "Tormenta",
-      "titulo": "Fuerte vendaval y tormenta eléctrica dejan más de 20 viviendas y el Teatro Tolima afectados — 2 de octubre de 2026, Ibagué, Tolima",
-      "lat": 4.4378,
-      "lng": -75.2006,
-      "desde": "2026-10-02",
-      "expira": "2026-10-05",
-      "lineas": [
-        "📅 Ocurrió en la tarde del viernes 2 de octubre de 2026 (hora de Colombia).",
-        "📊 Más de 12 sectores de Ibagué con árboles y ramas caídas, y 5 de ellos con inundaciones que dejaron más de 20 viviendas afectadas (barrios Nueva Castilla, Independiente, El País y la urbanización Pan de Azúcar), según la alcaldesa Johana Aranda. El Teatro Tolima sufrió filtraciones de agua por el techo del escenario que obligaron a evacuar preventivamente a unas 1.000 personas que asistían a una ceremonia de grado; no se reportaron heridos. También hubo caída de postes y luminarias y fallas eléctricas prolongadas en varios sectores.",
-        "ℹ️ Alerta informativa del equipo URBIS con base en la Alcaldía de Ibagué y prensa nacional (El Tiempo, Infobae, Pulzo, RCN). No es un reporte ciudadano."
-      ],
-      "fuente": "Alcaldía de Ibagué / El Tiempo / Infobae / Pulzo",
-      "url": "https://www.infobae.com/colombia/2026/10/03/fuerte-aguacero-en-ibague-dano-el-teatro-tolima-obligo-a-evacuar-una-graduacion-derribo-arboles-y-afecto-semaforos-asi-esta-el-panorama/"
+      "url": "https://www.semana.com/nacion/bucaramanga/articulo/arriesgan-sus-vidas-comunidad-hizo-una-trocha-por-derrumbe-en-la-via-bucaramanga-barrancabermeja-mientras-la-tierra-sigue-moviendose/202317/"
     }
   ]
 }

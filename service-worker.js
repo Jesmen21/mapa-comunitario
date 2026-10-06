@@ -1,4 +1,4 @@
-const URBIS_CACHE = 'urbis-v1072-seguimiento-corrupcion-bloque-busqueda-dni-huila';
+const URBIS_CACHE = 'urbis-v1073-alertas-granizada-bogota-lebrija-trocha';
 const URBIS_ASSETS = [
   './',
   './index.html',
