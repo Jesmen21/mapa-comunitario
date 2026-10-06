@@ -1,4 +1,4 @@
-const URBIS_CACHE = 'urbis-v1073-alertas-granizada-bogota-lebrija-trocha';
+const URBIS_CACHE = 'urbis-v1074-seguimiento-presidencial-6-oct';
 const URBIS_ASSETS = [
   './',
   './index.html',

@@ -3,8 +3,8 @@
   "presidente": "Abelardo de la Espriella",
   "periodo": "2026 – 2030",
   "posesion": "2026-08-07",
-  "actualizado": "2026-10-05",
-  "proximaActualizacion": "2026-10-06",
+  "actualizado": "2026-10-06",
+  "proximaActualizacion": "2026-10-07",
   "categorias": {
     "gobierno": {
       "nombre": "Gobierno y decretos",
@@ -74,6 +74,206 @@
   },
   "entradas": [
     {
+      "fecha": "2026-10-06",
+      "precision": "exacta",
+      "categoria": "exterior",
+      "titulo": "El Gobierno prepara una revisión del Acuerdo de Paz con las extintas FARC —PDET, PNIS, reincorporación y reforma rural— y el canciller Omar Bula comunica al Reino Unido, que lleva el tema de Colombia en el Consejo de Seguridad de la ONU, que buscará «remoldearlo» según las prioridades presidenciales; la discusión llega al Consejo el 12 de octubre junto al informe trimestral de la Misión de Verificación",
+      "categoriaProbatoria": "hecho-probado",
+      "tipoMedicion": "actividad",
+      "indicadores": [],
+      "detalle": "El Gobierno de Abelardo de la Espriella alista una revisión de la implementación del Acuerdo de Paz firmado en 2016 con las extintas FARC, que incluiría los Programas de Desarrollo con Enfoque Territorial (PDET), el Programa Nacional de Sustitución de Cultivos Ilícitos (PNIS) y los componentes de reincorporación y reforma rural. El canciller Omar Bula comunicó al Reino Unido —el país que lleva (penholder) el asunto colombiano en el Consejo de Seguridad de la ONU— que la administración busca «remoldear» el acuerdo en función de las prioridades presidenciales. El tema tendrá un escenario internacional el 12 de octubre de 2026, cuando el Consejo de Seguridad analice de nuevo la situación colombiana junto con el informe trimestral de la Misión de Verificación de la ONU. La revisión se suma a anuncios previos del Gobierno sobre el desmonte de la institucionalidad de la «Paz Total» y críticas a la JEP.",
+      "contrapunto": "A la fecha de esta entrada el Gobierno no ha radicado ningún decreto o proyecto de ley con el contenido concreto de los cambios que propone, y la comunicación conocida es la que el canciller envió al Reino Unido, no un documento público del Ejecutivo. El Acto Legislativo 02 de 2017 incorporó a la Constitución la obligación de que las actuaciones de las autoridades del Estado guarden coherencia con lo acordado y se desarrollen de buena fe, lo que fija un límite jurídico a cualquier cambio unilateral. Medios españoles reportan inquietud en inversiones de ese país ligadas a la implementación del acuerdo, pero no hay, a esta fecha, una medida formal que afecte esos proyectos.",
+      "tipoFuente": "verificado",
+      "fuentes": [
+        {
+          "n": "Vanguardia · De la Espriella alista cambios al Acuerdo de Paz y la ONU será escenario de la discusión",
+          "u": "https://www.vanguardia.com/colombia/2026/10/06/de-la-espriella-alista-cambios-al-acuerdo-de-paz-y-la-onu-sera-escenario-de-la-discusion/",
+          "rol": "acto"
+        },
+        {
+          "n": "El Colombiano · Gobierno de Abelardo de la Espriella plantea cambios en la implementación del Acuerdo de Paz; lo llevarían a la ONU",
+          "u": "https://www.elcolombiano.com/inicio/gobierno-de-abelardo-de-la-espriella-plantea-cambios-en-la-implementacion-del-acuerdo-de-paz-lo-llevarian-a-la-onu-NK41963349",
+          "rol": "acto"
+        },
+        {
+          "n": "El Colombiano · Gobierno alista revisión del Acuerdo de Paz para presentarla en la ONU: ¿qué puede cambiar?",
+          "u": "https://www.elcolombiano.com/colombia/gobierno-de-la-espriella-revision-acuerdo-de-paz-onu-BP41932939",
+          "rol": "contexto"
+        },
+        {
+          "n": "Moncloa · Colombia revisa su acuerdo de paz ante el Consejo de Seguridad: la inversión española, en el aire",
+          "u": "https://www.moncloa.com/2026/10/05/acuerdo-paz-colombia-consejo-seguridad-3442651",
+          "rol": "efecto"
+        },
+        {
+          "n": "Semana · Canciller Omar Bula aseguró que el Gobierno De La Espriella «remoldeará» el Acuerdo de Paz en función de sus prioridades",
+          "u": "https://www.semana.com/politica/articulo/canciller-omar-bula-aseguro-que-el-gobierno-de-la-espriella-remoldeara-el-acuerdo-de-paz-en-funcion-de-sus-prioridades/202607/",
+          "rol": "acto"
+        }
+      ],
+      "nivelGobierno": "nacional"
+    },
+    {
+      "fecha": "2026-10-06",
+      "precision": "exacta",
+      "categoria": "servicios",
+      "titulo": "El Gobierno descarta las plantas desalinizadoras para la crisis de agua potable de Santa Marta y anuncia una solución alternativa en 10 días; Petro cuestiona la decisión y pide crear un comité cívico para defender el proyecto",
+      "categoriaProbatoria": "hecho-probado",
+      "tipoMedicion": "actividad",
+      "indicadores": [],
+      "detalle": "El presidente Abelardo de la Espriella anunció el 25 de septiembre de 2026 que las plantas desalinizadoras proyectadas para resolver la crisis de agua potable de Santa Marta «no van» porque, según su evaluación, dejaron de ser técnicamente viables, y el 6 de octubre su Gobierno confirmó que anunciará en 10 días una solución alternativa a los $786.000 millones que estaban previstos para ese proyecto. El expresidente Gustavo Petro cuestionó la decisión en X y pidió crear un comité cívico para defender la alternativa de desalinización, sosteniendo que el proyecto ya contaba con financiación y estudios; el Gobierno le respondió públicamente, y Petro calificó la posición del Ejecutivo de «sinvergüenzas». El proyecto de desalinizadoras venía de administraciones anteriores y, en julio de 2026, la Contraloría había pedido la suspensión preventiva del trámite para revisar sus condiciones técnicas, legales, financieras y de planeación.",
+      "contrapunto": "Las dos partes sostienen versiones opuestas sobre la viabilidad técnica del proyecto: el Gobierno de De la Espriella afirma que las desalinizadoras dejaron de ser viables, mientras que Petro sostiene que el proyecto ya tenía financiación y estudios listos. A la fecha de esta entrada no hay un informe técnico independiente, posterior a la solicitud de suspensión preventiva de la Contraloría de julio de 2026, que resuelva esa discrepancia, ni se ha anunciado todavía cuál es la alternativa concreta que el Gobierno presentaría en los 10 días siguientes.",
+      "tipoFuente": "disputado",
+      "fuentes": [
+        {
+          "n": "Infobae · Gobierno De la Espriella descartó proyecto para la crisis de agua potable en Santa Marta y Gustavo Petro lo criticó: «No sean sinvergüenzas»",
+          "u": "https://www.infobae.com/colombia/2026/10/06/gobierno-de-la-espriella-descarto-proyecto-para-la-crisis-de-agua-potable-en-santa-marta-y-gustavo-petro-lo-critico-no-sean-sinverguenzas/",
+          "rol": "acto"
+        },
+        {
+          "n": "El Tiempo · De La Espriella anunciará en 10 días una solución para la crisis del agua en Santa Marta tras descartar las desalinizadoras",
+          "u": "https://www.eltiempo.com/colombia/otras-ciudades/de-la-espriella-anunciara-en-10-dias-una-solucion-para-la-crisis-del-agua-en-santa-marta-tras-descartar-las-desalinizadoras-3591542",
+          "rol": "acto"
+        },
+        {
+          "n": "Infobae · Gobierno de De la Espriella alertó a la Procuraduría sobre contrato de $786.000 millones para llevar agua a Santa Marta",
+          "u": "https://www.infobae.com/colombia/2026/07/26/gobierno-de-de-la-espriella-alerto-a-la-procuraduria-sobre-contrato-de-786000-millones-para-llevar-agua-a-santa-marta/",
+          "rol": "contexto"
+        },
+        {
+          "n": "latapaoficial · Gobierno de De la Espriella replantea solución al agua de Santa Marta y Petro cuestiona el descarte de las desalinizadoras",
+          "u": "https://latapaoficial.com/gobierno-de-de-la-espriella-replantea-solucion-al-agua-de-santa-marta-y-petro-cuestiona-el-descarte-de-las-desalinizadoras/",
+          "rol": "efecto"
+        }
+      ],
+      "nivelGobierno": "nacional"
+    },
+    {
+      "fecha": "2026-10-06",
+      "precision": "exacta",
+      "categoria": "economia",
+      "titulo": "El Gobierno estudia eliminar el subsidio al ACPM para vehículos particulares, oficiales y diplomáticos —y mantenerlo para el transporte de carga y de pasajeros—, con un ahorro fiscal calculado en $698.000 millones al año en el Fondo de Estabilización de Precios de los Combustibles",
+      "categoriaProbatoria": "hecho-probado",
+      "tipoMedicion": "actividad",
+      "indicadores": [],
+      "detalle": "El Gobierno de Abelardo de la Espriella avanza en un estudio para igualar el precio local del ACPM (diésel) con su referencia internacional para conductores particulares y vehículos oficiales y diplomáticos, con el argumento de que ese subsidio es regresivo y consume billones de pesos al año en un momento de estrechez fiscal. La Superintendencia de Industria y Comercio considera viable la medida por razones de eficiencia económica y sostenibilidad fiscal. El Gobierno calcula un ahorro fiscal directo de alrededor de $698.000 millones al año en el Fondo de Estabilización de Precios de los Combustibles (Fepc), y la propuesta mantendría el subsidio para el transporte de carga y de pasajeros para evitar presión sobre las tarifas de fletes y el costo de bienes básicos. La discusión retoma un debate iniciado durante el Gobierno de Gustavo Petro.",
+      "contrapunto": "A la fecha de esta entrada el Gobierno «estudia» la medida y no ha expedido un decreto que la haga efectiva; el precio del ACPM se mantiene congelado durante octubre de 2026 por la decisión adoptada en septiembre en el marco de las medidas asociadas a los efectos del terremoto. No hay, a esta fecha, un cronograma público de cuándo entraría en vigor el retiro del subsidio para los sectores mencionados.",
+      "tipoFuente": "verificado",
+      "fuentes": [
+        {
+          "n": "Infobae · Gobierno de De la Espriella estudia acabar con el subsidio al Acpm para conductores particulares y vehículos diplomáticos y oficiales: cómo lo haría",
+          "u": "https://www.infobae.com/colombia/2026/10/06/gobierno-de-de-la-espriella-estudia-acabar-con-el-subsidio-al-acpm-para-conductores-particulares-y-vehiculos-diplomaticos-y-oficiales-como-lo-haria/",
+          "rol": "acto"
+        },
+        {
+          "n": "Valora Analitik · Gobierno da pasos en eliminar subsidio al diésel para camionetas, carros oficiales y diplomáticos",
+          "u": "https://www.valoraanalitik.com/gobierno-da-pasos-en-eliminar-subsidio-al-diesel-para-camionetas-carros-oficiales-y-diplomaticos/",
+          "rol": "acto"
+        }
+      ],
+      "nivelGobierno": "nacional"
+    },
+    {
+      "fecha": "2026-10-06",
+      "precision": "exacta",
+      "categoria": "ambiente",
+      "titulo": "El Ministerio del Interior anuncia una reforma para destrabar la consulta previa con comunidades étnicas: digitalización del 100 % de los expedientes represados, un responsable y una fecha por caso, y la separación del trámite ambiental del de la consulta",
+      "categoriaProbatoria": "hecho-probado",
+      "tipoMedicion": "actividad",
+      "indicadores": [],
+      "detalle": "El ministro del Interior, Rodrigo Lara, anunció una reforma al procedimiento de consulta previa con comunidades étnicas que busca poner en orden procesos represados durante años, sin modificar el derecho de las comunidades a ser consultadas: «La consulta previa se respeta. El represamiento no». La propuesta incluye la digitalización del 100 % de los expedientes represados, una ventanilla digital única con la información de los procesos, un funcionario responsable y una fecha asociada por cada consulta, con mecanismos de alerta para vigilar los plazos. Lara explicó que una de las apuestas es separar los trámites de consulta previa y de licencia ambiental —que hoy se condicionan entre sí— para que ambos puedan avanzar de forma simultánea, lo que el Gobierno dice que priorizaría proyectos energéticos como Sirius.",
+      "contrapunto": "El anuncio fue hecho por vocería del Gobierno y, a la fecha de esta entrada, URBIS no encontró un decreto o proyecto de ley radicado con el contenido completo de la reforma, ni pronunciamientos públicos de organizaciones indígenas o afrodescendientes sobre esta propuesta específica. Separar la consulta previa de la licencia ambiental cambia el peso relativo que ese mecanismo de protección constitucional ha tenido frente al licenciamiento ambiental, y esta entrada no puede establecer, por ahora, si la reforma acelera igual los proyectos que benefician a las comunidades consultadas y los que generan objeciones de esas comunidades.",
+      "tipoFuente": "verificado",
+      "fuentes": [
+        {
+          "n": "El Heraldo · Gobierno busca destrabar consultas previas con comunidades étnicas: digitalizarán expedientes represados",
+          "u": "https://www.elheraldo.co/politica/2026/10/06/gobierno-busca-destrabar-consultas-previas-con-comunidades-etnicas-digitalizaran-expedientes-represados/",
+          "rol": "acto"
+        },
+        {
+          "n": "Semana · MinInterior anuncia reforma para destrabar consulta previa con comunidades: digitalizarán 100 % de los expedientes represados",
+          "u": "https://www.semana.com/politica/articulo/mininterior-anuncia-reforma-para-destrabar-consulta-previa-con-comunidades-digitalizaran-100-de-los-expedientes-represados/202622/",
+          "rol": "acto"
+        },
+        {
+          "n": "El Espectador · Listos ajustes del Gobierno De la Espriella para la consulta previa: «se respeta»",
+          "u": "https://www.elespectador.com/politica/consulta-previa-en-colombia-listos-los-cambios-que-plantea-de-la-espriella-habla-lara/",
+          "rol": "acto"
+        },
+        {
+          "n": "Valora Analitik · Gobierno De La Espriella anuncia reforma a consulta previa y prioriza proyectos energéticos como Sirius",
+          "u": "https://www.valoraanalitik.com/reforma-consulta-previa-proyectos-colombia/",
+          "rol": "contexto"
+        }
+      ],
+      "nivelGobierno": "nacional"
+    },
+    {
+      "fecha": "2026-10-06",
+      "precision": "exacta",
+      "categoria": "creditos",
+      "titulo": "Una delegación del Ministerio de Hacienda, encabezada por el viceministro técnico Juan Sebastián Betancur, se reúne en Washington con el FMI para avanzar en la financiación que el Gobierno busca ante un hueco de unos $200 billones en el presupuesto de 2027",
+      "categoriaProbatoria": "hecho-probado",
+      "tipoMedicion": "actividad",
+      "indicadores": [],
+      "detalle": "El 6 de octubre de 2026 una delegación del Ministerio de Hacienda encabezada por el viceministro técnico Juan Sebastián Betancur se reunió en Washington con representantes del Fondo Monetario Internacional (FMI) para avanzar en la financiación que el Gobierno busca y preparar un plan de ajuste fiscal con el que aspira a ganar credibilidad ante el Fondo. Las proyecciones oficiales calculan ingresos de $330 billones frente a gastos de $530 billones para el presupuesto de 2027, lo que deja un hueco de alrededor de $200 billones que el Estado buscaría cubrir con deuda u otras fuentes. Analistas calculan que un crédito del FMI por debajo de 300 % de la cuota de Colombia en el Fondo —entre US$4.200 y US$8.400 millones, según la cuota vigente de unos US$2.800 millones— tendría una tasa efectiva cercana al 3,7 % anual, frente al 6,6 % que el país paga hoy por bonos externos a plazos similares.",
+      "contrapunto": "A la fecha de esta entrada no existe un acuerdo, línea de crédito o programa financiero nuevo pactado con el FMI: la reunión del 6 de octubre es una etapa de la negociación y no su cierre. Las cifras de tasa y monto citadas son estimaciones de analistas a partir de la cuota de Colombia en el Fondo, no una oferta confirmada por el FMI, y el propio Fondo no ha anunciado condiciones ni montos definitivos. Pacto Histórico, desde la oposición, ha rechazado el acercamiento del Gobierno al FMI.",
+      "tipoFuente": "verificado",
+      "fuentes": [
+        {
+          "n": "Valora Analitik · Funcionarios del Gobierno de La Espriella viajarán a EE. UU. para buscar financiación del FMI; ley de rescate será clave",
+          "u": "https://www.valoraanalitik.com/funcionarios-del-gobierno-de-la-espriella-viajaran-a-ee-uu-para-buscar-financiacion-del-fmi-ley-de-rescate-sera-clave/",
+          "rol": "acto"
+        },
+        {
+          "n": "El País (Cali) · Gobierno De la Espriella busca crédito con el FMI por $200 billones para cumplir el presupuesto del 2027",
+          "u": "https://www.elpais.com.co/economia/gobierno-de-la-espriella-busca-credito-con-el-fmi-por-200-billones-para-cumplir-el-presupuesto-del-2027-2802.html",
+          "rol": "contexto"
+        },
+        {
+          "n": "Portafolio · Crédito del Fondo Monetario Internacional podría costarle a Colombia 3,7% anual, frente al 6,6% de bonos externos",
+          "u": "https://www.portafolio.co/economia/credito-del-fondo-monetario-internacional-podria-costarle-a-colombia-3-7-anual-frente-al-6-6-de-bonos-externos-503885",
+          "rol": "contexto"
+        },
+        {
+          "n": "Infobae · Negociación del Gobierno de De la Espriella con el FMI enfrenta el reto de un ajuste fiscal que evite disparar la deuda",
+          "u": "https://www.infobae.com/colombia/2026/10/04/negociacion-del-gobierno-de-de-la-espriella-con-el-fmi-enfrenta-el-reto-de-un-ajuste-fiscal-que-evite-disparar-la-deuda/",
+          "rol": "contexto"
+        }
+      ],
+      "nivelGobierno": "nacional"
+    },
+    {
+      "fecha": "2026-10-05",
+      "precision": "exacta",
+      "categoria": "exterior",
+      "titulo": "De la Espriella respalda en X a Flávio Bolsonaro frente a Lula da Silva en el escrutinio de la elección presidencial de Brasil —«el verdadero cambio es derrotar a la izquierda»— y Gustavo Petro le responde defendiendo a los gobiernos progresistas de la región",
+      "categoriaProbatoria": "hecho-probado",
+      "tipoMedicion": "actividad",
+      "indicadores": [],
+      "detalle": "El 4 de octubre de 2026, durante el escrutinio de la elección presidencial de Brasil, el presidente Abelardo de la Espriella escribió en X un mensaje de respaldo al candidato Flávio Bolsonaro frente a Lula da Silva: «Hoy mi corazón está con Brasil, que Dios se apiade del hermano país como lo hizo con Colombia. El verdadero cambio es derrotar a la izquierda. Um grande abraço, amigo Flávio Bolsonaro». El mensaje fue replicado por figuras del uribismo. El 5 de octubre el expresidente Gustavo Petro respondió defendiendo a los gobiernos progresistas de América Latina y cuestionando la política del presidente de Estados Unidos, Donald Trump, hacia la región, al señalar que la derecha «lleva dos siglos gobernando a Latinoamérica» frente a periodos breves de gobiernos progresistas.",
+      "contrapunto": "Es un intercambio de declaraciones políticas de ambos mandatarios sobre la elección de un tercer país, sin que ninguna de las dos partes aporte una cifra o un hecho verificable adicional: la lectura de quién «gobierna hace más tiempo» en la región depende del criterio histórico que se use y no es, en sí misma, un dato que esta entrada pueda calificar de verdadero o falso.",
+      "tipoFuente": "declaracion",
+      "fuentes": [
+        {
+          "n": "El Tiempo · Presidente Abelardo De La Espriella expresó su apoyo al candidato presidencial Flávio Bolsonaro: «El verdadero cambio es derrotar a la izquierda»",
+          "u": "https://www.eltiempo.com/mundo/latinoamerica/presidente-abelardo-de-la-espriella-expreso-su-apoyo-al-candidato-presidencial-flavio-bolsonaro-el-verdadero-cambio-es-derrotar-a-la-izquierda-3591153",
+          "rol": "acto"
+        },
+        {
+          "n": "El Universal · «Derrotar a la izquierda»: Abelardo de la Espriella apoya a Flávio Bolsonaro en Brasil",
+          "u": "https://www.eluniversal.com.co/colombia/2026/10/04/derrotar-a-la-izquierda-abelardo-de-la-espriella-apoya-a-flavio-bolsonaro-en-brasil/",
+          "rol": "acto"
+        },
+        {
+          "n": "Infobae · Gustavo Petro salió en defensa de los gobiernos progresistas por publicación de Abelardo de la Espriella",
+          "u": "https://www.infobae.com/colombia/2026/10/05/gustavo-petro-salio-en-defensa-de-los-gobiernos-progresistas-por-publicacion-de-abelardo-de-la-espriella/",
+          "rol": "efecto"
+        }
+      ],
+      "nivelGobierno": "nacional"
+    },
+    {
       "fecha": "2026-10-04",
       "precision": "exacta",
       "categoria": "corrupcion",
@@ -112,12 +312,12 @@
       "fecha": "2026-10-04",
       "precision": "exacta",
       "categoria": "corrupcion",
-      "titulo": "De la Espriella advierte al alcalde de Sincelejo, Yahir Acuña, que «no tendrán cheques en blanco» por el manejo de recursos públicos y el Programa de Alimentación Escolar; Acuña responde que el video que citó el presidente está editado",
+      "titulo": "De la Espriella advierte al alcalde de Sincelejo, Yahir Acuña, que «no tendrán cheques en blanco» por el manejo de recursos públicos y el Programa de Alimentación Escolar; Acuña dice que fue intimidado con hombres armados y que el video está editado, y la Presidencia lo niega",
       "categoriaProbatoria": "hecho-probado",
       "tipoMedicion": "actividad",
       "indicadores": [],
-      "detalle": "Durante una visita a Sucre el 4 de octubre de 2026, el presidente Abelardo de la Espriella cuestionó públicamente al alcalde de Sincelejo, Yahir Acuña, por el manejo de recursos públicos y por irregularidades señaladas en el Programa de Alimentación Escolar (PAE), y afirmó que «todo Sucre sabe lo que usted ha hecho con la plata» y que su Gobierno no le dará «cheques en blanco» para el manejo de dineros de la Nación destinados al municipio. El presidente dijo no poder «ignorar sus antecedentes». La Procuraduría General abrió el 19 de noviembre de 2025 una investigación preliminar contra Acuña por presuntas irregularidades en el PAE, a raíz de la circulación de un video que, según el ente de control, mostraría pagos irregulares con recursos del programa; y la Sala de Instrucción de la Corte Suprema lo llamó a indagatoria el 16 de junio de 2026 por un presunto enriquecimiento ilícito ligado a un incremento patrimonial no justificado durante su periodo como congresista (2010-2018).",
-      "contrapunto": "La investigación preliminar de la Procuraduría por el PAE y el llamado a indagatoria de la Corte Suprema por enriquecimiento ilícito son anteriores a esta administración y no fueron abiertos por el Gobierno de De la Espriella; esta entrada no los cuenta como casos de este Gobierno. Acuña respondió que el video que el presidente mostró en su encuentro en Coveñas está editado y manipulado, y cuestionó la forma en que se presentó. Ninguna autoridad ha anunciado, a la fecha de esta actualización, una nueva investigación abierta a partir de las declaraciones del 4 de octubre, que por ahora son un señalamiento público del presidente y no un acto judicial o disciplinario nuevo.",
+      "detalle": "Durante una visita a Sucre el 4 de octubre de 2026, el presidente Abelardo de la Espriella cuestionó públicamente al alcalde de Sincelejo, Yahir Acuña, por el manejo de recursos públicos y por irregularidades señaladas en el Programa de Alimentación Escolar (PAE), y afirmó que «todo Sucre sabe lo que usted ha hecho con la plata» y que su Gobierno no le dará «cheques en blanco» para el manejo de dineros de la Nación destinados al municipio. El presidente dijo no poder «ignorar sus antecedentes». La Procuraduría General abrió el 19 de noviembre de 2025 una investigación preliminar contra Acuña por presuntas irregularidades en el PAE, a raíz de la circulación de un video que, según el ente de control, mostraría pagos irregulares con recursos del programa; y la Sala de Instrucción de la Corte Suprema lo llamó a indagatoria el 16 de junio de 2026 por un presunto enriquecimiento ilícito ligado a un incremento patrimonial no justificado durante su periodo como congresista (2010-2018). Tras el encuentro, Acuña denunció públicamente que durante la reunión en Coveñas fue intimidado por hombres armados para impedirle responder a los señalamientos del presidente. El director del Departamento Administrativo de la Presidencia (Dapre), Carlos Ríos, respondió el 6 de octubre que no hubo intención de amedrentar al alcalde, que los hombres armados corresponden exclusivamente al esquema de seguridad habitual del presidente —distribuido en distintos puntos del recinto y no apostado detrás de Acuña— y que nadie fue ubicado allí para intimidarlo, amenazarlo o presionarlo.",
+      "contrapunto": "La investigación preliminar de la Procuraduría por el PAE y el llamado a indagatoria de la Corte Suprema por enriquecimiento ilícito son anteriores a esta administración y no fueron abiertos por el Gobierno de De la Espriella; esta entrada no los cuenta como casos de este Gobierno. Acuña respondió que el video que el presidente mostró en su encuentro en Coveñas está editado y manipulado, y cuestionó la forma en que se presentó. Ninguna autoridad ha anunciado, a la fecha de esta actualización, una nueva investigación abierta a partir de las declaraciones del 4 de octubre, que por ahora son un señalamiento público del presidente y no un acto judicial o disciplinario nuevo. Sobre la denuncia de intimidación, las dos partes sostienen versiones opuestas y no hay, a la fecha de esta entrada, un tercero independiente —una autoridad o una verificación de video por un medio— que las dirima: Acuña sostiene que fue amedrentado con hombres armados, y la Presidencia sostiene que esos hombres eran el esquema de seguridad habitual del mandatario y que el alcalde «se victimiza sin razón».",
       "tipoFuente": "disputado",
       "fuentes": [
         {
@@ -144,6 +344,21 @@
           "n": "Minuto60 · ¿Quién es Yahir Acuña? Su Alcaldía de Sincelejo está marcada por alertas judiciales y crisis del PAE",
           "u": "https://www.minuto60.com/politica/yahir-acuna-quien-es-alcalde-sincelejo-investigaciones-alertas-judiciales-crisis-pae/16542",
           "rol": "contexto"
+        },
+        {
+          "n": "Semana · Presidencia desmiente al alcalde de Sincelejo y aclara escena con Abelardo De La Espriella",
+          "u": "https://www.semana.com/politica/articulo/presidencia-desmiente-al-alcalde-de-sincelejo-y-aclara-escena-con-abelardo-de-la-espriella/202612/",
+          "rol": "efecto"
+        },
+        {
+          "n": "El Tiempo · Director del Dapre, Carlos Ríos, le responde al alcalde Yahir Acuña y asegura que esquema de seguridad corresponde al protocolo del presidente",
+          "u": "https://www.eltiempo.com/politica/gobierno/director-del-dapre-carlos-rios-le-responde-al-alcalde-yahir-acuna-y-asegura-que-esquema-de-seguridad-corresponde-al-protocolo-del-presidente-3591514",
+          "rol": "efecto"
+        },
+        {
+          "n": "Infobae · Presidencia negó que el alcalde de Sincelejo fuera intimidado con armas durante encuentro oficial: «Victimizarse sin razón»",
+          "u": "https://www.infobae.com/colombia/2026/10/06/presidencia-nego-que-el-alcalde-de-sincelejo-fuera-intimidado-con-armas-durante-encuentro-oficial-victimizarse-sin-razon/",
+          "rol": "efecto"
         }
       ],
       "nivelGobierno": "nacional"
@@ -9870,7 +10085,7 @@
           "k": "trabajo",
           "t": "Trabajo",
           "bn": 58.82,
-          "realPct": 10.0
+          "realPct": 10
         },
         {
           "k": "hacienda",
