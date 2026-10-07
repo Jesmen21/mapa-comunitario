@@ -13,7 +13,7 @@
 
    La versión va acá y en vision-territorial.html, idéntica, como en los
    otros siete archivos de versión del sitio: revisar.js lo comprueba. */
-const VT_CACHE = 'urbis-vt-v1078-los-dos-operativos-registrados-como-actos';
+const VT_CACHE = 'urbis-vt-v1079-fondo-milagro-presupuestado-y-plan-ante-el-nino';
 const VT_ASSETS = [
   './vision-territorial.html',
   './css/90-vt.css',

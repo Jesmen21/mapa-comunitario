@@ -3,8 +3,8 @@
   "presidente": "Abelardo de la Espriella",
   "periodo": "2026 – 2030",
   "posesion": "2026-08-07",
-  "actualizado": "2026-10-06",
-  "proximaActualizacion": "2026-10-07",
+  "actualizado": "2026-10-07",
+  "proximaActualizacion": "2026-10-08",
   "categorias": {
     "gobierno": {
       "nombre": "Gobierno y decretos",
@@ -73,6 +73,71 @@
     }
   },
   "entradas": [
+    {
+      "fecha": "2026-10-06",
+      "precision": "exacta",
+      "categoria": "creditos",
+      "titulo": "El Gobierno formaliza, mediante el Decreto 1488, la adición de $624.656 millones al Presupuesto General de la Nación 2026 para el Fondo Milagro, financiados con el crédito de emergencia que Colombia tiene contratado con el Banco Mundial (BIRF)",
+      "categoriaProbatoria": "hecho-probado",
+      "tipoMedicion": "actividad",
+      "indicadores": [],
+      "detalle": "El Ministerio de Hacienda liquidó, mediante el Decreto 1488 del 6 de octubre de 2026, una adición al Presupuesto General de la Nación de 2026 por $624.656 millones, tanto en el presupuesto de ingresos como en el de gastos. Los recursos provienen del desembolso del crédito de emergencia contratado con el Banco Internacional de Reconstrucción y Fomento (BIRF, el brazo de préstamos del Banco Mundial) bajo la modalidad de línea de desembolso diferido para catástrofes (CAT-DDO), vigente desde el 13 de agosto de 2026. En el anexo presupuestal, el dinero queda clasificado como transferencia corriente a otras entidades del Gobierno General con destino al Fondo Milagro, el patrimonio autónomo creado por el Decreto 1379 de 2026 para canalizar la reconstrucción tras el terremoto del 10 de agosto. Es la misma cifra de $624.656 millones que la entrada del 3 de octubre de esta cronología documentó bajo administración directa de Hacienda, sin girar y sin que el Fondo tuviera todavía contrato, gerente ni manual de contratación: este decreto es el paso presupuestal que ese reporte señalaba como pendiente, no un recurso nuevo.",
+      "contrapunto": "El decreto resuelve el paso presupuestal pendiente que URBIS documentó el 3 de octubre, pero no por sí solo pone a andar el Fondo Milagro: liquidar la adición en el Presupuesto no equivale a que el patrimonio autónomo ya tenga firmado su contrato de constitución, gerente designado o manual de contratación, pasos que a la fecha de esa entrada seguían sin completarse y que esta actualización no encontró confirmados como resueltos. Además, el origen de los $624.656 millones es deuda externa contratada con el Banco Mundial —no un ingreso propio ni una reasignación de gasto existente—, lo que aumenta el endeudamiento público aun cuando la emergencia que lo justifica (el terremoto del 10 de agosto) ya tiene casi dos meses.",
+      "tipoFuente": "verificado",
+      "fuentes": [
+        {
+          "n": "Infobae · Este es el decreto con el que el Gobierno nacional agregó $624.656 millones al Presupuesto General de la Nación del 2026 para financiar el Fondo Milagro",
+          "u": "https://www.infobae.com/colombia/2026/10/07/este-es-el-decreto-con-el-que-el-gobierno-nacional-agrego-624656-millones-al-presupuesto-general-de-la-nacion-del-2026-para-financiar-el-fondo-milagro/",
+          "rol": "acto"
+        },
+        {
+          "n": "La República · Tras la constitución formal del Fondo Milagro, Gobierno destinó adición de $624.656 millones",
+          "u": "https://www.larepublica.co/economia/gobierno-destina-624-656-millones-de-credito-externo-al-fondo-milagro-por-el-terremoto-4498302",
+          "rol": "acto"
+        },
+        {
+          "n": "El Heraldo · Gobierno agrega $624.656 millones al Presupuesto General de la Nación 2026 para el Fondo Milagro",
+          "u": "https://www.elheraldo.co/colombia/2026/10/07/gobierno-agrega-624656-millones-al-presupuesto-general-de-la-nacion-2026-para-el-fondo-milagro/",
+          "rol": "contexto"
+        },
+        {
+          "n": "La Veintitrés · Gobierno expide decreto que asigna $624.656 millones al Fondo Milagro tras el terremoto",
+          "u": "https://laveintitres.com/gobierno-expide-decreto-que-asigna-624656-millones-al-fondo-milagro-tras-el-terremoto/",
+          "rol": "contexto"
+        }
+      ],
+      "nivelGobierno": "nacional"
+    },
+    {
+      "fecha": "2026-10-06",
+      "precision": "exacta",
+      "categoria": "servicios",
+      "titulo": "El Ministerio de Minas y Energía expide el Decreto 1491, que flexibiliza el suministro de combustibles líquidos a las plantas térmicas para prevenir un apagón por El Niño 2026-2027",
+      "categoriaProbatoria": "hecho-probado",
+      "tipoMedicion": "actividad",
+      "indicadores": [],
+      "detalle": "El Decreto 1491 del 6 de octubre de 2026 modifica el Decreto 1073 de 2015 para permitir que las plantas térmicas de generación eléctrica se abastezcan de combustibles líquidos —principalmente ACPM— a través de varios agentes habilitados en el Sistema de Información de Combustibles Líquidos (SICOM), en lugar de depender de un único distribuidor mayorista. Quedan exceptuados los grandes consumidores que compren volúmenes iguales o superiores a 420.000 galones mensuales. La medida busca garantizar el respaldo térmico a la generación eléctrica ante el fenómeno de El Niño 2026-2027, que puede reducir la disponibilidad de generación hidroeléctrica en el país.",
+      "contrapunto": "El propio Gobierno describe la generación térmica con combustibles líquidos como un respaldo, no como la fuente principal: se activa justamente cuando la hidroeléctrica —más barata— disminuye por la sequía asociada a El Niño. Esta cronología registró en septiembre que la ministra de Minas ya había advertido ante el Congreso que «la tarifa tiene que subir» por El Niño y el gas caro, y que el propio Gobierno confirmó un recargo a quien no ahorre energía; el Decreto 1491 no fija tarifas, pero facilita precisamente el tipo de generación —térmica, con combustible comprado a varios proveedores— cuyo mayor costo ya estaba anunciado como motivo de alza. Esta actualización no encontró, a la fecha, un pronunciamiento de gremios o de organizaciones ambientales sobre el decreto en particular.",
+      "tipoFuente": "verificado",
+      "fuentes": [
+        {
+          "n": "Portafolio · Gobierno habilita nuevos proveedores de combustibles para plantas térmicas ante riesgo de El Niño en Colombia",
+          "u": "https://www.portafolio.co/energia/gobierno-habilita-nuevos-proveedores-de-combustibles-para-plantas-termicas-ante-riesgo-de-el-nino-en-colombia-504014",
+          "rol": "acto"
+        },
+        {
+          "n": "La República · MinEnergía permitirá a térmicas comprar combustible a varios proveedores por El Niño",
+          "u": "https://www.larepublica.co/economia/minenergia-permitira-a-termicas-comprar-combustible-a-varios-proveedores-por-el-nino-4498303",
+          "rol": "acto"
+        },
+        {
+          "n": "IFM Noticias · Gobierno Nacional flexibiliza abastecimiento de combustibles para plantas térmicas ante fenómeno de El Niño",
+          "u": "https://ifmnoticias.com/gobierno/gobierno-nacional-flexibiliza-abastecimiento-de-combustibles-para-plantas-termicas-ante-fenomeno-de-el-nino/",
+          "rol": "contexto"
+        }
+      ],
+      "nivelGobierno": "nacional"
+    },
     {
       "fecha": "2026-10-06",
       "precision": "exacta",
