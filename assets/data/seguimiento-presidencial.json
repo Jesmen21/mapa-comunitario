@@ -1446,6 +1446,88 @@
       ]
     },
     {
+      "fecha": "2026-08-30",
+      "id": "operacion-azarias-acto",
+      "precision": "exacta",
+      "categoria": "gobierno",
+      "titulo": "La Operación Azarías, contra el frente Carolina Ramírez en Miraflores (Guaviare), se anuncia con ocho muertos y el balance se actualiza después a 23",
+      "categoriaProbatoria": "hecho-probado",
+      "tipoMedicion": "actividad",
+      "indicadores": [
+        "I-14"
+      ],
+      "indicadoresPor": {
+        "I-14": {
+          "via": "muerte de una persona protegida —menor de edad, rendida, herida o fuera de combate— en una operación del Estado",
+          "base": "operacion-azarias-acto"
+        }
+      },
+      "estadoProcesal": "en-firme",
+      "tipoEvidencia": "reporte-periodistico",
+      "nivelGobierno": "nacional",
+      "detalle": "En la noche del 30 de agosto de 2026 las Fuerzas Militares ejecutaron la Operación Azarías en la vereda Lagos del Dorado, zona rural de Miraflores (Guaviare), contra el frente Carolina Ramírez, estructura de las disidencias de las FARC comandada por alias Iván Mordisco. Fue anunciada el 31 de agosto con ocho muertos, tres capturados y dos personas rescatadas que se identificaron como menores de edad. En los días siguientes el presidente actualizó el balance a 23 muertos y seis capturados. Que es un acto del Ejecutivo no se deduce: el propio presidente lo declaró —«Yo mismo autoricé esa operación hace dos semanas como comandante en jefe de nuestra Fuerza Pública»—. Esta entrada registra el ACTO; el balance forense de Medicina Legal, que confirmó dos menores entre los cuerpos, tiene su propia entrada.",
+      "contrapunto": "Este registro NO publica un total de muertos de esta operación, y no por falta de fuentes: las cifras no se reconcilian entre sí. Se anunció con ocho el 31 de agosto, se exhibieron 23 cuerpos el 2 de septiembre, y Medicina Legal recibió 24 el 1 de septiembre e identificó 20, con cuatro en análisis. Promediarlas o elegir una sería fabricar un total que ninguna fuente sostiene, así que se publican las tres cifras con su fecha y se dice que están en disputa.",
+      "tipoFuente": "disputado",
+      "fuentes": [
+        {
+          "n": "Infobae · Abelardo de la Espriella confirmó tercer bombardeo contra disidencias de alias Iván Mordisco: la Operación Azarías deja 8 fallecidos y al menos 3 capturados",
+          "rol": "acto",
+          "u": "https://www.infobae.com/colombia/2026/08/31/abelardo-de-la-espriella-confirmo-tercer-bombardeo-contra-disidencias-de-alias-ivan-mordisco-la-operacion-azarias-deja-8-fallecidos-y-al-menos-3-capturados/"
+        },
+        {
+          "n": "Semana · Abelardo de la Espriella entregó detalles de la Operación Azarías en la que cayó alias Tigre, cabecilla de la estructura de Iván Mordisco",
+          "rol": "acto",
+          "u": "https://www.semana.com/amp/politica/articulo/abelardo-de-la-espriella-entrego-detalles-de-la-operacion-azarias-en-la-que-cayo-alias-tigre-cabecilla-de-la-estructura-de-ivan-mordisco/202655/"
+        },
+        {
+          "n": "El Heraldo · Mindefensa defendió ante la Cámara el bombardeo en Guaviare contra disidencias de las Farc",
+          "rol": "efecto",
+          "u": "https://www.elheraldo.co/colombia/2026/09/23/mindefensa-defendio-ante-la-camara-el-bombardeo-en-guaviare-contra-disidencias-de-las-farc/"
+        }
+      ]
+    },
+    {
+      "fecha": "2026-08-27",
+      "id": "operacion-amon-acto",
+      "precision": "exacta",
+      "categoria": "gobierno",
+      "titulo": "La Operación Amón, un operativo militar contra el frente de alias Calarcá en El Retorno (Guaviare), deja diez muertos",
+      "categoriaProbatoria": "hecho-probado",
+      "tipoMedicion": "actividad",
+      "indicadores": [
+        "I-14"
+      ],
+      "indicadoresPor": {
+        "I-14": {
+          "via": "muerte de una persona protegida —menor de edad, rendida, herida o fuera de combate— en una operación del Estado",
+          "base": "operacion-amon-acto"
+        }
+      },
+      "estadoProcesal": "en-firme",
+      "tipoEvidencia": "reporte-periodistico",
+      "nivelGobierno": "nacional",
+      "detalle": "En la noche del 27 de agosto de 2026 las Fuerzas Militares ejecutaron la Operación Amón, un operativo contra una estructura del frente de alias Calarcá —del Estado Mayor de Bloques y Frentes de las disidencias de las FARC— en zona rural de El Retorno (Guaviare). El saldo reportado fue de diez muertos, una persona capturada y un menor de edad recuperado y puesto en proceso de restablecimiento de derechos. Esta entrada registra el ACTO —la operación— y no su resultado forense: que tres de los diez muertos eran menores de edad lo confirmó después Medicina Legal, y eso tiene su propia entrada en este registro. Las dos van separadas porque son cosas distintas y el módulo las mide por puertas distintas: la operación es una decisión del Ejecutivo, y el balance forense es un hecho verificado por una autoridad.",
+      "contrapunto": "El Ministerio de Defensa atribuyó la muerte de los menores a que los grupos armados «los instrumentalizaron», y anunció una mesa con la Fiscalía y la Rama Judicial sobre reclutamiento. Este registro no toma partido sobre esa atribución: publica el acto, su saldo reportado y lo que la autoridad forense confirmó, cada uno con su fuente.",
+      "tipoFuente": "verificado",
+      "fuentes": [
+        {
+          "n": "Infobae · Tres menores de edad murieron en operativos militares en El Retorno, Guaviare, y esto dijo el Ministerio de Defensa: \"los instrumentalizaron\"",
+          "rol": "acto",
+          "u": "https://www.infobae.com/colombia/2026/08/31/tres-menores-de-edad-murieron-en-operativos-militares-en-el-retorno-guaviare-y-esto-dijo-el-ministerio-de-defensa-los-instrumentalizaron/"
+        },
+        {
+          "n": "El Tiempo · Radican ante el Congreso moción de censura contra el ministro de Defensa por la muerte de tres menores en bombardeo en Guaviare",
+          "rol": "efecto",
+          "u": "https://www.eltiempo.com/politica/congreso/radican-ante-el-congreso-mocion-de-censura-contra-el-ministro-de-defensa-por-la-muerte-de-tres-menores-en-bombardeo-en-guaviare-3582708"
+        },
+        {
+          "n": "Infobae · Por la muerte de tres menores en bombardeo en el Guaviare, el congresista Óscar Benavides anunció moción de censura al ministro de Defensa: \"se está lavando las manos\"",
+          "rol": "efecto",
+          "u": "https://www.infobae.com/colombia/2026/09/01/por-la-muerte-de-tres-menores-en-bombardeo-en-el-guaviare-el-congresista-oscar-benavides-anuncio-mocion-de-censura-al-ministro-de-defensa-se-esta-lavando-las-manos/"
+        }
+      ]
+    },
+    {
       "fecha": "2026-08-11",
       "id": "operacion-beta-catatumbo-menor",
       "precision": "exacta",
@@ -10028,14 +10110,19 @@
           "que": "Las series de muertes y lesiones en operaciones del Estado, y la misma serie para los gobiernos anteriores.",
           "quien": "El Instituto Nacional de Medicina Legal y Ciencias Forenses, que produce la cifra forense de muertes violentas; la Defensoría del Pueblo, por sus alertas tempranas; y la Procuraduría General, por los procesos disciplinarios abiertos. Son tres entidades y tres documentos distintos: ninguna de las tres publica lo que publican las otras dos.",
           "como": "Las cifras agregadas de Medicina Legal son publicación ordinaria. El desagregado por operación no lo es, y se pide por derecho de petición —gratuito, con término de quince días hábiles—. Se piden la de este gobierno y la de los anteriores EN LA MISMA solicitud: con una sola, las cifras no tienen contra qué compararse y el nivel no sale igual.",
-          "cuando": "Las de los años cerrados existen hoy. La de 2026 cierra con el año, así que la comparación completa de este gobierno no está antes de 2027. Y desde la v1077 este mismo documento hace falta por una segunda razón: es lo que el indicador I-14 exige para CONTAR las entradas que ya lo declaran. Hoy las declara dos y no cuenta ninguna, porque lo que hay es el relato de los medios sobre lo que Medicina Legal confirmó, y no la confirmación de Medicina Legal."
+          "cuando": "Las de los años cerrados existen hoy. La de 2026 cierra con el año, así que la comparación completa de este gobierno no está antes de 2027. Y desde la v1077 este mismo documento hace falta por una segunda razón: es lo que el indicador I-14 exige para CONTAR las entradas que ya lo declaran. Las entradas que lo declaran no cuentan ninguna mientras lo que haya sea el relato de los medios sobre lo que Medicina Legal confirmó, y no la confirmación de Medicina Legal. El número exacto lo publica la ficha y no se teclea acá, que es como una cifra envejece sola."
+        }
+      ],
+      "_cerradas": [
+        {
+          "k": "indicador",
+          "cerrada": "v1077",
+          "razon": "I-14 se escribió contra el Protocolo de Minnesota y los Principios Básicos de la ONU, no contra este registro."
         },
         {
           "k": "operacion-como-acto",
-          "que": "Que cada operación con muertos quede registrada como un ACTO, y no solo el resultado que la confirma.",
-          "quien": "Nadie de afuera: es trabajo de este registro. Las fuentes ya están en las entradas que existen.",
-          "como": "Hoy la Operación Beta tiene su entrada de tipo actividad y por eso puede declarar el indicador. Las de Amón y Azarías solo existen como resultado —«se confirma que tres menores murieron», «Medicina Legal confirma que dos de los cuerpos eran menores»—, y la puerta del indicador exige nivel de gobierno, que a un resultado no se le puede declarar porque un resultado no es una decisión. Lo que falta es la entrada del OPERATIVO, con su fecha, su fuente y su nivel; el resultado se queda al lado, que es donde debe estar.",
-          "cuando": "Puede hacerse hoy. Las tres operaciones están documentadas en el registro y ninguna espera a nadie de afuera."
+          "cerrada": "v1078",
+          "razon": "Las operaciones Amón y Azarías quedaron registradas como ACTOS, con su fecha, sus fuentes y su nivel, y cada muerte confirmada del bloque `fuerza` nombra ahora el acto que la produjo. La condición se mide y no se recuerda: `revisar.js` se pone rojo si una operación con muertos confirmados deja de tener su acto."
         }
       ]
     }
@@ -10223,6 +10310,7 @@
         "n": 1,
         "confirma": "Instituto Nacional de Medicina Legal y Ciencias Forenses",
         "base": "operacion-beta-catatumbo-menor",
+        "acto": "operacion-beta-catatumbo-menor",
         "nota": "La edad exacta no se afirma: las coberturas coinciden en que era menor de edad y no en un número."
       },
       {
@@ -10232,6 +10320,7 @@
         "n": 3,
         "confirma": "Instituto Nacional de Medicina Legal y Ciencias Forenses",
         "base": "operacion-amon-tres-menores",
+        "acto": "operacion-amon-acto",
         "nota": "Dos de 15 años y uno de 16, según el análisis de los cuerpos."
       },
       {
@@ -10241,6 +10330,7 @@
         "n": 2,
         "confirma": "Instituto Nacional de Medicina Legal y Ciencias Forenses",
         "base": "operacion-azarias-balance-forense",
+        "acto": "operacion-azarias-acto",
         "nota": "Entre los 20 cuerpos identificados del balance forense del 4 de septiembre; cuatro quedaron en análisis."
       }
     ],

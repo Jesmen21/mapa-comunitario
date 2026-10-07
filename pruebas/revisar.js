@@ -2534,15 +2534,59 @@ console.log('\n  -- la ficha del gobernante --');
       mal14.length ? 'falla: ' + mal14.join(' · ')
                    : 'la fila llega al eje y el texto se recalcula con ella');
 
-    /* Y EL TRÁMITE VOLVIÓ A SU RENGLÓN (v1006): el del indicador se cerró y
-       lo que quedó en su lugar es el hallazgo de esta tanda. */
+    /* ── UN TRÁMITE NO PIDE LO QUE EL REGISTRO YA TIENE (v1006, v1078) ────
+       La v1077 cerró el renglón del indicador y puso en su lugar
+       `operacion-como-acto`; la v1078 lo cerró también, veinte minutos
+       después de escribirlo. Un renglón cumplido que se queda es peor que
+       ninguno, porque manda a hacer lo que ya está hecho.
+
+       Y la condición NO se recuerda: se MIDE. Cada muerte confirmada del
+       bloque `fuerza` nombra el acto que la produjo, ese acto existe en el
+       registro, es de tipo `actividad` y declara el indicador. El día que
+       entre una operación nueva sin su acto, esta guarda se pone roja y el
+       renglón del trámite tiene que volver. */
     const reglasD = ((regN.tramites || {}).D || {}).reglas || [];
     const claves = reglasD.map((r) => r.k);
-    comprobar('el trámite del eje D ya no pide el indicador, y dice lo que sí quedó faltando',
-      claves.indexOf('indicador') < 0 && claves.indexOf('operacion-como-acto') >= 0,
-      claves.indexOf('indicador') >= 0
-        ? 'sigue pidiendo el indicador, que esta versión escribió'
-        : 'reglas: ' + claves.join(' · '));
+    const cerradas = (((regN.tramites || {}).D || {})._cerradas || []).map((r) => r.k);
+
+    const porId = {};
+    (regN.entradas || []).forEach((e) => { if (e.id) porId[e.id] = e; });
+    const muertes = ((regN.fuerza || {}).menoresMuertos) || [];
+    const malActo = [];
+    muertes.forEach((m) => {
+      const a = m.acto && porId[m.acto];
+      if (!m.acto) malActo.push((m.op || '?') + ': no nombra su acto');
+      else if (!a) malActo.push((m.op || '?') + ': nombra «' + m.acto + '» y el registro no la tiene');
+      else if (a.tipoMedicion !== 'actividad') malActo.push((m.op || '?') + ': su acto no es de tipo actividad');
+      else if ((a.indicadores || []).indexOf('I-14') < 0) malActo.push((m.op || '?') + ': su acto no declara I-14');
+    });
+    comprobar('MATERIAL · toda muerte confirmada nombra el ACTO que la produjo, y ese acto declara I-14',
+      muertes.length > 0 && malActo.length === 0,
+      !muertes.length ? 'el bloque `fuerza` no registra ninguna muerte: no hay qué atar'
+        : malActo.length ? 'falla: ' + malActo.join(' · ')
+        : 'las ' + muertes.length + ' operaciones con muertos confirmados tienen su acto registrado');
+
+    /* El trámite y el registro no se contradicen: lo que la medición de
+       arriba da por hecho NO puede seguir pedido abajo. */
+    const yaHecho = muertes.length > 0 && malActo.length === 0;
+    const sobra = [];
+    if (claves.indexOf('indicador') >= 0) sobra.push('indicador (lo escribió la v1077)');
+    if (yaHecho && claves.indexOf('operacion-como-acto') >= 0) sobra.push('operacion-como-acto (ya está hecho y medido)');
+    comprobar('y el trámite del eje D no pide nada que el registro ya tenga',
+      sobra.length === 0 && reglasD.length > 0,
+      !reglasD.length ? 'el trámite del eje D se quedó sin reglas: un vacío sin trámite vuelve a ser un muro'
+        : sobra.length ? 'sigue pidiendo: ' + sobra.join(' · ')
+        : 'reglas: ' + claves.join(' · ') + ' · cerradas y dichas: ' + (cerradas.join(' · ') || 'ninguna'));
+
+    /* Y lo cerrado queda ESCRITO, con su versión y su razón: sin eso, una
+       regla que desaparece se lee igual que una que nunca se escribió. */
+    const malCerr = (((regN.tramites || {}).D || {})._cerradas || [])
+      .filter((r) => !(r.k && /^v\d+$/.test(r.cerrada || '') && (r.razon || '').length > 40)).map((r) => r.k || '?');
+    comprobar('y lo que se cerró queda escrito, con su versión y su razón',
+      cerradas.length > 0 && malCerr.length === 0,
+      !cerradas.length ? 'ninguna cerrada: una regla que desaparece se lee igual que una que nunca existió'
+        : malCerr.length ? 'sin versión o sin razón: ' + malCerr.join(', ')
+        : cerradas.length + ' cerradas, cada una con su versión y su razón');
   }
 
   /* ═══ LA VÍA: POR CUÁL RENGLÓN DEL CRITERIO ENTRA CADA HECHO (v963) ════

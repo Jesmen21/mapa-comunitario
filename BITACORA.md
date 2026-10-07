@@ -24596,3 +24596,98 @@ aserción. Se agregó.
   un registro anterior con al menos 20 entradas revisadas (v1075). `pendiente`
 * **Y no toca la escala de gravedad común**, segunda puerta del veredicto y
   decisión de quien firma el módulo. `pendiente`
+
+## v1078 · los dos operativos, registrados como actos
+
+Pedido tal cual: «registra los dos operativos como actos». Es el renglón que la
+v1077 acababa de escribir en el trámite del eje D, y lo cerró veinte minutos
+después de escribirlo.
+
+### Lo que había, y lo que faltaba
+
+De las tres operaciones con muertos confirmados forensemente, **solo la Beta
+estaba registrada como ACTO**. Amón y Azarías existían únicamente como
+`resultado` —«se confirma que tres menores murieron», «Medicina Legal confirma
+que dos de los cuerpos eran menores»— y la puerta del indicador exige
+`nivelGobierno`, que a un resultado no se le puede declarar porque un resultado
+no es una decisión (v1064). Por eso la v1077 no las forzó.
+
+**Las dos operaciones estaban documentadas en el registro**, con fuentes de rol
+`acto`: lo que faltaba no era averiguar nada, era darles su entrada. Y para la
+Azarías la atribución no se deduce, está declarada por el propio presidente:
+*«Yo mismo autoricé esa operación hace dos semanas como comandante en jefe de
+nuestra Fuerza Pública»*.
+
+Ninguna fuente se inventó: **las nueve direcciones se reusaron de las entradas
+que ya las tenían**, cada una con el rol que le corresponde en su entrada nueva.
+
+### Dos decisiones de redacción que no son de forma
+
+* **El acto y el resultado van SEPARADOS**, y cada entrada dice por qué: la
+  operación es una decisión del Ejecutivo; el balance forense es un hecho
+  verificado por una autoridad, y el módulo los mide por puertas distintas.
+* **La Azarías no publica un total.** Su `contrapunto` publica las tres cifras
+  con su fecha —ocho el 31 de agosto, 23 cuerpos exhibidos el 2 de septiembre,
+  24 recibidos por Medicina Legal el 1 y 20 identificados con cuatro en
+  análisis— y dice que están en disputa. Su `tipoFuente` es `disputado` y no
+  `verificado`. Elegir una o promediarlas sería fabricar un total que ninguna
+  fuente sostiene.
+
+### El resultado, que es el que importa
+
+```
+I-14 · 4 entradas lo declaran · 0 cuentan
+```
+
+Las cuatro fallan por **lo mismo**: el criterio pide confirmación forense u
+oficial y lo que hay es el relato de los medios sobre lo que Medicina Legal
+confirmó. Eso no es un fracaso de la tanda: es que ahora el cuello de botella
+queda inconfundible. **Un solo derecho de petición a Medicina Legal destraba
+las cuatro**, y es la regla que queda viva en el trámite del eje D.
+
+### La condición se MIDE, no se recuerda
+
+El renglón `operacion-como-acto` se retira del trámite —un renglón cumplido que
+se queda manda a hacer lo que ya está hecho—, pero no a cambio de confiar en la
+memoria:
+
+* cada fila de `fuerza.menoresMuertos` nombra ahora, con `acto`, **la entrada
+  del operativo que produjo esa muerte**, aparte del `base` que ya nombraba la
+  entrada del resultado;
+* y `revisar.js` comprueba que ese acto exista, sea de tipo `actividad` y
+  declare I-14. **El día que entre una operación nueva sin su acto, la guarda
+  se pone roja y el renglón del trámite tiene que volver.**
+
+Y lo cerrado **queda escrito** en `tramites.D._cerradas`, con su versión y su
+razón: una regla que desaparece se lee igual que una que nunca se escribió.
+
+### La guarda, y sus ocho inyecciones en rojo
+
+| Inyección | Qué se puso en rojo |
+|---|---|
+| el estado de la v1077: los dos sin acto | `falla: Beta, Amón y Azarías no nombran su acto` |
+| una operación deja de nombrar su acto | `falla: Operación Amón: no nombra su acto` |
+| nombra un acto que el registro no tiene | `nombra «operacion-que-no-existe» y el registro no la tiene` |
+| el acto deja de declarar el indicador | `su acto no declara I-14` |
+| el acto vuelve a ser un resultado | `su acto no es de tipo actividad` |
+| el renglón cumplido vuelve al trámite | `sigue pidiendo: operacion-como-acto (ya está hecho y medido)` |
+| el trámite se queda sin reglas | `un vacío sin trámite vuelve a ser un muro` |
+| una cerrada sin su razón | `sin versión o sin razón: operacion-como-acto` |
+
+Y una corrección de método: la primera versión de este parche **abortó** porque
+asertaba que el registro estaba ordenado por fecha, y no lo está —tiene nueve
+saltos que la rutina diaria fue dejando—. No se escribió nada, que es lo
+correcto. La aserción honesta no es «queda ordenado» sino **«mi inserción no
+empeora el orden»**: 9 saltos antes, 9 después.
+
+### Lo que esta versión NO hace
+
+* **No cuenta ninguna muerte todavía**, y la razón es la misma para las cuatro:
+  falta el documento forense. `pendiente`
+* **No mueve el veredicto.** Abelardo de la Espriella sigue en «Sin dictamen»:
+  el eje D no publica nivel mientras le falte la serie histórica, y los ejes B
+  y C siguen igual. `pendiente`
+* **No valida I-14**, que como los otros cuatro criterios exige correr contra
+  un registro anterior con al menos 20 entradas revisadas (v1075). `pendiente`
+* **Y no toca la escala de gravedad común**, segunda puerta del veredicto y
+  decisión de quien firma el módulo. `pendiente`
