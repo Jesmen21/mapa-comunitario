@@ -24267,3 +24267,114 @@ Versión en los nueve archivos.
   Aunque los tres ejes publicaran nivel mañana, la placa seguiría diciendo
   «Sin dictamen» por `sin-escala-comun` hasta que esa escala se escriba.
   `pendiente`
+
+## v1075 · la validación mide lo REVISADO, no lo que declara
+
+**El hallazgo.** Las cuatro fichas de indicador con criterio —I-04, I-05,
+I-07, I-13— publicaban, cada una, esta frase:
+
+> *Los registros de gobiernos anteriores que hay no pasaron por esta
+> clasificación, así que el criterio no se pudo correr ahí. Que no dispare no
+> demuestra que distinga: demuestra que no hay material.*
+
+**Es falsa desde la v1061**, que corrió los criterios escritos sobre los actos
+de los dos registros y marcó el resultado con la **lista vacía** —justamente
+para que «revisado y ninguno aplica» no se viera igual que «nadie lo ha
+mirado»—. Séptima declaración de ausencia falsa del proyecto (v861, v863,
+v864, v884, v888, v1055, y esta), y la segunda del módulo presidencial.
+
+**Por qué el módulo no lo veía.** `corridaHaciaAtras` contaba como material
+las entradas con `nivelGobierno` + `estadoProcesal` + `tipoEvidencia`. Y esos
+tres campos, dice **este mismo archivo doscientas líneas más arriba**:
+
+> *NO SE EXIGEN EN TODAS LAS ENTRADAS, y eso es deliberado: solo las que
+> declaran un indicador pasan por el gate… Pedírselos a las 200 sería un
+> trinquete que nadie puede bajar y que no protege nada.*
+
+Un registro anterior cuyos actos se revisaron y **no cayeron en ninguna vía**
+no declara ningún indicador, así que no lleva esos campos — y el contador daba
+**cero por construcción**. Medido:
+
+```
+PETRO   32 entradas · 6 actos
+  revisadas contra los criterios (indicadores definido)   6
+  declaran algún indicador                                0
+  con los TRES campos (lo que la guarda vieja contaba)    0
+ACTUAL  243 entradas · 165 actos
+  revisadas                                             165
+  declaran algún indicador                                7
+  de las que DECLARAN, sin los tres campos                0
+```
+
+Esa última línea es la que cierra el caso: **donde la regla sí los exige, los
+tres campos están completos en los dos registros.** El contador no medía una
+carencia: medía una exigencia que el propio módulo declara inaplicable. Es la
+clase del denominador de la v1064, **quinta vez** (v999, v1060, v1061, v1064),
+con la clase C encima — el dato estaba escrito y ninguna pantalla lo alcanzaba.
+
+### Lo que se hizo
+
+* **El material es lo REVISADO** (`e.indicadores !== undefined`), que es la
+  marca que la v1061 dejó escrita. Los tres campos los sigue exigiendo
+  `pasaElCriterio` a las que declaran, que es donde la regla dice que se piden.
+* **Un piso, que antes no existía**: con `clasificadas > 0` bastaba UNA entrada
+  para dar un criterio por validado. Ahora `MIN_ACTOS_VALIDACION`, y **no es un
+  número elegido para este caso** —eso sería el arreglo sin causa de la v882—:
+  es el mismo `FICHA_MIN_HECHOS` que el módulo ya declara para hablar de un
+  registro.
+* **Cuatro estados y no tres.** Faltaba el que importaba: *corrió, no disparó,
+  y es poco material*. Estaba colapsado dentro de «no hay material», que es lo
+  que hacía falsa la frase. La distinción es la de la v899.
+* **El nombre del gobierno anterior**, que estaba en el registro y la carta no
+  alcanzaba: Petro trae `presidente` y el código buscaba `gobernante` y
+  `titulo`, ninguno de los dos existe. La ficha decía «gobierno anterior»
+  teniendo el nombre al lado. Clase C, en la misma línea.
+
+**Y lo que esto NO hizo, que es la prueba de que el arreglo no es
+interesado:** los cuatro criterios **siguen sin validar**. Con el piso en 20 y
+6 entradas revisadas, `validado: no` se queda — y el renglón «criterios de
+indicador sin contrastar · 4 de 4» no se movió. Lo que cambió es que la razón
+publicada ahora es cierta y dice cuánto falta:
+
+> *Se corrió sobre 6 entradas revisadas del registro anterior y no disparó,
+> pero esas entradas son pocas para concluir que distingue: este módulo pide
+> al menos 20 entradas revisadas, el mismo piso que exige para hablar de un
+> registro. Lo que falta no es correrlo otra vez: es que el registro del
+> gobierno anterior crezca.*
+
+### La guarda, y sus ocho inyecciones en rojo
+
+La guarda vieja pedía `clasificadas > 0` y por eso no veía nada de esto. **No
+se aflojó: se hizo más precisa** —mide el discriminante que de verdad
+discrimina, y además exige el piso, que antes no se comprobaba porque no
+existía—.
+
+| Inyección | Qué se puso en rojo |
+|---|---|
+| el estado real de la v1074: contar por los tres campos | `falla: el material es lo REVISADO · y ya no se cuenta por los tres campos` |
+| «probado» sin piso: una sola entrada valida | `falla: y «probado» exige el piso Y que no dispare` |
+| el piso como número suelto elegido a mano | `falla: el piso NO es un número elegido para este caso` |
+| el cuarto estado colapsado | `falta el estado: disparó` |
+| el registro anterior sin la marca de la v1061 | `0 de 32 revisadas` |
+| la ficha deja de alcanzar el nombre | `el registro trae «Gustavo Petro» y la ficha NO lo alcanza` |
+| el cierre vuelve a ser frase fija | `el cierre ya no se ramifica` |
+| vuelve la frase del modelo viejo | `sigue la frase del modelo viejo («registro clasificado»)` |
+
+**Y una que cazó el papel y no el código**, novena vez: compuesta la carta, su
+última línea —fija— decía *«el día que este criterio se pueda correr contra el
+registro clasificado»* **debajo de una razón que dice que ya se corrió**. Dos
+frases de la misma caja contradiciéndose. El cierre se CALCULA ahora (v903),
+con sus dos redacciones escritas.
+
+### Lo que esta versión NO hace
+
+* **No valida ningún criterio, y no mueve el veredicto.** Abelardo de la
+  Espriella sigue en «Sin dictamen»: los tres ejes de realidad siguen sin
+  publicar nivel. `pendiente`
+* **No hace crecer el registro de Petro**, que es lo único que validaría los
+  cuatro criterios. Son 32 entradas y 6 actos; el piso pide 20 revisadas.
+  Es trabajo de archivo sobre un cuatrienio cerrado. `pendiente`
+* **No le escribe su trámite a los ejes B y D.** El pintor de la v1065 ya los
+  admite; el contenido es trabajo de archivo por eje. `pendiente`
+* **Y no toca la escala de gravedad común**, segunda puerta del veredicto y
+  decisión de quien firma el módulo. `pendiente`

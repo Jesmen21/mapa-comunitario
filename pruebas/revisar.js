@@ -2632,12 +2632,98 @@ console.log('\n  -- la ficha del gobernante --');
       !/gobiernosAnterioresProbados: 0/.test(j70v),
       'sale de correr el criterio contra el registro anterior, así que la marca se quita sola');
 
-    /* Las dos mitades de «probado», que es la distinción que la v963 midió:
-       sin registros clasificados, «no dispara» no significa que el criterio
-       distinga — significa que no hay material. */
-    comprobar('y «probado» exige registros clasificados Y que el criterio no dispare',
-      /probado: clasificadas > 0 && disparos === 0/.test(j70v),
-      'un registro sin clasificar no valida nada');
+    /* EL MATERIAL DE LA VALIDACIÓN ES LO QUE SE REVISÓ, NO LO QUE DECLARA
+       (v1075). La guarda anterior pedía `clasificadas > 0`, y `clasificadas`
+       contaba entradas con `nivelGobierno` + `estadoProcesal` +
+       `tipoEvidencia` — tres campos que este mismo módulo declara exigibles
+       SOLO a las que declaran indicador. Un registro anterior cuyos actos se
+       revisaron y no cayeron en ninguna vía no declara ninguno, así que daba
+       CERO por construcción y las cuatro fichas publicaban que el registro
+       «no pasó por esta clasificación». Falso desde la v1061.
+
+       La prueba no se afloja: se hace MÁS PRECISA. Mide lo que de verdad
+       discrimina —que alguien haya CORRIDO los criterios y dejado escrito el
+       resultado, aunque sea la lista vacía— y además exige el piso, que
+       antes no existía: con `clasificadas > 0` bastaba UNA entrada para dar
+       por validado un criterio. */
+    const mitadesProb = [
+      ['el material es lo REVISADO, no lo que declara',
+       /if \(e && e\.indicadores !== undefined\) revisadas\+\+;/.test(j70v)],
+      ['y «probado» exige el piso Y que no dispare',
+       /probado: revisadas >= MIN_ACTOS_VALIDACION && disparos === 0/.test(j70v)],
+      ['el piso NO es un número elegido para este caso',
+       /var MIN_ACTOS_VALIDACION = FICHA_MIN_HECHOS;/.test(j70v)],
+      ['y ya no se cuenta por los tres campos',
+       !/e\.nivelGobierno && e\.estadoProcesal && e\.tipoEvidencia\) clasificadas\+\+/.test(j70v)]
+    ];
+    const malProb = mitadesProb.filter((x) => !x[1]).map((x) => x[0]);
+    comprobar('«probado» mide lo REVISADO contra un piso declarado, no tres campos no exigibles',
+      malProb.length === 0,
+      malProb.length ? 'falla: ' + malProb.join(' · ')
+                     : 'cuenta lo que la v1061 dejó escrito, y el piso es el mismo FICHA_MIN_HECHOS');
+
+    /* LOS CUATRO ESTADOS, y que el nuevo EXISTA. Sin el de «corrió y es
+       poco», el módulo vuelve a decir «no hay material» sobre un registro
+       que sí se revisó, que es el defecto que esta tanda vino a arreglar.
+       Se mide dentro del trozo de `validacionDe` y no sobre el archivo. */
+    const tramoVal = (j70v.match(/function validacionDe\(id, anterior\) \{[\s\S]*?\n  \}/) || [''])[0];
+    const estadosVal = [
+      ['sin registro en mano', /No hay en mano ning[uú]n registro/.test(tramoVal)],
+      ['sin revisar', /\} else if \(!revisadas\) \{/.test(tramoVal)],
+      ['disparó', /\} else if \(disparos\) \{/.test(tramoVal)],
+      ['corrió y es poco', /para concluir que distingue: este m[oó]dulo pide al menos/.test(tramoVal)]
+    ];
+    const malEst = estadosVal.filter((x) => !x[1]).map((x) => x[0]);
+    comprobar('la razón distingue los CUATRO estados, no tres',
+      !!tramoVal && malEst.length === 0,
+      !tramoVal ? 'no se encontró validacionDe'
+                : malEst.length ? 'falta el estado: ' + malEst.join(' · ')
+                : 'sin registro · sin revisar · disparó · corrió y es poco');
+
+    /* Y LA MEDICIÓN, impresa: cuántas entradas del registro anterior están
+       revisadas. Es lo que deja ver de un vistazo que el «no hay material»
+       era falso, y lo que sube solo cuando el registro de Petro crezca. */
+    const regAnt = JSON.parse(leer('assets/data/seguimiento-petro.json'));
+    const entAnt = regAnt.entradas || [];
+    const revAnt = entAnt.filter((e) => e.indicadores !== undefined).length;
+    const tresAnt = entAnt.filter((e) => e.nivelGobierno && e.estadoProcesal && e.tipoEvidencia).length;
+    const declAnt = entAnt.filter((e) => (e.indicadores || []).length);
+    comprobar('el registro anterior tiene entradas REVISADAS, aunque ninguna declare indicador',
+      revAnt > 0,
+      revAnt + ' de ' + entAnt.length + ' revisadas · ' + declAnt.length + ' declaran indicador · ' +
+      tresAnt + ' con los tres campos (lo que la guarda vieja contaba)');
+
+    /* Y la otra mitad de la regla, la que protege a las que SÍ declaran: a
+       esas los tres campos se les siguen exigiendo, y es `pasaElCriterio`
+       quien lo hace. Sin esto, «no se cuentan los tres campos» se podría
+       leer como que ya no se piden nunca. */
+    const faltanTres = declAnt.filter((e) => !(e.nivelGobierno && e.estadoProcesal && e.tipoEvidencia));
+    comprobar('y a las que SÍ declaran indicador se les siguen exigiendo los tres campos',
+      faltanTres.length === 0 && /if \(!nv\) return \{ cuenta: false/.test(j70v),
+      faltanTres.length ? faltanTres.length + ' declaran indicador sin los tres campos'
+                        : 'la puerta del indicador los sigue pidiendo donde la regla dice que se piden');
+
+    /* El NOMBRE del gobierno anterior, que estaba en el registro y la carta
+       no alcanzaba (clase C, en la misma línea). */
+    /* Y EL CIERRE DE LA CARTA SE CALCULA (v903, v1075). Iba escrito a mano
+       —«el día que se pueda correr contra el registro clasificado»— debajo de
+       una razón que dice que YA se corrió: las dos frases de la misma caja se
+       contradecían. Lo vio el papel compuesto, no el código. */
+    const cierreCalc = /fi\.validacion\.corridas\.length && !fi\.validacion\.disparo/.test(j70v);
+    const sinTeclear = !/se pueda correr contra el registro clasificado/.test(j70v);
+    comprobar('el cierre de la carta se CALCULA y no se contradice con su propia razón',
+      cierreCalc && sinTeclear,
+      !cierreCalc ? 'el cierre ya no se ramifica: vuelve a ser una frase fija'
+        : !sinTeclear ? 'sigue la frase del modelo viejo («registro clasificado») debajo de una razón que dice que ya se corrió'
+        : 'dos redacciones, y la que aplica sale del estado de la corrida');
+
+        const loAlcanza = /quien: dd\.presidente \|\| dd\.gobernante/.test(j70v);
+    comprobar('la corrida nombra al gobernante anterior, que el registro trae',
+      loAlcanza && !!regAnt.presidente,
+      !regAnt.presidente ? 'el registro anterior no declara presidente'
+        : !loAlcanza ? 'el registro trae «' + regAnt.presidente + '» y la ficha NO lo alcanza: ' +
+                       'la carta diría «gobierno anterior» teniendo el nombre al lado'
+        : 'el registro trae «' + regAnt.presidente + '» y la ficha lo alcanza');
 
     comprobar('la marca se pinta junto a la cifra, no en una nota al pie',
       /sp-c2-noval/.test(j70v) && /validado: no · gobiernos anteriores probados: /.test(j70v) &&

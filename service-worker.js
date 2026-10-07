@@ -1,4 +1,4 @@
-const URBIS_CACHE = 'urbis-v1074-seguimiento-presidencial-6-oct';
+const URBIS_CACHE = 'urbis-v1075-la-validacion-mide-lo-revisado-no-lo-que-declara';
 const URBIS_ASSETS = [
   './',
   './index.html',

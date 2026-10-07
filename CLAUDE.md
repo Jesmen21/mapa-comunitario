@@ -1082,7 +1082,7 @@ sección al final de este archivo.
   clase C de arriba, y no tiene guarda a propósito.
 * **Y todo recuento de lo que FALTA declarar corre sobre las entradas a las
   que ese campo se les puede exigir, y ninguna más** (v999, v1060, v1061,
-  v1064). **Cuatro veces** se midió un pendiente que nadie podía bajar nunca,
+  v1064, v1075). **Cinco veces** se midió un pendiente que nadie podía bajar nunca,
   y la cuarta estuvo publicada sesenta y cinco versiones: el tablero decía
   «entradas sin nivel de gobierno declarado · 75 de 218» cuando ni una de
   esas 75 era un acto —son cifras del país y resultados— y medido sobre los
@@ -1090,6 +1090,25 @@ sección al final de este archivo.
   mil líneas antes, en la puerta del indicador: dos codificaciones de una
   regla, que es la clase B. **La señal para buscarla: un pendiente cuyo
   número sube cuando el registro CRECE y no baja cuando alguien trabaja.**
+* **Y la quinta tiene una forma propia que conviene saber buscar** (v1075):
+  no es un recuento sino un **DISCRIMINANTE** que exige campos que el propio
+  módulo declara inaplicables. `corridaHaciaAtras` contaba como «registro
+  clasificado» las entradas con `nivelGobierno` + `estadoProcesal` +
+  `tipoEvidencia`, tres campos que ese mismo archivo declara exigibles solo a
+  las que DECLARAN indicador — así que un registro revisado en el que ningún
+  criterio aplica daba **cero por construcción**, y cuatro fichas publicaban
+  que el registro anterior «no pasó por esta clasificación». **La señal: una
+  condición que el material correcto no puede satisfacer nunca.** Se busca
+  preguntando *¿qué tendría que traer una entrada para contar acá, y este
+  módulo se lo exige?* Y la cura no es aflojar la cuenta: es contar lo que de
+  verdad discrimina —acá, que alguien la haya REVISADO y dejado el resultado
+  escrito, aunque sea la lista vacía (v1061)—.
+* **Un umbral nuevo no se elige para que algo pase** (v882, v1075). Si al
+  ponerlo el módulo mejora de estado, el umbral está midiendo la conveniencia.
+  El de la v1075 se tomó prestado de `FICHA_MIN_HECHOS`, que ya estaba
+  declarado, y la señal de que no era interesado es que **dejó los cuatro
+  criterios sin validar igual que antes**: lo único que cambió fue que la
+  razón publicada pasó a ser cierta.
 * **Y una comprobación que llega a cero se DICE, no desaparece** (v1064). Un
   renglón que se borra solo deja «ya está hecho» con la misma cara que
   «nadie lo ha mirado» —la regla de arriba, dicha en una pantalla—. Tres de

@@ -2147,16 +2147,45 @@
      así que el criterio se pudo evaluar ahí— y el criterio no disparó. Las
      dos mitades hacen falta: sin la primera, «no dispara» no significa que
      distinga, significa que no hay material, que es lo que la v963 midió. */
+  /* EL PISO DE LA VALIDACIÓN (v1075). Un criterio que no dispara sobre seis
+     actos no demuestra que distinga: demuestra que se le pasaron seis actos.
+     El piso no se elige para que algo pase —elegirlo así sería el arreglo
+     sin causa de la v882—: es el MISMO que el módulo ya declara para hablar
+     de un registro, `FICHA_MIN_HECHOS`. Con él, los cuatro criterios siguen
+     SIN validar hoy, que es la respuesta honesta. */
+  var MIN_ACTOS_VALIDACION = FICHA_MIN_HECHOS;
+
+  /* ── QUÉ CUENTA COMO MATERIAL PARA CONTRASTAR UN CRITERIO (v1075) ───────
+     Contaba las entradas con `nivelGobierno`, `estadoProcesal` y
+     `tipoEvidencia` declarados — y esos tres campos, dice este mismo archivo
+     doscientas líneas más arriba, SOLO se les exigen a las entradas que
+     DECLARAN un indicador: «pedírselos a las 200 sería un trinquete que
+     nadie puede bajar y que no protege nada». Un registro cuyos actos se
+     revisaron y no cayeron en ninguna vía no declara ninguno, así que por
+     construcción daba CERO — y el módulo publicaba, en las cuatro fichas de
+     indicador, que el registro anterior «no pasó por esta clasificación».
+
+     Es falso desde la v1061, que corrió los criterios sobre los actos de los
+     dos registros y marcó el resultado con la LISTA VACÍA justamente para
+     que «revisado y ninguno aplica» no se viera igual que «nadie lo ha
+     mirado». El dato estaba escrito y ninguna pantalla lo alcanzaba: clase C
+     de CLAUDE.md, y séptima declaración de ausencia falsa (v861).
+
+     Lo que cuenta como material es, entonces, lo que la v1061 dejó escrito:
+     una entrada REVISADA contra los criterios, tenga o no indicador. Los
+     tres campos los sigue exigiendo `pasaElCriterio` a las que sí declaran,
+     que es donde la regla dice que se exigen. */
   function corridaHaciaAtras(dd, id) {
     var ent = ((dd || {}).entradas) || [];
     var ids = idsDelRegistro(dd);
-    var clasificadas = 0, disparos = 0;
+    var revisadas = 0, disparos = 0;
     ent.forEach(function (e) {
-      if (e && e.nivelGobierno && e.estadoProcesal && e.tipoEvidencia) clasificadas++;
+      if (e && e.indicadores !== undefined) revisadas++;
       if ((((e && e.indicadores) || []).indexOf(id) >= 0) && pasaElCriterio(e, id, ids).cuenta) disparos++;
     });
-    return { n: ent.length, clasificadas: clasificadas, disparos: disparos,
-             probado: clasificadas > 0 && disparos === 0 };
+    return { n: ent.length, revisadas: revisadas, disparos: disparos,
+             suficiente: revisadas >= MIN_ACTOS_VALIDACION,
+             probado: revisadas >= MIN_ACTOS_VALIDACION && disparos === 0 };
   }
 
   function validacionDe(id, anterior) {
@@ -2169,30 +2198,53 @@
     var cat = ind.origenCategoria || 'construida-para-el-caso';
     var oc = ORIGEN_CATEGORIA[cat] || ORIGEN_CATEGORIA['construida-para-el-caso'];
     var regs = anterior ? [anterior] : [];
-    var probados = 0, clasificadas = 0, corridas = [];
+    var probados = 0, revisadas = 0, disparos = 0, corridas = [];
     regs.forEach(function (dd) {
       var r = corridaHaciaAtras(dd, id);
-      clasificadas += r.clasificadas;
+      revisadas += r.revisadas;
+      disparos += r.disparos;
       if (r.probado) probados++;
-      corridas.push({ quien: dd.gobernante || dd.titulo || 'gobierno anterior', n: r.n,
-                      clasificadas: r.clasificadas, disparos: r.disparos, probado: r.probado });
+      /* El NOMBRE, que estaba en el registro y la carta no alcanzaba: el de
+         Petro trae `presidente` y acá se buscaba `gobernante` y `titulo`,
+         ninguno de los dos existe, así que la ficha decía «gobierno
+         anterior» teniendo el nombre al lado. Clase C otra vez, en la
+         misma línea (v1075). */
+      corridas.push({ quien: dd.presidente || dd.gobernante || dd.titulo || 'gobierno anterior', n: r.n,
+                      revisadas: r.revisadas, disparos: r.disparos, probado: r.probado });
     });
+    /* CUATRO ESTADOS Y NO TRES (v1075), porque piden cosas distintas y el
+       cuarto —corrió, no disparó, y sobre poco material— estaba colapsado
+       dentro de «no hay material», que es lo que hacía falsa la frase. La
+       distinción es la de la v899: dos causas que piden acciones distintas
+       se cuentan y se dicen aparte. */
     var razon;
     if (probados > 0) {
-      razon = 'Se corrió contra ' + probados + ' gobierno' + (probados === 1 ? '' : 's') +
-              ' anterior' + (probados === 1 ? '' : 'es') + ' con registros clasificados y no disparó: ' +
-              'distingue.';
+      razon = 'Se corrió contra ' + cn(probados, 'gobierno anterior', 'gobiernos anteriores') +
+              ' sobre ' + cn(revisadas, 'entrada revisada', 'entradas revisadas') +
+              ' y no disparó: distingue.';
     } else if (!regs.length) {
       razon = 'No hay en mano ningún registro de un gobierno anterior con el que contrastarlo.';
-    } else if (!clasificadas) {
-      razon = 'Los registros de gobiernos anteriores que hay no pasaron por esta clasificación, así que el ' +
-              'criterio no se pudo correr ahí. Que no dispare no demuestra que distinga: demuestra que no ' +
+    } else if (!revisadas) {
+      razon = 'Los actos del registro anterior no se han corrido todavía contra los criterios, así que ' +
+              'este no se pudo correr ahí. Que no dispare no demuestra que distinga: demuestra que no ' +
               'hay material.';
-    } else {
+    } else if (disparos) {
       razon = 'Corrido contra los registros anteriores, disparó: hay que mirar si el criterio distingue.';
+    } else {
+      /* El estado que faltaba. Se dice la cifra y el piso, no «poco»: una
+         palabra no deja saber cuánto falta. */
+      razon = 'Se corrió sobre ' + cn(revisadas, 'entrada revisada', 'entradas revisadas') +
+              ' del registro anterior y no disparó, pero ' + pl(revisadas, 'esa entrada es poca',
+              'esas entradas son pocas') + ' para concluir que distingue: este módulo pide al menos ' +
+              cn(MIN_ACTOS_VALIDACION, 'entrada revisada', 'entradas revisadas') + ', el mismo piso que ' +
+              'exige para hablar de un registro. Lo que falta no es correrlo otra vez: es que el registro ' +
+              'del gobierno anterior crezca.';
     }
     return { origenCategoria: cat, gravedad: oc.t, porQue: oc.d,
              urge: cat === 'construida-para-el-caso',
+             /* Los dos que la pantalla necesita para escribir su cierre sin
+                tecleárselo: cuántas hacen falta, y si disparó (v1075). */
+             pisoRevisadas: MIN_ACTOS_VALIDACION, revisadas: revisadas, disparo: disparos > 0,
              validado: probados > 0, gobiernosAnterioresProbados: probados,
              registrosEnMano: regs.length, corridas: corridas, razon: razon };
   }
@@ -4489,9 +4541,17 @@
         lv.appendChild(el('p', 'sp-c2-novalg' + (fi.validacion.urge ? ' urge' : ''),
           fi.validacion.gravedad + ' · ' + fi.validacion.porQue));
         lv.appendChild(el('p', null, fi.validacion.razon));
+        /* El cierre SE CALCULA (v903): con el modelo de cuatro estados de la
+           v1075 la frase fija se contradecía con la de arriba —decía «el día
+           que se pueda correr» debajo de una razón que dice que YA se
+           corrió—. Y lo vio el papel compuesto, no el código. */
         lv.appendChild(el('p', null,
-          'La marca se quita sola el día que este criterio se pueda correr contra el registro clasificado ' +
-          'de un gobierno anterior y no dispare: ahí sí distingue.'));
+          fi.validacion.corridas.length && !fi.validacion.disparo
+            ? 'La marca se quita sola cuando el registro del gobierno anterior llegue a ' +
+              cn(fi.validacion.pisoRevisadas, 'entrada revisada', 'entradas revisadas') +
+              ' y este criterio siga sin disparar: ahí sí distingue. No hay que volver a correrlo.'
+            : 'La marca se quita sola el día que este criterio se pueda correr contra un registro ' +
+              'revisado de un gobierno anterior y no dispare: ahí sí distingue.'));
         tb.appendChild(lv);
       }
       tb.appendChild(li);
