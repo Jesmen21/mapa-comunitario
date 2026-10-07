@@ -24478,3 +24478,121 @@ medio de la prosa; las notas internas las conservan porque no se pintan.
 * **No le escribe trámite al eje A**, con la razón arriba. `pendiente`
 * **Y no toca la escala de gravedad común**, segunda puerta del veredicto y
   decisión de quien firma el módulo. `pendiente`
+
+## v1077 · I-14, el indicador del eje D, con los bordes tomados de afuera
+
+Pedido tal cual: «redacta el indicador del eje D». Llevaba cinco versiones sin
+escribirse, y no por descuido: un criterio redactado mirando los hechos que
+tiene que clasificar nace `construida-para-el-caso` y sin validar (v965), y
+entonces el nivel del eje queda **asignado y no calculado**, que es
+exactamente lo que el pliego prohíbe.
+
+### De dónde salen los bordes
+
+De dos instrumentos anteriores a este proyecto, nombrados **dentro del
+criterio** y no solo en esta bitácora: el **Protocolo de Minnesota** de la ONU
+—cuándo nace el deber del Estado de investigar una muerte de forma pronta,
+independiente, imparcial y efectiva— y los **Principios Básicos sobre el
+empleo de la fuerza y de armas de fuego** (ONU, 1990). Por eso I-14 declara
+`origenCategoria: 'juridica-preexistente'`.
+
+**Y un renglón que se cayó al escribirlo, dicho porque enseña dónde está el
+borde:** «muerte en una operación cuyas cifras oficiales no se reconcilian
+entre sí» era tentador y **salía de este registro** —la Operación Azarías—.
+No entra. Habría sido el criterio tallado a la medida del caso.
+
+El orden importó y se respetó: **el criterio se escribió primero y se corrió
+después.** Mirar antes qué entradas hay es cómo se dibujan bordes a
+conveniencia sin darse cuenta.
+
+### La primera corrida, que es la prueba de que no se escribió a conveniencia
+
+```
+I-14 · 2 entradas lo declaran · 0 cuentan · 0 / 100 d
+```
+
+Las dos fallan por lo mismo: el criterio pide confirmación forense u oficial
+—la misma vara dura de I-04— y lo que el registro tiene es **el relato de los
+medios sobre lo que Medicina Legal confirmó**, no la confirmación de Medicina
+Legal. Un criterio escrito para que algo pasara habría salido con la vara más
+floja.
+
+Y ese resultado **encaja con el trámite que la v1076 escribió**: el documento
+que I-14 necesita para contar es exactamente el que la regla `series-oficiales`
+manda a pedir por derecho de petición. Las dos piezas cerraron solas.
+
+### Lo que la corrida destapó, y que no se forzó
+
+De las tres operaciones con muertos confirmados, **solo la Operación Beta está
+registrada como ACTO**. Amón y Azarías existen únicamente como `resultado`
+—«se confirma que tres menores murieron», «Medicina Legal confirma que dos de
+los cuerpos eran menores»— y la puerta del indicador exige `nivelGobierno`,
+que a un resultado no se le puede declarar porque un resultado no es una
+decisión (v1064).
+
+**No se forzó.** Declararles un nivel para que pasaran habría sido la sexta
+vez de la clase que este proyecto lleva cinco versiones persiguiendo. Lo que
+falta es la entrada del OPERATIVO, y eso entró al trámite del eje D como regla
+nueva, `operacion-como-acto`, en reemplazo de la del indicador — que esta
+versión cerró (v1006).
+
+### Tres cosas estructurales que hicieron falta para que esto fuera seguro
+
+* **Las tres cuentas por criterio se DERIVAN de `CRITERIOS`.** Iban escritas a
+  mano —`crudo`, `fuera` y `porVia`, las tres con los mismos cuatro
+  identificadores—, así que agregar un criterio pedía acordarse de tocar tres
+  sitios y el que se olvidara dejaría el indicador nuevo contando cero **sin un
+  solo error**. Clase B.
+* **El pintor de filas dejó de estar atado al eje B.** Estaba en
+  `ej.eje === 'B' && ej.filas`, así que la fila de I-14 viajaba en el objeto
+  del eje D y ninguna pantalla la alcanzaba: clase C.
+* **Y el cero lleva su discriminante al lado**: «2 entradas lo declaran y
+  ninguna cuenta» dice algo muy distinto de un cero sin nada declarado, y los
+  dos se ven igual (v875).
+
+### La guarda, y sus trece inyecciones en rojo
+
+| Inyección | Qué se puso en rojo |
+|---|---|
+| el estado de la v1076: el eje D sin indicador | `falla: el eje D declara su lista de indicadores` |
+| el criterio declarado como construido para el caso | `ya no declara juridica-preexistente` |
+| la referencia externa deja de nombrarse | `no nombra la referencia` |
+| la vara se afloja para que algo cuente | `la vara se aflojó, ya no exige un acto ocurrido ni evidencia dura` |
+| ninguna entrada lo declara | `el criterio no tiene nada que clasificar` |
+| una vía que el criterio no tiene | `cita un renglón que el criterio no tiene` |
+| una declaración sin vía citada | `2 la declaran sin indicadoresPor` |
+| las tres cuentas vuelven a estar tecleadas | `falla: fuera se deriva · y ninguna quedó tecleada` |
+| la fila vuelve a pintarse solo para el eje B | `falla: y el pintor de filas no está atado a un eje` |
+| el cero pierde su discriminante | `falla: y el cero declarado lleva su discriminante al lado` |
+| `.sp-c3-ind-nota` sin regla que la pinte | ídem |
+| el trámite sigue pidiendo el indicador | `sigue pidiendo el indicador, que esta versión escribió` |
+
+**Dos correcciones que las guardas del propio proyecto le hicieron a esta
+tanda**, y las dos valen más que el código que escribí:
+
+* la referencia externa estaba **solo en un comentario**, y `soloCodigo` los
+  quita: la guarda de la v926 —«la guarda lee el CÓDIGO y no los
+  comentarios»— lo denunció. Pasó a la `definicion`, que es donde el lector
+  la ve;
+* y el discriminante del cero usaba `--t-9`, el tamaño que el módulo reserva a
+  las etiquetas. Lo cazó la guarda de tipografía, no yo.
+
+Y una de la regla v1029: la inyección del pintor **no puso nada en rojo**, y
+eso no significaba que la inyección fuera mala — significaba que faltaba la
+aserción. Se agregó.
+
+### Lo que esta versión NO hace
+
+* **No mueve el veredicto.** Abelardo de la Espriella sigue en «Sin dictamen»:
+  el eje D tiene su indicador pero sigue sin nivel, porque le falta la serie
+  histórica, y los ejes B y C siguen igual. `pendiente`
+* **No cuenta ninguna muerte todavía**, y esa es la respuesta honesta: hace
+  falta el documento forense, que es la primera regla de su trámite.
+  `pendiente`
+* **No registra las operaciones de Amón y Azarías como actos**, que es lo que
+  dejaría contar sus muertes. Entró al trámite como regla con su cómo y su
+  cuándo. `pendiente`
+* **No valida I-14**, que como los otros cuatro criterios exige correr contra
+  un registro anterior con al menos 20 entradas revisadas (v1075). `pendiente`
+* **Y no toca la escala de gravedad común**, segunda puerta del veredicto y
+  decisión de quien firma el módulo. `pendiente`

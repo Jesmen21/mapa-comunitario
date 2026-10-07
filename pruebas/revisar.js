@@ -2411,6 +2411,140 @@ console.log('\n  -- la ficha del gobernante --');
                  : 'cualquier eje que traiga trámite lo publica');
   }
 
+
+  /* ═══ EL INDICADOR DEL EJE D, Y DE DÓNDE SALEN SUS BORDES (v1077) ═══════
+     El eje D publicaba un CONTEO —un piso confirmado operación por
+     operación— y un conteo no da nivel por mucho que crezca. Lo que faltaba
+     era un criterio con incluye y excluye, y llevaba cinco versiones sin
+     escribirse por una razón buena: un criterio redactado mirando los hechos
+     que tiene que clasificar nace `construida-para-el-caso` y sin validar
+     (v965), y entonces el nivel quedaría asignado y no calculado.
+
+     I-14 se escribió contra DOS instrumentos anteriores a este proyecto —el
+     Protocolo de Minnesota de la ONU y los Principios Básicos sobre el
+     empleo de la fuerza (ONU, 1990)— y por eso declara
+     `juridica-preexistente`. Esta guarda vigila justamente eso: que sus
+     renglones no sean casos de este registro.
+
+     Y vigila el resultado de su primera corrida, que es la prueba de que no
+     se escribió a conveniencia: **2 entradas lo declaran y NINGUNA cuenta**,
+     porque el criterio pide confirmación forense u oficial y lo que hay es
+     el relato de los medios. Un criterio escrito para que algo pasara habría
+     salido con la vara más floja. */
+  {
+    const j70n = soloCodigo(leer('js/70-seguimiento.js'));
+    const regN = JSON.parse(leer('assets/data/seguimiento-presidencial.json'));
+
+    const tramo14 = (j70n.match(/'I-14': \{\n      definicion:[\s\S]*?\n    \}/) || [''])[0];
+    const incluye14 = [...tramo14.matchAll(/^\s+'([^']{20,})',?$/gm)].map((m) => m[1]);
+
+    comprobar('MATERIAL · I-14 existe, con su definición y sus renglones',
+      !!tramo14 && incluye14.length >= 6,
+      tramo14 ? incluye14.length + ' renglones entre incluye y excluye'
+              : 'no se encontró el criterio I-14');
+
+    /* La categoría es PREEXISTENTE y lo dice, que es lo que separa este
+       criterio de uno tallado a la medida del caso. */
+    const catPre = /'I-14': \{ t: '[^']+', dec: true,\n\s+origenCategoria: 'juridica-preexistente'/.test(j70n);
+    comprobar('I-14 declara que su categoría existe sin este proyecto', catPre,
+      catPre ? 'se escribió contra un estándar externo, no contra este registro'
+             : 'ya no declara `juridica-preexistente`: si sus bordes salen de este registro, el nivel se asigna y no se calcula');
+
+    /* Y la referencia externa va NOMBRADA en el código, no solo en la
+       bitácora: sin el nombre, la próxima sesión no puede comprobar de dónde
+       salieron los bordes (v926, la guarda lee el código). */
+    const refs = ['Protocolo de Minnesota', 'Principios Básicos', 'Principios BÁSICOS'];
+    const nombradas = refs.filter((r) => j70n.indexOf(r) >= 0);
+    comprobar('y nombra en el CÓDIGO la referencia externa de la que salen sus bordes',
+      nombradas.length >= 2,
+      nombradas.length >= 2 ? 'cita ' + nombradas.slice(0, 2).join(' y ')
+                            : 'no nombra la referencia: no hay cómo comprobar de dónde salieron los bordes');
+
+    /* LA VARA NO SE AFLOJÓ PARA QUE ALGO PASARA (v882, v1075). Es la misma
+       de I-04: acto ocurrido y evidencia dura. */
+    const tramoReq = (tramo14.match(/requiere: function \(c\) \{[\s\S]*?\}/) || [''])[0];
+    const mitadesReq = [
+      ['exige un acto ocurrido', /c\.procesal\.id !== 'anunciado-sin-acto'/.test(tramoReq)],
+      ['y evidencia dura', /EVIDENCIA_DURA\[c\.evidencia\.id\]/.test(tramoReq)]
+    ];
+    const malReq = mitadesReq.filter((x) => !x[1]).map((x) => x[0]);
+    comprobar('I-14 pide la misma vara dura que I-04: acto ocurrido y evidencia dura',
+      !!tramoReq && malReq.length === 0,
+      !tramoReq ? 'no se encontró el `requiere` de I-14'
+        : malReq.length ? 'la vara se aflojó, ya no ' + malReq.join(' ni ')
+        : 'una muerte a manos del Estado no se cuenta con el relato de un medio');
+
+    /* EL RESULTADO DE LA PRIMERA CORRIDA, medido sobre el registro. No es un
+       trinquete: si mañana llega el documento forense, esta línea lo dice y
+       no se pone roja — mide el reparto, no exige que sea cero. */
+    const declaran14 = (regN.entradas || []).filter((e) => (e.indicadores || []).indexOf('I-14') >= 0);
+    const sinVia = declaran14.filter((e) => !(((e.indicadoresPor || {})['I-14'] || {}).via));
+    comprobar('toda entrada que declara I-14 dice por cuál renglón entra',
+      declaran14.length > 0 && sinVia.length === 0,
+      !declaran14.length ? 'ninguna entrada declara I-14: el criterio no tiene nada que clasificar'
+        : sinVia.length ? sinVia.length + ' la declaran sin `indicadoresPor`'
+        : declaran14.length + ' la declaran, todas con su vía citada');
+
+    /* Y la vía citada es un renglón EXACTO del `incluye` de I-14, no una
+       paráfrasis: una cita inventada se ve acá y no tres tandas después. */
+    const inc14 = (tramo14.match(/incluye: \[[\s\S]*?\]/) || [''])[0];
+    const malVia = declaran14.filter((e) => inc14.indexOf(((e.indicadoresPor || {})['I-14'] || {}).via || '\u0000') < 0);
+    comprobar('y esa vía es un renglón exacto del «incluye» de I-14',
+      declaran14.length > 0 && malVia.length === 0,
+      malVia.length ? 'cita un renglón que el criterio no tiene: ' +
+                      malVia.map((e) => e.id).join(', ')
+                    : 'ninguna cita apunta a un renglón que no exista');
+
+    /* Las tres cuentas DERIVADAS (clase B): con las listas escritas a mano,
+       agregar un criterio y olvidar una de las tres dejaba el indicador
+       nuevo contando cero sin un solo error. */
+    const mitadesDer = [
+      ['la lista sale de CRITERIOS', /var CON_CRITERIO = Object\.keys\(CRITERIOS\);/.test(j70n)],
+      ['crudo se deriva', /CON_CRITERIO\.forEach\(function \(k\) \{ crudo\[k\] = 0; \}\);/.test(j70n)],
+      ['fuera se deriva', /CON_CRITERIO\.forEach\(function \(k\) \{ fuera\[k\] = \[\]; \}\);/.test(j70n)],
+      ['porVia se deriva', /CON_CRITERIO\.forEach\(function \(k\) \{ porVia\[k\] = \{\}; \}\);/.test(j70n)],
+      ['y ninguna quedó tecleada', !/\{ 'I-04': \[\], 'I-05': \[\]/.test(j70n)]
+    ];
+    const malDer = mitadesDer.filter((x) => !x[1]).map((x) => x[0]);
+    comprobar('las tres cuentas por criterio se DERIVAN, no se teclean',
+      malDer.length === 0,
+      malDer.length ? 'falla: ' + malDer.join(' · ')
+                    : 'un criterio nuevo entra en las tres sin que nadie se acuerde');
+
+    /* LA GUARDA DE LA GUARDA: que el eje D lo LEA y llegue al papel. */
+    const mitades14 = [
+      ['el eje D declara su lista de indicadores', /var IND_EJE_D = \['I-14'\];/.test(j70n)],
+      ['y filtra sus filas por ella', /IND_EJE_D\.indexOf\(f\.id\) >= 0/.test(j70n)],
+      ['y su `falta` ya no dice que el indicador no existe',
+       !/La segunda es el INDICADOR: ninguno de los criterios/.test(j70n)],
+      ['y lo que falta se CALCULA de la fila, no se teclea', /var fi14 = \(r\.filas \|\| \[\]\)\[0\]/.test(j70n)],
+      /* Y QUE EL PINTOR NO ESTÉ ATADO AL EJE B. Faltaba esta mitad: con el
+         pintor en `ej.eje === 'B'` la fila de I-14 viaja en el objeto del eje
+         D y ninguna pantalla la alcanza —clase C—, y la inyección no ponía
+         nada en rojo. Cuando una inyección fiel no muerde, lo que falta es la
+         aserción y no la inyección (v1029). */
+      ['y el pintor de filas no está atado a un eje',
+       /if \(ej\.filas && ej\.filas\.length\) \{/.test(j70n) && !/if \(ej\.eje === 'B' && ej\.filas\)/.test(j70n)],
+      ['y el cero declarado lleva su discriminante al lado',
+       /fi\.declaradas && fi\.declaradas > fi\.n/.test(j70n) && /\.sp-c3-ind-nota\{/.test(leer('css/70-seguimiento.css'))]
+    ];
+    const mal14 = mitades14.filter((x) => !x[1]).map((x) => x[0]);
+    comprobar('el eje D lee su indicador y su «falta» sale de la corrida',
+      mal14.length === 0,
+      mal14.length ? 'falla: ' + mal14.join(' · ')
+                   : 'la fila llega al eje y el texto se recalcula con ella');
+
+    /* Y EL TRÁMITE VOLVIÓ A SU RENGLÓN (v1006): el del indicador se cerró y
+       lo que quedó en su lugar es el hallazgo de esta tanda. */
+    const reglasD = ((regN.tramites || {}).D || {}).reglas || [];
+    const claves = reglasD.map((r) => r.k);
+    comprobar('el trámite del eje D ya no pide el indicador, y dice lo que sí quedó faltando',
+      claves.indexOf('indicador') < 0 && claves.indexOf('operacion-como-acto') >= 0,
+      claves.indexOf('indicador') >= 0
+        ? 'sigue pidiendo el indicador, que esta versión escribió'
+        : 'reglas: ' + claves.join(' · '));
+  }
+
   /* ═══ LA VÍA: POR CUÁL RENGLÓN DEL CRITERIO ENTRA CADA HECHO (v963) ════
      La v962 escribió en su bitácora que el caso del DANE entraba por dos
      renglones del `incluye`, y uno de los dos era falso: la remoción que

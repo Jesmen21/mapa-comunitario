@@ -1942,6 +1942,9 @@ a.sp-fuente:hover svg{ color:var(--verde-hi); }
 .sp-c3-ind{ margin:0; padding:0; list-style:none; display:grid; gap:4px; }
 .sp-c3-ind li{ display:flex; justify-content:space-between; gap:12px; font-size:var(--t-8); color:var(--ink-2); }
 .sp-c3-ind b{ font-variant-numeric:tabular-nums; white-space:nowrap; }
+/* El discriminante del cero, pegado a su fila y en una línea propia: no es
+   otro indicador, es la lectura del de arriba (v1077). */
+.sp-c3-ind-nota{ display:block; margin:-1px 0 2px; font-size:var(--t-8); line-height:1.5; color:var(--ink-2); }
 .sp-c3-falta{
   margin:0; padding:9px 11px; border-radius:9px; background:#FBF3E3; border:1px solid #EDD6AC;
   font-size:var(--t-8); line-height:1.6; color:#7A5310;

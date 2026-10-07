@@ -1453,7 +1453,17 @@
       "titulo": "El primer bombardeo del gobierno —la Operación Beta, contra el ELN entre Tibú y San Calixto— deja un menor de edad muerto, tres campesinos heridos y 40 familias desplazadas",
       "categoriaProbatoria": "hecho-probado",
       "tipoMedicion": "actividad",
-      "indicadores": [],
+      "indicadores": [
+        "I-14"
+      ],
+      "indicadoresPor": {
+        "I-14": {
+          "via": "muerte de una persona protegida —menor de edad, rendida, herida o fuera de combate— en una operación del Estado",
+          "base": "operacion-beta-catatumbo-menor"
+        }
+      },
+      "estadoProcesal": "en-firme",
+      "tipoEvidencia": "reporte-periodistico",
       "nivelGobierno": "nacional",
       "detalle": "En la madrugada del martes 11 de agosto de 2026 —cuatro días después de la posesión y uno después del terremoto— las Fuerzas Militares ejecutaron el primer bombardeo de este gobierno, la Operación Beta, en zonas rurales entre los municipios de Tibú y San Calixto (Norte de Santander), contra estructuras del Ejército de Liberación Nacional. Medicina Legal confirmó después que uno de los integrantes del grupo armado muertos en la operación era MENOR DE EDAD. La Defensoría del Pueblo denunció además afectación a la población civil: al menos tres campesinos heridos —entre ellos una mujer de 44 años— en la vereda El Sinaí, jurisdicción de San Calixto, y unas 40 familias desplazadas por los ataques aéreos y terrestres. Este es el primero de los tres hechos que forman el piso forense de seis menores muertos en operaciones del primer mes: uno acá, tres en la Operación Amón (El Retorno, 27 de agosto) y dos en la Operación Azarías (Miraflores, 30 de agosto).",
       "contrapunto": "La edad exacta del menor no se afirma acá: las coberturas coinciden en que era menor de edad y no en un número, y escribir uno sería inventarlo. Y hay un señalamiento que este registro no da por probado: líderes sociales de la región, citados por Revista RAYA, sostuvieron que el bombardeo podría ser un «falso positivo». Eso es una afirmación de una parte, ninguna autoridad se ha pronunciado sobre ella, y se registra con su etiqueta y no como hallazgo: lo verificado es el bombardeo, la muerte del menor confirmada por Medicina Legal y la denuncia de la Defensoría; el «falso positivo» no lo está. A la fecha de este registro no consta imputación ni investigación penal formal por esta operación.",
@@ -2254,7 +2264,17 @@
       "titulo": "La Fuerza Pública rescata a cuatro secuestrados y a cuatro menores reclutados por grupos armados; muere alias 'Huevo', señalado cabecilla de disidencias de 'Calarcá', en un operativo en Gómez Plata, Antioquia",
       "categoriaProbatoria": "hecho-probado",
       "tipoMedicion": "actividad",
-      "indicadores": [],
+      "indicadores": [
+        "I-14"
+      ],
+      "indicadoresPor": {
+        "I-14": {
+          "via": "muerte causada por el uso de la fuerza o de armas de fuego por agentes del Estado",
+          "base": "rescate-cuatro-menores-20sep"
+        }
+      },
+      "estadoProcesal": "en-firme",
+      "tipoEvidencia": "reporte-periodistico",
       "nivelGobierno": "nacional",
       "detalle": "El presidente Abelardo de la Espriella reportó el 20 de septiembre que en las 24 horas anteriores la Fuerza Pública rescató a cuatro personas secuestradas, recuperó a cuatro menores de edad reclutados por grupos armados, capturó a 27 personas y dio de baja a dos. Uno de los operativos de rescate, adelantado por tropas del Gaula Militar en zona rural de Gómez Plata (Antioquia), terminó en la muerte de Stiven Martínez Rodríguez, de 20 años, conocido como alias 'Huevo', señalado cabecilla de una comisión de la Estructura 36 de las disidencias de las FARC lideradas por alias 'Calarcá'; según los reportes de prensa, otro presunto integrante de la misma estructura murió en la misma confrontación. Con estos datos, el balance acumulado desde la posesión del 7 de agosto llegó a 22.462 capturas, 93 toneladas de droga incautada y 2.360 armas de fuego retiradas.",
       "tipoFuente": "verificado",
@@ -10008,14 +10028,14 @@
           "que": "Las series de muertes y lesiones en operaciones del Estado, y la misma serie para los gobiernos anteriores.",
           "quien": "El Instituto Nacional de Medicina Legal y Ciencias Forenses, que produce la cifra forense de muertes violentas; la Defensoría del Pueblo, por sus alertas tempranas; y la Procuraduría General, por los procesos disciplinarios abiertos. Son tres entidades y tres documentos distintos: ninguna de las tres publica lo que publican las otras dos.",
           "como": "Las cifras agregadas de Medicina Legal son publicación ordinaria. El desagregado por operación no lo es, y se pide por derecho de petición —gratuito, con término de quince días hábiles—. Se piden la de este gobierno y la de los anteriores EN LA MISMA solicitud: con una sola, las cifras no tienen contra qué compararse y el nivel no sale igual.",
-          "cuando": "Las de los años cerrados existen hoy. La de 2026 cierra con el año, así que la comparación completa de este gobierno no está antes de 2027."
+          "cuando": "Las de los años cerrados existen hoy. La de 2026 cierra con el año, así que la comparación completa de este gobierno no está antes de 2027. Y desde la v1077 este mismo documento hace falta por una segunda razón: es lo que el indicador I-14 exige para CONTAR las entradas que ya lo declaran. Hoy las declara dos y no cuenta ninguna, porque lo que hay es el relato de los medios sobre lo que Medicina Legal confirmó, y no la confirmación de Medicina Legal."
         },
         {
-          "k": "indicador",
-          "que": "Un criterio con incluye y excluye que cuente un uso de la fuerza. Hoy este eje publica un CONTEO —un piso confirmado operación por operación—, y un conteo no da nivel por mucho que crezca.",
-          "quien": "Nadie de afuera. Lo escribe quien firma el módulo, igual que los otros cuatro criterios, y por eso no tiene trámite ante ninguna entidad.",
-          "como": "Con la forma de los demás —definición, qué incluye, qué excluye y su origen de categoria declarado— y redactado contra una referencia EXTERNA, no contra este registro: un criterio escrito mirando los hechos que tiene que clasificar nace construido para el caso y sin validar (v965), y entonces el nivel quedaría asignado y no calculado. Después se corre hacia atrás contra el registro del gobierno anterior, como los otros cuatro.",
-          "cuando": "Puede escribirse hoy; no espera a ninguna entidad ni a ninguna fecha. Lo que NO puede es escribirse mirando este registro, y esa es toda la razón por la que lleva cinco versiones sin escribirse."
+          "k": "operacion-como-acto",
+          "que": "Que cada operación con muertos quede registrada como un ACTO, y no solo el resultado que la confirma.",
+          "quien": "Nadie de afuera: es trabajo de este registro. Las fuentes ya están en las entradas que existen.",
+          "como": "Hoy la Operación Beta tiene su entrada de tipo actividad y por eso puede declarar el indicador. Las de Amón y Azarías solo existen como resultado —«se confirma que tres menores murieron», «Medicina Legal confirma que dos de los cuerpos eran menores»—, y la puerta del indicador exige nivel de gobierno, que a un resultado no se le puede declarar porque un resultado no es una decisión. Lo que falta es la entrada del OPERATIVO, con su fecha, su fuente y su nivel; el resultado se queda al lado, que es donde debe estar.",
+          "cuando": "Puede hacerse hoy. Las tres operaciones están documentadas en el registro y ninguna espera a nadie de afuera."
         }
       ]
     }

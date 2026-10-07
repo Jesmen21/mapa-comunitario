@@ -1961,6 +1961,43 @@
       ],
       requiere: function (c) { return c.evidencia.id === 'documento-primario'; },
       falta: 'Pide el documento que se entregó: sin él no consta que la tutela lo destrabara.'
+    },
+    /* Cada renglón de `incluye` es una categoría del Protocolo de Minnesota o
+       de los Principios Básicos, no un caso de este registro. El que se cayó
+       al escribirlo queda dicho porque explica dónde está el borde: «muerte en
+       una operación cuyas cifras oficiales no se reconcilian entre sí» era un
+       renglón tentador y SALÍA de este registro —la Operación Azarías—, así
+       que no entra: habría sido el criterio tallado a la medida del caso que
+       el propio módulo prohíbe. */
+    'I-14': {
+      definicion: 'Muerte de una persona ocurrida durante o como resultado directo de una operación de ' +
+                  'agentes del Estado, o bajo su custodia, que obliga al Estado a abrir una investigación ' +
+                  'pronta, independiente, imparcial y efectiva. Los bordes de esta cuenta NO se dibujaron ' +
+                  'mirando este registro: salen del Protocolo de Minnesota de la ONU, sobre la ' +
+                  'investigación de muertes potencialmente ilícitas, y de los Principios Básicos sobre el ' +
+                  'empleo de la fuerza y de armas de fuego por los funcionarios encargados de hacer ' +
+                  'cumplir la ley (ONU, 1990).',
+      incluye: [
+        'muerte causada por el uso de la fuerza o de armas de fuego por agentes del Estado',
+        'muerte de una persona bajo custodia del Estado',
+        'muerte de una persona protegida —menor de edad, rendida, herida o fuera de combate— en una operación del Estado',
+        'muerte ocurrida en una operación del Estado cuya causa no está establecida'
+      ],
+      excluye: [
+        'muerte de un agente del Estado en servicio (el deber de investigar existe por otra vía, y no es una muerte causada por la operación)',
+        'muerte atribuida a un actor armado no estatal, sin participación documentada de agentes del Estado',
+        'cifra agregada de homicidios o de víctimas del país, que no identifica una operación',
+        'muerte en desastre natural o accidente sin uso de la fuerza',
+        'lesión, captura, rescate o desaparición sin muerte'
+      ],
+      /* La misma vara dura que I-04: un acto ocurrido y evidencia dura. Una
+         muerte a manos del Estado contada con el relato de un medio es
+         exactamente la clase de afirmación que este registro no publica. */
+      requiere: function (c) {
+        return c.procesal.id !== 'anunciado-sin-acto' && !!EVIDENCIA_DURA[c.evidencia.id];
+      },
+      falta: 'Pide la confirmación de una autoridad forense u oficial: el relato de un medio no basta ' +
+             'para contar una muerte a manos del Estado.'
     }
   };
 
@@ -2110,13 +2147,35 @@
                  'agencias reguladoras—, que no son órganos autónomos y por eso no caben en I-05.' },
     'I-07': { t: 'Información pública obtenida por tutela', dec: true, origenCategoria: 'juridica-preexistente',
               d: 'Solicitudes que solo se respondieron después de una acción judicial.' },
+    /* I-14 · EL INDICADOR DEL EJE D (v1077). El eje publicaba un CONTEO —un
+       piso confirmado operación por operación— y un conteo no da nivel por
+       mucho que crezca. Lo que faltaba era un criterio con bordes.
+
+       Y los bordes NO se dibujaron mirando este registro, que es la
+       condición que el propio módulo puso (v965) y la razón por la que esto
+       llevaba cinco versiones sin escribirse. Salen de dos instrumentos
+       anteriores a este proyecto: el PROTOCOLO DE MINNESOTA de la ONU
+       —cuándo nace el deber del Estado de investigar una muerte de forma
+       pronta, independiente, imparcial y efectiva— y los PRINCIPIOS BÁSICOS
+       sobre el empleo de la fuerza y de armas de fuego por los funcionarios
+       encargados de hacer cumplir la ley (ONU, 1990).
+
+       Por eso su `origenCategoria` es `juridica-preexistente`: la categoría
+       existe sin nosotros. Lo que este módulo decide es qué entra en SU
+       cuenta, y eso sigue sin validar hasta que corra contra el registro de
+       un gobierno anterior, igual que los otros cuatro. */
+    'I-14': { t: 'Muertes en operaciones del Estado con deber de investigación', dec: true,
+              origenCategoria: 'juridica-preexistente',
+              d: 'Muertes ocurridas durante o como resultado de una operación de agentes del Estado, o ' +
+                 'bajo su custodia, que según el estándar internacional obligan a abrir una investigación ' +
+                 'independiente. Cuenta el HECHO que activa el deber, no si la investigación se abrió.' },
     'I-06': { t: 'Registros sin respuesta oficial', dec: false,               d: 'Hechos en los que se buscó la respuesta del Gobierno y no la hay. Sale de la Capa 1.' },
     'I-09': { t: 'Actividad reportada', dec: false,               d: 'Lo que el Gobierno hizo. No es lo mismo que lo que cambió, y no se suma con ello.' },
     'I-10': { t: 'Resultados medidos', dec: false,               d: 'Lo que cambió en el país. Que se mida no dice quién lo causó.' }
   };
   /* El orden de la tabla no es el alfabético: los tres declarados primero
      —son los del eje B— y después los que salen solos. */
-  var ORDEN_IND = ['I-04', 'I-05', 'I-13', 'I-07', 'I-06', 'I-09', 'I-10'];
+  var ORDEN_IND = ['I-04', 'I-05', 'I-13', 'I-07', 'I-14', 'I-06', 'I-09', 'I-10'];
 
   /* «Con menos de 180 días de gobierno, los indicadores describen un arranque,
      no una tendencia.» El pliego obliga a publicarlo siempre, así que va
@@ -2348,8 +2407,16 @@
 
     var idsReg = idsDelRegistro(dd);
     var c1 = capaUnoDe_conjunto(ent);
-    var crudo = { 'I-06': c1.contra.ausente, 'I-09': c1.medicion.actividad, 'I-10': c1.medicion.resultado,
-                  'I-04': 0, 'I-05': 0, 'I-13': 0, 'I-07': 0 };
+    /* LAS TRES CUENTAS SE DERIVAN DE `CRITERIOS` (v1077). Iban escritas a
+       mano, las tres con los mismos cuatro identificadores, y agregar un
+       criterio pedía acordarse de tocar tres sitios: el que se olvidara
+       dejaría el indicador nuevo contando cero sin un solo error. Es la
+       clase B de CLAUDE.md, y acá la derivación es la CORRECTA porque las
+       tres significan lo mismo —los indicadores que tienen criterio— y
+       ninguna decisión razonable las separaría. */
+    var CON_CRITERIO = Object.keys(CRITERIOS);
+    var crudo = { 'I-06': c1.contra.ausente, 'I-09': c1.medicion.actividad, 'I-10': c1.medicion.resultado };
+    CON_CRITERIO.forEach(function (k) { crudo[k] = 0; });
     /* TRES estados y no dos, que es la distinción de la v899 dicha sobre la
        clasificación: «declara uno», «se corrieron los criterios y ninguno
        aplica» y «nadie lo ha mirado» piden cosas distintas, y las dos
@@ -2371,11 +2438,13 @@
     /* Lo declarado que NO pasa el criterio no desaparece: se cuenta aparte y
        con su motivo. Un indicador que baja sin decir por qué se lee como que
        el hecho no ocurrió. */
-    var fuera = { 'I-04': [], 'I-05': [], 'I-13': [], 'I-07': [] };
+    var fuera = {};
+    CON_CRITERIO.forEach(function (k) { fuera[k] = []; });
     /* Por cuál renglón del criterio entró cada uno. Un indicador cuyo conteo
        entero viene de UNA sola vía dice algo distinto de uno repartido, y sin
        esto las dos cifras se ven iguales. */
-    var porVia = { 'I-04': {}, 'I-05': {}, 'I-13': {}, 'I-07': {} };
+    var porVia = {};
+    CON_CRITERIO.forEach(function (k) { porVia[k] = {}; });
     ent.forEach(function (e) {
       var lista = (e && e.indicadores) || [];
       if (e && e.tipoMedicion === 'actividad') {
@@ -2636,6 +2705,10 @@
      media de los tres gobiernos, entra acá con los otros cuatro — y hay una
      guarda para que no entre antes. */
   var IND_EJE_B = ['I-04', 'I-05', 'I-06', 'I-07'];
+  /* El eje D tiene su indicador desde la v1077. Va en su propia lista y no
+     dentro de la del B: son dos preguntas distintas y meterlos juntos sería
+     exactamente lo que la regla de oro del pliego prohíbe. */
+  var IND_EJE_D = ['I-14'];
 
   function ejeB(dd, corte) {
     var ind = indicadoresDe(dd, corte);
@@ -2869,6 +2942,9 @@
       pregunta: '\u00bfqu\u00e9 le est\u00e1 pasando a la gente en las operaciones del Estado?',
       nivel: null, publicable: false,
       hechos: man.length, sinEje: sinEje.length, enFuerza: enFuerza.length,
+      /* La fila del indicador, con su criterio y lo que queda fuera: es lo
+         que convierte el CONTEO de este eje en algo que puede dar nivel. */
+      filas: indicadoresDe(reg).filas.filter(function (f) { return IND_EJE_D.indexOf(f.id) >= 0; }),
       corte: F.corte || null,
       muertos: mue, recuperados: rec,
       nMuertos: suma(mue), nRecuperados: suma(rec),
@@ -2890,14 +2966,29 @@
       r.unidades = 'Piso confirmado una operaci\u00f3n por una, con su fecha y qui\u00e9n lo confirm\u00f3. Es un ' +
                    'PISO y no un total: lo que no se pudo confirmar no se cuenta, as\u00ed que la cifra solo ' +
                    'puede subir cuando llegue la confirmaci\u00f3n, nunca bajar.';
+      /* EL INDICADOR YA NO FALTA (v1077): I-14 está escrito, con sus bordes
+         tomados del Protocolo de Minnesota y de los Principios Básicos de la
+         ONU, no de este registro. Lo que falta cambió de sitio y se CALCULA
+         en vez de escribirse, para que el día que una entrada cuente la
+         frase no siga diciendo que ninguna cuenta (v903). */
+      var fi14 = (r.filas || [])[0] || null;
       r.falta = 'Dos cosas, y ninguna es que falten cifras. La primera es la FUENTE: las series de ' +
                 'Medicina Legal, la Procuradur\u00eda y la Defensor\u00eda que el pliego pide para este bloque, con ' +
                 'la misma serie de los gobiernos anteriores \u2014sin ella estas cifras no tienen contra qu\u00e9 ' +
-                'compararse y un nivel no sale\u2014. La segunda es el INDICADOR: ninguno de los criterios ' +
-                'escritos de este m\u00f3dulo cuenta un uso de la fuerza, y esto es un CONTEO y no un criterio ' +
-                'con incluye y excluye, as\u00ed que no da nivel. Y no se escribe de paso: un criterio ' +
-                'redactado mirando este registro nacer\u00eda construido para el caso y sin validar, y el ' +
-                'nivel de un eje se calcula, no se asigna.';
+                'compararse y un nivel no sale\u2014. La segunda ya no es que falte el INDICADOR: I-14 est\u00e1 ' +
+                'escrito, con sus bordes tomados de dos instrumentos anteriores a este proyecto y no de ' +
+                'este registro. Lo que falta es que alguna entrada lo CUMPLA: ' +
+                (!fi14
+                  ? 'el indicador no se pudo calcular en esta corrida.'
+                  : (fi14.declaradas
+                      ? cn(fi14.declaradas, 'entrada lo declara', 'entradas lo declaran') + ' y ' +
+                        (fi14.n
+                          ? cn(fi14.n, 'cuenta', 'cuentan') + ', as\u00ed que la cifra ya existe y lo que falta ' +
+                            'para el nivel es la serie hist\u00f3rica de arriba.'
+                          : 'ninguna cuenta todav\u00eda, porque el ' +
+                            'criterio pide la confirmaci\u00f3n forense u oficial y lo que hay es el relato de ' +
+                            'los medios. Es el mismo documento que el tr\u00e1mite de abajo manda a pedir.')
+                      : 'ninguna entrada lo declara todav\u00eda.'));
       r.lectura = 'Este eje publica sus cifras y NO publica nivel, igual que el eje C publica sus recortes ' +
                   'desde la v1055: una cifra confirmada no es un dictamen. Y las dos listas no se suman ni ' +
                   'se restan \u2014una recuperaci\u00f3n no compensa una muerte\u2014 porque se apoyan en calidades de ' +
@@ -4729,13 +4820,28 @@
       ' · ' + ej.conIdentidad + ' con identidad de objeto · ' +
           ej.sinIdentidad + ' como tensión retórica · ' + ej.sinDeclarar + ' sin declarar'));
       }
-      if (ej.eje === 'B' && ej.filas) {
+      /* CUALQUIER eje que traiga filas, no solo el B (v1077). Estaba atado al
+         caso, así que la fila de I-14 viajaba en el objeto del eje D y
+         ninguna pantalla la alcanzaba: la clase C de CLAUDE.md. */
+      if (ej.filas && ej.filas.length) {
         var ub = el('ul', 'sp-c3-ind');
         ej.filas.forEach(function (fi) {
           var lb = el('li', null);
           lb.appendChild(el('span', null, fi.id + ' · ' + fi.t));
           lb.appendChild(el('b', null, fi.sinCalcular ? '—' : (String(fi.por100).replace('.', ',') + ' / 100 d')));
           ub.appendChild(lb);
+          /* Y EL DISCRIMINANTE DEL CERO, al lado y no en otra pantalla: un
+             «0 / 100 d» con entradas declaradas que no cumplen el criterio
+             dice algo muy distinto de un cero sin nada declarado, y los dos
+             se ven igual (v875). */
+          if (fi.declaradas && fi.declaradas > fi.n) {
+            var ln = el('li', 'sp-c3-ind-nota', null);
+            ln.appendChild(el('span', null,
+              cn(fi.declaradas, 'entrada lo declara', 'entradas lo declaran') + ' y ' +
+              (fi.n ? cn(fi.n, 'cuenta', 'cuentan') : 'ninguna cuenta') +
+              ': el criterio pide más de lo que esas entradas traen.'));
+            ub.appendChild(ln);
+          }
         });
         li.appendChild(ub);
       }

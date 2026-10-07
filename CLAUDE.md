@@ -1113,6 +1113,17 @@ sección al final de este archivo.
   módulo se lo exige?* Y la cura no es aflojar la cuenta: es contar lo que de
   verdad discrimina —acá, que alguien la haya REVISADO y dejado el resultado
   escrito, aunque sea la lista vacía (v1061)—.
+* **Un criterio se escribe contra una referencia EXTERNA, y primero** (v965,
+  v1077). Redactarlo mirando los hechos que tiene que clasificar lo deja
+  `construida-para-el-caso` y sin validar, y entonces el nivel del eje queda
+  asignado y no calculado. Dos reglas que lo hacen comprobable: **el orden**
+  —se escribe, y después se corre; mirar antes qué entradas hay es cómo se
+  dibujan bordes a conveniencia sin darse cuenta— y que **la referencia vaya
+  nombrada donde el lector la ve**, no en un comentario: `soloCodigo` los
+  quita, así que una guarda no puede comprobarla ahí (v926, y mordió a la
+  propia v1077). La señal de que no se escribió a conveniencia es que su
+  primera corrida **no cuente nada**: I-14 salió con 2 entradas declaradas y
+  0 contadas, porque la vara pedía más de lo que el registro traía.
 * **Un umbral nuevo no se elige para que algo pase** (v882, v1075). Si al
   ponerlo el módulo mejora de estado, el umbral está midiendo la conveniencia.
   El de la v1075 se tomó prestado de `FICHA_MIN_HECHOS`, que ya estaba

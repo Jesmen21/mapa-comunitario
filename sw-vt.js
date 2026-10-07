@@ -13,7 +13,7 @@
 
    La versión va acá y en vision-territorial.html, idéntica, como en los
    otros siete archivos de versión del sitio: revisar.js lo comprueba. */
-const VT_CACHE = 'urbis-vt-v1076-el-tramite-de-los-tres-ejes-en-un-solo-sitio';
+const VT_CACHE = 'urbis-vt-v1077-i14-el-indicador-del-eje-d-con-bordes-externos';
 const VT_ASSETS = [
   './vision-territorial.html',
   './css/90-vt.css',
