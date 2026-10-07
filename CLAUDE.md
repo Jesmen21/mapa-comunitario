@@ -1056,7 +1056,17 @@ sección al final de este archivo.
   pide y **cuándo puede existir**—, y el último es el que más se olvida: sin
   él, un vacío que solo cierra el calendario (el EJECUTADO de un presupuesto
   cuyo año no ha empezado) se lee como archivo que alguien no fue a buscar.
+* **Y los trámites viven en UN solo bloque del registro, con la clave del
+  eje** (v1076), no dentro del dato de cada uno: con tres sitios, la guarda
+  necesita una tabla de dónde mirar y esa tabla es lo que envejece. **La
+  lista de a quién se le exige sale de `PESO_EJE`**, así que un eje nuevo
+  nace con el trámite exigido sin que su autor se acuerde.
 * **Un intento que falla se FECHA, con su canal y su razón** (v1055, v1065).
+  Y **cuando NO se ha intentado, eso también se escribe** (v1076): la v1065
+  imprimía la línea solo si había intento, así que en los ejes sin ninguno
+  desaparecía — y «nadie lo ha buscado» volvía a tener la cara de «no hay
+  nada que decir», que es justo lo que esa versión escribió acá para
+  prohibirlo. Las dos redacciones, siempre (v970).
   Desde afuera, «nadie lo ha buscado» y «se buscó y no se pudo» se leen
   igual. Y conviene saberlo antes de salir: **desde este contenedor el proxy
   niega TODOS los dominios** —medido el 2 de octubre de 2026 sobre

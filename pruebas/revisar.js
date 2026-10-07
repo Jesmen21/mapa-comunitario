@@ -2276,88 +2276,121 @@ console.log('\n  -- la ficha del gobernante --');
   }
 
 
-  /* ═══ UN VACÍO SIN SU TRÁMITE ES UN MURO (v1065) ═══════════════════════
-     El eje C nombraba las dos reglas del pliego que le faltan y callaba
-     cómo se consiguen. Por la regla de este proyecto (v849, v880) eso no es
-     un vacío declarado sino un muro: quien lo lee no puede saber si es
-     trabajo de una tarde, de un derecho de petición, o de esperar a que
-     pase un año — y las tres piden decisiones distintas.
+  /* ═══ UN VACÍO SIN SU TRÁMITE ES UN MURO (v1065, v1076) ════════════════
+     El eje C nombraba las dos reglas del pliego que le faltan y callaba cómo
+     se consiguen. Por la regla de este proyecto (v849, v880) eso no es un
+     vacío declarado sino un muro: quien lo lee no puede saber si es trabajo
+     de una tarde, de un derecho de petición, o de esperar a que pase un año.
 
-     Lo midió un intento real. El 2 de octubre de 2026 esta sesión salió a
-     buscar la serie histórica, y lo que encontró fue que desde este
-     contenedor no se alcanza NINGUNA fuente: minhacienda.gov.co,
-     dane.gov.co, dnp.gov.co y cinco medios, los nueve sin conexión por
-     política del proxy. Y que la búsqueda sola devuelve cifras
-     contradictorias para el mismo sector y año —Defensa 2023 en 32,9 y en
-     37,2 billones—, que es exactamente el caso que la v1055 ya se negó a
-     dibujar: citar una dirección que no se pudo leer es fabricar una fuente
-     con buena apariencia.
+     La v1076 lo extendió a los ejes B y D y movió los tres a UN SOLO bloque
+     del registro, `tramites`, con la clave del eje. Con uno en `presupuesto`,
+     otro en `fuerza` y el del B sin casa, esta guarda necesitaría una tabla
+     de dónde mirar — y esa tabla es exactamente lo que se queda viejo el día
+     que alguien agregue un eje (v867: dos copias de una advertencia se
+     separan).
 
-     Así que lo que esta tanda deja no son las cifras: es que el vacío diga
-     su trámite, y que el intento quede FECHADO. Sin esa fecha, «no se ha
-     buscado» y «se buscó y no se pudo» se leen igual, que es la regla de
-     arriba de todo este archivo.
+     Y la lista de a quién se le exige NO se teclea: sale de `PESO_EJE`,
+     filtrando los que miden la REALIDAD. Así un eje de realidad nuevo nace
+     con el trámite exigido sin que su autor se acuerde, que es lo único que
+     impide que esto vuelva a pasar.
 
-     Cuatro mitades:
-       1 · el trámite existe en el REGISTRO y no tecleado en el código;
-       2 · cada regla trae sus cuatro campos, y el `cuándo` es obligatorio
-           porque es el que separa un vacío que alguien puede cerrar hoy de
-           uno que solo cierra el calendario;
-       3 · un trámite a medias NO se pinta a medias: se descarta entero,
-           porque media instrucción se sigue peor que ninguna;
-       4 · y la guarda de la guarda: que LLEGUE a la pantalla, con su regla
-           en el css. Sin eso es la clase C de CLAUDE.md — un dato correcto
-           que ningún lector alcanza. */
+     DE QUÉ NO RESPONDE, dicho y no disimulado (v945): al eje A no se le
+     exige. Lo que le falta es un HECHO con fecha de revisión escrita —el 21
+     de noviembre de 2026—, no un documento que alguien pueda ir a pedir, y
+     pedirle un trámite mandaría a tramitar lo que no se tramita. */
   {
     const j70t = soloCodigo(leer('js/70-seguimiento.js'));
     const regT = JSON.parse(leer('assets/data/seguimiento-presidencial.json'));
-    const tram = ((regT.presupuesto || {}).tramite) || null;
-    const reglasT = (tram && tram.reglas) || [];
+    const tramites = regT.tramites || null;
 
-    comprobar('MATERIAL · el trámite del eje C vive en el REGISTRO, con sus reglas',
-      !!tram && reglasT.length >= 2,
-      tram ? reglasT.length + ' reglas: ' + reglasT.map((r) => r.k).join(' · ')
-           : 'no hay bloque `presupuesto.tramite` en el registro');
+    /* A QUIÉN SE LE EXIGE: derivado de PESO_EJE, no copiado. */
+    const bloquePeso = (j70t.match(/var PESO_EJE = \{[\s\S]*?\n  \};/) || [''])[0];
+    const deRealidad = [...bloquePeso.matchAll(/'?([A-Z])'?: \{ mide: 'realidad'/g)].map((m) => m[1]);
 
-    /* Los cuatro campos, y el detalle dice CUÁL falta en CUÁL regla (v973). */
+    comprobar('MATERIAL · los trámites viven en UN bloque del registro, con la clave del eje',
+      !!tramites && Object.keys(tramites).filter((k) => k[0] !== '_').length >= 2 && deRealidad.length >= 2,
+      !tramites ? 'no hay bloque `tramites` en el registro'
+                : 'trámites: ' + Object.keys(tramites).filter((k) => k[0] !== '_').join(' · ') +
+                  ' · ejes de realidad según PESO_EJE: ' + deRealidad.join(' '));
+
+    /* FALLA CERRADO: todo eje que mide la realidad tiene el suyo. */
+    const sinTramite = deRealidad.filter((e) => !((tramites || {})[e] || {}).reglas);
+    comprobar('todo eje que mide la REALIDAD tiene su trámite, y la lista sale de PESO_EJE',
+      deRealidad.length > 0 && sinTramite.length === 0,
+      !deRealidad.length ? 'no se pudo leer PESO_EJE: la lista de a quién exigirle quedaría vacía'
+        : sinTramite.length ? 'sin trámite: eje ' + sinTramite.join(', eje ')
+        : 'los ' + deRealidad.length + ' ejes de realidad (' + deRealidad.join(' ') + ') lo traen');
+
+    /* Los cuatro campos, en TODAS las reglas de TODOS los ejes, y el detalle
+       dice en cuál regla de cuál eje falla (v973). */
     const CAMPOS = ['que', 'quien', 'como', 'cuando'];
     const incompletas = [];
-    reglasT.forEach((r) => {
-      const fal = CAMPOS.filter((c) => !String((r || {})[c] || '').trim());
-      if (fal.length) incompletas.push((r.k || '?') + ' sin ' + fal.join(' ni '));
+    let nReglas = 0;
+    Object.keys(tramites || {}).filter((k) => k[0] !== '_').forEach((e) => {
+      ((tramites[e] || {}).reglas || []).forEach((r) => {
+        nReglas++;
+        const fal = CAMPOS.filter((c) => !String((r || {})[c] || '').trim());
+        if (fal.length) incompletas.push(e + '/' + (r.k || '?') + ' sin ' + fal.join(' ni '));
+      });
     });
     comprobar('cada regla dice QUÉ falta, QUIÉN lo tiene, CÓMO se pide y CUÁNDO puede existir',
-      reglasT.length > 0 && incompletas.length === 0,
-      !reglasT.length ? 'no hay reglas que medir'
-                      : incompletas.length ? 'falla: ' + incompletas.join(' · ')
-                      : 'las ' + reglasT.length + ' con sus cuatro campos');
+      nReglas > 0 && incompletas.length === 0,
+      !nReglas ? 'no hay reglas que medir'
+               : incompletas.length ? 'falla: ' + incompletas.join(' · ')
+               : 'las ' + nReglas + ' reglas de los ' +
+                 Object.keys(tramites).filter((k) => k[0] !== '_').length + ' ejes, con sus cuatro campos');
 
-    /* El intento, FECHADO. Es lo que separa «no se ha buscado» de «se buscó
-       y no se pudo», que desde afuera se leen igual. */
-    const ui = (tram && tram.ultimoIntento) || null;
-    comprobar('y el último intento queda fechado, con su canal y su resultado',
-      !!(ui && /^\d{4}-\d{2}-\d{2}$/.test(ui.fecha || '') && ui.canal && (ui.resultado || '').length > 80),
-      ui ? 'intento del ' + ui.fecha + ' por ' + ui.canal
-         : 'sin registro de intento: «nadie lo ha buscado» y «se buscó y no se pudo» se leen igual');
+    /* El intento: cuando está, va FECHADO. Y cuando NO está, la pantalla
+       tiene que decirlo igual — las dos redacciones (v970, v1076). */
+    const conIntento = Object.keys(tramites || {}).filter((k) => k[0] !== '_')
+      .map((e) => ({ e: e, u: (tramites[e] || {}).ultimoIntento }))
+      .filter((x) => x.u);
+    const malIntento = conIntento.filter((x) =>
+      !(/^\d{4}-\d{2}-\d{2}$/.test(x.u.fecha || '') && x.u.canal && (x.u.resultado || '').length > 80));
+    comprobar('todo intento registrado va FECHADO, con su canal y su resultado',
+      malIntento.length === 0,
+      malIntento.length ? 'intento sin fecha, canal o resultado: eje ' + malIntento.map((x) => x.e).join(', ')
+        : conIntento.length ? conIntento.map((x) => 'eje ' + x.e + ' el ' + x.u.fecha).join(' · ')
+        : 'ninguno de los ejes registra un intento todavía');
 
-    /* El código lo LEE y no lo teclea: con el trámite escrito en js/70, la
-       rutina diaria no podría corregirlo y la cifra envejecería sola (v903). */
-    const tramoT = (j70t.match(/function tramiteDe\(P\) \{[\s\S]*?\n  \}/) || [''])[0];
-    const leeDelRegistro = /P && P\.tramite/.test(tramoT);
+    const dosRedacciones = /Nadie lo ha intentado todav[ií]a desde este registro/.test(j70t) &&
+                           /'[ÚU]ltimo intento: ' \+ fechaCorta\(u\.fecha\)/.test(j70t);
+    comprobar('y la pantalla escribe LAS DOS: la del intento y la de que nadie lo ha intentado',
+      dosRedacciones,
+      dosRedacciones ? 'sin intento, el renglón se escribe igual: no desaparece'
+        : 'falta una de las dos: un renglón que desaparece deja «nadie lo buscó» con la cara de «no hay nada que decir»');
+
+    /* El código lo LEE por la clave del eje y no lo teclea. */
+    const tramoT = (j70t.match(/function tramiteDe\(dd, eje\) \{[\s\S]*?\n  \}/) || [''])[0];
+    const leePorEje = /\(\(\(dd \|\| \{\}\)\.tramites\) \|\| \{\}\)\[eje\]/.test(tramoT);
     const descartaAMedias = /r\.que && r\.quien && r\.como && r\.cuando/.test(tramoT);
-    comprobar('el eje LEE el trámite del registro y descarta el que venga a medias',
-      !!tramoT && leeDelRegistro && descartaAMedias,
-      !tramoT ? 'no se encontró tramiteDe'
-              : !leeDelRegistro ? 'no lo lee del registro: estaría tecleado en el código'
+    comprobar('el eje LEE su trámite del registro por su clave y descarta el que venga a medias',
+      !!tramoT && leePorEje && descartaAMedias,
+      !tramoT ? 'no se encontró tramiteDe(dd, eje)'
+              : !leePorEje ? 'no lo lee de `tramites` por la clave del eje'
               : !descartaAMedias ? 'acepta una regla a medias: media instrucción se sigue peor que ninguna'
-              : 'sale del registro, y una regla incompleta no se pinta');
+              : 'sale del registro por su clave, y una regla incompleta no se pinta');
+
+    /* UNA SOLA CODIFICACIÓN (clase B): la copia vieja no se quedó. */
+    comprobar('no queda la copia vieja dentro de `presupuesto`',
+      !((regT.presupuesto || {}).tramite) && !/tramiteDe\(P\)/.test(j70t),
+      (regT.presupuesto || {}).tramite ? 'sigue `presupuesto.tramite`: dos sitios para la misma convención'
+                                       : 'un solo bloque, y el lector ya no mira dentro del dato del eje');
+
+    /* Y LOS TRES EJES LO PIDEN de verdad: sin esta mitad, el bloque podría
+       estar completo en el registro y ningún eje leerlo (clase C). */
+    const piden = deRealidad.filter((e) => new RegExp("tramiteDe\\(dd \\|\\| D, '" + e + "'\\)").test(j70t));
+    comprobar('y cada eje de realidad PIDE el suyo en su propio objeto',
+      piden.length === deRealidad.length,
+      piden.length === deRealidad.length
+        ? 'los ' + piden.length + ' lo piden por su clave'
+        : 'no lo piden: eje ' + deRealidad.filter((e) => piden.indexOf(e) < 0).join(', eje '));
 
     /* LA GUARDA DE LA GUARDA (v878): que llegue al papel. */
     const mitadesT = [
       ['el pintor de ejes lo pinta', /if \(ej\.tramite\) li\.appendChild\(bloqueTramite\(ej\.tramite\)\);/.test(j70t)],
       ['bloqueTramite imprime los cuatro campos',
        /Qui[eé]n lo tiene: /.test(j70t) && /C[oó]mo se pide: /.test(j70t) && /Cu[aá]ndo puede existir: /.test(j70t)],
-      ['y el último intento con su fecha', /'[ÚU]ltimo intento: ' \+ fechaCorta\(u\.fecha\)/.test(j70t)],
       ['y la clase tiene regla en el css', /\.sp-c3-tram\{/.test(leer('css/70-seguimiento.css'))]
     ];
     const malT = mitadesT.filter((x) => !x[1]).map((x) => x[0]);
@@ -2366,20 +2399,15 @@ console.log('\n  -- la ficha del gobernante --');
       malT.length ? 'falla: ' + malT.join(' · ') : 'se pinta bajo la caja de lo que falta, y tiene css');
 
     /* Se persigue la CLASE y no el caso: el pintor es de cualquier eje que
-       traiga trámite, no del eje C. Un `ej.eje === 'C'` acá dejaría a los
-       otros tres siendo un muro el día que alguien les escriba el suyo. */
+       traiga trámite, no del eje C. */
     const tramoPint = (j70t.match(/if \(!ej\.publicable\) \{[\s\S]*?\n      \}/) || [''])[0];
-    /* Las dos mitades aparte: en su primera corrida esta aserción se puso
-       roja imprimiendo el texto del verde, que es el defecto que este
-       repositorio lleva contado siete veces (v973, v1051), y lo cazó la
-       demostración y no la lectura. */
     const pintaAlgo = /if \(ej\.tramite\)/.test(tramoPint);
     const atadoAC = /ej\.eje === 'C'/.test(tramoPint);
-    comprobar('el trámite se pinta por EJE y no solo para el eje C',
+    comprobar('el trámite se pinta por EJE y no solo para uno',
       !!tramoPint && pintaAlgo && !atadoAC,
       !tramoPint ? 'no se encontró el trozo que pinta la falta'
                  : !pintaAlgo ? 'ya no pinta ningún trámite: no hay qué atar a una clase'
-                 : atadoAC ? 'atado al eje C: los otros tres siguen siendo un muro'
+                 : atadoAC ? 'atado al eje C: los otros siguen siendo un muro'
                  : 'cualquier eje que traiga trámite lo publica');
   }
 

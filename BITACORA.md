@@ -24378,3 +24378,103 @@ con sus dos redacciones escritas.
   admite; el contenido es trabajo de archivo por eje. `pendiente`
 * **Y no toca la escala de gravedad común**, segunda puerta del veredicto y
   decisión de quien firma el módulo. `pendiente`
+
+## v1076 · el trámite de los tres ejes, en un solo sitio
+
+Pedido tal cual: «escribe el trámite de los ejes B y D». El del C lo escribió
+la v1065; estos dos seguían nombrando lo que les falta y callando cómo se
+consigue, que por la regla de este proyecto (v849, v880) es un muro y no un
+vacío: quien lo lee no puede saber si es trabajo de una tarde, de un derecho
+de petición, o de esperar a que pase un año.
+
+### Por qué los tres se movieron a un bloque
+
+La v1065 puso el del eje C dentro de `presupuesto`, que es donde vive su dato.
+Siguiendo esa lógica, el del D iría en `fuerza` y el del B **no tendría casa**:
+lo que le falta es una media histórica que no vive en ningún bloque del
+registro. Serían tres sitios para una sola convención, y entonces la guarda
+necesitaría una tabla de dónde mirar — y esa tabla es exactamente lo que se
+queda viejo el día que alguien agregue un eje. Es la lección de la v867 dicha
+sobre otra cosa: **dos copias de una advertencia se separan.**
+
+Van en `tramites`, con la clave del eje, y `tramiteDe(dd, eje)` los lee por
+ahí. La copia de `presupuesto` se retiró: una sola codificación.
+
+### Lo que dice cada uno
+
+**Eje B — una regla.** La media histórica de I-04 a I-07 para Petro, Duque y
+Santos, por 100 días. Lo que había que decir y no estaba: **nadie la publica**
+—no es una fuente que se descargue, es un registro que se construye—, los
+hechos están en el Diario Oficial de cada vigencia, **puede empezarse hoy sin
+depender de nadie de afuera**, y el mismo trabajo que la levanta le quita el
+«validado: no» a los cuatro criterios, porque el registro de Petro tiene 6
+entradas revisadas de las 20 que pide el piso de la v1075.
+
+**Eje D — dos reglas, y de clase distinta**, que es justamente por qué van
+separadas:
+
+* *La serie oficial* tiene entidad y término: Medicina Legal produce la cifra
+  forense, la Defensoría sus alertas tempranas, la Procuraduría los procesos
+  disciplinarios — tres entidades y tres documentos, y ninguna publica lo de
+  las otras dos. El agregado es publicación ordinaria; el desagregado por
+  operación se pide por derecho de petición, gratuito y con quince días
+  hábiles. Y se piden la de este gobierno y la de los anteriores **en la misma
+  solicitud**: con una sola, las cifras no tienen contra qué compararse.
+* *El indicador* **no tiene trámite ante nadie**: lo escribe quien firma el
+  módulo. Puede escribirse hoy, no espera a ninguna entidad ni a ninguna
+  fecha, y lo que NO puede es escribirse mirando este registro — que es toda
+  la razón por la que lleva cinco versiones sin escribirse.
+
+### Un defecto de la propia v1065, que salió al conectar los otros dos
+
+`bloqueTramite` imprimía el último intento **solo si lo había**. Los ejes B y D
+no tienen ninguno, así que la línea simplemente desaparecía — y «nadie lo ha
+intentado» quedaba con la misma cara que «no hay nada que decir». Es, palabra
+por palabra, el defecto que la v1065 escribió en CLAUDE.md para prohibirlo, y
+que su propia implementación dejó a medias. **Las dos redacciones** (v970):
+sin intento, el renglón se escribe igual y dice que nadie lo ha buscado.
+
+### La guarda, y sus ocho inyecciones en rojo
+
+La lista de a quién se le exige trámite **no se teclea: sale de `PESO_EJE`**,
+filtrando los que miden la realidad. Así un eje de realidad nuevo nace con el
+trámite exigido sin que su autor se acuerde.
+
+| Inyección | Qué se puso en rojo |
+|---|---|
+| el estado de la v1075: solo el eje C lo tiene | `sin trámite: eje B, eje D` |
+| una regla del eje D sin CUÁNDO | `falla: D/indicador sin cuando` |
+| un intento sin fechar | `intento sin fecha, canal o resultado: eje C` |
+| vuelve la copia dentro de `presupuesto` | `dos sitios para la misma convención` |
+| el lector deja de leer por la clave del eje | `no lo lee de tramites por la clave del eje` |
+| el eje D deja de pedir el suyo | `no lo piden: eje D` |
+| la redacción de «nadie lo ha intentado» desaparece | `falta una de las dos` |
+| la lista se teclea en vez de salir de PESO_EJE | `no se pudo leer PESO_EJE: la lista quedaría vacía` |
+
+**DE QUÉ NO RESPONDE, escrito al lado** (v945): al eje A no se le exige
+trámite. Lo que le falta es un HECHO con fecha de revisión —el 21 de noviembre
+de 2026—, no un documento que alguien pueda ir a pedir, y pedirle un trámite
+mandaría a tramitar lo que no se tramita.
+
+### Medición en el papel
+
+Ficha del gobernante: **tres trámites pintados** —B, C y D—, cinco reglas con
+sus cuatro campos cada una, el intento del eje C fechado el 2 de octubre y los
+de B y D diciendo que nadie los ha intentado. `node pruebas/revisar.js`: **672
+verdes, 0 rojos**, un `?` sin material (la guarda de rol de la v966, intacta).
+Y una del papel: `origenCategoria` salía con sus comillas inversas crudas en
+medio de la prosa; las notas internas las conservan porque no se pintan.
+
+### Lo que esta versión NO hace
+
+* **No consigue ningún dato, y no mueve el veredicto.** Abelardo de la
+  Espriella sigue en «Sin dictamen» y los tres ejes de realidad siguen sin
+  publicar nivel. Lo que cambia es que ahora los tres dicen quién tiene lo que
+  falta, cómo se pide y cuándo puede existir. `pendiente`
+* **No escribe el indicador del eje D**, que es lo único de las cinco reglas
+  que no depende de ninguna entidad. Escribirlo mirando este registro lo
+  dejaría construido para el caso y sin validar, así que es una tanda con su
+  propia fuente externa. `pendiente`
+* **No le escribe trámite al eje A**, con la razón arriba. `pendiente`
+* **Y no toca la escala de gravedad común**, segunda puerta del veredicto y
+  decisión de quien firma el módulo. `pendiente`

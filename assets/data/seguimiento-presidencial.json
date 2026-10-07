@@ -9964,8 +9964,20 @@
     "cuantas": 0,
     "lista": []
   },
-  "presupuesto": {
-    "tramite": {
+  "tramites": {
+    "_nota": "EL TRÁMITE DE CADA EJE, EN UN SOLO SITIO (v1076). La v1065 escribió el del eje C dentro de `presupuesto`, que es donde vive su dato. Con el del B y el del D eso serían tres bloques en tres sitios con una sola convención, y dos copias de una advertencia se separan (v867): la guarda necesitaría una tabla de dónde mirar, y esa tabla es lo que se queda viejo. Van acá, con la clave del eje, y `tramiteDe` los lee por esa clave. Cada regla lleva sus cuatro campos —qué, quién lo tiene, cómo se pide y cuándo puede existir— y ninguno sobra.",
+    "B": {
+      "reglas": [
+        {
+          "k": "media-historica",
+          "que": "La media histórica de I-04 a I-07 para Petro, Duque y Santos, por 100 días y con los mismos criterios. Sin ella los cuatro indicadores de este eje no tienen contra qué compararse.",
+          "quien": "Nadie la publica, y esa es la primera cosa que hay que saber: no es una fuente que se descargue, es un registro que se construye. Los hechos están en el Diario Oficial de cada vigencia y en la prensa de la época, y el registro de Petro ya existe en este repositorio, en assets/data/seguimiento-petro.json.",
+          "como": "Se clasifican los actos de cada gobierno con los MISMOS cuatro criterios escritos y se normaliza por 100 días. Dos cosas la invalidan si se hacen distinto, y por eso van dichas: cambiarle un borde a un criterio entre un gobierno y otro, y comparar un cuatrienio completo contra los primeros meses de este.",
+          "cuando": "Puede empezarse hoy y no depende de nadie de afuera: los hechos ocurrieron y están documentados. Lo que no existe todavía es el registro clasificado. El de Petro tiene 6 entradas revisadas de 32, y el piso de validación de los criterios pide 20 — así que el mismo trabajo que levanta esta media le quita el «validado: no» a los cuatro indicadores."
+        }
+      ]
+    },
+    "C": {
       "_nota": "EL TRÁMITE DE LO QUE LE FALTA AL EJE C (v1065). El eje nombraba las dos reglas que le faltan y callaba cómo se consiguen, que por la regla de este proyecto (v849, v880) convierte un vacío en un muro: quien lee no sabe si es trabajo de una tarde, de un derecho de petición o de esperar a que pase un año. Va en el registro y no en el código para que la rutina diaria lo pueda actualizar sin tocar js/70, igual que las cifras.",
       "reglas": [
         {
@@ -9989,6 +10001,26 @@
         "resultado": "No se escribió ninguna cifra, y la razón va dicha para que la próxima sesión no gaste otra tanda en el mismo callejón. Desde esta máquina el proxy niega todos los dominios: se probaron minhacienda.gov.co, dane.gov.co, dnp.gov.co y cinco medios, y los nueve contestaron sin conexión, así que ninguna página se pudo abrir. La búsqueda sola devolvió cifras CONTRADICTORIAS para el mismo sector y el mismo año: Defensa 2023 en 32,9 y en 37,2 billones, y el total de 2023 como 391,4 (radicado) y 405,6 (aprobado). El estándar de este registro, escrito en _pendientesFuente desde la v1003, es que la búsqueda sostiene QUE un hecho ocurrió y no que se leyó cada página; una serie numérica deflactada cae del otro lado de esa raya."
       }
     },
+    "D": {
+      "reglas": [
+        {
+          "k": "series-oficiales",
+          "que": "Las series de muertes y lesiones en operaciones del Estado, y la misma serie para los gobiernos anteriores.",
+          "quien": "El Instituto Nacional de Medicina Legal y Ciencias Forenses, que produce la cifra forense de muertes violentas; la Defensoría del Pueblo, por sus alertas tempranas; y la Procuraduría General, por los procesos disciplinarios abiertos. Son tres entidades y tres documentos distintos: ninguna de las tres publica lo que publican las otras dos.",
+          "como": "Las cifras agregadas de Medicina Legal son publicación ordinaria. El desagregado por operación no lo es, y se pide por derecho de petición —gratuito, con término de quince días hábiles—. Se piden la de este gobierno y la de los anteriores EN LA MISMA solicitud: con una sola, las cifras no tienen contra qué compararse y el nivel no sale igual.",
+          "cuando": "Las de los años cerrados existen hoy. La de 2026 cierra con el año, así que la comparación completa de este gobierno no está antes de 2027."
+        },
+        {
+          "k": "indicador",
+          "que": "Un criterio con incluye y excluye que cuente un uso de la fuerza. Hoy este eje publica un CONTEO —un piso confirmado operación por operación—, y un conteo no da nivel por mucho que crezca.",
+          "quien": "Nadie de afuera. Lo escribe quien firma el módulo, igual que los otros cuatro criterios, y por eso no tiene trámite ante ninguna entidad.",
+          "como": "Con la forma de los demás —definición, qué incluye, qué excluye y su origen de categoria declarado— y redactado contra una referencia EXTERNA, no contra este registro: un criterio escrito mirando los hechos que tiene que clasificar nace construido para el caso y sin validar (v965), y entonces el nivel quedaría asignado y no calculado. Después se corre hacia atrás contra el registro del gobierno anterior, como los otros cuatro.",
+          "cuando": "Puede escribirse hoy; no espera a ninguna entidad ni a ninguna fecha. Lo que NO puede es escribirse mirando este registro, y esa es toda la razón por la que lleva cinco versiones sin escribirse."
+        }
+      ]
+    }
+  },
+  "presupuesto": {
     "anio": 2027,
     "corte": "2026-09-14",
     "estadoProcesal": "en-tramite-legislativo",

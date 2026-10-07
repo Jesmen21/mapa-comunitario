@@ -2642,6 +2642,10 @@
     var filas = ind.filas.filter(function (f) { return IND_EJE_B.indexOf(f.id) >= 0; });
     return {
       eje: 'B', t: 'Deterioro institucional', enLista: 'el deterioro institucional',
+      /* El tramite de este eje (v1076): que falta, quien lo tiene, como se
+         pide y cuando puede existir. Sin el, «falta la media historica» no
+         deja saber si es trabajo de una tarde o de esperar a una entidad. */
+      tramite: tramiteDe(dd || D, 'B'),
       pregunta: '¿qué le está pasando a las reglas del juego?',
       dias: ind.dias, poder: ind.poder, filas: filas,
       nivel: null, publicable: false,
@@ -2716,17 +2720,22 @@
      serie para los gobiernos anteriores, que es la misma condición de
      validez de archivo que bloquea el eje B. Lo que cambia es que publica
      sus cifras, como el eje B publica sus cuatro números desde la v958. */
-  /* El trámite viaja con el vacío, y se lee del registro. Devuelve null
-     cuando no está escrito: un trámite inventado acá sería peor que
-     ninguno, porque se leería como averiguado. */
-  function tramiteDe(P) {
-    var t = (P && P.tramite) || null;
+  /* El trámite viaja con el vacío, y se lee del registro POR LA CLAVE DEL
+     EJE. Devuelve null cuando no está escrito: un trámite inventado acá sería
+     peor que ninguno, porque se leería como averiguado.
+
+     Vive en un solo bloque, `tramites`, y no dentro del dato de cada eje
+     (v1076). Con uno en `presupuesto`, otro en `fuerza` y el del B sin casa,
+     la guarda necesitaría una tabla de dónde mirar — y esa tabla es
+     exactamente lo que se queda viejo cuando alguien agrega un eje. */
+  function tramiteDe(dd, eje) {
+    var t = (((dd || {}).tramites) || {})[eje] || null;
     if (!t || !(t.reglas || []).length) return null;
     var reglas = (t.reglas || []).filter(function (r) {
       return r && r.que && r.quien && r.como && r.cuando;
     });
     if (!reglas.length) return null;
-    return { reglas: reglas, ultimoIntento: t.ultimoIntento || null };
+    return { eje: eje, reglas: reglas, ultimoIntento: t.ultimoIntento || null };
   }
 
   function ejeC(dd) {
@@ -2758,7 +2767,7 @@
          sabe si es trabajo de una tarde, de un derecho de peticion o de
          esperar a que pase un ano. Se LEE del registro y no se escribe acá,
          para que la rutina diaria lo corrija sin tocar este archivo. */
-      tramite: tramiteDe(P)
+      tramite: tramiteDe(dd || D, 'C')
     };
 
     if (!sec.length) {
@@ -2852,6 +2861,11 @@
 
     var r = {
       eje: 'D', t: 'Uso de la fuerza y derechos', enLista: 'el uso de la fuerza',
+      /* Las DOS reglas de este eje piden cosas de clase distinta y por eso el
+         tramite las separa: la serie oficial tiene entidad y termino, y el
+         indicador no tiene tramite ante nadie —lo escribe quien firma el
+         modulo— pero tampoco puede escribirse mirando este registro (v1076). */
+      tramite: tramiteDe(dd || D, 'D'),
       pregunta: '\u00bfqu\u00e9 le est\u00e1 pasando a la gente en las operaciones del Estado?',
       nivel: null, publicable: false,
       hechos: man.length, sinEje: sinEje.length, enFuerza: enFuerza.length,
@@ -4218,12 +4232,19 @@
       ul.appendChild(li);
     });
     d.appendChild(ul);
+    /* LAS DOS REDACCIONES DEL INTENTO (v1076). La v1065 escribió la de «se
+       intentó y no se pudo» y dejó la otra sin escribir: sin intento, la
+       línea simplemente desaparecía — y «nadie lo ha intentado» se leía
+       igual que «no hay nada que decir», que es el defecto que esa misma
+       versión vino a prohibir. Se vio al conectar los ejes B y D, que no
+       tienen intento ninguno. */
     var u = tr.ultimoIntento;
-    if (u && u.fecha && u.resultado) {
-      d.appendChild(el('p', 'sp-c3-tram-i',
-        'Último intento: ' + fechaCorta(u.fecha) +
-        (u.canal ? ' · por ' + u.canal : '') + '. ' + u.resultado));
-    }
+    d.appendChild(el('p', 'sp-c3-tram-i',
+      (u && u.fecha && u.resultado)
+        ? 'Último intento: ' + fechaCorta(u.fecha) +
+          (u.canal ? ' · por ' + u.canal : '') + '. ' + u.resultado
+        : 'Nadie lo ha intentado todavía desde este registro. No es que se haya buscado y no se ' +
+          'pudiera: es que no se ha buscado, y las dos cosas piden decisiones distintas.'));
     return d;
   }
 
