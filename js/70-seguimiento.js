@@ -68,6 +68,15 @@
      decreto y de expediente, y esos se escriben seguidos a proposito, asi que
      no pasan por aqui: no son cuentas. */
   function cn(n, sing, plur) { return miles(n) + ' ' + pl(n, sing, plur); }
+  /* El MES de una fecha, que es la unidad en la que el DANE publica la
+     inflación: «agosto de 2026». Con `fechaLarga` saldría «31 de agosto de
+     2026», y el 31 es del cierre del mes y no del dato (v1082). */
+  function mesDe(iso) {
+    var p = String(iso || '').split('-');
+    if (p.length < 2) return String(iso || '');
+    return (MESES[+p[1] - 1] || '') + ' de ' + p[0];
+  }
+
   function fechaCorta(iso) {
     var p = String(iso || '').split('-');
     if (p.length !== 3) return String(iso || '');
@@ -2811,6 +2820,32 @@
     return { eje: eje, reglas: reglas, ultimoIntento: t.ultimoIntento || null };
   }
 
+  /* ── EL DEFLACTOR ENVEJECE, Y AHORA SE MIDE (v1082) ─────────────────────
+     El eje C descuenta la inflación con una cifra del DANE, y esa cifra la
+     reemplaza el DANE todos los meses. Hasta acá su vejez vivía en la PROSA
+     de `deflactorNota` —«inflación anual de agosto»— y nada la comparaba con
+     nada: el día que saliera la de septiembre, el panel seguiría declarando
+     la de agosto sin que ninguna pantalla lo notara. Es la cifra que
+     envejece sola de la v903, con el agravante de la v867: declarar parte de
+     la procedencia —el método, la fecha de corte— y callar que el insumo ya
+     tiene reemplazo se lee como plenamente al día.
+
+     Y NO se arregla cambiando el número. Las variaciones reales por sector
+     están calculadas con el 6,24 % y el registro no guarda el monto de 2026
+     de cada sector, así que no se pueden rehacer: subir el deflactor dejaría
+     la etiqueta diciendo una cosa y los porcentajes calculados con otra, que
+     es peor que quedarse viejo. Lo que se arregla es que SE DIGA. */
+  function deflactorAlDia(dd) {
+    var P = ((dd || D) || {}).presupuesto || {};
+    var ser = ((((dd || D) || {}).indicadores) || {}).inflacion || {};
+    var pts = (ser.puntos || []).filter(function (x) { return x && x.f && x.v != null; });
+    if (!P.deflactorDesde || !pts.length) return null;
+    var ult = pts[pts.length - 1];
+    return { desde: P.deflactorDesde, pct: P.deflactorPct,
+             ultimaF: ult.f, ultimaV: ult.v,
+             alDia: !(ult.f > P.deflactorDesde) };
+  }
+
   function ejeC(dd) {
     var P = ((dd || D) || {}).presupuesto || {};
     var lista = (P.sectores && P.sectores.lista) || [];
@@ -2859,9 +2894,22 @@
                 'serie para los gobiernos anteriores, deflactada con los mismos criterios, que es la misma ' +
                 'condición de archivo que bloquea el eje B. Sin ella estas variaciones no tienen contra ' +
                 'qué compararse y el nivel no sale.';
+      /* LAS DOS REDACCIONES (v970): la de «el deflactor está al día» y la de
+         «ya hay una lectura más nueva». La segunda es la que hace falta todos
+         los meses a partir del primero, y la primera el día que alguien
+         rehaga las variaciones. */
+      var defl = deflactorAlDia(dd || D);
+      r.deflactor = defl;
       r.unidades = 'Billones de pesos del presupuesto de ' + (r.anio || '') + ' y variación REAL frente al ' +
                    'año anterior, descontada una inflación de ' +
                    (r.deflactorPct != null ? miles(r.deflactorPct, 2) + ' %' : 'la publicada por el DANE') +
+                   (defl && !defl.alDia
+                     ? ' —la de ' + mesDe(defl.desde) + '—. El DANE ya publicó una más reciente, de ' +
+                       miles(defl.ultimaV, 2) + ' % en ' + mesDe(defl.ultimaF) + ', y estas variaciones NO se ' +
+                       'rehicieron con ella: el registro no guarda el monto de ' + ((r.anio || 2027) - 1) +
+                       ' de cada sector, así que cambiar solo la etiqueta dejaría los porcentajes calculados ' +
+                       'con una cifra y declarados con otra'
+                     : (defl ? ' —la de ' + mesDe(defl.desde) + ', que es la última que el DANE publicó—' : '')) +
                    '. Un porcentaje grande sobre un monto pequeño mueve pocos pesos, así que las dos ' +
                    'cifras van juntas y ninguna ordena sola' +
                    (r.sinDeflactar.length

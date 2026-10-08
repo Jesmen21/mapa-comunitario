@@ -2589,6 +2589,88 @@ console.log('\n  -- la ficha del gobernante --');
         : cerradas.length + ' cerradas, cada una con su versión y su razón');
   }
 
+
+  /* ═══ UN DEFLACTOR ENVEJECE, Y SU VEJEZ SE MIDE (v1082) ═════════════════
+     El eje C descuenta la inflación con una cifra del DANE, y el DANE la
+     reemplaza todos los meses. Su vejez vivía en la PROSA de
+     `deflactorNota` —«inflación anual de agosto»— y nada la comparaba con
+     nada: el día que saliera la de septiembre el panel seguiría declarando
+     la de agosto sin que ninguna pantalla lo notara. Es la cifra que
+     envejece sola (v903) con el agravante de la v867: declarar el método y
+     la fecha de corte y callar que el insumo ya tiene reemplazo se lee como
+     plenamente al día.
+
+     Y la cura NO es subir el número. Las variaciones reales por sector están
+     calculadas con el 6,24 % y el registro no guarda el monto del año
+     anterior por sector, así que no se pueden rehacer acá: cambiar solo la
+     etiqueta dejaría los porcentajes calculados con una cifra y declarados
+     con otra, que es peor que quedarse viejo. La cura es que se DIGA, y que
+     la comparación sea una FECHA contra otra y no una lectura de prosa. */
+  {
+    const j70f = soloCodigo(leer('js/70-seguimiento.js'));
+    const regF = JSON.parse(leer('assets/data/seguimiento-presidencial.json'));
+    const Pf = regF.presupuesto || {};
+    const serie = ((regF.indicadores || {}).inflacion) || {};
+    const pts = (serie.puntos || []).filter((x) => x && x.f && x.v != null);
+
+    comprobar('MATERIAL · la inflación es una SERIE con fechas, no una frase en una nota',
+      pts.length >= 2 && !!Pf.deflactorDesde,
+      !pts.length ? 'no hay serie `indicadores.inflacion` con puntos'
+        : !Pf.deflactorDesde ? 'el deflactor no declara `deflactorDesde`: su vejez solo se puede leer en prosa'
+        : pts.length + ' lecturas, de ' + pts[0].f + ' a ' + pts[pts.length - 1].f +
+          ' · el deflactor es de ' + Pf.deflactorDesde);
+
+    /* La comparación se CALCULA y las DOS redacciones están escritas (v970):
+       la del día que esté al día y la de hoy, que no lo está. */
+    const mitadesD = [
+      ['el eje compara las dos fechas', /alDia: !\(ult\.f > P\.deflactorDesde\)/.test(j70f)],
+      ['y la redacción de «hay una más reciente» existe',
+       /El DANE ya public[oó] una m[aá]s reciente/.test(j70f)],
+      ['y la de «es la última» también', /que es la [uú]ltima que el DANE public[oó]/.test(j70f)],
+      ['y dice POR QUÉ no se rehicieron las variaciones',
+       /no guarda el monto de ' \+ \(\(r\.anio \|\| 2027\) - 1\) \+/.test(j70f)]
+    ];
+    const malD = mitadesD.filter((x) => !x[1]).map((x) => x[0]);
+    comprobar('el eje C compara la fecha del deflactor con la última lectura, y escribe las dos redacciones',
+      malD.length === 0,
+      malD.length ? 'falla: ' + malD.join(' · ')
+                  : 'la vejez del deflactor se mide contra la serie, no se lee en una nota');
+
+    /* Y LA MEDICIÓN DE HOY, impresa. No es un trinquete: el día que alguien
+       rehaga las variaciones con la cifra nueva, esta línea lo dice y sigue
+       en verde — mide el estado, no exige que esté viejo. */
+    const ultF = pts.length ? pts[pts.length - 1].f : null;
+    const ultV = pts.length ? pts[pts.length - 1].v : null;
+    const alDia = !!(ultF && Pf.deflactorDesde && !(ultF > Pf.deflactorDesde));
+    comprobar('y el estado del deflactor va medido y dicho, no supuesto',
+      pts.length > 0,
+      !pts.length ? 'sin serie no hay con qué comparar'
+        : alDia ? 'al día: el deflactor (' + Pf.deflactorPct + ' %) es la última lectura del registro'
+        : 'VIEJO y declarado: deflacta con ' + Pf.deflactorPct + ' % de ' + Pf.deflactorDesde +
+          ' y la última lectura es ' + ultV + ' % de ' + ultF);
+
+    /* La trampa que esto evita: que alguien suba el número y deje los
+       porcentajes calculados con el viejo. Si el deflactor coincide con la
+       última lectura, los `realPct` tienen que poder rehacerse —y hoy no
+       pueden, porque falta el monto del año anterior—, así que coincidir sin
+       esa base sería la etiqueta mintiendo. */
+    const sec = ((Pf.sectores || {}).lista) || [];
+    const conBase = sec.filter((x) => x.bnAnterior != null).length;
+    const coincide = !!(ultV != null && Pf.deflactorPct === ultV);
+    comprobar('y si el deflactor se actualiza, las variaciones tienen que poder rehacerse',
+      !coincide || conBase === sec.length,
+      !coincide
+        ? 'el deflactor no se movió, y la pantalla dice por qué: sin el monto del año anterior no hay cómo rehacer los ' + sec.length + ' sectores'
+        : conBase === sec.length ? 'coincide con la última lectura y los ' + sec.length + ' sectores traen su base para rehacerse'
+        : 'el deflactor se actualizó a la última lectura pero ' + (sec.length - conBase) +
+          ' sectores no traen el monto del año anterior: los porcentajes quedaron calculados con otra cifra');
+
+    /* GUARDA DE LA GUARDA (v878): que llegue al papel. */
+    comprobar('y el aviso LLEGA a la pantalla, dentro de las unidades del eje',
+      /r\.deflactor = defl;/.test(j70f) && /defl && !defl\.alDia/.test(j70f),
+      'va en `unidades`, que es el renglón que la ficha pinta debajo del título del eje');
+  }
+
   /* ═══ LA VÍA: POR CUÁL RENGLÓN DEL CRITERIO ENTRA CADA HECHO (v963) ════
      La v962 escribió en su bitácora que el caso del DANE entraba por dos
      renglones del `incluye`, y uno de los dos era falso: la remoción que

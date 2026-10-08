@@ -24691,3 +24691,96 @@ empeora el orden»**: 9 saltos antes, 9 después.
   un registro anterior con al menos 20 entradas revisadas (v1075). `pendiente`
 * **Y no toca la escala de gravedad común**, segunda puerta del veredicto y
   decisión de quien firma el módulo. `pendiente`
+
+## v1082 · la inflación de septiembre, y el deflactor que envejece
+
+Llegó como captura de un TikTok: un clip de Caracol con el rótulo «Otro
+'Milagro' de la 'Patria Milagro' · Golpe al bolsillo de los colombianos: LA
+INFLACIÓN SE DISPARÓ: 6,29 %». La cifra es cierta; el encuadre no entra.
+
+### Lo que se comprobó antes de escribir nada
+
+La búsqueda devolvió **siete medios independientes con la misma cifra** —RCN,
+El País, El Colombiano, Semana, Infobae, Colombia.com, minuto60— y el boletín
+del DANE del 7 de octubre: anual 6,29 %, mensual 0,37 %, acumulado 5,74 %.
+Converge, al revés que el caso del presupuesto de la v1065, donde la búsqueda
+se contradecía a sí misma.
+
+**Y hay una comprobación que este registro sí pudo hacer solo**, que vale más
+que una cita más: el acumulado a agosto ya estaba acá, 5,35 %. Compuesto con
+el 0,37 % mensual de septiembre da **5,740 %** — exactamente el 5,74 %
+reportado. Las cifras nuevas cuadran con las que el registro ya tenía.
+
+### Lo que se registró, y cómo
+
+Entrada `ipc-septiembre-2026`, `resultado` y `verificado`, con cinco fuentes y
+**sin `nivelGobierno`**: a un resultado no se le declara de qué nivel es la
+decisión, porque no es una decisión (v1064). Y su contrapunto repite la vara
+que la entrada de agosto ya traía, ahora con nombre:
+
+> *Este dato va como CONTEXTO, no como resultado de este gobierno… la pieza
+> que trajo esta cifra a este registro la presentaba como «golpe al bolsillo»
+> de un gobierno, y atribuir así una serie anual es el mismo error de línea
+> base que este seguimiento le señala a otras narrativas.*
+
+### El hallazgo: un insumo que caduca y nadie lo mira
+
+El eje C descuenta la inflación con una cifra del DANE **que el DANE reemplaza
+todos los meses**. Su vejez vivía en la PROSA de `deflactorNota` —«inflación
+anual de agosto»— y nada la comparaba con nada: desde el 7 de octubre el panel
+declaraba la de agosto y ninguna pantalla lo notaba. Es la cifra que envejece
+sola de la v903, con el agravante de la v867 — declarar el método y la fecha
+de corte y callar que el insumo ya tiene reemplazo se lee como plenamente al
+día.
+
+**Y la cura NO era subir el número.** Medido: los `realPct` por sector están
+precalculados y el registro **no guarda el monto de 2026 de cada sector**, así
+que no se pueden rehacer acá. Cambiar solo la etiqueta dejaría los porcentajes
+calculados con una cifra y declarados con otra, que es peor que quedarse
+viejo. La cura es que **se diga**, y que la comparación sea una FECHA contra
+otra:
+
+* `indicadores.inflacion`, una serie con las tres lecturas —julio 6,03 %,
+  agosto 6,24 %, septiembre 6,29 %—, que `seriesGraficas` descubre sola por
+  tener `puntos`, así que se dibuja sin cablear nada;
+* `presupuesto.deflactorDesde`, la fecha de la cifra que se usa;
+* y el eje C compara las dos y lo escribe, **con sus dos redacciones** (v970):
+  la de «ya hay una más reciente» y la de «es la última que el DANE publicó».
+
+En el papel, hoy: *«descontada una inflación de 6,24 % —la de agosto de
+2026—. El DANE ya publicó una más reciente, de 6,29 % en septiembre de 2026, y
+estas variaciones NO se rehicieron con ella…»*
+
+### La guarda, y sus siete inyecciones en rojo
+
+| Inyección | Qué se puso en rojo |
+|---|---|
+| el estado de la v1081: sin serie y sin fecha | `no hay serie indicadores.inflacion con puntos` |
+| la serie existe y el deflactor no declara su fecha | `su vejez solo se puede leer en prosa` |
+| el eje deja de comparar las fechas | `falla: el eje compara las dos fechas` |
+| desaparece «hay una más reciente» | `falla: y la redacción de «hay una más reciente» existe` |
+| desaparece «es la última» | `falla: y la de «es la última» también` |
+| alguien sube el deflactor sin poder rehacer | `7 sectores no traen el monto del año anterior` |
+| el aviso deja de llegar a la pantalla | `falla la guarda de la guarda` |
+
+La sexta es la importante: **si alguien pone el deflactor en 6,29 sin agregar
+el monto del año anterior por sector, la corrida se pone roja.** La guarda no
+exige que el deflactor esté viejo —mide el estado, no el número—, así que el
+día que alguien traiga las bases y lo actualice, sigue en verde.
+
+Y dos trampas de método, las dos ya escritas en CLAUDE.md y las dos cobradas
+igual: un `grep … | head` con `|| echo` **mide el `head` y no el `grep`**, así
+que el aviso de que `mesDe` no existía no se imprimió; y dos inyecciones no
+mordieron por anclas con escapes `\uXXXX` donde el archivo tiene las tildes
+literales — no escribieron nada, que es lo correcto.
+
+### Lo que esta versión NO hace
+
+* **No actualiza el deflactor a 6,29 %**, y la razón va en pantalla: sin el
+  monto de 2026 por sector no hay cómo rehacer las variaciones. Lo que falta
+  son siete cifras del PGN 2026 por sector. `pendiente`
+* **No mueve el veredicto.** Abelardo de la Espriella sigue en «Sin dictamen»:
+  este dato es un resultado del país y no entra en ningún eje. `pendiente`
+* **No añade la inflación a ningún eje.** Es contexto, y meterla en el eje C
+  —que mide el rumbo del gasto— sería confundir el deflactor con lo
+  deflactado. `pendiente`

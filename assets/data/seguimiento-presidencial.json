@@ -134,6 +134,45 @@
       ]
     },
     {
+      "fecha": "2026-10-07",
+      "id": "ipc-septiembre-2026",
+      "precision": "exacta",
+      "categoria": "economia",
+      "titulo": "La inflación anual sube a 6,29 % en septiembre, según el DANE, y encadena el tercer mes de alza por encima del rango meta del Banco de la República",
+      "categoriaProbatoria": "hecho-probado",
+      "tipoMedicion": "resultado",
+      "detalle": "El DANE publicó el 7 de octubre de 2026 que la inflación anual llegó a 6,29 % en septiembre, frente al 6,24 % de agosto y al 6,03 % de julio. La variación mensual fue de 0,37 % y el acumulado del año va en 5,74 %, contra 4,55 % en el mismo tramo de 2025. En septiembre de 2025 la anual era de 5,18 %: una subida de 1,11 puntos en el año. Queda por encima del rango meta del Banco de la República, que es de 2 % a 4 % con centro en 3 %. Es además la cifra de referencia para la negociación del salario mínimo de 2027. Las divisiones que más subieron en el mes fueron educación (1,43 %) y alimentos y bebidas no alcohólicas (0,78 %).\n\nUna comprobación que este registro sí pudo hacer por su cuenta: el acumulado publicado cuadra con lo que ya estaba acá. El acumulado a agosto era 5,35 %, y compuesto con el 0,37 % mensual de septiembre da 5,740 % — exactamente el 5,74 % reportado. No es una fuente más: es que las cifras nuevas son coherentes con las que el registro ya tenía.",
+      "contrapunto": "Este dato va como CONTEXTO, no como resultado de este gobierno, igual que el de agosto. La tendencia al alza venía de antes del 7 de agosto y dos meses de gestión no explican una inflación anual. Y conviene decirlo porque circula al revés: la pieza que trajo esta cifra a este registro la presentaba como «golpe al bolsillo» de un gobierno, y atribuir así una serie anual es el mismo error de línea base que este seguimiento le señala a otras narrativas. Primero se mira cuándo empieza la curva y después se dice de quién es.",
+      "tipoFuente": "verificado",
+      "fuentes": [
+        {
+          "n": "DANE · índice de precios al consumidor, septiembre de 2026",
+          "u": "https://www.dane.gov.co/",
+          "rol": "acto"
+        },
+        {
+          "n": "Noticias RCN · Inflación anual en Colombia llegó al 6,29 % en septiembre, según el DANE",
+          "u": "https://www.noticiasrcn.com/economia/inflacion-anual-en-colombia-llego-al-6-29-en-septiembre-1069516",
+          "rol": "acto"
+        },
+        {
+          "n": "El Colombiano · Inflación en Colombia llegó a 6,29 % en septiembre de 2026",
+          "u": "https://www.elcolombiano.com/negocios/inflacion-colombia-ipc-septiembre-2026-6-29-por-ciento-BC42047600",
+          "rol": "acto"
+        },
+        {
+          "n": "El País (Cali) · La inflación anual mantiene la tendencia al alza; según el DANE, los precios variaron 6,29 % a septiembre",
+          "u": "https://www.elpais.com.co/economia/la-inflacion-anual-en-colombia-mantiene-la-tendencia-alza-con-629-a-septiembre-segun-informe-del-dane-0706.html",
+          "rol": "acto"
+        },
+        {
+          "n": "Semana · Inflación en septiembre fue de 6,29 %: subida de precios no se detiene",
+          "u": "https://www.semana.com/economia/macroeconomia/articulo/inflacion-en-septiembre-fue-de-629-subida-de-precios-no-se-detiene/202616/",
+          "rol": "acto"
+        }
+      ]
+    },
+    {
       "fecha": "2026-10-06",
       "precision": "exacta",
       "categoria": "creditos",
@@ -9192,6 +9231,48 @@
           "u": "https://www.lasillavacia.com/detector-de-mentiras/enganoso/detector-logro-de-petro-en-incautaciones-de-cocaina-es-enganoso/"
         }
       ]
+    },
+    "inflacion": {
+      "titulo": "La inflación anual desde la posesión",
+      "unidad": "variación anual del IPC, en %",
+      "formato": "pct",
+      "sentido": "sube-malo",
+      "color": "#C95A55",
+      "leyenda": "Tres lecturas del DANE: julio, agosto y septiembre de 2026. La serie sube en las tres y las tres quedan por encima del rango meta del Banco de la República (2 % a 4 %). Va como contexto y no como resultado de este gobierno: la curva empieza antes del 7 de agosto, y esta serie publica el número sin decir de quién es. Es además el dato con el que el eje C descuenta la inflación del presupuesto, así que su última lectura se compara con la que ese eje declara.",
+      "fuentes": [
+        {
+          "n": "DANE · índice de precios al consumidor, septiembre de 2026",
+          "u": "https://www.dane.gov.co/",
+          "rol": "acto"
+        },
+        {
+          "n": "Noticias RCN · Inflación anual en Colombia llegó al 6,29 % en septiembre, según el DANE",
+          "u": "https://www.noticiasrcn.com/economia/inflacion-anual-en-colombia-llego-al-6-29-en-septiembre-1069516",
+          "rol": "acto"
+        },
+        {
+          "n": "El Colombiano · Inflación en Colombia llegó a 6,29 % en septiembre de 2026",
+          "u": "https://www.elcolombiano.com/negocios/inflacion-colombia-ipc-septiembre-2026-6-29-por-ciento-BC42047600",
+          "rol": "acto"
+        }
+      ],
+      "puntos": [
+        {
+          "f": "2026-07-31",
+          "v": 6.03,
+          "e": "Julio de 2026"
+        },
+        {
+          "f": "2026-08-31",
+          "v": 6.24,
+          "e": "Agosto de 2026, el dato con el que el eje C deflacta"
+        },
+        {
+          "f": "2026-09-30",
+          "v": 6.29,
+          "e": "Septiembre de 2026, publicado el 7 de octubre"
+        }
+      ]
     }
   },
   "contradicciones": {
@@ -10260,7 +10341,8 @@
     "base": "pgn-2027-monto-aprobado-comisiones",
     "totalBn": 634.9,
     "deflactorPct": 6.24,
-    "deflactorNota": "Inflación anual de agosto de 2026 publicada por el DANE el 7 de septiembre y registrada en este mismo seguimiento. Es con lo que se descuenta la inflación para pasar de pesos corrientes a variación real.",
+    "deflactorDesde": "2026-08-31",
+    "deflactorNota": "Inflación anual de agosto de 2026 publicada por el DANE el 7 de septiembre y registrada en este mismo seguimiento. Es con lo que se descuenta la inflación para pasar de pesos corrientes a variación real. Las variaciones reales por sector están CALCULADAS con esta cifra y el registro no guarda el monto de 2026 de cada sector, así que no se pueden rehacer acá: cambiar el deflactor sin rehacerlas dejaría la etiqueta diciendo una cosa y los porcentajes calculados con otra. Por eso lleva su fecha, `deflactorDesde`, y el eje compara esa fecha con la última lectura de inflación del registro y lo dice en pantalla.",
     "heroe": {
       "titulo": "En 2027 los intereses de la deuda se llevan más que toda la inversión pública",
       "interesesBn": 94.42,

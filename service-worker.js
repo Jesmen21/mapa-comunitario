@@ -1,4 +1,4 @@
-const URBIS_CACHE = 'urbis-v1081-seguimiento-presidencial-oct-8';
+const URBIS_CACHE = 'urbis-v1082-la-inflacion-de-septiembre-y-el-deflactor-que-envejece';
 const URBIS_ASSETS = [
   './',
   './index.html',

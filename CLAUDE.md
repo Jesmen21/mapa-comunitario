@@ -1086,6 +1086,16 @@ sección al final de este archivo.
 * **Un estado se CALCULA, nunca se escribe a mano** (v903). Una cifra tecleada
   dentro de un texto fijo envejece sola, y una bandera que alguien tiene que
   acordarse de bajar es una cifra vieja esperando.
+* **Y un INSUMO que la fuente reemplaza cada mes lleva su FECHA, no su
+  descripción** (v1082). El eje C deflactaba con «la inflación anual de
+  agosto» escrito en prosa: el día que el DANE publicó la de septiembre, el
+  panel siguió declarando la vieja y ninguna pantalla lo notó. Una fecha se
+  compara contra la última lectura; una frase no. Y **la cura no es subir el
+  número**: los porcentajes estaban calculados con el viejo y el registro no
+  guarda la base para rehacerlos, así que cambiar solo la etiqueta deja los
+  porcentajes calculados con una cifra y declarados con otra — peor que
+  quedarse viejo. La cura es decirlo, con las dos redacciones, y que la
+  guarda se ponga roja si alguien actualiza la etiqueta sin la base.
 * **Las dos redacciones se escriben, la de cero y la de N** (v970): la segunda
   es justo la que hace falta el día que el material vuelva.
 * **Un dato que ninguna pantalla alcanza se ve igual que uno ausente** — es la
