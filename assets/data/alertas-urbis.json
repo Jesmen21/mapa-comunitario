@@ -1,7 +1,22 @@
 {
   "_comentario": "Alertas EDITORIALES del equipo URBIS (desastres verificados). Se publican editando este archivo — no requieren la hoja de cálculo ni credenciales. El mapa las dibuja junto a las que ya están en la base; si coinciden las coordenadas, se muestra una sola. Reglas: solo desastres naturales de fuente oficial, nunca violencia ni homicidios; coordenadas geocodificadas, jamás estimadas a ojo; sin fuente no se publica.",
-  "actualizado": "2026-10-06",
+  "actualizado": "2026-10-08",
   "alertas": [
+    {
+      "tipo": "Desbordamiento de arroyo o canal",
+      "titulo": "Mujer de 72 años muere al colapsar su vivienda por desbordamiento de una cañada — 7 de octubre de 2026, Fusagasugá, Cundinamarca",
+      "lat": 4.3452,
+      "lng": -74.3618,
+      "desde": "2026-10-07",
+      "expira": "2026-10-12",
+      "lineas": [
+        "📅 Ocurrió hacia la medianoche entre el martes 6 y el miércoles 7 de octubre de 2026 (hora de Colombia), cuando fuertes lluvias taponaron rejillas, colapsaron un tramo del alcantarillado y provocaron el desbordamiento de una cañada que golpeó una vivienda en el barrio La Marsella (calle 22 con carrera 8), Fusagasugá, Cundinamarca.",
+        "📊 Luz Marina Ospina Poveda, de 72 años, murió arrastrada por el agua tras el colapso de su casa; su cuerpo fue hallado hacia las 7:39 a. m. en la quebrada Manila, sector El Capri. Una joven de 20 años y un niño de 6 que también estaban en la vivienda fueron rescatados con vida. Otras tres viviendas resultaron afectadas, además de encharcamientos cerca del hospital municipal y árboles caídos en la vía que comunica con Pasca.",
+        "ℹ️ Alerta informativa del equipo URBIS con base en la Gobernación de Cundinamarca y prensa nacional (Infobae, El Tiempo, El Espectador, Pulzo). No es un reporte ciudadano. Coordenadas de referencia: centro urbano de Fusagasugá; Nominatim no fue alcanzable desde este contenedor para geocodificar con precisión el barrio La Marsella o el sector El Capri."
+      ],
+      "fuente": "Gobernación de Cundinamarca / Infobae / El Tiempo / El Espectador / Pulzo",
+      "url": "https://www.infobae.com/colombia/2026/10/07/hallan-sin-vida-a-una-mujer-en-fusagasuga-su-casa-colapso-tras-las-fuertes-lluvias/"
+    },
     {
       "tipo": "Tormenta",
       "titulo": "Granizada y vendaval dejan techos colapsados, árboles caídos y el aeropuerto El Dorado suspendido — 5 de octubre de 2026, Bogotá",

@@ -1,4 +1,4 @@
-const URBIS_CACHE = 'urbis-v1079-fondo-milagro-presupuestado-y-plan-ante-el-nino';
+const URBIS_CACHE = 'urbis-v1080-alerta-fusagasuga-oct-7';
 const URBIS_ASSETS = [
   './',
   './index.html',
