@@ -1,4 +1,4 @@
-const URBIS_CACHE = 'urbis-v1080-alerta-fusagasuga-oct-7';
+const URBIS_CACHE = 'urbis-v1081-seguimiento-presidencial-oct-8';
 const URBIS_ASSETS = [
   './',
   './index.html',

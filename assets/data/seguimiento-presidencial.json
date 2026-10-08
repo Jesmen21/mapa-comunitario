@@ -3,8 +3,8 @@
   "presidente": "Abelardo de la Espriella",
   "periodo": "2026 – 2030",
   "posesion": "2026-08-07",
-  "actualizado": "2026-10-07",
-  "proximaActualizacion": "2026-10-08",
+  "actualizado": "2026-10-08",
+  "proximaActualizacion": "2026-10-09",
   "categorias": {
     "gobierno": {
       "nombre": "Gobierno y decretos",
@@ -73,6 +73,66 @@
     }
   },
   "entradas": [
+    {
+      "fecha": "2026-10-08",
+      "precision": "exacta",
+      "categoria": "gobierno",
+      "titulo": "El Gobierno difunde un nuevo balance de seguridad: 32.029 capturas y 135.515 kg de droga incautada desde el 7 de agosto",
+      "categoriaProbatoria": "hecho-probado",
+      "tipoMedicion": "actividad",
+      "indicadores": [],
+      "nivelGobierno": "nacional",
+      "detalle": "El presidente Abelardo de la Espriella presentó el 8 de octubre un nuevo balance acumulado de la Fuerza Pública desde su posesión el 7 de agosto: 32.029 capturas y 135.515 kilogramos de droga incautada.",
+      "contrapunto": "Las cifras provienen enteramente del propio Gobierno y no han sido objeto de una auditoría independiente ni de una verificación cruzada por organismos de control; varios medios se limitaron a reproducir el comunicado oficial, sin indicar siempre la misma base temporal entre un corte y otro. Un chequeo previo de La Silla Vacía sobre una cifra anterior de capturas de este mismo gobierno concluyó que el dato no era inventado ni excepcional, pero señaló que el Gobierno no revela la metodología de sus balances acumulados y que la Policía Nacional, consultada directamente, ha dado cifras propias que no necesariamente coinciden con lo que el presidente anuncia en redes; ese mismo chequeo encontró que la mayoría de esas capturas corresponden a delitos comunes —en su mayoría en flagrancia, por microtráfico, hurto y lesiones— y no a golpes contra estructuras criminales como el balance sugiere.",
+      "tipoFuente": "declaracion",
+      "fuentes": [
+        {
+          "n": "El Heraldo · De la Espriella reporta balance contra grupos armados: 32.029 capturas desde el 7 de agosto",
+          "u": "https://www.elheraldo.co/colombia/2026/10/08/de-la-espriella-reporta-balance-contra-grupos-armados-32029-capturas-desde-el-7-de-agosto/",
+          "rol": "acto"
+        },
+        {
+          "n": "La Silla Vacía · Detector de Mentiras · «12 mil capturados»: el dato de Abelardo no es inventado ni excepcional",
+          "u": "https://www.lasillavacia.com/detector-de-mentiras/12-mil-capturados-dato-de-abelardo-no-es-inventado-ni-excepcional/",
+          "rol": "contexto"
+        }
+      ]
+    },
+    {
+      "fecha": "2026-10-07",
+      "precision": "exacta",
+      "categoria": "exterior",
+      "titulo": "De la Espriella sostiene una videollamada con el candidato presidencial brasileño Flávio Bolsonaro sobre cooperación antinarcóticos en la frontera amazónica, y propone una reunión bilateral presencial",
+      "categoriaProbatoria": "hecho-probado",
+      "tipoMedicion": "actividad",
+      "indicadores": [],
+      "nivelGobierno": "nacional",
+      "detalle": "El presidente Abelardo de la Espriella sostuvo el 7 de octubre de 2026 una videollamada con el senador brasileño Flávio Bolsonaro, candidato presidencial de Brasil que disputa la segunda vuelta contra Luiz Inácio Lula da Silva, prevista para el 25 de octubre de 2026. La conversación, centrada en la cooperación antinarcóticos en la frontera amazónica de unos 1.600 kilómetros entre los dos países, fue transmitida por el canal de YouTube de Eduardo Bolsonaro, hermano del candidato. Flávio Bolsonaro pidió el respaldo de Colombia para la ofensiva antinarcóticos de su campaña y planteó coordinación en capturas, extradiciones e intercambio de inteligencia sobre redes de narcotráfico en la zona fronteriza. De la Espriella respaldó la propuesta, señaló que Colombia produce entre el 75 % y el 80 % de la cocaína mundial y que, con frontera común, los dos países «tienen que ponerse de acuerdo»; calificó la extradición de «justicia restaurativa» y propuso una reunión bilateral presencial en Colombia. Bolsonaro lo invitó a su eventual posesión, prevista para enero de 2027; De la Espriella respondió que no podría asistir porque se comprometió a no salir de Colombia durante su mandato.",
+      "contrapunto": "Flávio Bolsonaro es un candidato en campaña y no un jefe de Estado en ejercicio, y la segunda vuelta en la que compite contra Lula da Silva seguía sin resolverse a la fecha de la llamada: cualquier coordinación anunciada es, por ahora, una intención entre un presidente y un aspirante extranjero, no un acuerdo de gobierno a gobierno. La transmisión corrió por el canal de Eduardo Bolsonaro, hermano del candidato, que reside en Estados Unidos desde marzo de 2025 y fue condenado en junio de 2026 por el Supremo Tribunal Federal de Brasil a cuatro años y dos meses de prisión por coacción en el curso de un proceso judicial, una pena que no se ha podido ejecutar porque permanece fuera de Brasil.",
+      "tipoFuente": "verificado",
+      "fuentes": [
+        {
+          "n": "Noticias RCN · Presidente De la Espriella habló con candidato que puntúa en las elecciones de Brasil sobre lucha contra el narco",
+          "u": "https://www.noticiasrcn.com/colombia/presidente-de-la-espriella-hablo-con-candidato-que-puntua-en-las-elecciones-de-brasil-sobre-lucha-contra-el-narco-1069597",
+          "rol": "acto"
+        },
+        {
+          "n": "Semana · Abelardo De La Espriella habla con Flávio Bolsonaro y lo respalda de cara a la segunda vuelta en Brasil; así fue el diálogo",
+          "u": "https://www.semana.com/mundo/articulo/abelardo-de-la-espriella-habla-con-flavio-bolsonaro-y-lo-respalda-de-cara-a-la-segunda-vuelta-en-brasil-asi-fue-el-dialogo/202629/",
+          "rol": "contexto"
+        },
+        {
+          "n": "AFP vía Yahoo Noticias · El presidenciable brasileño Bolsonaro pide ayuda contra el narco al presidente de Colombia",
+          "u": "https://es-us.noticias.yahoo.com/presidenciable-brasile%C3%B1o-bolsonaro-pide-ayuda-114313632.html",
+          "rol": "contexto"
+        },
+        {
+          "n": "Unitel · Presidenciable brasileño Bolsonaro pide ayuda contra el narco al presidente de Colombia",
+          "u": "https://unitel.bo/noticias/agencias/presidenciable-brasileno-bolsonaro-pide-ayuda-contra-el-narco-al-presidente-de-colombia-CB23990453",
+          "rol": "contexto"
+        }
+      ]
+    },
     {
       "fecha": "2026-10-06",
       "precision": "exacta",
