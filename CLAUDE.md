@@ -1236,6 +1236,34 @@ sección al final de este archivo.
   ninguna pantalla la pinte creyendo que es la lectura. Y **un eje no es
   `publicable` sin su lectura** (v880): el nivel se arma en UNA función, así
   que un eje nuevo no puede armarlo de otra manera.
+* **Y los CINCO peldaños de un eje llevan su lectura, o la razón de que el eje
+  no los alcance** (v1091). Tres estados y no dos, porque piden cosas
+  distintas (v899): `lectura`, `no-alcanzable` —un límite del eje, con su
+  razón, que un lector debería saber— y `sin-declarar`, que sí es trabajo y
+  sale en ámbar. Los dos últimos se leían igual, ausentes. Y lo que lo hace
+  **fallar cerrado**: la escalera de un eje se calcula recorriendo `ESCALERA`
+  y no las claves de su propia escala, así que un peldaño nuevo nace
+  `sin-declarar` y APARECE en vez de quedarse sin fila. Lo que el eje D
+  declara con eso merece publicarse: **no puede decir que un gobierno esté
+  bien** —cuenta muertes confirmadas, y cero confirmadas no es cero ocurridas
+  (v875)—, así que es un eje que solo baja.
+* **Y una bandera que declara una capacidad se ATA a que la capacidad exista**
+  (v1091). `PESO_EJE[k].escala` era un booleano escrito a mano y la existencia
+  de la escala es un hecho del código: dos codificaciones de «¿este eje tiene
+  escala?» que ya se habían separado —decía `true` para los ejes A y B y
+  ninguno tenía objeto de escala—. La cura no fue la misma para los dos, y la
+  pregunta que la decide es si la capacidad existe en otro sitio: **el eje A SÍ
+  tenía escala, `ESCALERA` misma**, cuyas definiciones se escribieron para él,
+  así que su escala se DERIVA de ella —derivar es lo correcto cuando no existe
+  un cambio razonable que deba mover una y no la otra (v879)—; el eje B no la
+  tenía y su bandera era falsa, así que baja a `false`, que no es una regresión
+  sino una declaración que dejó de mentir.
+* **Y un eje SIN la escala lo DICE, con su causa separada** (v1091). Antes no
+  pintaba nada y tres de los cuatro ejes salían en blanco, que se lee igual que
+  si no hiciera falta. Y su causa no es «falta un dato»: sin escala el eje **no
+  puede publicar peldaño por más material que consiga**, así que pide una
+  decisión y no un archivo — y si la tabla dijera que sí la tiene, la propia
+  ficha denuncia la contradicción.
 * **Y el conteo de palomitas es parte de la lectura de una corrida** (v1090).
   Una guarda nueva con una variable de otro bloque tiró un `ReferenceError`
   que **mató la corrida antes del resumen**; el `grep` de `✗` no encontró nada

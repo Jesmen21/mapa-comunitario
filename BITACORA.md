@@ -25477,3 +25477,110 @@ prohíbe. Se rehizo buscando las dos cosas dentro del trozo de la función.
   lectura antes de dejarlo pasar. `pendiente`
 * **No toca `ESCALERA[].d`.** Sigue siendo la definición del eje de la palabra
   y sigue siendo correcta ahí, rotulada. `cerrado en v1090 · medido y declinado`
+
+## v1091 · los cinco peldaños de cada eje, y la bandera que mentía
+
+Pedido: seguir con los demás peldaños. La v1090 le dio lectura al peldaño que
+el eje PUBLICA; faltaban los otros cuatro, y el hueco vivía en la prosa de una
+bitácora —«no son alcanzables, medido y declinado»—, que es exactamente la
+forma en que una declaración envejece sin que nada la mida.
+
+### Tres estados y no dos, porque piden cosas distintas
+
+| Estado | Qué es | Qué pide |
+|---|---|---|
+| `lectura` | el eje llega a ese peldaño y dice qué significa | nada |
+| `no-alcanzable` | la escala del eje **no puede** producirlo, con su razón | nada: es un límite del eje, y un lector debería saberlo |
+| `sin-declarar` | el eje puede llegar y nadie escribió la lectura | trabajo, y sale en ámbar |
+
+Los dos últimos se leían igual —ausentes— y son cosas distintas: una es un
+límite y la otra es deuda nuestra. Es la distinción de la v899.
+
+Y lo que hace que esto **falle cerrado** (v880): la escalera de un eje se
+calcula recorriendo `ESCALERA`, no las claves de su propia escala. Así un
+peldaño nuevo nace `sin-declarar` y **aparece**, en vez de quedarse sin fila y
+desaparecer.
+
+### Lo que el eje D declara, y que importa publicar
+
+Sus tres peldaños altos son `no-alcanzable`, y la razón es fuerte: **este eje
+no puede decir que un gobierno esté bien.** Cuenta muertes de persona protegida
+confirmadas, y cero confirmadas no es cero ocurridas — es que este registro no
+tiene ninguna documentada, así que con cero el eje devuelve null y no un
+peldaño bueno (v875). Es un eje que **solo baja**, y eso ahora está escrito
+donde el lector lo ve en vez de en un comentario.
+
+Y «Dudosa» tampoco lo alcanza, por otra razón: una sola muerte de persona
+protegida ya entra en «Poco fiable», porque el artículo 135 la tipifica como un
+crimen y no como una duda. Poner «Dudosa» en medio sería inventar un umbral
+para suavizar el primero.
+
+### El hallazgo: una bandera que mentía desde hacía versiones
+
+Al medir los cuatro ejes para pintar sus escaleras salió esto:
+
+| eje | `PESO_EJE[k].escala` | ¿existe el objeto de escala? |
+|---|---|---|
+| A | **true** | **no** |
+| B | **true** | **no** |
+| C | false | no |
+| D | true | sí |
+
+**Clase B, y ya se habían separado.** La bandera es una declaración escrita a
+mano y la existencia de la escala es un hecho del código; dos codificaciones de
+«¿este eje tiene escala?» que nadie ataba.
+
+Y la cura no fue la misma para los dos:
+
+* **El eje A SÍ tiene escala, y es `ESCALERA` misma.** Sus cinco definiciones
+  hablan de casos de corrupción, de cambios de postura y del porcentaje
+  verificado **porque se escribieron para él**: son su lectura, no una
+  prestada. Así que su escala se **deriva** de `ESCALERA` en vez de copiarse —
+  copiar los cinco textos dejaría dos listas que coinciden hoy y se separan la
+  primera vez que alguien corrija una. Acá derivar es lo CORRECTO porque no
+  existe un cambio razonable que deba mover una y no la otra: son la misma
+  cosa (v879). El eje A pasa a tener sus cinco peldaños con lectura.
+* **El eje B no la tiene, y su bandera era falsa.** Pasa a `false`. No es una
+  regresión: es una declaración que dejó de mentir.
+
+Y queda **atado**: la guarda compara la bandera con la existencia del objeto,
+así que poner una sin escribir la otra sale en rojo.
+
+### Y un eje sin escala lo DICE
+
+Antes no pintaba nada, y tres de los cuatro ejes salían sin una palabra sobre
+sus peldaños — que desde afuera se lee igual que si no hiciera falta. Ahora lo
+dice, y distingue su causa de la otra: sin escala el eje **no puede publicar
+peldaño por más material que consiga**, así que pide una decisión y no un
+archivo. Y si la tabla dijera que sí la tiene, la propia ficha denuncia la
+contradicción.
+
+### Cómo queda en el papel
+
+| eje | qué dice |
+|---|---|
+| A | Los 5 peldaños en este eje: 5 con su lectura · 0 que este eje no alcanza |
+| B | Este eje no tiene escala escrita… pide una decisión y no un dato |
+| C | Este eje no tiene escala escrita… pide una decisión y no un dato |
+| D | Los 5 peldaños en este eje: 2 con su lectura · 3 que este eje no alcanza |
+
+La lista va **plegada**, por la misma razón que las fuentes de un gráfico: son
+cinco renglones entre eje y eje. Lo que el pliegue no esconde es el recuento —
+el resumen lo dice, y un eje con peldaños sin declarar lo anuncia en ámbar sin
+que nadie despliegue.
+
+### Y una guarda mía que no podía fallar
+
+La primera versión de la aserción del eje sin escala era un booleano con un
+`=== false ||` en medio que la dejaba casi incapaz de fallar, y **una guarda
+que no puede fallar es un verde** (v878). Se rehizo en cuatro mitades, cada una
+diciendo cuál falló (v973).
+
+### Lo que esta versión NO hace
+
+* **No escribe la escala del eje B ni la del C.** Las dos son decisiones de
+  quien firma el módulo —qué significaría «Dudosa» en deterioro institucional,
+  qué en orientación del gasto— y ahora la ficha lo dice con esas palabras en
+  vez de callarlo. `pendiente`
+* **No cambia el dictamen.** Sigue en «Nada fiable» por saturación: esta tanda
+  explica los peldaños, no mueve ninguno. `cerrado en v1091 · medido y declinado`

@@ -13,7 +13,7 @@
 
    La versión va acá y en vision-territorial.html, idéntica, como en los
    otros siete archivos de versión del sitio: revisar.js lo comprueba. */
-const VT_CACHE = 'urbis-vt-v1090-la-lectura-del-peldano-por-eje';
+const VT_CACHE = 'urbis-vt-v1091-los-cinco-peldanos-de-cada-eje';
 const VT_ASSETS = [
   './vision-territorial.html',
   './css/90-vt.css',

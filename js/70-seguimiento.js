@@ -2667,7 +2667,11 @@
               documentadas: doc.length, conIdentidad: conId, sinIdentidad: sinId,
               sinDeclarar: sinDeclarar, tensionRetorica: retoricas,
               pendientes: pendientes,
-              nivel: null, publicable: false, falta: '' };
+              nivel: null, publicable: false, falta: '',
+              /* Su escala y su escalera, como cualquier eje (v1091): la
+                 pantalla no tiene que saber que este eje es un caso
+                 especial. */
+              escala: ESCALA_EJE_A, escaleraEje: escaleraDeEje(ESCALA_EJE_A) };
     if (sinDeclarar) {
       r.falta = sinDeclarar + ' de ' + cn(doc.length, 'contradicción documentada', 'contradicciones documentadas') +
       pl(sinDeclarar, ' no declara', ' no declaran') + ' si las dos ' +
@@ -2951,6 +2955,32 @@
      inventa uno de paso: un criterio escrito mirando este registro nacería
      `construida-para-el-caso` y sin validar (v965), y el pliego es explícito
      en que el nivel se calcula y no se asigna. */
+  /* ══ LA ESCALA DEL EJE A (v1091) ═══════════════════════════════════════
+     El eje A no tenía objeto de escala y `PESO_EJE` declaraba `escala: true`
+     para él: dos codificaciones de «¿este eje tiene escala?» que ya se habían
+     separado (clase B). Y al mirarlo, la que faltaba no era una escala nueva:
+     **el eje A SÍ tiene escala, y es `ESCALERA` misma.** Sus cinco
+     definiciones hablan de casos de corrupción, de cambios de postura y del
+     porcentaje verificado porque se escribieron PARA ESTE EJE — son su
+     lectura, no una prestada.
+
+     Así que la escala del eje A se DERIVA de `ESCALERA` en vez de copiarse:
+     copiar los cinco textos sería dejar dos listas que coinciden hoy y se
+     separan la primera vez que alguien corrija una (clase B otra vez). Y acá
+     derivar es lo CORRECTO, porque no existe un cambio razonable que deba
+     mover una y no la otra: son la misma cosa. */
+  var ESCALA_EJE_A = {
+    referencia: 'Las cuatro cuentas del propio registro —casos de corrupción por estado probatorio, ' +
+                'cambios de postura contados, y qué parte del registro está verificada por terceros—, ' +
+                'con los techos declarados en TECHOS.',
+    origenCategoria: 'construida-para-el-caso',
+    umbralPrestadoDe: null,
+    noAlcanza: {},
+    /* DERIVADA, no copiada: la lectura de cada peldaño en este eje ES la
+       definición de la escalera, porque la escalera se escribió para él. */
+    cortes: ESCALERA.map(function (p) { return { id: p.id, d: p.d }; })
+  };
+
   /* ══ LA ESCALA DEL EJE D (v1088) ═══════════════════════════════════════
      SE ESCRIBE PRIMERO y contra una referencia EXTERNA, que es la condición
      que la v965 y la v1077 le ponen a cualquier vara de este módulo: una
@@ -2990,6 +3020,31 @@
                 'humanitario con pena de 30 a 40 años.',
     origenCategoria: 'juridica-preexistente',
     umbralPrestadoDe: 'la cuenta de casos de corrupción confirmados de este mismo módulo',
+    /* LOS PELDAÑOS QUE ESTA ESCALA NO ALCANZA, con su razón (v1091).
+       No es lo mismo que «nadie escribió la lectura», y por eso van aparte:
+       las dos cosas se leían igual en la pantalla y piden acciones
+       distintas —una es un límite del eje y la otra es trabajo pendiente—,
+       que es la distinción de la v899.
+
+       Y lo que declara es importante y un lector debería saberlo: **este eje
+       no puede decir que un gobierno esté bien.** Solo cuenta muertes de
+       persona protegida confirmadas, así que con cero confirmadas no sube a
+       un peldaño bueno: devuelve null, porque un registro sin nada
+       documentado no puede certificar que no haya pasado nada (v875). Es un
+       eje que solo baja. */
+    noAlcanza: {
+      'inquebrantable': 'Este eje no puede certificar que un gobierno esté bien. Cuenta muertes de ' +
+        'persona protegida confirmadas por autoridad forense, y cero confirmadas no significa cero ' +
+        'ocurridas: significa que este registro no tiene ninguna documentada. Con cero, el eje no ' +
+        'publica nivel en vez de publicar un peldaño bueno.',
+      'fiable': 'Por la misma razón que el peldaño de arriba: esta escala solo baja. No hay ninguna ' +
+        'cantidad de muertes confirmadas que produzca «Fiable», y la ausencia de muertes documentadas ' +
+        'no es una medición de que no las haya habido.',
+      'dudosa': 'Esta escala no tiene un corte intermedio: una sola muerte de persona protegida ' +
+        'confirmada en una operación del Estado ya entra en «Poco fiable», porque el artículo 135 del ' +
+        'Código Penal la tipifica como un crimen y no como una duda. Poner «Dudosa» en medio sería ' +
+        'inventar un umbral para suavizar el primero.'
+    },
     cortes: [
       { desde: 2, id: 'nada-fiable',
         d: 'Dos o más muertes de persona protegida confirmadas por autoridad forense en operaciones ' +
@@ -3080,6 +3135,10 @@
          razón al lado; ahora sale de la escala y de las muertes confirmadas,
          y sigue siendo null cuando no hay ninguna. */
       nivel: null, publicable: false, escala: ESCALA_EJE_D, nivelCalc: null,
+      /* La escalera ENTERA de este eje, con la lectura de cada peldaño o la
+         razón de que no lo alcance (v1091). Va en el objeto del eje para que
+         la pantalla no tenga que reconstruirla (v867). */
+      escaleraEje: escaleraDeEje(ESCALA_EJE_D),
       hechos: man.length, sinEje: sinEje.length, enFuerza: enFuerza.length,
       /* La fila del indicador, con su criterio y lo que queda fuera: es lo
          que convierte el CONTEO de este eje en algo que puede dar nivel. */
@@ -3230,7 +3289,12 @@
        dir:    +1 si un número mayor es PEOR · -1 si es MEJOR
        escala: false mientras el eje no tenga una escrita */
     A: { mide: 'palabra',  dir: -1, escala: true  },
-    B: { mide: 'realidad', dir: +1, escala: true  },
+    /* `escala: false` desde la v1091, y no es una regresión: era una
+       declaración FALSA. Este eje no tiene ninguna escala escrita —nadie ha
+       dicho qué significaría un peldaño acá— y la tabla decía que sí. La
+       guarda ata ahora la bandera con la existencia del objeto, así que
+       ponerla en true sin escribir la escala sale en rojo. */
+    B: { mide: 'realidad', dir: +1, escala: false },
     C: { mide: 'realidad', dir: +1, escala: false },
     D: { mide: 'realidad', dir: +1, escala: true  }
   };
@@ -3324,6 +3388,43 @@
 
      Va en UNA función para que un eje nuevo no pueda armar su nivel de otra
      manera: tres copias de esto se separan a la primera (clase B). */
+  /* ══ LA LECTURA DE CADA PELDAÑO EN UN EJE, LOS CINCO (v1091) ═══════════
+     La v1090 le dio lectura al peldaño que el eje PUBLICA. Esto se la da a
+     los cinco, que es lo que deja leer la escala entera de un eje y no solo
+     el escalón en el que está hoy.
+
+     TRES estados y no dos, porque piden cosas distintas (v899):
+
+       · `lectura` — el eje puede llegar a ese peldaño y dice qué significa.
+       · `no-alcanzable` — la escala del eje NO puede producirlo, con la razón
+         escrita. No es trabajo pendiente: es un límite del eje, y un lector
+         debería saberlo.
+       · `sin-declarar` — el eje puede llegar y nadie escribió la lectura. SÍ
+         es trabajo pendiente, y sale en ámbar.
+
+     El tercero es el que hace que esto FALLE CERRADO (v880): se calcula
+     recorriendo `ESCALERA`, así que un peldaño nuevo nace `sin-declarar` y
+     sale en la pantalla, en vez de quedarse sin fila y desaparecer. */
+  function lecturaDePeldano(escala, id) {
+    if (!escala) return { estado: 'sin-escala', texto: '' };
+    var corte = (escala.cortes || []).filter(function (c) { return c.id === id; })[0];
+    if (corte) return { estado: 'lectura', texto: corte.d || '', desde: corte.desde };
+    var nal = (escala.noAlcanza || {})[id];
+    if (nal) return { estado: 'no-alcanzable', texto: nal };
+    return { estado: 'sin-declarar', texto: '' };
+  }
+
+  /* Los CINCO peldaños de un eje, en el orden de la escalera. Se recorre
+     `ESCALERA` y no las claves de la escala del eje: así el recuento es
+     sobre todos los peldaños que existen y no sobre los que alguien se
+     acordó de escribir, que es la diferencia entre una cuenta y una lista. */
+  function escaleraDeEje(escala) {
+    return ESCALERA.map(function (p, i) {
+      var l = lecturaDePeldano(escala, p.id);
+      return { id: p.id, t: p.t, i: i, estado: l.estado, texto: l.texto, desde: l.desde };
+    });
+  }
+
   function nivelDeEje(id, lectura, deDonde) {
     var i = indiceEnEscalera(id);
     if (i < 0) return null;
@@ -5321,6 +5422,64 @@
          publica nivel y no trae lectura, se dice: imprimir la definición de
          la escalera de la palabra sobre un eje de realidad le atribuiría al
          gobernante algo que ese eje no midió. */
+      /* LA ESCALERA ENTERA DE ESTE EJE, plegada (v1091). Los cinco peldaños
+         con su lectura, o con la razón de que el eje no los alcance. Va
+         plegada por la misma razón que las fuentes de un gráfico: son cinco
+         renglones de texto entre eje y eje, y lo que tiene que quedar
+         VISIBLE es el peldaño publicado y su lectura, que van arriba. Lo que
+         el pliegue no esconde es el recuento: el resumen lo dice en el
+         propio `summary`, así que un eje con peldaños sin declarar lo
+         anuncia sin que nadie despliegue. */
+      /* UN EJE SIN ESCALA LO DICE (v1091). Antes simplemente no pintaba
+         nada, y tres de los cuatro ejes salían sin una palabra sobre sus
+         peldaños — que desde afuera se lee igual que si no hiciera falta.
+         Y la causa es distinta de «le falta un dato»: sin escala el eje no
+         puede publicar peldaño por más material que consiga, así que pide
+         una decisión y no un archivo. */
+      if (!(ej.escaleraEje || []).length) {
+        var pesoEj = PESO_EJE[ej.eje] || {};
+        li.appendChild(el('p', 'sp-c3-eje-lectura sp-c3-sin-escala',
+          'Este eje no tiene escala escrita: nadie ha dicho todavía qué significaría cada peldaño ' +
+          'acá, así que no puede publicar ninguno por más material que consiga. Es una decisión de ' +
+          'quien firma el módulo y no un dato que falte' +
+          (pesoEj.escala
+            ? '. Y la tabla de peso declara que SÍ la tiene, que es una contradicción: una de las dos ' +
+              'está mal y la guarda la denuncia.'
+            : ', y la tabla de peso lo declara así.')));
+      }
+
+      if ((ej.escaleraEje || []).length) {
+        var sinDec = ej.escaleraEje.filter(function (x) { return x.estado === 'sin-declarar'; });
+        var noAlc  = ej.escaleraEje.filter(function (x) { return x.estado === 'no-alcanzable'; });
+        var conLec = ej.escaleraEje.filter(function (x) { return x.estado === 'lectura'; });
+        var w = el('details', 'sp-c3-esc');
+        var sm = el('summary', 'sp-c3-esc-t',
+          pl(ej.escaleraEje.length, 'El único peldaño en este eje: ',
+                                      'Los ' + ej.escaleraEje.length + ' peldaños en este eje: ') +
+          pl(conLec.length, '1 con su lectura', conLec.length + ' con su lectura') + ' · ' +
+          pl(noAlc.length, '1 que este eje no alcanza',
+                           noAlc.length + ' que este eje no alcanza') +
+          (sinDec.length ? ' · ' + sinDec.length + ' SIN DECLARAR' : ''));
+        if (sinDec.length) sm.className += ' mal';
+        w.appendChild(sm);
+        var ul = el('ul', 'sp-c3-esc-l');
+        ej.escaleraEje.forEach(function (x) {
+          var pub = !!(ej.nivel && ej.nivel.id === x.id);
+          var it = el('li', 'sp-c3-esc-i e-' + x.estado + (pub ? ' on' : ''));
+          it.appendChild(el('b', null, x.t + (pub ? ' · es el que publica' : '')));
+          it.appendChild(el('span', null,
+            x.estado === 'lectura'
+              ? (x.desde != null ? 'Desde ' + x.desde + ': ' : '') + x.texto
+              : x.estado === 'no-alcanzable'
+                ? 'Este eje no alcanza este peldaño. ' + x.texto
+                : 'Este eje puede llegar a este peldaño y todavía no dice qué significaría acá. ' +
+                  'Mientras falte, un peldaño sin lectura no se puede publicar.'));
+          ul.appendChild(it);
+        });
+        w.appendChild(ul);
+        li.appendChild(w);
+      }
+
       if (ej.nivel) {
         li.appendChild(el('p', 'sp-c3-eje-lectura',
           ej.nivel.lectura

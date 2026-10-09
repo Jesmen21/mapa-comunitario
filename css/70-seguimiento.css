@@ -2354,3 +2354,29 @@ a.sp-fuente:hover svg{ color:var(--verde-hi); }
 .sp-c3-eje-lectura{
   margin:4px 0 0; font-size:var(--t-8); color:var(--ink-2); line-height:1.55;
 }
+
+/* LOS CINCO PELDAÑOS DE UN EJE, PLEGADOS (v1091).
+   Tres estados y tres tratamientos, porque piden cosas distintas (v899): con
+   lectura, en gris, que es un hecho; no alcanzable, en gris y en cursiva,
+   que es un límite del eje y no deuda nuestra; y sin declarar, en ámbar, que
+   sí es deuda nuestra. El ámbar es «ojo con esto» en este tablero y no el
+   rojo de un hallazgo (v971). */
+.sp-c3-esc{ margin-top:9px; }
+.sp-c3-esc-t{
+  cursor:pointer; font-size:var(--t-8); color:var(--ink-2); font-weight:600;
+}
+.sp-c3-esc-t.mal{ color:var(--ambar); }
+.sp-c3-esc-l{ margin:7px 0 0; padding:0; list-style:none; display:grid; gap:6px; }
+.sp-c3-esc-i{
+  font-size:var(--t-8); line-height:1.5; color:var(--ink-2);
+  padding-left:9px; border-left:2px solid var(--linea-2);
+}
+.sp-c3-esc-i b{ display:block; color:var(--ink); }
+.sp-c3-esc-i.on{ border-left-color:var(--rojo); }
+.sp-c3-esc-i.e-no-alcanzable span{ font-style:italic; }
+.sp-c3-esc-i.e-sin-declarar{ border-left-color:var(--ambar); }
+.sp-c3-esc-i.e-sin-declarar span{ color:var(--ambar); font-weight:600; }
+/* Un eje sin escala escrita (v1091). En gris y no en ámbar: no es deuda de
+   datos, es una decisión sin tomar, y pintarla como alerta la confundiría
+   con un archivo que alguien no fue a buscar. */
+.sp-c3-sin-escala{ font-style:italic; }

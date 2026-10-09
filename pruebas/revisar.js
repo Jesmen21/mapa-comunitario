@@ -12653,6 +12653,102 @@ console.log('\n  -- el marcado que vive dentro del JavaScript (v1025) --');
                encontró: imprimía «nada-fiable · undefined»;
              · y la lectura VIAJA con el veredicto y llega a la placa, con su
                redacción para cuando falte (v867, v970). */
+        /* ── LOS CINCO PELDAÑOS DE UN EJE, NINGUNO EN SILENCIO (v1091)
+           La v1090 le dio lectura al peldaño que el eje PUBLICA. Faltaban los
+           otros cuatro, y el hueco vivía en la prosa de una bitácora —«no son
+           alcanzables, medido y declinado»—, que es justo la forma en que una
+           declaración envejece sin que nada la mida.
+
+           Y hay DOS causas que se leían igual y piden acciones distintas
+           (v899): que el eje no PUEDA alcanzar un peldaño es un límite suyo y
+           un lector debería saberlo; que pueda y nadie haya escrito la
+           lectura es trabajo pendiente. La primera va declarada con su razón,
+           la segunda sale en ámbar.
+
+           Lo que hace que esto FALLE CERRADO (v880) es que la escalera del
+           eje se calcula recorriendo `ESCALERA` y no las claves de la escala:
+           un peldaño nuevo nace `sin-declarar` y aparece, en vez de quedarse
+           sin fila y desaparecer. Y por eso la cuenta se mide contra el largo
+           de `ESCALERA` (v903) y no contra un número escrito. */
+        const escD = (vg0.match(/var ESCALA_EJE_D = \{[\s\S]*?\n  \};/) || [''])[0] ||
+                     (cod.match(/var ESCALA_EJE_D = \{[\s\S]*?\n  \};/) || [''])[0];
+        const nEsc = (cod.match(/var ESCALERA = \[[\s\S]*?\n  \];/) || [''])[0]
+                       .split(/\{ id: '/).length - 1;
+        const idsEsc = ((cod.match(/var ESCALERA = \[[\s\S]*?\n  \];/) || [''])[0]
+                        .match(/\{ id: '([a-z-]+)'/g) || []).map((x) => x.replace(/.*'([a-z-]+)'/, '$1'));
+        const cubiertos = idsEsc.filter((id) =>
+          new RegExp("id: '" + id + "'").test(escD) || new RegExp("'" + id + "':").test(escD));
+
+        /* LA ATADURA (v1091): `PESO_EJE[k].escala` es una bandera escrita a
+           mano y la existencia de la escala es un hecho del código. Eran dos
+           codificaciones de «¿este eje tiene escala?» y YA se habían
+           separado: la tabla decía `true` para los ejes A y B y ninguno tenía
+           objeto de escala. Se ata, así que poner la bandera sin escribir la
+           escala —o al revés— sale en rojo. */
+        const escalasEje = (cod.match(/var ESCALA_EJE_[A-D] = \{/g) || [])
+          .map((x) => x.replace(/.*ESCALA_EJE_([A-D]).*/, '$1'));
+        const banderas = {};
+        ((vg0.match(/var PESO_EJE = \{[\s\S]*?\n  \};/) || [''])[0]
+          .match(/([A-D]): \{[^}]*escala: (true|false)/g) || []).forEach((x) => {
+            const m = x.match(/([A-D]): \{[^}]*escala: (true|false)/);
+            banderas[m[1]] = m[2] === 'true';
+          });
+        const desatados = Object.keys(banderas).filter((k) =>
+          banderas[k] !== (escalasEje.indexOf(k) >= 0));
+        comprobar('la bandera `escala` de cada eje coincide con que su escala EXISTA',
+          Object.keys(banderas).length >= 4 && desatados.length === 0,
+          Object.keys(banderas).length < 4
+            ? 'no se leyeron las cuatro banderas de PESO_EJE: ' + Object.keys(banderas).join(' · ')
+            : desatados.length
+              ? 'la tabla y el código no coinciden en: ' + desatados.map((k) =>
+                  k + ' (tabla ' + banderas[k] + ', escala escrita ' + (escalasEje.indexOf(k) >= 0) + ')').join(' · ')
+              : 'las cuatro coinciden · con escala escrita: ' + (escalasEje.join(' · ') || 'ninguna'));
+
+        /* Y las dos mitades por separado, con el detalle diciendo cuál
+           falló (v973): la primera versión de esto era un booleano con un
+           `=== false ||` en medio que la dejaba casi incapaz de fallar, y una
+           guarda que no puede fallar es un verde (v878). */
+        const mitSin = [
+          ['la ficha dice que el eje no tiene escala escrita', /no tiene escala escrita/.test(cod)],
+          ['y distingue eso de «falta un dato»', /no un dato que falte/.test(cod)],
+          ['y denuncia la contradicción si la tabla dice que sí la tiene',
+           /la tabla de peso declara que SÍ la tiene/.test(cod)],
+          ['y la clase tiene regla en el css', /\.sp-c3-sin-escala\{/.test(c70)]
+        ];
+        const malSin = mitSin.filter((x) => !x[1]).map((x) => x[0]);
+        comprobar('y un eje SIN escala lo dice en la ficha, no desaparece',
+          malSin.length === 0,
+          malSin.length ? 'falla: ' + malSin.join(' · ')
+            : 'lo dice, distingue «no hay escala» de «falta un dato» —pide una decisión, no ' +
+              'archivo— y denuncia la contradicción con la tabla');
+
+        const esc = [
+          ['la escalera de un eje se recorre sobre ESCALERA, no sobre sus propias claves',
+           /function escaleraDeEje\(escala\) \{\s*\n\s*return ESCALERA\.map/.test(vg0)],
+          ['y la lectura de un peldaño tiene TRES estados',
+           /estado: 'lectura'/.test(vg0) && /estado: 'no-alcanzable'/.test(vg0) &&
+           /estado: 'sin-declarar'/.test(vg0)],
+          ['el eje D declara los peldaños que NO alcanza, con su razón',
+           /noAlcanza: \{/.test(escD) && /no puede certificar que un gobierno esté bien/.test(escD)],
+          ['y los ' + nEsc + ' peldaños de la escalera están cubiertos por un corte o por una razón',
+           nEsc > 0 && cubiertos.length === nEsc],
+          ['y el eje publica su escalera entera en su objeto',
+           /escaleraEje: escaleraDeEje\(ESCALA_EJE_D\)/.test(cod)],
+          ['la ficha la pinta, con el peldaño publicado marcado',
+           /sp-c3-esc-i e-' \+ x\.estado/.test(cod) && /es el que publica/.test(cod)],
+          ['y el recuento de los SIN DECLARAR llega al resumen sin desplegar',
+           /SIN DECLARAR/.test(cod) && /sm\.className \+= ' mal'/.test(cod)],
+          ['y los tres estados tienen regla propia en el css',
+           /\.sp-c3-esc-i\.e-no-alcanzable span\{/.test(c70) &&
+           /\.sp-c3-esc-i\.e-sin-declarar\{/.test(c70)]
+        ];
+        const malEsc = esc.filter((x) => !x[1]).map((x) => x[0]);
+        comprobar('los ' + nEsc + ' peldaños de un eje llevan su lectura, o la razón de que el eje no los alcance',
+          malEsc.length === 0,
+          malEsc.length ? 'falla: ' + malEsc.join(' · ')
+            : 'cubiertos ' + cubiertos.length + ' de ' + nEsc + ': los que el eje alcanza con su ' +
+              'lectura y los que no con su razón, y un peldaño nuevo nace «sin declarar» y se ve');
+
         const pel = [
           ['el nivel de un eje se arma en UNA función', /function nivelDeEje\(id, lectura, deDonde\)/.test(vg0)],
           /* POR CONTENIDO Y NO POR DISTANCIA (v935). La primera versión de
