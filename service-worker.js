@@ -1,4 +1,4 @@
-const URBIS_CACHE = 'urbis-v1083-alertas-urbis-mantenimiento-del-9-de-octubre';
+const URBIS_CACHE = 'urbis-v1084-seguimiento-presidencial-circular-06-y-decreto-1492';
 const URBIS_ASSETS = [
   './',
   './index.html',

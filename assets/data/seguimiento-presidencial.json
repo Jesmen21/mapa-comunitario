@@ -3,8 +3,8 @@
   "presidente": "Abelardo de la Espriella",
   "periodo": "2026 – 2030",
   "posesion": "2026-08-07",
-  "actualizado": "2026-10-08",
-  "proximaActualizacion": "2026-10-09",
+  "actualizado": "2026-10-09",
+  "proximaActualizacion": "2026-10-10",
   "categorias": {
     "gobierno": {
       "nombre": "Gobierno y decretos",
@@ -73,6 +73,66 @@
     }
   },
   "entradas": [
+    {
+      "fecha": "2026-10-07",
+      "precision": "exacta",
+      "categoria": "gobierno",
+      "titulo": "El presidente firma la Circular 06, que ordena priorizar las reuniones virtuales, usar la tarifa aérea más económica y limitar los viajes oficiales y la publicidad estatal",
+      "categoriaProbatoria": "hecho-probado",
+      "tipoMedicion": "actividad",
+      "indicadores": [],
+      "nivelGobierno": "nacional",
+      "detalle": "El presidente Abelardo de la Espriella firmó el 7 de octubre de 2026 la Circular 06, con medidas de austeridad para la administración pública. La circular ordena a ministerios y entidades dar prelación a las reuniones virtuales sobre los desplazamientos físicos, y exige que los viajes nacionales e internacionales de ministros y directores de entidades sean mínimos, plenamente justificados y se realicen con la tarifa aérea más económica disponible, salvo excepción justificada. Toda comisión de servicio al exterior requiere aprobación previa del jefe de despacho presidencial, con la solicitud radicada al menos cinco días hábiles antes del viaje, y los valores de pasajes o viáticos no utilizados deben reintegrarse de inmediato a la entidad. La circular también restringe el uso de fondos públicos para autopromoción y ciertos gastos de publicidad estatal.",
+      "contrapunto": "La medida llega en medio del debate del Presupuesto General de 2027 en el Congreso y se enmarca en el control del gasto para esa vigencia. Un reporte de La Silla Vacía, con base en un derecho de petición respondido por el Ministerio de Defensa, documentó que los desplazamientos aéreos del propio presidente costaron cerca de $1.117 millones solo entre el 7 y el 24 de agosto de 2026, con trayectos en helicóptero de pocos minutos; un reporte posterior de la misma fuente elevó la cifra a $2.286 millones en el primer mes de gobierno. Las fuentes consultadas no registran todavía un informe independiente sobre el ahorro efectivo que produzca la Circular 06.",
+      "tipoFuente": "verificado",
+      "fuentes": [
+        {
+          "n": "Infobae · De la Espriella ordenó austeridad: se priorizarán las reuniones virtuales y se usará la tarifa más económica en viajes oficiales mínimos y justificados",
+          "u": "https://www.infobae.com/colombia/2026/10/08/de-la-espriella-ordeno-austeridad-se-priorizaran-las-reuniones-virtuales-y-se-usara-la-tarifa-mas-economica-en-viajes-oficiales-minimos-y-justificados/",
+          "rol": "acto"
+        },
+        {
+          "n": "Cambio Colombia · De la Espriella ordena austeridad: menos viajes y límites a la publicidad estatal",
+          "u": "https://cambiocolombia.com/poder/articulo/2026/10/medidas-austeridad-abelardo-espriella-gobierno-viajes-exterior-publicidad",
+          "rol": "acto"
+        },
+        {
+          "n": "El Colombiano · Abelardo endurece la austeridad: viajes al exterior «económicos» y bajo el aval de Presidencia",
+          "u": "https://www.elcolombiano.com/colombia/controles-gasto-publico-presidencia-comisiones-exterior-MD42051962",
+          "rol": "contexto"
+        },
+        {
+          "n": "La Silla Vacía · reporte sobre el costo de los vuelos presidenciales en agosto de 2026",
+          "u": "https://www.lasillavacia.com/?p=444097",
+          "rol": "contexto"
+        }
+      ]
+    },
+    {
+      "fecha": "2026-10-06",
+      "precision": "exacta",
+      "categoria": "exterior",
+      "titulo": "El Ministerio de Relaciones Exteriores expide el Decreto 1492, que adiciona el artículo 11A al Reglamento de Protocolo y Ceremonial de la Presidencia (Decreto 770 de 1982) para fijar qué autoridades extranjeras recibe personalmente el presidente",
+      "categoriaProbatoria": "hecho-probado",
+      "tipoMedicion": "actividad",
+      "indicadores": [],
+      "nivelGobierno": "nacional",
+      "detalle": "El Decreto 1492 del 6 de octubre de 2026 adicionó el artículo 11A al Decreto 770 de 1982, que regula el protocolo y ceremonial de la Presidencia de la República. La norma establece que el presidente recibe formalmente a los jefes de Estado o de Gobierno que visiten el país, mientras que otras autoridades internacionales serán atendidas por el canciller o por un funcionario nacional de rango equivalente al del visitante, según lo determine la Cancillería. Toda solicitud de reunión con el presidente debe tramitarse por conducto del Ministerio de Relaciones Exteriores. Según el decreto, el reglamento de 1982 no fijaba criterios explícitos para decidir qué dignatarios debían ser recibidos por el jefe de Estado, y el nuevo artículo busca llenar ese vacío.",
+      "contrapunto": "Es una norma de procedimiento interno sobre protocolo diplomático; las fuentes consultadas no registran controversia pública sobre su contenido. No fue posible ubicar el texto del decreto en el Diario Oficial ni en la página de la Cancillería al momento de esta actualización —el acceso a esos dominios está bloqueado desde este contenedor—, por lo que su contenido se registra con base en la cobertura de prensa.",
+      "tipoFuente": "verificado",
+      "fuentes": [
+        {
+          "n": "Portafolio · Gobierno cambia protocolo para recibir a autoridades extranjeras: así funcionarán las visitas a Colombia",
+          "u": "https://www.portafolio.co/economia/gobierno/gobierno-cambia-protocolo-para-recibir-a-autoridades-extranjeras-asi-funcionaran-las-visitas-a-colombia-504013",
+          "rol": "acto"
+        },
+        {
+          "n": "Infobae · Gobierno estableció nuevo protocolo para definir qué autoridades extranjeras que visiten Colombia serán recibidas por De la Espriella",
+          "u": "https://www.infobae.com/colombia/2026/10/08/gobierno-establecio-nuevo-protocolo-para-definir-que-autoridades-extranjeras-que-visiten-colombia-seran-recibidas-por-de-la-espriella/",
+          "rol": "acto"
+        }
+      ]
+    },
     {
       "fecha": "2026-10-08",
       "precision": "exacta",
