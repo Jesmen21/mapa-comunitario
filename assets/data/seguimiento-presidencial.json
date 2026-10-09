@@ -4773,7 +4773,8 @@
           "u": "https://www.dane.gov.co/",
           "rol": "acto"
         }
-      ]
+      ],
+      "id": "ipc-agosto-2026"
     },
     {
       "fecha": "2026-09-07",
@@ -8099,7 +8100,8 @@
         }
       ],
       "tipoFuente": "verificado",
-      "contrapunto": "El techo de la línea contingente no es una sola cifra en las fuentes: esta entrada dice «hasta USD 450 millones» y el ministro de Hacienda habló de un cupo posible de hasta USD 420 millones. Las dos circulan y ninguna autoridad ha publicado el contrato, así que la cifra del techo queda sin dirimir; el desembolso de los USD 200 millones sí está corroborado."
+      "contrapunto": "El techo de la línea contingente no es una sola cifra en las fuentes: esta entrada dice «hasta USD 450 millones» y el ministro de Hacienda habló de un cupo posible de hasta USD 420 millones. Las dos circulan y ninguna autoridad ha publicado el contrato, así que la cifra del techo queda sin dirimir; el desembolso de los USD 200 millones sí está corroborado.",
+      "id": "credito-banco-mundial-200-terremoto"
     },
     {
       "fecha": "2026-08-13",
@@ -8132,7 +8134,8 @@
         }
       ],
       "tipoFuente": "verificado",
-      "contrapunto": "La única fuente que esta entrada traía era una nota sobre empresas españolas en la reconstrucción, que no documenta el desembolso del BID: es el mismo desajuste que la v967 encontró en el Decreto 1171. Las tres de arriba sí lo documentan, y añaden lo que la entrada no decía: además de los USD 300 millones reembolsables, el BID ofreció USD 500.000 no reembolsables para asistencia humanitaria y evaluación de daños."
+      "contrapunto": "La única fuente que esta entrada traía era una nota sobre empresas españolas en la reconstrucción, que no documenta el desembolso del BID: es el mismo desajuste que la v967 encontró en el Decreto 1171. Las tres de arriba sí lo documentan, y añaden lo que la entrada no decía: además de los USD 300 millones reembolsables, el BID ofreció USD 500.000 no reembolsables para asistencia humanitaria y evaluación de daños.",
+      "id": "credito-bid-300-terremoto"
     },
     {
       "fecha": "2026-08-13",
@@ -9051,7 +9054,8 @@
           "n": "TRM diaria · 19 de agosto",
           "u": "https://dolar.wilkinsonpc.com.co/2026-08-19"
         }
-      ]
+      ],
+      "sinBase": "La TRM es una lectura diaria del mercado y no un acto de nadie: ninguna entrada del registro la documenta, ni debe, porque una entrada por día de cotización sería ruido. Esta serie es su propio registro y por eso lleva ocho fuentes, una por punto."
     },
     "deudaSerie": {
       "titulo": "Deuda comprometida, acumulada",
@@ -9059,24 +9063,33 @@
       "color": "#C0392B",
       "formato": "miles",
       "sentido": "sube-malo",
-      "leyenda": "Suma de los créditos multilaterales activados desde la posesión. El paquete de seguridad de Estados Unidos NO se cuenta: es cooperación, no deuda que el país deba devolver.",
+      "leyenda": "Suma de lo COMPROMETIDO —la línea de crédito abierta y disponible—, que es lo que el título de esta serie dice y lo que el bloque `deuda` de este mismo registro mide en su columna `comprometido`: Banco Mundial 450 y BID 300 el 13 de agosto de 2026.\n\nLo GIRADO es menos y es otra cifra: del Banco Mundial están desembolsados 200 —el primer giro de una línea contingente— y el desembolso del BID no está informado, así que lo girado no se puede sumar. Las dos cosas no se mezclan en la misma línea, y hasta la v1084 la leyenda de esta serie decía «activados» mientras el punto sumaba techos: el título decía una medida y la leyenda otra, con los dos números correctos a dos claves de distancia en el mismo bloque del registro. El número no estaba mal; estaba sin decir de qué era.\n\nEl paquete de seguridad de Estados Unidos no se cuenta: es cooperación, no deuda que el país deba devolver.",
       "puntos": [
         {
           "f": "2026-08-07",
           "v": 0,
           "e": "Posesión: sin crédito nuevo activado",
-          "hito": true
+          "hito": true,
+          "sinBase": "Es la línea base del día de la posesión, no un hecho: vale cero por construcción y ninguna entrada la documenta porque no hay nada que documentar."
         },
         {
           "f": "2026-08-13",
           "v": 750,
-          "e": "Banco Mundial (450) + BID (300) en un mismo día"
+          "e": "Banco Mundial (450) + BID (300): la suma de lo COMPROMETIDO, no de lo girado",
+          "base": [
+            "credito-banco-mundial-200-terremoto",
+            "credito-bid-300-terremoto"
+          ]
         }
       ],
       "fuentes": [
         {
-          "n": "El Banco Mundial desembolsa 200 millones",
-          "u": "https://www.infobae.com/colombia/2026/08/17/abelardo-de-la-espriella-enfrenta-un-nuevo-descuadre-de-dinero-por-el-terremoto-y-confirman-que-tendria-que-gastar-mas-nos-vamos-a-endeudar/"
+          "n": "El Tiempo · desembolso de USD 200 millones",
+          "u": "https://www.eltiempo.com/economia/sectores/el-banco-mundial-ya-desembolso-los-us-200-millones-del-credito-al-que-colombia-accedio-para-atender-el-terremoto-3578269"
+        },
+        {
+          "n": "Moncloa · línea de 450 y 300 del BID",
+          "u": "https://www.moncloa.com/2026/08/13/reconstruccion-colombia-empresas-espanolas-3414876/"
         }
       ]
     },
@@ -9167,7 +9180,8 @@
           "n": "Wikipedia · elecciones presidenciales de Colombia de 2026",
           "u": "https://es.wikipedia.org/wiki/Elecciones_presidenciales_de_Colombia_de_2026"
         }
-      ]
+      ],
+      "sinBase": "Cada medida es una encuesta de una consultora, no un acto de este gobierno: el registro de actos no la documenta ni debe. La procedencia de cada una va en su propio campo `quien`, con la calidad de la medición, que es más de lo que un enlace a una entrada diría."
     },
     "consulta": {
       "titulo": "La consulta de URBIS",
@@ -9191,7 +9205,8 @@
           "t": "Ni una ni otra",
           "c": "#5F6B72"
         }
-      ]
+      ],
+      "sinBase": "Son respuestas de la consulta propia de URBIS, recogidas en esta aplicación: no son un acto de nadie y no hay entrada del registro que las documente. Su procedencia es la propia consulta, declarada como tal en la advertencia que acompaña al gráfico."
     },
     "bombardeos": {
       "titulo": "Bombardeos aéreos autorizados",
@@ -9205,12 +9220,16 @@
           "f": "2026-08-07",
           "v": 0,
           "e": "Posesión",
-          "hito": true
+          "hito": true,
+          "sinBase": "Es la línea base del día de la posesión, no un hecho: vale cero por construcción y ninguna entrada la documenta porque no hay nada que documentar."
         },
         {
           "f": "2026-08-11",
           "v": 1,
-          "e": "Operación Beta · Catatumbo, contra el ELN"
+          "e": "Operación Beta · Catatumbo, contra el ELN",
+          "base": [
+            "operacion-beta-catatumbo-menor"
+          ]
         }
       ],
       "fuentes": [
@@ -9260,7 +9279,8 @@
           "n": "Moncloa · línea de 450 y 300 del BID",
           "u": "https://www.moncloa.com/2026/08/13/reconstruccion-colombia-empresas-espanolas-3414876/"
         }
-      ]
+      ],
+      "sinBase": "Este bloque ES la fuente: de sus líneas sale el total comprometido que la serie `deudaSerie` dibuja, y las dos entradas que documentan el 13 de agosto están enlazadas desde esa serie. Enlazarlas otra vez acá repetiría el mismo enlace a dos clics de distancia."
     },
     "cocaina": {
       "titulo": "Cocaína incautada al año",
@@ -9295,7 +9315,8 @@
           "n": "La Silla Vacía · Detector: el logro de Petro en incautaciones de cocaína es engañoso",
           "u": "https://www.lasillavacia.com/detector-de-mentiras/enganoso/detector-logro-de-petro-en-incautaciones-de-cocaina-es-enganoso/"
         }
-      ]
+      ],
+      "sinBase": "Son años cerrados anteriores a este gobierno, tomados de los balances que las tres fuentes citan: el registro de actos de este gobierno no los documenta ni puede, porque son resultados de otro periodo. Van acá para que la comparación sea entre años completos."
     },
     "inflacion": {
       "titulo": "La inflación anual desde la posesión",
@@ -9325,20 +9346,30 @@
         {
           "f": "2026-07-31",
           "v": 6.03,
-          "e": "Julio de 2026"
+          "e": "Julio de 2026",
+          "base": [
+            "ipc-agosto-2026"
+          ]
         },
         {
           "f": "2026-08-31",
           "v": 6.24,
-          "e": "Agosto de 2026, el dato con el que el eje C deflacta"
+          "e": "Agosto de 2026, el dato con el que el eje C deflacta",
+          "base": [
+            "ipc-agosto-2026"
+          ]
         },
         {
           "f": "2026-09-30",
           "v": 6.29,
-          "e": "Septiembre de 2026, publicado el 7 de octubre"
+          "e": "Septiembre de 2026, publicado el 7 de octubre",
+          "base": [
+            "ipc-septiembre-2026"
+          ]
         }
       ]
-    }
+    },
+    "_notaAnclaje": "Cada punto de serie declara DÓNDE está escrito su hecho en el registro: `base`, con los ids de las entradas cuyo texto lo documenta, o `sinBase`, con la razón de que no haya ninguna. Una serie puede declarar `sinBase` para todos sus puntos a la vez cuando la razón es la misma. Hace falta porque una serie trae sus propias fuentes y vive aparte de las entradas: sin el anclaje son dos codificaciones de un mismo hecho que coinciden el día que se escriben y se separan la tanda siguiente, que es exactamente lo que le pasó a `deudaSerie` y nadie vio durante setenta y dos versiones. Lo que el anclaje NO promete es que el número coincida: el valor de un punto es a veces la cifra publicada y a veces un acumulado que ninguna entrada escribe, y una marca a mano para distinguirlos sería una cifra envejeciendo sola (v903). Promete que el lector pueda ir a comprobarlo en un toque, y que el enlace exista."
   },
   "contradicciones": {
     "_nota": "Cada caso exige LAS DOS declaraciones documentadas. Si solo hay una, no es contradicción: es una postura. Y si un verificador la desmintió, se publica como desmentida — publicar una acusación falsa destruye la credibilidad del seguimiento. Un caso puede llevar 'cuenta': false: queda registrado y visible, pero NO suma al veredicto de fiabilidad de la Ficha del gobernante. Se usa cuando el propio matiz dice que el giro no habla de su palabra —una conversión religiosa, por ejemplo—. La ficha muestra esos casos igual, marcados como no contados y con el motivo, para que la decisión esté a la vista y no escondida en el código. Los casos de CORRUPCIÓN no van aquí sino en 'casos', con su estado probatorio: una contradicción es una palabra contra otra; un caso es un hecho contra la ley.",

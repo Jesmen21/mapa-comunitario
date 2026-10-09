@@ -24784,3 +24784,165 @@ literales — no escribieron nada, que es lo correcto.
 * **No añade la inflación a ningún eje.** Es contexto, y meterla en el eje C
   —que mide el rumbo del gasto— sería confundir el deflactor con lo
   deflactado. `pendiente`
+
+## v1085 · un número publicado sin decir de qué era, y el anclaje que lo habría visto
+
+Entró por una captura de TikTok —Blu Radio, «La papa subió 78 % y frutas más de
+16 %»— que no traía una cifra nueva: el 6,29 % de septiembre ya estaba
+registrado desde la v1082. Lo que no estaba era el reparto DENTRO de la
+canasta, y la regla del módulo para eso está escrita: «un caso que avanza se
+actualiza, no se duplica». Así que primero se midió si sobrevivía la entrada
+—`¿sobrevive la mía? true · fuentes: 5 · ¿menciona la papa? NO`— y se
+enriqueció en vez de abrir una segunda.
+
+### Lo que la captura sí aportó, y lo que no
+
+Verificado por búsqueda y convergente en siete medios: en los doce meses a
+septiembre la papa subió **78,24 %**, las frutas frescas **16,64 %** y la carne
+de res **14,22 %**. Tres productos de uso diario muy por encima del 6,29 %
+general, que es un promedio de toda la canasta y no lo que paga nadie.
+
+Y una cifra que la pieza no traía y es la que de verdad mide «el bolsillo»: el
+DANE publica la variación mensual separada por ingreso, y en septiembre fue de
+**0,41 % para los hogares pobres contra 0,32 % para los de ingresos altos**. El
+mes pesó más abajo que arriba.
+
+Eso va dicho, y conviene decir por qué se dice viniendo de una pieza
+interesada: **una parte de esa narrativa es cierta y medida, y callarla por su
+procedencia sería el error simétrico del que esta ficha le señala.** Lo que no
+se sostiene sigue sin sostenerse —la atribución de una serie anual a dos meses
+de gestión—, y la entrada separa las dos cosas en vez de rechazar el paquete
+entero.
+
+### El hallazgo, y la corrección a medio camino que vale más que el hallazgo
+
+Buscando la clase, no el caso. La pregunta era: ¿qué otra cosa de este módulo
+puede estar diciendo dos números para un mismo hecho? Y la respuesta estaba en
+las series: **una serie trae sus propias fuentes y vive APARTE de las
+entradas**, así que el punto y la entrada que documentan el mismo hecho son dos
+codificaciones de una sola cosa. Clase B.
+
+Medido punto por punto sobre los 22 que el registro tiene, apareció uno
+torcido: `deudaSerie` publicaba **750** millones de dólares el 13 de agosto con
+la etiqueta «Banco Mundial (450) + BID (300)», mientras las dos entradas del
+registro decían que el Banco Mundial **giró 200**, primer desembolso de una
+línea contingente de **hasta 450**. Se bajó el punto a 500 —200 girados más 300
+activados— y se dio por arreglado.
+
+**Y estaba mal.** Lo mostró componer la página y leerla, que es otra vez el
+método que más defectos encuentra acá: al mirar la tarjeta de al lado apareció
+que el bloque `deuda` del MISMO registro ya traía las dos columnas, a dos
+claves de distancia:
+
+| | `comprometido` | `desembolsado` |
+|---|---|---|
+| Banco Mundial | 450 | 200 |
+| BID | 300 | `null` · no informado |
+
+Con eso, los 750 **no eran un error de suma**: son exactamente la suma de lo
+comprometido, que es lo que el TÍTULO de la serie dice —«Deuda comprometida,
+acumulada»—. Y mi 500 era peor que el 750: mezclaba una cifra de girado con una
+de comprometido en el mismo total.
+
+**El defecto real era otro, y es de los que esta bitácora persigue: el número
+estaba publicado sin decir de qué era.** El título decía «comprometida» y la
+leyenda decía «créditos ACTIVADOS», dos medidas distintas en la misma tarjeta,
+y el lector no tenía cómo saber cuál estaba mirando. Es la clase A dentro de la
+clase B: el discriminante —las dos columnas— estaba en el mismo objeto y nadie
+lo leyó, y lo que falló fue una codificación duplicada.
+
+Corregido: el punto vuelve a **750**, la leyenda dice que es lo COMPROMETIDO,
+dice lo girado al lado —200 del Banco Mundial— y dice por qué lo girado **no se
+puede sumar**: falta el del BID. Y las fuentes de la serie pasan a ser las del
+bloque, que eran las de verdad; la que tenía era una nota de contexto, cuyo
+propio nombre decía 200.
+
+**La lección va arriba, a CLAUDE.md**: ante un número que no cuadra con otra
+parte del registro, la pregunta no es cuál de los dos está mal — es **de qué
+mide cada uno**. Cambiar el número antes de contestar eso es arreglar la
+contradicción destruyendo la medida.
+
+### La atadura, que es la cura, y el anclaje, que es la comprobación
+
+Son dos cosas y conviene no confundirlas:
+
+* **La atadura** impide separarse: el último punto de `deudaSerie` tiene que
+  ser la suma de `comprometido` del bloque `deuda`. Si mañana el BID amplía su
+  línea y alguien toca un solo sitio, sale en rojo. Es la derivación CORRECTA
+  de las dos que CLAUDE.md distingue, porque no existe un cambio razonable que
+  deba mover una y no la otra.
+* **El anclaje** deja comprobar. Cada punto declara ahora dónde está escrito su
+  hecho: `base`, con los ids de las entradas cuyo texto lo documenta, o
+  `sinBase`, con la razón de que no haya ninguna. Hubo que darle id a tres
+  entradas que no lo tenían (`credito-banco-mundial-200-terremoto`,
+  `credito-bid-300-terremoto`, `ipc-agosto-2026`).
+
+Las razones son razones y no «no aplica»: la TRM es una lectura diaria del
+mercado y no un acto de nadie; los años de cocaína son anteriores a este
+gobierno; una encuesta la hace una consultora y su procedencia va en su propio
+campo; un punto que vale cero el día de la posesión es una línea base y no un
+hecho.
+
+Medición de hoy: **22 puntos · 5 remiten a una entrada · 17 con su razón
+escrita · 0 sin declarar · 7 bloques de `indicadores` cubiertos.**
+
+Y llega al papel: la tarjeta de cada gráfico imprime «Dónde está escrito», con
+los ids enlazados a `#/hecho/<i>`. Es también la cura de la clase C —el dato
+existía y ninguna pantalla lo alcanzaba— porque ahora se comprueba en un toque.
+
+### Dos cosas más que solo salieron al leer la página
+
+* **Dos tarjetas se quedaban sin la línea, en silencio.** «Aprobación del
+  presidente» y «Créditos activados» no tienen `puntos`: la primera guarda sus
+  medidas en `grupos[].medidas` y la segunda en `lineas`. La función miraba
+  solo `puntos`, así que devolvía `null` y la tarjeta salía sin anclaje — **que
+  desde afuera se lee igual que una anclada**. Es la cuarta trampa de
+  CLAUDE.md, la exención sin aviso, y la cuenta de la guarda tenía el mismo
+  agujero: decía «16 puntos, todos cubiertos» sobre 22. Las tres formas entran
+  ahora por la misma puerta, y el recuento pasó de 16 a 22.
+* **La puntuación.** Salía «del registro. y la razón va escrita» en minúscula y
+  «…-terremoto 1 punto no, y la razón» sin nada que los separara. No se ve
+  leyendo el código.
+
+### Demostrada en rojo, con catorce inyecciones fieles
+
+1. el estado de la v1084 · ni un punto declaraba dónde está escrito
+2. un id declarado que no resuelve a ninguna entrada
+3. «No aplica.» como razón
+4. el anclaje deja de llegar a uno de los sitios que pintan una serie
+5. la tarjeta lo recibe y no lo pinta
+6. `.sp-graf-ancla-mal` sin regla en el css
+7. se borra la redacción de «ninguno remite», la que hace falta el otro día
+8. el punto sin declarar deja de decirlo en la pantalla
+9. el registro sin series con puntos — la guarda lo dice en vez de pasar en verde
+10. la serie publica 500 y el bloque suma 750: las dos codificaciones separadas
+11. el estado real de la v1084 · la leyenda dice «activados» y el punto suma techos
+12. el bloque pierde la columna `desembolsado`, que es la que discrimina
+13. el anclaje deja de llegar al bloque de deuda, que es el del hallazgo
+14. una comparación por fuente sin razón declarada · la exención en silencio
+
+### De qué NO responde esta guarda, y va dicho
+
+El anclaje no comprueba que el número del punto coincida con el de la entrada.
+El valor de un punto es a veces la cifra publicada (6,29 % de inflación) y a
+veces un acumulado que ninguna entrada escribe (el primer bombardeo vale 1 y
+ninguna entrada dice «1»). Una marca a mano para distinguirlos sería
+exactamente la cifra que envejece sola que la v903 prohibió. Lo que sostiene es
+que el enlace exista —o que su ausencia esté razonada— y que llegue a la
+pantalla. Va escrito en `indicadores._notaAnclaje`, dentro del registro y donde
+el lector lo ve (v926), y la guarda comprueba que esté.
+
+### Lo que esta versión NO hace
+
+* **No comprueba el número del punto contra el de la entrada.** Está arriba con
+  su razón. `pendiente`
+* **No ancla los gráficos que salen de `presupuesto` ni los de contar el propio
+  registro.** Esos no son dos codificaciones de un hecho: son el registro
+  mismo, así que la clase no aplica. La medición lo dice al lado del recuento
+  para que no se lea como un olvido. `cerrado en v1085 · medido y declinado`
+* **No ata más pares que el de `deudaSerie` y `deuda`.** Es el único par
+  derivable que este registro tiene hoy; el día que aparezca otro, se ata acá.
+  `pendiente`
+* **No vuelve a buscar los giros que faltan.** El desembolso del BID no está
+  informado y el resto de la línea del Banco Mundial no se ha activado: hace
+  falta la noticia, no código. `pendiente`

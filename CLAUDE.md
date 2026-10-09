@@ -1096,6 +1096,36 @@ sección al final de este archivo.
   porcentajes calculados con una cifra y declarados con otra — peor que
   quedarse viejo. La cura es decirlo, con las dos redacciones, y que la
   guarda se ponga roja si alguien actualiza la etiqueta sin la base.
+* **Dos números que se contradicen piden la MEDIDA antes que el arreglo**
+  (v1085). Ante una cifra que no cuadra con otra parte del registro, la
+  pregunta no es cuál de las dos está mal: es **de qué mide cada una**. La
+  serie de deuda publicaba 750 y las entradas decían 200 girados, así que bajé
+  el punto a 500 —200 girados más 300 activados— y eso era peor que el 750:
+  mezclaba las dos medidas en un total. El bloque `deuda` del mismo registro
+  traía las dos columnas, `comprometido` y `desembolsado`, a dos claves de
+  distancia, y con ellas los 750 eran exactos. **El defecto era que el número
+  estaba publicado sin decir de qué era** —el título decía «comprometida» y la
+  leyenda «activados»—, que es la clase A dentro de la clase B. Cambiar el
+  número antes de contestar la pregunta es arreglar la contradicción
+  destruyendo la medida. Lo cazó componer la página y LEERLA, no el código.
+* **Y una serie vive APARTE de las entradas, así que declara dónde está
+  escrito su hecho** (v1085). Una serie trae sus propias fuentes, de modo que
+  su punto y la entrada que documenta el mismo hecho son dos codificaciones
+  que coinciden el día que se escriben. Cada punto lleva `base` —los ids de
+  las entradas cuyo texto lo documenta— o `sinBase` con su razón, y el enlace
+  llega a la pantalla. Son **dos cosas distintas y conviene no confundirlas**:
+  la **atadura** impide separarse —el último punto de `deudaSerie` SALE de la
+  suma del bloque— y el **anclaje** deja comprobar. Y el anclaje no promete
+  que el número coincida, porque el valor de un punto es a veces la cifra
+  publicada y a veces un acumulado que ninguna entrada escribe: eso va escrito
+  donde el lector lo ve (v945, v952).
+* **Y la cuenta tiene que mirar TODAS las formas en que el módulo publica**
+  (v1085). La del anclaje miraba solo `puntos` y decía «16 puntos, todos
+  cubiertos» cuando eran 22: dos tarjetas guardan sus cifras en
+  `grupos[].medidas` y en `lineas`, devolvían `null`, y salían sin la línea —
+  **que desde afuera se lee igual que una anclada**. Es la exención silenciosa
+  de arriba, entrando por la puerta de la forma del dato y no por la del
+  estado.
 * **Las dos redacciones se escriben, la de cero y la de N** (v970): la segunda
   es justo la que hace falta el día que el material vuelva.
 * **Un dato que ninguna pantalla alcanza se ve igual que uno ausente** — es la

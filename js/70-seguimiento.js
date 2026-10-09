@@ -5696,7 +5696,95 @@
     return el('p', dias > 0 ? 'sp-graf-corte sp-graf-corte-atras' : 'sp-graf-corte', t);
   }
 
-  function tarjetaGrafica(titulo, unidad, cuerpo, nota, fuentes, extra) {
+  /* ══ DÓNDE ESTÁ ESCRITO CADA PUNTO · EL ANCLAJE (v1085) ════════════════
+     Una serie trae sus propias fuentes y vive APARTE de las entradas, así que
+     un punto y la entrada que documenta el mismo hecho son dos codificaciones
+     de una sola cosa (clase B). Coinciden el día que se escriben y se separan
+     la tanda siguiente: `deudaSerie` publicó 750 millones «activados» durante
+     setenta y dos versiones mientras las dos entradas del registro decían que
+     se habían girado 500, y el discriminante estaba en el nombre de la propia
+     fuente de la serie, que decía 200.
+
+     El anclaje no promete que el número coincida —el valor de un punto es a
+     veces la cifra publicada y a veces un acumulado que ninguna entrada
+     escribe, y una marca a mano para distinguirlos sería una cifra
+     envejeciendo sola (v903)—. Promete que el lector llegue a comprobarlo en
+     un toque, y que el enlace exista o su ausencia esté razonada.
+
+     Las DOS redacciones van escritas (v970): la del día que todos los puntos
+     remitan a una entrada, y la de hoy. */
+  function anclajeDeSerie(d, dd) {
+    var ent = (((dd || D) || {}).entradas) || [];
+    /* Las tres formas que publica este módulo, y las tres piden anclaje: una
+       serie de puntos, una comparación por fuente —cuyas medidas son los
+       puntos— y el bloque de deuda, cuyas líneas lo son. Si una forma nueva
+       no entrara acá se quedaría sin anclaje EN SILENCIO, que es la cuarta
+       trampa de CLAUDE.md: la exención sin aviso se lee igual que un
+       aprobado. */
+    var pts = (d.puntos || []).filter(function (p) { return p && p.f && p.v != null; });
+    if (!pts.length) {
+      (d.grupos || []).forEach(function (g) {
+        (g.medidas || []).forEach(function (m) { if (m && m.f && m.v != null) pts.push(m); });
+      });
+    }
+    if (!pts.length) {
+      (d.lineas || []).forEach(function (l) { if (l) pts.push(l); });
+    }
+    if (!pts.length) return null;
+    var indiceDe = {};
+    ent.forEach(function (e, i) { if (e && e.id) indiceDe[e.id] = i; });
+
+    var conBase = [], razones = {}, sinNada = 0, ids = [];
+    pts.forEach(function (p) {
+      var b = (p.base || []).filter(function (x) { return indiceDe[x] != null; });
+      if (b.length) {
+        conBase.push(p);
+        b.forEach(function (x) { if (ids.indexOf(x) < 0) ids.push(x); });
+        return;
+      }
+      var r = p.sinBase || d.sinBase || null;
+      if (r) razones[r] = (razones[r] || 0) + 1; else sinNada++;
+    });
+
+    var c = el('p', 'sp-graf-ancla');
+    var cab = pts.length === conBase.length
+      ? 'Los ' + pts.length + (pts.length === 1 ? ' punto remite' : ' puntos remiten') +
+        ' a una entrada del registro, donde el hecho está documentado con su fecha y sus fuentes: '
+      : conBase.length
+        ? conBase.length + ' de ' + pts.length +
+          (conBase.length === 1 ? ' puntos remite' : ' puntos remiten') +
+          ' a una entrada del registro: '
+        : 'Ningún punto de esta serie remite a una entrada del registro';
+    c.appendChild(el('span', 'sp-graf-ancla-t', 'Dónde está escrito: '));
+    c.appendChild(document.createTextNode(cab));
+    ids.forEach(function (x, j) {
+      if (j) c.appendChild(document.createTextNode(' · '));
+      var a = el('a', 'sp-graf-ancla-a', x);
+      a.href = '#/hecho/' + indiceDe[x];
+      c.appendChild(a);
+    });
+    /* Cada razón abre su propia frase. Leído en el papel salía
+       «...del registro. y la razón va escrita» en minúscula, y
+       «...-terremoto 1 punto no, y la razón» sin nada que los separara. */
+    Object.keys(razones).forEach(function (r) {
+      c.appendChild(document.createTextNode(
+        '. ' + (razones[r] === pts.length
+          ? 'La razón va escrita: '
+          : razones[r] + (razones[r] === 1
+              ? ' punto no remite a ninguna, y la razón va escrita: '
+              : ' puntos no remiten a ninguna, y la razón va escrita: ')) + r));
+    });
+    /* FALLA CERRADO (v880): un punto que no declara ni una cosa ni la otra no
+       pasa en silencio, lo dice la pantalla. */
+    if (sinNada) {
+      c.appendChild(el('span', 'sp-graf-ancla-mal',
+        ' ' + sinNada + (sinNada === 1 ? ' punto no declara' : ' puntos no declaran') +
+        ' ni la entrada que lo documenta ni la razón de que no haya ninguna.'));
+    }
+    return c;
+  }
+
+  function tarjetaGrafica(titulo, unidad, cuerpo, nota, fuentes, extra, anclaje) {
     var c = el('section', 'sp-graf');
     c.appendChild(el('h3', 'sp-graf-h', titulo));
     if (unidad) c.appendChild(el('p', 'sp-graf-u', unidad));
@@ -5706,6 +5794,7 @@
        acaba de mirar, y la nota es la leyenda. */
     if (cuerpo) { var lc = lineaDeCorte(cuerpo); if (lc) c.appendChild(lc); }
     if (nota) c.appendChild(el('p', 'sp-graf-nota', nota));
+    if (anclaje) c.appendChild(anclaje);
     if (fuentes && fuentes.length) {
       /* LAS TARJETAS DE FUENTE VAN PLEGADAS, y esto resuelve dos instrucciones
          del mismo lector que chocan: «sin texto entre gráfico y gráfico más
@@ -6797,11 +6886,13 @@
       if (d.vista === 'porFuente') {
         if (!(d.grupos || []).length) return;
       } else if (!(d.puntos || []).length) return;
-      poner(tarjetaGrafica(d.titulo, d.unidad, grafSerie(d, false), d.leyenda, d.fuentes, null));
+      poner(tarjetaGrafica(d.titulo, d.unidad, grafSerie(d, false), d.leyenda, d.fuentes,
+        null, anclajeDeSerie(d, D)));
     });
     if (ind.deuda) {
       poner(tarjetaGrafica(ind.deuda.titulo, ind.deuda.unidad,
-        grafDeuda(ind.deuda), ind.deuda.leyenda, ind.deuda.fuentes));
+        grafDeuda(ind.deuda), ind.deuda.leyenda, ind.deuda.fuentes,
+        null, anclajeDeSerie(ind.deuda, D)));
     }
 
     // 3 · Lo que sale de contar el propio registro.
@@ -6995,7 +7086,7 @@
       if (d.vista === 'porFuente') {
         if (!(d.grupos || []).length) return;
         cont.appendChild(tarjetaGrafica(d.titulo, d.unidad,
-          grafSerie(d, false), d.leyenda, d.fuentes, null));
+          grafSerie(d, false), d.leyenda, d.fuentes, null, anclajeDeSerie(d, D)));
         return;
       }
       if (!(d.puntos || []).length) return;
@@ -7017,13 +7108,14 @@
         extra.appendChild(el('span', 'sp-med-v', 'desde el ' + fechaCorta(pts[0].f)));
       }
       cont.appendChild(tarjetaGrafica(d.titulo, d.unidad,
-        grafSerie(d, false), d.leyenda, d.fuentes, extra));
+        grafSerie(d, false), d.leyenda, d.fuentes, extra, anclajeDeSerie(d, D)));
     });
 
     // 2 · Deuda
     if (ind.deuda) {
       cont.appendChild(tarjetaGrafica(ind.deuda.titulo, ind.deuda.unidad,
-        grafDeuda(ind.deuda), ind.deuda.leyenda, ind.deuda.fuentes));
+        grafDeuda(ind.deuda), ind.deuda.leyenda, ind.deuda.fuentes,
+        null, anclajeDeSerie(ind.deuda, D)));
     }
 
     // 2b · Consulta propia, justo después de las encuestadoras para que se lea

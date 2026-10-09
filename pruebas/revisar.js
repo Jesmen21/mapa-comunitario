@@ -2671,6 +2671,218 @@ console.log('\n  -- la ficha del gobernante --');
       'va en `unidades`, que es el renglón que la ficha pinta debajo del título del eje');
   }
 
+  /* ═══ DÓNDE ESTÁ ESCRITO CADA PUNTO DE SERIE · EL ANCLAJE (v1085) ══════
+     `deudaSerie` publicó durante setenta y dos versiones 750 millones de
+     dólares «activados» desde la posesión, con la etiqueta «Banco Mundial
+     (450) + BID (300)». Las dos entradas del registro que documentan ese día
+     dicen otra cosa: el Banco Mundial GIRÓ 200, primer desembolso de una
+     línea contingente de HASTA 450. El techo estaba sumado como si estuviera
+     girado, y la serie se contradecía con su propia leyenda —que dice
+     «activados»— y con el nombre de su única fuente, que decía 200.
+
+     Es la clase B: una serie trae sus propias fuentes y vive APARTE de las
+     entradas, así que el punto y la entrada son dos codificaciones de un
+     mismo hecho. Coincidían el día que se escribieron. Y es también la razón
+     de que nadie lo viera: no había ni un enlace entre las dos, así que
+     comprobarlas una contra otra pedía acordarse de hacerlo.
+
+     DE QUÉ NO RESPONDE ESTA GUARDA (v945, v952), y va dicho porque declarar
+     cubrir más de lo que se cubre es tan engañoso como cubrir menos: NO
+     comprueba que el número del punto coincida con el de la entrada. El valor
+     de un punto es a veces la cifra publicada (6,29 % de inflación) y a veces
+     un acumulado que ninguna entrada escribe (el primer bombardeo vale 1 y
+     ninguna entrada dice «1»); una marca a mano para distinguirlos sería
+     exactamente la cifra que envejece sola que la v903 prohibió. Lo que esta
+     guarda sostiene es que el ENLACE exista —o que su ausencia esté
+     razonada—, y que llegue a la pantalla, que es lo que faltaba. */
+  {
+    const j70a = soloCodigo(leer('js/70-seguimiento.js'));
+    const cssA = leer('css/70-seguimiento.css');
+    const regA = JSON.parse(leer('assets/data/seguimiento-presidencial.json'));
+    const indA = regA.indicadores || {};
+    const idsA = {};
+    (regA.entradas || []).forEach((e) => { if (e && e.id) idsA[e.id] = true; });
+
+    /* El MATERIAL va primero (v920), y es lo que sobrevive al cero (v1022):
+       no es «hay puntos sin anclar» —eso se vacía el día que se anclen todos—
+       sino que HAYA series con puntos sobre las que preguntar. */
+    /* LAS TRES FORMAS que este módulo publica, y las tres cuentan: una serie
+       de puntos, una comparación por fuente —cuyas `medidas` son los puntos— y
+       el bloque de deuda, cuyas `lineas` lo son. Si la cuenta mirara solo
+       `puntos`, dos de las ocho formas se quedarían sin anclaje EN SILENCIO y
+       la guarda pasaría en verde sobre ellas, que es la cuarta trampa de
+       CLAUDE.md: la exención sin aviso se lee igual que un aprobado. Lo cazó
+       el papel: «Aprobación del presidente» y «Créditos activados» salían sin
+       la línea y nada lo decía. */
+    const puntosDe = (b) => {
+      const pp = (b.puntos || []).filter((p) => p && p.f && p.v != null);
+      if (pp.length) return pp;
+      const mm = [];
+      (b.grupos || []).forEach((g) => (g.medidas || []).forEach((m) => {
+        if (m && m.f && m.v != null) mm.push(m);
+      }));
+      if (mm.length) return mm;
+      return (b.lineas || []).filter((l) => !!l);
+    };
+    const seriesA = Object.keys(indA).filter((k) => indA[k] && typeof indA[k] === 'object' &&
+      puntosDe(indA[k]).length > 0);
+    const puntosA = [];
+    seriesA.forEach((k) => puntosDe(indA[k])
+      .forEach((p) => puntosA.push({ k: k, p: p, serie: indA[k] })));
+
+    comprobar('MATERIAL · el registro trae series con puntos sobre los que preguntar dónde están escritos',
+      seriesA.length >= 3 && puntosA.length >= 8,
+      !seriesA.length ? 'ninguna serie del registro tiene puntos: sin eso el anclaje no tiene de qué responder'
+        : seriesA.length + ' series con puntos · ' + puntosA.length + ' puntos en total: ' + seriesA.join(' · '));
+
+    /* FALLA CERRADO (v880): todo punto declara una de las dos cosas. Lo que no
+       se declara sale en rojo; nada pasa por omisión. */
+    const sinDeclarar = puntosA.filter((x) => {
+      const b = (x.p.base || []).length;
+      return !b && !x.p.sinBase && !x.serie.sinBase;
+    }).map((x) => x.k + ' ' + (x.p.f || x.p.n || '?'));
+    comprobar('todo punto de serie declara la entrada donde su hecho está escrito, o la razón de que no haya ninguna',
+      sinDeclarar.length === 0 && puntosA.length > 0,
+      sinDeclarar.length
+        ? 'sin declarar ni lo uno ni lo otro: ' + sinDeclarar.join(' · ') +
+          ' — y un punto que no remite a nada se lee igual que uno comprobado'
+        : puntosA.length + ' puntos, cada uno con su entrada o con su razón');
+
+    /* Y el enlace tiene que LLEVAR a algún sitio: un id que no resuelve es un
+       anclaje que parece anclaje. */
+    const idsMalos = [];
+    puntosA.forEach((x) => (x.p.base || []).forEach((b) => {
+      if (!idsA[b]) idsMalos.push(x.k + ' ' + (x.p.f || x.p.n || '?') + ' → ' + b);
+    }));
+    const conBaseA = puntosA.filter((x) => (x.p.base || []).length);
+    comprobar('y cada id declarado resuelve a una entrada real del registro',
+      idsMalos.length === 0 && conBaseA.length > 0,
+      idsMalos.length ? 'ids que no existen en el registro: ' + idsMalos.join(' · ')
+        : !conBaseA.length ? 'ningún punto remite a una entrada: sin eso el enlace no se ejercita'
+        : conBaseA.length + ' de ' + puntosA.length + ' puntos remiten a una entrada, y las ' +
+          Object.keys(conBaseA.reduce((a, x) => { (x.p.base || []).forEach((b) => { a[b] = 1; }); return a; }, {})).length +
+          ' entradas nombradas existen');
+
+    /* Y una razón tiene que ser una razón. «no aplica» no explica nada, y un
+       vacío se declara con QUÉ falta y por qué (v849, v880). */
+    const razonesCortas = [];
+    puntosA.forEach((x) => {
+      if ((x.p.base || []).length) return;
+      const r = x.p.sinBase || x.serie.sinBase || '';
+      if (String(r).length < 80) razonesCortas.push(x.k + ' ' + (x.p.f || x.p.n || '?') + ': «' + r + '»');
+    });
+    comprobar('y la razón de que un punto no remita a ninguna entrada es una razón, no una palabra',
+      razonesCortas.length === 0,
+      razonesCortas.length ? 'razones que no explican nada: ' + razonesCortas.join(' · ')
+        : (puntosA.length - conBaseA.length) + ' puntos sin entrada, cada uno con su razón escrita y comprobable');
+
+    /* Las DOS redacciones (v970): la de hoy y la del día que todos los puntos
+       remitan a una entrada. La segunda es justo la que hace falta entonces. */
+    const mitadesA = [
+      ['la función del anclaje existe y lee el registro', /function anclajeDeSerie\(d, dd\)/.test(j70a)],
+      ['y la redacción de «todos remiten» está escrita',
+       /pts\.length === conBase\.length[\s\S]{0,200}a una entrada del registro, donde el hecho est/.test(j70a)],
+      ['y la de «ninguno remite» también',
+       /Ning[uú]n punto de esta serie remite a una entrada del registro/.test(j70a)],
+      ['y la del caso mixto, que es el de hoy', /de ' \+ pts\.length \+/.test(j70a)],
+      ['y un punto sin declarar lo DICE en la pantalla, no pasa en silencio',
+       /ni la entrada que lo documenta ni la raz[oó]n de que no haya ninguna/.test(j70a)]
+    ];
+    const malA = mitadesA.filter((x) => !x[1]).map((x) => x[0]);
+    comprobar('y las tres redacciones del anclaje están escritas, con la del punto sin declarar',
+      malA.length === 0,
+      malA.length ? 'falla: ' + malA.join(' · ')
+                  : 'las tres redacciones y el aviso de lo no declarado, escritos antes de hacer falta');
+
+    /* GUARDA DE LA GUARDA (v878): que LLEGUE al papel, en los tres sitios
+       donde se pinta una serie. Si deja de llegar, todo lo de arriba sigue en
+       verde sobre documentación — y el dato existiría sin que ninguna
+       pantalla lo alcanzara, que es la clase C de CLAUDE.md. */
+    /* CINCO sitios, no tres: las series se pintan en tres y el bloque de
+       deuda en dos más. Contar solo `anclajeDeSerie(d, D)` dejaba los dos
+       del bloque de deuda sin vigilar, y es justo el bloque del hallazgo. */
+    const sitios = (j70a.match(/anclajeDeSerie\((?:d|ind\.deuda), D\)/g) || []).length;
+    comprobar('y el anclaje LLEGA a la pantalla, en los cinco sitios donde se pinta una cifra de `indicadores`',
+      sitios >= 5 && /if \(anclaje\) c\.appendChild\(anclaje\);/.test(j70a) &&
+      /\.sp-graf-ancla\{/.test(cssA) && /\.sp-graf-ancla-mal\{/.test(cssA),
+      sitios < 5 ? 'solo ' + sitios + ' de los 5 sitios lo pasan: en los otros la serie se publicaría sin decir dónde está escrita'
+        : !/if \(anclaje\) c\.appendChild\(anclaje\);/.test(j70a) ? 'la tarjeta recibe el anclaje y no lo pinta'
+        : !/\.sp-graf-ancla\{/.test(cssA) ? 'la clase `.sp-graf-ancla` no tiene regla en el css: se pintaría sin forma'
+        : !/\.sp-graf-ancla-mal\{/.test(cssA) ? 'la clase del punto sin declarar no tiene regla: el aviso se pintaría como texto normal'
+        : 'los 5 sitios lo pasan, la tarjeta lo pinta y las dos clases tienen regla en el css');
+
+    /* Y DE QUÉ NO RESPONDE, escrito donde el lector lo ve y no en un
+       comentario (v926, v945, v952): el registro lo dice en su propia nota. */
+    const notaA = String(indA._notaAnclaje || '');
+    comprobar('y el registro declara que el anclaje NO promete que el número coincida',
+      notaA.length > 300 && /no promete|NO promete/.test(notaA) && /v903/.test(notaA),
+      !notaA ? 'falta `indicadores._notaAnclaje`: sin ella, el anclaje se lee como si comprobara la cifra'
+        : notaA.length <= 300 ? 'la nota del anclaje tiene ' + notaA.length + ' caracteres: no alcanza para decir qué cubre y qué no'
+        : !/v903/.test(notaA) ? 'la nota no dice POR QUÉ no se comprueba el número (la marca a mano que envejece)'
+        : 'la nota dice qué promete el anclaje y qué no, y por qué no puede prometerlo');
+
+    /* LA ATADURA, que es la cura de la clase B y no el anclaje: el anclaje
+       deja comprobar, esto impide separarse. El punto de `deudaSerie` y el
+       bloque `deuda` dicen el mismo hecho con dos codificaciones, y el bloque
+       ya traía las DOS columnas —`comprometido` y `desembolsado`— a dos claves
+       de distancia. El defecto no era el número: era que el título decía
+       «comprometida» y la leyenda «activados», así que 750 estaba publicado
+       sin decir de qué era, y 200 y 450 estaban ahí al lado sin leerse. Eso es
+       la clase A dentro de la clase B.
+
+       Lo que se ata es la DERIVACIÓN: el último punto de la serie tiene que
+       ser la suma de lo comprometido del bloque. Si mañana el BID amplía su
+       línea y alguien toca un solo sitio, esto se pone rojo. Y es la
+       derivación CORRECTA de las dos que CLAUDE.md distingue, porque no existe
+       un cambio razonable que deba mover una y no la otra. */
+    const deuB = indA.deuda || {};
+    const lineasB = (deuB.lineas || []).filter((l) => l && l.comprometido != null);
+    const sumaB = lineasB.reduce((a, l) => a + l.comprometido, 0);
+    const serB = (indA.deudaSerie || {});
+    const ptsB = (serB.puntos || []).filter((p) => p && p.f && p.v != null);
+    const ultB = ptsB.length ? ptsB[ptsB.length - 1] : null;
+
+    comprobar('MATERIAL · el bloque de deuda trae las dos columnas, que es lo que hacía falta leer',
+      lineasB.length >= 2 && lineasB.some((l) => l.desembolsado != null),
+      lineasB.length < 2 ? 'menos de dos líneas con `comprometido`: sin eso no hay suma que atar'
+        : !lineasB.some((l) => l.desembolsado != null)
+          ? 'ninguna línea distingue lo desembolsado: sin las dos columnas el número vuelve a no decir de qué es'
+          : lineasB.length + ' líneas · comprometido ' + sumaB + ' · con desembolso informado ' +
+            lineasB.filter((l) => l.desembolsado != null).length);
+
+    comprobar('y el último punto de `deudaSerie` SALE de la suma de lo comprometido del bloque, no de otra cuenta',
+      !!ultB && ultB.v === sumaB,
+      !ultB ? 'la serie de deuda no tiene puntos: no hay qué atar'
+        : ultB.v !== sumaB ? 'la serie publica ' + ultB.v + ' y el bloque suma ' + sumaB +
+          ': dos codificaciones del mismo hecho, separadas'
+        : 'los dos dicen ' + sumaB + ', y la serie declara en su leyenda que es lo COMPROMETIDO');
+
+    comprobar('y la serie dice de QUÉ es su número, con lo girado al lado y dicho aparte',
+      /lo COMPROMETIDO/.test(String(serB.leyenda || '')) &&
+      /Lo GIRADO es menos y es otra cifra/.test(String(serB.leyenda || '')) &&
+      /no se puede sumar/.test(String(serB.leyenda || '')),
+      !/lo COMPROMETIDO/.test(String(serB.leyenda || ''))
+        ? 'la leyenda no dice que el número sea lo comprometido: vuelve a ser una cifra sin decir de qué es'
+        : !/Lo GIRADO es menos y es otra cifra/.test(String(serB.leyenda || ''))
+          ? 'la leyenda no dice lo girado al lado: el lector no puede distinguir las dos medidas'
+          : !/no se puede sumar/.test(String(serB.leyenda || ''))
+            ? 'la leyenda no dice que lo girado NO se puede sumar porque falta el del BID'
+            : 'la leyenda nombra la medida que publica, la que no, y por qué la otra no se puede sumar');
+
+    /* Y LA MEDICIÓN DE HOY, impresa. Mide el estado y no exige un pendiente:
+       el día que todos los puntos remitan a una entrada, esta línea lo dice y
+       sigue en verde (v965). */
+    comprobar('y el estado del anclaje va medido y dicho, no supuesto',
+      puntosA.length > 0,
+      (conBaseA.length === puntosA.length
+        ? 'los ' + puntosA.length + ' puntos remiten a una entrada del registro'
+        : conBaseA.length + ' de ' + puntosA.length + ' puntos remiten a una entrada; los otros ' +
+          (puntosA.length - conBaseA.length) + ' declaran por qué no hay ninguna') +
+      ' · ' + seriesA.length + ' bloques de `indicadores` cubiertos, y FUERA quedan los gráficos' +
+      ' que salen de `presupuesto` y de contar el propio registro: esos no son dos codificaciones' +
+      ' de un hecho, son el registro mismo, y esta guarda no responde por ellos');
+  }
+
   /* ═══ LA VÍA: POR CUÁL RENGLÓN DEL CRITERIO ENTRA CADA HECHO (v963) ════
      La v962 escribió en su bitácora que el caso del DANE entraba por dos
      renglones del `incluye`, y uno de los dos era falso: la remoción que

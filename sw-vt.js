@@ -13,7 +13,7 @@
 
    La versión va acá y en vision-territorial.html, idéntica, como en los
    otros siete archivos de versión del sitio: revisar.js lo comprueba. */
-const VT_CACHE = 'urbis-vt-v1084-seguimiento-presidencial-circular-06-y-decreto-1492';
+const VT_CACHE = 'urbis-vt-v1085-anclaje-de-series-y-de-que-es-el-numero';
 const VT_ASSETS = [
   './vision-territorial.html',
   './css/90-vt.css',

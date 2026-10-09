@@ -2310,3 +2310,24 @@ a.sp-fuente:hover svg{ color:var(--verde-hi); }
 }
 .sp-proc-fuera b{ font-size:var(--t-8); color:var(--ink); }
 .sp-proc-fuera p{ margin:4px 0 0; font-size:var(--t-8); line-height:1.5; color:var(--ink-2); }
+
+/* ── DÓNDE ESTÁ ESCRITO CADA PUNTO · EL ANCLAJE (v1085) ───────────────────
+   Va debajo de la leyenda y antes de las fuentes plegadas, porque es la otra
+   mitad de la procedencia: las fuentes dicen quién lo publicó afuera, y esto
+   dice dónde está escrito ADENTRO, en el registro, para poder comprobar que
+   la serie y la entrada no se separaron. Que es lo que le pasó a `deudaSerie`
+   durante setenta y dos versiones sin que ninguna pantalla lo dijera.
+
+   En --t-8 y no en --t-9 por la misma razón que la línea de corte de arriba:
+   es texto corrido de varios renglones, no una etiqueta. */
+.sp-graf-ancla{
+  margin-top:9px; font-size:var(--t-8); color:var(--ink-2); line-height:1.5;
+}
+.sp-graf-ancla-t{ font-weight:600; color:var(--ink); }
+.sp-graf-ancla-a{
+  color:var(--azul); text-decoration:underline; text-underline-offset:2px;
+  overflow-wrap:anywhere;
+}
+/* El ámbar es «ojo con esto» en este tablero, no el rojo de un hallazgo
+   (v971): un punto sin declarar es deuda nuestra, no una acusación. */
+.sp-graf-ancla-mal{ color:var(--ambar); font-weight:600; }
