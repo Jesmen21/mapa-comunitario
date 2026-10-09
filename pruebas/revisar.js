@@ -3655,8 +3655,15 @@ console.log('\n  -- la ficha del gobernante --');
       ['y declara que su categoría es preexistente, no construida acá',
        /origenCategoria: 'juridica-preexistente'/.test(escD)],
       ['y dice de dónde tomó PRESTADO su umbral', /umbralPrestadoDe:/.test(escD)],
+      /* v1090: el nivel ya no se arma a mano en el eje — lo arma
+         `nivelDeEje`, que le pone el NOMBRE del peldaño y su LECTURA en este
+         eje. La aserción se hace más precisa: ya no mide la forma del objeto
+         literal, mide que el eje pase por la función y le dé la lectura de
+         su propio corte. */
       ['el nivel se CALCULA de las muertes confirmadas', /function nivelEjeD/.test(j70c3) &&
-       /r\.nivel = nd\.nivel \? \{ id: nd\.nivel/.test(tramoD)],
+       /r\.nivel = nd\.nivel[\s\S]{0,120}nivelDeEje\(nd\.nivel, nd\.corte && nd\.corte\.d/.test(tramoD)],
+      ['y no se publica sin su lectura por eje',
+       /r\.publicable = !!\(r\.nivel && r\.nivel\.lectura\)/.test(tramoD)],
       ['y vuelve a null sin material, no al peldaño bueno',
        /if \(!n\) \{\n      return \{ nivel: null/.test(nivD)],
       ['y declara sobre qué evidencia descansa', /descansaEn:/.test(nivD)],
@@ -12622,6 +12629,67 @@ console.log('\n  -- el marcado que vive dentro del JavaScript (v1025) --');
           ['y el PISO lleva estado propio, distinto del dictamen', /'piso'/.test(vg) && /'dictamen'/.test(vg)]
         ];
         const mal5 = mitades5.filter((x) => !x[1]).map((x) => x[0]);
+        /* ── UN PELDAÑO TIENE DOS TEXTOS, Y NO SON INTERCAMBIABLES (v1090)
+           `ESCALERA` es la escala de gravedad común y sus descripciones
+           hablan de casos de corrupción y cambios de postura, porque de ahí
+           salió: es la escalera del eje de la PALABRA. Eso es correcto donde
+           se usa —la caja de la ficha va rotulada— y es FALSO en cuanto un
+           eje de realidad aterriza en el mismo peldaño: «Nada fiable» con la
+           definición de los casos de corrupción debajo, sobre un eje que
+           cuenta muertes en operaciones del Estado, le atribuye al gobernante
+           algo que ese eje no midió.
+
+           Así que el peldaño tiene DOS textos: el NOMBRE, común a los cuatro
+           ejes y por eso comparable, y la LECTURA, que la pone cada eje y es
+           distinta en cada uno. Cinco cosas, y las cinco son comprobables:
+
+             · los dos textos viven en campos distintos, y la definición de la
+               escalera NO se llama `d` dentro del nivel de un eje, para que
+               ninguna pantalla la pinte creyendo que es la lectura;
+             · el nivel de un eje se arma en UNA función, así que un eje nuevo
+               no puede armarlo de otra manera (clase B);
+             · un eje no es `publicable` sin su lectura — falla cerrado (v880);
+             · la ficha pinta el NOMBRE y no el id, que es el defecto que esto
+               encontró: imprimía «nada-fiable · undefined»;
+             · y la lectura VIAJA con el veredicto y llega a la placa, con su
+               redacción para cuando falte (v867, v970). */
+        const pel = [
+          ['el nivel de un eje se arma en UNA función', /function nivelDeEje\(id, lectura, deDonde\)/.test(vg0)],
+          /* POR CONTENIDO Y NO POR DISTANCIA (v935). La primera versión de
+             esta aserción exigía que las dos líneas estuvieran a menos de 200
+             caracteres, y un ancla de N caracteres envejece a la primera
+             línea que se mete en medio. Se buscan las dos cosas DENTRO del
+             trozo de la función, que es lo que de verdad importa. */
+          ['y lleva el NOMBRE del peldaño aparte de su lectura',
+           (function () {
+             const fn = (vg0.match(/function nivelDeEje\(id, lectura, deDonde\) \{[\s\S]*?\n  \}/) || [''])[0];
+             return /t: ESCALERA\[i\]\.t/.test(fn) && /lectura: lectura \|\| null/.test(fn);
+           }())],
+          ['y la definición de la escalera NO se llama `d` ahí dentro',
+           /defEscalera: ESCALERA\[i\]\.d/.test(vg0)],
+          ['y sin lectura no devuelve nivel publicable',
+           /r\.publicable = !!\(r\.nivel && r\.nivel\.lectura\)/.test(cod)],
+          ['la ficha pinta el NOMBRE del peldaño y no su id',
+           /ej\.nivel && ej\.nivel\.t \? ej\.nivel\.t : 'sin nivel'/.test(cod) &&
+           !/ej\.nivel\.id \+ ' · '/.test(cod)],
+          ['y pinta la lectura de ese peldaño en ese eje',
+           /Qué significa «' \+ ej\.nivel\.t \+ '» en este eje/.test(cod)],
+          ['y lo DICE cuando un eje publica nivel sin lectura',
+           /no declara qué significa en '/.test(cod)],
+          ['la lectura viaja con el veredicto, no se reconstruye en la placa',
+           /lectura: \(e\.nivel && e\.nivel\.lectura\) \|\| ''/.test(vg0)],
+          ['y la placa la imprime junto al titular',
+           /'Qué significa «' \+ \(\(vg\.nivel && vg\.nivel\.t\)/.test(cod)],
+          ['y la clase tiene regla en el css', /\.sp-fi-vlect\{/.test(c70) &&
+           /\.sp-c3-eje-lectura\{/.test(c70)]
+        ];
+        const malPel = pel.filter((x) => !x[1]).map((x) => x[0]);
+        comprobar('un peldaño lleva su NOMBRE común y su LECTURA por eje, y la lectura llega al papel',
+          malPel.length === 0,
+          malPel.length ? 'falla: ' + malPel.join(' · ')
+            : 'el nombre se compara entre ejes y la lectura la pone cada eje, con su redacción para ' +
+              'cuando falte y sin que la definición de la escalera de la palabra pueda colarse');
+
         /* ── EL PISO SATURADO CIERRA EL DICTAMEN (v1089) ───────────────
            Con el piso en el ÚLTIMO peldaño, el veredicto está determinado:
            lo que falta solo puede empeorarlo y por debajo no hay peldaño, así

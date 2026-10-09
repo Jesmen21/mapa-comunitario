@@ -3124,8 +3124,15 @@
          (v925). */
       var nd = nivelEjeD(mue);
       r.nivelCalc = nd;
-      r.nivel = nd.nivel ? { id: nd.nivel, de: 'escala-eje-d' } : null;
-      r.publicable = !!nd.nivel;
+      /* La LECTURA de este peldaño en ESTE eje sale del corte de su propia
+         escala, que ya la traía escrita: «Dos o más muertes de persona
+         protegida confirmadas por autoridad forense en operaciones del
+         Estado». Sin ella la ficha pintaría la definición de la escalera de
+         la palabra —casos de corrupción— sobre un eje que no los cuenta. */
+      r.nivel = nd.nivel
+        ? nivelDeEje(nd.nivel, nd.corte && nd.corte.d, 'escala-eje-d')
+        : null;
+      r.publicable = !!(r.nivel && r.nivel.lectura);
       r.falta = 'Dos cosas, y ninguna es el NIVEL, que desde la v1088 s\u00ed sale. La primera es la ' +
                 'FUENTE: las series de Medicina Legal, la Procuradur\u00eda y la Defensor\u00eda que el pliego ' +
                 'pide para este bloque, con la misma serie de los gobiernos anteriores. Sirven para ' +
@@ -3265,7 +3272,14 @@
                        llegar a ningún lector — clase C en el sitio más caro
                        del módulo. */
                     porque: (e.nivelCalc && e.nivelCalc.porque) || '',
-                    descansaEn: (e.nivelCalc && e.nivelCalc.descansaEn) || '' });
+                    descansaEn: (e.nivelCalc && e.nivelCalc.descansaEn) || '',
+                    /* La LECTURA del peldaño en ese eje, viajando con el
+                       veredicto (v867, v1090): el titular de la página es un
+                       peldaño de la escala común, y sin la lectura del eje
+                       que lo puso, lo único que el lector tendría debajo es
+                       la definición de la escalera de la PALABRA —casos de
+                       corrupción— sobre un eje que cuenta otra cosa. */
+                    lectura: (e.nivel && e.nivel.lectura) || '' });
       if (j > i) { i = j; cual = e; }
     });
     return { i: i, eje: cual, usados: usados };
@@ -3282,6 +3296,43 @@
   function deLosQueMiden(n) {
     return pl(n, 'Del único eje que mide la realidad',
                  'De los ' + n + ' ejes que miden la realidad');
+  }
+
+  /* ══ EL NIVEL DE UN EJE, CON SU LECTURA POR EJE (v1090) ════════════════
+     `ESCALERA` es la escala de GRAVEDAD común, y sus descripciones hablan de
+     casos de corrupción y cambios de postura porque de ahí salió: es la
+     escalera del eje de la palabra. Eso es correcto donde se usa —la caja de
+     la ficha va rotulada «Fiabilidad de la palabra»— y es FALSO en cuanto un
+     eje de realidad aterriza en el mismo peldaño: «Nada fiable» con la
+     definición de los casos de corrupción debajo, sobre un eje que cuenta
+     muertes en operaciones del Estado, le atribuye al gobernante algo que
+     ese eje no midió.
+
+     Así que un peldaño tiene DOS textos y no uno, y la distinción es la que
+     hay que tener clara:
+
+       · `ESCALERA[i].t` — el NOMBRE del peldaño. Es común a todos los ejes:
+         es la escala de gravedad, y por eso se puede comparar entre ejes.
+       · la LECTURA — qué significa ese peldaño EN ESTE EJE. La pone el eje,
+         sale de su propia escala, y es distinta en cada uno.
+
+     Un eje que publique nivel sin lectura no pasa: `lectura` queda en null y
+     la pantalla lo DICE en vez de imprimir la de otro eje o un `undefined`
+     —que es lo que pasaba, literalmente: la ficha imprimía
+     «nada-fiable · undefined» porque el objeto del nivel no traía título—.
+     Falla cerrado (v880).
+
+     Va en UNA función para que un eje nuevo no pueda armar su nivel de otra
+     manera: tres copias de esto se separan a la primera (clase B). */
+  function nivelDeEje(id, lectura, deDonde) {
+    var i = indiceEnEscalera(id);
+    if (i < 0) return null;
+    return { id: ESCALERA[i].id, t: ESCALERA[i].t, i: i,
+             /* La definición de la ESCALERA se conserva con su nombre
+                propio y NO como `d`: así ninguna pantalla la puede pintar
+                creyendo que es la lectura de este eje. */
+             defEscalera: ESCALERA[i].d,
+             lectura: lectura || null, de: deDonde || null };
   }
 
   function indiceEnEscalera(nivel) {
@@ -4293,6 +4344,27 @@
 
          Se arma de los ejes que PUSIERON el piso, así que un eje nuevo que
          publique nivel lo hereda sin que su autor se acuerde. */
+      /* QUÉ SIGNIFICA EL PELDAÑO, antes de de dónde sale (v1090). El
+         titular es un peldaño de la escala común —«Nada fiable»— y su
+         definición escrita vive en la escalera del eje de la PALABRA, donde
+         habla de casos de corrupción. Imprimirla acá le atribuiría al
+         gobernante algo que el eje que puso el peldaño no midió. La lectura
+         la pone el eje, y si no la trae se dice. */
+      var lecturas = (vg.usados || []).map(function (u) {
+        return u.lectura ? u.lectura : null;
+      }).filter(Boolean);
+      var sinLectura = (vg.usados || []).filter(function (u) { return !u.lectura; });
+      if (lecturas.length) {
+        placa.appendChild(el('p', 'sp-fi-vlect',
+          'Qué significa «' + ((vg.nivel && vg.nivel.t) || (vg.piso && vg.piso.t) || '') +
+          '» acá: ' + lecturas.join(' — ')));
+      }
+      if (sinLectura.length) {
+        placa.appendChild(el('p', 'sp-fi-vlect sp-fi-vlect-mal',
+          pl(sinLectura.length, 'Un eje puso este peldaño', sinLectura.length + ' ejes pusieron este peldaño') +
+          ' y no declara qué significa en su propia medición: ' +
+          sinLectura.map(function (u) { return u.t; }).join(' · ') + '.'));
+      }
       var deDonde = (vg.usados || []).map(function (u) {
         return u.t + (u.porque ? ': ' + u.porque : '');
       }).filter(Boolean);
@@ -5239,8 +5311,24 @@
       /* El nivel, o el hueco donde iría. Un eje sin nivel se pinta con el
          hueco marcado y no se calla: callarlo dejaría la sección con dos
          ejes donde el pliego anuncia tres. */
-      cab.appendChild(el('b', 'sp-c3-nivel', ej.publicable ? (ej.nivel.id + ' · ' + ej.nivel.t) : 'sin nivel'));
+      /* EL NOMBRE del peldaño, no su id: la ficha imprimía
+         «nada-fiable · undefined» —el id crudo más un campo que el objeto no
+         traía—, y lo vio el papel compuesto y no el código. */
+      cab.appendChild(el('b', 'sp-c3-nivel',
+        ej.nivel && ej.nivel.t ? ej.nivel.t : 'sin nivel'));
       li.appendChild(cab);
+      /* Y LA LECTURA DE ESE PELDAÑO EN ESTE EJE, debajo del nombre. Si el eje
+         publica nivel y no trae lectura, se dice: imprimir la definición de
+         la escalera de la palabra sobre un eje de realidad le atribuiría al
+         gobernante algo que ese eje no midió. */
+      if (ej.nivel) {
+        li.appendChild(el('p', 'sp-c3-eje-lectura',
+          ej.nivel.lectura
+            ? 'Qué significa «' + ej.nivel.t + '» en este eje: ' + ej.nivel.lectura
+            : 'Este eje publica el peldaño «' + ej.nivel.t + '» y no declara qué significa en ' +
+              'este eje. El nombre del peldaño es común a los cuatro —es la escala de gravedad— ' +
+              'pero su lectura la pone cada eje, y sin ella no se puede saber qué se midió.'));
+      }
 
       if (ej.eje === 'A' && ej.documentadas !== undefined) {
         li.appendChild(el('p', 'sp-c3-dato',

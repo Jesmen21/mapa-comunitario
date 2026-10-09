@@ -1224,6 +1224,27 @@ sección al final de este archivo.
   el texto dice que está determinado «y no porque se haya medido todo», nombra
   los ejes que siguen sin medir y dice que si el eje que lo sostiene bajara,
   volvería a quedar abierto.
+* **Un peldaño tiene DOS textos y no son intercambiables** (v1090). El
+  NOMBRE —«Nada fiable»— es común a los cuatro ejes: es la escala de gravedad,
+  y por eso se puede comparar entre ejes. La **LECTURA** —qué significa ese
+  peldaño EN ESTE EJE— la pone cada eje y es distinta en cada uno.
+  `ESCALERA[].d` habla de casos de corrupción porque es la escalera del eje de
+  la PALABRA: correcta donde va rotulada, y **falsa** en cuanto un eje de
+  realidad aterriza en el mismo peldaño, porque le atribuye al gobernante algo
+  que ese eje no midió. La definición de la escalera se guarda con nombre
+  propio (`defEscalera`) y nunca como `d` dentro del nivel de un eje, para que
+  ninguna pantalla la pinte creyendo que es la lectura. Y **un eje no es
+  `publicable` sin su lectura** (v880): el nivel se arma en UNA función, así
+  que un eje nuevo no puede armarlo de otra manera.
+* **Y el conteo de palomitas es parte de la lectura de una corrida** (v1090).
+  Una guarda nueva con una variable de otro bloque tiró un `ReferenceError`
+  que **mató la corrida antes del resumen**; el `grep` de `✗` no encontró nada
+  y lo leí como verde — la trampa que este archivo ya tiene escrita como «una
+  salida vacía no es una salida buena». Lo delató el NÚMERO: 683 donde la
+  corrida anterior tenía 701. Dos reglas: **se compara el conteo contra el de
+  la corrida anterior**, y un arnés de inyecciones distingue **tres** estados
+  —`ROJO`, `VERDE` y `MURIO`—, porque una inyección que mata la corrida no es
+  una guarda que mordió.
 * **Una condición que compara contra un estado que nadie devuelve es siempre
   verdadera, y su rama muerta despierta el día que el módulo mejora** (v1089).
   Tres sitios preguntaban «¿hay dictamen?» con `estado !== 'ok'`, y

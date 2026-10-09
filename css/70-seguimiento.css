@@ -2339,3 +2339,18 @@ a.sp-fuente:hover svg{ color:var(--verde-hi); }
   margin-top:8px; font-size:var(--t-8); color:var(--ink-2); line-height:1.55;
 }
 .sp-fi-vbase-2{ margin-top:5px; font-style:italic; }
+
+/* QUÉ SIGNIFICA EL PELDAÑO EN EL EJE QUE LO PUSO (v1090).
+   El nombre del peldaño es común a los cuatro ejes —es la escala de
+   gravedad— pero su definición escrita vive en la escalera del eje de la
+   PALABRA, donde habla de casos de corrupción. La lectura la pone cada eje,
+   y va junto al peldaño porque sin ella un lector le atribuye al gobernante
+   lo que ese eje no midió. */
+.sp-fi-vlect{
+  margin:6px 0 0; font-size:var(--t-8); color:#C9D2DA; line-height:1.55;
+}
+.sp-fi-vlect-mal{ color:var(--ambar); font-weight:600; }
+/* Y la misma lectura en el bloque de los cuatro ejes de la ficha. */
+.sp-c3-eje-lectura{
+  margin:4px 0 0; font-size:var(--t-8); color:var(--ink-2); line-height:1.55;
+}

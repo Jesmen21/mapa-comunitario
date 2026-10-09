@@ -25382,3 +25382,98 @@ queda, medido donde ahora vive.
 Y el `cn` anidado apareció **dos veces más** —«así que 2 los 2 ejes que faltan»
 y «y 2 algunos todavía no publican nivel»—, con lo que van **cinco en esta
 sesión**. Las cinco las vio el papel compuesto, nunca el código.
+
+## v1090 · un peldaño tiene DOS textos, y no son intercambiables
+
+Pedido: «arregla la descripción por peldaño». Era el pendiente que la v1089
+dejó anotado, y al medirlo resultó peor de lo declarado.
+
+### Qué estaba mal, y lo que la pantalla imprimía de verdad
+
+`ESCALERA` es la escala de gravedad común, y sus descripciones hablan de casos
+de corrupción y de cambios de postura **porque de ahí salió**: es la escalera
+del eje de la palabra. Eso es correcto donde se usa —la caja de la ficha va
+rotulada «Fiabilidad de la palabra»— y es **falso en cuanto un eje de realidad
+aterriza en el mismo peldaño**. «Nada fiable» con la definición de los casos de
+corrupción debajo, sobre un eje que cuenta muertes en operaciones del Estado,
+le atribuye al gobernante algo que ese eje no midió.
+
+Y componer la ficha encontró algo que la declaración no decía: el bloque del
+eje D imprimía
+
+```
+nada-fiable · undefined
+```
+
+El id crudo del peldaño, más un campo que el objeto del nivel no traía. Llevaba
+ahí desde la v1088, y ninguna guarda lo miraba porque hasta entonces ningún eje
+publicaba nivel.
+
+### La distinción, que es el arreglo
+
+Un peldaño tiene **dos textos** y conviene no confundirlos:
+
+| | Qué es | De quién es |
+|---|---|---|
+| `ESCALERA[i].t` | el **NOMBRE** del peldaño | común a los cuatro ejes: es la escala de gravedad, y por eso se puede comparar entre ejes |
+| la **LECTURA** | qué significa ese peldaño **en este eje** | la pone cada eje, sale de su propia escala, y es distinta en cada uno |
+
+Para el eje D la lectura ya estaba escrita y sin usar —en los `cortes` de su
+escala, desde la v1088—: «Dos o más muertes de persona protegida confirmadas
+por autoridad forense en operaciones del Estado». Clase C otra vez: el dato
+existía y ninguna pantalla lo alcanzaba.
+
+Y la definición de la escalera **se conserva con nombre propio**,
+`defEscalera`, y no como `d` dentro del nivel de un eje — para que ninguna
+pantalla la pueda pintar creyendo que es la lectura de ese eje.
+
+### Cómo queda en el papel
+
+En la placa, debajo del titular:
+
+> **Nada fiable**
+> Qué significa «Nada fiable» acá: Dos o más muertes de persona protegida
+> confirmadas por autoridad forense en operaciones del Estado.
+
+Y en el bloque de los cuatro ejes de la ficha, el nombre del peldaño —ya no el
+id— con su lectura debajo.
+
+### Tres cosas que lo hacen no volver
+
+* **Una sola función arma el nivel de un eje** (`nivelDeEje`), así que un eje
+  nuevo no puede armarlo de otra manera. Tres copias de esto se separan a la
+  primera (clase B).
+* **Un eje no es `publicable` sin su lectura.** Falla cerrado (v880): publicar
+  el peldaño sin decir qué significa en ese eje es justamente el defecto.
+* **Y la lectura VIAJA con el veredicto**, dentro de `usados`, no se
+  reconstruye en la placa (v867) — con su redacción escrita para el día que un
+  eje la olvide, que la pantalla dice en ámbar en vez de callarla (v970).
+
+### Y caí en la trampa que este proyecto tiene documentada
+
+Al añadir la guarda usé `j70c3`, una variable de OTRO bloque de `revisar.js`.
+Eso tiró un `ReferenceError` que **mató la corrida antes del resumen**, y mi
+`grep` de `✗` no encontró nada — así que lo leí como verde. Es exactamente la
+trampa que CLAUDE.md llama «una salida vacía no es una salida buena»: una
+comprobación que busca señales de FALLO tiene que buscar también la de ÉXITO.
+
+Lo que lo delató fue el **conteo**: 683 palomitas donde la corrida anterior
+tenía 701. Por eso el arnés de inyecciones de esta tanda distingue tres estados
+y no dos —`ROJO`, `VERDE` y **`MURIO`**—, y una inyección que mata la corrida
+no cuenta como que la guarda mordió.
+
+Y la primera versión de una de mis aserciones medía **por distancia** —exigía
+que dos líneas estuvieran a menos de 200 caracteres—, que es lo que la v935
+prohíbe. Se rehizo buscando las dos cosas dentro del trozo de la función.
+
+### Lo que esta versión NO hace
+
+* **No escribe la lectura de los otros peldaños del eje D.** Tiene dos cortes
+  —uno y dos o más— y los dos la traen; los peldaños por encima de «Poco
+  fiable» no son alcanzables en este eje, así que no hay qué escribir.
+  `cerrado en v1090 · medido y declinado`
+* **No le escribe lectura al eje A.** No publica nivel, así que no hay peldaño
+  del que decir qué significa; el día que lo publique, la guarda exige su
+  lectura antes de dejarlo pasar. `pendiente`
+* **No toca `ESCALERA[].d`.** Sigue siendo la definición del eje de la palabra
+  y sigue siendo correcta ahí, rotulada. `cerrado en v1090 · medido y declinado`
