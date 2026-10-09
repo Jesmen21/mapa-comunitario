@@ -1274,12 +1274,38 @@ sección al final de este archivo.
   **no tiene ningún umbral numérico**: no hay número que elegir. La firmeza se
   mide con `ESTADO_PROCESAL`, ya declarada para otra cosa.
 * **Y un umbral que SÍ está en la ley puede seguir sin poder escribirse**
-  (v1092). Los dos cortes de deuda del eje C tienen su número en la Ley 2155
-  —ancla 55 % del PIB, límite 71 %— y quedaron `sin-declarar`, porque el
-  registro no trae la deuda como serie: sus menciones viven en prosa y **se
-  contradicen entre sí (60 %, 64 % y 66 %)**. Elegir una sería elegir a
-  conveniencia, que es la raya de la v1065. Tener la referencia no basta: hace
-  falta el dato en una forma que no obligue a escoger.
+  (v1092, **corregida en la v1093**). Los dos cortes de deuda del eje C tienen
+  su número en la Ley 2155 —ancla 55 % del PIB, límite 71 %— y siguen
+  `sin-declarar`. **La razón que la v1092 escribió era FALSA** y se deja dicha
+  porque el error importa más que el caso: decía que las menciones de deuda del
+  registro «se contradicen entre sí (60 %, 64 % y 66 %)», y medidas una por una
+  ninguna contradice a otra —60 % es la cifra oficial del primer semestre de
+  2026, 66 % es la proyección de un crítico declarada como tal, y 64 % es el
+  cierre del cuatrienio de PETRO, otro gobierno—. Es el error que la v1085
+  tiene escrito cuatro renglones más arriba, **cometido por quien lo escribió,
+  siete versiones después y sobre la misma serie**: una regla recién escrita no
+  protege a su autor.
+  La razón de verdad es más precisa y es la que vale: **el umbral de la Ley 2155
+  está definido sobre deuda NETA** —la bruta menos los activos financieros,
+  metodología del Confis— y la cifra verificable es la **BRUTA** (60,5 % del PIB
+  a junio de 2026, Minhacienda, convergente en cuatro medios). Comparar una
+  bruta contra un umbral de neta es un error de categoría. Y las netas a mano
+  son proyecciones secundarias que no coinciden —58,9 % en el MFMP, 60,3 % en el
+  CARF—; **las dos quedan por encima del ancla, así que el corte parecería claro
+  y aun así no se escribe**, porque un peldaño publicado sobre una persona real
+  no se apoya en una proyección secundaria.
+* **Una cifra lleva su MEDIDA, y declara contra qué NO se puede comparar**
+  (v1093). Publicar «la deuda: 60,5 %» es lo que permite confundir una bruta con
+  una neta; publicar «deuda bruta del GNC, 60,5 % del PIB a junio de 2026, no
+  comparable con el ancla de la Ley 2155 porque esa es neta» no lo permite. Y
+  cuando varias cifras de un mismo nombre difieren, **la causa va escrita**: acá
+  el DENOMINADOR —Hacienda alterna el PIB del DANE de 2025 con su proyección de
+  2026— y la medida. Nadie está equivocado: son divisiones distintas.
+* **Y un peldaño `sin-declarar` puede traer su razón** (v1093). Dentro de ese
+  único estado, «el eje llegaría y falta el dato» se leía igual que «nadie lo ha
+  mirado» — la distinción de la v899 otra vez, un nivel más abajo. Ahora declara
+  por qué le falta, la ficha lo pinta debajo, y sigue en ámbar porque sigue
+  siendo trabajo pendiente.
 * **Y una clasificación que decide un nivel vive en el REGISTRO, con su
   referencia y sus decisiones discutibles dichas** (v1092). Qué sector es gasto
   público social lo declara el registro con el artículo 366 citado, no el código,

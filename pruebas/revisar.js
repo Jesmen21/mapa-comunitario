@@ -12662,6 +12662,59 @@ console.log('\n  -- el marcado que vive dentro del JavaScript (v1025) --');
                encontró: imprimía «nada-fiable · undefined»;
              · y la lectura VIAJA con el veredicto y llega a la placa, con su
                redacción para cuando falte (v867, v970). */
+        /* ── UNA CIFRA NO SE COMPARA CONTRA UN UMBRAL DE OTRA MEDIDA (v1093)
+           La v1092 dejó los dos peldaños de deuda del eje C sin declarar y
+           escribió que la razón era que las menciones del registro «se
+           contradicen entre sí —60 %, 64 % y 66 %—». Era FALSO, y es el error
+           que este proyecto tiene escrito desde la v1085: dos números que no
+           cuadran piden la MEDIDA antes que el arreglo. Medidas una por una,
+           las tres son cosas distintas y ninguna contradice a otra.
+
+           La razón de verdad es más precisa y es la que esta guarda protege:
+           el umbral de la Ley 2155 está definido sobre deuda NETA y la cifra
+           verificable es la BRUTA. Comparar una contra la otra es un error de
+           categoría, así que:
+
+             · la cifra se publica con su MEDIDA declarada —`medida: 'bruta'`—
+               y no como «la deuda», que es lo que permite confundirlas;
+             · declara CONTRA QUÉ no se puede comparar, y por qué;
+             · y el peldaño sin declarar trae su razón, para que «el eje
+               llegaría y falta el dato» no se lea igual que «nadie lo ha
+               mirado» (v899, otra vez). */
+        const regD = JSON.parse(leer('assets/data/seguimiento-presidencial.json'));
+        const dB = ((regD.presupuesto || {}).deudaBruta) || {};
+        const escC = (cod.match(/var ESCALA_EJE_C = \{[\s\S]*?\n  \};/) || [''])[0];
+        const med = [
+          ['la cifra de deuda declara su MEDIDA, no se publica como «la deuda»',
+           dB.medida === 'bruta' && dB.pct != null && !!dB.fecha],
+          ['y declara contra qué NO se puede comparar, y por qué',
+           /deuda NETA/.test(String(dB.noComparableCon || '')) &&
+           /error de categor[ií]a/.test(String(dB.noComparableCon || ''))],
+          ['y dice por qué las otras cifras DIFIEREN, en vez de llamarlas contradicción',
+           /DENOMINADOR/.test(String(dB.porQueLasOtrasCifrasDIFIEREN || '')) &&
+           /de qué mide cada una/.test(String(dB.porQueLasOtrasCifrasDIFIEREN || ''))],
+          ['y su convergencia va declarada, con el estándar que la v1082 fijó',
+           String(dB.convergencia || '').length > 80 && (dB.fuentes || []).length >= 3],
+          ['la escala del eje C dice por qué sus dos peldaños de deuda siguen sin lectura',
+           /sinDeclararPorque: \{/.test(escC) && /deuda NETA/.test(escC)],
+          ['y esa razón NO vive solo en un comentario (v926)',
+           /sinDeclararPorque/.test(escC)],
+          ['y la ficha la pinta junto al peldaño sin declarar',
+           /Por qué falta: ' \+ x\.texto/.test(cod)],
+          ['y el intento del eje C queda FECHADO, con lo que sí consiguió y lo que no',
+           (function () {
+             const t = ((regD.tramites || {}).C || {}).ultimoIntento || {};
+             return !!t.fecha && t.canal === 'búsqueda' && /PARCIAL/.test(String(t.resultado || '')) &&
+                    /deuda NETA/.test(String(t.resultado || ''));
+           }())]
+        ];
+        const malMed = med.filter((x) => !x[1]).map((x) => x[0]);
+        comprobar('una cifra lleva su MEDIDA y declara contra qué umbral NO se puede comparar',
+          malMed.length === 0,
+          malMed.length ? 'falla: ' + malMed.join(' · ')
+            : 'la bruta se publica como bruta, con lo que no se puede comparar y por qué las otras ' +
+              'cifras difieren; y el peldaño que falta dice por qué falta');
+
         /* ── LOS CINCO PELDAÑOS DE UN EJE, NINGUNO EN SILENCIO (v1091)
            La v1090 le dio lectura al peldaño que el eje PUBLICA. Faltaban los
            otros cuatro, y el hueco vivía en la prosa de una bitácora —«no son

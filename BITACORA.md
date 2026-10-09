@@ -25705,3 +25705,91 @@ salía vacío para ese eje.
 * **No revisa la clasificación social de los siete sectores con nadie más.** Está
   escrita en el registro con su referencia y sus dos decisiones discutibles
   dichas, pero la firma es de quien opera el módulo. `pendiente`
+
+## v1093 · la corrección: no se contradecían, medían cosas distintas
+
+Esta tanda empezó buscando la serie de deuda que la v1092 declaró pendiente, y
+lo primero que encontró fue **un error mío publicado dos versiones atrás**.
+
+### Lo que la v1092 escribió, y por qué era falso
+
+Dejó los dos peldaños de deuda del eje C sin declarar con esta razón: «el
+registro no trae la deuda como serie: sus menciones viven en prosa y **se
+contradicen entre sí — 60 %, 64 % y 66 % del PIB**». Y esa frase llegó a
+`CLAUDE.md` como regla.
+
+Medidas una por una, **ninguna contradice a otra**:
+
+| cifra | qué es, de verdad |
+|---|---|
+| **60 %** | la cifra OFICIAL al cierre del primer semestre de 2026 |
+| 66 % | la PROYECCIÓN de un crítico — la propia entrada dice «por su cuenta» y «podría llegar» |
+| 64 % | el cierre del cuatrienio de **Petro**, que es otro gobierno |
+
+Es exactamente el error que este proyecto tiene escrito **desde la v1085**: *dos
+números que se contradicen piden la MEDIDA antes que el arreglo; la pregunta no
+es cuál está mal, es de qué mide cada una.* La escribí yo, en esta misma sesión,
+sobre la serie de deuda — y la violé siete versiones después, sobre la misma
+serie de deuda. Queda dicho así porque el patrón importa más que el caso: **una
+regla recién escrita no protege a quien la escribió.**
+
+### Y la búsqueda confirmó la clase desde afuera
+
+Las cifras que circulan difieren **por el denominador**, y lo dice la propia
+fuente: Hacienda alterna el dato del DANE de 2025 con su proyección de 2026, así
+que 65,1 % a marzo y 64,5 % a enero no se comparan con 60,5 % a junio sin tener
+eso en cuenta. Nadie está equivocado; son divisiones distintas.
+
+### La cifra sí se consiguió, y entra con su medida
+
+**60,5 % del PIB a junio de 2026**, deuda bruta del Gobierno Nacional Central,
+del Ministerio de Hacienda. Convergente en cuatro medios sobre la misma cifra,
+el mismo mes y la misma fuente — el estándar que la v1082 fijó para escribir la
+inflación de septiembre.
+
+Y entra al registro **declarando que es BRUTA**, no como «la deuda»: publicar
+una cifra sin su medida es justo lo que permite confundirlas. Con tres cosas al
+lado: contra qué **no** se puede comparar, su convergencia, y por qué las otras
+cifras difieren.
+
+### Y los dos peldaños siguen sin declarar, por una razón MEJOR
+
+La razón vieja era falsa; la nueva es precisa: **el umbral de la Ley 2155 está
+definido sobre deuda NETA** —la bruta menos los activos financieros, con la
+metodología que define el Confis— y la cifra verificable es la **bruta**.
+Comparar una contra la otra es un error de categoría: el mismo que acabo de
+corregir, cometido en la dirección opuesta.
+
+Y hay una tentación que conviene decir que se rechazó. Las cifras NETAS que la
+búsqueda devuelve son **58,9 %** (Marco Fiscal de Mediano Plazo) y **60,3 %**
+(escenario del CARF). Las dos quedan **por encima** del ancla del 55 %, así que
+el corte parecería claro y escribirlo sería fácil. No se escribió: son
+proyecciones de fuente secundaria, y **un peldaño publicado sobre una persona
+real no se apoya en eso.** Lo que lo cerraría está nombrado en el trámite: la
+serie oficial de deuda neta del GNC, o el informe del CARF, leídos directamente.
+
+### Un peldaño sin declarar puede traer su razón
+
+`sin-declarar` seguía siendo un solo estado, y dentro de él **«el eje llegaría y
+falta el dato» se leía igual que «nadie lo ha mirado»** — la distinción de la
+v899 otra vez, un nivel más abajo. Ahora un peldaño sin lectura puede declarar
+por qué le falta, la ficha lo pinta debajo, y sigue en ámbar porque sigue siendo
+trabajo pendiente.
+
+### El intento queda FECHADO, y PARCIAL
+
+Con su canal y su resultado dicho en las dos mitades (v1055, v1065, v1076): lo
+que SÍ consiguió —la bruta, registrada— y lo que NO —la neta, que es la que los
+umbrales definen—. «Se buscó y salió a medias» no es «se buscó y no se pudo», y
+tampoco «nadie lo ha buscado».
+
+### Lo que esta versión NO hace
+
+* **No escribe los dos cortes de deuda.** Piden la serie de deuda NETA del GNC
+  leída de la fuente, no una proyección secundaria. `pendiente`
+* **No cambia el dictamen.** Sigue en «Nada fiable» por «manda el peor», desde
+  el eje D. `cerrado en v1093 · medido y declinado`
+* **No corrige hacia atrás las menciones en prosa de las entradas.** Las dos que
+  existen son correctas cada una por su lado —una oficial, una proyección
+  declarada como tal—; lo que estaba mal era mi lectura de ellas, no ellas.
+  `cerrado en v1093 · medido y declinado`

@@ -10400,9 +10400,10 @@
         }
       ],
       "ultimoIntento": {
-        "fecha": "2026-10-02",
+        "fecha": "2026-10-09",
         "canal": "búsqueda",
-        "resultado": "No se escribió ninguna cifra, y la razón va dicha para que la próxima sesión no gaste otra tanda en el mismo callejón. Desde esta máquina el proxy niega todos los dominios: se probaron minhacienda.gov.co, dane.gov.co, dnp.gov.co y cinco medios, y los nueve contestaron sin conexión, así que ninguna página se pudo abrir. La búsqueda sola devolvió cifras CONTRADICTORIAS para el mismo sector y el mismo año: Defensa 2023 en 32,9 y en 37,2 billones, y el total de 2023 como 391,4 (radicado) y 405,6 (aprobado). El estándar de este registro, escrito en _pendientesFuente desde la v1003, es que la búsqueda sostiene QUE un hecho ocurrió y no que se leyó cada página; una serie numérica deflactada cae del otro lado de esa raya."
+        "que": "La deuda del GNC como % del PIB, para los dos cortes de la regla fiscal del eje C.",
+        "resultado": "PARCIAL y vale decir qué se consiguió y qué no. SÍ: la deuda BRUTA, 60,5 % del PIB a junio de 2026, del Ministerio de Hacienda, convergente en cuatro medios — queda registrada en `presupuesto.deudaBruta`. NO: la deuda NETA, que es la que los umbrales de la Ley 2155 definen. Las netas que la búsqueda devuelve son proyecciones de fuente secundaria y no coinciden entre sí —58,9 % en el MFMP, 60,3 % en el escenario del CARF—, y un peldaño publicado sobre una persona real no se apoya en eso. Lo que lo cerraría: la serie oficial de deuda NETA del GNC del Ministerio de Hacienda, o el informe del CARF, leídos directamente."
       }
     },
     "D": {
@@ -10606,6 +10607,34 @@
           "n": "Presidencia · Gobierno radica Presupuesto de la Verdad para 2027 por $635 billones",
           "rol": "acto",
           "u": "https://www.presidencia.gov.co/prensa/Paginas/Gobierno-radica-Presupuesto-de-la-Verdad-para-2027-por-635-billones-260827.aspx"
+        }
+      ]
+    },
+    "deudaBruta": {
+      "pct": 60.5,
+      "medida": "bruta",
+      "de": "Gobierno Nacional Central",
+      "fecha": "2026-06-30",
+      "fuenteCorta": "Ministerio de Hacienda y Crédito Público",
+      "canal": "búsqueda",
+      "convergencia": "Cuatro medios publican la misma cifra para el mismo mes y la misma fuente: El Espectador, Occidente, HSB Noticias y Visión Davivienda. Es el estándar que la v1082 usó para escribir la inflación de septiembre: convergencia entre medios sobre una cifra oficial fechada.",
+      "noComparableCon": "El ancla y el límite de la Ley 2155 —55 % y 71 % del PIB—, porque esos umbrales están definidos sobre deuda NETA: la bruta menos los activos financieros, con la metodología que define el Confis. Comparar una bruta contra un umbral de neta es un error de categoría. Esta cifra se publica por lo que es y no se usa para poner ningún peldaño.",
+      "porQueLasOtrasCifrasDIFIEREN": "Y conviene decirlo porque la v1092 lo leyó como una contradicción y no lo era: las cifras que circulan difieren por el DENOMINADOR y por la MEDIDA, no porque alguna esté mal. 65,1 % a marzo y 64,5 % a enero usan otra base de PIB —Hacienda alterna el dato del DANE de 2025 con su proyección de 2026—; 66 % es la proyección de un crítico, declarada como tal; y 64 % es el cierre del cuatrienio de Petro, que es otro gobierno. Es la regla de la v1085: la pregunta no es cuál está mal, es de qué mide cada una.",
+      "fuentes": [
+        {
+          "n": "El Espectador · la deuda bruta llegó al 60,5 % del PIB proyectado para 2026",
+          "u": "https://www.elespectador.com/economia/macroeconomia/deuda-bruta-en-colombia-llego-al-605-del-pib-proyectado-para-2026-estos-son-los-datos/",
+          "rol": "acto"
+        },
+        {
+          "n": "Visión Davivienda · la deuda bruta colombiana alcanzó el 60,5 % del PIB en junio",
+          "u": "https://vision.davivienda.com/estar-actualizado/asi-cierran-los-mercados/deuda-publica-colombia-junio-2026",
+          "rol": "acto"
+        },
+        {
+          "n": "Occidente · la deuda bruta del Gobierno Nacional Central equivale al 60,5 % del PIB",
+          "u": "https://occidente.co/empresario/deuda-bruta-del-gobierno-nacional-central-equivale-al-60-5-del-pib/",
+          "rol": "acto"
         }
       ]
     }

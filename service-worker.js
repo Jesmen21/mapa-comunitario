@@ -1,4 +1,4 @@
-const URBIS_CACHE = 'urbis-v1092-las-escalas-de-los-ejes-b-y-c';
+const URBIS_CACHE = 'urbis-v1093-la-medida-antes-que-el-arreglo-otra-vez';
 const URBIS_ASSETS = [
   './',
   './index.html',

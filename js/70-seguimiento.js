@@ -3113,15 +3113,32 @@
      2021**, que fija la regla fiscal con un **ancla de deuda del 55 % del
      PIB** y un **límite del 71 %**.
 
-     DOS PELDAÑOS QUEDAN `sin-declarar` A PROPÓSITO, y es la parte que importa.
-     Los de la regla fiscal tienen su umbral en la ley —55 % y 71 %— pero
-     **este registro no trae la deuda como serie**: las cifras viven en la
-     prosa de las entradas y se CONTRADICEN entre sí —60 %, 64 % y 66 % del
-     PIB en entradas distintas—. Escribir el corte con una de las tres sería
-     elegir un número a conveniencia, y es exactamente la raya que la v1065
-     trazó: la búsqueda sostiene QUE un hecho ocurrió, no una serie numérica.
-     Así que esos dos peldaños se declaran sin lectura, el eje no puede
-     publicarlos, y la pantalla lo dice en ámbar. */
+     DOS PELDAÑOS QUEDAN `sin-declarar`, Y LA RAZÓN LA CORRIGIÓ LA v1093.
+
+     La v1092 escribió que las menciones de deuda del registro «se contradicen
+     entre sí —60 %, 64 % y 66 %—» y que por eso no se podía escribir el corte.
+     **Eso era falso**, y es el mismo error que este proyecto tiene escrito
+     desde la v1085: dos números que no cuadran piden la MEDIDA antes que el
+     arreglo. Medidas una por una, las tres son cosas distintas y ninguna
+     contradice a otra: 60 % es la cifra OFICIAL al cierre del primer semestre
+     de 2026; 66 % es la PROYECCIÓN de un crítico, que la propia entrada
+     declara «por su cuenta» y «podría llegar»; y 64 % es el cierre del
+     cuatrienio de PETRO, que es otro gobierno.
+
+     La razón de verdad es otra y es más precisa: **el umbral de la Ley 2155
+     está definido sobre deuda NETA** —la bruta menos los activos financieros,
+     con la metodología que define el Confis— y la cifra que se puede conseguir
+     y verificar es la **BRUTA**: 60,5 % del PIB a junio de 2026, del Ministerio
+     de Hacienda, convergente en cuatro medios. Comparar una bruta contra un
+     ancla definida sobre neta es el mismo error de categoría que la v1085
+     persigue, así que no se hace.
+
+     Y las cifras NETAS que hay a mano son proyecciones y no coinciden: 58,9 %
+     en el Marco Fiscal de Mediano Plazo y 60,3 % en el escenario del CARF.
+     Con las dos del mismo lado del ancla del 55 % —por encima— el corte
+     parecería claro, y aun así no se escribe: son proyecciones de fuente
+     secundaria, y un peldaño publicado sobre una persona real no se apoya en
+     eso. Lo que lo cerraría está nombrado abajo, en el trámite. */
   var ESCALA_EJE_C = {
     referencia: 'Artículo 350 de la Constitución —el gasto público social tiene prioridad sobre ' +
                 'cualquier otra asignación, salvo las excepciones de seguridad nacional—, artículo ' +
@@ -3130,6 +3147,22 @@
     origenCategoria: 'juridica-preexistente',
     umbralPrestadoDe: 'el artículo 350 para la prioridad del gasto social, y la Ley 2155 de 2021 ' +
                       'para los dos cortes de deuda. Ninguno se escribió para esta pregunta.',
+    /* LA RAZÓN de los dos peldaños de la regla fiscal, donde el lector la ve
+       y no en un comentario (v926). No van en `noAlcanza` —el eje SÍ los
+       alcanzaría— sino acá, para que la pantalla pueda decir por qué un
+       peldaño que la ley define sigue sin lectura. */
+    sinDeclararPorque: {
+      'nada-fiable': 'La Ley 2155 pone el límite en 71 % del PIB de deuda NETA —la bruta menos los ' +
+        'activos financieros, metodología del Confis—. La cifra que este registro puede conseguir y ' +
+        'verificar es la BRUTA: 60,5 % del PIB a junio de 2026, del Ministerio de Hacienda. Comparar ' +
+        'una bruta contra un umbral definido sobre neta es un error de categoría, así que el corte no ' +
+        'se escribe con lo que hay.',
+      'dudosa': 'El ancla de la Ley 2155 es 55 % del PIB de deuda NETA, y pasa lo mismo: la cifra ' +
+        'verificable es bruta. Las netas que hay a mano son proyecciones de fuente secundaria y no ' +
+        'coinciden —58,9 % en el Marco Fiscal de Mediano Plazo, 60,3 % en el escenario del CARF—; las ' +
+        'dos quedan por encima del ancla, así que el corte parecería claro, y aun así no se escribe: ' +
+        'un peldaño publicado sobre una persona real no se apoya en una proyección secundaria.'
+    },
     noAlcanza: {
       'inquebrantable': 'Este eje no puede certificar que el rumbo del gasto esté bien. Mide si el ' +
         'gasto social PIERDE prioridad, y que no la pierda no demuestra que el rumbo sea bueno: hay ' +
@@ -3616,7 +3649,12 @@
     if (corte) return { estado: 'lectura', texto: corte.d || '', desde: corte.desde };
     var nal = (escala.noAlcanza || {})[id];
     if (nal) return { estado: 'no-alcanzable', texto: nal };
-    return { estado: 'sin-declarar', texto: '' };
+    /* Un peldaño sin declarar PUEDE traer su razón (v1093): «el eje llegaría
+       y falta el dato» no es lo mismo que «nadie lo ha mirado», y las dos se
+       leían igual. Sigue siendo `sin-declarar` —es trabajo pendiente y sale
+       en ámbar— pero con la razón escrita cuando la haya. */
+    var sdp = (escala.sinDeclararPorque || {})[id];
+    return { estado: 'sin-declarar', texto: sdp || '' };
   }
 
   /* Los CINCO peldaños de un eje, en el orden de la escalera. Se recorre
@@ -5703,7 +5741,8 @@
               : x.estado === 'no-alcanzable'
                 ? 'Este eje no alcanza este peldaño. ' + x.texto
                 : 'Este eje puede llegar a este peldaño y todavía no dice qué significaría acá. ' +
-                  'Mientras falte, un peldaño sin lectura no se puede publicar.'));
+                  'Mientras falte, un peldaño sin lectura no se puede publicar.' +
+                  (x.texto ? ' Por qué falta: ' + x.texto : '')));
           ul.appendChild(it);
         });
         w.appendChild(ul);
