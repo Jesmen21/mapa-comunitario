@@ -1,4 +1,4 @@
-const URBIS_CACHE = 'urbis-v1082-la-inflacion-de-septiembre-y-el-deflactor-que-envejece';
+const URBIS_CACHE = 'urbis-v1083-alertas-urbis-mantenimiento-del-9-de-octubre';
 const URBIS_ASSETS = [
   './',
   './index.html',

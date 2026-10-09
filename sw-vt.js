@@ -13,7 +13,7 @@
 
    La versión va acá y en vision-territorial.html, idéntica, como en los
    otros siete archivos de versión del sitio: revisar.js lo comprueba. */
-const VT_CACHE = 'urbis-vt-v1082-la-inflacion-de-septiembre-y-el-deflactor-que-envejece';
+const VT_CACHE = 'urbis-vt-v1083-alertas-urbis-mantenimiento-del-9-de-octubre';
 const VT_ASSETS = [
   './vision-territorial.html',
   './css/90-vt.css',
