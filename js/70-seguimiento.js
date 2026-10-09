@@ -2726,6 +2726,10 @@
   function ejeB(dd, corte) {
     var ind = indicadoresDe(dd, corte);
     var filas = ind.filas.filter(function (f) { return IND_EJE_B.indexOf(f.id) >= 0; });
+    /* EL NIVEL (v1092), contra la escala de este eje: identidad y firmeza
+       del hallazgo de un tercero, sin umbral numérico. */
+    var ndB = nivelEjeB(filas, hechosDelMandato(dd || D));
+    var nivB = ndB.nivel ? nivelDeEje(ndB.nivel, ndB.corte && ndB.corte.d, 'escala-eje-b') : null;
     return {
       eje: 'B', t: 'Deterioro institucional', enLista: 'el deterioro institucional',
       /* El tramite de este eje (v1076): que falta, quien lo tiene, como se
@@ -2734,7 +2738,10 @@
       tramite: tramiteDe(dd || D, 'B'),
       pregunta: '¿qué le está pasando a las reglas del juego?',
       dias: ind.dias, poder: ind.poder, filas: filas,
-      nivel: null, publicable: false,
+      /* EL NIVEL, calculado contra la escala de la v1092: identidad y firmeza
+         del hallazgo de un tercero, sin umbral numérico. */
+      nivel: nivB, publicable: !!(nivB && nivB.lectura), nivelCalc: ndB,
+      escala: ESCALA_EJE_B, escaleraEje: escaleraDeEje(ESCALA_EJE_B),
       actos: ind.actos, declaran: ind.declaran,
       revisadosSinInd: ind.revisadosSinInd, sinRevisar: ind.sinRevisar, hechos: ind.hechos,
       /* DOS razones, y no son la misma, así que se dicen aparte.
@@ -2867,7 +2874,8 @@
     var r = {
       eje: 'C', t: 'Orientación del gasto', enLista: 'el rumbo del gasto',
       pregunta: '¿hacia dónde se mueve el dinero público, en términos reales?',
-      nivel: null, publicable: false,
+      nivel: null, publicable: false, nivelCalc: null,
+      escala: ESCALA_EJE_C, escaleraEje: escaleraDeEje(ESCALA_EJE_C),
       anio: P.anio || null, corte: P.corte || null,
       estadoTexto: P.estadoTexto || '', deflactorPct: P.deflactorPct != null ? P.deflactorPct : null,
       totalBn: P.totalBn != null ? P.totalBn : null,
@@ -2927,6 +2935,14 @@
                   'distintas y el módulo no las suma. Lo que sí publica son las cifras, deflactadas y con ' +
                   'su fecha de corte, para que la discusión sea sobre ellas.';
     }
+    /* EL NIVEL DEL EJE C (v1092). Se calcula de la variación real por sector
+       cruzada con la clasificación del artículo 366 que el REGISTRO declara,
+       no una que el código suponga. */
+    var ndC = nivelEjeC(r.sectores);
+    r.nivelCalc = ndC;
+    r.nivel = ndC.nivel ? nivelDeEje(ndC.nivel, ndC.corte && ndC.corte.d, 'escala-eje-c') : null;
+    r.publicable = !!(r.nivel && r.nivel.lectura);
+
     return r;
   }
 
@@ -2980,6 +2996,195 @@
        definición de la escalera, porque la escalera se escribió para él. */
     cortes: ESCALERA.map(function (p) { return { id: p.id, d: p.d }; })
   };
+
+  /* ══ LA ESCALA DEL EJE B (v1092) ═══════════════════════════════════════
+     SE ESCRIBE PRIMERO y contra referencia EXTERNA, como todas (v965, v1077).
+     Y lo primero que hubo que decidir es la FORMA, porque la del eje D no
+     sirve acá: sus cortes son un CONTEO —una muerte, dos o más— y un conteo
+     de mecanismos excepcionales no mide deterioro. **Un decreto de emergencia
+     es constitucionalmente legítimo**: los artículos 212 a 215 lo prevén, con
+     control automático de la Corte Constitucional. Contar cuatro y bajar un
+     peldaño sería castigar el uso de una facultad que la Constitución da.
+
+     LA REFERENCIA, nombrada acá donde el lector la ve (v926): los artículos
+     **212 a 215 de la Constitución**, que establecen los tres estados de
+     excepción y los someten a **control automático de constitucionalidad** de
+     la Corte Constitucional, con control político del Congreso; y el artículo
+     **113**, que ordena la separación y la colaboración armónica de las ramas
+     y de los órganos autónomos.
+
+     Y de ahí sale la forma: lo que mide deterioro no es que el Ejecutivo use
+     un mecanismo, sino que **un tercero con competencia haya fallado en su
+     contra**. Así que los cortes se anclan a la IDENTIDAD del hallazgo
+     —quién lo hizo y con qué firmeza— y **no a un número**. Eso tiene una
+     consecuencia que conviene decir: en esta escala no hay ningún umbral que
+     yo haya elegido, porque no hay ningún umbral.
+
+     La dimensión de firmeza tampoco se inventa: es `ESTADO_PROCESAL`, la
+     escalera que este módulo ya tenía declarada para otra cosa. Prestada, no
+     escrita para esta pregunta (v882, v1075). */
+  var ESCALA_EJE_B = {
+    referencia: 'Artículos 212 a 215 de la Constitución —los tres estados de excepción, con control ' +
+                'automático de constitucionalidad de la Corte Constitucional y control político del ' +
+                'Congreso— y artículo 113, que ordena la separación y la colaboración armónica entre ' +
+                'las ramas y los órganos autónomos.',
+    origenCategoria: 'juridica-preexistente',
+    umbralPrestadoDe: 'ESTADO_PROCESAL, la escalera de firmeza que este módulo ya tenía declarada. ' +
+                      'Y no hay umbral numérico: los cortes se anclan a QUIÉN falló y con qué ' +
+                      'firmeza, no a cuántas veces.',
+    noAlcanza: {
+      'inquebrantable': 'Este eje no puede certificar que las reglas del juego estén bien. Cuenta ' +
+        'hallazgos de terceros contra el Ejecutivo, y cero hallazgos no significa que no haya habido ' +
+        'deterioro: significa que este registro no tiene ninguno documentado (v875). Con cero, el eje ' +
+        'no publica nivel en vez de publicar un peldaño bueno.',
+      'fiable': 'Por la misma razón: esta escala solo baja. Y conviene decir lo que NO cuenta — que ' +
+        'el Gobierno expida decretos de emergencia no la mueve, porque los artículos 212 a 215 le dan ' +
+        'esa facultad y la someten a control automático. El deterioro no es usar el mecanismo: es que ' +
+        'el control falle en contra.'
+    },
+    cortes: [
+      { id: 'nada-fiable', requiere: 'fallo-en-firme',
+        d: 'Un órgano de cierre falló EN FIRME contra un acto del Ejecutivo en materia de reglas del ' +
+           'juego: la Corte Constitucional declaró inexequible un decreto de excepción, o un juez ' +
+           'concedió una tutela por información pública negada y el fallo quedó en firme.' },
+      { id: 'poco-fiable', requiere: 'autonomia-afectada-acto-en-firme',
+        d: 'Un órgano autónomo declaró formalmente que un acto del Ejecutivo afecta su autonomía, y ' +
+           'ese acto sigue EN FIRME: la disputa existe y el Ejecutivo no la ha deshecho.' },
+      { id: 'dudosa', requiere: 'disputa-abierta',
+        d: 'Hay una disputa institucional ABIERTA y sin resolver —un órgano autónomo se pronunció, o ' +
+           'el asunto está en revisión judicial— así que todavía no hay un fallo en contra, pero ' +
+           'tampoco colaboración armónica.' }
+    ]
+  };
+
+  /* El nivel del eje B SE CALCULA de la identidad y la firmeza de lo que el
+     registro documenta, recorriendo los cortes de peor a mejor y quedándose
+     con el PRIMERO que se cumpla: así «manda el peor», igual que en todo este
+     módulo. Y devuelve null sin material, no un peldaño bueno (v875). */
+  function nivelEjeB(filas, entradas) {
+    var ent = entradas || [];
+    var decl = ent.filter(function (e) { return (e.indicadores || []).length; });
+    /* Los tres hechos que los cortes distinguen, leídos del registro y no de
+       un conteo: quién falló, y en qué estado quedó el acto. */
+    var enFirme = decl.filter(function (e) {
+      return e.estadoProcesal === 'en-firme' &&
+             ((e.indicadores || []).indexOf('I-07') >= 0 || (e.indicadores || []).indexOf('I-04') >= 0) &&
+             /inexequible|tutela concedida|concedi[oó] la tutela/i.test(String(e.titulo || '') + String(e.detalle || ''));
+    });
+    var autonomia = decl.filter(function (e) {
+      var via = ((e.indicadoresPor || {})['I-05'] || {}).via || '';
+      return /afecta su autonom[ií]a o competencia/.test(via) && e.estadoProcesal === 'en-firme';
+    });
+    var disputa = decl.filter(function (e) {
+      return e.estadoProcesal === 'en-disputa-institucional' || e.estadoProcesal === 'en-revision-judicial';
+    });
+    var cumple = { 'fallo-en-firme': enFirme, 'autonomia-afectada-acto-en-firme': autonomia,
+                   'disputa-abierta': disputa };
+    for (var i = 0; i < ESCALA_EJE_B.cortes.length; i++) {
+      var c = ESCALA_EJE_B.cortes[i];
+      var hs = cumple[c.requiere] || [];
+      if (hs.length) {
+        return { nivel: c.id, corte: c, n: hs.length,
+                 porque: cn(hs.length, 'hallazgo de un tercero contra el Ejecutivo en materia de ' +
+                                       'reglas del juego', 'hallazgos de terceros contra el Ejecutivo ' +
+                                       'en materia de reglas del juego') + ', y el peor de ' +
+                         pl(hs.length, 'él', 'ellos') + ' es: ' + c.d +
+                         ' La escala de este eje está escrita contra el ' + ESCALA_EJE_B.referencia +
+                         ' No tiene umbral numérico: se ancla a quién falló y con qué firmeza.',
+                 descansaEn: 'El estado procesal de cada hallazgo sale del registro, y la firmeza se ' +
+                             'mide con `ESTADO_PROCESAL`, la escalera que este módulo ya tenía ' +
+                             'declarada. Lo que NO mueve este eje: que el Gobierno expida decretos ' +
+                             'de emergencia, porque los artículos 212 a 215 le dan esa facultad.' };
+      }
+    }
+    return { nivel: null, n: 0,
+             porque: 'Este eje no publica nivel porque el registro no documenta ningún hallazgo de un ' +
+                     'tercero contra el Ejecutivo en materia de reglas del juego. Eso NO quiere decir ' +
+                     'que no haya deterioro: quiere decir que este registro no tiene ninguno ' +
+                     'documentado, y un eje no puede certificar una ausencia que no midió.' };
+  }
+
+  /* ══ LA ESCALA DEL EJE C (v1092) ═══════════════════════════════════════
+     LA REFERENCIA, externa y nombrada acá: el artículo **350** de la
+     Constitución, que ordena que **el gasto público social tenga prioridad
+     sobre cualquier otra asignación** salvo las excepciones de seguridad
+     nacional; el artículo **366**, que nombra las áreas de ese gasto —salud,
+     educación, saneamiento ambiental y agua potable—; y la **Ley 2155 de
+     2021**, que fija la regla fiscal con un **ancla de deuda del 55 % del
+     PIB** y un **límite del 71 %**.
+
+     DOS PELDAÑOS QUEDAN `sin-declarar` A PROPÓSITO, y es la parte que importa.
+     Los de la regla fiscal tienen su umbral en la ley —55 % y 71 %— pero
+     **este registro no trae la deuda como serie**: las cifras viven en la
+     prosa de las entradas y se CONTRADICEN entre sí —60 %, 64 % y 66 % del
+     PIB en entradas distintas—. Escribir el corte con una de las tres sería
+     elegir un número a conveniencia, y es exactamente la raya que la v1065
+     trazó: la búsqueda sostiene QUE un hecho ocurrió, no una serie numérica.
+     Así que esos dos peldaños se declaran sin lectura, el eje no puede
+     publicarlos, y la pantalla lo dice en ámbar. */
+  var ESCALA_EJE_C = {
+    referencia: 'Artículo 350 de la Constitución —el gasto público social tiene prioridad sobre ' +
+                'cualquier otra asignación, salvo las excepciones de seguridad nacional—, artículo ' +
+                '366, que nombra sus áreas (salud, educación, saneamiento ambiental y agua potable), ' +
+                'y la Ley 2155 de 2021, que fija el ancla de deuda en 55 % del PIB y el límite en 71 %.',
+    origenCategoria: 'juridica-preexistente',
+    umbralPrestadoDe: 'el artículo 350 para la prioridad del gasto social, y la Ley 2155 de 2021 ' +
+                      'para los dos cortes de deuda. Ninguno se escribió para esta pregunta.',
+    noAlcanza: {
+      'inquebrantable': 'Este eje no puede certificar que el rumbo del gasto esté bien. Mide si el ' +
+        'gasto social PIERDE prioridad, y que no la pierda no demuestra que el rumbo sea bueno: hay ' +
+        'muchas maneras de orientar mal el gasto que esta escala no mira. Con nada medido, el eje no ' +
+        'publica nivel en vez de publicar un peldaño bueno (v875).',
+      'fiable': 'Por la misma razón: esta escala solo baja.'
+    },
+    cortes: [
+      { id: 'poco-fiable', requiere: 'social-pierde-frente-a-no-social',
+        d: 'Un sector del gasto público social del artículo 366 —salud, educación, saneamiento, agua ' +
+           'potable— PIERDE participación en términos reales mientras un sector no social la gana. ' +
+           'El artículo 350 ordena lo contrario: prioridad del gasto social sobre cualquier otra ' +
+           'asignación, salvo seguridad nacional.' }
+    ]
+  };
+
+  /* El nivel del eje C se calcula de la variación REAL por sector que el
+     registro ya trae, cruzada con la clasificación del artículo 366 que el
+     propio registro declara. Si ningún sector trae esa clasificación, no se
+     adivina: devuelve null y lo dice. */
+  function nivelEjeC(sectores) {
+    var sec = (sectores || []).filter(function (x) { return x && x.realPct != null; });
+    var conClase = sec.filter(function (x) { return x.social === true || x.social === false; });
+    if (!sec.length || !conClase.length) {
+      return { nivel: null, n: 0,
+               porque: 'Este eje no publica nivel porque sus sectores no declaran si son gasto ' +
+                       'público social del artículo 366. Sin esa clasificación no se puede saber si ' +
+                       'el gasto social perdió prioridad, y adivinarla sería clasificar a ojo el ' +
+                       'presupuesto de un país.' };
+    }
+    var socialBaja = conClase.filter(function (x) { return x.social === true && x.realPct < 0; });
+    var noSocialSube = conClase.filter(function (x) { return x.social === false && x.realPct > 0; });
+    if (socialBaja.length && noSocialSube.length) {
+      var c = ESCALA_EJE_C.cortes[0];
+      return { nivel: c.id, corte: c, n: socialBaja.length,
+        porque: cn(socialBaja.length, 'sector del gasto público social pierde',
+                                      'sectores del gasto público social pierden') +
+                ' participación real mientras ' +
+                cn(noSocialSube.length, 'un sector no social la gana', 'sectores no sociales la ganan') +
+                ': ' + socialBaja.map(function (x) { return x.t + ' ' + x.realPct + ' %'; }).join(' · ') +
+                ' frente a ' + noSocialSube.map(function (x) { return x.t + ' +' + x.realPct + ' %'; }).join(' · ') +
+                '. La escala de este eje está escrita contra el ' + ESCALA_EJE_C.referencia,
+        descansaEn: 'Las variaciones reales salen del bloque `presupuesto` del registro y están ' +
+                    'calculadas con el deflactor que ese bloque declara; la clasificación social de ' +
+                    'cada sector la declara el propio registro, con el artículo 366 citado al lado. ' +
+                    'Y lo que este eje todavía NO puede mirar son los dos cortes de deuda de la Ley ' +
+                    '2155: el registro no trae la deuda como serie y sus menciones en prosa se ' +
+                    'contradicen entre sí.' };
+    }
+    return { nivel: null, n: 0,
+             porque: 'Este eje no publica nivel: con la clasificación del artículo 366 que el registro ' +
+                     'declara, ningún sector del gasto social pierde participación real mientras uno ' +
+                     'no social la gana. Eso NO es un buen peldaño —esta escala solo baja— y tampoco ' +
+                     'mide los dos cortes de deuda de la Ley 2155, que siguen sin lectura.' };
+  }
 
   /* ══ LA ESCALA DEL EJE D (v1088) ═══════════════════════════════════════
      SE ESCRIBE PRIMERO y contra una referencia EXTERNA, que es la condición
@@ -3294,8 +3499,8 @@
        dicho qué significaría un peldaño acá— y la tabla decía que sí. La
        guarda ata ahora la bandera con la existencia del objeto, así que
        ponerla en true sin escribir la escala sale en rojo. */
-    B: { mide: 'realidad', dir: +1, escala: false },
-    C: { mide: 'realidad', dir: +1, escala: false },
+    B: { mide: 'realidad', dir: +1, escala: true  },
+    C: { mide: 'realidad', dir: +1, escala: true  },
     D: { mide: 'realidad', dir: +1, escala: true  }
   };
 
@@ -4451,10 +4656,22 @@
          habla de casos de corrupción. Imprimirla acá le atribuiría al
          gobernante algo que el eje que puso el peldaño no midió. La lectura
          la pone el eje, y si no la trae se dice. */
-      var lecturas = (vg.usados || []).map(function (u) {
-        return u.lectura ? u.lectura : null;
-      }).filter(Boolean);
-      var sinLectura = (vg.usados || []).filter(function (u) { return !u.lectura; });
+      /* SOLO LA LECTURA DEL EJE QUE PUSO EL PELDAÑO (v1092). Con un eje
+         publicando esto daba igual; con tres, concatenaba las lecturas de los
+         tres bajo el titular — y solo UNO está en ese peldaño. Las otras dos
+         eran las definiciones de «Dudosa» y «Poco fiable» presentadas como si
+         fueran lo que significa «Nada fiable»: un defecto de VERDAD y no de
+         estética, y lo vio el papel compuesto en cuanto hubo tres ejes.
+
+         Los otros ejes no se callan: van abajo, con su peldaño y su nombre,
+         en su propio renglón. */
+      var idMandan = (vg.nivel && vg.nivel.id) || (vg.piso && vg.piso.id) || null;
+      var mandan = (vg.usados || []).filter(function (u) {
+        return idMandan && ((u.nivel && (u.nivel.id || u.nivel)) === idMandan);
+      });
+      var otros = (vg.usados || []).filter(function (u) { return mandan.indexOf(u) < 0; });
+      var lecturas = mandan.map(function (u) { return u.lectura || null; }).filter(Boolean);
+      var sinLectura = mandan.filter(function (u) { return !u.lectura; });
       if (lecturas.length) {
         placa.appendChild(el('p', 'sp-fi-vlect',
           'Qué significa «' + ((vg.nivel && vg.nivel.t) || (vg.piso && vg.piso.t) || '') +
@@ -4466,7 +4683,7 @@
           ' y no declara qué significa en su propia medición: ' +
           sinLectura.map(function (u) { return u.t; }).join(' · ') + '.'));
       }
-      var deDonde = (vg.usados || []).map(function (u) {
+      var deDonde = mandan.map(function (u) {
         return u.t + (u.porque ? ': ' + u.porque : '');
       }).filter(Boolean);
       if (deDonde.length) {
@@ -4474,10 +4691,23 @@
         /* Y SOBRE QUÉ EVIDENCIA descansa, que es otra cosa y pide otra
            acción: el peldaño es el mismo con el documento o sin él, y eso
            va dicho para que nadie lea el piso como pendiente de un papel. */
-        var sobre = (vg.usados || []).map(function (u) { return u.descansaEn; }).filter(Boolean);
+        var sobre = mandan.map(function (u) { return u.descansaEn; }).filter(Boolean);
         if (sobre.length) {
           placa.appendChild(el('p', 'sp-fi-vbase sp-fi-vbase-2', sobre.join(' — ')));
         }
+      }
+      /* Y LOS OTROS EJES QUE PUBLICAN, con su peldaño y sin su párrafo: no
+         fijan el dictamen —manda el peor— pero callarlos dejaría la placa
+         diciendo que solo uno midió. Su lectura entera está en su eje. */
+      if (otros.length) {
+        placa.appendChild(el('p', 'sp-fi-vbase sp-fi-votros',
+          pl(otros.length, 'El otro eje que mide la realidad también publica nivel, y no fija el ' +
+                           'dictamen porque manda el peor: ',
+                           'Los otros ejes que miden la realidad también publican nivel, y no fijan ' +
+                           'el dictamen porque manda el peor: ') +
+          otros.map(function (u) {
+            return u.t + ', «' + ((u.nivel && u.nivel.t) || (u.nivel && u.nivel.id) || '?') + '»';
+          }).join(' · ') + '.'));
       }
       /* Y el peldaño de la palabra, abajo, con lo que mide dicho delante.
          Va DESPUÉS del titular a propósito: leído en orden, quien llega a

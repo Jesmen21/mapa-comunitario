@@ -10515,44 +10515,51 @@
           "k": "educacion",
           "t": "Educación",
           "bn": 78.77,
-          "realPct": -3.1
+          "realPct": -3.1,
+          "social": true
         },
         {
           "k": "salud",
           "t": "Salud",
           "bn": 77.05,
-          "realPct": -4.4
+          "realPct": -4.4,
+          "social": true
         },
         {
           "k": "trabajo",
           "t": "Trabajo",
           "bn": 58.82,
-          "realPct": 10
+          "realPct": 10,
+          "social": false
         },
         {
           "k": "hacienda",
           "t": "Hacienda y Crédito Público",
           "bn": 40.7,
-          "realPct": 34.4
+          "realPct": 34.4,
+          "social": false
         },
         {
           "k": "defensa",
           "t": "Defensa",
           "bn": 33.8,
-          "realPct": 14.6
+          "realPct": 14.6,
+          "social": false
         },
         {
           "k": "policia",
           "t": "Policía Nacional",
           "bn": 20.9,
-          "realPct": null
+          "realPct": null,
+          "social": false
         },
         {
           "k": "deporte",
           "t": "Deporte",
           "bn": 0.2977,
           "realPct": -43.5,
-          "base": "recorte-presupuesto-deporte-2027"
+          "base": "recorte-presupuesto-deporte-2027",
+          "social": false
         }
       ],
       "fuentes": [
@@ -10571,7 +10578,8 @@
           "rol": "acto",
           "u": "https://www.presidencia.gov.co/prensa/Paginas/Gobierno-radica-Presupuesto-de-la-Verdad-para-2027-por-635-billones-260827.aspx"
         }
-      ]
+      ],
+      "_clasificacionSocial": "Cada sector declara si es gasto público social en el sentido del ARTÍCULO 366 de la Constitución, que nombra sus áreas: salud, educación, saneamiento ambiental y agua potable. La clasificación vive acá y no en el código para que se pueda discutir mirando el registro, y lleva su referencia al lado.\n\nY se ajusta a ESA lista y no a una idea más amplia de «gasto social», porque ensanchar la lista es ensanchar el criterio — que es la manera silenciosa de hacer que entren más sectores y el eje baje más fácil. Las dos decisiones discutibles, dichas: TRABAJO queda como NO social aunque su gasto lo sea en sentido amplio, porque el artículo 366 no lo nombra; y DEPORTE tampoco, por lo mismo, aun con su caída real del 43,5 %, que es la mayor de los siete. Si alguna de las dos se cambiara, el nivel del eje C podría moverse: por eso están escritas y no supuestas.\n\nNota de método: POLICÍA no trae variación real, así que no entra en ninguna de las dos ramas del cálculo — ni a favor ni en contra."
     },
     "agregacion": {
       "titulo": "La misma plata, dos agregaciones: dónde queda Defensa según qué se sume",

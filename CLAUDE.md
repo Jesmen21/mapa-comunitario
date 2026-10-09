@@ -1264,6 +1264,42 @@ sección al final de este archivo.
   puede publicar peldaño por más material que consiga**, así que pide una
   decisión y no un archivo — y si la tabla dijera que sí la tiene, la propia
   ficha denuncia la contradicción.
+* **Y una escala puede anclarse a la IDENTIDAD del hallazgo en vez de a un
+  número** (v1092). La del eje D son cortes por conteo; esa forma no servía para
+  el eje B, y la razón es de fondo: **un decreto de emergencia es
+  constitucionalmente legítimo** —los artículos 212 a 215 lo prevén con control
+  automático de la Corte—, así que contar cuatro y bajar un peldaño sería
+  castigar el uso de una facultad que la Constitución concede. La escala del eje
+  B se ancla a **quién falló contra el Ejecutivo y con qué firmeza**, y por eso
+  **no tiene ningún umbral numérico**: no hay número que elegir. La firmeza se
+  mide con `ESTADO_PROCESAL`, ya declarada para otra cosa.
+* **Y un umbral que SÍ está en la ley puede seguir sin poder escribirse**
+  (v1092). Los dos cortes de deuda del eje C tienen su número en la Ley 2155
+  —ancla 55 % del PIB, límite 71 %— y quedaron `sin-declarar`, porque el
+  registro no trae la deuda como serie: sus menciones viven en prosa y **se
+  contradicen entre sí (60 %, 64 % y 66 %)**. Elegir una sería elegir a
+  conveniencia, que es la raya de la v1065. Tener la referencia no basta: hace
+  falta el dato en una forma que no obligue a escoger.
+* **Y una clasificación que decide un nivel vive en el REGISTRO, con su
+  referencia y sus decisiones discutibles dichas** (v1092). Qué sector es gasto
+  público social lo declara el registro con el artículo 366 citado, no el código,
+  para que se discuta mirando los datos. Y se ajusta a la lista que ese artículo
+  nombra: **ensanchar la lista es ensanchar el criterio**, que es la manera
+  silenciosa de que entren más sectores y el eje baje más fácil. Las decisiones
+  discutibles van escritas — y **se mide si deciden**: acá no, porque dos
+  sectores no sociales ya disparaban el corte sin la tercera.
+* **Y la lectura que acompaña al titular es la del eje que PUSO el peldaño, no
+  la de todos los que publican** (v1092). Con un eje daba igual; con tres, la
+  placa concatenaba las tres lecturas bajo un titular al que solo UNO
+  corresponde, así que presentaba las definiciones de «Dudosa» y «Poco fiable»
+  como si fueran lo que significa «Nada fiable». **Es un defecto de verdad y no
+  de estética.** Los otros ejes no se callan: se nombran con su propio peldaño.
+* **Y una CLAVE DUPLICADA en un literal la resuelve JavaScript con la última,
+  sin un solo error** (v1092). Un parche anterior ya había escrito
+  `nivelCalc: null` y el mío añadió `nivelCalc: ndB` más arriba: el eje publicaba
+  su peldaño con la razón EN BLANCO, sin excepción y sin aviso. Lo delató el
+  papel. Antes de añadir una clave a un literal que otro parche ya tocó, se
+  comprueba que no esté.
 * **Y el conteo de palomitas es parte de la lectura de una corrida** (v1090).
   Una guarda nueva con una variable de otro bloque tiró un `ReferenceError`
   que **mató la corrida antes del resumen**; el `grep` de `✗` no encontró nada

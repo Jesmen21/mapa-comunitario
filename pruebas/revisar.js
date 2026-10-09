@@ -3692,8 +3692,17 @@ console.log('\n  -- la ficha del gobernante --');
        nuevo lo hereda sin que su autor se acuerde (v867). */
     const plD = [
       ['la placa dice de dónde sale el piso', /'De dónde sale: ' \+ deDonde\.join/.test(j70c3)],
-      ['y lo arma de los ejes que lo pusieron, no de una lista aparte',
-       /\(vg\.usados \|\| \[\]\)\.map/.test(j70c3)],
+      /* v1092 · MÁS PRECISA, no más laxa. Con un solo eje publicando daba
+         igual de qué lista saliera; con tres, la placa concatenaba las
+         lecturas de los tres bajo un titular al que solo UNO corresponde —las
+         otras dos eran las definiciones de otros peldaños presentadas como si
+         fueran la de este—. Así que ahora se exige que salga de los que
+         PUSIERON el peldaño, y que los otros se nombren en vez de callarse. */
+      ['y lo arma de los ejes que PUSIERON el peldaño, no de todos',
+       /var mandan = \(vg\.usados \|\| \[\]\)\.filter/.test(j70c3) &&
+       /var deDonde = mandan\.map/.test(j70c3)],
+      ['y los otros ejes que publican se nombran, no se callan',
+       /sp-fi-votros/.test(j70c3) && /no fija el '/.test(j70c3)],
       ['y dice aparte sobre qué evidencia descansa', /sp-fi-vbase sp-fi-vbase-2/.test(j70c3)],
       ['y la clase tiene regla en el css', /\.sp-fi-vbase\{/.test(leer('css/70-seguimiento.css'))]
     ];

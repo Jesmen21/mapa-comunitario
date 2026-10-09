@@ -1,4 +1,4 @@
-const URBIS_CACHE = 'urbis-v1091-los-cinco-peldanos-de-cada-eje';
+const URBIS_CACHE = 'urbis-v1092-las-escalas-de-los-ejes-b-y-c';
 const URBIS_ASSETS = [
   './',
   './index.html',

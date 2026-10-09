@@ -2380,3 +2380,5 @@ a.sp-fuente:hover svg{ color:var(--verde-hi); }
    datos, es una decisión sin tomar, y pintarla como alerta la confundiría
    con un archivo que alguien no fue a buscar. */
 .sp-c3-sin-escala{ font-style:italic; }
+/* Los otros ejes que publican nivel y no fijan el dictamen (v1092). */
+.sp-fi-votros{ margin-top:5px; }

@@ -25584,3 +25584,124 @@ diciendo cuál falló (v973).
   vez de callarlo. `pendiente`
 * **No cambia el dictamen.** Sigue en «Nada fiable» por saturación: esta tanda
   explica los peldaños, no mueve ninguno. `cerrado en v1091 · medido y declinado`
+
+## v1092 · las escalas de los ejes B y C, y el dictamen deja de ser por saturación
+
+Pedido: escribir las escalas del B y del C. Eran lo último que quedaba del
+módulo y las dos tandas anteriores las habían declarado decisión de quien firma.
+Con la orden dada, se escribieron — y con tres reglas puestas de antemano, porque
+una escala mal anclada mueve en público el juicio sobre una persona real:
+**referencia externa y primero**, **umbral prestado y no inventado**, y lo que la
+v1091 acababa de habilitar: **un peldaño cuyo umbral no se pueda anclar queda
+`sin-declarar`**, no relleno con un número propio.
+
+### El eje B no podía tener la forma del eje D, y eso fue el primer hallazgo
+
+Los cortes del eje D son un CONTEO —una muerte, dos o más—. Un conteo no sirve
+acá, y la razón es de fondo: **un decreto de emergencia es constitucionalmente
+legítimo.** Los artículos 212 a 215 lo prevén y lo someten a control automático
+de la Corte Constitucional. Contar los cuatro mecanismos excepcionales del
+registro y bajar un peldaño sería castigar el uso de una facultad que la
+Constitución concede.
+
+Así que la escala del eje B se ancla a la **identidad del hallazgo externo** —quién
+falló contra el Ejecutivo y con qué firmeza— y **no tiene ningún umbral
+numérico**. Esa es la propiedad que la hace defendible: no hay ningún número que
+yo haya elegido, porque no hay ningún número. La dimensión de firmeza tampoco se
+inventó: es `ESTADO_PROCESAL`, la escalera que este módulo ya tenía declarada
+para otra cosa.
+
+| peldaño | se ancla a |
+|---|---|
+| `nada-fiable` | un órgano de cierre falló EN FIRME: inexequibilidad de un decreto de excepción, o tutela concedida en firme |
+| `poco-fiable` | un órgano autónomo declaró afectada su autonomía y el acto sigue EN FIRME |
+| `dudosa` | hay disputa institucional ABIERTA, sin fallo todavía |
+| `fiable` · `inquebrantable` | **no alcanzables**: este eje solo baja, y lo que NO lo mueve va dicho — que el Gobierno expida decretos de emergencia |
+
+Medido sobre el registro: el eje B queda en **«Dudosa»**, por la carta del
+presidente de la JEP, que está `en-disputa-institucional` y sin resolver. Es el
+corte más suave de los tres, y eso importa como señal: la escala no se escribió
+buscando severidad.
+
+### El eje C: dos peldaños anclados en la ley y dos `sin-declarar` a propósito
+
+Referencias, las tres externas: el **artículo 350** —el gasto público social
+tiene prioridad sobre cualquier otra asignación, salvo seguridad nacional—, el
+**artículo 366**, que nombra sus áreas, y la **Ley 2155 de 2021**, que fija el
+ancla de deuda en 55 % del PIB y el límite en 71 %.
+
+Y acá está la parte que más importa de esta tanda. Los dos cortes de deuda
+**tienen su umbral en la ley** y aun así quedaron `sin-declarar`, porque **este
+registro no trae la deuda como serie**: sus menciones viven en la prosa de las
+entradas y **se contradicen entre sí — 60 %, 64 % y 66 % del PIB** en entradas
+distintas. Elegir una de las tres para escribir el corte sería elegir un número a
+conveniencia, y es exactamente la raya que la v1065 trazó: la búsqueda sostiene
+QUE un hecho ocurrió, no una serie numérica. Así que esos dos peldaños salen en
+ámbar en la pantalla y el eje no puede publicarlos.
+
+Lo que sí quedó anclado es el corte del artículo 350, y dispara: **Salud −4,4 % y
+Educación −3,1 % pierden participación real mientras Hacienda +34,4 %, Defensa
++14,6 % y Trabajo +10 % la ganan.** El eje C queda en **«Poco fiable»**.
+
+### La clasificación del artículo 366 vive en el REGISTRO, no en el código
+
+Qué sector es gasto público social lo declara el registro, sector por sector,
+con el artículo 366 citado al lado — para que se pueda discutir mirando los
+datos y no leyendo JavaScript. Y se ajusta a la lista que ese artículo nombra
+—salud, educación, saneamiento, agua potable— y no a una idea más amplia de
+«gasto social», porque **ensanchar la lista es ensanchar el criterio**, que es la
+manera silenciosa de hacer que entren más sectores y el eje baje más fácil.
+
+Las dos decisiones discutibles van escritas en el propio registro: TRABAJO queda
+como no social aunque su gasto lo sea en sentido amplio, y DEPORTE tampoco, aun
+con su caída real del 43,5 %, la mayor de los siete. **Y se midió si la decisión
+discutible decide: no.** Hacienda +34,4 % y Defensa +14,6 % solas ya disparan el
+corte, así que mover Trabajo no cambia el resultado.
+
+### El dictamen no cambió, y esa es la señal
+
+| | antes (v1091) | ahora |
+|---|---|---|
+| eje B | sin nivel | **Dudosa** |
+| eje C | sin nivel | **Poco fiable** |
+| eje D | Nada fiable | Nada fiable |
+| veredicto | **Nada fiable**, por saturación | **Nada fiable**, por «manda el peor» |
+
+Las dos escalas nuevas **no movieron el veredicto ni un peldaño**. Lo único que
+cambió es que ya no descansa en un argumento de monotonía con dos ejes sin medir:
+los tres miden, y el peor manda. Esa es la prueba de que los umbrales no se
+eligieron para producir un resultado — el resultado ya estaba.
+
+### Y el papel destapó un defecto de VERDAD, no de estética
+
+Con un solo eje publicando, la placa imprimía «Qué significa "Nada fiable" acá:»
+y la lectura de ese eje. Con tres, concatenaba **las lecturas de los tres** bajo
+el titular — y solo UNO está en ese peldaño. Las otras dos eran las definiciones
+de «Dudosa» y de «Poco fiable» presentadas como si fueran lo que significa «Nada
+fiable». Eso no es un problema de legibilidad: es atribuirle al peldaño publicado
+definiciones que no son suyas.
+
+Ahora el titular lleva solo la lectura del eje que PUSO el peldaño, y los otros
+dos **se nombran con el suyo** en su propio renglón —«Deterioro institucional,
+"Dudosa" · Orientación del gasto, "Poco fiable"»— en vez de callarse. Lo vio
+componer la página, en cuanto hubo tres ejes que publicaran.
+
+### Y una clave duplicada, sin un solo error
+
+Un parche anterior ya había escrito `nivelCalc: null` en el literal del eje B, y
+el mío añadió `nivelCalc: ndB` más arriba. **JavaScript resuelve una clave
+repetida con la última**, así que el eje publicaba su peldaño con la razón en
+blanco — sin una excepción, sin un aviso. Lo delató el papel: «De dónde sale»
+salía vacío para ese eje.
+
+### Lo que esta versión NO hace
+
+* **No escribe los dos cortes de deuda del eje C.** Tienen su umbral en la Ley
+  2155 y les falta el dato: la deuda como serie, con una sola cifra y su fuente.
+  Mientras no esté, salen en ámbar. `pendiente`
+* **No consigue la serie de deuda.** Pide una fuente que este contenedor no
+  puede abrir —el proxy niega todos los dominios— y las menciones en prosa se
+  contradicen. `pendiente`
+* **No revisa la clasificación social de los siete sectores con nadie más.** Está
+  escrita en el registro con su referencia y sus dos decisiones discutibles
+  dichas, pero la firma es de quien opera el módulo. `pendiente`
