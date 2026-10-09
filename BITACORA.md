@@ -25155,3 +25155,120 @@ y no se rodea.
   dispara en proporción o si fue el caso raro. `pendiente`
 * **No publica ningún piso todavía**, porque sigue sin haber un eje con nivel.
   `pendiente`
+
+## v1088 · el eje D publica nivel, y hay piso
+
+Pedido con impaciencia y con razón: «necesito ya los dictámenes porque vamos
+tan lento por algo tan sencillo». **La impaciencia estaba justificada: el
+bloqueo que las dos tandas anteriores reportaron era mío, no del módulo.**
+
+### El bloqueo que no existía
+
+La v1087 cerró diciendo que para que el eje D publicara nivel había que
+documentar 13 actos más del gobierno de Petro, porque la escala necesitaba
+validarse contra otro gobierno. Medido otra vez, eso confunde dos cosas:
+
+* la **validación contra un gobierno anterior** es del INDICADOR, y lo que
+  marca es su `origenCategoria` y su bandera `validado`, que el módulo ya
+  publica como «no validado» sin que eso impida nada;
+* lo que el NIVEL de un eje necesita es **una escala escrita contra una
+  referencia externa, y antes de mirar el registro** (v965, v1077).
+
+Y I-14 ya traía `origenCategoria: 'juridica-preexistente'` desde la v1077: sus
+bordes salen de instrumentos anteriores a este proyecto. **El registro de Petro
+nunca estuvo en el camino.** Es la clase de error que la v925 manda buscar: las
+premisas de una tanda anterior también se miden, incluidas las propias.
+
+Y había un segundo bloqueo escrito dentro del propio eje: su texto decía que
+sin las series históricas de Medicina Legal «un nivel no sale». Tampoco es
+cierto para esta escala: **sus cortes son ABSOLUTOS** —uno, dos o más— igual
+que la cuenta de casos de corrupción de la que se tomaron prestados, y un
+umbral absoluto no necesita contra qué compararse. La serie sigue faltando y
+sigue sirviendo para otra cosa: para decir si esto está por encima o por debajo
+de otros gobiernos. Eso es una comparación, no el nivel.
+
+### La escala del eje D, escrita primero y afuera
+
+`ESCALA_EJE_D`, con las tres cosas que la hacen comprobable:
+
+* **La referencia, nombrada donde el lector la ve** y no en un comentario
+  —`soloCodigo` los quita (v926)—: el **artículo 135 del Código Penal
+  colombiano**, homicidio en persona protegida, que tipifica la muerte de una
+  persona protegida por el DIH con pena de 30 a 40 años.
+* **El umbral es PRESTADO, no escrito para esta pregunta**: son los mismos
+  cortes que la cuenta de casos de corrupción ya tenía declarados —uno baja a
+  «Poco fiable», dos o más a «Nada fiable»—. Un umbral nuevo se elige para que
+  algo pase (v882, v1075); uno ya declarado, y para otra cosa, no.
+* **Y el préstamo es conservador, no severo**: el artículo 135 castiga con 30 a
+  40 años, muy por encima de un caso de corrupción, así que aplicar la misma
+  vara pide MENOS de lo que su gravedad legal sostendría.
+
+El nivel **se calcula** de las muertes confirmadas y **vuelve a null sin
+material**, no al peldaño bueno: cero medido y cero ocurrido son cosas
+distintas (v875), y un eje no puede certificar una ausencia que no midió. Las
+dos redacciones van escritas (v970).
+
+### El resultado, que es lo que se pidió
+
+| | |
+|---|---|
+| muertes de persona protegida confirmadas | **6**, en 3 operaciones |
+| quién confirma | Instituto Nacional de Medicina Legal y Ciencias Forenses |
+| nivel del eje D | **`nada-fiable`** |
+| veredicto de la página | **«No puede ser mejor que "Nada fiable"»** (`piso`) |
+
+El piso es el que la v1086 dejó construido, y esta es la primera vez que sale.
+
+### Leer el papel encontró los dos defectos de siempre
+
+Componer la placa y leerla —otra vez el método que más cosas encuentra acá:
+
+* **La placa publicaba el peldaño más grave de la escalera sin un solo dato al
+  lado.** Un lector no tenía cómo saber si eso venía de seis muertes
+  confirmadas o de un umbral puesto a ojo, y es el juicio público sobre una
+  persona con nombre. El dato estaba calculado dos pantallas adentro: **clase C
+  en el sitio más caro del módulo.** Ahora la placa dice de qué sale, con la
+  referencia y el préstamo del umbral, y dice **aparte** sobre qué evidencia
+  descansa — incluida la frase que evita una lectura falsa: *el documento de
+  Medicina Legal NO movería este nivel, porque ya está en el peldaño de dos o
+  más; lo que cambiaría es la clase de evidencia, no el resultado.*
+* **Una frase quedó vieja en el acto**: «y de los 4 que sí se miden tampoco
+  sale un nivel», que dejó de ser cierta en cuanto el eje publicó. Era una
+  afirmación escrita a mano dentro de un texto fijo (v903). Ahora se calcula, y
+  las dos redacciones están escritas.
+
+Y un tercer defecto, de los que solo salen al componer: `De dónde sale` salía
+sin su razón porque el pintor la buscaba en `f.ejes`, que **la ficha no
+expone**. La cura no fue exponerla: fue que el dato **viaje dentro de
+`usados`**, con el veredicto, que es la regla de la v867 —el aviso viaja con la
+cifra y no con la pantalla— y la única forma de que un eje nuevo lo herede sin
+que su autor se acuerde.
+
+### Dos guardas que fallaron por un cambio legítimo, y se hicieron MÁS precisas
+
+* La de la v1055 exigía que el eje D **no** publicara nivel. Su razón era
+  buena para lo que entonces se sabía —no había criterio escrito—, pero I-14
+  existe desde la v1077. Aflojarla sería perder la prueba; ahora mide la
+  propiedad que de verdad importaba: que el nivel **se calcule y no se
+  asigne**, en ocho mitades (escala aparte, referencia externa nombrada,
+  categoría preexistente declarada, umbral prestado, nivel calculado, null sin
+  material, evidencia declarada, y que la razón del eje ya no diga que el nivel
+  depende de la serie).
+* Y una de esas mitades **tropezó con mi propio comentario**, que cita la frase
+  vieja para explicar por qué se corrigió. La guarda lee el CÓDIGO y no los
+  comentarios (v926), así que esa mitad pasa por `soloCodigo`.
+
+### Lo que esta versión NO hace
+
+* **No publica el dictamen completo**, y la diferencia importa: es un PISO. Los
+  ejes B y C siguen sin nivel, así que el dictamen final puede ser igual o
+  peor, nunca mejor. `pendiente`
+* **No redacta la lectura por eje de cada peldaño.** «Nada fiable» hereda una
+  descripción que habla de casos de corrupción, porque de ahí salió la
+  escalera. Un eje de realidad que aterrice ahí se lee con una definición que
+  no habla de él. `pendiente`
+* **No consigue el documento de Medicina Legal.** Sigue pedido, el derecho de
+  petición está escrito en `tramites/`, y queda dicho en pantalla que no
+  movería el nivel. `pendiente`
+* **No escribe la escala del eje C** ni la media histórica del B, que son los
+  dos que faltan para el dictamen completo. `pendiente`

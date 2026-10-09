@@ -3626,22 +3626,76 @@ console.log('\n  -- la ficha del gobernante --');
       /EJECUTADO/.test(tramoC) && /gobiernos anteriores/.test(tramoC),
       'el nivel queda en null y la razón nombra las dos reglas que faltan');
 
-    /* ── v1055 · EL EJE D, Y LO QUE NINGÚN EJE RECOGE ───────────────
-       Tampoco publica nivel, y por dos razones que se dicen aparte porque
-       piden cosas distintas: no hay FUENTE —las tres series oficiales— y no
-       hay INDICADOR —ningún criterio escrito del módulo cuenta un uso de la
-       fuerza—. Lo que NO puede hacer es escribirse uno de paso: un criterio
-       redactado mirando este registro nacería construido para el caso y sin
-       validar (v965). */
+    /* ── EL EJE D YA PUBLICA NIVEL (v1088) — y la comprobación se hace
+       MÁS PRECISA, no más laxa.
+
+       La de la v1055 exigía que NO lo publicara, y su razón era buena para
+       lo que entonces se sabía: no había criterio escrito, y uno redactado
+       mirando este registro nacería construido para el caso. Eso cambió —
+       I-14 existe desde la v1077 con sus bordes tomados de instrumentos
+       anteriores a este proyecto— así que la aserción falla por un cambio
+       legítimo y aflojarla sería perder la prueba entera.
+
+       Lo que se mide ahora es la propiedad que de verdad importaba detrás de
+       aquella: que el nivel se CALCULE y no se asigne. Cuatro mitades:
+
+         · la escala está escrita y nombra su referencia EXTERNA donde el
+           lector la ve, no en un comentario (v926);
+         · su umbral es PRESTADO y no escrito para esta pregunta (v882, v1075);
+         · el nivel sale de contar y vuelve a null sin material, porque cero
+           medido no es cero ocurrido (v875);
+         · y declara SOBRE QUÉ evidencia descansa (v1085). */
     const tramoD = (j70c3.match(/function ejeD\(dd\) \{[\s\S]*?\n  \}/) || [''])[0];
-    const dosD = /la FUENTE/.test(tramoD) && /el INDICADOR/.test(tramoD);
-    comprobar('el eje D no publica nivel, y dice sus DOS razones por separado',
-      tramoD.length > 0 && /nivel: null, publicable: false/.test(tramoD) && dosD,
+    const escD = (j70c3.match(/var ESCALA_EJE_D = \{[\s\S]*?\n  \};/) || [''])[0];
+    const nivD = (j70c3.match(/function nivelEjeD\(mue\) \{[\s\S]*?\n  \}/) || [''])[0];
+    const mitD = [
+      ['la escala del eje D está escrita, aparte del eje', escD.length > 0],
+      ['y nombra su referencia externa donde el lector la ve',
+       /Art[ií]culo 135 del C[oó]digo Penal/.test(escD)],
+      ['y declara que su categoría es preexistente, no construida acá',
+       /origenCategoria: 'juridica-preexistente'/.test(escD)],
+      ['y dice de dónde tomó PRESTADO su umbral', /umbralPrestadoDe:/.test(escD)],
+      ['el nivel se CALCULA de las muertes confirmadas', /function nivelEjeD/.test(j70c3) &&
+       /r\.nivel = nd\.nivel \? \{ id: nd\.nivel/.test(tramoD)],
+      ['y vuelve a null sin material, no al peldaño bueno',
+       /if \(!n\) \{\n      return \{ nivel: null/.test(nivD)],
+      ['y declara sobre qué evidencia descansa', /descansaEn:/.test(nivD)],
+      /* Sobre el CÓDIGO y no sobre los comentarios (v926): mi propio
+         comentario cita la frase vieja para explicar por qué se corrigió, y
+         la aserción cruda tropezaba con ella. `soloCodigo` deja las cadenas
+         y quita los comentarios, que es exactamente la distinción que hace
+         falta acá. */
+      ['y la razón del eje ya no dice que el nivel dependa de la serie',
+       !/un nivel no sale/.test(soloCodigo(tramoD)) && /no necesita contra/.test(tramoD)]
+    ];
+    const malD = mitD.filter((x) => !x[1]).map((x) => x[0]);
+    comprobar('el eje D publica nivel CALCULADO, con su escala contra referencia externa y su umbral prestado',
+      tramoD.length > 0 && malD.length === 0,
       !tramoD.length ? 'NO PUDO CORRER: el eje D no existe, así que el uso de la fuerza no lo mide nada ' +
                        'y ninguna pantalla lo dice'
-        : (dosD ? 'sin nivel, y separa la fuente que falta del indicador que no existe'
-                : 'junta las dos razones: mandaría a conseguir unas series que, sin indicador, no ' +
-                  'habría cómo clasificar'));
+        : malD.length ? 'falla: ' + malD.join(' · ')
+        : 'el nivel sale de contar contra una escala escrita antes y afuera, con el umbral de la ' +
+          'cuenta de corrupción, y declara su evidencia');
+
+    /* Y EL PISO LLEGA A LA PLACA CON SU BASE (v1088). Lo vio el papel: la
+       placa publicaba el peldaño más grave de la escalera sin un dato al
+       lado, y el dato estaba calculado dos pantallas adentro — clase C en el
+       sitio más caro del módulo, que es el juicio público sobre una persona
+       con nombre. Y se arma de los ejes que PUSIERON el piso, así que un eje
+       nuevo lo hereda sin que su autor se acuerde (v867). */
+    const plD = [
+      ['la placa dice de dónde sale el piso', /'De dónde sale: ' \+ deDonde\.join/.test(j70c3)],
+      ['y lo arma de los ejes que lo pusieron, no de una lista aparte',
+       /\(vg\.usados \|\| \[\]\)\.map/.test(j70c3)],
+      ['y dice aparte sobre qué evidencia descansa', /sp-fi-vbase sp-fi-vbase-2/.test(j70c3)],
+      ['y la clase tiene regla en el css', /\.sp-fi-vbase\{/.test(leer('css/70-seguimiento.css'))]
+    ];
+    const malPl = plD.filter((x) => !x[1]).map((x) => x[0]);
+    comprobar('y el piso LLEGA a la placa diciendo de qué sale y sobre qué descansa',
+      malPl.length === 0,
+      malPl.length ? 'falla: ' + malPl.join(' · ')
+        : 'el peldaño no se publica solo: va con las muertes que lo producen y con la clase de ' +
+          'evidencia que lo sostiene');
 
     /* Y la cifra que hace comprobable el «no lo resume» de la placa: cuánto
        del registro queda fuera de TODOS los ejes. Sin ella, un lector no

@@ -1187,6 +1187,32 @@ sección al final de este archivo.
   `dictamen`—, porque «no puede ser mejor que X» y «es X» dicen cosas distintas
   a quien lee (v876), y promete una sola cosa comprobable: que el dictamen
   final no quedará por encima de ese peldaño.
+* **Y antes de aceptar un bloqueo de una tanda anterior, se mide** (v925,
+  v1088). La v1087 cerró diciendo que el eje D no podía publicar nivel hasta
+  documentar 13 actos más del gobierno anterior. Era falso y el bloqueo era
+  mío: la validación contra otro gobierno es del INDICADOR —marca su
+  `origenCategoria` y su bandera, y no impide nada—, mientras que el nivel de
+  un eje solo pide **una escala escrita contra referencia externa y antes de
+  mirar el registro**, que I-14 ya tenía desde la v1077. Y el propio eje traía
+  un segundo bloqueo escrito: que sin la serie histórica «un nivel no sale».
+  También falso para una escala de **cortes ABSOLUTOS**: la serie sirve para
+  COMPARAR con otros gobiernos, no para poner el nivel. **La señal: un
+  pendiente que nadie puede bajar y que ninguna regla escrita exige.**
+* **Y un peldaño publicado dice DE QUÉ SALE, en la misma superficie** (v1088).
+  La placa publicaba «No puede ser mejor que "Nada fiable"» —el peldaño más
+  grave— sin un dato al lado, y es el juicio público sobre una persona con
+  nombre: un lector no podía distinguir seis muertes confirmadas de un umbral
+  puesto a ojo. El dato estaba calculado dos pantallas adentro, que es la clase
+  C en el sitio más caro del módulo. Y va con **dos renglones y no uno**,
+  porque piden acciones distintas: de qué sale el nivel, y **sobre qué
+  evidencia descansa** —incluida la frase que evita la lectura falsa, que el
+  documento que falta no movería el nivel—.
+* **Y lo que la pantalla necesita VIAJA con el dato, no se reconstruye allí**
+  (v867, v1088). El pintor de la placa buscaba la razón del nivel en `f.ejes`,
+  que la ficha no expone. La cura no fue exponerla: fue meter `porque` y
+  `descansaEn` dentro de `usados`, donde el veredicto ya los lleva. Así un eje
+  nuevo que publique nivel lo hereda **sin que su autor se acuerde**, que es lo
+  único que impide que vuelva a pasar.
 * **Un ayudante de prosa que ANTEPONE el número no se anida** (v1086). `cn`
   imprime la cifra y el plural, así que `cn(a, 'uno de ' + cn(b, …))` sale como
   «1 Un eje de 3 los 3 que miden la realidad». Pasó **tres veces en una sola

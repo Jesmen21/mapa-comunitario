@@ -2951,6 +2951,94 @@
      inventa uno de paso: un criterio escrito mirando este registro nacería
      `construida-para-el-caso` y sin validar (v965), y el pliego es explícito
      en que el nivel se calcula y no se asigna. */
+  /* ══ LA ESCALA DEL EJE D (v1088) ═══════════════════════════════════════
+     SE ESCRIBE PRIMERO y contra una referencia EXTERNA, que es la condición
+     que la v965 y la v1077 le ponen a cualquier vara de este módulo: una
+     redactada mirando los hechos que tiene que clasificar nace
+     `construida-para-el-caso` y deja el nivel del eje asignado y no
+     calculado.
+
+     LA REFERENCIA, nombrada acá donde el lector la ve y no en un comentario
+     —`soloCodigo` los quita, así que una guarda no puede comprobarla ahí
+     (v926)—: el **artículo 135 del Código Penal colombiano, homicidio en
+     persona protegida**, que tipifica la muerte de una persona protegida por
+     el derecho internacional humanitario —entre ellas la población civil y
+     quien está fuera de combate— con pena de 30 a 40 años. La categoría
+     existe sin este proyecto: es `juridica-preexistente`, la misma marca de
+     origen que el indicador I-14 ya llevaba.
+
+     EL UMBRAL NO SE ELIGIÓ, SE TOMÓ PRESTADO. Son los mismos cortes que la
+     cuenta de casos de corrupción de este módulo ya tenía declarados —uno
+     confirmado baja a «Poco fiable», dos o más a «Nada fiable»— y no unos
+     escritos para esta pregunta. Un umbral nuevo se elige para que algo pase
+     (v882, v1075); uno ya declarado, y para otra cosa, no se puede acomodar.
+
+     Y conviene decir que el préstamo es CONSERVADOR y no severo: el artículo
+     135 castiga con 30 a 40 años, muy por encima de un caso de corrupción,
+     así que aplicar la misma vara a una muerte de persona protegida pide
+     MENOS de lo que su gravedad legal sostendría. No se endureció.
+
+     DE QUÉ NO RESPONDE: esta escala no dice que la operación fuera ilegal ni
+     que haya responsabilidad de nadie. Cuenta un hecho —una persona
+     protegida murió en una operación del Estado, con autoridad forense que lo
+     confirma— y ese hecho existe con independencia de cómo termine la
+     investigación. El deber de investigar es justamente lo que el indicador
+     nombra. */
+  var ESCALA_EJE_D = {
+    referencia: 'Artículo 135 del Código Penal colombiano (homicidio en persona protegida), que ' +
+                'tipifica la muerte de una persona protegida por el derecho internacional ' +
+                'humanitario con pena de 30 a 40 años.',
+    origenCategoria: 'juridica-preexistente',
+    umbralPrestadoDe: 'la cuenta de casos de corrupción confirmados de este mismo módulo',
+    cortes: [
+      { desde: 2, id: 'nada-fiable',
+        d: 'Dos o más muertes de persona protegida confirmadas por autoridad forense en operaciones ' +
+           'del Estado.' },
+      { desde: 1, id: 'poco-fiable',
+        d: 'Una muerte de persona protegida confirmada por autoridad forense en una operación del ' +
+           'Estado.' }
+    ]
+  };
+
+  /* El nivel SE CALCULA de las muertes confirmadas, y devuelve también SOBRE
+     QUÉ descansa: sin eso sería una cifra sin decir de qué es (v1085). Y si
+     no hay ninguna, devuelve null y NO el peldaño bueno: cero medido y cero
+     ocurrido son cosas distintas (v875), y este eje no puede certificar que
+     no haya habido ninguna. Las dos redacciones van escritas (v970). */
+  function nivelEjeD(mue) {
+    var n = (mue || []).reduce(function (a, x) { return a + (Number(x.n) || 0); }, 0);
+    var quien = {};
+    (mue || []).forEach(function (x) { if (x.confirma) quien[x.confirma] = 1; });
+    var confirman = Object.keys(quien);
+    if (!n) {
+      return { nivel: null, n: 0, confirman: confirman,
+               porque: 'Este eje no publica nivel porque el registro no documenta ninguna muerte de ' +
+                       'persona protegida con confirmación forense. Eso NO quiere decir que no haya ' +
+                       'habido: quiere decir que este registro no la tiene documentada, y un eje no ' +
+                       'puede certificar una ausencia que no midió.' };
+    }
+    var corte = null;
+    for (var i = 0; i < ESCALA_EJE_D.cortes.length; i++) {
+      if (n >= ESCALA_EJE_D.cortes[i].desde) { corte = ESCALA_EJE_D.cortes[i]; break; }
+    }
+    if (!corte) return { nivel: null, n: n, confirman: confirman, porque: 'Ningún corte de la escala aplica.' };
+    return {
+      nivel: corte.id, n: n, corte: corte, confirman: confirman,
+      porque: cn(n, 'muerte de persona protegida confirmada por autoridad forense en una operación ' +
+                    'del Estado', 'muertes de persona protegida confirmadas por autoridad forense en ' +
+                    'operaciones del Estado') +
+              '. La escala de este eje está escrita contra el ' + ESCALA_EJE_D.referencia +
+              ' Su umbral no se escribió para esta pregunta: es el mismo de ' +
+              ESCALA_EJE_D.umbralPrestadoDe + '.',
+      descansaEn: 'La confirmación es de ' + (confirman.join(' · ') || 'una autoridad forense') +
+                  ', y en este registro consta por el reporte de los medios que la citan, no por el ' +
+                  'documento del Instituto. Conseguirlo está pedido en el trámite de este eje. Y hay ' +
+                  'algo que conviene decir: el documento NO movería este nivel, porque ya está en el ' +
+                  'peldaño que la escala pone para dos o más. Lo que haría es cambiar la clase de ' +
+                  'evidencia, no el resultado.'
+    };
+  }
+
   function ejeD(dd) {
     var reg = (dd || D) || {};
     var man = hechosDelMandato(reg);
@@ -2988,7 +3076,10 @@
          modulo— pero tampoco puede escribirse mirando este registro (v1076). */
       tramite: tramiteDe(dd || D, 'D'),
       pregunta: '\u00bfqu\u00e9 le est\u00e1 pasando a la gente en las operaciones del Estado?',
-      nivel: null, publicable: false,
+      /* EL NIVEL, calculado (v1088). Antes era `null` escrito a mano con su
+         razón al lado; ahora sale de la escala y de las muertes confirmadas,
+         y sigue siendo null cuando no hay ninguna. */
+      nivel: null, publicable: false, escala: ESCALA_EJE_D, nivelCalc: null,
       hechos: man.length, sinEje: sinEje.length, enFuerza: enFuerza.length,
       /* La fila del indicador, con su criterio y lo que queda fuera: es lo
          que convierte el CONTEO de este eje en algo que puede dar nivel. */
@@ -3020,10 +3111,28 @@
          en vez de escribirse, para que el día que una entrada cuente la
          frase no siga diciendo que ninguna cuenta (v903). */
       var fi14 = (r.filas || [])[0] || null;
-      r.falta = 'Dos cosas, y ninguna es que falten cifras. La primera es la FUENTE: las series de ' +
-                'Medicina Legal, la Procuradur\u00eda y la Defensor\u00eda que el pliego pide para este bloque, con ' +
-                'la misma serie de los gobiernos anteriores \u2014sin ella estas cifras no tienen contra qu\u00e9 ' +
-                'compararse y un nivel no sale\u2014. La segunda ya no es que falte el INDICADOR: I-14 est\u00e1 ' +
+
+      /* EL NIVEL (v1088). Y con él una corrección a la premisa de la v965,
+         que este eje traía escrita: decía que sin la serie histórica de
+         Medicina Legal «un nivel no sale». Medido, eso no es cierto para
+         ESTA escala: sus cortes son ABSOLUTOS —uno, dos o más— igual que la
+         cuenta de casos de corrupción de la que se tomaron prestados, y un
+         umbral absoluto no necesita contra qué compararse. La serie sigue
+         faltando y sigue sirviendo para otra cosa: para decir si esto está
+         por encima o por debajo de otros gobiernos. Eso es una comparación,
+         no el nivel. Las premisas de una tanda anterior también se miden
+         (v925). */
+      var nd = nivelEjeD(mue);
+      r.nivelCalc = nd;
+      r.nivel = nd.nivel ? { id: nd.nivel, de: 'escala-eje-d' } : null;
+      r.publicable = !!nd.nivel;
+      r.falta = 'Dos cosas, y ninguna es el NIVEL, que desde la v1088 s\u00ed sale. La primera es la ' +
+                'FUENTE: las series de Medicina Legal, la Procuradur\u00eda y la Defensor\u00eda que el pliego ' +
+                'pide para este bloque, con la misma serie de los gobiernos anteriores. Sirven para ' +
+                'COMPARAR \u2014decir si esto est\u00e1 por encima o por debajo de otros gobiernos\u2014 y no para ' +
+                'poner el nivel: los cortes de esta escala son absolutos, como los de la cuenta de ' +
+                'corrupci\u00f3n de la que se tomaron prestados, y un umbral absoluto no necesita contra ' +
+                'qu\u00e9 compararse. La segunda ya no es que falte el INDICADOR: I-14 est\u00e1 ' +
                 'escrito, con sus bordes tomados de dos instrumentos anteriores a este proyecto y no de ' +
                 'este registro. Lo que falta es que alguna entrada lo CUMPLA: ' +
                 (!fi14
@@ -3148,7 +3257,15 @@
       if (!p || p.mide !== 'realidad' || !e.nivel) return;
       var j = indiceEnEscalera(e.nivel);
       if (j < 0) return;
-      usados.push({ eje: e.eje, t: e.t, nivel: e.nivel, i: j });
+      usados.push({ eje: e.eje, t: e.t, nivel: e.nivel, i: j,
+                    /* De qué sale el nivel de ESTE eje, y sobre qué
+                       descansa, viajando con el veredicto. La ficha no
+                       expone la lista de ejes, así que la placa no tenía de
+                       dónde reconstruirlo y el dato se quedaba calculado sin
+                       llegar a ningún lector — clase C en el sitio más caro
+                       del módulo. */
+                    porque: (e.nivelCalc && e.nivelCalc.porque) || '',
+                    descansaEn: (e.nivelCalc && e.nivelCalc.descansaEn) || '' });
       if (j > i) { i = j; cual = e; }
     });
     return { i: i, eje: cual, usados: usados };
@@ -4083,6 +4200,29 @@
         placa.appendChild(el('p', 'sp-fi-vfaltan',
           'Falta medir: ' + vg.faltan.map(function (x) { return x.t.toLowerCase(); }).join(' · ') + '.'));
       }
+      /* DE QUÉ SALE EL PELDAÑO, en la placa y no dos pantallas más adentro
+         (v1088). Lo vio el papel: la placa publicaba «No puede ser mejor que
+         Nada fiable» —el peldaño más grave de la escalera— sin un solo dato
+         al lado. Un lector no tenía cómo saber si eso venía de seis muertes
+         confirmadas o de un umbral puesto a ojo, y es el juicio público sobre
+         una persona con nombre. El dato ya estaba calculado dos pantallas
+         adentro: clase C, en el sitio más caro del módulo.
+
+         Se arma de los ejes que PUSIERON el piso, así que un eje nuevo que
+         publique nivel lo hereda sin que su autor se acuerde. */
+      var deDonde = (vg.usados || []).map(function (u) {
+        return u.t + (u.porque ? ': ' + u.porque : '');
+      }).filter(Boolean);
+      if (deDonde.length) {
+        placa.appendChild(el('p', 'sp-fi-vbase', 'De dónde sale: ' + deDonde.join(' — ')));
+        /* Y SOBRE QUÉ EVIDENCIA descansa, que es otra cosa y pide otra
+           acción: el peldaño es el mismo con el documento o sin él, y eso
+           va dicho para que nadie lea el piso como pendiente de un papel. */
+        var sobre = (vg.usados || []).map(function (u) { return u.descansaEn; }).filter(Boolean);
+        if (sobre.length) {
+          placa.appendChild(el('p', 'sp-fi-vbase sp-fi-vbase-2', sobre.join(' — ')));
+        }
+      }
       /* Y el peldaño de la palabra, abajo, con lo que mide dicho delante.
          Va DESPUÉS del titular a propósito: leído en orden, quien llega a
          «Fiable» ya sabe que eso son sus palabras y no el país. */
@@ -4193,13 +4333,24 @@
                ayudante que antepusiera la cifra imprimiría «y de 4 los que
                sí se miden», que es el defecto que la v1027 pagó en el otro
                módulo y que solo se ve leyendo el papel. */
+            /* Y si el eje YA publica nivel, la frase no puede seguir
+               diciendo que no sale ninguno: era una cifra escrita a mano
+               dentro de un texto fijo, que envejece sola (v903). Las dos
+               redacciones van escritas, y la que vale se calcula. */
             (ejeFuerza.enFuerza
-              ? pl(ejeFuerza.enFuerza,
-                   ', y del único que sí se mide tampoco sale un nivel.',
-                   ', y de los ' + miles(ejeFuerza.enFuerza) + ' que sí se miden tampoco sale un nivel.')
+              ? (ejeFuerza.nivel
+                  ? pl(ejeFuerza.enFuerza,
+                       ', y del único que sí se mide sale el nivel de este eje.',
+                       ', y de los ' + miles(ejeFuerza.enFuerza) + ' que sí se miden sale el nivel de este eje.')
+                  : pl(ejeFuerza.enFuerza,
+                       ', y del único que sí se mide tampoco sale un nivel.',
+                       ', y de los ' + miles(ejeFuerza.enFuerza) + ' que sí se miden tampoco sale un nivel.'))
               : '.')
           : 'Todos los hechos registrados de este mandato alimentan algún eje' +
-            (ejeFuerza.enFuerza ? ', y de ninguno sale todavía un nivel.' : '.')));
+            (ejeFuerza.enFuerza
+              ? (ejeFuerza.nivel ? ', y de ellos sale el nivel de este eje.'
+                                 : ', y de ninguno sale todavía un nivel.')
+              : '.')));
     }
     placa.appendChild(el('p', 'sp-fi-cuentas', cuentasDe(f)));
     return placa;

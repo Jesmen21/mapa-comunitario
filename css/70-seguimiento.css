@@ -2331,3 +2331,11 @@ a.sp-fuente:hover svg{ color:var(--verde-hi); }
 /* El ámbar es «ojo con esto» en este tablero, no el rojo de un hallazgo
    (v971): un punto sin declarar es deuda nuestra, no una acusación. */
 .sp-graf-ancla-mal{ color:var(--ambar); font-weight:600; }
+
+/* De dónde sale el piso, en la placa (v1088). Publicar el peldaño más grave
+   sin decir de qué sale es el juicio público sobre una persona real hecho a
+   ciegas: el dato estaba calculado dos pantallas adentro. */
+.sp-fi-vbase{
+  margin-top:8px; font-size:var(--t-8); color:var(--ink-2); line-height:1.55;
+}
+.sp-fi-vbase-2{ margin-top:5px; font-style:italic; }
