@@ -1170,6 +1170,35 @@ sección al final de este archivo.
   declarado, y la señal de que no era interesado es que **dejó los cuatro
   criterios sin validar igual que antes**: lo único que cambió fue que la
   razón publicada pasó a ser cierta.
+* **Y la escala que ya está declarada en otra parte del módulo vale más que
+  una nueva** (v1086). La escala de gravedad común entre ejes no se escribió:
+  es `ESCALERA`, los cinco peldaños que el eje de la palabra usa desde el
+  principio, y la composición es «manda el peor», que es la regla que las
+  cuatro cuentas del registro ya aplicaban. Una escala escrita para la
+  pregunta que la necesita se puede acomodar; una escrita para otra cosa y
+  antes de que la pregunta existiera, no. **La señal de que no es interesada:
+  aplicada no mejora el estado de nada** —el eje C siguió sin escala y el B sin
+  su media—; lo único que cambió es que lo ya medido se publica.
+* **Y un PISO se publica cuando lo que falta solo puede empeorar** (v1086).
+  Con alguno de los ejes de realidad publicando nivel, callar el peor de ellos
+  era publicar menos de lo que se sabe: el propio módulo ya tenía escrito que
+  «lo que falta por medir podría ser peor y nunca mejor», así que el peor de
+  los que publican es una cota inferior. Lleva **estado propio** —`piso`, no
+  `dictamen`—, porque «no puede ser mejor que X» y «es X» dicen cosas distintas
+  a quien lee (v876), y promete una sola cosa comprobable: que el dictamen
+  final no quedará por encima de ese peldaño.
+* **Un ayudante de prosa que ANTEPONE el número no se anida** (v1086). `cn`
+  imprime la cifra y el plural, así que `cn(a, 'uno de ' + cn(b, …))` sale como
+  «1 Un eje de 3 los 3 que miden la realidad». Pasó **tres veces en una sola
+  tanda** y ninguna se ve leyendo el código ni leyendo el papel, porque esas
+  ramas no se ejecutan con el registro de hoy: las vio el **caso fabricado**.
+  Para contar se usa `cn`; dentro de una frase ya contada, `pl`.
+* **Un estado al que solo se llega cuando TODO está mal es un estado
+  inalcanzable** (v1086). `nivel-fuera-de-escala` pedía que los tres ejes
+  trajeran un id malo; con uno malo y dos sin medir, la placa decía «2 de 3 no
+  publican» y el que publicaba basura desaparecía. Es la exención silenciosa,
+  y la causa pide otra acción —un id mal escrito, no un archivo que falte—, así
+  que se cuenta aparte y se dice en TODAS las ramas, incluida la del éxito.
 * **Y una comprobación que llega a cero se DICE, no desaparece** (v1064). Un
   renglón que se borra solo deja «ya está hecho» con la misma cara que
   «nadie lo ha mirado» —la regla de arriba, dicha en una pantalla—. Tres de

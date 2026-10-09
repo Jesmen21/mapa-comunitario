@@ -12434,6 +12434,11 @@ console.log('\n  -- el marcado que vive dentro del JavaScript (v1025) --');
         const j = cod.indexOf(b, i); return j < 0 ? cod.slice(i) : cod.slice(i, j);
       };
       const vg    = trozo('function veredictoGeneral(', 'function ejesDe(');
+      /* `peorNivelDe` e `indiceEnEscalera` viven FUERA de
+         `veredictoGeneral` —son la escala, no el veredicto—, así que
+         buscarlas dentro del trozo no las encontraría. Se busca dentro
+         del trozo de la TABLA, que es donde están escritas (v854). */
+      const vg0   = trozo('var PESO_EJE = {', 'function veredictoGeneral(');
       /* El corte es `dichoDelVeredicto` y no `pintarPlacaPortada`: esa
          función vive entre las dos y nombra «Cómo está el país» por su
          cuenta, así que con el corte de abajo el trozo la incluía y la
@@ -12500,17 +12505,43 @@ console.log('\n  -- el marcado que vive dentro del JavaScript (v1025) --');
              : 'incompletos: ' + flojos.join(' · ') + ' — sin la dirección, comparar niveles crudos ' +
                'publicaría un B5 crítico como si fuera el mejor de los dos');
 
-        // 5 · Y la escala de gravedad común NO se inventa: con los tres
-        //     publicando nivel el módulo se para y lo dice, en vez de sacar
-        //     un máximo a ojo sobre escalas que van al revés.
-        const g5 = /sin-escala-comun/.test(vg) && !/Math\.max/.test(vg);
-        comprobar('y con todos publicando nivel se para en vez de sacar un máximo a ojo', g5,
-          g5 ? 'declara que falta la escala de gravedad común y no compara'
-             : (/Math\.max/.test(vg)
-                ? 'compara niveles de ejes distintos: sus escalas van al revés y el eje C y el D no ' +
-                  'tienen ninguna, así que el máximo sería inventado'
-                : 'no declara que falta la escala común: el día que los tres publiquen, el módulo ' +
-                  'callaría sin decir por qué'));
+        // 5 · LA ESCALA COMÚN, QUE YA ESTÁ DECLARADA (v1086) — y la
+        //     comprobación se hace MÁS PRECISA, no más laxa.
+        //
+        //     Hasta la v1085 esto exigía que el módulo se PARARA diciendo que
+        //     le faltaba la escala. Quien firma el módulo la decidió, así que
+        //     esa aserción falla por un cambio legítimo y aflojarla sería
+        //     perder la prueba entera. Lo que se mide ahora es la propiedad
+        //     que de verdad importaba detrás de aquella: que la escala NO se
+        //     haya inventado para esto.
+        //
+        //     Tres cosas, y las tres son comprobables:
+        //       · el orden sale de `ESCALERA`, la escalera de cinco peldaños
+        //         que este módulo ya tenía escrita para el eje de la palabra,
+        //         y NO de números sueltos ni de una tabla nueva;
+        //       · la composición es «manda el peor» y no un promedio: ninguna
+        //         función promedia, que es la regla de oro del pliego;
+        //       · un nivel que no corresponda a un peldaño no compone nada
+        //         —falla cerrado (v880)— y lo dice con un estado propio.
+        const usaEscalera = /function indiceEnEscalera/.test(vg0) &&
+                            /ESCALERA\[k\]\.id === id/.test(vg0);
+        const peorNoPromedia = /function peorNivelDe/.test(vg0) &&
+                               /if \(j > i\) \{ i = j; cual = e; \}/.test(vg0) &&
+                               !/\/ *real\.length/.test(vg) && !/promedi[oa]\(/.test(vg0);
+        const fallaCerrado = /nivel-fuera-de-escala/.test(vg) && /return -1;/.test(vg0);
+        const mitades5 = [
+          ['el orden sale de ESCALERA y no de una tabla nueva', usaEscalera],
+          ['manda el peor, y ninguna función promedia', peorNoPromedia],
+          ['un nivel fuera de la escalera no compone nada y lo dice', fallaCerrado],
+          ['y el PISO lleva estado propio, distinto del dictamen', /'piso'/.test(vg) && /'dictamen'/.test(vg)]
+        ];
+        const mal5 = mitades5.filter((x) => !x[1]).map((x) => x[0]);
+        comprobar('y la escala común es la ESCALERA que ya estaba declarada, con «manda el peor» y sin promediar',
+          mal5.length === 0,
+          mal5.length ? 'falla: ' + mal5.join(' · ')
+                      : 'la escala no se escribió para esto: es la de los cinco peldaños del eje de la ' +
+                        'palabra, la composición es el peor de los que publican, y un id fuera de la ' +
+                        'escalera no compone nada');
 
         // 6 · La placa lee ESE veredicto y no el peldaño.
         const g6 = /f\.general/.test(placa) && /Cómo está el país/.test(placa);

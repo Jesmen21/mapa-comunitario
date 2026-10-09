@@ -3116,8 +3116,62 @@
     A: { mide: 'palabra',  dir: -1, escala: true  },
     B: { mide: 'realidad', dir: +1, escala: true  },
     C: { mide: 'realidad', dir: +1, escala: false },
-    D: { mide: 'realidad', dir: +1, escala: false }
+    D: { mide: 'realidad', dir: +1, escala: true  }
   };
+
+  /* ══ LA ESCALA DE GRAVEDAD COMÚN, Y POR QUÉ NO SE INVENTÓ (v1086) ══════
+     Hasta la v1085 el veredicto se paraba con los tres ejes publicando,
+     porque «para sacar el peor hace falta una escala de gravedad común que
+     este módulo todavía no declara». Quien firma el módulo la decidió, y la
+     decisión fue la barata: **no escribir una nueva.**
+
+     La escala es `ESCALERA`, la misma de los cinco peldaños que el eje de la
+     palabra usa desde el principio, con su índice como orden. Y la regla de
+     composición es «manda el peor», que es la que las cuatro cuentas del
+     registro de corrupción ya aplican: «cada función devuelve el PEOR peldaño
+     que esa cuenta permite; ninguna puede subir lo que otra bajó».
+
+     Eso es deliberado y es lo que la hace comprobable. Un umbral nuevo se
+     elige para que algo pase (v882, v1075); uno ya declarado, escrito para
+     otra cosa y antes de que este eje existiera, no se puede acomodar. La
+     señal de que no es interesada: aplicada hoy **no mejora el estado de
+     nada** —el eje C sigue sin escala y sin nivel, y el eje B sigue sin su
+     media histórica—; lo único que cambia es que lo ya medido se publica.
+
+     Y lo que NO se hace: promediar. Un eje bueno no puede tapar uno malo, y
+     no hay ninguna función que los promedie — devolver el peor y no una media
+     es la misma regla que `ejesDe` aplica al no devolver un total. */
+  function peorNivelDe(ejes) {
+    var i = -1, cual = null, usados = [];
+    (ejes || []).forEach(function (e) {
+      var p = e && PESO_EJE[e.eje];
+      if (!p || p.mide !== 'realidad' || !e.nivel) return;
+      var j = indiceEnEscalera(e.nivel);
+      if (j < 0) return;
+      usados.push({ eje: e.eje, t: e.t, nivel: e.nivel, i: j });
+      if (j > i) { i = j; cual = e; }
+    });
+    return { i: i, eje: cual, usados: usados };
+  }
+
+  /* El nivel de un eje se declara con el id de un peldaño de `ESCALERA`, no
+     con un número: un entero suelto se puede escribir fuera de rango y nadie
+     lo nota. Si el id no está en la escalera, esto devuelve -1 y el eje no
+     entra en la composición — falla cerrado (v880). */
+  /* El denominador de las frases del veredicto, con sus dos redacciones:
+     «De los 3 ejes que miden la realidad» y «Del único eje que la mide». Va
+     en una función porque las tres ramas lo escriben y tres copias de una
+     concordancia se separan (clase B). */
+  function deLosQueMiden(n) {
+    return pl(n, 'Del único eje que mide la realidad',
+                 'De los ' + n + ' ejes que miden la realidad');
+  }
+
+  function indiceEnEscalera(nivel) {
+    var id = nivel && (nivel.id || nivel);
+    for (var k = 0; k < ESCALERA.length; k++) if (ESCALERA[k].id === id) return k;
+    return -1;
+  }
 
   /* El veredicto de la PÁGINA, que no es el peldaño de la escalera.
 
@@ -3137,6 +3191,68 @@
     }
 
     var sin = real.filter(function (e) { return !e.nivel; });
+    var peor = peorNivelDe(real);
+
+    /* UN NIVEL FUERA DE LA ESCALERA NO SE CALLA (v1086).
+       `nivel-fuera-de-escala` solo se alcanzaba si TODOS los ejes traían un
+       id malo; con uno malo y dos sin nivel, el módulo decía «2 de 3 no
+       publican» y el tercero —que publicaba basura— se leía igual que uno
+       sin medir. Es la exención silenciosa de CLAUDE.md: la causa es otra
+       —un id mal escrito, no un archivo que falte— y pide otra acción.
+       Se cuenta aparte y se dice en la redacción que toque. */
+    var malId = real.filter(function (e) {
+      return !!e.nivel && indiceEnEscalera(e.nivel) < 0;
+    });
+    var avisoMalId = malId.length
+      ? ' Y ' + pl(malId.length, 'un eje declara un nivel',
+                                 malId.length + ' ejes declaran un nivel') +
+        ' que no corresponde a ningún peldaño de la escalera de este módulo (' +
+        malId.map(function (e) { return e.eje + ': «' + (e.nivel.id || e.nivel) + '»'; }).join(' · ') +
+        '), así que no entra en la composición. Eso no es un archivo que falte: es un id mal ' +
+        'escrito, y se corrige en el eje que lo declara.'
+      : '';
+
+    /* ══ EL PISO (v1086) ═══════════════════════════════════════════════
+       Con alguno —no todos— de los ejes de realidad publicando nivel, la
+       placa ya no se calla: publica un PISO. Y lo que lo hace legítimo es
+       que es la conclusión que este mismo módulo ya tenía escrita tres
+       renglones más abajo: «lo que falta por medir podría ser peor que lo
+       que ya está medido, y nunca mejor». Si eso es cierto, entonces el
+       peor de los ejes que SÍ publican es una cota inferior de gravedad, y
+       callarla era publicar menos de lo que se sabe.
+
+       Un piso NO es un dictamen y por eso lleva estado propio y no el
+       mismo: «el dictamen no puede ser mejor que X» y «el dictamen es X»
+       dicen cosas distintas a quien lee, y juntarlas en un estado sería
+       exactamente el null que la v876 prohibió. Lo que el piso promete es
+       una sola cosa, y se puede comprobar: que el dictamen final, cuando
+       llegue, no estará por encima de este peldaño. */
+    if (sin.length && peor.i >= 0) {
+      return {
+        estado: 'piso', t: 'No puede ser mejor que «' + ESCALERA[peor.i].t + '»',
+        palabra: palabra || null,
+        piso: ESCALERA[peor.i], pisoI: peor.i, usados: peor.usados,
+        deCuantos: real.length,
+        faltan: sin.map(function (e) { return { eje: e.eje, t: e.t, falta: e.falta || '' }; }),
+        /* «Uno de los 1 ejes» tampoco es castellano, así que el denominador
+           lleva sus dos redacciones igual que el numerador (v874). Con tres
+           ejes hoy no se alcanza, y es justo la que hará falta el día que
+           alguien agregue o quite uno. */
+        porque: 'Es un PISO y no el dictamen. ' +
+          deLosQueMiden(real.length) +
+          pl(peor.usados.length,
+             ' ya publica nivel uno, y es «' + ESCALERA[peor.i].t + '»',
+             ' ya publican nivel ' + peor.usados.length + ', y el peor de ellos es «' +
+               ESCALERA[peor.i].t + '»') +
+          '. ' + pl(sin.length, 'El otro todavía no publica', 'Los otros ' + sin.length +
+                                ' todavía no publican') +
+          ', y lo que falta por medir podría ser peor que lo ya medido y nunca mejor: por eso esto ' +
+          'es una cota de gravedad hacia abajo y el dictamen final no puede quedar por encima de ' +
+          'ella. Lo que NO dice es cuánto peor puede ser.' + avisoMalId,
+        malId: malId.length
+      };
+    }
+
     if (sin.length) {
       return {
         estado: 'sin-dictamen', t: 'Sin dictamen', palabra: palabra || null,
@@ -3146,7 +3262,7 @@
            es justo la que hace falta el día que uno de los tres se desbloquee
            y los otros no, y sin ella ese día la placa diría lo de «ninguno»
            sobre un eje que sí publica (v970). */
-        porque: sin.length === real.length
+        porque: (sin.length === real.length
           /* Sin la segunda frase del borrador —«el peldaño de la palabra no lo
              sustituye»—, que el bloque de la palabra ya dice tres renglones
              más abajo y al lado del peldaño donde aplica. Dicha dos veces en
@@ -3163,15 +3279,40 @@
                                              'ejes que miden la realidad') + ' todavía no ' +
             pl(sin.length, 'publica', 'publican') + ' nivel, así que el veredicto queda ' +
             'indeterminado: lo que falta por medir podría ser peor que lo que ya está medido, y ' +
-            'nunca mejor.'
+            'nunca mejor.') + avisoMalId,
+        malId: malId.length
       };
     }
 
-    /* Con los tres publicando nivel hace falta la escala de gravedad común
-       para compararlos, y esa NO se inventa acá — ver PESO_EJE. Se declara y
-       se para, que es lo que este módulo hace con todo lo que no puede medir
-       todavía. */
-    return { estado: 'sin-escala-comun', t: 'Sin dictamen', palabra: palabra || null,
+    /* Con TODOS publicando y la escala declarada (v1086), el dictamen sale
+       de «manda el peor» sobre `ESCALERA`. Sigue sin haber ninguna función
+       que promedie: un eje bueno no tapa uno malo. */
+    if (peor.i >= 0) {
+      return {
+        estado: 'dictamen', t: ESCALERA[peor.i].t, palabra: palabra || null,
+        nivel: ESCALERA[peor.i], nivelI: peor.i, usados: peor.usados,
+        deCuantos: real.length,
+        /* `cn` ANTEPONE el número, así que anidarlo imprimía «3 Los 3 ejes …
+           y el dictamen es 3 el PEOR de los 3». Se usa `pl`, que no cuenta.
+           Lo vio el caso FABRICADO: con el registro de hoy esta rama no se
+           ejecuta nunca, así que leyendo la pantalla no habría salido. */
+        porque: pl(real.length, 'El único eje que mide la realidad publica nivel',
+                                'Los ' + real.length + ' ejes que miden la realidad publican nivel') +
+          ', y el dictamen es ' +
+          pl(real.length, 'el de ese único eje', 'el PEOR de los ' + real.length) +
+          ': «' + ESCALERA[peor.i].t + '», que viene del eje ' +
+          (peor.eje ? peor.eje.eje + ' · ' + peor.eje.t : '?') + '. No se promedian: un eje mejor no ' +
+          'puede tapar uno peor, que es la misma regla con la que las cuatro cuentas del registro ' +
+          'ponen su techo. La escala es la de los cinco peldaños de este módulo, la misma que ' +
+          'usa el eje de la palabra, y no una escrita para esto.' + avisoMalId,
+        malId: malId.length
+      };
+    }
+
+    /* Y si algún eje declara un nivel que NO está en la escalera, no se
+       compone nada: falla cerrado (v880). Es un estado aparte porque pide
+       una acción distinta —corregir el id— y no esperar un archivo. */
+    return { estado: 'nivel-fuera-de-escala', t: 'Sin dictamen', palabra: palabra || null,
              niveles: real.map(function (e) { return { eje: e.eje, t: e.t, nivel: e.nivel }; }),
              porque: (real.length === 1
                        ? 'El único eje que mide la realidad ya publica nivel, y '
@@ -3182,9 +3323,9 @@
                         lista por un verbo (v895); reescribir la frase no cuesta nada y dice lo
                         mismo. Un comentario en medio NO sirve: `soloCodigo` lo quita y las dos
                         cadenas vuelven a quedar pegadas. */
-                     'para sacar el peor hace falta una escala de gravedad común que este ' +
-                     'módulo todavía no declara. Escribirla es una decisión de quien firma el ' +
-                     'módulo, no un ajuste de código.' };
+                     'ninguno de esos niveles corresponde a un peldaño de la escalera de este ' +
+                     'módulo, así que no hay con qué ordenarlos. No es un archivo que falte: es un ' +
+                     'id mal escrito, y se corrige en el eje que lo declara.' };
   }
 
   /* Los tres juntos, y NINGUNA función que los promedie. Devolver una lista

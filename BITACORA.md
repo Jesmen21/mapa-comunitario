@@ -24946,3 +24946,117 @@ el lector lo ve (v926), y la guarda comprueba que esté.
 * **No vuelve a buscar los giros que faltan.** El desembolso del BID no está
   informado y el resto de la línea del Banco Mundial no se ha activado: hace
   falta la noticia, no código. `pendiente`
+
+## v1086 · el piso del dictamen, y la escala común que no hubo que inventar
+
+Pedido en estas palabras: «pasemos a que podamos tener el dictamen». Y lo
+primero fue medir por qué no lo había, porque la respuesta cambiaba el trabajo:
+`nivel: null` está **escrito a mano** en los tres ejes de realidad, y `PESO_EJE`
+declaraba `escala: false` para los ejes C y D. No existía código que calculara
+un nivel. Un dictamen hoy no era cuestión de ganas.
+
+### Las dos decisiones, que son de quien firma el módulo
+
+Se le preguntaron y las contestó, y las dos resultaron ser las baratas:
+
+1. **El piso con un solo eje.** Con alguno —no todos— de los ejes de realidad
+   publicando nivel, la placa publica una cota: «No puede ser mejor que X».
+2. **Manda el peor, sin ponderar.**
+
+### Por qué la escala NO se inventó, que es lo que la hace comprobable
+
+La escala común es **`ESCALERA`**, la misma de los cinco peldaños que el eje de
+la palabra usa desde el principio, con su índice como orden. Y la regla de
+composición es la que las cuatro cuentas del registro de corrupción ya
+aplicaban: «cada función devuelve el PEOR peldaño que esa cuenta permite;
+ninguna puede subir lo que otra bajó».
+
+Eso es deliberado. Un umbral nuevo se elige para que algo pase (v882, v1075);
+uno ya declarado, escrito para otra cosa y antes de que esta pregunta
+existiera, no se puede acomodar. **La señal de que no es interesada: aplicada
+hoy no mejora el estado de nada.** El eje C sigue sin escala y sin nivel, el eje
+B sigue sin su media histórica, y la placa sigue diciendo «Sin dictamen». Lo
+único que cambia es que el día que uno de los tres se desbloquee, lo ya medido
+se publica en vez de callarse.
+
+Y lo que no se hace: promediar. No hay ninguna función que promedie, igual que
+`ejesDe` no devuelve un total.
+
+### Lo que el piso promete, y lo que no
+
+El argumento que lo sostiene ya estaba escrito en este mismo módulo, tres
+renglones más abajo del sitio donde se callaba: «lo que falta por medir podría
+ser peor que lo que ya está medido, y nunca mejor». Si eso es cierto, el peor de
+los ejes que SÍ publican **es una cota inferior de gravedad**, y callarla era
+publicar menos de lo que se sabe.
+
+Un piso no es un dictamen y lleva **estado propio** (`piso`, no `dictamen`):
+«el dictamen no puede ser mejor que X» y «el dictamen es X» dicen cosas
+distintas a quien lee, y juntarlas sería el null que la v876 prohibió. Lo que
+promete es una sola cosa y es comprobable: que el dictamen final, cuando
+llegue, no quedará por encima de ese peldaño. Lo que NO dice es cuánto peor
+puede ser.
+
+### Cinco estados, medidos contra un caso FABRICADO
+
+La rama con material se mide contra un caso fabricado y no contra el registro
+(v970), y acá no había alternativa: con el registro de hoy ninguna de las ramas
+nuevas se ejecuta. Se ejercitaron los cinco por la API que el módulo ya expone:
+
+| Ejes que publican | Estado | Titular |
+|---|---|---|
+| ninguno | `sin-dictamen` | Sin dictamen |
+| uno (`poco-fiable`) | `piso` | No puede ser mejor que «Poco fiable» |
+| dos (`dudosa`, `nada-fiable`) | `piso` | No puede ser mejor que «Nada fiable» |
+| tres (`fiable`, `dudosa`, `poco-fiable`) | `dictamen` | Poco fiable |
+| uno con id inventado | `sin-dictamen` + aviso | Sin dictamen |
+
+**Y encontró cuatro defectos que la pantalla no podía mostrar**, porque ninguna
+de esas ramas corre hoy:
+
+* **`cn` ANTEPONE el número, y anidarlo imprimía basura.** Tres veces en la
+  misma tanda: «1 Un eje de 3 los 3 que miden la realidad», «3 Los 3 ejes … y
+  el dictamen es 3 el PEOR de los 3», «Y 1 un eje declara». Se usa `pl`, que no
+  cuenta. Leyendo el código no se ve; leyendo el papel tampoco, porque el papel
+  nunca llega ahí.
+* **Un nivel FUERA de la escalera se leía igual que un eje sin medir.** El
+  estado `nivel-fuera-de-escala` solo se alcanzaba si TODOS los ejes traían un
+  id malo; con uno malo y dos sin nivel, la placa decía «2 de 3 no publican» y
+  el tercero —que publicaba basura— desaparecía. Es la exención silenciosa de
+  CLAUDE.md, y la causa pide otra acción: no es un archivo que falte, es un id
+  mal escrito. Ahora se cuenta aparte (`malId`) y se dice en las tres ramas,
+  **incluida la del dictamen**, donde un id malo quedaba excluido en silencio
+  con los tres publicando.
+* **«Uno de los 1 ejes» y «Ninguno de los 1 ejes» no son castellano.** El
+  denominador lleva sus dos redacciones en una función, `deLosQueMiden`, porque
+  tres copias de una concordancia se separan.
+
+### Una guarda que falló por un cambio legítimo, y se hizo MÁS precisa
+
+La de la v1056 exigía que el módulo se PARARA diciendo que le faltaba la escala
+común. Esta versión la declara, así que esa aserción falla con razón — y
+aflojarla sería perder la prueba entera. Lo que mide ahora es la propiedad que
+de verdad importaba detrás de aquella: que la escala **no se haya escrito para
+esto**. Cuatro mitades, cada una comprobable: que el orden salga de `ESCALERA`,
+que la composición sea el peor y ninguna función promedie, que un id fuera de
+la escalera no componga nada, y que el piso lleve estado propio.
+
+### Lo que esta versión NO hace
+
+* **No publica todavía ningún dictamen ni ningún piso**, porque ningún eje
+  publica nivel. Lo que queda construido es que el día que uno lo haga, salga
+  solo. `pendiente`
+* **No escribe la escala del eje C.** Sigue en `escala: false`, y su nivel pide
+  el ejecutado por sector y la serie histórica, que este contenedor no puede
+  alcanzar. `pendiente`
+* **No da nivel al eje D**, aunque su `escala` ya quedó en `true`. El módulo
+  tiene escrito que una escala redactada mirando el registro que debe clasificar
+  nace `construida-para-el-caso` y sin validar, y validarla pide el contraste
+  contra otro gobierno: el registro de Petro, que hay que clasificar primero.
+  Es trabajo de archivo que SÍ se puede hacer acá, y es el siguiente renglón.
+  `pendiente`
+* **No toca `ESCALERA` ni sus cinco peldaños.** La descripción de cada uno sigue
+  hablando de casos de corrupción y de cambios de postura, que es de donde
+  salió: un eje de realidad que aterrice en «Poco fiable» hereda una
+  descripción que no habla de él. Hay que redactar la lectura por eje, y no se
+  hace a ojo. `pendiente`
