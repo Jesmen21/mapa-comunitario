@@ -1213,6 +1213,29 @@ sección al final de este archivo.
   `descansaEn` dentro de `usados`, donde el veredicto ya los lleva. Así un eje
   nuevo que publique nivel lo hereda **sin que su autor se acuerde**, que es lo
   único que impide que vuelva a pasar.
+* **Y un piso en el ÚLTIMO peldaño CIERRA el dictamen** (v1089). Si lo que
+  falta solo puede empeorar el veredicto y el piso ya está en el peldaño más
+  bajo de la escalera, no hay hacia dónde: el intervalo se cierra sobre un
+  punto y el veredicto **es** ese peldaño, sin suponer nada sobre lo que falta.
+  Es la monotonía de la v1048 aplicada a los ejes. Tres cosas lo hacen honesto
+  y no un atajo: la saturación **se calcula contra el largo de la escalera** y
+  no contra el id del último peldaño (v903), de modo que agregar un peldaño
+  peor reabre el intervalo solo; un piso NO saturado **sigue siendo piso**; y
+  el texto dice que está determinado «y no porque se haya medido todo», nombra
+  los ejes que siguen sin medir y dice que si el eje que lo sostiene bajara,
+  volvería a quedar abierto.
+* **Una condición que compara contra un estado que nadie devuelve es siempre
+  verdadera, y su rama muerta despierta el día que el módulo mejora** (v1089).
+  Tres sitios preguntaban «¿hay dictamen?» con `estado !== 'ok'`, y
+  `veredictoGeneral` nunca devuelve `'ok'`. Mientras no hubo dictamen nadie lo
+  notó; el día que apareció, la placa lo pintó con el gris de «no hay», el
+  texto accesible leyó «sin dictamen todavía» encima de uno publicado, y un
+  `else` muerto desde la v1056 despertó y volvió a titular con el peldaño de la
+  PALABRA. **Una rama que solo se alcanza cuando el módulo MEJORA es una
+  regresión esperando**, así que se RETIRA en vez de arreglarse —antes de
+  retirarla se comprueba que no pierda ninguna capacidad— y la pregunta queda
+  en UNA función. La señal para buscarla: un estado comparado contra un valor
+  que no está en la lista de los que la función devuelve.
 * **Un ayudante de prosa que ANTEPONE el número no se anida** (v1086). `cn`
   imprime la cifra y el plural, así que `cn(a, 'uno de ' + cn(b, …))` sale como
   «1 Un eje de 3 los 3 que miden la realidad». Pasó **tres veces en una sola

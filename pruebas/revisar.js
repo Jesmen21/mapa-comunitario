@@ -12251,27 +12251,50 @@ console.log('\n  -- el marcado que vive dentro del JavaScript (v1025) --');
        provisional. Medido sobre la placa entera, el orden salía al revés y
        la guarda daba rojo sobre lo que está bien. Es la v854: se busca
        dentro de la caja. */
-    const ramaPeldano = (function () {
-      const i = placa.indexOf("'Fiabilidad de la palabra'");
-      return i < 0 ? '' : placa.slice(i);
-    }());
-    const iProv = ramaPeldano.indexOf("'sp-fi-vprov'");
-    const iVval = ramaPeldano.indexOf("'sp-fi-vval'");
-    comprobar('la placa dice que es provisional y hasta dónde baja',
-      iProv > 0 && /sp-fi-vfalta/.test(placa) && /veredicto\.hasta\.t/.test(placa) &&
-        !!ramaPeldano,
-      iProv < 0 ? 'no imprime el rótulo de provisional'
-        : !/veredicto\.hasta\.t/.test(placa) ? 'no dice hasta dónde puede bajar'
-          : 'imprime el rótulo y el techo');
+    /* v1089 · ESTA RAMA YA NO EXISTE, y la guarda se hace MÁS precisa.
+       Hasta la v1088 la placa tenía DOS caminos: uno titulaba con el país y
+       el otro —el anterior a la v1056— titulaba con el peldaño de la palabra.
+       El segundo era código muerto (su condición salía de comparar contra un
+       estado que `veredictoGeneral` nunca devuelve) y el día que apareció un
+       dictamen de verdad se despertó y la placa volvió a titular con la
+       palabra. Se retiró, porque una rama que solo se alcanza cuando el
+       módulo mejora es una regresión esperando.
 
-    /* 5 · Y EL RÓTULO VA ANTES DEL PELDAÑO. El peldaño se pinta en el color
-       de su escalón —«Fiable» sale en verde a 32 px— y en una captura ese
-       color domina. Leído en orden, quien llega al verde ya sabe que es con
-       lo confirmado; detrás, el color afirma antes de que el texto acote. */
-    comprobar('y el rótulo va ANTES del peldaño, no después',
-      iProv > 0 && iVval > 0 && iProv < iVval,
-      iProv > iVval ? 'va detrás: el color del peldaño afirma antes de que el texto lo acote'
-        : 'va antes, así que el color se lee ya acotado');
+       Estas dos aserciones medían ESE camino: la clase `sp-fi-vprov` y el
+       orden del rótulo dentro de él. Aflojarlas sería perder la prueba; lo
+       que medían de verdad es otra cosa y sigue siendo exigible: que el
+       peldaño de la palabra NO se publique como firme cuando es provisional,
+       y que el acotamiento se lea ANTES del peldaño. En la rama que queda eso
+       se cumple de otra manera —el «con lo confirmado hasta hoy» va dentro de
+       la misma frase, delante del peldaño— así que se mide así. */
+    const ramaPal = (function () {
+      const i = placa.indexOf("'sp-fi-vpal'");
+      return i < 0 ? '' : placa.slice(i, i + 1400);
+    }());
+    const iAcot = ramaPal.indexOf('con lo confirmado hasta hoy');
+    const iPeld = ramaPal.indexOf('confiabilidad de la palabra');
+    const mitProv = [
+      ['la placa publica el peldaño de la palabra por su propia rama', !!ramaPal],
+      ['y cuando es provisional lo dice', iAcot > 0 && /palabra\.provisional/.test(ramaPal)],
+      ['y dice hasta dónde puede bajar', /palabra\.hasta\.t/.test(placa)],
+      ['y el camino viejo que titulaba con la palabra ya no existe',
+       !/'sp-fi-vlabel', 'Fiabilidad de la palabra'/.test(placa)]
+    ];
+    const malProv = mitProv.filter((x) => !x[1]).map((x) => x[0]);
+    comprobar('la placa dice que el peldaño de la palabra es provisional y hasta dónde baja',
+      malProv.length === 0,
+      malProv.length ? 'falla: ' + malProv.join(' · ')
+        : 'lo publica acotado, con su techo, y sin el camino que lo titulaba');
+
+    /* 5 · Y EL ACOTAMIENTO VA ANTES DEL PELDAÑO. El peldaño se lee en el
+       color de su escalón y en una captura ese color domina: leído en orden,
+       quien llega al peldaño ya sabe que es con lo confirmado. */
+    comprobar('y el acotamiento va ANTES del peldaño, no después',
+      iAcot > 0 && iPeld > 0 && iAcot < iPeld,
+      iAcot < 0 ? 'no acota el peldaño de la palabra'
+        : iPeld < 0 ? 'no se encontró el peldaño en su rama'
+        : iAcot > iPeld ? 'va detrás: el peldaño afirma antes de que el texto lo acote'
+        : 'va antes, así que el peldaño se lee ya acotado');
 
     /* 6 · LA GUARDA DE LA GUARDA: que el intervalo se siga calculando de las
        dos cotas. Con `palMax` sin usar, todo lo de arriba seguiría en verde
@@ -12408,12 +12431,21 @@ console.log('\n  -- el marcado que vive dentro del JavaScript (v1025) --');
         'no se pudieron leer placaDe o ejeB');
     } else {
       // 1 · El rótulo nombra lo que mide, no la familia.
-      const r1 = /'sp-fi-vlabel',\s*'Fiabilidad de la palabra'/.test(placa);
+      /* v1089: el rótulo de la placa es ahora SIEMPRE «Cómo está el país»,
+         porque el camino que titulaba con la palabra se retiró. Lo que esta
+         aserción protegía sigue vigente y cambió de sitio: que el peldaño de
+         la palabra no se publique como si midiera el gobierno entero. Ahora
+         eso lo dice su propia frase, que empieza nombrando lo que mide. */
+      const r1 = /'sp-fi-vlabel', 'Cómo está el país'/.test(placa) &&
+                 /mide sus palabras, no el país/.test(placa) &&
+                 !/'sp-fi-vlabel',\s*'Fiabilidad'\s*\)/.test(placa);
       comprobar('el rótulo del peldaño dice QUÉ mide, no la familia entera', r1,
-        r1 ? 'dice «Fiabilidad de la palabra», no la familia entera'
-           : (/'sp-fi-vlabel',\s*'Fiabilidad'\s*\)/.test(placa)
-              ? 'volvió a «Fiabilidad» a secas: una captura del peldaño se lee como un veredicto sobre el gobierno entero'
-              : 'el rótulo cambió de forma y ya no dice qué mide'));
+        r1 ? 'la placa titula con el país, y el peldaño de la palabra dice que mide sus palabras'
+           : (!/'sp-fi-vlabel', 'Cómo está el país'/.test(placa)
+              ? 'la placa no titula con el país: un peldaño de titular se lee como un veredicto sobre el gobierno entero'
+              : !/mide sus palabras, no el país/.test(placa)
+                ? 'el peldaño de la palabra se publica sin decir que mide sus palabras'
+                : 'volvió a «Fiabilidad» a secas'));
 
       // 2 · Y la placa dice qué NO mide.
       /* La PROPIEDAD y no dos palabras: «deterioro institucional» y «rumbo
@@ -12590,6 +12622,50 @@ console.log('\n  -- el marcado que vive dentro del JavaScript (v1025) --');
           ['y el PISO lleva estado propio, distinto del dictamen', /'piso'/.test(vg) && /'dictamen'/.test(vg)]
         ];
         const mal5 = mitades5.filter((x) => !x[1]).map((x) => x[0]);
+        /* ── EL PISO SATURADO CIERRA EL DICTAMEN (v1089) ───────────────
+           Con el piso en el ÚLTIMO peldaño, el veredicto está determinado:
+           lo que falta solo puede empeorarlo y por debajo no hay peldaño, así
+           que el intervalo se cierra sobre un punto. Tres cosas que lo hacen
+           honesto y no un atajo, y las tres son comprobables:
+
+             · la saturación se CALCULA contra el largo de la escalera y no
+               contra el id del último peldaño (v903): agregar un peldaño peor
+               reabre el intervalo solo, sin que nadie se acuerde — y escribir
+               `'nada-fiable'` acá sería la cifra que envejece sola;
+             · el piso NO saturado sigue siendo piso, que es lo que impide que
+               esto se lea como «cualquier piso vale como dictamen»;
+             · y el texto dice que los ejes que faltan SIGUEN sin medir, y que
+               si el eje que lo sostiene bajara, volvería a quedar abierto. Un
+               dictamen determinado por saturación no es un dictamen completo,
+               y confundirlos sería publicar más de lo que se sabe. */
+        const sat = [
+          ['la saturación se calcula contra el largo de la escalera',
+           /peor\.i === ESCALERA\.length - 1/.test(vg)],
+          ['y NO se escribe el id del último peldaño a mano',
+           !/saturado[\s\S]{0,80}'nada-fiable'/.test(vg)],
+          ['el piso saturado devuelve dictamen y se marca como tal',
+           /porSaturacion: true/.test(vg)],
+          ['y el piso NO saturado sigue siendo piso',
+           /if \(sin\.length && saturado\)[\s\S]*?if \(sin\.length && peor\.i >= 0\) \{[\s\S]{0,120}estado: 'piso'/.test(vg)],
+          ['y dice que lo que falta SIGUE sin medir', /y no porque se haya medido todo/.test(vg)],
+          ['y que si el eje que lo sostiene bajara, volvería a quedar abierto',
+           /volver[ií]a a quedar abierto/.test(vg)],
+          /* DENTRO del trozo de la rama saturada y no en todo
+             `veredictoGeneral` (v854): `faltan: sin.map` también está en la
+             rama del piso y en la de «sin dictamen», así que un patrón suelto
+             seguía encontrándolo con la rama saturada ya sin él. Lo descubrió
+             una inyección fiel que NO mordía, que es la señal de que lo que
+             falta es la aserción y no la inyección (v1029). */
+          ['y nombra los ejes que faltan igual que el piso',
+           /faltan: sin\.map/.test((vg.match(/if \(sin\.length && saturado\) \{[\s\S]*?\n    \}/) || [''])[0])]
+        ];
+        const malSat = sat.filter((x) => !x[1]).map((x) => x[0]);
+        comprobar('y un piso en el ÚLTIMO peldaño cierra el dictamen, calculado y no escrito',
+          malSat.length === 0,
+          malSat.length ? 'falla: ' + malSat.join(' · ')
+            : 'la saturación sale del largo de la escalera, el piso alto sigue siendo piso, y el ' +
+              'texto no vende el dictamen como completo');
+
         comprobar('y la escala común es la ESCALERA que ya estaba declarada, con «manda el peor» y sin promediar',
           mal5.length === 0,
           mal5.length ? 'falla: ' + mal5.join(' · ')

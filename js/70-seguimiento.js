@@ -3296,6 +3296,22 @@
      dictamen porque falta medir la realidad» y «no hay dictamen porque
      ningún eje la mide» piden cosas distintas a quien lee, y un null las
      juntaría en una (v876). */
+  /* ¿HAY DICTAMEN? UNA sola función (v1089).
+     Tres sitios lo preguntaban por separado y los tres comparaban contra un
+     estado `'ok'` que `veredictoGeneral` NUNCA devuelve —sus estados son
+     `sin-dictamen`, `piso`, `dictamen`, `sin-ejes` y `nivel-fuera-de-escala`—,
+     así que las tres condiciones eran siempre verdaderas y nadie lo notó
+     mientras no hubo dictamen. El día que apareció, los tres quedaron mal a
+     la vez: la placa pintó el veredicto con el gris de «no hay», y el texto
+     accesible leía «sin dictamen todavía» encima de un dictamen publicado.
+
+     Es la clase B en su forma más simple —tres codificaciones de una
+     pregunta— y la cura es la de siempre: una función, y retirar las copias.
+     `'ok'` se conserva porque la ficha lo usa para su propio veredicto. */
+  function hayDictamen(vg) {
+    return !!(vg && (vg.estado === 'dictamen' || vg.estado === 'ok'));
+  }
+
   function veredictoGeneral(ejes, palabra) {
     var real = (ejes || []).filter(function (e) {
       var p = e && PESO_EJE[e.eje]; return !!p && p.mide === 'realidad';
@@ -3344,6 +3360,56 @@
        exactamente el null que la v876 prohibió. Lo que el piso promete es
        una sola cosa, y se puede comprobar: que el dictamen final, cuando
        llegue, no estará por encima de este peldaño. */
+    /* ══ EL PISO SATURADO CIERRA EL DICTAMEN (v1089) ═══════════════════
+       Pedido como «fuerza el dictamen», y no hubo que forzar nada: con el
+       piso en el ÚLTIMO peldaño de la escalera, el dictamen ya está
+       determinado y la v1086 no lo vio.
+
+       El argumento es el de la propia v1086, llevado hasta el final. Lo que
+       sostiene el piso es que «lo que falta por medir podría ser peor que lo
+       ya medido, y nunca mejor». Si eso es cierto, entonces los ejes sin
+       nivel solo pueden mover el veredicto HACIA ABAJO — y desde el último
+       peldaño no hay abajo. El intervalo entre el piso y el techo se cierra
+       sobre un punto, así que el veredicto no es «no puede ser mejor que X»:
+       **es X**, sin suponer nada sobre lo que falta.
+
+       Es el mismo razonamiento de monotonía que la ficha usa desde la v1048
+       para publicar el peldaño que lo confirmado sostiene: «los tres techos
+       son monótonos, más material solo puede bajar el peldaño y nunca
+       subirlo». Acá los ejes hacen de techos.
+
+       Y es importante decir qué NO cambia: los ejes B y C siguen sin medir, y
+       el dictamen queda determinado A PESAR de eso y no porque se hayan
+       medido. Si mañana el eje D bajara de peldaño —porque una autoridad
+       desvirtuara las muertes confirmadas—, esto volvería a ser un piso y el
+       veredicto volvería a quedar abierto. La saturación se CALCULA contra el
+       largo de la escalera, no se escribe (v903): agregar un peldaño peor
+       reabre el intervalo solo, sin que nadie tenga que acordarse. */
+    var saturado = peor.i >= 0 && peor.i === ESCALERA.length - 1;
+
+    if (sin.length && saturado) {
+      return {
+        estado: 'dictamen', t: ESCALERA[peor.i].t, palabra: palabra || null,
+        nivel: ESCALERA[peor.i], nivelI: peor.i, usados: peor.usados,
+        porSaturacion: true, deCuantos: real.length,
+        faltan: sin.map(function (e) { return { eje: e.eje, t: e.t, falta: e.falta || '' }; }),
+        /* La frase sigue a dos puntos, así que el denominador entra en
+           minúscula: `deLosQueMiden` abre oración y acá no la abre. Lo vio el
+           papel —«medido todo: De los 3 ejes»— y no el código. */
+        porque: 'El dictamen está DETERMINADO, y no porque se haya medido todo: ' +
+          deLosQueMiden(real.length).charAt(0).toLowerCase() + deLosQueMiden(real.length).slice(1) +
+          pl(peor.usados.length, ' publica nivel uno', ' publican nivel ' + peor.usados.length) +
+          ' y ' + pl(peor.usados.length, 'es', 'el peor es') + ' «' + ESCALERA[peor.i].t +
+          '», que es el ÚLTIMO peldaño de la escalera. Lo que falta por medir solo puede empeorar ' +
+          'el veredicto y nunca mejorarlo, y por debajo de este peldaño no hay ninguno: así que ' +
+          pl(sin.length, 'el eje que falta no puede cambiarlo',
+                         'los ' + sin.length + ' ejes que faltan no pueden cambiarlo') +
+          '. No es un piso: el piso y el techo coinciden. Si el eje que lo sostiene bajara de nivel, ' +
+          'esto volvería a quedar abierto.' + avisoMalId,
+        malId: malId.length
+      };
+    }
+
     if (sin.length && peor.i >= 0) {
       return {
         estado: 'piso', t: 'No puede ser mejor que «' + ESCALERA[peor.i].t + '»',
@@ -4108,10 +4174,14 @@
        placa sale en verde, y un verde a pantalla completa desmiente las tres
        líneas de acotación que van debajo por más literales que sean: el ojo
        llega al color antes que al texto. Lo vio el papel, no el código. */
-    var sinDictamen = !!(f.general && f.general.estado !== 'ok');
+    /* Y el color sale del nivel del VEREDICTO DE LA PÁGINA, no de
+       `f.veredicto`, que es el peldaño de la palabra: pintar la placa con ese
+       es exactamente el defecto que la v1056 vino a quitar. */
+    var sinDictamen = !hayDictamen(f.general);
+    var nivPag = (f.general && f.general.nivel && f.general.nivel.id) || null;
     var placa = el('div', 'sp-fi-placa ' +
-      (sinDictamen ? 'sp-fi-v-sin-dictamen' : 'sp-fi-v-' + f.veredicto.id) +
-      (!sinDictamen && f.veredicto.provisional ? ' sp-fi-prov' : '') +
+      (sinDictamen || !nivPag ? 'sp-fi-v-sin-dictamen' : 'sp-fi-v-' + nivPag) +
+      (!sinDictamen && nivPag && f.veredicto.provisional ? ' sp-fi-prov' : '') +
       (cerrado ? ' sp-fi-placa-cerrada' : ''));
 
     /* ── La firma ────────────────────────────────────────────────────────
@@ -4186,9 +4256,22 @@
        El peldaño de la palabra NO se pierde: baja a donde le corresponde, con
        su rótulo y sin el verde de titular. */
     var vg = f.general || null;
-    var vgSin = !!(vg && vg.estado !== 'ok');
+    var vgSin = !hayDictamen(vg);
 
-    if (vgSin) {
+    /* EL BLOQUE DEL PAÍS VA SIEMPRE (v1089), con dictamen o sin él. Hasta acá
+       estaba dentro de un `if (vgSin)` cuyo `else` era el camino anterior a la
+       v1056: titular la placa con el peldaño de la PALABRA. Ese else era CÓDIGO
+       MUERTO —`vgSin` salía de `estado !== 'ok'`, un estado que
+       `veredictoGeneral` nunca devuelve, así que era siempre verdadero— y el
+       día que apareció un dictamen de verdad se despertó y la placa volvió a
+       titular con la palabra, que es exactamente el defecto que la v1056 vino
+       a quitar. Lo vio el papel compuesto y no el código.
+
+       Así que el camino viejo se RETIRA en vez de arreglarse: una rama que
+       solo se alcanza cuando el módulo mejora es una regresión esperando. El
+       peldaño de la palabra sigue publicándose, abajo y con su rótulo, por la
+       rama que ya lo hacía. */
+    if (vg) {
       placa.appendChild(el('p', 'sp-fi-vlabel', 'Cómo está el país'));
       placa.appendChild(el('p', 'sp-fi-vval', vg.t));
       placa.appendChild(el('p', 'sp-fi-vfalta', vg.porque));
@@ -4238,27 +4321,6 @@
             ', si las dos frases hablan del mismo objeto verificado. Si todas resultaran serlo, ese ' +
             'peldaño bajaría a «' + vg.palabra.hasta.t + '»; lo que falta no puede subirlo.'));
         }
-      }
-    } else {
-      placa.appendChild(el('p', 'sp-fi-vlabel', 'Fiabilidad de la palabra'));
-      /* El rótulo de provisional va ANTES del peldaño y no después, y el orden
-         es la mitad que hace el trabajo: el peldaño se pinta en el color de su
-         escalón —«Fiable» sale en verde a 32 px— y en una captura ese color
-         domina. Leído en orden, quien llega al verde ya sabe que es con lo
-         confirmado. Detrás, el color afirmaría antes de que el texto acote. */
-      if (f.veredicto.provisional) placa.appendChild(el('p', 'sp-fi-vprov', 'Con lo confirmado hasta hoy'));
-      placa.appendChild(el('p', 'sp-fi-vval', f.veredicto.t));
-      /* Un peldaño PROVISIONAL lo dice en la placa misma, y dice hasta dónde
-         puede bajar. Esta placa se fotografía y la captura circula sola: un
-         peldaño pelado se leería como firme, y uno sin su techo dejaría al
-         lector sin saber qué está en juego. Las dos mitades hacen falta —lo
-         que sostiene y lo que falta— o la marca es un adorno. */
-      if (f.veredicto.provisional) {
-        placa.appendChild(el('p', 'sp-fi-vfalta',
-          'Aún no se confirma, en ' + f.veredicto.sinDeclarar + ' de ' +
-          cn(f.veredicto.documentadas, 'contradicción documentada', 'contradicciones documentadas') +
-          ', si las dos frases hablan del mismo objeto verificado. Si todas resultaran serlo, el ' +
-          'peldaño bajaría a «' + f.veredicto.hasta.t + '»; lo que falta no puede subirlo.'));
       }
     }
     /* QUE NO MIDE, y por que va en la PLACA y no solo en el bloque de los
@@ -4313,7 +4375,11 @@
       (!conNivel.length
         ? 'hoy ninguno de ellos publica nivel: un peldaño alto aquí NO dice que el gobierno esté bien.'
         : (conNivel.length < otrosEjes.length
-            ? cn(otrosEjes.length - conNivel.length, 'uno de ellos todavía no publica nivel',
+            /* `pl` y no `cn`: la frase ya trae su sujeto —«uno de ellos»,
+               «algunos»— así que anteponerle la cifra imprimía «y 2 algunos
+               todavía no publican nivel». Quinta vez en esta sesión, y la
+               quinta la vio el papel y no el código. */
+            ? pl(otrosEjes.length - conNivel.length, 'uno de ellos todavía no publica nivel',
                  'algunos todavía no publican nivel') + ': un peldaño alto aquí no resume los ' +
               enLetra(otrosEjes.length + 1) + '.'
             : 'cada uno con su nivel: este peldaño no los resume.'))));
@@ -4364,7 +4430,22 @@
      durante versiones. */
   function dichoDelVeredicto(f) {
     var vg = f.general;
-    if (vg && vg.estado !== 'ok') {
+    /* Y con dictamen publicado, el texto leído en voz alta no puede decir
+       «sin dictamen todavía»: las dos redacciones van escritas (v970), y la
+       del dictamen dice si está determinado por saturación, porque es la
+       diferencia entre «es X» y «es X y además se midió todo». */
+    if (hayDictamen(vg)) {
+      return 'Cómo está el país: ' + (vg.t || 'sin calcular') +
+        (vg.porSaturacion
+          ? ', un dictamen determinado aunque ' +
+            cn((vg.faltan || []).length, 'un eje de realidad siga sin medir',
+                                         'ejes de realidad sigan sin medir') +
+            ', porque es el último peldaño de la escalera y lo que falta solo podría empeorarlo.'
+          : '.') +
+        ' Lo que sí tiene peldaño aparte mide sus palabras y no el país: confiabilidad de la ' +
+        'palabra ' + (vg.palabra && vg.palabra.t ? '«' + vg.palabra.t + '»' : 'sin calcular') + '.';
+    }
+    if (vg && !hayDictamen(vg)) {
       return 'Cómo está el país: sin dictamen todavía, porque ' +
         (vg.faltan && vg.faltan.length
           ? cn(vg.faltan.length, 'eje de realidad no publica nivel', 'ejes de realidad no publican nivel')

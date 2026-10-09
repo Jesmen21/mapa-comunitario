@@ -25272,3 +25272,113 @@ que su autor se acuerde.
   movería el nivel. `pendiente`
 * **No escribe la escala del eje C** ni la media histórica del B, que son los
   dos que faltan para el dictamen completo. `pendiente`
+
+## v1089 · el dictamen, que no hubo que forzar: el piso saturado cierra el intervalo
+
+Pedido así: «fuerce el dictamen por favor, arregla eso en base a lo que ya
+tenemos». Y no hubo que forzar nada, porque **el dictamen ya estaba determinado
+desde la v1088 y esa versión no lo vio.**
+
+### El argumento, que es el de la v1086 llevado hasta el final
+
+Lo que sostiene el piso está escrito desde la v1086: «lo que falta por medir
+podría ser peor que lo ya medido, y nunca mejor». Si eso es cierto, los ejes
+sin nivel solo pueden mover el veredicto **hacia abajo**.
+
+Y el piso de la v1088 quedó en **«Nada fiable», que es el ÚLTIMO peldaño de la
+escalera**. Desde ahí no hay abajo. El intervalo entre el piso y el techo se
+cierra sobre un punto, así que el veredicto no es «no puede ser mejor que X»:
+**es X**, sin suponer absolutamente nada sobre los ejes B y C.
+
+Es el mismo razonamiento de monotonía que la ficha usa desde la v1048 para
+publicar el peldaño que lo confirmado sostiene —«los tres techos son monótonos:
+más material solo puede bajar el peldaño, nunca subirlo»—. Acá los ejes hacen
+de techos, y es la razón de que esto no sea un atajo: no se aflojó ninguna
+condición ni se inventó ningún nivel. Se leyó una propiedad que ya estaba.
+
+### El resultado
+
+| | |
+|---|---|
+| veredicto de la página | **«Nada fiable»**, estado `dictamen` |
+| cómo se determinó | `porSaturacion: true` |
+| ejes que lo sostienen | eje D, con 6 muertes de persona protegida confirmadas |
+| ejes todavía sin medir | B (deterioro institucional) y C (orientación del gasto) |
+
+### Tres cosas que lo hacen honesto, y las tres se comprueban
+
+* **La saturación se CALCULA contra el largo de la escalera**, no contra el id
+  del último peldaño (v903). Escribir `'nada-fiable'` ahí sería la cifra que
+  envejece sola: el día que alguien agregue un peldaño peor, el intervalo se
+  reabre **solo**, sin que nadie tenga que acordarse.
+* **Un piso NO saturado sigue siendo piso.** Medido contra un caso fabricado:
+  con el piso en «Poco fiable» el estado sigue siendo `piso`. Eso es lo que
+  impide que esto se lea como «cualquier piso vale como dictamen», que sería
+  exactamente el atajo que se pidió y que no se tomó.
+* **Y el texto no vende el dictamen como completo.** Dice que está determinado
+  «y no porque se haya medido todo», nombra los dos ejes que siguen sin medir
+  igual que lo hacía el piso, y dice que **si el eje que lo sostiene bajara de
+  nivel, esto volvería a quedar abierto**. Un dictamen determinado por
+  saturación y un dictamen completo no son lo mismo, y confundirlos sería
+  publicar más de lo que se sabe.
+
+### Medido contra cinco casos fabricados
+
+Con el registro de hoy solo una rama se ejecuta, así que las cinco se midieron
+por la API que el módulo expone:
+
+| Ejes que publican | Estado | Titular |
+|---|---|---|
+| ninguno | `sin-dictamen` | Sin dictamen |
+| uno, en «Poco fiable» | `piso` | No puede ser mejor que «Poco fiable» |
+| uno, en «Nada fiable» | `dictamen` | **Nada fiable** |
+| dos, el peor «Nada fiable» | `dictamen` | **Nada fiable** |
+| los tres, sin saturar | `dictamen` | Poco fiable |
+| **el registro real** | `dictamen` | **Nada fiable** |
+
+### Lo que esta versión NO hace
+
+* **No mide los ejes B y C**, y el dictamen los nombra como pendientes. Que el
+  veredicto esté determinado no los vuelve innecesarios: siguen siendo lo que
+  diría CUÁNTO peor está el país, que es una pregunta distinta de cuál es el
+  peldaño. `pendiente`
+* **No redacta la lectura por eje de cada peldaño.** «Nada fiable» todavía
+  hereda la descripción que habla de casos de corrupción, y ahora es el
+  titular de la página, así que pesa más que cuando era un piso. `pendiente`
+* **No consigue el documento de Medicina Legal.** Sigue pedido y sigue sin
+  mover el nivel, y eso va dicho en pantalla. `pendiente`
+
+### Y la regresión que esto despertó, que es la más instructiva de la tanda
+
+Al hacer que `vgSin` saliera de una función en vez de comparar contra un
+estado `'ok'`, **la placa volvió a titular con el peldaño de la PALABRA** —el
+defecto exacto que la v1056 vino a quitar—. La causa es de las que conviene
+tener nombradas:
+
+Tres sitios preguntaban «¿hay dictamen?» con `estado !== 'ok'`, y
+`veredictoGeneral` **nunca devuelve `'ok'`**: sus estados son `sin-dictamen`,
+`piso`, `dictamen`, `sin-ejes` y `nivel-fuera-de-escala`. Así que las tres
+condiciones eran **siempre verdaderas**, y el `else` de la placa era código
+muerto desde la v1056. Nadie lo notó mientras no hubo dictamen. El día que
+apareció uno de verdad, los tres quedaron mal a la vez:
+
+* la placa pintó el veredicto con el gris de «no hay»;
+* el texto accesible leía «sin dictamen todavía» encima de un dictamen
+  publicado;
+* y el `else` muerto despertó y tituló con la palabra.
+
+**Una rama que solo se alcanza cuando el módulo MEJORA es una regresión
+esperando**, así que el camino viejo se retiró en vez de arreglarse —no perdía
+ninguna capacidad: la rama que queda ya imprimía «con lo confirmado hasta hoy»
+y hasta dónde baja el peldaño—. Y la pregunta quedó en UNA función,
+`hayDictamen`, que es la cura de siempre para tres codificaciones de lo mismo.
+
+Tres guardas fallaron detrás de eso, las tres por un cambio legítimo —medían el
+camino retirado— y las tres se hicieron **más precisas**: lo que protegían era
+que el peldaño de la palabra no se publique como firme ni se lea como un
+veredicto sobre el gobierno entero, y eso sigue siendo exigible en la rama que
+queda, medido donde ahora vive.
+
+Y el `cn` anidado apareció **dos veces más** —«así que 2 los 2 ejes que faltan»
+y «y 2 algunos todavía no publican nivel»—, con lo que van **cinco en esta
+sesión**. Las cinco las vio el papel compuesto, nunca el código.
