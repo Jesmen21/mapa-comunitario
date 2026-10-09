@@ -769,7 +769,7 @@
       "categoria": "legitimidad",
       "titulo": "Un tribunal remite a la Comisión de Acusación un caso en su contra por presunto desacato a una medida cautelar sobre sus denuncias de fraude",
       "categoriaProbatoria": "hecho-probado",
-      "tipoMedicion": "contexto-estructural",
+      "tipoMedicion": "actividad",
       "detalle": "El proceso, abierto por sus denuncias de fraude electoral pese a una medida cautelar que le ordenaba abstenerse, fue remitido a la Comisión de Acusación de la Cámara de Representantes, que es el único órgano competente para investigar a un presidente en Colombia. La Registraduría había desmontado uno por uno sus señalamientos, y la Misión de Observación Electoral respaldó a la Registraduría: no hubo fraude. Uno de los documentos que él usó para denunciar había sido modificado por alguien ajeno a la entidad.",
       "contrapunto": "La remisión a la Comisión de Acusación no es una imputación ni una condena: ese órgano archiva la enorme mayoría de lo que le llega, y esa inefectividad es un reproche al Congreso, no una prueba contra el señalado.",
       "tipoFuente": "verificado",
@@ -794,7 +794,21 @@
           "u": "https://www.lasillavacia.com/detector-de-mentiras/asi-fabrica-petro-narrativas-infundadas-sobre-fraude-electoral/",
           "rol": "contexto"
         }
-      ]
+      ],
+      "id": "desacato-medida-cautelar-fraude",
+      "nivelGobierno": "nacional",
+      "estadoProcesal": "en-disputa-institucional",
+      "tipoEvidencia": "reporte-periodistico",
+      "indicadores": [
+        "I-05"
+      ],
+      "indicadoresPor": {
+        "I-05": {
+          "via": "una decisión judicial resuelve en contra del Ejecutivo en la controversia",
+          "base": "desacato-medida-cautelar-fraude"
+        }
+      },
+      "_retipificada": "v1087: estaba como `contexto-estructural` y es un acto institucional documentado de un tercero, que en este módulo va como `actividad` —igual que la carta del presidente de la JEP a la Corte Penal Internacional en el otro registro—. Con el tipo anterior no podía declarar indicador, y el criterio de I-05 sí entra en ella. El cambio va dicho acá y no en silencio: retipificar una entrada para que quepa una declaración sería acomodar el dato."
     },
     {
       "fecha": "2026-08-23",
@@ -1130,5 +1144,40 @@
         ]
       }
     ]
+  },
+  "_revisionCriterios": {
+    "fecha": "2026-10-09",
+    "version": "v1087",
+    "corrio": "Los cinco criterios escritos —I-04, I-05, I-13, I-07 e I-14— sobre los 7 actos de gobierno de este registro, que es el denominador honesto: a un resultado del país o a un hecho estructural no se le puede exigir una clasificación de actos sin medir un pendiente que nadie puede bajar nunca (v999, v1064).",
+    "resultado": "7 actos revisados · 1 declara indicador · 6 con la lista vacía.",
+    "loQueNOSeCorrio": "I-06, I-09 e I-10 no tienen criterio escrito —salen directos de la Capa 1—, así que no hay vara que correr. Y las otras 25 entradas no son actos: 10 son resultados del país y 15 son contexto estructural.",
+    "yQUEDASINVALIDAR": "Esta corrida NO desbloquea la validación de ningún criterio, y conviene decirlo con el número: `corridaHaciaAtras` cuenta las entradas REVISADAS, y una entrada solo puede revisarse si es un acto, así que el techo de este registro son sus 7 actos y el piso que el módulo exige son 20. Lo que falta no es correr los criterios otra vez: es DOCUMENTAR más actos del gobierno de Petro, con sus fuentes. Eso es archivo, y se puede hacer por búsqueda.",
+    "discriminantes": [
+      {
+        "caso": "la sanción del CNE a la campaña Petro Presidente 2022",
+        "porQueNO": "I-05 pide un choque con un acto del EJECUTIVO, y la sancionada es la campaña de 2022: no es el Ejecutivo y es anterior al gobierno. Que el sancionado sea el presidente no convierte su campaña en un acto de gobierno."
+      },
+      {
+        "caso": "la Procuraduría destituye a los responsables de los carrotanques de la UNGRD",
+        "porQueNO": "Es un acto institucional de un órgano autónomo contra funcionarios del Ejecutivo, pero no hay controversia documentada: el Ejecutivo no se opuso. I-05 cuenta CHOQUES, y una sanción que nadie disputó no es uno."
+      },
+      {
+        "caso": "la Corte Constitucional avala la mayor parte de la reforma pensional",
+        "porQueNO": "La decisión fue a favor en lo principal. Un criterio que contara como choque un fallo que el Ejecutivo ganó mediría que hubo pleito y no quién perdió."
+      },
+      {
+        "caso": "la exfiscal denuncia presiones para retirar el delito de lavado",
+        "porQueNO": "I-05 excluye la tensión reportada sin documento de ninguna de las partes, y el único acto institucional acá es la respuesta de la Fiscalía, que NIEGA: el órgano no declaró su autonomía afectada, declaró lo contrario. Y no es I-13 porque no hay producto técnico de por medio."
+      },
+      {
+        "caso": "Petro, ya expresidente, pregunta por las cuatro muertes del operativo de Riohacha",
+        "porQueNO": "El operativo dispara I-14, pero NO en este registro: es un acto del gobierno siguiente y la entrada documenta un comentario suyo. Cargarle a un gobierno la operación de otro es el error de línea base que este módulo le señala a otras narrativas."
+      },
+      {
+        "caso": "el tribunal remite a la Comisión de Acusación el caso por desacato a la medida cautelar",
+        "porQueSI": "El único que DISPARA. Hay controversia con un órgano autónomo —la Registraduría, sobre sus denuncias de fraude— y una decisión judicial resolvió en contra del Ejecutivo: la medida cautelar que le ordenaba abstenerse. Entra por esa vía de I-05 y por ninguna otra. Hubo que retipificarla a `actividad`, y el cambio queda escrito en la propia entrada."
+      }
+    ],
+    "yLoQueESTOLEHACEALCRITERIO": "Que I-05 dispare en el registro anterior NO lo valida: lo deja en «disparó, hay que mirar si distingue», que es MÁS exigente que el estado anterior. Se anota igual, y por eso se anota: declararlo todo en lista vacía habría sido la salida barata y habría dado por bueno un criterio sin haberlo puesto a prueba."
   }
 }

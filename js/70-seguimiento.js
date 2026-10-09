@@ -3858,6 +3858,13 @@
                              // agrega acá en vez de alcanzarlo por un lado (v871).
                              indicadores: indicadoresDe, comparabilidad: comparabilidad,
                              catalogoIndicadores: INDICADORES, capaUno: capaUnoDe_conjunto,
+                             /* La validación de un criterio y su corrida hacia atrás: lo que
+                                una prueba necesita leer se agrega acá y no se alcanza por un
+                                lado (v871). Hacían falta para medir si clasificar el registro
+                                anterior desbloquea algo, y no estaban. */
+                             validacion: validacionDe, corridaAtras: corridaHaciaAtras,
+                             minimoValidacion: MIN_ACTOS_VALIDACION,
+                             veredictoDe: veredictoGeneral, peorNivel: peorNivelDe,
                              ejes: ejesDe, ejeA: ejeA, ejeB: ejeB, ejeC: ejeC, ejeD: ejeD,
                              pesoEje: PESO_EJE, general: veredictoGeneral,
                              fuentesComp: composicionDeFuentes,

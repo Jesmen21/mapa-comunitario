@@ -25060,3 +25060,98 @@ la escalera no componga nada, y que el piso lleve estado propio.
   salió: un eje de realidad que aterrice en «Poco fiable» hereda una
   descripción que no habla de él. Hay que redactar la lectura por eje, y no se
   hace a ojo. `pendiente`
+
+## v1087 · la corrida sobre el registro de Petro, y el número que la cierra
+
+Pedido: seguir con lo de Petro para desbloquear la validación. La corrida se
+hizo, encontró un disparo real, y **midió que no desbloquea nada todavía** —con
+el número exacto de lo que falta, que es lo que la vuelve útil.
+
+### Lo primero: un plan que las guardas del propio proyecto tumbaron
+
+El plan era anotar `indicadores: []` en las 26 entradas sin revisar, para que
+`revisadas` pasara de 6 a 32 y cruzara el piso de 20. Dos guardas lo rechazaron
+en la primera corrida: «a lo que no es un acto de gobierno no se le asigna
+indicador — 26 lo llevan sin ser actos».
+
+Y tenían razón, que es lo que importa. **Medido en el otro registro: la clave
+`indicadores` la llevan 173 de 252 entradas y las 173 son `actividad`.** A un
+resultado del país o a un hecho estructural no se le puede exigir una
+clasificación de actos: sería un pendiente que nadie puede bajar nunca, que es
+la regla de la v999 y la v1064. Las 26 se revirtieron.
+
+### La corrida, sobre el denominador honesto
+
+Los cinco criterios escritos —I-04, I-05, I-13, I-07, I-14— sobre los actos de
+gobierno del registro. I-06, I-09 e I-10 no se corrieron porque no tienen
+criterio escrito: salen directos de la Capa 1 y no hay vara que correr.
+
+**Resultado: 7 actos revisados, 1 declara indicador, 6 con la lista vacía.** Y
+los discriminantes quedaron escritos en el registro, que es lo que sirve la
+próxima vez:
+
+| Caso | Por qué NO |
+|---|---|
+| la sanción del CNE a la campaña de 2022 | la sancionada es la campaña, que no es el Ejecutivo y es anterior al gobierno |
+| la Procuraduría destituye por los carrotanques | acto institucional sin controversia: el Ejecutivo no se opuso, y I-05 cuenta CHOQUES |
+| la Corte avala la reforma pensional | la decisión fue a favor en lo principal; contarla mediría que hubo pleito y no quién perdió |
+| la exfiscal denuncia presiones | el único acto institucional es la respuesta de la Fiscalía, que NIEGA: el órgano declaró lo contrario |
+| Petro pregunta por las muertes de Riohacha | el operativo dispara I-14, pero es del gobierno SIGUIENTE: cargárselo a este es el error de línea base |
+
+### El que dispara, y por qué se anotó aunque cueste
+
+El tribunal que remitió a la Comisión de Acusación el caso por desacato a la
+medida cautelar sobre sus denuncias de fraude. Hay controversia con un órgano
+autónomo —la Registraduría— y una decisión judicial resolvió contra el
+Ejecutivo: la medida cautelar que le ordenaba abstenerse. Entra por esa vía de
+I-05 y por ninguna otra.
+
+**Y que dispare NO valida I-05: lo deja en «disparó, hay que mirar si
+distingue», que es MÁS exigente que antes.** Por eso se anota. Declararlo todo
+en lista vacía habría sido la salida barata y habría dado por bueno un criterio
+sin haberlo puesto a prueba — exactamente el verde que este proyecto lleva
+treinta tandas persiguiendo.
+
+Hubo que **retipificar** esa entrada de `contexto-estructural` a `actividad`, y
+el cambio va escrito dentro de la propia entrada (`_retipificada`) y no en
+silencio: es un acto institucional documentado de un tercero, que en este
+módulo va como `actividad` —igual que la carta del presidente de la JEP a la
+Corte Penal Internacional en el otro registro—. Retipificar para que quepa una
+declaración sería acomodar el dato, así que queda a la vista.
+
+### El número que cierra la tanda
+
+| | |
+|---|---|
+| entradas revisadas del registro anterior | **7** |
+| piso que el módulo exige | **20** |
+| faltan | **13 actos documentados** |
+
+`corridaHaciaAtras` cuenta las entradas REVISADAS, y una entrada solo puede
+revisarse si es un acto. Así que **el techo de este registro son sus 7 actos**, y
+correr los criterios otra vez no mueve nada. Lo que falta es DOCUMENTAR más
+actos del gobierno de Petro con sus fuentes: decretos, declaratorias,
+sanciones de leyes. Eso es archivo, y por búsqueda se puede hacer.
+
+Y conviene decir qué desbloquea: con 20 revisadas y sin disparos, I-04, I-13,
+I-07 e I-14 pasan a `validado`. Con I-14 validado, el eje D puede publicar
+nivel — y con un eje publicando, **aparece el primer piso del dictamen**, que es
+lo que la v1086 dejó construido.
+
+### Y `validacionDe` no estaba expuesta
+
+Medir si la corrida desbloqueaba algo pedía leer la validación, y la API del
+módulo no la publicaba: hubo que alcanzarla por un lado. Se agregó a
+`window.URBIS_SEG_FICHA` —con `corridaHaciaAtras`, el piso y `veredictoGeneral`—
+porque la regla de la v871 es que lo que una prueba necesita leer se agrega ahí
+y no se rodea.
+
+### Lo que esta versión NO hace
+
+* **No documenta los 13 actos que faltan.** Es el siguiente renglón y es
+  archivo por búsqueda, no código. `pendiente`
+* **No resuelve si I-05 distingue.** Disparó una vez en el registro anterior, y
+  eso pide mirar el criterio, no taparlo. Con más actos documentados se verá si
+  dispara en proporción o si fue el caso raro. `pendiente`
+* **No publica ningún piso todavía**, porque sigue sin haber un eje con nivel.
+  `pendiente`
