@@ -4171,8 +4171,20 @@
 
     function caja(t, estado, det) { f.push({ t: t, estado: estado, det: det }); }
 
-    caja('Todo indicador comparativo va normalizado por 100 días', 'pasa',
-         'Los seis indicadores salen por 100 días de gobierno desde la v958.');
+    /* CALCULADO EN LA v1098. Era un `'pasa'` literal con una frase que
+       nombraba la versión que lo hizo, y eso es exactamente la forma del
+       renglón del eje B que acabó publicando una afirmación falsa: un estado
+       escrito a mano nadie lo vuelve a medir. Acá además era barato de
+       calcular, que es lo que lo hace imperdonable. */
+    var indC = indicadoresDe(dd, corte);
+    var sinTasa = indC.filas.filter(function (f) { return f.por100 == null; });
+    caja('Todo indicador comparativo va normalizado por 100 días',
+         (!sinTasa.length && indC.dias > 0) ? 'pasa' : 'falla',
+         sinTasa.length
+           ? cn(sinTasa.length, 'indicador se publica sin su tasa', 'indicadores se publican sin su tasa') +
+             ': ' + sinTasa.map(function (f) { return f.id; }).join(' ')
+           : cn(indC.filas.length, 'indicador', 'indicadores') + ', todos con su tasa sobre ' +
+             cn(indC.dias, 'día de gobierno', 'días de gobierno'));
 
     var sinFecha = ent.filter(function (e) { return !e.fecha; }).length;
     caja('Toda afirmación sobre un hecho pasado tiene fecha', sinFecha ? 'falla' : 'pasa',
@@ -4216,8 +4228,155 @@
     caja('Ningún registro trae menores identificados', 'sin-correr',
          'Se revisa a mano al escribir cada entrada; el módulo no tiene cómo comprobarlo por su cuenta. ' +
          'Los dos hechos del registro que involucran menores están como agregado y sin nombres.');
-    caja('El eje B se recalculó para los gobiernos anteriores', 'falla',
-         'No existe la media histórica de Petro, Duque y Santos, así que el eje B no publica nivel.');
+    /* CORREGIDO EN LA v1098, y el renglón estaba IMPRESO en el papel con una
+       afirmación falsa: decía «así que el eje B no publica nivel» y el eje B
+       publica «Dudosa» desde la v1092, por otra vía —la identidad y la
+       firmeza del hallazgo de un tercero, sin umbral numérico— que no
+       necesita la media. Es la cifra escrita a mano de la v903 en el sitio
+       más visible del módulo, y envejeció seis versiones.
+
+       Dos cosas que conviene dejar separadas. La media histórica sigue sin
+       existir, y eso es trabajo de archivo que nadie ha hecho. Y la v1097
+       midió por qué conseguirla no bastaría: las cuentas de los indicadores
+       suman ENTRADAS, dos registros agrupan distinto, y comparar sin igualar
+       la unidad es la `comparacion_invalida` que este módulo existe para
+       detectar. Así que el casillero pasa a `sin-correr`: no es que falle, es
+       que no se puede correr, y se dice con qué haría falta. */
+    caja('El eje B se recalculó para los gobiernos anteriores', 'sin-correr',
+         'No existe la media histórica de Petro, Duque y Santos: es trabajo de archivo y no está hecho. ' +
+         'Y hay una razón por la que conseguirla no bastaría (v1097): las cuentas de los indicadores ' +
+         'suman ENTRADAS del registro y no actos, y dos registros agrupan distinto, así que no se pueden ' +
+         'poner una al lado de la otra sin igualar la unidad. El eje B publica su nivel por otra vía, que ' +
+         'no necesita la media.');
+
+    /* ═══ EL MÓDULO, MEDIDO CONTRA SÍ MISMO (v1098) ═════════════════════════
+       Los casilleros de arriba miden el REGISTRO: que cada hecho tenga fecha,
+       fuente y contrargumento. Lo que no había en ninguna superficie es la
+       otra pregunta, la que hace cualquiera que llegue al módulo y la que
+       toda sesión de trabajo volvía a reconstruir leyendo la bitácora: **¿qué
+       de este módulo está hecho y qué falta?**
+
+       Estaba escrito, repartido en las secciones «Lo que esta versión NO
+       hace» de veinte tandas, que es documentación para quien trabaja acá y
+       nada para quien lee. Un dato que existe y que ninguna pantalla alcanza
+       se ve igual que un dato ausente: la clase C de CLAUDE.md, aplicada al
+       estado del módulo entero.
+
+       Y la regla que los hace valer es la de arriba, la que este renglón
+       acaba de pagar: **cada estado se CALCULA**. Ninguno se teclea, porque
+       un casillero con su «pasa» escrito a mano es una afirmación que
+       envejece sola y que nadie vuelve a mirar. */
+    var ejesC = ejesDe(dd, corte);
+    var vg = veredictoGeneral(ejesC);
+    var real = ejesC.filter(function (e) {
+      var p = PESO_EJE[e.eje]; return p && p.mide === 'realidad';
+    });
+    var conNivel = real.filter(function (e) { return e.publicable && e.nivel; });
+    var sinNivel = real.filter(function (e) { return !(e.publicable && e.nivel); });
+
+    caja('El veredicto de la página se publica, o se dice por qué no',
+         (hayDictamen(vg) || vg.estado === 'piso') ? 'pasa' : 'falla',
+         hayDictamen(vg)
+           ? 'publicado: «' + ((vg.nivel && vg.nivel.t) || '') + '», del eje que puso el peor peldaño'
+           : vg.estado === 'piso'
+             ? 'publicado como PISO: no puede ser mejor que «' + ((vg.nivel && vg.nivel.t) || '') + '»'
+             : 'no se publica ninguno todavía, y el estado calculado es «' + vg.estado + '»');
+
+    caja('Cada eje que mide la realidad publica su nivel',
+         conNivel.length === real.length ? 'pasa' : 'falla',
+         conNivel.length + ' de ' + real.length + ' publican nivel' +
+         (sinNivel.length
+           ? ' · sin nivel: ' + sinNivel.map(function (e) { return e.t; }).join(' · ')
+           : ': ' + conNivel.map(function (e) { return e.t + ' «' + e.nivel.t + '»'; }).join(' · ')) +
+         '. El eje de la palabra va aparte: solo puede empeorar el veredicto y no lo fija.');
+
+    var sinLectura = [];
+    ejesC.forEach(function (e) {
+      (e.escaleraEje || []).forEach(function (x) {
+        /* La coma y no el punto medio: el punto medio es el separador de la
+           LISTA, así que usarlo también dentro de cada elemento hacía que
+           «Orientación del gasto · «Dudosa» · Orientación del gasto ·
+           «Nada fiable»» se leyera como cuatro cosas y no como dos. Lo vio el
+           papel compuesto. */
+        if (x.estado === 'sin-declarar') sinLectura.push(e.t + ', «' + x.t + '»');
+      });
+    });
+    caja('Los cinco peldaños de cada eje llevan su lectura, o la razón de que el eje no lo alcance',
+         sinLectura.length ? 'falla' : 'pasa',
+         sinLectura.length
+           ? cn(sinLectura.length, 'peldaño sin declarar', 'peldaños sin declarar') + ': ' +
+             sinLectura.join(' · ') + '. Cada uno dice debajo por qué le falta'
+           : cn(ejesC.length * ESCALERA.length, 'peldaño', 'peldaños') + ' de ' +
+             cn(ejesC.length, 'eje', 'ejes') + ', cada uno con su lectura o con la razón de que ese eje ' +
+             'no lo alcance');
+
+    var val = Object.keys(CRITERIOS).map(function (k) {
+      return { k: k, v: validacionDe(k, dd === D ? DA : null) };
+    }).filter(function (x) { return x.v; });
+    var validados = val.filter(function (x) { return x.v.validado; });
+    var dispararon = val.filter(function (x) { return x.v.disparo; });
+    var porPiso = val.filter(function (x) { return !x.v.validado && !x.v.disparo; });
+    caja('Todo criterio escrito se contrastó contra el registro de un gobierno anterior',
+         validados.length === val.length ? 'pasa' : 'falla',
+         'validados: ' + validados.length + ' de ' +
+         cn(val.length, 'criterio escrito', 'criterios escritos') +
+         (dispararon.length
+           ? ' · ' + cn(dispararon.length, 'disparó hacia atrás', 'dispararon hacia atrás') + ' (' +
+             dispararon.map(function (x) { return x.k; }).join(' ') + '), y a ' +
+             pl(dispararon.length, 'ese', 'esos') + ' el piso no les quita la marca: lo que falta es ' +
+             'mirar los casos que cayeron'
+           : '') +
+         (porPiso.length
+           ? ' · a ' + cn(porPiso.length, 'criterio', 'criterios') + ' (' +
+             porPiso.map(function (x) { return x.k; }).join(' ') + ') ' +
+             pl(porPiso.length, 'le falta', 'les falta') + ' que el registro anterior ' +
+             'llegue a ' + cn(porPiso[0].v.pisoRevisadas, 'entrada revisada', 'entradas revisadas') +
+             ', y va en ' + porPiso[0].v.revisadas
+           : ''));
+
+    var conCuenta = indC.filas.filter(function (f) { return f.criterio && f.n; });
+    var pisoActos = conCuenta.filter(function (f) { return !f.unidadExacta; });
+    caja('Toda cuenta de indicador declara en qué se mide',
+         pisoActos.length ? 'falla' : 'pasa',
+         pisoActos.length
+           ? cn(pisoActos.length, 'cuenta publica un PISO de actos', 'cuentas publican un PISO de actos') +
+             ' porque alguna de sus entradas no declara cuántos agrupa: ' +
+             pisoActos.map(function (f) { return f.id; }).join(' ')
+           : conCuenta.length
+             ? cn(conCuenta.length, 'cuenta con hechos declara su unidad', 'cuentas con hechos declaran su unidad') +
+               ': miden ENTRADAS y no actos, y su cifra de actos es exacta'
+             : 'ninguna cuenta tiene hechos todavía, y la redacción de ese caso está escrita');
+
+    var defl = deflactorAlDia(dd);
+    caja('El insumo que la fuente reemplaza cada mes declara su FECHA, no su descripción',
+         !defl ? 'sin-correr' : (defl.alDia ? 'pasa' : 'falla'),
+         !defl
+           ? 'el registro no declara `deflactorDesde`, así que no hay fecha que comparar contra la serie'
+           : defl.alDia
+             ? 'el deflactor es de ' + defl.desde + ' y sigue siendo la última lectura publicada'
+             : 'el deflactor es de ' + defl.desde + ' y la serie ya trae ' + defl.ultimaF +
+               '. No se sube el número a secas: los porcentajes reales están calculados con el viejo y el ' +
+               'registro no guarda la base para rehacerlos, así que lo que se hace es decirlo');
+
+    var conTramite = real.filter(function (e) { return e.tramite && ((e.tramite.reglas || []).length); });
+    var sinTramite = real.filter(function (e) { return !(e.tramite && ((e.tramite.reglas || []).length)); });
+    caja('Todo eje que necesita un documento declara su trámite: qué, quién lo tiene, cómo se pide y cuándo',
+         conTramite.length === real.length ? 'pasa' : 'falla',
+         conTramite.length + ' de ' + real.length + ' con trámite completo' +
+         (sinTramite.length ? ' · sin trámite: ' + sinTramite.map(function (e) { return e.t; }).join(' · ') : '') +
+         ' · ' + conTramite.map(function (e) {
+           var ui = e.tramite.ultimoIntento;
+           return 'eje ' + e.eje + ': ' + (ui ? 'intentado el ' + (ui.fecha || 'sin fecha') : 'sin intentar');
+         }).join(' · '));
+
+    var mc = marcoDeclarado(dd);
+    caja('Quien opera el módulo declaró sus supuestos de valor',
+         mc.completo ? 'pasa' : 'falla',
+         mc.completo
+           ? cn(mc.supuestos.length, 'supuesto declarado', 'supuestos declarados') + ' por ' +
+             mc.autor + ', ' + mc.fecha
+           : 'sin declarar. No es una falla de archivo: es una decisión de quien firma el módulo, y no ' +
+             'declararla no quita la decisión de valores — la esconde');
 
     var falla = f.filter(function (x) { return x.estado === 'falla'; }).length;
     var sinCorrer = f.filter(function (x) { return x.estado === 'sin-correr'; }).length;

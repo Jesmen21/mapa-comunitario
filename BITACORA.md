@@ -26162,3 +26162,155 @@ corrida anterior tenía 711.
   la unidad sale solo donde hay criterio. `pendiente`
 * **No mueve el dictamen.** Sigue en «Nada fiable», y tenía que seguir: el eje
   D cuenta muertes del bloque `fuerza`, no entradas de I-14. `cerrado en v1097`
+
+
+## v1098 · el control mide el MÓDULO contra sí mismo
+
+«Necesitamos terminar el módulo presidencial», y lo primero fue medir qué
+quiere decir eso. La respuesta honesta no es «no queda nada»: queda, y una
+parte **no depende de nadie acá** —el proxy niega todos los dominios, el
+documento forense se radica afuera, el marco de supuestos lo firma quien opera
+el módulo—. Así que terminar quiere decir otra cosa: **que todo lo computable
+esté computado, y que lo que falta esté publicado en UNA superficie con lo que
+haría falta para cerrarlo.**
+
+Eso ya existía a medias. El `controlDeCalidad` del pliego trae diez casilleros
+con tres estados —pasa, falla, no se puede correr— y sale impreso al lado del
+registro. Lo que medía era el REGISTRO: que cada hecho tenga fecha, fuente,
+nivel y contrargumento. Lo que no medía era **el módulo**.
+
+### El renglón que llevaba seis versiones publicando algo falso
+
+Y antes de agregar nada, un hallazgo que lo cambió todo de orden. El casillero
+
+> ✕ **El eje B se recalculó para los gobiernos anteriores** — «No existe la
+> media histórica de Petro, Duque y Santos, **así que el eje B no publica
+> nivel**.»
+
+El eje B publica «Dudosa» **desde la v1092**, por otra vía: la identidad y la
+firmeza del hallazgo de un tercero, sin umbral numérico, que no necesita la
+media. La segunda mitad de esa frase era falsa y estaba **impresa en el papel**,
+en la superficie que el módulo publica como su control de calidad.
+
+Su estado iba escrito a mano: `caja(..., 'falla', '...')`. Es la cifra que
+envejece sola de la v903, en el sitio donde más caro sale — y la razón por la
+que envejeció es que **nadie vuelve a medir una afirmación que ya está escrita**.
+
+Se partió en lo que de verdad son dos cosas. La media histórica sigue sin
+existir y es trabajo de archivo, así que el casillero pasa a `sin-correr` con
+lo que haría falta. Y se agrega lo que la v1097 midió y que conviene que esté
+ahí: **conseguir la media no bastaría**, porque las cuentas de los indicadores
+suman ENTRADAS y dos registros agrupan distinto, así que compararlas sin
+igualar la unidad es la `comparacion_invalida` que este módulo existe para
+detectar.
+
+### Los ocho casilleros nuevos, todos calculados
+
+| Casillero | Hoy |
+|---|---|
+| El veredicto de la página se publica, o se dice por qué no | ✓ «Nada fiable», del eje que puso el peor peldaño |
+| Cada eje que mide la realidad publica su nivel | ✓ 3 de 3 |
+| Los cinco peldaños de cada eje llevan su lectura | ✕ 2 sin declarar, los dos del eje C |
+| Todo criterio escrito se contrastó contra un gobierno anterior | ✕ 0 de 5 · 2 dispararon · a 3 les falta que el registro anterior llegue a 20 y va en 16 |
+| Toda cuenta de indicador declara en qué se mide | ✓ las 3 con hechos declaran su unidad |
+| El insumo que la fuente reemplaza cada mes declara su FECHA | ✕ el deflactor es de agosto y la serie ya trae septiembre |
+| Todo eje que necesita un documento declara su trámite | ✓ 3 de 3 · eje C intentado el 9 de octubre, B y D sin intentar |
+| Quien opera el módulo declaró sus supuestos de valor | ✕ sin declarar |
+
+Y el primero de todos, el que llevaba su `'pasa'` literal desde siempre —«Todo
+indicador comparativo va normalizado por 100 días», con una frase que nombraba
+la versión que lo hizo— pasa a calcularse: **8 indicadores, todos con su tasa
+sobre 64 días de gobierno**. Era barato de calcular, que es lo que lo hacía
+imperdonable.
+
+**El control queda en 18 casilleros: 10 pasan · 5 fallan · 3 no se pueden
+correr.** Eso es el estado del módulo, publicado, y es lo que esta tanda
+entiende por terminarlo: ya no hace falta leer veinte secciones de bitácora
+para saber qué falta.
+
+### La regla, y es comprobable
+
+> **Un estado literal solo puede ser `'sin-correr'`.**
+
+`sin-correr` es una declaración permanente —este módulo no puede computar este
+casillero— y solo envejece si el módulo adquiere la capacidad, que es un cambio
+de código y se ve en el diff. `'pasa'` y `'falla'` son afirmaciones sobre el
+estado de HOY: esas se calculan o mienten. La guarda lo lee del trozo de
+`controlDeCalidad` y habría cazado el renglón del eje B el día que se escribió.
+
+Con sus dos acompañantes: el **piso de 18 casilleros** —son código, no datos,
+así que un trinquete absoluto es legítimo (v965), y lo que protege es que nadie
+borre el renglón incómodo, que es justo el que esta tanda corrigió— y la
+**guarda de la guarda**, que los casilleros del módulo LEAN el módulo:
+`ejesDe`, `veredictoGeneral`, `validacionDe`, `f.unidadExacta`,
+`deflactorAlDia`, el trámite y `marcoDeclarado`.
+
+### La trampa de la v1090, otra vez y en el mismo archivo
+
+La guarda nueva usaba `cn()` para su plural. `cn` es de `js/70` y en
+`revisar.js` **no existe**, así que esa rama tiraba un `ReferenceError` — y solo
+se alcanza cuando la guarda FALLA, que es exactamente cuando hace falta. La
+corrida verde no la toca nunca.
+
+La cazó el arnés de tres estados: tres inyecciones salieron **`MURIO`** con 230
+palomitas donde la base tenía 719. Sin esa distinción las habría leído como
+mordidas. Es la trampa que este proyecto tiene escrita desde la v1090,
+cometida otra vez por el mismo archivo, y la cura es escribir el plural a mano
+donde `cn` no vive.
+
+### Y tres lecturas que solo se ven componiendo
+
+* «2 peldaños sin declarar: Orientación del gasto **·** «Dudosa» **·**
+  Orientación del gasto **·** «Nada fiable»» — el punto medio es el separador de
+  la LISTA, así que usarlo también dentro de cada elemento hacía leer cuatro
+  cosas donde hay dos. Va con coma dentro y punto medio entre.
+* «0 de 5 criterios escritos, validados» → «validados: 0 de 5 criterios
+  escritos».
+* «a 3 criterios **le** falta» → `pl`, «les falta».
+
+Y dos defectos de plural más los cazó la guarda que ya existía, antes de
+llegar al papel: cinco sitios nuevos que habrían impreso «1 peldaños», «1
+ejes», «1 validados», «1 entradas», «1 cuentas». El trinquete de 307 sitios sin
+rama no se movió.
+
+### Las siete inyecciones
+
+| Inyección | Qué pasó |
+|---|---|
+| el renglón del eje B vuelve a su `'falla'` literal (el estado real de la v1097) | **ROJO**, nombrando el casillero |
+| el primer renglón vuelve a su `'pasa'` escrito a mano | **ROJO** |
+| el casillero del veredicto afirma que pasa | **ROJO** |
+| se borra el casillero incómodo del marco de supuestos | **ROJO** · 17 casilleros, piso 18 |
+| el control deja de leer los ejes | **ROJO** · «ese casillero pasaría sobre nada» |
+| el control deja de leer el marco | **ROJO** |
+| el control deja de leer el deflactor | **ROJO** |
+
+**719 comprobaciones en verde, una sin material, código de salida 0.** La
+corrida anterior tenía 717.
+
+### Lo que esta versión NO hace, y ahora lo dice el propio módulo
+
+Esto ya no es solo una lista de bitácora: los cinco casilleros en rojo son esta
+misma lista, publicada.
+
+* **Los dos peldaños del eje C** siguen `sin-declarar`. Piden la serie de deuda
+  NETA del GNC, y desde este contenedor el proxy niega todos los dominios: la
+  búsqueda sostiene que un hecho ocurrió, no una serie numérica (v1065).
+  `pendiente`
+* **Ningún criterio está validado.** A I-13, I-07 e I-14 les faltan **4**
+  entradas revisadas del registro anterior, que es archivo y se puede hacer por
+  búsqueda con su regla escrita antes. A I-04 e I-05 el piso no les quita la
+  marca: dispararon, y lo que falta es mirar los casos — decisión de quien
+  firma. `pendiente`
+* **El deflactor está viejo y se dice.** No se sube el número a secas porque
+  los porcentajes reales están calculados con el viejo y el registro no guarda
+  la base para rehacerlos (v1082). `pendiente`
+* **El marco de supuestos de valor sigue sin declarar.** No es archivo: lo
+  firma quien opera el módulo. `pendiente`
+* **El eje A no publica nivel**, y eso NO se toca: espera la identidad de
+  objeto de la contradicción que queda, con prueba escrita de antemano y fecha
+  de revisión el 21 de noviembre de 2026. Declararla antes sería resolver a
+  conveniencia lo que ese párrafo existe para impedir. `pendiente`
+* **La media histórica del eje B** no existe, y conseguirla no bastaría sin
+  igualar la unidad de las cuentas. `pendiente`
+* **No mueve el dictamen.** Sigue en «Nada fiable». `cerrado en v1098`

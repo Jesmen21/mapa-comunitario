@@ -1424,6 +1424,32 @@ sección al final de este archivo.
   frase que buscaba está cortada por el `' +` de la concatenación. Un patrón
   que cruza dos literales no mide el contenido: mide cómo quedó partida la
   línea.
+* **Un casillero de control con su estado ESCRITO A MANO es una afirmación que
+  nadie vuelve a medir** (v903, v1098). El control de calidad del módulo
+  presidencial publicaba «✕ El eje B se recalculó para los gobiernos
+  anteriores — *así que el eje B no publica nivel*» y el eje B publicaba su
+  nivel desde seis versiones antes. Estaba IMPRESO en el papel, en la
+  superficie que el módulo publica como su control. La regla que lo evita es
+  una y es comprobable: **un estado literal solo puede ser `sin-correr`.** Eso
+  es una declaración permanente —el módulo no puede computar este casillero— y
+  solo envejece si el módulo adquiere la capacidad, que es un cambio de código
+  y se ve en el diff; `pasa` y `falla` son afirmaciones sobre HOY, y esas se
+  calculan o mienten. Con su piso de casilleros —son código, no datos, así que
+  el trinquete absoluto es legítimo (v965), y protege que nadie borre el
+  renglón incómodo— y su guarda de la guarda: que los casilleros LEAN el
+  módulo y no una constante.
+* **Y «terminar un módulo» es publicar su propio estado, calculado** (v1098).
+  Lo que falta vivía repartido en las secciones «Lo que esta versión NO hace»
+  de veinte tandas: documentación para quien trabaja acá y nada para quien lee
+  — **un dato que ninguna pantalla alcanza se ve igual que un dato ausente**,
+  que es la clase C aplicada al estado del módulo entero. La pregunta «¿qué
+  está hecho y qué falta?» se contesta en UNA superficie, con un casillero por
+  cosa, el estado calculado del propio módulo y, en los que fallan, lo que
+  haría falta para cerrarlos. Y conviene decir qué NO quiere decir terminar:
+  parte de lo que falta no depende de nadie acá —un documento que se radica
+  afuera, una serie que el proxy no deja leer, una decisión de quien firma el
+  módulo— y para esos el estado honesto es publicarlos en rojo con su trámite,
+  no cerrarlos.
 * **Y una comprobación que llega a cero se DICE, no desaparece** (v1064). Un
   renglón que se borra solo deja «ya está hecho» con la misma cara que
   «nadie lo ha mirado» —la regla de arriba, dicha en una pantalla—. Tres de

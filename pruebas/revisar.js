@@ -4208,9 +4208,11 @@ console.log('\n  -- la ficha del gobernante --');
       circulares.length ? circulares.join(' · ') : 'ninguna fuente apunta a la opinión del propio módulo');
 
     /* El control de calidad tiene que poder FALLAR. Una lista de casilleros
-       en la que todos pasan siempre es un adorno: la del pliego trae hoy tres
-       fallas reales y dos que no se pueden correr, y publicarlas es el punto
-       —«no publica sin la marca»—. Si un día el código dejara de contar las
+       en la que todos pasan siempre es un adorno: la del pliego trae hoy
+       varias fallas reales y varios casilleros que no se pueden correr, y
+       publicarlas es el punto —el recuento exacto NO va acá, porque un número
+       en un comentario envejece igual que uno en el código (v903, v1098)—
+       y «no publica sin la marca». Si un día el código dejara de contar las
        fallas, esto se pone rojo. */
     comprobar('el control de calidad cuenta las fallas y las publica, no las esconde',
       /estado === 'falla'/.test(j70c4) && /estado === 'sin-correr'/.test(j70c4) &&
@@ -4221,6 +4223,83 @@ console.log('\n  -- la ficha del gobernante --');
       /marcoDeclarado\(D\)/.test(j70c4) && /editorialDe\(D\)/.test(j70c4) &&
       /controlDeCalidad\(D, f\.corte\)/.test(j70c4),
       'los tres se componen en la ficha');
+
+    /* ═══ NINGÚN ESTADO DEL CONTROL SE ESCRIBE A MANO (v1098) ══════════════
+       El renglón «El eje B se recalculó para los gobiernos anteriores» tenía
+       su estado escrito a mano —`caja(..., 'falla', '...')`— con una frase
+       que decía «así que el eje B no publica nivel». El eje B publica
+       «Dudosa» desde la v1092, así que ese renglón estuvo IMPRESO EN EL PAPEL
+       afirmando algo falso durante seis versiones. Es la cifra que envejece
+       sola de la v903, en la superficie que el módulo publica como su
+       control de calidad: el sitio donde más caro sale.
+
+       La regla que lo evita es una y es comprobable: **un estado literal solo
+       puede ser `'sin-correr'`**. `'sin-correr'` es una declaración
+       permanente —este módulo no puede computar este casillero— y envejece
+       solo si el módulo adquiere la capacidad, que es un cambio de código y
+       se ve. `'pasa'` y `'falla'` son afirmaciones sobre el estado de HOY, y
+       esas se calculan o mienten.
+
+       DE QUÉ NO RESPONDE, dicho al lado (v945, v952): no comprueba que el
+       cálculo sea el correcto —eso lo miden las guardas de cada cosa que el
+       renglón lee— ni que el texto del `sin-correr` sea cierto. Comprueba
+       que ningún casillero afirme «pasa» o «falla» sin haberlo medido. */
+    const trozoCtl = (j70c4.split('function controlDeCalidad(')[1] || '').split('\n  function ')[0];
+    /* El patrón pide la comilla: `caja(` a secas casaba también con
+       `function caja(t, estado, det)`, y el recuento salía 19 donde la
+       página imprime 18. Un token sin su contexto casa por prefijo (v1053). */
+    const llamadas = trozoCtl.match(/caja\(\s*'/g) || [];
+    const literales = [];
+    let re = /caja\(\s*('(?:[^'\\]|\\.)*')\s*,\s*('(?:[^'\\]|\\.)*')/g, m;
+    while ((m = re.exec(trozoCtl))) {
+      if (m[2] !== "'sin-correr'") literales.push(m[1].slice(1, 44) + '… → ' + m[2]);
+    }
+    comprobar('ningún casillero del control afirma «pasa» o «falla» sin calcularlo',
+      !!trozoCtl && llamadas.length > 0 && literales.length === 0,
+      !trozoCtl ? 'no se encontró `controlDeCalidad`'
+        : !llamadas.length ? 'no se encontró ningún `caja(` dentro: el control se quedó sin casilleros'
+        /* El plural va escrito a mano y NO con `cn()`: `cn` es de js/70 y acá no
+           existe, así que esta rama tiraba un `ReferenceError` — y solo se
+           alcanza cuando la guarda FALLA, que es justo cuando hace falta. Lo
+           cazó el arnés de tres estados con su `MURIO`, no la corrida verde: es
+           la trampa que CLAUDE.md tiene escrita desde la v1090, cometida otra
+           vez por el mismo archivo. */
+        : literales.length ? literales.length +
+                             (literales.length === 1 ? ' casillero lleva su estado escrito a mano'
+                                                     : ' casilleros llevan su estado escrito a mano') +
+                             ', y solo `sin-correr` puede serlo: ' + literales.join(' | ')
+        : llamadas.length + ' casilleros · los estados salen de una comparación, salvo los `sin-correr`, ' +
+          'que son la declaración de que el módulo no puede computarlos');
+
+    /* EL PISO DE CASILLEROS. Son código, no datos, así que no pueden
+       desaparecer por una mejora del registro: un trinquete absoluto es
+       legítimo acá (v965). Lo que protege es que nadie borre el renglón
+       incómodo — y el que esta tanda corrigió era justamente el que decía
+       que algo faltaba. */
+    comprobar('el control no pierde casilleros: mide el registro Y el módulo',
+      llamadas.length >= 18,
+      llamadas.length + ' casilleros (piso 18): los que miden el REGISTRO —fecha, fuente, nivel, ' +
+      'contrargumento— y los que miden el MÓDULO —el veredicto, el nivel de cada eje, los peldaños sin ' +
+      'lectura, la validación, la unidad de las cuentas, el deflactor, los trámites y el marco—');
+
+    /* Y QUE LOS CASILLEROS DEL MÓDULO LEAN EL MÓDULO (v878). Si dejaran de
+       llamar a las funciones que calculan el estado, lo de arriba seguiría en
+       verde sobre comparaciones contra constantes. */
+    const lee = [
+      ['los ejes', /ejesDe\(dd, corte\)/.test(trozoCtl)],
+      ['el veredicto', /veredictoGeneral\(ejesC\)/.test(trozoCtl)],
+      ['la validación', /validacionDe\(k, dd === D \? DA : null\)/.test(trozoCtl)],
+      ['la unidad de las cuentas', /f\.unidadExacta/.test(trozoCtl)],
+      ['el deflactor', /deflactorAlDia\(dd\)/.test(trozoCtl)],
+      ['los trámites', /e\.tramite && \(\(e\.tramite\.reglas \|\| \[\]\)\.length\)/.test(trozoCtl)],
+      ['el marco', /marcoDeclarado\(dd\)/.test(trozoCtl)]
+    ];
+    const noLee = lee.filter((x) => !x[1]).map((x) => x[0]);
+    comprobar('y los casilleros del módulo leen el módulo, no una constante',
+      !!trozoCtl && !noLee.length,
+      noLee.length ? 'el control dejó de leer: ' + noLee.join(' · ') +
+                     ' — ese casillero pasaría sobre nada'
+        : 'lee los ejes, el veredicto, la validación, la unidad, el deflactor, los trámites y el marco');
   }
 
   /* La regla que el propio módulo se puso: una contradicción exige LAS DOS
