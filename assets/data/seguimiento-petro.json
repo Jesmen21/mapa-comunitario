@@ -5,8 +5,8 @@
   "posesion": "2022-08-07",
   "entrega": "2026-08-07",
   "cerrado": true,
-  "cobertura": "Este registro NO es exhaustivo: son 32 hechos escogidos de cuatro años, con fuente cada uno, elegidos para cubrir tanto lo que se le reconoce como lo que se le reprocha. La ficha cuenta solo los 25 que ocurrieron DENTRO del mandato, hasta el 7 de agosto de 2026; los 7 posteriores —lo que se dijo de él y lo que él dijo ya como expresidente— quedan en el registro y a la vista, pero no pesan en un veredicto sobre su gobierno. El porcentaje de verificación se calcula sobre esos 25, no sobre todo lo que pasó en el cuatrienio.",
-  "actualizado": "2026-09-07",
+  "cobertura": "Este registro NO es exhaustivo: son 41 hechos escogidos de cuatro años, con fuente cada uno, elegidos para cubrir tanto lo que se le reconoce como lo que se le reprocha. La ficha cuenta solo los 34 que ocurrieron DENTRO del mandato, hasta el 7 de agosto de 2026; los 7 posteriores —lo que se dijo de él y lo que él dijo ya como expresidente— quedan en el registro y a la vista, pero no pesan en un veredicto sobre su gobierno. El porcentaje de verificación se calcula sobre esos 34, no sobre todo lo que pasó en el cuatrienio.",
+  "actualizado": "2026-10-10",
   "categorias": {
     "gobierno": {
       "nombre": "Gobierno y decretos",
@@ -88,7 +88,8 @@
           "u": "https://cnnespanol.cnn.com/2026/08/07/colombia/live-news/abelardo-espriella-posesion-investidura-presidencial-orix",
           "rol": "acto"
         }
-      ]
+      ],
+      "_porQueListaVacia": "Entregar el mando es el cauce ordinario del artículo 190 y no invoca ninguna facultad extraordinaria, así que I-04 no aplica. No hay órgano autónomo en contra (I-05), ni producto técnico (I-13), ni información negada y entregada tras tutela (I-07), ni muerte en una operación del Estado (I-14)."
     },
     {
       "fecha": "2026-04-29",
@@ -205,7 +206,8 @@
           "u": "https://cnnespanol.cnn.com/2025/12/30/colombia/gobierno-sube-salario-minimo-2026-efe",
           "rol": "acto"
         }
-      ]
+      ],
+      "_porQueListaVacia": "El decreto de salario mínimo es la facultad ordinaria del artículo 8 de la Ley 278 de 1996 cuando no hay concertación: es el régimen normal y no una excepción, así que I-04 lo deja fuera. Los otros cuatro no tienen materia."
     },
     {
       "fecha": "2025-06-25",
@@ -245,7 +247,8 @@
           "u": "https://www.elcolombiano.com/negocios/reforma-laboral-petro-sanciona-ley-trabajo-cambios-entrada-en-vigencia-IJ27848022",
           "rol": "acto"
         }
-      ]
+      ],
+      "_porQueListaVacia": "Ley ordinaria sancionada: I-04 excluye con esas palabras el cauce normal. Los otros cuatro criterios no tienen materia en ella."
     },
     {
       "fecha": "2024-07-16",
@@ -285,7 +288,8 @@
           "rol": "acto"
         }
       ],
-      "contrapunto": "El acto es la sanción de la Ley 2381 el 16 de julio de 2024 en la Plaza de Bolívar de Bogotá, documentada por la propia Presidencia. La ley crea el sistema de cuatro pilares y su artículo 94 la hace regir desde el 1 de julio de 2025, así que la sanción y la entrada en vigencia están a casi un año de distancia."
+      "contrapunto": "El acto es la sanción de la Ley 2381 el 16 de julio de 2024 en la Plaza de Bolívar de Bogotá, documentada por la propia Presidencia. La ley crea el sistema de cuatro pilares y su artículo 94 la hace regir desde el 1 de julio de 2025, así que la sanción y la entrada en vigencia están a casi un año de distancia.",
+      "_porQueListaVacia": "Ley ordinaria sancionada: fuera de I-04 por ser el cauce normal. Que la Corte la revisara después no la mete en I-05: ese fallo es otra entrada de este registro y el Ejecutivo lo ganó en lo principal."
     },
     {
       "fecha": "2026-06-01",
@@ -498,7 +502,8 @@
           "u": "https://www.infobae.com/colombia/2026/07/21/gustavo-petro-le-cierra-la-puerta-al-fracking-insiste-en-que-es-un-inmenso-error-y-que-aplicarlo-aumenta-la-pobreza-y-destruye-el-empleo/",
           "rol": "acto"
         }
-      ]
+      ],
+      "_porQueListaVacia": "Lo que consta es el ANUNCIO de un proyecto, y I-04 excluye el «anuncio sin acto administrativo expedido» de forma expresa. Si el proyecto se hubiera convertido en ley sería además el cauce ordinario. Los otros cuatro no tienen materia."
     },
     {
       "fecha": "2024-04-26",
@@ -679,7 +684,8 @@
           "rol": "acto"
         }
       ],
-      "contrapunto": "El acto es la investidura del 7 de agosto de 2022 en la Plaza de Bolívar de Bogotá, con el juramento tomado por el presidente del Congreso, Roy Barreras, y ante nueve jefes de Estado. La única fuente que esta entrada traía era un repaso posterior de hitos del cuatrienio."
+      "contrapunto": "El acto es la investidura del 7 de agosto de 2022 en la Plaza de Bolívar de Bogotá, con el juramento tomado por el presidente del Congreso, Roy Barreras, y ante nueve jefes de Estado. La única fuente que esta entrada traía era un repaso posterior de hitos del cuatrienio.",
+      "_porQueListaVacia": "La posesión es el acto ordinario del artículo 192 y no invoca ninguna facultad de excepción: I-04 no aplica, y los otros cuatro no tienen materia."
     },
     {
       "fecha": "2022-10-01",
@@ -855,6 +861,367 @@
           "rol": "contexto"
         }
       ]
+    },
+    {
+      "fecha": "2022-11-04",
+      "precision": "exacta",
+      "categoria": "paz",
+      "titulo": "Sanciona la Ley 2272, que convierte la paz total en política de Estado",
+      "categoriaProbatoria": "hecho-probado",
+      "tipoMedicion": "actividad",
+      "detalle": "La ley define la política de paz como una política de Estado, desarrolla los mecanismos para la desmovilización de grupos armados y para el sometimiento a la justicia de estructuras de crimen organizado, y modifica el artículo 6 de la Ley 418 de 1997. Obliga además a que el Plan Nacional de Desarrollo fije políticas para cumplir los acuerdos de paz, con un capítulo propio de construcción de paz. Es el marco jurídico de la Paz Total: los ceses y las mesas de los cuatro años se apoyan en ella.",
+      "contrapunto": "Una ley de paz no es paz. Lo que pasó con el marco que esta ley creó lo mide otra entrada de este mismo registro —el cierre del cuatrienio con 29.000 integrantes de grupos armados—, y no esta. Y su permanencia no está resuelta: hay un proyecto radicado para derogarla (Proyecto de Ley 277 de 2025, Cámara), con ponencia para primer debate notificada el 16 de abril de 2026.",
+      "tipoFuente": "verificado",
+      "fuentes": [
+        {
+          "n": "Función Pública · Gestor Normativo, texto de la Ley 2272 de 2022",
+          "u": "https://www1.funcionpublica.gov.co/eva/gestornormativo/norma.php?i=197883",
+          "rol": "acto"
+        },
+        {
+          "n": "DMS Jurídica · Ley 2272 de 2022, texto y vigencia",
+          "u": "https://www.dmsjuridica.com/buscador_20179478954/legislacion/leyes/2022/11/09/ley-2272-de-2022/",
+          "rol": "contexto"
+        }
+      ],
+      "id": "ley-2272-paz-total",
+      "nivelGobierno": "nacional",
+      "indicadores": [],
+      "_porQueListaVacia": "Una ley ordinaria sancionada es el cauce normal y I-04 la excluye con esas palabras. No hay órgano autónomo en contra (I-05), ni producto técnico (I-13), ni información negada y entregada tras tutela (I-07), ni muerte en una operación del Estado (I-14)."
+    },
+    {
+      "fecha": "2022-12-13",
+      "precision": "exacta",
+      "categoria": "economia",
+      "titulo": "Sanciona la Ley 2277, la reforma tributaria «para la igualdad y la justicia social»",
+      "categoriaProbatoria": "hecho-probado",
+      "tipoMedicion": "actividad",
+      "detalle": "Sancionada en la Casa de Nariño el martes 13 de diciembre de 2022, con expedición, publicación y entrada en vigencia el mismo día según el Diario Oficial. El Gobierno declaró que buscaba recaudar 19,73 billones de pesos durante 2023. Fue la primera de las reformas del programa y la que financiaba el resto.",
+      "contrapunto": "Lo que una reforma tributaria se propone recaudar y lo que recauda son dos cifras, y esta entrada registra solo la primera: el recaudo efectivo es un resultado y pide su propia entrada con dato oficial. Varias de sus normas fueron después demandadas y algunas cayeron en la Corte; esta entrada documenta la sanción, no la suerte posterior de cada artículo.",
+      "tipoFuente": "verificado",
+      "fuentes": [
+        {
+          "n": "Texto oficial de la Ley 2277 de 2022",
+          "u": "https://www.unidadvictimas.gov.co/wp-content/uploads/Documentos/ley/Ley_2277_2022.pdf",
+          "rol": "acto"
+        },
+        {
+          "n": "INCP · sancionada la ley de la reforma tributaria, con la fecha y el recaudo esperado",
+          "u": "https://incp.org.co/publicaciones/infoincp-publicaciones/informacion-para-empresas/actualidad/2022/12/sancionada-la-ley-de-la-reforma-tributaria/",
+          "rol": "acto"
+        },
+        {
+          "n": "Alcaldía de Cali · el texto de la reforma que entró en vigor en 2023",
+          "u": "https://www.cali.gov.co/publicaciones/173463/conozca-el-texto-de-la-reforma-tributaria-que-entrara-en-vigor-en-2023/",
+          "rol": "contexto"
+        }
+      ],
+      "id": "ley-2277-tributaria",
+      "nivelGobierno": "nacional",
+      "indicadores": [],
+      "_porQueListaVacia": "Ley ordinaria sancionada: I-04 la excluye por ser el cauce normal. Ninguno de los otros cuatro criterios tiene materia acá."
+    },
+    {
+      "fecha": "2023-05-19",
+      "precision": "exacta",
+      "categoria": "gobierno",
+      "titulo": "Sanciona la Ley 2294, el Plan Nacional de Desarrollo 2022-2026",
+      "categoriaProbatoria": "hecho-probado",
+      "tipoMedicion": "actividad",
+      "detalle": "La Ley 2294 del 19 de mayo de 2023 expide el Plan Nacional de Desarrollo 2022-2026, «Colombia, potencia mundial de la vida». Lleva la paz total como eje transversal y, en cumplimiento de la Ley 2272 de 2022, un capítulo de proyectos, políticas y programas para la construcción de paz. Es el documento que fija las metas de gasto del cuatrienio.",
+      "contrapunto": "Un plan de desarrollo es la declaración de lo que un gobierno se propone, no de lo que hizo: las metas de este plan no son mediciones y este registro no las cuenta como tales. Varios de sus artículos fueron demandados y la Corte tumbó algunos; la sanción es lo que esta entrada documenta.",
+      "tipoFuente": "verificado",
+      "fuentes": [
+        {
+          "n": "Texto de la Ley 2294 de 2023 (Gestor Normativo de Función Pública)",
+          "u": "https://www.apccolombia.gov.co/sites/default/files/2023-06/Ley%202294%20de%202023%20-%20Gestor%20Normativo%20-%20Funci%C3%B3n%20P%C3%BAblica.pdf",
+          "rol": "acto"
+        }
+      ],
+      "id": "ley-2294-pnd",
+      "nivelGobierno": "nacional",
+      "indicadores": [],
+      "_porQueListaVacia": "Ley ordinaria sancionada por el cauce del artículo 341: I-04 la excluye. Los otros cuatro no tienen materia."
+    },
+    {
+      "fecha": "2023-07-02",
+      "precision": "exacta",
+      "categoria": "gobierno",
+      "titulo": "Declara el estado de emergencia económica, social y ecológica en La Guajira, y la Corte lo tumba",
+      "categoriaProbatoria": "hecho-probado",
+      "tipoMedicion": "actividad",
+      "detalle": "El Decreto 1085 del 2 de julio de 2023 declaró el estado de emergencia económica, social y ecológica en La Guajira por treinta días, en el área urbana y en la rural. Es una facultad del artículo 215 de la Constitución, que aparta al Ejecutivo del régimen ordinario de gasto y de contratación y lo somete a control automático de la Corte. En la Sentencia C-383 del 2 de octubre de 2023 (expediente RE-347, ponencia de Diana Fajardo Rivera y José Fernando Reyes Cuartas) la Corte declaró el decreto INEXEQUIBLE, con efectos diferidos por un año respecto de la amenaza de agravamiento de la crisis humanitaria por menor disponibilidad de agua, y exhortó al Gobierno y al Congreso a atender la crisis estructural de La Guajira citando la Sentencia T-302 de 2017.",
+      "contrapunto": "La inexequibilidad no dice que la crisis de La Guajira no existiera: la Corte la dio por cierta —por eso difirió los efectos un año y exhortó a atenderla— y lo que rechazó fue el INSTRUMENTO, por tratarse de una crisis estructural y no de un hecho sobreviniente. Y declarar una emergencia es una facultad que la Constitución concede: usarla no es por sí mismo un reproche.",
+      "tipoFuente": "verificado",
+      "fuentes": [
+        {
+          "n": "Texto del Decreto 1085 de 2023 (Normograma MinTIC)",
+          "u": "https://normograma.mintic.gov.co/docs/pdf/decreto_1085_2023.pdf",
+          "rol": "acto"
+        },
+        {
+          "n": "Texto de la Sentencia C-383 de 2023 (Normograma MinTIC)",
+          "u": "https://normograma.mintic.gov.co/mintic/docs/pdf/c-383_2023.pdf",
+          "rol": "efecto"
+        },
+        {
+          "n": "Corte Constitucional · comunicado de prensa 35 de 2023",
+          "u": "https://ambitojuridico.com/sites/default/files/2023-10/Comunicado-35-2023.pdf",
+          "rol": "efecto"
+        },
+        {
+          "n": "El Colombiano · la Corte tumba el estado de emergencia en La Guajira",
+          "u": "https://www.elcolombiano.com/colombia/corte-constitucional-tumbo-decreto-de-petro-sobre-estado-de-emergencia-en-la-guajira-BG22534995",
+          "rol": "efecto"
+        },
+        {
+          "n": "RTVC Noticias · qué pasa con los decretos expedidos al amparo de la emergencia",
+          "u": "https://www.rtvcnoticias.com/colombia/corte-constitucional-declaro-inexequible-estado-de-emergencia-para-la-guajira-esto-pasara",
+          "rol": "efecto"
+        }
+      ],
+      "id": "emergencia-guajira-2023",
+      "nivelGobierno": "nacional",
+      "estadoProcesal": "en-firme",
+      "tipoEvidencia": "documento-primario",
+      "indicadores": [
+        "I-04"
+      ],
+      "indicadoresPor": {
+        "I-04": {
+          "via": "declaratoria de emergencia (económica, social, ecológica o conmoción interior)",
+          "base": "emergencia-guajira-2023"
+        }
+      }
+    },
+    {
+      "fecha": "2024-01-28",
+      "precision": "exacta",
+      "categoria": "gobierno",
+      "titulo": "Declara la situación de desastre nacional en todo el país por los incendios y el fenómeno de El Niño",
+      "categoriaProbatoria": "hecho-probado",
+      "tipoMedicion": "actividad",
+      "detalle": "El Decreto 0037 de 2024 declaró la situación de desastre nacional en todo el territorio por doce meses, prorrogables hasta por un periodo igual, frente a los incendios de cobertura vegetal y al fenómeno de El Niño. El Consejo Nacional para la Gestión del Riesgo de Desastres dio concepto previo favorable por cumplirse los criterios del artículo 59 de la Ley 1523 de 2012, y la UNGRD quedó a cargo del Plan de Acción Específico. La declaratoria aparta al Ejecutivo del régimen ordinario de contratación y de gasto mientras dura.",
+      "contrapunto": "A diferencia de un estado de excepción, la declaratoria de desastre de la Ley 1523 no va a control automático de la Corte: su control es el de la jurisdicción de lo contencioso administrativo y el político. Que entre en la cuenta de este registro no dice que fuera indebida —el concepto previo favorable del Consejo Nacional está documentado—, dice que el régimen ordinario quedó de lado.",
+      "tipoFuente": "verificado",
+      "fuentes": [
+        {
+          "n": "El Heraldo · el Gobierno oficializa el decreto de desastre nacional en todo el país",
+          "u": "https://www.elheraldo.co/colombia/2024/01/28/gobierno-oficializa-el-decreto-de-desastre-nacional-en-todo-el-pais-1066247/",
+          "rol": "acto"
+        },
+        {
+          "n": "Portafolio · el Gobierno expide el decreto de la declaratoria de desastre nacional",
+          "u": "https://www.portafolio.co/economia/gobierno/gobierno-expide-decreto-con-el-que-se-oficializa-la-declaratoria-de-desastre-nacional-597064",
+          "rol": "acto"
+        },
+        {
+          "n": "El País · declaran situación de desastre nacional por incendios y el fenómeno de El Niño",
+          "u": "https://www.elpais.com.co/colombia/declaran-situacion-de-desastre-nacional-en-colombia-por-incendios-y-fenomeno-del-nino-2818.html",
+          "rol": "acto"
+        },
+        {
+          "n": "Publimetro · la declaratoria va por doce meses",
+          "u": "https://www.publimetro.co/noticias/2024/01/28/gobierno-de-petro-declaro-desastre-nacional-por-fenomeno-de-el-nino-durante-12-meses/",
+          "rol": "acto"
+        },
+        {
+          "n": "El Colombiano · qué implica el decreto de desastre nacional",
+          "u": "https://www.elcolombiano.com/colombia/decreto-desastre-nacional-fenomeno-el-nino-implicaciones-FN39078386",
+          "rol": "contexto"
+        }
+      ],
+      "id": "desastre-nacional-2024-nino",
+      "nivelGobierno": "nacional",
+      "estadoProcesal": "en-firme",
+      "tipoEvidencia": "documento-primario",
+      "indicadores": [
+        "I-04"
+      ],
+      "indicadoresPor": {
+        "I-04": {
+          "via": "declaratoria de desastre nacional (Ley 1523)",
+          "base": "desastre-nacional-2024-nino"
+        }
+      }
+    },
+    {
+      "fecha": "2024-11-01",
+      "precision": "aproximada",
+      "categoria": "gobierno",
+      "titulo": "Declara una segunda situación de desastre nacional, esta vez por la variabilidad climática",
+      "categoriaProbatoria": "hecho-probado",
+      "tipoMedicion": "actividad",
+      "detalle": "El Decreto 1372 de 2024 declaró la situación de desastre nacional en todo el territorio por doce meses, por la ocurrencia de múltiples fenómenos asociados a la variabilidad climática. Es la segunda del mismo año: la de enero fue por El Niño y los incendios. La declaratoria fue prorrogada en noviembre de 2025 con fundamento en el parágrafo del artículo 64 de la Ley 1523, ya bajo el gobierno siguiente.",
+      "contrapunto": "Dos declaratorias de desastre en un año pueden leerse como un uso fácil del instrumento o como un año climático excepcional, y este registro no resuelve cuál: para eso haría falta la serie de declaratorias de los gobiernos anteriores, que no está en mano. La prórroga, además, la firmó otro gobierno.",
+      "tipoFuente": "verificado",
+      "fuentes": [
+        {
+          "n": "Rama Judicial · texto del decreto de prórroga de noviembre de 2025, que recita el Decreto 1372 de 2024",
+          "u": "https://sidn.ramajudicial.gov.co/SIDN/NORMATIVA/TEXTOS_COMPLETOS/5_DECRETOS/DECRETOS%202025/DECRETO%201190%20DE%202025.PDF",
+          "rol": "acto"
+        }
+      ],
+      "id": "desastre-nacional-2024-clima",
+      "nivelGobierno": "nacional",
+      "estadoProcesal": "en-firme",
+      "tipoEvidencia": "documento-primario",
+      "indicadores": [
+        "I-04"
+      ],
+      "indicadoresPor": {
+        "I-04": {
+          "via": "declaratoria de desastre nacional (Ley 1523)",
+          "base": "desastre-nacional-2024-clima"
+        }
+      },
+      "_precisionYNUMERO": "La fecha va `aproximada` —noviembre de 2024— porque las fuentes en mano no dan el día. Y el número del decreto de PRÓRROGA no está firme: el archivo de la Rama Judicial se llama «DECRETO 1190 DE 2025» y su texto dice 1193. Se deja dicho en vez de elegir uno: lo que esta entrada sostiene es el Decreto 1372 de 2024, que las dos versiones recitan igual."
+    },
+    {
+      "fecha": "2025-01-24",
+      "precision": "exacta",
+      "categoria": "seguridad",
+      "titulo": "Declara el estado de conmoción interior en el Catatumbo, el primero en Colombia en diecisiete años",
+      "categoriaProbatoria": "hecho-probado",
+      "tipoMedicion": "actividad",
+      "detalle": "El Decreto 0062 del 24 de enero de 2025, firmado por el presidente y su gabinete al amparo del artículo 213 de la Constitución, declaró la conmoción interior en la región del Catatumbo, en los municipios del área metropolitana de Cúcuta y en Río de Oro y González (Cesar), por los enfrentamientos entre el ELN y las disidencias de las FARC y el desplazamiento de más de 40.000 personas. En la Sentencia C-148 de 2025 (comunicado del 29 de abril de 2025, expediente RE-361) la Corte declaró la exequibilidad y la inexequibilidad PARCIALES: avaló la declaratoria frente a los enfrentamientos entre el ELN y otros grupos, los ataques contra la población civil y contra firmantes del Acuerdo de Paz, y la crisis humanitaria por desplazamientos y confinamientos masivos; y tumbó los apartes que invocaban problemas ESTRUCTURALES anteriores —la presencia histórica del ELN y de grupos armados organizados, la concentración de cultivos ilícitos y las fallas del PNIS—.",
+      "contrapunto": "La conmoción interior es una facultad que la Constitución concede, con control automático de la Corte, y la Corte avaló su núcleo: contarla no es decir que fuera indebida. El reproche que el propio fallo deja es de LÍMITE, no de fondo: un estado de excepción no sirve para una causa estructural, por grave que sea. La Procuraduría había pedido declararlo exequible; la ANDI, inexequible.",
+      "tipoFuente": "verificado",
+      "fuentes": [
+        {
+          "n": "Vanguardia · el decreto de conmoción interior llega a revisión de la Corte, con su fecha y su alcance",
+          "u": "https://www.vanguardia.com/politica/2025/01/28/decreto-de-conmocion-interior-ya-esta-siendo-revisado-por-la-corte-constitucional-que-viene-ahora/",
+          "rol": "acto"
+        },
+        {
+          "n": "El Tiempo · llegó para revisión a la Corte el decreto sobre conmoción interior en el Catatumbo",
+          "u": "https://www.eltiempo.com/justicia/cortes/llego-para-revision-a-la-corte-constitucional-el-decreto-del-gobierno-sobre-conmocion-interior-en-el-catatumbo-3421614",
+          "rol": "acto"
+        },
+        {
+          "n": "Cuatrecasas · la Corte declara la constitucionalidad parcial del Decreto Legislativo 062 de 2025",
+          "u": "https://www.cuatrecasas.com/es/latam/fiscalidad/art/corte-constitucional-constitucionalidad-parcial-decreto-legislativo-062-2025",
+          "rol": "efecto"
+        },
+        {
+          "n": "Ámbito Jurídico · declaran constitucional parcialmente la norma que decretó la conmoción",
+          "u": "https://www.ambitojuridico.com/noticias/derecho-publico/declaran-constitucional-parcialmente-norma-que-decreto-conmocion-interior",
+          "rol": "efecto"
+        },
+        {
+          "n": "El País · qué pasa con los once decretos expedidos al amparo de la conmoción",
+          "u": "https://www.elpais.com.co/colombia/que-pasara-con-los-11-decretos-emitidos-por-el-gobierno-si-la-corte-tumba-la-conmocion-interior-2950",
+          "rol": "contexto"
+        }
+      ],
+      "id": "conmocion-interior-catatumbo-2025",
+      "nivelGobierno": "nacional",
+      "estadoProcesal": "en-firme",
+      "tipoEvidencia": "documento-primario",
+      "indicadores": [
+        "I-04"
+      ],
+      "indicadoresPor": {
+        "I-04": {
+          "via": "declaratoria de emergencia (económica, social, ecológica o conmoción interior)",
+          "base": "conmocion-interior-catatumbo-2025"
+        }
+      }
+    },
+    {
+      "fecha": "2025-02-14",
+      "precision": "aproximada",
+      "categoria": "economia",
+      "titulo": "Crea impuestos por decreto al amparo de la conmoción: IVA a los juegos de azar en línea y 1 % a hidrocarburos y carbón",
+      "categoriaProbatoria": "hecho-probado",
+      "tipoMedicion": "actividad",
+      "detalle": "El Decreto Legislativo 0175 de 2025, expedido al amparo de la conmoción interior del Catatumbo, adoptó medidas tributarias excepcionales: un IVA del 19 % sobre los juegos de suerte y azar operados exclusivamente por internet y un impuesto especial del 1 % sobre hidrocarburos y carbón. En la Sentencia C-431 de 2025 la Corte declaró exequibles los artículos 1 a 10 con una CONDICIÓN —que el Gobierno solo recaudara lo estrictamente necesario para financiar partidas en salud, inclusión social y defensa— y ordenó al Ministerio de Hacienda calcular en un máximo de treinta días hábiles el monto autorizado de adiciones presupuestales. Declaró inexequible el parágrafo 5 del artículo 1 por falta de necesidad jurídica.",
+      "contrapunto": "La Corte dejó en pie lo sustancial del decreto, así que no es un acto desautorizado: es un impuesto creado sin Congreso que el juez constitucional admitió con condiciones. Que un tributo se cree por decreto es justamente lo que el artículo 215 permite en una emergencia, y es también lo que el régimen ordinario reserva al Congreso: las dos cosas son ciertas y el fallo las concilia con la condición de destino.",
+      "tipoFuente": "verificado",
+      "fuentes": [
+        {
+          "n": "Corte Constitucional · relatoría de la Sentencia C-431 de 2025",
+          "u": "https://www.corteconstitucional.gov.co/relatoria/2025/C-431-25.htm",
+          "rol": "efecto"
+        },
+        {
+          "n": "Infobae · los decretos excepcionales del Catatumbo y lo que contienen",
+          "u": "https://www.infobae.com/colombia/2025/04/30/conmocion-interior-en-catatumbo-estos-son-los-decretos-excepcionales-en-riesgo-tras-el-fallo-de-la-corte-constitucional/",
+          "rol": "acto"
+        },
+        {
+          "n": "Cuatrecasas · efectos fiscales de la exequibilidad parcial de la conmoción",
+          "u": "https://www.cuatrecasas.com/es/latam/art/efectos-fiscales-exequibilidad-parcial-conmocion-interior-catatumbo",
+          "rol": "efecto"
+        },
+        {
+          "n": "Yahoo Noticias · la Corte condiciona las medidas tributarias de la conmoción",
+          "u": "https://es-us.noticias.yahoo.com/corte-constitucional-condiciona-medidas-tributarias-234000030.html",
+          "rol": "efecto"
+        }
+      ],
+      "id": "decreto-tributario-conmocion-175-2025",
+      "nivelGobierno": "nacional",
+      "estadoProcesal": "en-firme",
+      "tipoEvidencia": "documento-primario",
+      "indicadores": [
+        "I-04"
+      ],
+      "indicadoresPor": {
+        "I-04": {
+          "via": "decreto expedido al amparo de una declaratoria de emergencia",
+          "base": "decreto-tributario-conmocion-175-2025"
+        }
+      },
+      "_precisionYNUMERO": "La fecha va `aproximada`: las fuentes en mano identifican el decreto por su número —Decreto Legislativo 0175 de 2025— y no dan el día de expedición. El número es lo que la regla de `documento-primario` exige."
+    },
+    {
+      "fecha": "2025-06-18",
+      "precision": "aproximada",
+      "categoria": "gobierno",
+      "titulo": "Expide once decretos legislativos al amparo de la conmoción del Catatumbo, y la Corte le tumba dos",
+      "categoriaProbatoria": "hecho-probado",
+      "tipoMedicion": "actividad",
+      "detalle": "El Ejecutivo expidió once decretos legislativos al amparo de la conmoción interior del Catatumbo. Dos cayeron. El Decreto Legislativo 116 de 2025, que adoptaba medidas extraordinarias en materia ambiental, fue declarado inexequible por la Sentencia C-267 de 2025 (ponencia de Juan Carlos Cortés González, comunicado de prensa 28 de 2025): la Corte concluyó que no acreditaba conexión estrecha y directa con los supuestos que la C-148 había dejado en pie. El Decreto Legislativo 180 de 2025, sobre cultivos ilícitos y núcleos familiares —incluía exenciones de IVA para programas de sustitución—, cayó por CONSECUENCIA: su fundamento estaba en los apartes estructurales que la C-148 ya había declarado inexequibles.",
+      "contrapunto": "Que dos de once decretos se caigan no es que el Ejecutivo perdiera: nueve quedaron en pie, y uno de ellos —el tributario— con condiciones. Y la razón de la caída no es que las medidas fueran malas, es que no cabían en el perímetro que la Corte había dejado abierto. Las fuentes en mano no coinciden en todos los detalles de fechas y números de los demás decretos, así que esta entrada sostiene los dos que las cuatro convergen en nombrar.",
+      "tipoFuente": "verificado",
+      "fuentes": [
+        {
+          "n": "Corte Constitucional · comunicado de las Sentencias C-267 y C-268 de 2025",
+          "u": "https://www.ambitojuridico.com/sites/default/files/2025-07/Com-Sent-C-267yC-268-25.pdf",
+          "rol": "efecto"
+        },
+        {
+          "n": "Fenalco · la Corte declara la inexequibilidad del Decreto Legislativo 116 de 2025, en materia ambiental",
+          "u": "https://www.fenalco.com.co/blog/juridico-2/notijuridico-083-la-corte-constitucional-declaro-la-inexequibilidad-del-decreto-legislativo-116-de-2025-que-contenia-disposiciones-en-materia-ambiental-8200",
+          "rol": "efecto"
+        },
+        {
+          "n": "Blu Radio · la Corte tumbó dos decretos de la conmoción interior en el Catatumbo: cuáles y por qué",
+          "u": "https://www.bluradio.com/judicial/corte-constitucional-tumbo-2-decretos-de-conmocion-interior-en-catatumbo-cuales-y-por-que-rg10",
+          "rol": "acto"
+        },
+        {
+          "n": "El País · la Corte tumbó dos decretos del estado de conmoción firmados por Petro",
+          "u": "https://www.elpais.com.co/politica/corte-tumbo-dos-decretos-del-estado-de-conmocion-en-el-catatumbo-firmados-por-petro-2736",
+          "rol": "acto"
+        }
+      ],
+      "id": "decretos-conmocion-tumbados-116-180",
+      "nivelGobierno": "nacional",
+      "estadoProcesal": "en-firme",
+      "tipoEvidencia": "documento-primario",
+      "indicadores": [
+        "I-04"
+      ],
+      "indicadoresPor": {
+        "I-04": {
+          "via": "decreto expedido al amparo de una declaratoria de emergencia",
+          "base": "decretos-conmocion-tumbados-116-180"
+        }
+      },
+      "_precisionYNUMERO": "La fecha `aproximada` es la de la Sentencia C-267 de 2025 según vLex (18 de junio de 2025); la del Decreto 180 no está firme en las fuentes en mano. El ACTO que esta entrada cuenta es la expedición de los decretos por el Ejecutivo, no el fallo: el fallo es su efecto y va con ese rol.",
+      "_rolCorregido": "v1094: esta entrada salió primero titulada por lo que hizo la CORTE y con las cuatro fuentes en `efecto`, así que la guarda de rol la contó `sin-acto` — con razón: el acto que I-04 cuenta es la EXPEDICIÓN de los decretos por el Ejecutivo, y ninguna fuente estaba declarada como documentándola. El defecto era del título, no del rol: el título hablaba de otro sujeto. Se corrigieron los dos juntos, y queda dicho porque cambiar solo el rol habría sido mover una etiqueta para callar la comprobación (v882)."
     }
   ],
   "casos": {
@@ -1151,7 +1518,7 @@
     "corrio": "Los cinco criterios escritos —I-04, I-05, I-13, I-07 e I-14— sobre los 7 actos de gobierno de este registro, que es el denominador honesto: a un resultado del país o a un hecho estructural no se le puede exigir una clasificación de actos sin medir un pendiente que nadie puede bajar nunca (v999, v1064).",
     "resultado": "7 actos revisados · 1 declara indicador · 6 con la lista vacía.",
     "loQueNOSeCorrio": "I-06, I-09 e I-10 no tienen criterio escrito —salen directos de la Capa 1—, así que no hay vara que correr. Y las otras 25 entradas no son actos: 10 son resultados del país y 15 son contexto estructural.",
-    "yQUEDASINVALIDAR": "Esta corrida NO desbloquea la validación de ningún criterio, y conviene decirlo con el número: `corridaHaciaAtras` cuenta las entradas REVISADAS, y una entrada solo puede revisarse si es un acto, así que el techo de este registro son sus 7 actos y el piso que el módulo exige son 20. Lo que falta no es correr los criterios otra vez: es DOCUMENTAR más actos del gobierno de Petro, con sus fuentes. Eso es archivo, y se puede hacer por búsqueda.",
+    "yQUEDASINVALIDAR": "Esta corrida NO desbloquea la validación de ningún criterio, y conviene decirlo con el número: `corridaHaciaAtras` cuenta las entradas REVISADAS, y una entrada solo puede revisarse si es un acto, así que el techo de este registro son sus 7 actos y el piso que el módulo exige son 20. Lo que falta no es correr los criterios otra vez: es DOCUMENTAR más actos del gobierno de Petro, con sus fuentes. Eso es archivo, y se puede hacer por búsqueda. — SUPERADA EN LA v1094: ese «techo de 7 actos» era el de octubre de 2026 y ya no vale. La v1094 documentó 9 actos más por una regla escrita antes de buscar, el registro quedó en 16 revisadas, y midió que para I-04 e I-05 el piso de 20 dejó de ser lo que bloquea: los dos DISPARARON acá. Lo que falta está en `_revisionCriterios2`. La cifra de este renglón se queda como estaba porque es el registro de lo que esa corrida encontró; lo que no puede quedarse es sin decir que fue superada.",
     "discriminantes": [
       {
         "caso": "la sanción del CNE a la campaña Petro Presidente 2022",
@@ -1179,5 +1546,36 @@
       }
     ],
     "yLoQueESTOLEHACEALCRITERIO": "Que I-05 dispare en el registro anterior NO lo valida: lo deja en «disparó, hay que mirar si distingue», que es MÁS exigente que el estado anterior. Se anota igual, y por eso se anota: declararlo todo en lista vacía habría sido la salida barata y habría dado por bueno un criterio sin haberlo puesto a prueba."
+  },
+  "_revisionCriterios2": {
+    "fecha": "2026-10-10",
+    "version": "v1094",
+    "laREGLA": "Qué actos se documentaron, y la regla se escribió ANTES de buscar y antes de saber si disparaban (v1077). Dos vías objetivas y ninguna más: (a) las LEYES que el Ejecutivo sancionó y presentó como su programa —están en el Diario Oficial y su lista es cerrada—; y (b) los ACTOS por los que el Ejecutivo se apartó del régimen ordinario —declaratorias de excepción, de emergencia o de desastre—, que la Constitución y la Ley 1523 someten a control, así que su existencia es pública y su lista también es cerrada.",
+    "yLOQUEESOIMPLICA": "La vía (b) DISPARA I-04 por definición, y eso va dicho de antemano: documentarla no es elegir material a conveniencia — OMITIRLA sería dejar el registro torcido para que el criterio siguiera sin tener nada que rechazar, que es la salida barata que este proyecto tiene prohibida por escrito. El resultado que se publica es el que salga.",
+    "resultado": "9 actos nuevos documentados: 3 leyes del programa (2272 de 2022 paz total, 2277 de 2022 tributaria, 2294 de 2023 plan de desarrollo) y 6 actos de excepción, emergencia o desastre (Decreto 1085 de 2023 emergencia en La Guajira, Decretos 0037 y 1372 de 2024 desastre nacional, Decreto 0062 de 2025 conmoción interior en el Catatumbo, Decreto 0175 de 2025 tributario al amparo de la conmoción, y los Decretos 116 y 180 de 2025 que la Corte tumbó). Las 3 leyes van con la LISTA VACÍA —I-04 excluye la ley ordinaria con esas palabras— y los 6 actos declaran I-04.",
+    "yQUEDASINVALIDAR": "El registro pasa de 7 a 16 entradas revisadas y el piso que el módulo exige son 20, así que NO se alcanzó. Pero medido, el piso ya no es lo que bloquea a dos de los cinco criterios: I-04 e I-05 DISPARARON en este registro —seis veces el primero, una el segundo— y con un disparo el estado pasa a «disparó: hay que mirar si distingue», que no depende del piso. El piso sigue mordiendo a I-13, I-07 e I-14, que no tienen materia acá: faltan 4 actos revisados para llegar a 20.",
+    "yUNAOBSERVACIONQUECONVIENEMEDIRDESPUES": "Que I-04 dispare seis veces sobre OTRO gobierno es, leído de frente, evidencia de que el criterio NO está tallado a la medida del caso de este registro — que es justamente lo que `construida-para-el-caso` teme. La semántica de validación que el módulo tiene hoy lo lee al contrario: solo «no disparó» valida. Las dos lecturas pueden ser ciertas a la vez y esta tanda no las resuelve; queda anotado para que la siguiente lo mida en vez de redescubrirlo.",
+    "discriminantes": [
+      {
+        "caso": "las tres leyes del programa (2272, 2277, 2294)",
+        "porQueNO": "I-04 excluye el «proyecto de ley ordinaria (es el cauce normal, no una excepción)», y una ley sancionada por el cauce ordinario es exactamente eso. Los otros cuatro criterios no tienen materia: no hay órgano autónomo en contra, ni producto técnico, ni información negada y entregada tras tutela, ni muerte en una operación del Estado."
+      },
+      {
+        "caso": "la revisión automática de la Corte sobre los decretos de excepción",
+        "porQueNO": "NO entra por I-05, y por eso el criterio se estrechó en esta misma tanda. El artículo 214.6 obliga al Ejecutivo a enviar el decreto a la Corte al día siguiente de expedirlo: es el cauce obligado, no una controversia. Contarlo habría dado seis choques que son los MISMOS seis decretos que I-04 ya cuenta —dos codificaciones de un solo hecho— y habría convertido I-05 en sinónimo de «declaró una emergencia»."
+      },
+      {
+        "caso": "el Decreto 0175 de 2025, que la Corte dejó en pie con condiciones",
+        "porQueNO": "Tampoco es un choque, y la razón ya estaba escrita en este registro para la reforma pensional: un fallo que el Ejecutivo gana en lo sustancial mediría que hubo pleito y no quién perdió. Entra por I-04 y por ninguna otra vía."
+      },
+      {
+        "caso": "el Decreto 1372 de 2024 y el número de su prórroga",
+        "porQueSI": "Entra por I-04 como declaratoria de desastre, y se deja dicho lo que no está firme: el archivo de la Rama Judicial se llama «DECRETO 1190 DE 2025» y su texto dice 1193. Lo que la entrada sostiene es el Decreto 1372 de 2024, que las dos versiones recitan igual. Elegir uno de los dos números habría sido publicar una precisión que no se tiene."
+      },
+      {
+        "caso": "la emergencia económica por la fiebre amarilla, abril de 2025",
+        "porQueNO": "NO SE DOCUMENTÓ, y la razón importa: el 15 de abril de 2025 el presidente ANUNCIÓ que la decretaría, y la búsqueda no sostiene que el decreto se expidiera. I-04 excluye el «anuncio sin acto administrativo expedido», así que la entrada habría sumado una revisada sin disparo — es decir, habría acercado el registro al piso de 20 sin aportar un acto. Se deja fuera por eso: meterla sería mover el número y no el material."
+      }
+    ]
   }
 }

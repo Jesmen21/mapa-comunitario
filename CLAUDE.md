@@ -1359,6 +1359,39 @@ sección al final de este archivo.
   publican» y el que publicaba basura desaparecía. Es la exención silenciosa,
   y la causa pide otra acción —un id mal escrito, no un archivo que falte—, así
   que se cuenta aparte y se dice en TODAS las ramas, incluida la del éxito.
+* **«Revisado y ninguno aplica» no se puede escribir sin la razón** (v1094).
+  La lista vacía —`indicadores: []`— es la marca que la v1061 inventó para que
+  «lo corrí y ninguno aplica» no se viera igual que «nadie lo ha mirado». Pero
+  la marca sola es **gratis**: son dos corchetes, y el recuento de revisadas
+  cuenta cualquier entrada que los lleve. Es decir, **la salida barata para
+  acercar un registro al piso de validación es escribir corchetes vacíos sin
+  haber corrido nada**, y desde afuera se lee idéntico a haberlo corrido. Cada
+  lista vacía lleva su `_porQueListaVacia`, la guarda comprueba que ESTÉ —que
+  sea cierta no lo puede comprobar nadie (v1008)— y declara al lado que no
+  cubre el registro actual, con su razón.
+* **Y el MATERIAL nuevo se escoge por una regla escrita ANTES de buscar, que
+  dice de antemano qué va a disparar** (v1077, v1094). Documentar hechos para
+  subir un recuento es la forma más fácil de escoger a conveniencia: se busca
+  hasta encontrar lo que haga pasar la cuenta. La regla del orden vale igual
+  para el material que para el criterio — y lleva una segunda mitad: **si una
+  de sus vías dispara por definición, eso va dicho antes de correrla.**
+  Omitirla para que el criterio siga sin tener nada que rechazar es dejar el
+  registro torcido, que es la salida barata de más arriba.
+* **Un criterio se ESTRECHA sin sospecha solo si el estado que mide no se
+  mueve** (v882, v1075, v1094). Estrechar baja los disparos, así que favorece
+  al criterio: pide la misma justificación que un umbral nuevo. La señal de la
+  v1094: I-05 ya había disparado por otra entrada, así que excluir el control
+  automático del art. 214.6 no cambió su estado ni un peldaño — lo único que
+  cambió es que seis decretos dejaron de contarse dos veces en I-04 y en I-05,
+  que eran dos codificaciones de un hecho (clase B).
+* **Y cuando una tanda separa estados, el CIERRE de cada pantalla tiene que
+  crecer con ellos** (v899, v1075, v1094). La v1075 dejó cuatro razones y el
+  cierre se quedó con dos ramas, así que el `else` juntaba «corrió y disparó»
+  con «no se pudo correr» y publicaba la frase del segundo debajo de la razón
+  del primero. **Cuatro razones y dos cierres es una contradicción esperando**,
+  y solo se ve componiendo el papel. Las causas se separan cuando piden
+  ACCIONES distintas, y el cierre se arma en UNA función, para que un estado
+  nuevo no pueda quedarse sin cierre en una pantalla y tenerlo en otra.
 * **Y una comprobación que llega a cero se DICE, no desaparece** (v1064). Un
   renglón que se borra solo deja «ya está hecho» con la misma cara que
   «nadie lo ha mirado» —la regla de arriba, dicha en una pantalla—. Tres de

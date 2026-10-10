@@ -25138,6 +25138,18 @@ I-07 e I-14 pasan a `validado`. Con I-14 validado, el eje D puede publicar
 nivel — y con un eje publicando, **aparece el primer piso del dictamen**, que es
 lo que la v1086 dejó construido.
 
+> **CORREGIDO EN LA v1094, y la parte equivocada es la predicción.** Las dos
+> primeras cifras eran ciertas el 9 de octubre y dejaron de serlo al día
+> siguiente: la v1094 documentó nueve actos y el registro quedó en **16
+> revisadas**, no 7. Pero lo que estaba MAL no es el recuento, es la frase
+> «con 20 revisadas y sin disparos, I-04 … pasa a `validado`»: daba por hecho
+> el «sin disparos». **I-04 disparó seis veces** sobre el registro anterior —seis
+> decretos de excepción, emergencia o desastre—, y con un solo disparo el
+> estado del criterio deja de depender del piso. Así que para I-04 y para I-05
+> el piso de 20 **nunca fue lo que bloqueaba**, y «faltan 13 actos documentados»
+> era un pendiente que, para esos dos, nadie podía bajar documentando nada.
+> Sigue siendo cierto para I-13, I-07 e I-14, a los que les faltan **4**.
+
 ### Y `validacionDe` no estaba expuesta
 
 Medir si la corrida desbloqueaba algo pedía leer la validación, y la API del
@@ -25793,3 +25805,188 @@ tampoco «nadie lo ha buscado».
   existen son correctas cada una por su lado —una oficial, una proyección
   declarada como tal—; lo que estaba mal era mi lectura de ellas, no ellas.
   `cerrado en v1093 · medido y declinado`
+
+
+## v1094 · nueve actos del gobierno anterior, por una regla escrita antes de buscar
+
+La tanda que la v1087 dejó pedida: **documentar más actos del gobierno de Petro
+para que los criterios se puedan contrastar hacia atrás.** Es archivo, y por
+búsqueda se puede hacer desde este contenedor.
+
+### Lo primero fue escribir la regla, y antes de buscar
+
+Documentar actos para subir un recuento es, dicho sin adornos, la forma más
+fácil de escoger material a conveniencia: se busca hasta encontrar lo que haga
+pasar la cuenta. La regla de la v1077 —**se escribe el criterio y después se
+corre; mirar antes qué hay es cómo se dibujan bordes a conveniencia sin darse
+cuenta**— vale igual para escoger MATERIAL, así que se escribió primero, en el
+cuaderno, y no se tocó después:
+
+> Dos vías objetivas y ninguna más. **(a)** Las LEYES que el Ejecutivo sancionó
+> y presentó como su programa: están en el Diario Oficial y su lista es cerrada.
+> **(b)** Los ACTOS por los que el Ejecutivo se apartó del régimen ordinario
+> —declaratorias de excepción, de emergencia o de desastre—, que la Constitución
+> y la Ley 1523 someten a control, así que su existencia es pública y su lista
+> también es cerrada.
+
+Y con la regla, lo que iba a pasar, dicho de antemano: **la vía (b) dispara I-04
+por definición.** Eso no es una objeción a la regla, es la razón de que tenga
+que estar escrita antes. Omitir la vía (b) habría sido dejar el registro
+torcido para que el criterio siguiera sin tener nada que rechazar —la salida
+barata que este proyecto tiene prohibida por escrito, en «Una guarda que se
+pone roja cuando los datos MEJORAN»—.
+
+### Los nueve
+
+Tres por la vía (a), las tres con la **lista vacía**:
+
+| Acto | Por qué ninguno aplica |
+|---|---|
+| Ley 2272 de 2022 · paz total, 4 nov 2022 | I-04 excluye el «proyecto de ley ordinaria (es el cauce normal, no una excepción)» |
+| Ley 2277 de 2022 · reforma tributaria, 13 dic 2022 | lo mismo; los otros cuatro criterios no tienen materia |
+| Ley 2294 de 2023 · Plan Nacional de Desarrollo, 19 may 2023 | lo mismo, por el cauce del artículo 341 |
+
+Seis por la vía (b), las seis declarando **I-04**:
+
+| Acto | Vía del criterio |
+|---|---|
+| Decreto 1085 de 2023 · emergencia económica, social y ecológica en La Guajira | declaratoria de emergencia |
+| Decreto 0037 de 2024 · desastre nacional por El Niño y los incendios | declaratoria de desastre nacional (Ley 1523) |
+| Decreto 1372 de 2024 · desastre nacional por variabilidad climática | declaratoria de desastre nacional (Ley 1523) |
+| Decreto 0062 de 2025 · conmoción interior en el Catatumbo | declaratoria de conmoción interior |
+| Decreto 0175 de 2025 · IVA a los juegos de azar en línea y 1 % a hidrocarburos y carbón | decreto expedido al amparo de una emergencia |
+| Decretos 116 y 180 de 2025 · los dos que la Corte tumbó | decreto expedido al amparo de una emergencia |
+
+Cada uno con su desenlace judicial escrito donde el lector lo ve: la Guajira
+**inexequible** con efectos diferidos un año (C-383 de 2023); la conmoción
+**exequible e inexequible parcialmente** (C-148 de 2025 — avalada frente a los
+enfrentamientos, los ataques a civiles y a firmantes y la crisis humanitaria;
+tumbada en los apartes que invocaban problemas estructurales anteriores); el
+decreto tributario **exequible condicionado** (C-431 de 2025, con el parágrafo 5
+del artículo 1 inexequible); el 116 **inexequible** (C-267 de 2025) y el 180 por
+consecuencia.
+
+### Lo que el número dice, y por qué el piso no era el bloqueo
+
+| Criterio | revisadas | disparos | estado |
+|---|---|---|---|
+| I-04 | 16 | **6** | «disparó: hay que mirar si distingue» |
+| I-05 | 16 | **1** | «disparó: hay que mirar si distingue» |
+| I-13 | 16 | 0 | corrió y es poco · faltan 4 para el piso de 20 |
+| I-07 | 16 | 0 | corrió y es poco · faltan 4 |
+| I-14 | 16 | 0 | corrió y es poco · faltan 4 |
+
+El registro anterior pasa de **7 a 16** entradas revisadas, y el piso sigue en
+20: **no se alcanzó.** Lo que sí se midió es que para dos de los cinco
+criterios el piso **nunca fue lo que bloqueaba**: con un disparo el estado pasa
+a «disparó» y eso no depende de cuánto crezca el registro. Es la regla de la
+v1088 —**un pendiente que nadie puede bajar y que ninguna regla escrita
+exige**— encontrada esta vez en una predicción propia de siete versiones antes.
+
+### I-05 se estrechó, y conviene decir por qué no es interesado
+
+Al correr los criterios sobre los seis decretos de excepción apareció que
+I-05 los recogía TODOS por la vía «una decisión judicial resuelve en contra del
+Ejecutivo en la controversia»: el control de la Corte. Es falso, y de fondo:
+**el artículo 214.6 obliga** al Ejecutivo a mandar el decreto a la Corte al día
+siguiente de expedirlo. No hay controversia; hay un trámite obligatorio.
+Contarlo habría convertido I-05 en sinónimo de «declaró una emergencia», que
+es lo que I-04 ya cuenta — **dos codificaciones de un solo hecho**, clase B.
+
+Un estrechamiento BAJA los disparos, así que es la clase de cambio que hay que
+justificar (v882, v1075). La señal de que no se eligió a conveniencia: **I-05 ya
+había disparado** por la remisión a la Comisión de Acusación (v1087), así que su
+estado no se mueve ni un peldaño con esto. Lo único que cambia es que seis
+decretos dejan de contarse dos veces. Y la referencia va **dentro del texto de
+la exclusión** y no en el comentario de al lado, porque `soloCodigo` quita los
+comentarios y una guarda no puede comprobarla ahí (v926, v1077).
+
+### Lo que encontró el papel compuesto, otra vez
+
+Dos cosas, y ninguna se veía leyendo el código.
+
+**Cuatro razones y dos cierres.** La carta de validación publicaba, debajo de
+«Corrido contra los registros anteriores, disparó», la frase del estado en que
+*no se pudo correr*: «La marca se quita sola el día que este criterio se pueda
+correr contra un registro revisado de un gobierno anterior». La v1075 había
+arreglado exactamente esta contradicción un nivel más arriba —dejó cuatro
+razones— y el cierre se quedó con **dos ramas**, así que el `else` juntaba
+«corrió y disparó» con «no se pudo correr». Es la distinción de la v899: las
+causas se separan cuando piden **acciones** distintas, y acá son tres —dejar
+crecer el registro, mirar los casos que cayó, conseguir un registro—. El cierre
+se armó en UNA función, `cierreDeValidacion`, para que un estado nuevo no pueda
+quedarse sin cierre en una pantalla y tenerlo en otra (v880, v1090). Y la
+cuenta de disparos sale del cálculo, no de la prosa (v903): «disparó 6 veces» y
+«disparó 1 vez» salen las dos bien.
+
+**Un título que hablaba de otro sujeto.** La entrada de los decretos 116 y 180
+salió titulada por lo que hizo la CORTE y con sus cuatro fuentes en `efecto`, y
+la guarda de rol de la v966 la contó `sin-acto`. Tenía razón: el acto que I-04
+cuenta es la **expedición** de los decretos por el Ejecutivo, y ninguna fuente
+estaba declarada como documentándola. El defecto era del **título**, no del rol.
+Se corrigieron los dos juntos y queda dicho, porque cambiar solo la etiqueta
+para callar la comprobación es el arreglo sin causa de la v882.
+
+### Las guardas, y la que es contra la tentación propia
+
+**«Revisado y ninguno aplica» no se puede escribir sin la razón.** `indicadores:
+[]` es la marca que la v1061 inventó para que eso no se viera igual que «nadie
+lo ha mirado». Pero la marca sola es **gratis**: son dos corchetes, y
+`corridaHaciaAtras` cuenta como revisada cualquier entrada que los lleve. Es
+decir, la salida barata para acercar el registro anterior al piso de validación
+es escribir corchetes vacíos sin haber corrido nada — y desde afuera se lee
+idéntico. Es la exención silenciosa entrando por la puerta del recuento. La
+guarda es contra la tentación que **esta misma tanda tuvo delante**, con el piso
+de 20 a la vista, y no contra una hipotética.
+
+De qué no responde, dicho al lado (v945, v952): comprueba que la razón ESTÉ, no
+que sea cierta —eso una guarda no lo puede hacer (v1008)—. Y corre sobre el
+registro del gobierno ANTERIOR y no sobre el actual, con su razón escrita: es
+en el anterior donde cuelga la validación, y las entradas del actual con la
+lista vacía las corrió la v1061 en bloque, así que su razón por entrada es
+trabajo pendiente. Las seis entradas del registro anterior que estaban sin
+razón —la entrega del mando, el salario mínimo, las dos reformas sancionadas,
+el fracking y la posesión— quedaron con la suya.
+
+Con su **guarda de la guarda** (v878): que `corridaHaciaAtras` siga contando la
+lista vacía como revisada. Si dejara de contarla, lo de arriba pasaría en verde
+sobre entradas que ya no cuentan.
+
+### Las ocho inyecciones
+
+| Inyección | Qué pasó |
+|---|---|
+| una entrada corrida pierde su `_porQueListaVacia` | **ROJO** |
+| I-05 vuelve a contar el control automático | **ROJO** |
+| la exclusión queda y el art. 214.6 se va al comentario | **ROJO** (la mitad del texto) |
+| `corridaHaciaAtras` deja de contar la lista vacía | **ROJO** (y lo cazó también una guarda de la v1075) |
+| la nota de cobertura se queda en «32 hechos · 25 dentro» | **ROJO** |
+| la entrada de los decretos vuelve a tener todas sus fuentes de `efecto` | la guarda de rol la cuenta `sin-acto` y la nombra |
+| `cierreDeValidacion` pierde la rama del disparo | **ROJO** · «falta el cierre del estado: disparó» |
+| el pintor deja de delegar en `cierreDeValidacion` | **ROJO** · con su propia mitad |
+
+**711 comprobaciones en verde, una sin material, código de salida 0.** La
+corrida anterior tenía 706: se compara el CONTEO, que es lo que delató a la
+v1090 cuando un `ReferenceError` mató la corrida antes del resumen.
+
+### Lo que esta versión NO hace
+
+* **No llega al piso de 20**, y por tanto no valida I-13, I-07 ni I-14. Faltan
+  **4** entradas revisadas, y la regla de selección de esta tanda ya se agotó:
+  las dos vías dieron nueve actos y no diez. Una tanda que quiera llegar
+  escribe su propia regla —antes de buscar— y dice qué va a disparar.
+  `pendiente`
+* **No decide si I-04 distingue.** Disparó seis veces y la carta ahora dice que
+  lo que falta es mirar esos seis casos, no dejar crecer el registro. Es una
+  decisión de quien firma el módulo y no de una corrida. `pendiente`
+* **No documentó la emergencia económica por la fiebre amarilla** de abril de
+  2025, y la razón está escrita en el registro: el presidente la ANUNCIÓ el 15
+  de abril y la búsqueda no sostiene que el decreto se expidiera. I-04 excluye
+  el anuncio sin acto, así que la entrada habría sumado una revisada sin
+  disparo — habría acercado el registro al piso **sin aportar un acto**. Se dejó
+  fuera por eso. `cerrado en v1094 · medido y declinado`
+* **No da la razón por entrada de las entradas con lista vacía del registro
+  ACTUAL**, que la v1061 corrió en bloque. Son ciento sesenta y ocho y la
+  guarda nueva, dicho y no disimulado, no las cubre. `pendiente`
+* **No mueve el dictamen.** Sigue en «Nada fiable» y tenía que seguir: este
+  registro es del gobierno anterior y ningún eje lo lee. `cerrado en v1094`

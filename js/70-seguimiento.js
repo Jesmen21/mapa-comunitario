@@ -1925,7 +1925,29 @@
            técnica —el DANE, las agencias reguladoras— no son órganos del
            art. 113. Esos casos tienen su propio indicador, I-13, para que no
            se pierdan por no caber acá. */
-        'entidades del Ejecutivo con independencia solo técnica (van a I-13)'
+        'entidades del Ejecutivo con independencia solo técnica (van a I-13)',
+        /* ESTRECHADO EN LA v1094, al correr el criterio sobre los decretos de
+           excepción del gobierno anterior. El control automático de
+           constitucionalidad del artículo 214.6 NO es una controversia: el
+           Ejecutivo está OBLIGADO a enviar el decreto a la Corte al día
+           siguiente de expedirlo, y la Corte está obligada a decidirlo. Contar
+           cada revisión automática como un choque mediría el cauce normal, y
+           ensancharía I-05 hasta hacerlo sinónimo de «declaró una emergencia»,
+           que es lo que I-04 ya cuenta: dos codificaciones de un solo hecho
+           (clase B).
+
+           Y es un ESTRECHAMIENTO, que baja disparos, así que conviene decir por
+           qué no es interesado (v882, v1075): I-05 YA disparó en ese registro
+           —la remisión a la Comisión de Acusación por el desacato a la medida
+           cautelar, v1087—, así que su estado no se mueve ni un peldaño con
+           esto. Lo único que cambia es que seis decretos de emergencia dejan de
+           contarse dos veces.
+
+           Lo que SÍ sigue entrando: un fallo en una controversia que el
+           Ejecutivo tuvo con un órgano —la medida cautelar de la entrada del
+           desacato— y una decisión que el órgano toma por su cuenta contra un
+           acto del Ejecutivo. La raya es si el pleito existía antes del fallo. */
+        'el control automático de constitucionalidad de un decreto de excepción (art. 214.6: es el cauce obligado, no una controversia)'
       ],
       requiere: function (c) {
         return (c.procesal.id === 'en-disputa-institucional' || c.procesal.id === 'en-revision-judicial' ||
@@ -2313,8 +2335,33 @@
              /* Los dos que la pantalla necesita para escribir su cierre sin
                 tecleárselo: cuántas hacen falta, y si disparó (v1075). */
              pisoRevisadas: MIN_ACTOS_VALIDACION, revisadas: revisadas, disparo: disparos > 0,
+             /* Y LA CUENTA, no solo el sí o el no (v1094): el cierre de la carta tiene
+                que decir CUÁNTAS veces disparó, y una cifra en prosa envejece sola. */
+             disparos: disparos,
              validado: probados > 0, gobiernosAnterioresProbados: probados,
              registrosEnMano: regs.length, corridas: corridas, razon: razon };
+  }
+
+  /* El cierre de la carta de validación, en UNA función: la ficha no lo arma
+     por su cuenta, así que un estado nuevo no puede quedarse sin cierre en
+     una pantalla y tenerlo en otra (v880, v1090). */
+  function cierreDeValidacion(v) {
+    if (!v) return '';
+    if (v.disparo) {
+      return 'La marca NO se quita dejando crecer el registro: este criterio ya corrió hacia atrás ' +
+             'y disparó ' + cn(v.disparos, 'vez', 'veces') + ' en el registro del gobierno ' +
+             'anterior. Lo que falta es mirar ' + pl(v.disparos, 'ese caso', 'esos casos') + ' y ' +
+             'decidir si el criterio distingue el hecho que busca o si está contando el cauce ' +
+             'normal: si distingue, se declara con su razón; si no, se estrecha. Que dispare sobre ' +
+             'otro gobierno es, eso sí, lo contrario de estar tallado al caso de este registro.';
+    }
+    if (v.corridas.length) {
+      return 'La marca se quita sola cuando el registro del gobierno anterior llegue a ' +
+             cn(v.pisoRevisadas, 'entrada revisada', 'entradas revisadas') +
+             ' y este criterio siga sin disparar: ahí sí distingue. No hay que volver a correrlo.';
+    }
+    return 'La marca se quita sola el día que este criterio se pueda correr contra un registro ' +
+           'revisado de un gobierno anterior y no dispare: ahí sí distingue.';
   }
 
   /* ── DÓNDE PUDO CORRER LA GUARDA DE ROL, Y DÓNDE NO (v966) ───────────────
@@ -5526,13 +5573,23 @@
            v1075 la frase fija se contradecía con la de arriba —decía «el día
            que se pueda correr» debajo de una razón que dice que YA se
            corrió—. Y lo vio el papel compuesto, no el código. */
-        lv.appendChild(el('p', null,
-          fi.validacion.corridas.length && !fi.validacion.disparo
-            ? 'La marca se quita sola cuando el registro del gobierno anterior llegue a ' +
-              cn(fi.validacion.pisoRevisadas, 'entrada revisada', 'entradas revisadas') +
-              ' y este criterio siga sin disparar: ahí sí distingue. No hay que volver a correrlo.'
-            : 'La marca se quita sola el día que este criterio se pueda correr contra un registro ' +
-              'revisado de un gobierno anterior y no dispare: ahí sí distingue.'));
+        /* TRES CIERRES Y NO DOS (v1094). El `else` juntaba «no se pudo
+           correr» con «corrió y DISPARÓ», y el día que I-04 e I-05
+           dispararon sobre el registro anterior la ficha publicó, debajo de
+           una razón que dice que ya corrió y disparó, la frase del estado en
+           que no se pudo correr. Es el MISMO defecto que la v1075 arregló
+           un nivel más arriba, y volvió por donde los estados no estaban
+           separados: cuatro razones y dos cierres. Las causas se separan
+           cuando piden ACCIONES distintas (v899), y acá piden tres
+           distintas: dejar crecer el registro, mirar los casos que cayó, o
+           conseguir un registro. Lo vio el papel compuesto, otra vez.
+
+           Y lo que el cierre del disparo NO dice: que el criterio esté mal.
+           Que dispare sobre OTRO gobierno es lo contrario de estar tallado
+           al caso de este registro; lo que queda abierto es si lo que cayó
+           es el hecho que el criterio busca o el cauce normal. Eso se
+           decide mirando, no creciendo. */
+        lv.appendChild(el('p', null, cierreDeValidacion(fi.validacion)));
         tb.appendChild(lv);
       }
       tb.appendChild(li);

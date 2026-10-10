@@ -3209,13 +3209,35 @@ console.log('\n  -- la ficha del gobernante --');
        —«el día que se pueda correr contra el registro clasificado»— debajo de
        una razón que dice que YA se corrió: las dos frases de la misma caja se
        contradecían. Lo vio el papel compuesto, no el código. */
-    const cierreCalc = /fi\.validacion\.corridas\.length && !fi\.validacion\.disparo/.test(j70v);
+    /* APRETADA EN LA v1094, no aflojada. Mirábamos la expresión
+       `corridas.length && !disparo` escrita dentro del pintor, y eso
+       demostraba DOS redacciones. El día que I-04 e I-05 dispararon sobre
+       el registro anterior se vio que dos no alcanzan: el `else` juntaba
+       «corrió y disparó» con «no se pudo correr» y publicaba la frase del
+       segundo debajo de la razón del primero. Ahora se mide DENTRO del
+       trozo de `cierreDeValidacion` (v854, v935: por contenido y dentro
+       del trozo, no por distancia) que estén los TRES estados, y que el
+       pintor delegue en esa función en vez de armar el cierre por su
+       cuenta —que es lo que permitió que un estado nuevo se quedara sin
+       cierre (v880, v1090)—. */
+    const trozoCie = (j70v.split('function cierreDeValidacion(')[1] || '').split('\n  }\n')[0];
+    const tresCie = [
+      ['disparó', /if \(v\.disparo\)/.test(trozoCie) && /disparó ' \+ cn\(v\.disparos/.test(trozoCie)],
+      ['corrió y es poco', /if \(v\.corridas\.length\)/.test(trozoCie) && /pisoRevisadas/.test(trozoCie)],
+      ['no se pudo correr', /se pueda correr contra un registro/.test(trozoCie)]
+    ];
+    const faltaCie = tresCie.filter((x) => !x[1]).map((x) => x[0]);
+    const delega = /el\('p', null, cierreDeValidacion\(fi\.validacion\)\)/.test(j70v);
     const sinTeclear = !/se pueda correr contra el registro clasificado/.test(j70v);
-    comprobar('el cierre de la carta se CALCULA y no se contradice con su propia razón',
-      cierreCalc && sinTeclear,
-      !cierreCalc ? 'el cierre ya no se ramifica: vuelve a ser una frase fija'
+    comprobar('el cierre de la carta se CALCULA, con un estado por cada acción distinta',
+      !!trozoCie && !faltaCie.length && delega && sinTeclear,
+      !trozoCie ? 'no se encontró `cierreDeValidacion`: el cierre volvió a armarse dentro del pintor'
+        : faltaCie.length ? 'falta el cierre del estado: ' + faltaCie.join(' · ') +
+                            ' — ese estado publicaría la frase de otro debajo de su propia razón'
+        : !delega ? 'el pintor ya no delega en `cierreDeValidacion`, así que un estado nuevo puede ' +
+                    'quedarse sin cierre en esta pantalla y tenerlo en otra'
         : !sinTeclear ? 'sigue la frase del modelo viejo («registro clasificado») debajo de una razón que dice que ya se corrió'
-        : 'dos redacciones, y la que aplica sale del estado de la corrida');
+        : 'tres cierres —dejar crecer, mirar lo que cayó, conseguir un registro— y el pintor delega en uno solo');
 
         const loAlcanza = /quien: dd\.presidente \|\| dd\.gobernante/.test(j70v);
     comprobar('la corrida nombra al gobernante anterior, que el registro trae',
@@ -3229,6 +3251,77 @@ console.log('\n  -- la ficha del gobernante --');
       /sp-c2-noval/.test(j70v) && /validado: no · gobiernos anteriores probados: /.test(j70v) &&
       /sp-c2-noval/.test(leer('css/70-seguimiento.css')),
       'sale en la tabla de indicadores y tiene regla que la pinta');
+
+    /* ═══ UNA LISTA DE INDICADORES VACÍA DICE POR QUÉ (v1094) ══════════════
+       `indicadores: []` significa «lo corrí contra los cinco criterios y
+       ninguno aplica», y es la marca que la v1061 inventó justamente para que
+       eso no se viera igual que «nadie lo ha mirado».
+
+       Pero la marca sola es GRATIS: son dos corchetes, y `corridaHaciaAtras`
+       cuenta como revisada cualquier entrada que los lleve. Es decir, la
+       salida barata para acercar el registro anterior al piso de validación
+       es escribir corchetes vacíos sin haber corrido nada — y eso se lee
+       exactamente igual que haberlo corrido. Es la exención silenciosa de
+       CLAUDE.md entrando por la puerta del recuento.
+
+       La guarda es contra la tentación PROPIA y no contra una hipotética:
+       esta misma tanda documentó nueve actos del registro anterior con el
+       piso de 20 a la vista.
+
+       DE QUÉ NO RESPONDE, dicho al lado (v945, v952): no comprueba que la
+       razón sea CIERTA —eso una guarda no lo puede hacer (v1008)—, comprueba
+       que ESTÉ. Y corre sobre el registro del gobierno ANTERIOR y no sobre el
+       actual, con su razón: es en el anterior donde cuelga la validación de
+       los criterios, y las entradas del actual con la lista vacía las corrió
+       la v1061 en bloque, así que su razón POR ENTRADA es trabajo pendiente y
+       va declarado como tal en la bitácora. Ponerla en rojo acá mandaría a
+       revisar ciento sesenta y ocho entradas que están bien revisadas. */
+    const vacias = entAnt.filter((e) => Array.isArray(e.indicadores) && !e.indicadores.length);
+    const sinRazon = vacias.filter((e) => !String(e._porQueListaVacia || '').trim());
+    comprobar('MATERIAL · el registro anterior trae entradas corridas con la lista VACÍA',
+      vacias.length > 0,
+      vacias.length + ' entradas declaran «lo corrí y ninguno aplica»');
+    comprobar('y ninguna de ellas deja sin escribir por qué ninguno aplica',
+      vacias.length > 0 && sinRazon.length === 0,
+      !vacias.length ? 'no hay ninguna con la lista vacía: lo dice la de arriba'
+        : sinRazon.length ? sinRazon.length + ' de ' + vacias.length + ' sin razón escrita: ' +
+            sinRazon.slice(0, 3).map((e) => (e.fecha || '') + ' · ' +
+                                            String(e.titulo || '').slice(0, 44)).join(' | ')
+        : 'las ' + vacias.length + ' llevan su razón en `_porQueListaVacia`');
+    /* LA GUARDA DE LA GUARDA (v878): lo de arriba solo vale mientras el
+       módulo siga contando como revisada una entrada con la lista vacía. Si
+       dejara de contarla, la comprobación pasaría en verde sobre nada. */
+    const cuentaVacia = /e\.indicadores !== undefined\) revisadas\+\+/.test(j70v);
+    comprobar('y vigila justo lo que el módulo cuenta como corrido',
+      cuentaVacia,
+      !cuentaVacia ? '`corridaHaciaAtras` dejó de contar la lista vacía como revisada, así que la ' +
+                     'comprobación de arriba pasaría en verde sobre entradas que ya no cuentan' :
+      '`corridaHaciaAtras` cuenta como revisada toda entrada con `indicadores` declarado, ' +
+      'lista vacía incluida: es eso lo que la de arriba protege');
+
+    /* ═══ I-05 NO CUENTA EL CONTROL AUTOMÁTICO (v1094) ═════════════════════
+       El artículo 214.6 obliga al Ejecutivo a mandar el decreto de excepción
+       a la Corte al día siguiente de expedirlo. Contar cada revisión
+       automática como un choque institucional convertiría I-05 en sinónimo de
+       «declaró una emergencia», que es lo que I-04 ya cuenta: dos
+       codificaciones de un solo hecho (clase B de CLAUDE.md).
+
+       La referencia va DENTRO del texto de la exclusión y no en el comentario
+       de al lado, porque `soloCodigo` quita los comentarios y una guarda no
+       puede comprobarla ahí (v926, v1077). Las dos mitades aparte, que es lo
+       que dice qué falló cuando falla (v973, v1051). */
+    const trozoI05 = (j70v.split("'I-05': {")[1] || '').split("'I-13'")[0];
+    const sinComentar = soloCodigo(trozoI05);
+    const hayExcl = /control autom[aá]tico de constitucionalidad de un decreto de excepci[oó]n/.test(trozoI05);
+    const hayNorma = /214\.6/.test(sinComentar);
+    comprobar('I-05 excluye el control automático de un decreto de excepción, con la norma donde se lee',
+      !!trozoI05 && hayExcl && hayNorma,
+      !trozoI05 ? 'no se encontró el criterio I-05'
+        : !hayExcl ? 'I-05 volvió a contar el control automático del art. 214.6 como un choque: ' +
+                     'cada decreto de emergencia contaría dos veces, en I-04 y en I-05'
+        : !hayNorma ? 'la exclusión está y NO nombra el artículo en el texto —solo en un comentario—, ' +
+                      'así que el lector de la ficha no lo ve'
+        : 'excluido, y el art. 214.6 nombrado en el texto que la pantalla pinta');
   }
 
   /* ═══ UNA FUENTE DE EFECTO NO PRUEBA EL ACTO (v965) ═════════════════════
