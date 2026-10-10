@@ -1,4 +1,4 @@
-const URBIS_CACHE = 'urbis-v1094-nueve-actos-por-una-regla-escrita-antes';
+const URBIS_CACHE = 'urbis-v1095-alerta-medellin-la-iguana';
 const URBIS_ASSETS = [
   './',
   './index.html',

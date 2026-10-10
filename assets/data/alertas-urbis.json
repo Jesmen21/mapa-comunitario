@@ -1,7 +1,22 @@
 {
   "_comentario": "Alertas EDITORIALES del equipo URBIS (desastres verificados). Se publican editando este archivo — no requieren la hoja de cálculo ni credenciales. El mapa las dibuja junto a las que ya están en la base; si coinciden las coordenadas, se muestra una sola. Reglas: solo desastres naturales de fuente oficial, nunca violencia ni homicidios; coordenadas geocodificadas, jamás estimadas a ojo; sin fuente no se publica.",
-  "actualizado": "2026-10-09",
+  "actualizado": "2026-10-10",
   "alertas": [
+    {
+      "tipo": "Desbordamiento de arroyo o canal",
+      "titulo": "Desbordamiento de la quebrada La Iguaná deja decenas de viviendas en evaluación y evacuaciones en el occidente de Medellín — 9 de octubre de 2026",
+      "lat": 6.2518,
+      "lng": -75.5636,
+      "desde": "2026-10-09",
+      "expira": "2026-10-14",
+      "lineas": [
+        "📅 Ocurrió en la tarde y noche del viernes 9 de octubre de 2026 (hora de Colombia), cuando una tormenta con lluvias intensas, granizo y vientos fuertes golpeó Medellín y el Valle de Aburrá (con afectaciones también en Envigado, Itagüí y Caldas) y provocó el desbordamiento de la quebrada La Iguaná en el occidente de la ciudad, cerca del sector de El Pesebre; las quebradas La Presidenta y La Guayabala se mantuvieron en nivel rojo durante la emergencia.",
+        "📊 El DAGRD y el Sistema de Emergencias 123 registraron cerca de 420 llamadas por la tormenta; el alcalde Federico Gutiérrez reportó un balance preliminar en evaluación de más de 200 viviendas en el sector de La Iguaná (un primer parte del DAGRD había hablado de 4 viviendas averiadas y 10 árboles caídos, en Guayabal y Belén), con evacuación preventiva de habitantes por la creciente y un hombre de 62 años rescatado y trasladado estable a un hospital. Las autoridades no reportaron heridos de gravedad ni muertos.",
+        "ℹ️ Alerta informativa del equipo URBIS con base en el DAGRD, la Alcaldía de Medellín y prensa nacional y regional (El Colombiano, Semana, Infobae, Teleantioquia, Noticias Caracol). No es un reporte ciudadano. Coordenadas de referencia: centro de Medellín (Parque Berrío); Nominatim no fue alcanzable desde este contenedor para geocodificar con precisión el sector de El Pesebre ni el curso de la quebrada La Iguaná."
+      ],
+      "fuente": "DAGRD / Alcaldía de Medellín / El Colombiano / Semana / Infobae",
+      "url": "https://www.elcolombiano.com/medellin/tormenta-electrica-granizo-vientos-fuertes-medellin-valle-de-aburra-DF42124227"
+    },
     {
       "tipo": "Desbordamiento de arroyo o canal",
       "titulo": "Mujer de 72 años muere al colapsar su vivienda por desbordamiento de una cañada — 7 de octubre de 2026, Fusagasugá, Cundinamarca",
@@ -16,21 +31,6 @@
       ],
       "fuente": "Gobernación de Cundinamarca / Infobae / El Tiempo / El Espectador / Pulzo",
       "url": "https://www.infobae.com/colombia/2026/10/07/hallan-sin-vida-a-una-mujer-en-fusagasuga-su-casa-colapso-tras-las-fuertes-lluvias/"
-    },
-    {
-      "tipo": "Tormenta",
-      "titulo": "Granizada y vendaval dejan techos colapsados, árboles caídos y el aeropuerto El Dorado suspendido — 5 de octubre de 2026, Bogotá",
-      "lat": 4.7016,
-      "lng": -74.1469,
-      "desde": "2026-10-05",
-      "expira": "2026-10-09",
-      "lineas": [
-        "📅 Ocurrió en la tarde del lunes 5 de octubre de 2026, con el punto más fuerte hacia las 3:42 p. m. (hora de Colombia), cuando una tormenta eléctrica con granizada y vientos fuertes golpeó el occidente y noroccidente de Bogotá.",
-        "📊 El IDIGER reportó la caída de 5 árboles (en Engativá y Suba), encharcamientos y represamiento de alcantarillado en varias vías, y el colapso de techos livianos y cubiertas de policarbonato en terrazas y parqueaderos, sobre todo en Engativá y Fontibón; también hubo afectaciones en Kennedy. La Aeronáutica Civil suspendió los vuelos en el aeropuerto El Dorado a las 3:42 p. m. por la tormenta y la baja visibilidad, y los restableció hacia las 4:30 p. m.",
-        "ℹ️ Alerta informativa del equipo URBIS con base en el IDIGER, la Aeronáutica Civil y prensa nacional (El Tiempo, Infobae, Pulzo, El Heraldo). No es un reporte ciudadano. Coordenadas de referencia: aeropuerto El Dorado, en el límite de Engativá y Fontibón, el punto conocido más central entre las localidades afectadas (Kennedy, Engativá, Suba y Fontibón); Nominatim no fue alcanzable desde este contenedor para geocodificar un punto más fino."
-      ],
-      "fuente": "IDIGER / Aeronáutica Civil / El Tiempo / Infobae / Pulzo",
-      "url": "https://www.infobae.com/colombia/2026/10/05/en-imagenes-fuerte-granizada-cubrio-de-blanco-algunas-vias-del-occidente-de-bogota-y-afecto-la-movilidad/"
     },
     {
       "tipo": "Sismo",
