@@ -1392,6 +1392,38 @@ sección al final de este archivo.
   y solo se ve componiendo el papel. Las causas se separan cuando piden
   ACCIONES distintas, y el cierre se arma en UNA función, para que un estado
   nuevo no pueda quedarse sin cierre en una pantalla y tenerlo en otra.
+* **Una cuenta declara su UNIDAD, y la unidad de un conteo del registro es la
+  ENTRADA y no el acto** (v1093, v1097). La cuenta de un indicador suma
+  entradas; mientras cada entrada fue un acto las dos cosas coincidieron y
+  nadie lo notó. Desde que el registro agrupa paquetes —«el Gobierno firma 11
+  decretos», «un paquete adicional de 15 decretos»— no coinciden, y «I-04 · 5 ·
+  7,8 por 100 días» se leía como cinco actos excepcionales siendo veintinueve
+  decretos en cinco entradas. **El discriminante está en el TÍTULO de la propia
+  entrada**, que es la clase A en su forma más barata. Y la cura no es cambiar
+  la cuenta —subir el número de 5 a 29 sobre un campo escrito a mano es mover
+  el juicio público sobre una persona—: es decir la unidad al lado, publicar el
+  PISO de actos, y que `comparabilidad` lo cuente como razón propia.
+* **Y un piso que se apoya en un campo opcional cuenta lo no declarado como el
+  MÍNIMO, nunca como cero ni como un rojo** (v970, v1089, v1097). Una entrada
+  sin `actosQueAgrupa` vale UNO, así que la suma solo puede quedarse corta y se
+  publica como piso. Exigir el campo a todas dejaría la rama del piso **muerta**
+  —y una rama que solo se alcanza cuando el módulo empeora es la gemela de la
+  que la v1089 retiró—, y además rompería la rutina diaria, que es otra sesión
+  y no conoce el campo. Lo que falta se cuenta y se dice; no se calla ni se
+  pone rojo.
+* **Y una guarda de MATERIAL cuyo cero es una MEJORA va con su `?` y no en
+  rojo, aunque la acabes de escribir** (v970, v1097). La guarda de la unidad
+  pedía en rojo que alguna entrada agrupara más de un acto — y que ninguna
+  agrupe es lo que pasa el día que alguien parte el paquete de 15 decretos en
+  15 entradas. **La señal la dio su propia inyección**: una que vaciaba un
+  registro la dejó en verde porque el otro aún agrupaba, y al hacerla fiel se
+  vio que el rojo estaba mal puesto. Se parte en dos: lo que sobrevive al cero
+  en rojo, lo que lo ponen los datos con su `?`.
+* **Y una frase de código se busca DENTRO de un solo literal** (v935, v1000,
+  v1053, v1097). Una guarda salió roja teniendo el texto delante porque la
+  frase que buscaba está cortada por el `' +` de la concatenación. Un patrón
+  que cruza dos literales no mide el contenido: mide cómo quedó partida la
+  línea.
 * **Y una comprobación que llega a cero se DICE, no desaparece** (v1064). Un
   renglón que se borra solo deja «ya está hecho» con la misma cara que
   «nadie lo ha mirado» —la regla de arriba, dicha en una pantalla—. Tres de

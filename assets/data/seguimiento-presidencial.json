@@ -1713,7 +1713,8 @@
           "rol": "efecto",
           "u": "https://www.elheraldo.co/colombia/2026/09/23/mindefensa-defendio-ante-la-camara-el-bombardeo-en-guaviare-contra-disidencias-de-las-farc/"
         }
-      ]
+      ],
+      "actosQueAgrupa": 1
     },
     {
       "fecha": "2026-08-27",
@@ -1754,7 +1755,8 @@
           "rol": "efecto",
           "u": "https://www.infobae.com/colombia/2026/09/01/por-la-muerte-de-tres-menores-en-bombardeo-en-el-guaviare-el-congresista-oscar-benavides-anuncio-mocion-de-censura-al-ministro-de-defensa-se-esta-lavando-las-manos/"
         }
-      ]
+      ],
+      "actosQueAgrupa": 1
     },
     {
       "fecha": "2026-08-11",
@@ -1815,7 +1817,8 @@
           "u": "https://revistaraya.com/el-primer-bombardeo-del-gobierno-de-la-espriella-podria-ser-un-falso-positivo-en-el-catatumbo-aseguran-lideres-sociales.html",
           "rol": "efecto"
         }
-      ]
+      ],
+      "actosQueAgrupa": 1
     },
     {
       "fecha": "2026-09-30",
@@ -2615,7 +2618,8 @@
           "u": "https://www.eltiempo.com/politica/abelardo-de-la-espriella/presidente-abelardo-de-la-espriella-hace-balance-de-seguridad-tras-operativos-de-los-ultimos-dias-van-mas-de-22-000-delincuentes-capturados-3587411",
           "rol": "acto"
         }
-      ]
+      ],
+      "actosQueAgrupa": 1
     },
     {
       "fecha": "2026-09-19",
@@ -2715,7 +2719,8 @@
           "via": "el órgano declara formalmente que un acto del Ejecutivo afecta su autonomía o competencia",
           "base": "jep-carta-cpi-recorte"
         }
-      }
+      },
+      "actosQueAgrupa": 1
     },
     {
       "fecha": "2026-09-19",
@@ -2963,7 +2968,9 @@
           "u": "https://www.pulzo.com/nacion/fondo-milagro-colombia-reconstruccion-tras-terremoto-del-10-de-agosto-y-control-anticorrupcion-PP5285874A",
           "rol": "efecto"
         }
-      ]
+      ],
+      "actosQueAgrupa": 15,
+      "_queCuentaEseNumero": "El paquete adicional que el Gobierno expidió al cierre de los treinta días: quince decretos legislativos, uno de ellos el de contratación directa por urgencia manifiesta. La entrada es una; los actos son quince."
     },
     {
       "fecha": "2026-09-17",
@@ -4111,7 +4118,8 @@
           "via": "aplazamiento por acto administrativo de un plazo fijado en ley o reglamento",
           "base": "decreto-1384-aplaza-concursos"
         }
-      }
+      },
+      "actosQueAgrupa": 1
     },
     {
       "fecha": "2026-09-11",
@@ -4425,7 +4433,9 @@
           "via": "decreto expedido al amparo de una declaratoria de emergencia",
           "base": "decretos-reconstruccion-terremoto"
         }
-      }
+      },
+      "actosQueAgrupa": 11,
+      "_queCuentaEseNumero": "Los once decretos firmados el 9 de septiembre al cabo del consejo de ministros, dentro del marco del Decreto 1261. La entrada es una; los actos son once."
     },
     {
       "fecha": "2026-09-09",
@@ -4476,7 +4486,8 @@
           "u": "https://www.infobae.com/colombia/2026/09/17/ministerio-de-defensa-debera-entregar-informacion-completa-sobre-los-vuelos-de-abelardo-de-la-espriella-juez-le-dio-plazo-de-48-horas/",
           "rol": "efecto"
         }
-      ]
+      ],
+      "actosQueAgrupa": 1
     },
     {
       "fecha": "2026-09-08",
@@ -5381,7 +5392,8 @@
           "via": "instrucción sobre contenido, oportunidad o forma de difusión de información técnica",
           "base": "directiva-presidencial-01-comunicaciones"
         }
-      }
+      },
+      "actosQueAgrupa": 1
     },
     {
       "fecha": "2026-09-02",
@@ -8326,7 +8338,8 @@
           "base": "decreto-1171-desastre-nacional"
         }
       },
-      "tipoFuente": "verificado"
+      "tipoFuente": "verificado",
+      "actosQueAgrupa": 1
     },
     {
       "fecha": "2026-08-10",
@@ -8916,6 +8929,61 @@
           "rol": "efecto"
         }
       ]
+    },
+    {
+      "fecha": "2026-08-19",
+      "precision": "exacta",
+      "categoria": "gobierno",
+      "titulo": "Decreto 1261: declara el estado de emergencia económica, social y ecológica en 15 departamentos por el terremoto, el acto que le abre los poderes extraordinarios",
+      "categoriaProbatoria": "hecho-probado",
+      "tipoMedicion": "actividad",
+      "detalle": "El Decreto 1261 del 19 de agosto de 2026 declaró el estado de emergencia económica, social y ecológica por treinta días calendario en quince departamentos —Antioquia, Caldas, Cauca, Chocó, Quindío, Cundinamarca, Risaralda, Huila, Valle del Cauca, Tolima, Putumayo, Norte de Santander, Bolívar, Nariño y Sucre—, con fundamento en el artículo 215 de la Constitución y en la Ley 137 de 1994, por el terremoto de magnitud 7,4 del 10 de agosto con epicentro en San José del Palmar (Chocó), a 103,4 km de profundidad. El propio decreto cifra el impacto en al menos 30 billones de pesos, el 1,5 % del PIB, y argumenta que el endeudamiento bruto de la Nación supera el 60 % del PIB y que el Presupuesto de 2026 quedó desfinanciado al no aprobarse la Ley de Financiamiento. Es un decreto MARCO: no reparte ayudas, habilita al Gobierno para expedir decretos legislativos con fuerza de ley durante esos treinta días, cada uno con control automático de la Corte Constitucional. De él salen los paquetes de 11 y de 15 decretos que este registro ya tiene, y el aplazamiento de los concursos de mérito. Fue modificado por el Decreto 1348 del 31 de agosto de 2026.",
+      "contrapunto": "Declarar una emergencia por un terremoto de 7,4 con 314 muertos y 30.664 viviendas destruidas es el uso previsto del artículo 215, no un abuso: la Constitución lo escribió para esto. Lo que esta entrada registra es que el régimen ordinario de gasto y de contratación quedó de lado durante treinta días, con el control de la Corte todavía pendiente de conocerse en este registro.",
+      "tipoFuente": "verificado",
+      "fuentes": [
+        {
+          "n": "Vanguardia · De la Espriella decreta la emergencia económica tras el sismo de 7,4, con el documento",
+          "u": "https://www.vanguardia.com/colombia/2026/08/20/abelardo-de-la-espriella-decreta-emergencia-economica-tras-devastador-sismo-de-74-este-es-el-documento/",
+          "rol": "acto"
+        },
+        {
+          "n": "Actualícese · el Gobierno declara la emergencia económica en 15 departamentos mediante el Decreto 1261",
+          "u": "https://actualicese.com/el-gobierno-declara-la-emergencia-economica-en-15-departamentos-por-el-terremoto-mediante-el-decreto-1261/",
+          "rol": "acto"
+        },
+        {
+          "n": "Noticias RCN · el Gobierno declara emergencia económica y social en 15 departamentos",
+          "u": "https://www.noticiasrcn.com/colombia/gobierno-declara-emergencia-economica-y-social-en-15-departamentos-1052033",
+          "rol": "acto"
+        },
+        {
+          "n": "Bloomberg Línea · ABC de la emergencia económica: una a una las medidas",
+          "u": "https://www.bloomberglinea.com/latinoamerica/colombia/abc-de-la-emergencia-economica-una-a-una-las-medidas-que-tomo-de-la-espriella/",
+          "rol": "efecto"
+        },
+        {
+          "n": "Portafolio · duración de la emergencia y controles sobre los decretos que de ella salgan",
+          "u": "https://www.portafolio.co/economia/gobierno/abc-de-la-emergencia-economica-por-el-terremoto-ayudas-previstas-duracion-y-controles-sobre-los-decretos-500952",
+          "rol": "contexto"
+        }
+      ],
+      "id": "decreto-1261-emergencia-terremoto",
+      "nivelGobierno": "nacional",
+      "estadoProcesal": "en-firme",
+      "tipoEvidencia": "documento-primario",
+      "indicadores": [
+        "I-04"
+      ],
+      "indicadoresPor": {
+        "I-04": {
+          "via": "declaratoria de emergencia (económica, social, ecológica o conmoción interior)",
+          "base": "decreto-1261-emergencia-terremoto"
+        }
+      },
+      "actosQueAgrupa": 1,
+      "_porQueFALTABA": "v1097: este decreto estaba NOMBRADO en el detalle de dos entradas —los paquetes de 11 y de 15 decretos dicen «dentro del marco de la emergencia declarada por el decreto 1261»— y no tenía entrada propia, así que I-04 no lo contaba: el acto que FUNDA toda la emergencia estaba en el registro y ningún contador lo alcanzaba, que es la clase C de CLAUDE.md. Con él, I-04 del gobierno actual pasa de 4 a 5. La entrada se abre aunque suba la cuenta, y eso es parte de la medida: una cuenta que omite el acto marco no se puede defender.",
+      "_yLOQUESIGUESINENTRADA": "El Decreto 1348 del 31 de agosto de 2026, que modificó este, sigue sin entrada propia: las fuentes en mano lo nombran de paso y ninguna documenta su contenido. Queda dicho acá en vez de inventarle una entrada, y en vez de callarlo — porque callarlo lo dejaría igual que si no existiera.",
+      "_divergenciaDEPARTAMENTOS": "Son 15 departamentos y el Decreto 1171 del 11 de agosto declaró el desastre nacional en 12. No se contradicen: son dos actos distintos, con dos instrumentos distintos —Ley 1523 y artículo 215— y dos ámbitos que el Gobierno fijó por separado. Va dicho porque dos cifras del mismo nombre a nueve días de distancia se leen como un error (v1093)."
     }
   ],
   "balances": [

@@ -1810,6 +1810,150 @@ console.log('\n  -- la ficha del gobernante --');
       /indicadoresDe\(D, f\.corte\)/.test(j70c2) && /comparabilidad\(D, DA\)/.test(j70c2),
       'la ficha llama a las dos');
 
+    /* ═══ LA CIFRA DE UN INDICADOR DECLARA SU UNIDAD (v1097) ═══════════════
+       La cuenta suma ENTRADAS del registro, no actos. Mientras cada entrada
+       fue un acto las dos cosas coincidieron; en el registro actual no
+       coinciden: una entrada es «el Gobierno firma 11 decretos de
+       reconstrucción» y otra «un paquete adicional de 15 decretos». Así que
+       «I-04 · 5 · 7,8 por 100 días» se leía como cinco actos excepcionales y
+       son cinco entradas que agrupan veintinueve decretos.
+
+       El discriminante estaba EN EL TÍTULO de la propia entrada —clase A de
+       CLAUDE.md— y la cifra sale mecánicamente bien, que es lo que la hace
+       cara. Y la regla que se rompía es la de la v1093: una cifra lleva su
+       MEDIDA, o el lector le pone la que espera.
+
+       Lo que esta guarda NO exige, y va dicho (v945, v952): no exige que
+       todas las entradas DECLAREN su unidad. Si lo exigiera, `sinUnidad`
+       sería cero por construcción y la rama del PISO quedaría muerta — y una
+       rama que solo se alcanza cuando el módulo empeora es la gemela de la
+       que la v1089 tuvo que retirar. Una entrada sin declarar se cuenta como
+       UNA, que es el mínimo, se dice en pantalla y la suma se publica como
+       piso. Así la rutina diaria —que es otra sesión y no conoce el campo—
+       puede seguir escribiendo entradas sin romper nada. */
+    const j70u = leer('js/70-seguimiento.js');
+    let conUnidad = 0, agrupanDatos = 0, actosDatos = 0, malUnidad = [];
+    REGISTROS.forEach((ruta) => {
+      const quien = ruta.split('-').pop().replace('.json', '');
+      ((JSON.parse(leer(ruta)).entradas) || []).forEach((e) => {
+        if (!((e.indicadores || []).length)) return;
+        const v = e.actosQueAgrupa;
+        if (v === undefined) return;
+        const n = Number(v);
+        if (!Number.isFinite(n) || n < 1 || Math.floor(n) !== n) {
+          malUnidad.push(quien + '/' + (e.id || e.fecha) + ' declara `actosQueAgrupa` = ' + v); return;
+        }
+        conUnidad++; actosDatos += n;
+        if (n > 1) agrupanDatos++;
+      });
+    });
+    /* DOS COMPROBACIONES Y NO UNA, y la razón se midió en esta misma tanda
+       (v970, v1097). La primera versión pedía `agrupanDatos > 0` en ROJO, y
+       una inyección que quitaba la unidad a las dos entradas del registro
+       actual la dejó en verde porque la del anterior seguía agrupando. Al
+       hacerla fiel —quitársela a las tres— se vio que el rojo estaba mal
+       puesto por otro motivo: que NINGUNA entrada agrupe es una mejora
+       legítima del registro —alguien parte el paquete de 15 decretos en 15
+       entradas— y un rojo ahí pondría la salida barata en dejar los paquetes
+       juntos para que la guarda siga teniendo algo que rechazar.
+
+       Lo que sobrevive al cero va en ROJO: que ninguna unidad esté escrita
+       con un valor imposible, y que el recuento se calcule. Lo que lo pone
+       los DATOS va con su `?`. */
+    comprobar('ninguna unidad declarada es un valor imposible',
+      !malUnidad.length,
+      malUnidad.length ? malUnidad.join(' · ')
+        : 'las ' + conUnidad + ' que la declaran traen un entero de uno o más · ' +
+          actosDatos + ' actos en total');
+    if (!agrupanDatos) {
+      anotarSinMaterial('MATERIAL · alguna entrada agrupa más de un acto',
+        'ninguna de las ' + conUnidad + ' que declaran su unidad agrupa más de uno. No es un fallo: ' +
+        'es lo que pasa si alguien parte los paquetes de decretos en una entrada por acto, y entonces ' +
+        'entradas y actos coinciden. Las tres redacciones se comprueban arriba');
+    } else {
+      comprobar('MATERIAL · alguna entrada agrupa más de un acto',
+        conUnidad > 0,
+        conUnidad + ' declaran su unidad · ' + agrupanDatos + ' agrupan más de un acto · ' +
+        actosDatos + ' actos en total');
+    }
+
+    /* El recuento se CALCULA y sobre las que CUENTAN y ninguna más: va dentro
+       de la rama de `g.cuenta`, así que una entrada declarada que el criterio
+       rechaza no suma actos. Sin esto la cifra de actos sería de otra
+       población que la de entradas y las dos se publicarían juntas. */
+    const trozoCnt = (j70u.split('if (g.cuenta) {')[1] || '').split('else fuera[k]')[0];
+    const dentro = [
+      ['la suma de actos', /actosDe\[k\] \+= u\.n;/.test(trozoCnt)],
+      ['cuántas agrupan', /if \(u\.agrupa\) agrupan\[k\]\+\+;/.test(trozoCnt)],
+      ['cuántas no declaran', /if \(!u\.declarada\) sinUnidad\[k\]\+\+;/.test(trozoCnt)]
+    ];
+    const fueraCnt = dentro.filter((x) => !x[1]).map((x) => x[0]);
+    comprobar('las tres cuentas de la unidad se calculan sobre las entradas que CUENTAN y ninguna más',
+      !!trozoCnt && !fueraCnt.length,
+      !trozoCnt ? 'no se encontró la rama de `g.cuenta` en indicadoresDe'
+        : fueraCnt.length ? 'quedó fuera de la rama que cuenta: ' + fueraCnt.join(' · ') +
+                            ' — mediría una población distinta de la de la cifra'
+        : 'las tres dentro de `if (g.cuenta)`, así que una declarada que el criterio rechaza no suma actos');
+
+    /* LAS TRES REDACCIONES, escritas (v970, v1091). La de cero y la de N se
+       ven hoy las dos en la misma página —I-07 y I-14 en cero, I-04 con
+       cinco—; la del PISO no se ejercita con el registro de hoy porque las
+       diecinueve declarantes declaran su unidad, y por eso se comprueba que
+       esté ESCRITA y se mide aparte contra un caso fabricado. */
+    const trozoTxt = (j70u.split('function textoDeUnidad(')[1] || '').split('\n  }\n')[0];
+    const tres = [
+      ['la de cero', /La cuenta está en cero/.test(trozoTxt)],
+      ['la de N', /y no actos: una entrada puede agrupar varios/.test(trozoTxt)],
+      ['la del piso', /es un PISO y no un/.test(trozoTxt) && /!f\.unidadExacta/.test(trozoTxt)]
+    ];
+    const faltanTxt = tres.filter((x) => !x[1]).map((x) => x[0]);
+    comprobar('la unidad tiene sus TRES redacciones: cero, N, y el piso cuando alguna no declara',
+      !!trozoTxt && !faltanTxt.length,
+      !trozoTxt ? 'no se encontró `textoDeUnidad`'
+        : faltanTxt.length ? 'falta la redacción: ' + faltanTxt.join(' · ') +
+                             ' — ese caso saldría sin decir en qué se mide la cifra'
+        : 'las tres escritas, y el texto se arma en una sola función');
+
+    /* LA GUARDA DE LA GUARDA: que la unidad LLEGUE a la pantalla. Sin esto
+       todo lo de arriba sería documentación y la cifra seguiría publicándose
+       sin su medida, que es el patrón de la v878 y la clase C de CLAUDE.md. */
+    const llega = /lc\.appendChild\(el\('p', 'sp-c2-unidad', fi\.unidad\)\)/.test(j70u);
+    const pegada = /' entrada en total' : ' entradas en total'/.test(j70u);
+    const conRegla = /\.sp-c2-unidad\{/.test(leer('css/70-seguimiento.css'));
+    comprobar('y la unidad llega a la pantalla: pegada al número y explicada debajo del criterio',
+      llega && pegada && conRegla,
+      !llega ? 'la ficha ya no pinta `fi.unidad`: la cifra vuelve a publicarse sin su medida'
+        : !pegada ? 'el número crudo volvió a decir «N en total» sin la palabra que dice de qué son'
+        : !conRegla ? 'falta la regla de `.sp-c2-unidad` en el CSS: el párrafo sale sin acotar'
+        : 'el crudo dice «N entradas» y el párrafo explica la unidad y el piso');
+
+    /* Y LA TERCERA RAZÓN DE `comparabilidad`, aparte de las dos de FORMA.
+       Las dos viejas son del registro —uno es bitácora diaria y el otro una
+       selección— y se arreglarían con otro registro. Esta es de la UNIDAD y
+       sobreviviría a eso, así que pide otra acción y se cuenta aparte
+       (v899). */
+    const trozoCmp = (j70u.split('function comparabilidad(')[1] || '').split('\n  }\n')[0];
+    const razTres = [
+      ['registro-no-exhaustivo', /'registro-no-exhaustivo'/.test(trozoCmp)],
+      ['muestra-insuficiente', /'muestra-insuficiente'/.test(trozoCmp)],
+      ['unidad-no-igualada', /'unidad-no-igualada'/.test(trozoCmp) && /f\.agrupan > 0/.test(trozoCmp)]
+    ];
+    const faltanRaz = razTres.filter((x) => !x[1]).map((x) => x[0]);
+    /* La frase se busca DENTRO de un solo literal y no a caballo de dos: la
+       primera versión de esta guarda buscó «las cuentas de los indicadores
+       miden ENTRADAS y no actos» y salió roja teniendo el texto delante,
+       porque en el código la frase está cortada por el `' +` de la
+       concatenación. Es el barrido propio contra el código real (v1000,
+       v1053), y la cura es medir por contenido que de verdad existe (v935). */
+    const loDice = /miden ENTRADAS y no actos/.test(trozoCmp) &&
+                   /igualar la unidad es condición para comparar/.test(trozoCmp);
+    comprobar('la no-comparabilidad separa la razón de la UNIDAD de las dos de la forma del registro',
+      !!trozoCmp && !faltanRaz.length && loDice,
+      !trozoCmp ? 'no se encontró `comparabilidad`'
+        : faltanRaz.length ? 'falta la razón: ' + faltanRaz.join(' · ')
+        : !loDice ? 'la razón está en la lista y el TEXTO no la dice, así que el lector no se entera'
+        : 'tres razones, y la de la unidad dicha en el texto que la pantalla publica');
+
     /* La normalización es obligatoria: ningún indicador se puede publicar sin
        su tasa. Lo que se vigila acá es que la división exista y sea por 100
        —`por100` no puede ser una copia del crudo—, y `tficha` lo mide sobre

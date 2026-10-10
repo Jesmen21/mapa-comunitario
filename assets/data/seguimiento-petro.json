@@ -814,7 +814,8 @@
           "base": "desacato-medida-cautelar-fraude"
         }
       },
-      "_retipificada": "v1087: estaba como `contexto-estructural` y es un acto institucional documentado de un tercero, que en este módulo va como `actividad` —igual que la carta del presidente de la JEP a la Corte Penal Internacional en el otro registro—. Con el tipo anterior no podía declarar indicador, y el criterio de I-05 sí entra en ella. El cambio va dicho acá y no en silencio: retipificar una entrada para que quepa una declaración sería acomodar el dato."
+      "_retipificada": "v1087: estaba como `contexto-estructural` y es un acto institucional documentado de un tercero, que en este módulo va como `actividad` —igual que la carta del presidente de la JEP a la Corte Penal Internacional en el otro registro—. Con el tipo anterior no podía declarar indicador, y el criterio de I-05 sí entra en ella. El cambio va dicho acá y no en silencio: retipificar una entrada para que quepa una declaración sería acomodar el dato.",
+      "actosQueAgrupa": 1
     },
     {
       "fecha": "2026-08-23",
@@ -992,7 +993,8 @@
           "via": "declaratoria de emergencia (económica, social, ecológica o conmoción interior)",
           "base": "emergencia-guajira-2023"
         }
-      }
+      },
+      "actosQueAgrupa": 1
     },
     {
       "fecha": "2024-01-28",
@@ -1043,7 +1045,8 @@
           "via": "declaratoria de desastre nacional (Ley 1523)",
           "base": "desastre-nacional-2024-nino"
         }
-      }
+      },
+      "actosQueAgrupa": 1
     },
     {
       "fecha": "2024-11-01",
@@ -1075,7 +1078,8 @@
           "base": "desastre-nacional-2024-clima"
         }
       },
-      "_precisionYNUMERO": "La fecha va `aproximada` —noviembre de 2024— porque las fuentes en mano no dan el día. Y el número del decreto de PRÓRROGA no está firme: el archivo de la Rama Judicial se llama «DECRETO 1190 DE 2025» y su texto dice 1193. Se deja dicho en vez de elegir uno: lo que esta entrada sostiene es el Decreto 1372 de 2024, que las dos versiones recitan igual."
+      "_precisionYNUMERO": "La fecha va `aproximada` —noviembre de 2024— porque las fuentes en mano no dan el día. Y el número del decreto de PRÓRROGA no está firme: el archivo de la Rama Judicial se llama «DECRETO 1190 DE 2025» y su texto dice 1193. Se deja dicho en vez de elegir uno: lo que esta entrada sostiene es el Decreto 1372 de 2024, que las dos versiones recitan igual.",
+      "actosQueAgrupa": 1
     },
     {
       "fecha": "2025-01-24",
@@ -1126,7 +1130,8 @@
           "via": "declaratoria de emergencia (económica, social, ecológica o conmoción interior)",
           "base": "conmocion-interior-catatumbo-2025"
         }
-      }
+      },
+      "actosQueAgrupa": 1
     },
     {
       "fecha": "2025-02-14",
@@ -1173,7 +1178,8 @@
           "base": "decreto-tributario-conmocion-175-2025"
         }
       },
-      "_precisionYNUMERO": "La fecha va `aproximada`: las fuentes en mano identifican el decreto por su número —Decreto Legislativo 0175 de 2025— y no dan el día de expedición. El número es lo que la regla de `documento-primario` exige."
+      "_precisionYNUMERO": "La fecha va `aproximada`: las fuentes en mano identifican el decreto por su número —Decreto Legislativo 0175 de 2025— y no dan el día de expedición. El número es lo que la regla de `documento-primario` exige.",
+      "actosQueAgrupa": 1
     },
     {
       "fecha": "2025-06-18",
@@ -1221,7 +1227,9 @@
         }
       },
       "_precisionYNUMERO": "La fecha `aproximada` es la de la Sentencia C-267 de 2025 según vLex (18 de junio de 2025); la del Decreto 180 no está firme en las fuentes en mano. El ACTO que esta entrada cuenta es la expedición de los decretos por el Ejecutivo, no el fallo: el fallo es su efecto y va con ese rol.",
-      "_rolCorregido": "v1094: esta entrada salió primero titulada por lo que hizo la CORTE y con las cuatro fuentes en `efecto`, así que la guarda de rol la contó `sin-acto` — con razón: el acto que I-04 cuenta es la EXPEDICIÓN de los decretos por el Ejecutivo, y ninguna fuente estaba declarada como documentándola. El defecto era del título, no del rol: el título hablaba de otro sujeto. Se corrigieron los dos juntos, y queda dicho porque cambiar solo el rol habría sido mover una etiqueta para callar la comprobación (v882)."
+      "_rolCorregido": "v1094: esta entrada salió primero titulada por lo que hizo la CORTE y con las cuatro fuentes en `efecto`, así que la guarda de rol la contó `sin-acto` — con razón: el acto que I-04 cuenta es la EXPEDICIÓN de los decretos por el Ejecutivo, y ninguna fuente estaba declarada como documentándola. El defecto era del título, no del rol: el título hablaba de otro sujeto. Se corrigieron los dos juntos, y queda dicho porque cambiar solo el rol habría sido mover una etiqueta para callar la comprobación (v882).",
+      "actosQueAgrupa": 11,
+      "_queCuentaEseNumero": "Los once decretos legislativos que el Ejecutivo expidió al amparo de la conmoción del Catatumbo. La entrada es una; los actos son once. Que la Corte tumbara dos es su efecto y no cambia cuántos se expidieron."
     }
   ],
   "casos": {

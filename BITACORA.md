@@ -25990,3 +25990,175 @@ v1090 cuando un `ReferenceError` mató la corrida antes del resumen.
   guarda nueva, dicho y no disimulado, no las cubre. `pendiente`
 * **No mueve el dictamen.** Sigue en «Nada fiable» y tenía que seguir: este
   registro es del gobierno anterior y ningún eje lo lee. `cerrado en v1094`
+
+
+## v1097 · la cifra del indicador mide ENTRADAS, no actos
+
+Esta tanda salió de medir si el módulo ya podía comparar los dos gobiernos.
+Con la v1094 el registro anterior quedó con **I-04 ×6** y el actual tiene
+**I-04 ×4**, así que la comparación parecía estar a un paso. No lo estaba, y
+por una razón que el módulo no tenía escrita.
+
+### Lo que apareció al mirar las cuatro entradas
+
+| Entrada | Qué es |
+|---|---|
+| Decreto 1171 · desastre nacional en 12 departamentos | **1** decreto |
+| «el Gobierno firma **11 decretos** de reconstrucción» | **11** decretos |
+| «un paquete adicional de **15 decretos**» | **15** decretos |
+| Decreto 1384 · aplaza los concursos de mérito | **1** decreto |
+
+La cuenta de un indicador suma **ENTRADAS del registro**, no actos. Mientras
+cada entrada fue un acto las dos cosas coincidieron y nadie lo notó; desde que
+el registro empezó a agrupar paquetes de decretos en una entrada, no
+coinciden. Así que la ficha publicaba «I-04 · 4 · 6,3 por 100 días · 4 en
+total», que se lee como cuatro actos excepcionales, y eran **veintiocho
+decretos en cuatro entradas**.
+
+Es la **clase A** de CLAUDE.md en su forma más barata: el discriminante
+—cuántos actos agrupa— está escrito **en el título de la propia entrada**, y la
+cifra sale mecánicamente bien, que es lo que la hace cara. Y la regla que se
+rompía es la de la v1093: **una cifra lleva su MEDIDA**, o el lector le pone la
+que espera.
+
+### Y al lado, un acto que ningún contador alcanzaba
+
+Buscando cuántos decretos había debajo de cada entrada apareció que el
+**Decreto 1261 del 19 de agosto de 2026** —la declaratoria del estado de
+emergencia económica, social y ecológica que ABRE todos los poderes
+extraordinarios— estaba **nombrado en el detalle de dos entradas** y no tenía
+entrada propia. Las dos dicen «dentro del marco de la emergencia declarada por
+el decreto 1261» y I-04 no lo contaba: el acto que funda la emergencia estaba
+en el registro y ninguna superficie lo alcanzaba, que es la **clase C**.
+
+Documentado con cinco fuentes convergentes: 30 días calendario, quince
+departamentos, artículo 215 y Ley 137 de 1994, impacto cifrado por el propio
+decreto en 30 billones de pesos (1,5 % del PIB), control automático de la Corte
+sobre él y sobre cada decreto legislativo que de él salga. **I-04 del gobierno
+actual pasa de 4 a 5**, y la entrada se abre aunque suba la cuenta — una cuenta
+que omite el acto marco no se puede defender.
+
+Queda dicho lo que sigue sin entrada: el **Decreto 1348 del 31 de agosto**, que
+modificó el 1261 y que las fuentes en mano solo nombran de paso. Y queda dicha
+la divergencia de ámbito —15 departamentos en el 1261 y 12 en el 1171— que no
+es un error sino dos actos con dos instrumentos distintos (v1093).
+
+### Lo que se hizo, y lo que NO se hizo
+
+**No se cambió la cuenta.** Contar actos en vez de entradas movería hacia
+arriba un número que es el juicio público sobre una persona —de 5 a 29—
+apoyado en un campo escrito a mano. La cuenta se queda en entradas, que es lo
+que el registro sabe contar sin suponer, y lo que se agrega es la **unidad
+dicha al lado** más el **piso de actos**:
+
+* el número crudo pasa de «5 en total» a «**5 entradas en total**»;
+* debajo de la definición del criterio va el párrafo de la unidad, armado en
+  UNA función (`textoDeUnidad`) para que una superficie nueva lo herede sin
+  que su autor se acuerde (v867);
+* y las **diecinueve** entradas que declaran indicador en los dos registros
+  declaran su `actosQueAgrupa`, tres de ellas con más de uno.
+
+**Y el piso es piso de verdad.** Una entrada que no declara su unidad se cuenta
+como UNA, que es el mínimo posible, así que la suma solo puede quedarse corta —
+y se publica como piso, no como total. Eso es deliberado y tiene su razón: si la
+guarda exigiera el campo a todas, `sinUnidad` sería cero por construcción y la
+rama del piso quedaría **muerta**, que es la gemela de la que la v1089 tuvo que
+retirar. Además la rutina diaria es otra sesión y no conoce el campo: así puede
+seguir escribiendo entradas sin romper nada, y el módulo lo dice en vez de
+callarlo.
+
+### La tercera razón de `comparabilidad`, que es de otra clase
+
+El módulo ya se negaba a comparar los dos gobiernos, con dos razones, y las dos
+son de la **FORMA** de los registros: uno es una bitácora diaria y el otro una
+selección de hechos de un cuatrienio. Las dos se arreglarían con otro registro.
+
+La de la unidad **no**: sobreviviría a eso. Dos cifras de entradas no se
+comparan sin igualar la unidad, y arreglar la forma de los registros no la
+iguala. Así que se cuenta aparte, porque pide otra acción (v899): las dos
+primeras piden otro registro, esta pide declarar la unidad de cada entrada. Y
+el texto que la pantalla publica lo dice, no solo la lista de razones.
+
+### El caso fabricado, que es el único que mide las tres redacciones
+
+Con el registro de hoy se ven dos de las tres en la misma página —I-07 e I-14
+en cero, I-04 con cinco— y la del **piso** no se ejercita, porque las
+diecinueve declaran su unidad. Así que se midió contra un caso fabricado
+(v970), seis registros armados a mano:
+
+| Caso | n | actos | agrupan | sin unidad | qué dijo |
+|---|---|---|---|---|---|
+| A · vacío | 0 | 0 | 0 | 0 | «la cuenta está en cero, todavía no hay unidad que declarar» |
+| B · dos, ninguna agrupa | 2 | 2 | 0 | 0 | «entradas y actos coinciden en 2» |
+| C · una agrupa 15 | 2 | 16 | 1 | 0 | «1 de esas entradas agrupa más de un acto, así que los actos son 16» |
+| D · una no declara | 2 | **2** | 0 | 1 | «los actos son **al menos** 2 … es un PISO y no un total» |
+| E · agrupa 11 y una no declara | 2 | **12** | 1 | 1 | «los actos son al menos 12 … PISO» |
+| F · una declara 9 y el criterio la RECHAZA | 1 | **1** | 0 | 0 | los 9 no suman: la unidad se cuenta sobre las que CUENTAN |
+
+El caso **F** es el que importa y es el que no se ve leyendo: una entrada que
+declara agrupar nueve actos y que el criterio rechaza sumaba cero, porque las
+tres cuentas van DENTRO de la rama de `g.cuenta`. Sin eso la cifra de actos
+sería de otra población que la de entradas y las dos se publicarían juntas.
+
+### La guarda que estaba mal puesta, y la cazó su propia inyección
+
+La primera versión de la guarda de MATERIAL pedía en ROJO que **alguna** entrada
+agrupara más de un acto. Una inyección que quitaba la unidad a las dos entradas
+del registro actual la dejó en **VERDE**, porque la del anterior seguía
+agrupando. Al hacerla fiel —quitársela a las tres— se vio que el rojo estaba
+mal puesto por otro motivo, y peor: **que ninguna entrada agrupe es una mejora
+legítima** —alguien parte el paquete de 15 decretos en 15 entradas— y un rojo
+ahí pondría la salida barata en dejar los paquetes juntos para que la guarda
+siga teniendo algo que rechazar. Es exactamente la v970, cometida en una guarda
+escrita el mismo día.
+
+Partida en dos: lo que sobrevive al cero va en rojo —ninguna unidad escrita con
+un valor imposible, y el recuento calculado— y lo que lo ponen los datos va con
+su `?`. Medido: con las tres unidades bajadas a 1, sale el `?` y no un fallo.
+
+### Y una guarda que salió roja teniendo el texto delante
+
+Buscaba en el código la frase «las cuentas de los indicadores miden ENTRADAS y
+no actos» y no la encontraba, porque en el fuente está **cortada por el `' +` de
+la concatenación**. Es el barrido propio contra el código real (v1000, v1053), y
+la cura es la de la v935: medir por contenido que de verdad existe, dentro de un
+solo literal.
+
+### Las diez inyecciones
+
+| Inyección | Qué pasó |
+|---|---|
+| la suma de actos sale de la rama de `g.cuenta` | **ROJO** · «mediría una población distinta de la de la cifra» |
+| se cae la redacción del PISO | **ROJO** · «falta la redacción: la del piso» |
+| la unidad deja de pintarse debajo del criterio | **ROJO** · «la cifra vuelve a publicarse sin su medida» |
+| el crudo vuelve a decir «N en total» | **ROJO** · con su propia mitad |
+| se cae la regla `.sp-c2-unidad` del CSS | **ROJO** · con su propia mitad |
+| `comparabilidad` pierde `unidad-no-igualada` | **ROJO** |
+| la razón queda en la lista y el texto no la dice | **ROJO** · «el lector no se entera» |
+| las dos entradas del registro actual pierden su unidad | **VERDE** → la guarda estaba mal puesta, ver arriba |
+| las TRES que agrupan pierden su unidad (inyección fiel) | **`?` SIN MATERIAL**, que es lo correcto |
+| una unidad escrita con `0` | **ROJO** · nombrando la entrada |
+
+**717 comprobaciones en verde, una sin material, código de salida 0.** La
+corrida anterior tenía 711.
+
+### Lo que esta versión NO hace
+
+* **No publica la comparación entre los dos gobiernos**, y ahora dice las tres
+  razones en vez de dos. La de la unidad es la única que no se arregla
+  consiguiendo otro registro. `pendiente`
+* **No cuenta actos en la cifra**, a propósito: subiría de 5 a 29 un número que
+  es el juicio público sobre una persona, apoyado en un campo escrito a mano.
+  Lo que se publica es la cifra de entradas, su unidad dicha, y el piso de
+  actos al lado. `cerrado en v1097 · medido y declinado`
+* **No le abre entrada al Decreto 1348 del 31 de agosto**, que modificó el
+  1261: las fuentes en mano lo nombran de paso y ninguna documenta su
+  contenido. Queda dicho dentro de la entrada del 1261. `pendiente`
+* **No llega al piso de 20 del registro anterior.** Esta tanda documentó un
+  acto del registro ACTUAL, que no cuenta para esa validación. Siguen faltando
+  **4**. `pendiente`
+* **No mide la unidad de las cuentas sin criterio** —I-06, I-09, I-10—, que
+  también suman entradas: su número crudo ya dice «entradas», y el párrafo de
+  la unidad sale solo donde hay criterio. `pendiente`
+* **No mueve el dictamen.** Sigue en «Nada fiable», y tenía que seguir: el eje
+  D cuenta muertes del bloque `fuerza`, no entradas de I-14. `cerrado en v1097`

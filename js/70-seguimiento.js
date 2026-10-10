@@ -2450,6 +2450,67 @@
              sinCorrer: n - (por.ok + por['sin-acto']) };
   }
 
+  /* ═══ LA UNIDAD DE LA CIFRA DE UN INDICADOR (v1097) ════════════════════
+     La cuenta de un indicador suma ENTRADAS del registro, no actos. Mientras
+     cada entrada fue un acto, las dos cosas coincidieron y nadie lo notó; en
+     el registro actual NO coinciden desde la v1030: una entrada es «el
+     Gobierno firma 11 decretos de reconstrucción» y otra «un paquete
+     adicional de 15 decretos». Así que «I-04 · 5 · 7,8 por 100 días» se lee
+     como cinco actos excepcionales y son cinco entradas que agrupan
+     veintinueve decretos.
+
+     Es la clase A de CLAUDE.md en su forma más barata: el discriminante
+     —cuántos actos agrupa— está escrito EN EL TÍTULO de la propia entrada, y
+     la cifra sale mecánicamente bien. Y es la regla de la v1093: una cifra
+     lleva su MEDIDA, o el lector le pone la que espera.
+
+     Lo que NO se hace es cambiar la cuenta. Contar actos en vez de entradas
+     movería hacia arriba un número que es el juicio público sobre una persona
+     —de 5 a 29— apoyado en un campo escrito a mano. La cuenta se queda en
+     entradas, que es lo que el registro sabe contar sin suponer, y lo que se
+     agrega es la unidad dicha al lado, más el PISO de actos.
+
+     Y el piso es piso de verdad: una entrada que no declara su unidad se
+     cuenta como UNO, que es el mínimo posible, así que la suma solo puede
+     quedarse corta. Las dos redacciones están escritas —la del piso y la del
+     total exacto— porque la segunda es la que hace falta el día que todas
+     declaren (v970), y hoy es justo esa la que aplica. */
+  function unidadDe(e) {
+    var v = e && e.actosQueAgrupa;
+    var n = Number(v);
+    if (v === undefined || v === null || !isFinite(n) || n < 1) {
+      return { n: 1, declarada: false, agrupa: false };
+    }
+    n = Math.floor(n);
+    return { n: n, declarada: true, agrupa: n > 1 };
+  }
+
+  /* El texto se arma en UNA función y no en la pantalla: es una advertencia
+     sobre la medida, y dos copias de una advertencia se separan (v867). Una
+     superficie nueva lo hereda sin que su autor se acuerde. */
+  function textoDeUnidad(f) {
+    if (!f.n) {
+      return 'La cuenta está en cero, así que todavía no hay unidad que declarar. Cuando suba contará ' +
+             'ENTRADAS del registro y no actos, y lo dirá acá con su número.';
+    }
+    var t = 'Esta cuenta mide ENTRADAS del registro que declaran el indicador y pasan su criterio ' +
+            '—' + cn(f.n, 'entrada', 'entradas') + '—, y no actos: una entrada puede agrupar varios. ';
+    if (f.agrupan) {
+      t += cn(f.agrupan, 'de esas entradas agrupa más de un acto', 'de esas entradas agrupan más de un acto') +
+           ', así que los actos ' + (f.unidadExacta ? 'son ' : 'son al menos ') + f.actos + '. ';
+    } else {
+      t += 'Hoy ninguna agrupa más de uno, así que ' +
+           (f.unidadExacta ? 'entradas y actos coinciden en ' : 'los actos son al menos ') + f.actos + '. ';
+    }
+    if (!f.unidadExacta) {
+      t += cn(f.sinUnidad, 'entrada no declara', 'entradas no declaran') + ' cuántos actos agrupa y se ' +
+           'cuenta como una sola, que es el mínimo posible: por eso la cifra de actos es un PISO y no un ' +
+           'total. ';
+    }
+    return t + 'Y es la razón por la que esta cuenta no se puede poner al lado de la de otro registro sin ' +
+           'igualar la unidad: dos registros agrupan distinto.';
+  }
+
   function indicadoresDe(dd, corte) {
     /* Sin argumento, el registro del gobierno actual —igual que
        `comparabilidad`. Antes caía en `{}` y medía un registro vacío, que es
@@ -2501,6 +2562,12 @@
        esto las dos cifras se ven iguales. */
     var porVia = {};
     CON_CRITERIO.forEach(function (k) { porVia[k] = {}; });
+    /* LA UNIDAD, por indicador (v1097): el piso de actos que las entradas
+       contadas agrupan, cuántas agrupan más de una y cuántas no lo declaran.
+       Las tres, porque piden acciones distintas (v899): la segunda dice que
+       entradas y actos no coinciden, y la tercera que la suma es un piso. */
+    var actosDe = {}, agrupan = {}, sinUnidad = {};
+    CON_CRITERIO.forEach(function (k) { actosDe[k] = 0; agrupan[k] = 0; sinUnidad[k] = 0; });
     ent.forEach(function (e) {
       var lista = (e && e.indicadores) || [];
       if (e && e.tipoMedicion === 'actividad') {
@@ -2512,7 +2579,13 @@
       lista.forEach(function (k) {
         if (crudo[k] === undefined || !INDICADORES[k].dec) return;
         var g = pasaElCriterio(e, k, idsReg);
-        if (g.cuenta) { crudo[k]++; porVia[k][g.via] = (porVia[k][g.via] || 0) + 1; }
+        if (g.cuenta) {
+          crudo[k]++; porVia[k][g.via] = (porVia[k][g.via] || 0) + 1;
+          var u = unidadDe(e);
+          actosDe[k] += u.n;
+          if (u.agrupa) agrupan[k]++;
+          if (!u.declarada) sinUnidad[k]++;
+        }
         else fuera[k].push({ titulo: (e && e.titulo) || '', fecha: (e && e.fecha) || '',
                              motivo: g.motivo, d: g.d });
       });
@@ -2527,6 +2600,11 @@
         f.porVia = porVia[k];
         f.vias = Object.keys(porVia[k]);
         f.declaradas = crudo[k] + fuera[k].length;
+        f.actos = actosDe[k];
+        f.agrupan = agrupan[k];
+        f.sinUnidad = sinUnidad[k];
+        f.unidadExacta = sinUnidad[k] === 0;
+        f.unidad = textoDeUnidad(f);
       }
       /* La validación se mide contra el registro del gobierno ANTERIOR, que
          es otro objeto: pedírselo al propio registro sería comprobar que es
@@ -2588,6 +2666,21 @@
     var razones = [];
     if (!ia.exhaustivo || !ib.exhaustivo) razones.push('registro-no-exhaustivo');
     if (ib.hechos < 10) razones.push('muestra-insuficiente');
+    /* LA TERCERA RAZÓN, Y ES DE OTRA CLASE (v1097). Las dos de arriba son de
+       la FORMA de los registros: uno es una bitácora diaria y el otro una
+       selección. Esta es de la UNIDAD, y sobreviviría aunque las dos primeras
+       se arreglaran: la cuenta de un indicador suma entradas, una entrada
+       puede agrupar varios actos, y los dos registros agrupan distinto. Dos
+       cifras de entradas no se comparan sin igualar eso, y arreglar la forma
+       de los registros no lo igualaría.
+
+       Se dice aparte porque pide otra acción (v899): las dos primeras piden
+       otro registro, esta pide declarar la unidad de cada entrada. */
+    var agrupaEn = function (x) {
+      return ((x && x.filas) || []).filter(function (f) { return f.agrupan > 0; });
+    };
+    var ga = agrupaEn(ia), gb = agrupaEn(ib);
+    if (ga.length || gb.length) razones.push('unidad-no-igualada');
     return {
       a: ia, b: ib, comparable: razones.length === 0, razones: razones,
       /* El texto se arma acá y no en la pantalla: es una advertencia, y dos
@@ -2602,7 +2695,17 @@
           'bitácora diaria, y así lo dice el propio registro. ') +
         'En esa ventana el actual trae ' + cn(ia.hechos, 'hecho', 'hechos') +
         ' y el anterior ' + ib.hechos + ': la diferencia ' +
-        'es de los registros, no de los gobiernos.'
+        'es de los registros, no de los gobiernos. ' +
+        (ga.length || gb.length
+          ? 'Y hay una razón que no se arregla cambiando de registro: las cuentas de los indicadores ' +
+            'miden ENTRADAS y no actos. ' +
+            (ga.length ? cn(ga.length, 'cuenta del actual', 'cuentas del actual') + ' agrupa' +
+                         (ga.length === 1 ? '' : 'n') + ' más de un acto en alguna de sus entradas' : '') +
+            (ga.length && gb.length ? ', y ' : '') +
+            (gb.length ? cn(gb.length, 'cuenta del anterior', 'cuentas del anterior') + ' también' : '') +
+            '. Dos registros agrupan distinto, así que igualar la unidad es condición para comparar ' +
+            'estas cifras, no un detalle.'
+          : '')
     };
   }
 
@@ -5553,7 +5656,12 @@
       else {
         cif.appendChild(el('b', null, String(fi.por100).replace('.', ',')));
         cif.appendChild(el('span', null, 'por 100 días'));
-        cif.appendChild(el('span', 'sp-c2-crudo', fi.n + ' en total'));
+        /* LA UNIDAD, pegada al número (v1097). Decía «5 en total» y la
+           unidad era la ENTRADA, no el acto: a dos centímetros del título
+           de una entrada que dice «un paquete adicional de 15 decretos».
+           El detalle entero va más abajo, en el bloque del criterio. */
+        cif.appendChild(el('span', 'sp-c2-crudo',
+          fi.n + (fi.n === 1 ? ' entrada en total' : ' entradas en total')));
       }
       li.appendChild(cif);
 
@@ -5602,6 +5710,11 @@
         var lc = el('li', 'sp-c2-crit');
         lc.appendChild(el('b', null, 'Qué cuenta como ' + fi.t.toLowerCase()));
         lc.appendChild(el('p', null, fi.criterio.definicion));
+        /* QUÉ MIDE LA CIFRA, debajo de la definición de qué cuenta. Las dos
+           preguntas son distintas y la segunda no estaba escrita en ninguna
+           parte: el criterio dice qué entra, la unidad dice en qué se mide
+           lo que entró (v1093, v1097). */
+        lc.appendChild(el('p', 'sp-c2-unidad', fi.unidad));
         [['Incluye', fi.criterio.incluye, 'si'], ['No incluye', fi.criterio.excluye, 'no']].forEach(function (par) {
           var dv = el('div', 'sp-c2-lista sp-c2-' + par[2]);
           dv.appendChild(el('span', null, par[0]));
