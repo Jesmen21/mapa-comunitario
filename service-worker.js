@@ -1,4 +1,4 @@
-const URBIS_CACHE = 'urbis-v1098-el-control-mide-el-modulo-contra-si-mismo';
+const URBIS_CACHE = 'urbis-v1099-seguimiento-sin-novedades-11-oct';
 const URBIS_ASSETS = [
   './',
   './index.html',
