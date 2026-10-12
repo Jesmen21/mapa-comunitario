@@ -1,4 +1,4 @@
-const URBIS_CACHE = 'urbis-v1101-el-tercer-resultado-de-correr-un-criterio';
+const URBIS_CACHE = 'urbis-v1102-alertas-vencidas-retiradas';
 const URBIS_ASSETS = [
   './',
   './index.html',

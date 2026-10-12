@@ -1,6 +1,6 @@
 {
   "_comentario": "Alertas EDITORIALES del equipo URBIS (desastres verificados). Se publican editando este archivo — no requieren la hoja de cálculo ni credenciales. El mapa las dibuja junto a las que ya están en la base; si coinciden las coordenadas, se muestra una sola. Reglas: solo desastres naturales de fuente oficial, nunca violencia ni homicidios; coordenadas geocodificadas, jamás estimadas a ojo; sin fuente no se publica.",
-  "actualizado": "2026-10-10",
+  "actualizado": "2026-10-12",
   "alertas": [
     {
       "tipo": "Desbordamiento de arroyo o canal",
@@ -82,39 +82,6 @@
       ],
       "fuente": "Servicio Geológico Colombiano (SGC) / prensa nacional",
       "url": "https://www.elheraldo.co/colombia/2026/09/30/sismo-de-magnitud-42-sacudio-a-chaparral-tolima-este-29-de-septiembre/"
-    },
-    {
-      "tipo": "Sismo",
-      "titulo": "Sismo de magnitud 4,3 — 27 de septiembre de 2026, Istmina, Chocó",
-      "lat": 4.46,
-      "lng": -76.7,
-      "desde": "2026-09-27",
-      "expira": "2026-10-11",
-      "lineas": [
-        "📅 Ocurrió el domingo 27 de septiembre de 2026 a las 4:57 p. m. (hora de Colombia).",
-        "📊 Magnitud 4,3 · profundidad 43 km · epicentro a unos 22 km del municipio de Sipí y 51 km de Trujillo y El Dovio, Valle del Cauca (4,46° N / 76,70° O, Servicio Geológico Colombiano). Se sintió con fuerza en Pereira, Armenia, Buenaventura, Manizales, Ibagué y Cali; el SGC no reportó heridos ni daños estructurales.",
-        "🌎 Es parte de la secuencia sísmica que el SGC monitorea desde hace varias semanas en los municipios de Istmina, Medio San Juan, Sipí y Litoral del San Juan (Chocó), con profundidades que suelen estar entre 30 y 70 km, y de la actividad sísmica que sigue registrándose en el Chocó desde el terremoto de magnitud 7,4 del 10 de agosto de 2026.",
-        "ℹ️ Alerta informativa del equipo URBIS con base en el Servicio Geológico Colombiano y prensa nacional (El Espectador, El País, Pulzo, Radio Nacional). No es un reporte ciudadano."
-      ],
-      "fuente": "Servicio Geológico Colombiano (SGC) / prensa nacional",
-      "url": "https://www.sgc.gov.co/detallesismo/SGC2026qgfpju/resumen"
-    },
-    {
-      "tipo": "Derrumbe o deslizamiento",
-      "titulo": "Derrumbe cierra de forma indefinida la vía Bucaramanga-Barrancabermeja — km 42, sector Lisboa y Brisas, Lebrija, Santander, 1 de octubre de 2026",
-      "lat": 7.1131,
-      "lng": -73.2189,
-      "desde": "2026-10-01",
-      "expira": "2026-10-11",
-      "lineas": [
-        "📅 Ocurrió el domingo 1 de octubre de 2026 (hora de Colombia), cuando un movimiento de tierra por una falla geológica destruyó el pavimento de la vía Bucaramanga-Barrancabermeja a la altura del kilómetro 42, en el sector Lisboa y Brisas, zona rural del municipio de Lebrija, Santander.",
-        "📊 El colapso afectó cerca de 200 metros de calzada y dejó un camión atascado en el pavimento hundido. La vía quedó cerrada de manera total e indefinida; se habilitó como ruta alterna el corredor Bucaramanga–Rionegro–San Alberto–La Lizama.",
-        "⚠️ Las autoridades evacuaron preventivamente a 14 familias (unas 40 personas) ante el riesgo de un nuevo deslizamiento por la inestabilidad del terreno y las lluvias recientes, y recomendaron la salida de otras 10 personas que permanecían en la zona.",
-        "🔄 Al 4 de octubre de 2026 la vía seguía cerrada de forma total e indefinida y el terreno continuaba moviéndose. La comunidad de la zona rural de Lebrija abrió esa tarde, a pico y pala, una trocha provisional para motos, caminantes y habitantes de la zona hacia Barrancabermeja, San Vicente de Chucurí y el área metropolitana de Bucaramanga; las autoridades no habían fijado todavía una fecha de reapertura y advirtieron que el paso improvisado seguía siendo riesgoso por el talud inestable.",
-        "ℹ️ Alerta informativa del equipo URBIS con base en prensa nacional (Semana, El País). No es un reporte ciudadano. Coordenadas de referencia: municipio de Lebrija, Santander (el derrumbe se ubica en zona rural sobre la vía, no en el casco urbano; no fue posible geocodificar con mayor precisión el punto exacto del kilómetro 42)."
-      ],
-      "fuente": "Semana / El País",
-      "url": "https://www.semana.com/nacion/bucaramanga/articulo/arriesgan-sus-vidas-comunidad-hizo-una-trocha-por-derrumbe-en-la-via-bucaramanga-barrancabermeja-mientras-la-tierra-sigue-moviendose/202317/"
     }
   ]
 }
