@@ -1,0 +1,298 @@
+<!doctype html>
+<html lang="es"><head><meta charset="utf-8">
+<title>De quien es la culpa</title>
+<style>
+  @page { size: A4; margin: 0; }
+  * { box-sizing: border-box; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  html, body { margin: 0; padding: 0; background: #fff; }
+  body { font-family: Georgia, "Times New Roman", serif; color: #1b1b1b; }
+
+  .hoja { width: 210mm; height: 297mm; padding: 20mm 18mm; page-break-after: always;
+          position: relative; overflow: hidden; }
+  .hoja:last-child { page-break-after: auto; }
+
+  .sello { position: absolute; top: 9mm; right: 18mm; font-family: Verdana, sans-serif;
+           font-size: 8.5pt; letter-spacing: .14em; color: #8a8f94; text-transform: uppercase; }
+  .pie { position: absolute; bottom: 10mm; left: 18mm; right: 18mm; font-family: Verdana, sans-serif;
+         font-size: 8.5pt; color: #8a8f94; display: flex; justify-content: space-between; }
+
+  h1 { font-size: 40pt; line-height: 1.08; margin: 0 0 6mm; letter-spacing: -.02em; }
+  h2 { font-size: 25pt; line-height: 1.15; margin: 0 0 7mm; letter-spacing: -.01em; }
+  p  { font-size: 15.5pt; line-height: 1.62; margin: 0 0 5mm; }
+  .gordo { font-weight: bold; }
+
+  .rotulo { font-family: Verdana, sans-serif; font-size: 10pt; letter-spacing: .16em;
+            text-transform: uppercase; color: #6b7177; margin: 0 0 5mm; }
+
+  /* portada */
+  .portada { display: flex; flex-direction: column; justify-content: center; }
+  .portada h1 { font-size: 54pt; }
+  .portada .bajada { font-size: 19pt; line-height: 1.5; color: #44494e; margin-top: 2mm; }
+
+  /* la linea de tiempo */
+  .linea { margin: 10mm 0 8mm; }
+  .barra { display: flex; height: 26mm; border-radius: 4mm; overflow: hidden; }
+  .barra div { display: flex; align-items: center; justify-content: center;
+               font-family: Verdana, sans-serif; font-size: 12pt; font-weight: bold; color: #fff;
+               text-align: center; line-height: 1.3; }
+  .antes { flex: 1.25; background: #2E6B4F; }
+  .hito  { width: 13mm; background: #1b1b1b; }
+  .despues { flex: 1; background: #9C2B26; }
+  .marcas { display: flex; margin-top: 3mm; font-family: Verdana, sans-serif; font-size: 11pt; }
+  .marcas div { flex: 1; }
+  .marcas .der { text-align: right; }
+  .marcas .cen { flex: 0 0 auto; text-align: center; font-weight: bold; }
+
+  /* cajas */
+  .caja { border-left: 3.5mm solid #ccc; padding: 6mm 7mm; margin: 0 0 6mm; background: #f7f8f8; }
+  .caja.verde { border-left-color: #2E6B4F; background: #F0F5F2; }
+  .caja.roja  { border-left-color: #9C2B26; background: #FBF1F0; }
+  .caja .t { font-family: Verdana, sans-serif; font-size: 13pt; font-weight: bold; margin: 0 0 3mm; }
+  .caja p { font-size: 14.5pt; margin: 0 0 3mm; }
+  .caja p:last-child { margin-bottom: 0; }
+
+  .enorme { font-size: 86pt; line-height: 1; font-weight: bold; letter-spacing: -.04em; }
+  .enorme.rojo { color: #9C2B26; }
+  .enorme.verde { color: #2E6B4F; }
+  .alcostado { display: flex; align-items: center; gap: 9mm; margin: 6mm 0 7mm; }
+  .alcostado .texto { font-size: 17pt; line-height: 1.45; }
+
+  table { width: 100%; border-collapse: collapse; margin: 4mm 0 6mm; }
+  td { font-size: 15pt; padding: 3.6mm 2mm; border-bottom: 1px solid #e2e5e7; vertical-align: middle; }
+  td.q { font-family: Verdana, sans-serif; font-size: 12.5pt; }
+  td.n { text-align: right; font-weight: bold; white-space: nowrap; font-size: 17pt; }
+  .baja { color: #9C2B26; }
+  .sube { color: #1b5e8a; }
+
+  .fechas li { font-size: 15.5pt; line-height: 1.5; margin-bottom: 4mm; }
+  ul { margin: 0 0 6mm; padding-left: 7mm; }
+
+  .remate { border-top: 2px solid #1b1b1b; padding-top: 6mm; margin-top: 4mm; }
+  .remate p { font-size: 16.5pt; }
+</style></head><body>
+
+<!-- 1 · PORTADA -->
+<section class="hoja portada">
+  <div class="sello">URBIS · Seguimiento presidencial</div>
+  <p class="rotulo">Explicado en palabras sencillas</p>
+  <h1>¿De quién<br>es la culpa?</h1>
+  <p class="bajada">Cuando algo malo pasa en el país, mucha gente discute
+  de quién es la culpa y nadie se pone de acuerdo.</p>
+  <p class="bajada"><span class="gordo">Hay una manera fácil de saberlo.</span>
+  Y no hay que entender de economía.</p>
+  <div class="pie"><span>12 de octubre de 2026</span><span>Página 1 de 7</span></div>
+</section>
+
+<!-- 2 · LA REGLA -->
+<section class="hoja">
+  <div class="sello">La regla</div>
+  <p class="rotulo">Lo único que hay que aprender</p>
+  <h2>Mira la fecha.</h2>
+
+  <p>El presidente Abelardo de la Espriella se posesionó el
+  <span class="gordo">7 de agosto de 2026</span>. Ese día empezó a mandar.</p>
+
+  <div class="linea">
+    <div class="barra">
+      <div class="antes">ANTES<br>no es suyo</div>
+      <div class="hito"></div>
+      <div class="despues">DESPUÉS<br>sí es suyo</div>
+    </div>
+    <div class="marcas">
+      <div>El gobierno anterior</div>
+      <div class="cen">7 de agosto<br>de 2026</div>
+      <div class="der">Este gobierno</div>
+    </div>
+  </div>
+
+  <p>Si una cosa pasó <span class="gordo">antes</span> de esa fecha, no la hizo él.
+  Si pasó <span class="gordo">después</span>, sí.</p>
+
+  <p>Parece muy simple, y lo es. Pero casi todas las peleas en internet son
+  porque alguien no mira la fecha.</p>
+
+  <div class="caja">
+    <p class="t">Ojo con una trampa</p>
+    <p>Algunas cosas <span class="gordo">tardan</span> en verse. La comida es el mejor ejemplo:
+    una papa que se siembra hoy se come cinco meses después. Entonces el precio
+    de hoy viene de una siembra de hace cinco meses.</p>
+    <p>Por eso, en la comida, hay que contar hacia atrás antes de echar culpas.</p>
+  </div>
+
+  <div class="pie"><span>¿De quién es la culpa?</span><span>Página 2 de 7</span></div>
+</section>
+
+<!-- 3 · LO QUE NO ES SUYO -->
+<section class="hoja">
+  <div class="sello">Primera parte</div>
+  <p class="rotulo">Usando la regla</p>
+  <h2>Dos cosas que la gente<br>le echa y NO son suyas.</h2>
+
+  <div class="caja verde">
+    <p class="t">1 · La papa subió 78 %</p>
+    <p>Es verdad que subió muchísimo. Pero la papa se siembra meses antes de
+    venderse, y los campesinos <span class="gordo">aplazaron la siembra</span> porque no sabían
+    si venía sequía (el fenómeno de El Niño).</p>
+    <p>Menos papa sembrada, entonces menos papa en la plaza, entonces más caro.
+    Eso lo explica el DANE, que es la entidad que mide los precios.</p>
+    <p>Es el clima y el tiempo de la cosecha. <span class="gordo">No es una decisión del presidente.</span></p>
+  </div>
+
+  <div class="caja verde">
+    <p class="t">2 · La deuda del país</p>
+    <p>El país debe plata: 60,5 de cada 100 pesos de todo lo que produce en un año.
+    Es mucho.</p>
+    <p>Pero esa cuenta se midió el <span class="gordo">30 de junio de 2026</span>. Aplica la regla:
+    eso es <span class="gordo">antes</span> del 7 de agosto. La deuda ya estaba ahí cuando él llegó.</p>
+  </div>
+
+  <div class="remate">
+    <p>Y esto no lo digo ahora para quedar bien. <span class="gordo">Está escrito en mi página
+    desde antes de que nadie me lo reclamara.</span> Un papel que solo sirve para acusar
+    no sirve para nada.</p>
+  </div>
+
+  <div class="pie"><span>¿De quién es la culpa?</span><span>Página 3 de 7</span></div>
+</section>
+
+<!-- 4 · LOS SEIS NIÑOS -->
+<section class="hoja">
+  <div class="sello">Segunda parte</div>
+  <p class="rotulo">Usando la misma regla</p>
+  <h2>Lo que SÍ es suyo.</h2>
+
+  <div class="alcostado">
+    <div class="enorme rojo">6</div>
+    <div class="texto"><span class="gordo">Seis niños muertos</span> en operaciones
+    militares, en los primeros 23 días de este gobierno.</div>
+  </div>
+
+  <p class="rotulo">Las tres operaciones, con su fecha</p>
+  <ul class="fechas">
+    <li><span class="gordo">11 de agosto</span> — Operación Beta, entre Tibú y San Calixto.
+    Fue el primer bombardeo de este gobierno, cuatro días después de posesionarse.
+    <br>Murió <span class="gordo">1 niño</span>.</li>
+    <li><span class="gordo">27 de agosto</span> — Operación Amón, en El Retorno, Guaviare.
+    <br>Murieron <span class="gordo">3 niños</span>.</li>
+    <li><span class="gordo">30 de agosto</span> — Operación Azarías, en Miraflores, Guaviare.
+    <br>Murieron <span class="gordo">2 niños</span>.</li>
+  </ul>
+
+  <div class="caja roja">
+    <p class="t">Por qué acá no sirve la excusa de la papa</p>
+    <p>Una operación militar <span class="gordo">no tarda cinco meses</span>. Se ordena un día
+    y pasa ese mismo día. No viene de atrás. No la dejó nadie.</p>
+    <p>Las tres fechas están después del 7 de agosto. La regla no deja dudas.</p>
+  </div>
+
+  <div class="caja">
+    <p class="t">¿Y quién dice que eran niños?</p>
+    <p><span class="gordo">Medicina Legal</span>, que es la entidad del Estado que examina los
+    cuerpos. No lo dijo un periódico ni lo dije yo.</p>
+  </div>
+
+  <div class="pie"><span>¿De quién es la culpa?</span><span>Página 4 de 7</span></div>
+</section>
+
+<!-- 5 · LA PLATA -->
+<section class="hoja">
+  <div class="sello">Tercera parte</div>
+  <p class="rotulo">Lo que SÍ es suyo</p>
+  <h2>En qué va a gastar<br>la plata del país.</h2>
+
+  <p>Cada año el gobierno decide cuánta plata va para cada cosa.
+  El plan para el <span class="gordo">año 2027</span> lo hizo <span class="gordo">este</span> gobierno,
+  y se aprobó el 14 de septiembre de 2026. Después del 7 de agosto.</p>
+
+  <p>Así quedó, ya quitándole la inflación — o sea, es plata de verdad
+  y no números infladas:</p>
+
+  <table>
+    <tr><td class="q">Educación · colegios y maestros</td><td class="n baja">baja 3,1 %</td></tr>
+    <tr><td class="q">Salud · hospitales</td><td class="n baja">baja 4,4 %</td></tr>
+    <tr><td class="q">Deporte</td><td class="n baja">baja 43,5 %</td></tr>
+    <tr><td class="q">Defensa · el Ejército</td><td class="n sube">sube 14,6 %</td></tr>
+    <tr><td class="q">Hacienda · el manejo del dinero</td><td class="n sube">sube 34,4 %</td></tr>
+  </table>
+
+  <div class="caja roja">
+    <p class="t">En palabras simples</p>
+    <p>Para el colegio y el hospital va a haber <span class="gordo">menos</span> plata que este año.
+    Para el Ejército, <span class="gordo">más</span>.</p>
+    <p>Uno puede estar de acuerdo o no con eso — es una decisión, y se puede discutir.
+    Lo que no se puede decir es que la dejó el gobierno pasado.</p>
+  </div>
+
+  <div class="pie"><span>¿De quién es la culpa?</span><span>Página 5 de 7</span></div>
+</section>
+
+<!-- 6 · LO QUE DICE A FAVOR -->
+<section class="hoja">
+  <div class="sello">Para ser justos</div>
+  <p class="rotulo">Lo bueno también se escribe</p>
+  <h2>Lo que digo<br>a su favor.</h2>
+
+  <p>Si un papel solo cuenta lo malo, no es un informe: es una pelea.</p>
+
+  <div class="alcostado">
+    <div class="enorme verde">7</div>
+    <div class="texto"><span class="gordo">Siete niños rescatados vivos</span> en esas mismas
+    operaciones, sacados de los grupos armados.</div>
+  </div>
+
+  <div class="caja verde">
+    <p class="t">Ningún caso de corrupción</p>
+    <p>Hasta hoy, en este gobierno hay <span class="gordo">cero</span> casos de corrupción
+    comprobados y <span class="gordo">cero</span> investigaciones abiertas.</p>
+  </div>
+
+  <div class="caja verde">
+    <p class="t">Los decretos del terremoto NO se le cobran</p>
+    <p>Después del terremoto del 10 de agosto —de 7,4, con 314 muertos— el gobierno
+    firmó muchos decretos de emergencia muy rápido. Eso
+    <span class="gordo">no cuenta como falta</span>: la Constitución los permite justamente
+    para desastres así, y castigárselo sería injusto.</p>
+  </div>
+
+  <div class="caja">
+    <p class="t">Y no comparo los dos gobiernos</p>
+    <p>Mucha gente quiere saber «cuál fue peor». No lo publico: de un gobierno tengo
+    un registro de todos los días y del otro solo unos hechos escogidos.
+    <span class="gordo">Comparar eso sería hacer trampa.</span></p>
+  </div>
+
+  <div class="pie"><span>¿De quién es la culpa?</span><span>Página 6 de 7</span></div>
+</section>
+
+<!-- 7 · EL RESULTADO -->
+<section class="hoja">
+  <div class="sello">El resultado</div>
+  <p class="rotulo">Qué dice la página al final</p>
+  <h2>«Nada fiable».</h2>
+
+  <p>Esa es la calificación que sale hoy, y es la más baja de cinco escalones.
+  Pero importa <span class="gordo">de dónde sale</span>, porque casi nadie pregunta eso:</p>
+
+  <div class="caja roja">
+    <p class="t">No sale de la inflación. No sale de la deuda.</p>
+    <p>Sale de <span class="gordo">los seis niños</span>. Nada más.</p>
+    <p>La ley colombiana —el artículo 135 del Código Penal— castiga con 30 a 40 años
+    de cárcel la muerte de una persona protegida, y un niño lo es siempre.
+    Esa es la vara, y no la inventé yo: ya estaba escrita en la ley.</p>
+  </div>
+
+  <p>Por eso, cuando alguien contesta hablando de la papa o de la deuda,
+  está contestando <span class="gordo">otra pregunta</span>. Nadie dijo que la papa fuera culpa suya.
+  La página dice lo contrario, y por escrito.</p>
+
+  <div class="remate">
+    <p class="rotulo" style="margin-bottom:3mm">Todo esto se puede revisar</p>
+    <p>Cada dato de este papel tiene su fuente y su fecha, y cualquiera las puede
+    abrir y leer. Si alguno está mal, se corrige — eso también está escrito.</p>
+    <p class="gordo" style="font-size:20pt; margin-top:5mm">urbispro.city</p>
+  </div>
+
+  <div class="pie"><span>¿De quién es la culpa?</span><span>Página 7 de 7</span></div>
+</section>
+
+</body></html>

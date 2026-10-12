@@ -18,3 +18,8 @@ docs/
 # son el producto. La carpeta puede seguir existiendo en el disco de quien
 # trabaje —las pruebas la usan— pero no vuelve a subirse.
 servidor/
+
+# El PDF de divulgación se genera con divulgacion/hacer-pdf.js y no se
+# sube: lo que se versiona es el HTML, que es lo que se corrige. Subir el
+# binario además lo publicaría en urbispro.city, que es una decisión aparte.
+divulgacion/*.pdf
