@@ -5,7 +5,7 @@
   "posesion": "2022-08-07",
   "entrega": "2026-08-07",
   "cerrado": true,
-  "cobertura": "Este registro NO es exhaustivo: son 41 hechos escogidos de cuatro años, con fuente cada uno, elegidos para cubrir tanto lo que se le reconoce como lo que se le reprocha. La ficha cuenta solo los 34 que ocurrieron DENTRO del mandato, hasta el 7 de agosto de 2026; los 7 posteriores —lo que se dijo de él y lo que él dijo ya como expresidente— quedan en el registro y a la vista, pero no pesan en un veredicto sobre su gobierno. El porcentaje de verificación se calcula sobre esos 34, no sobre todo lo que pasó en el cuatrienio.",
+  "cobertura": "Este registro NO es exhaustivo: son 45 hechos escogidos de cuatro años, con fuente cada uno, elegidos para cubrir tanto lo que se le reconoce como lo que se le reprocha. La ficha cuenta solo los 38 que ocurrieron DENTRO del mandato, hasta el 7 de agosto de 2026; los 7 posteriores —lo que se dijo de él y lo que él dijo ya como expresidente— quedan en el registro y a la vista, pero no pesan en un veredicto sobre su gobierno. El porcentaje de verificación se calcula sobre esos 38, no sobre todo lo que pasó en el cuatrienio.",
   "actualizado": "2026-10-10",
   "categorias": {
     "gobierno": {
@@ -1230,6 +1230,161 @@
       "_rolCorregido": "v1094: esta entrada salió primero titulada por lo que hizo la CORTE y con las cuatro fuentes en `efecto`, así que la guarda de rol la contó `sin-acto` — con razón: el acto que I-04 cuenta es la EXPEDICIÓN de los decretos por el Ejecutivo, y ninguna fuente estaba declarada como documentándola. El defecto era del título, no del rol: el título hablaba de otro sujeto. Se corrigieron los dos juntos, y queda dicho porque cambiar solo el rol habría sido mover una etiqueta para callar la comprobación (v882).",
       "actosQueAgrupa": 11,
       "_queCuentaEseNumero": "Los once decretos legislativos que el Ejecutivo expidió al amparo de la conmoción del Catatumbo. La entrada es una; los actos son once. Que la Corte tumbara dos es su efecto y no cambia cuántos se expidieron."
+    },
+    {
+      "fecha": "2022-12-15",
+      "precision": "exacta",
+      "categoria": "economia",
+      "titulo": "Concierta con sindicatos y empresarios el mayor alza del salario mínimo en dos décadas: 16 % para 2023",
+      "categoriaProbatoria": "hecho-probado",
+      "tipoMedicion": "actividad",
+      "detalle": "La Comisión Permanente de Concertación de Políticas Salariales y Laborales acordó el 15 de diciembre de 2022 subir el salario mínimo 16 %, de $1.000.000 a $1.160.000 mensuales, y el auxilio de transporte 20 %, a $140.606. El acuerdo se formalizó en el Decreto 2613 de 2022, con vigencia desde el 1 de enero de 2023. Fue el mayor aumento porcentual en veinte años, y se dio POR ACUERDO de las tres partes: el Gobierno no tuvo que usar la facultad subsidiaria del artículo 8 de la Ley 278 de 1996, que es la que lo deja fijarlo por decreto cuando no hay concertación.",
+      "contrapunto": "Un alza nominal alta no es por sí misma un alza real: la inflación de 2022 cerró en 13,12 %, así que el aumento del 16 % dejó una ganancia real cercana a tres puntos, no de dieciséis. Y el acuerdo tripartito es un logro del mecanismo, no solo del Gobierno: lo firman también las centrales obreras y los gremios.",
+      "tipoFuente": "verificado",
+      "fuentes": [
+        {
+          "n": "Función Pública · Decreto 2613 de 2022, texto normativo",
+          "u": "https://www.funcionpublica.gov.co/eva/gestornormativo/norma.php?i=200172",
+          "rol": "acto"
+        },
+        {
+          "n": "MinTrabajo · $1.160.000 será el salario mínimo para 2023 y auxilio de transporte por $140.606",
+          "u": "https://www.mintrabajo.gov.co/prensa/comunicados/2022/diciembre/-1.160.000-ser%C3%A1-el-salario-minimo-para-2023-y-auxilio-de-transporte-por-140.606",
+          "rol": "acto"
+        },
+        {
+          "n": "Infobae · el salario mínimo sube 16 % y queda en $1.160.000 para 2023",
+          "u": "https://www.infobae.com/america/colombia/2022/12/15/salario-minimo-en-colombia-subio-un-16-quedara-para-2023-en-1160000/",
+          "rol": "contexto"
+        }
+      ],
+      "id": "salario-minimo-2023-decreto-2613",
+      "nivelGobierno": "nacional",
+      "tipoEvidencia": "documento-primario",
+      "indicadores": [],
+      "actosQueAgrupa": 1,
+      "_porQueListaVacia": "Fijar el salario mínimo es el régimen ORDINARIO —la Ley 278 de 1996 y el artículo 8 de la Ley 278 lo prevén año por año—, y acá además hubo concertación: el Ejecutivo formalizó un acuerdo de la Comisión, no ejerció ninguna facultad extraordinaria. I-04 pide un acto que «se aparta del régimen ordinario invocando una facultad extraordinaria, de emergencia o de excepción», y esto es lo contrario. No hay órgano de autonomía constitucional en contra (I-05), ni producto técnico de una entidad con independencia técnica (I-13), ni información negada y entregada tras una tutela (I-07), ni muerte en una operación del Estado (I-14)."
+    },
+    {
+      "fecha": "2023-12-29",
+      "precision": "exacta",
+      "categoria": "economia",
+      "titulo": "Fija por decreto el salario mínimo de 2024 en $1.300.000, un alza del 12 %",
+      "categoriaProbatoria": "hecho-probado",
+      "tipoMedicion": "actividad",
+      "detalle": "El Decreto 2292 del 29 de diciembre de 2023 fijó el salario mínimo legal mensual de 2024 en $1.300.000, desde $1.160.000: un alza cercana al 12 % ($139.896 según El Colombiano, que lo cifra en 12,06 %). El auxilio de transporte se fijó aparte, en el Decreto 2293 de 2023, en $162.000, un 15 % más. Lo firmaron los ministros de Hacienda y del Trabajo.",
+      "contrapunto": "El aumento quedó por encima de la inflación de 2023 (9,28 %), así que fue un alza real; y el mecanismo legal prevé expresamente que el Gobierno decrete cuando la mesa no acuerda, de modo que decretar no es saltarse nada.",
+      "tipoFuente": "verificado",
+      "fuentes": [
+        {
+          "n": "Función Pública · Decreto 2292 de 2023, texto normativo",
+          "u": "https://www.funcionpublica.gov.co/eva/gestornormativo/norma.php?i=227530",
+          "rol": "acto"
+        },
+        {
+          "n": "Régimen Legal de Bogotá · Decreto 2292 de 2023, con su cadena de derogatorias",
+          "u": "https://www.alcaldiabogota.gov.co/sisjur/normas/Norma1.jsp?i=152446",
+          "rol": "acto"
+        },
+        {
+          "n": "Bancolombia · tras no lograrse acuerdo en la mesa, el incremento se definió por decreto",
+          "u": "https://www.bancolombia.com/empresas/capital-inteligente/actualidad-economica-sectorial/aumento-salario-minimo-2024",
+          "rol": "contexto"
+        },
+        {
+          "n": "El Colombiano · el salario mínimo para 2024 es $1.300.000",
+          "u": "https://www.elcolombiano.com/negocios/el-salario-minimo-en-colombia-para-2024-es-1300000-LH23428289",
+          "rol": "contexto"
+        }
+      ],
+      "id": "salario-minimo-2024-decreto-2292",
+      "nivelGobierno": "nacional",
+      "tipoEvidencia": "documento-primario",
+      "indicadores": [],
+      "actosQueAgrupa": 1,
+      "_porQueListaVacia": "Fijar el salario mínimo por decreto cuando la mesa no acuerda es la facultad ORDINARIA del artículo 8 de la Ley 278 de 1996, no una facultad extraordinaria: el propio mecanismo legal lo prevé con fecha límite. I-04 excluye el cauce normal con esas palabras. No hay órgano de autonomía constitucional en contra (I-05), ni producto técnico de una entidad con independencia técnica (I-13), ni información negada y entregada tras una tutela (I-07), ni muerte en una operación del Estado (I-14).",
+      "_discrepanciaDeFUENTES": "HUBO o NO HUBO acuerdo en la mesa: Bancolombia y Buk dicen que no se logró y que por eso se decretó; El Colombiano dice las dos cosas en la misma nota. El dato del ACTO —número de decreto, monto y fecha— es convergente en las cuatro fuentes y es lo que esta entrada publica; el «sin acuerdo» va en la fuente de contexto y no en el título, porque no está dirimido. Y la discrepancia no mueve la lista vacía: con acuerdo o sin él, el decreto es el cauce ordinario del artículo 8 y I-04 lo excluye igual. Dirimirlo pide el acta de la Comisión, que se pide al Ministerio del Trabajo por petición de información del artículo 23 de la Constitución, y desde este contenedor el proxy niega todos los dominios: no se ha intentado por otro canal.",
+      "_precisionDelPORCENTAJE": "El alza se publica como «cerca del 12 %» y no como 12,07 %: las fuentes en mano dan 12 %, 12,06 % y $139.896, y 139.896 sobre 1.160.000 es 12,06 %. El 12,07 % que circula no apareció en ninguna de las fuentes consultadas, así que no se escribe."
+    },
+    {
+      "fecha": "2024-12-24",
+      "precision": "exacta",
+      "categoria": "economia",
+      "titulo": "Fija por decreto el salario mínimo de 2025 en $1.423.500, un alza del 9,54 %",
+      "categoriaProbatoria": "hecho-probado",
+      "tipoMedicion": "actividad",
+      "detalle": "El Decreto 1572 del 24 de diciembre de 2024 fijó el salario mínimo legal mensual de 2025 en $1.423.500, desde los $1.300.000 de 2024: un alza de $123.500, el 9,54 %. El auxilio de transporte quedó en $200.000, de modo que el ingreso mínimo mensual con auxilio llegó a $1.623.500. No hubo acuerdo en la sesión de la Comisión de Concertación del 16 de diciembre de 2024 —las centrales pidieron 12 % y los gremios partieron de 5,2 %—, así que el Gobierno aplicó la regla subsidiaria del artículo 8 de la Ley 278 de 1996, que manda fijarlo a más tardar el 30 de diciembre con base en la meta de inflación del Banco de la República y la productividad acordada en el comité tripartito.",
+      "contrapunto": "El 9,54 % también quedó por encima de la inflación de 2024 (5,2 %), así que fue el tercer año seguido de alza real del mínimo; y la regla subsidiaria que se aplicó es la que la propia ley escribió para el caso en que la mesa no acuerde.",
+      "tipoFuente": "verificado",
+      "fuentes": [
+        {
+          "n": "Función Pública · Decreto 1572 de 2024, texto normativo",
+          "u": "https://www.funcionpublica.gov.co/eva/gestornormativo/norma.php?i=257156",
+          "rol": "acto"
+        },
+        {
+          "n": "INCP · PDF del Decreto 1572 del 24 de diciembre de 2024",
+          "u": "https://incp.org.co/wp-content/uploads/2025/01/Decreto-No.-1572-del-24-de-diciembre-de-2024.pdf",
+          "rol": "acto"
+        },
+        {
+          "n": "La República · el incremento se decretó por 9,54 %",
+          "u": "https://www.larepublica.co/economia/incremento-del-salario-minimo-se-decreto-por-9-54-y-quedo-en-1-623-000-millones-4028474",
+          "rol": "contexto"
+        }
+      ],
+      "id": "salario-minimo-2025-decreto-1572",
+      "nivelGobierno": "nacional",
+      "tipoEvidencia": "documento-primario",
+      "indicadores": [],
+      "actosQueAgrupa": 1,
+      "_porQueListaVacia": "Igual que el de 2024: la facultad del artículo 8 de la Ley 278 de 1996 es ORDINARIA y el decreto es su cauce previsto cuando la mesa no acuerda, con fecha límite escrita en la ley. I-04 excluye el cauce normal. No hay órgano de autonomía constitucional en contra (I-05), ni producto técnico de una entidad con independencia técnica (I-13), ni información negada y entregada tras una tutela (I-07), ni muerte en una operación del Estado (I-14)."
+    },
+    {
+      "fecha": "2025-06-11",
+      "precision": "exacta",
+      "categoria": "legitimidad",
+      "titulo": "Convoca por decreto la consulta popular que el Senado había negado, y el Consejo de Estado le suspende el decreto una semana después",
+      "categoriaProbatoria": "hecho-probado",
+      "tipoMedicion": "actividad",
+      "detalle": "El 11 de junio de 2025, en Cali, firmó el Decreto 0639 convocando a consulta popular sobre la reforma laboral para el 7 de agosto de 2025, después de que el Senado la hubiera negado el 14 de mayo. El documento salió sin la firma de cuatro ministros, con iniciales de viceministros en su lugar. El 18 de junio la Sección Quinta del Consejo de Estado suspendió provisionalmente sus efectos al admitir una demanda de nulidad presentada por senadores —entre ellos el presidente del Senado, Efraín Cepeda—, por haberse expedido sin el concepto previo y favorable del Senado que exige el artículo 104 de la Constitución. El 24 de junio el propio Gobierno derogó el decreto, y el Consejo de Estado se abstuvo después de fallar de fondo por pérdida de fuerza ejecutoria: nunca hubo sentencia de nulidad.",
+      "contrapunto": "La suspensión provisional no es una declaratoria de ilegalidad —lo dijo el propio Petro, y es cierto: es una medida cautelar de una sala, tomada al admitir la demanda—, y de hecho el fondo no se falló nunca porque el decreto se derogó antes. Quien defiende el decreto sostiene que el Senado nunca votó formalmente el fondo de la consulta y que el Gobierno leyó esa omisión como ausencia de negativa; esa lectura la rechazó el tribunal, pero el rechazo fue cautelar.",
+      "tipoFuente": "verificado",
+      "fuentes": [
+        {
+          "n": "Infobae · el texto del decreto con el que convocó la consulta, y los ministros que no lo firmaron",
+          "u": "https://www.infobae.com/colombia/2025/06/11/este-es-el-decreto-con-el-que-gustavo-petro-convoco-a-la-consulta-popular-pese-a-decision-del-senado-no-todos-los-ministros-lo-firmaron/",
+          "rol": "acto"
+        },
+        {
+          "n": "Infobae · el Consejo de Estado suspende los efectos del decreto: estos son los argumentos",
+          "u": "https://www.infobae.com/colombia/2025/06/18/el-consejo-de-estado-suspendio-los-efectos-del-decretazo-de-petro-con-el-que-se-convoco-la-consulta-popular-estos-son-los-argumentos/",
+          "rol": "acto"
+        },
+        {
+          "n": "El Tiempo · el Consejo de Estado suspende el decreto que convocaba la consulta popular",
+          "u": "https://www.eltiempo.com/justicia/cortes/urgente-consejo-de-estado-suspende-el-decretazo-del-gobierno-petro-que-convocaba-la-consulta-popular-3464645",
+          "rol": "acto"
+        },
+        {
+          "n": "El País · el Consejo de Estado deja en firme la nulidad de la consulta que quería convocar en 2025",
+          "u": "https://www.elpais.com.co/politica/consejo-de-estado-dejo-en-firme-la-nulidad-de-la-consulta-popular-que-deseaba-convocar-el-presidente-gustavo-petro-en-2025-2058.html",
+          "rol": "efecto"
+        },
+        {
+          "n": "Universidad Javeriana · consulta popular por decreto: lo que dice la academia",
+          "u": "https://www.javeriana.edu.co/pesquisa/consulta-popular-decreto-petro/",
+          "rol": "contexto"
+        }
+      ],
+      "id": "consulta-popular-por-decreto-suspendida",
+      "nivelGobierno": "nacional",
+      "estadoProcesal": "en-disputa-institucional",
+      "tipoEvidencia": "documento-primario",
+      "indicadores": [],
+      "actosQueAgrupa": 1,
+      "_porQueListaVacia": "Corrido contra los cuatro criterios escritos, NINGUNO aplica, y eso es un hallazgo sobre los criterios y no sobre el hecho. I-04 pide un acto que se aparte del régimen ordinario INVOCANDO una facultad extraordinaria, y acá el Ejecutivo sostuvo lo contrario: que estaba dentro del artículo 104 porque el Senado no había negado formalmente. I-05 pide una diferencia con un «órgano de autonomía constitucional», y las dos contrapartes de este choque son RAMAS —el Senado, legislativa; el Consejo de Estado, judicial—, no los órganos autónomos e independientes del inciso segundo del artículo 113, que es el universo alrededor del cual se escribió ese criterio (sus propias exclusiones citan el artículo 130 y las entidades de independencia solo técnica). I-13, I-07 e I-14 no tienen materia acá. La ambigüedad de I-05 y el vacío que deja quedan declarados en `_vaciosDeCriterio`, y NO se resuelven en esta tanda: ensanchar o estrechar un criterio mirando el caso que tiene que clasificar es exactamente lo que `construida-para-el-caso` prohíbe (v1077).",
+      "_porQueENTRAIGUAL": "Entra aunque no dispare nada porque el hecho está documentado y es el choque institucional más grave del cuatrienio: un decreto que se saltó la competencia de otra rama y que un tribunal frenó. Omitirlo porque no cabe en ningún criterio sería dejar el registro torcido para que los criterios siguieran sin tener nada que rechazar."
     }
   ],
   "casos": {
@@ -1585,5 +1740,15 @@
         "porQueNO": "NO SE DOCUMENTÓ, y la razón importa: el 15 de abril de 2025 el presidente ANUNCIÓ que la decretaría, y la búsqueda no sostiene que el decreto se expidiera. I-04 excluye el «anuncio sin acto administrativo expedido», así que la entrada habría sumado una revisada sin disparo — es decir, habría acercado el registro al piso de 20 sin aportar un acto. Se deja fuera por eso: meterla sería mover el número y no el material."
       }
     ]
-  }
+  },
+  "_vaciosDeCriterio": [
+    {
+      "entrada": "consulta-popular-por-decreto-suspendida",
+      "hecho": "El Ejecutivo se apartó de la competencia constitucional de otra RAMA —el concepto previo y favorable del Senado que exige el artículo 104— y un tribunal le suspendió el acto.",
+      "porQueNingunoAplica": "I-04 pide que el acto INVOQUE una facultad extraordinaria, y acá el Ejecutivo sostuvo que estaba dentro del cauce ordinario. I-05 pide un «órgano de autonomía constitucional» en contra, y las dos contrapartes son ramas: el Senado y el Consejo de Estado. I-13, I-07 e I-14 no tienen materia.",
+      "queLoCERRARIA": "Un quinto criterio sobre el choque entre RAMAS, con su referencia externa —el artículo 113 y el reparto de competencias— escrito ANTES de volver a mirar el registro; o una decisión razonada de que el universo de I-05 incluye a las ramas, que es un ENSANCHAMIENTO y pide la misma justificación que un umbral nuevo (v882, v1075).",
+      "porQueNoSeCierraAhora": "Escribir o ensanchar un criterio con este caso delante lo deja «construida para el caso» y sin validar (v1077): el orden es escribir primero y correr después. Y conviene decir que el vacío no es cómodo para nadie: cerrarlo haría DISPARAR un criterio sobre el gobierno anterior, no al revés.",
+      "porQueNOCAMBIAELVEREDICTO": "La validación de un criterio marca el el origen de la categoría del INDICADOR y no fija el nivel de ningún eje (medido en la v1088), así que ni este vacío ni su cierre mueven el dictamen del gobierno actual."
+    }
+  ]
 }

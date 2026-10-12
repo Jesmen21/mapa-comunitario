@@ -3443,6 +3443,74 @@ console.log('\n  -- la ficha del gobernante --');
       '`corridaHaciaAtras` cuenta como revisada toda entrada con `indicadores` declarado, ' +
       'lista vacía incluida: es eso lo que la de arriba protege');
 
+    /* ═══ EL TERCER RESULTADO DE CORRER UN CRITERIO (v1101) ════════════════
+       Correr los criterios da TRES resultados y hasta acá tenía forma para
+       dos: la entrada cae en una vía, o no cae en ninguna y lleva la lista
+       vacía con su razón. El tercero lo encontró el Decreto 0639 de 2025 —la
+       consulta popular convocada por decreto y suspendida—: un hecho
+       documentado que no cae en ninguno porque el UNIVERSO del criterio no lo
+       contempla, no porque el criterio lo haya mirado y lo descarte.
+
+       Dentro de la lista vacía los dos últimos se leen idénticos, y piden
+       acciones distintas (v899): «lo miré y no aplica» no pide nada, y «el
+       criterio no alcanza a este hecho» pide un criterio nuevo escrito contra
+       referencia externa y ANTES de mirar el registro (v1077).
+
+       DE QUÉ NO RESPONDE (v945, v952): no busca vacíos. Comprueba que los
+       vacíos ESCRITOS estén completos, nombren una entrada que exista y no
+       contradigan su propia entrada, y que las DOS redacciones —la de cero y
+       la de N— estén escritas y lleguen a la pantalla. Un vacío que nadie
+       notó no lo puede encontrar ninguna guarda, y eso va dicho en la propia
+       pantalla. */
+    const vcDecl = Array.isArray(regAnt._vaciosDeCriterio) ? regAnt._vaciosDeCriterio : [];
+    const idsAnt = {};
+    entAnt.forEach((e) => { if (e && e.id) idsAnt[e.id] = e; });
+    const vcMal = vcDecl.filter((v) => {
+      const e = idsAnt[v && v.entrada];
+      return !e || ((e.indicadores || []).length > 0) ||
+             !String((v && v.hecho) || '').trim() ||
+             !String((v && v.porQueNingunoAplica) || '').trim() ||
+             !String((v && v.queLoCERRARIA) || '').trim() ||
+             !String((v && v.porQueNoSeCierraAhora) || '').trim();
+    });
+    comprobar('MATERIAL · el registro anterior declara algún vacío de criterio hallado al correr',
+      vcDecl.length > 0,
+      vcDecl.length + ' declarado(s): ' + vcDecl.map((v) => v.entrada).join(' '));
+    comprobar('y cada vacío está completo y nombra una entrada que lo sostiene',
+      vcDecl.length > 0 && vcMal.length === 0,
+      !vcDecl.length ? 'no hay ninguno declarado: lo dice la de arriba'
+        : vcMal.length ? vcMal.length + ' de ' + vcDecl.length + ' incompleto(s) o sobre una entrada ' +
+            'que no existe o que SÍ declara indicador: ' + vcMal.map((v) => (v && v.entrada) || '«sin entrada»').join(' ')
+        : (vcDecl.length === 1 ? 'el declarado trae hecho, por qué ninguno aplica, qué lo cerraría y por qué no '
+            : 'los ' + vcDecl.length + ' traen hecho, por qué ninguno aplica, qué los cerraría y por qué no ') +
+          (vcDecl.length === 1 ? 'se cierra acá, y su entrada existe y lleva la lista vacía'
+            : 'se cierran acá, y sus entradas existen y llevan la lista vacía'));
+    /* LA GUARDA DE LA GUARDA (v878), en sus tres mitades: que el módulo LEA el
+       bloque, que escriba las DOS redacciones, y que el bloque LLEGUE a la
+       pantalla. Sin la tercera, el vacío sigue siendo un dato que ninguna
+       superficie alcanza, que es la clase C que esta tanda vino a cerrar. */
+    const leeVacios = /_vaciosDeCriterio\b/.test(j70v);
+    const dosRedacciones = /Un vacío que nadie notó no aparece acá/.test(j70v) &&
+                           /no caben en NINGUNO de los criterios escritos/.test(j70v);
+    /* Y la tercera mitad mide el ENGANCHE y no la construcción: la inyección
+       que borró solo el `appendChild` dejó esta comprobación en verde con el
+       bloque calculado y sin llegar a ninguna pantalla —que es exactamente la
+       clase C que la tanda vino a cerrar—, así que lo que falta no era la
+       inyección sino lo que la aserción medía (v1029). DE QUÉ NO RESPONDE: de
+       que el bloque se VEA. Eso lo mediría una suite de navegador, y en este
+       contenedor no corre ninguna. */
+    const pintaVacios = /sp-c2-vacio/.test(j70v) && /textoDeVacios\(vcs\.length\)/.test(j70v) &&
+                        /s2\.appendChild\(vx\)/.test(j70v);
+    comprobar('y el módulo lee el bloque, escribe las dos redacciones y lo pinta',
+      leeVacios && dosRedacciones && pintaVacios,
+      !leeVacios ? '`js/70` dejó de leer `_vaciosDeCriterio`, así que la de arriba vigila un bloque ' +
+                   'que nadie consume'
+      : !dosRedacciones ? 'falta una de las dos redacciones: con una sola, el día que el vacío se cierre ' +
+                          'el renglón desaparece y «ninguno» vuelve a leerse como «nadie lo ha mirado»'
+      : !pintaVacios ? 'el bloque no llega a la pantalla de indicadores: el vacío volvería a ser un dato ' +
+                       'que ninguna superficie alcanza'
+      : 'lo lee, tiene la redacción de cero y la de N, y lo pinta en la Capa 2 de la ficha');
+
     /* ═══ I-05 NO CUENTA EL CONTROL AUTOMÁTICO (v1094) ═════════════════════
        El artículo 214.6 obliga al Ejecutivo a mandar el decreto de excepción
        a la Corte al día siguiente de expedirlo. Contar cada revisión

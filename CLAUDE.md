@@ -1450,6 +1450,24 @@ sección al final de este archivo.
   afuera, una serie que el proxy no deja leer, una decisión de quien firma el
   módulo— y para esos el estado honesto es publicarlos en rojo con su trámite,
   no cerrarlos.
+* **Correr un criterio da TRES resultados, no dos** (v1061, v1101). La entrada
+  cae en una vía; o no cae en ninguna y lleva la **lista vacía** con su razón;
+  o **no cae en ninguna porque el UNIVERSO del criterio no la contempla**, que
+  es otra cosa y pide otra acción (v899): el segundo no pide nada, el tercero
+  pide un criterio nuevo. Dentro de la lista vacía los dos últimos se leen
+  idénticos. **La señal: el criterio no la descarta, no la alcanza.** Se busca
+  preguntando *¿este criterio miró este hecho y lo dejó fuera, o su universo
+  nunca lo contempló?* Y el vacío **no se cierra en la tanda que lo encuentra**
+  —escribir o ensanchar un criterio con delante el caso que debe clasificar lo
+  deja `construida-para-el-caso` (v1077)—: lo que sí se hace es que LLEGUE a
+  una pantalla, con qué hecho, por qué no cabe, qué lo cerraría y por qué no se
+  cierra acá. Y conviene medir a quién le conviene: el de la v1101 **haría
+  disparar** un criterio sobre el gobierno anterior, no al revés.
+* **Y una aserción puede medir que algo se CONSTRUYA y no que se ENGANCHE**
+  (v1029, v1101). Una guarda contra la clase C se quedó en verde con el bloque
+  calculado y sin `appendChild`: en verde sobre exactamente el defecto que
+  vigilaba. **La señal: la inyección que borra solo el enganche no la pone
+  roja.** Lo que falta no es la inyección — es lo que la aserción mide.
 * **Y una comprobación que llega a cero se DICE, no desaparece** (v1064). Un
   renglón que se borra solo deja «ya está hecho» con la misma cara que
   «nadie lo ha mirado» —la regla de arriba, dicha en una pantalla—. Tres de

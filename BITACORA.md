@@ -26421,3 +26421,129 @@ vieja cualquiera tampoco aparece ahí.
   queda pendiente fijar su fecha de publicación. `pendiente`
 * **No mueve el dictamen.** Sigue en «Nada fiable», y el registro pasa de 244 a
   246 hechos del mandato. `cerrado en v1100`
+
+## v1101 · el TERCER resultado de correr un criterio
+
+**Lo que la tanda vino a hacer** era bajar el renglón rojo del control que
+pedía los cuatro actos que le faltaban al registro del gobierno anterior para
+llegar al piso de 20 entradas revisadas. Eso se hizo. Lo que no estaba
+previsto es lo que apareció al correr los criterios sobre el cuarto acto.
+
+### La regla de selección, escrita ANTES de buscar (v1077)
+
+Va primero porque es lo que impide escoger material a conveniencia, y porque
+una de las dos vías tenía resultado predicho:
+
+* **Vía (c) · completar las SERIES ANUALES que el registro ya había empezado.**
+  El registro traía el decreto de salario mínimo de 2026 —«el alza más alta del
+  periodo»— y ninguno de los otros tres años. Publicar un punto de una serie
+  anual y callar los otros tres es un defecto por sí mismo: deja al lector
+  comparando un año contra nada. **La lista la cierra el calendario**, no yo.
+  Y lo que iba a disparar, dicho de antemano: **NADA** —fijar el salario mínimo
+  es la facultad del artículo 8 de la Ley 278 de 1996 y I-04 excluye el cauce
+  ordinario—, que es EXACTAMENTE la forma que me convendría si lo que buscara
+  fuera pasar el piso. Por eso la razón independiente va primero.
+* **Vía (d) · los actos que un juez dejó sin efecto**, para que la tanda no
+  quedara inclinada hacia lo cómodo. Lo que iba a disparar, dicho de antemano:
+  **I-05**, que ya disparó en ese registro, así que su estado no se mueve.
+
+### Lo que salió, y la predicción que falló
+
+Los tres decretos de salario mínimo salieron como estaba escrito: 2023
+(Decreto 2613 de 2022, $1.160.000, +16 %, **por concertación**), 2024 (Decreto
+2292 de 2023, $1.300.000, ~12 %) y 2025 (Decreto 1572 de 2024, $1.423.500,
++9,54 %), los dos últimos por la regla subsidiaria. Lista vacía los tres.
+
+**La vía (d) falló la predicción, y ahí está el hallazgo.** El cuarto acto
+—Decreto 0639 del 11 de junio de 2025, la consulta popular convocada por
+decreto después de que el Senado la negó, suspendida por el Consejo de Estado
+el 18 de junio y derogada por el propio Gobierno el 24— no dispara I-05. La
+razón es precisa: I-05 pide una diferencia con un **«órgano de autonomía
+constitucional»**, y las dos contrapartes de este choque son **RAMAS** —el
+Senado, legislativa; el Consejo de Estado, judicial—, no los órganos autónomos
+e independientes del inciso segundo del artículo 113, que es el universo
+alrededor del cual se escribió ese criterio: sus propias exclusiones citan el
+artículo 130 y las entidades de independencia solo técnica.
+
+Y tampoco dispara I-04, que pide que el acto **INVOQUE** una facultad
+extraordinaria: acá el Ejecutivo sostuvo lo contrario, que estaba dentro del
+artículo 104 porque el Senado no había negado formalmente.
+
+### Correr un criterio da TRES resultados, y había forma para dos
+
+Hasta acá: la entrada cae en una vía y declara su indicador, o no cae en
+ninguna y lleva la **lista vacía** con su razón, que es la marca que la v1061
+inventó para que «lo corrí y ninguno aplica» no se viera igual que «nadie lo ha
+mirado».
+
+El tercero es otro: **un hecho documentado que no cae en ninguno porque el
+UNIVERSO del criterio no lo contempla**, no porque el criterio lo haya mirado
+y lo descarte. Dentro de la lista vacía los dos últimos se leen idénticos, y
+piden acciones distintas (v899): el segundo no pide nada, y el tercero pide un
+criterio nuevo escrito contra referencia externa y antes de volver a mirar el
+registro.
+
+**No se cierra en esta tanda, y conviene decir por qué no es comodidad:**
+cerrarlo haría DISPARAR un criterio sobre el gobierno anterior, no al revés.
+Lo que lo impide es el orden de la v1077 — escribir el criterio con delante el
+caso que tiene que clasificar lo deja «construida para el caso» y sin validar.
+
+Lo que SÍ se hizo es que el vacío **llegue a una pantalla**: escrito solo en el
+registro era un dato que ninguna superficie alcanzaba, que es la clase C.
+`_vaciosDeCriterio` en el registro, `vaciosDeCriterio` y `textoDeVacios` en
+`js/70`, pintado en la Capa 2 de la ficha con sus dos redacciones —la de cero y
+la de N (v970)—, y un casillero calculado en el control.
+
+### La demostración en rojo, y la inyección que NO mordió
+
+Cinco inyecciones fieles, con el arnés de tres estados (v1090):
+
+| Inyección | Estado |
+|---|---|
+| el bloque de vacíos desaparece del registro | ROJO · 720 |
+| el vacío se queda sin «qué lo cerraría» | ROJO · 721 |
+| el vacío nombra una entrada que SÍ declara indicador | ROJO · 721 |
+| se borra la redacción de CERO | ROJO · 721 |
+| el casillero del control vuelve a un estado escrito a mano | ROJO · 721 (lo cazó la guarda de la v1098) |
+
+Y la sexta, que es la que enseña algo: **borrar solo el `appendChild` del
+bloque dejó la comprobación en VERDE** con el bloque calculado y sin llegar a
+ninguna pantalla — es decir, en verde sobre exactamente la clase C que la tanda
+vino a cerrar. Lo que faltaba no era la inyección, era lo que la aserción medía
+(v1029): comprobaba que el bloque se CONSTRUYERA y no que se ENGANCHARA. Con
+el enganche medido, la inyección pone la corrida en rojo.
+
+### Y el `ReferenceError` otra vez, cazado por el CONTEO
+
+Tercera vez en este archivo. La primera guarda que escribí usaba `dAnt` donde
+la variable se llama `regAnt`: la rama solo se ejecuta cuando la guarda corre,
+así que tiró un `ReferenceError` que **mató la corrida antes del resumen**. El
+`grep` de `✗` no encontró nada. Lo delató el número: **183 palomitas donde la
+corrida anterior tenía 722**. La regla de CLAUDE.md funcionó tal como está
+escrita, y por eso no se agrega nada: se compara el conteo.
+
+### Lo que esta versión NO hace
+
+* **NO escribe el quinto criterio** sobre el choque entre ramas. Pide una
+  referencia externa —el artículo 113 y el reparto de competencias— redactada
+  antes de volver a mirar el registro, que es otra tanda y en ese orden.
+  `pendiente`
+* **NO resuelve si el universo de I-05 incluye a las ramas.** Es un
+  ENSANCHAMIENTO y pide la misma justificación que un umbral nuevo (v882,
+  v1075); decidirlo con este caso delante es lo que la regla prohíbe.
+  `pendiente`
+* **NO dirime si hubo acuerdo en la mesa de 2024.** Bancolombia y Buk dicen
+  que no; El Colombiano dice las dos cosas en la misma nota. El dato del ACTO
+  es convergente y es lo que se publica; la discrepancia va escrita en
+  `_discrepanciaDeFUENTES` y no mueve la lista vacía, porque con acuerdo o sin
+  él el decreto es el cauce ordinario. Dirimirlo pide el acta de la Comisión y
+  el proxy niega todos los dominios. `pendiente`
+* **NO baja el casillero de validación a verde.** Pasó de «validados: 0 de 5» a
+  **«3 de 5»** —I-13, I-07 e I-14 quedaron validados al llegar el registro
+  anterior a 20 entradas revisadas— y sigue en rojo por I-04 e I-05, que
+  dispararon: a esos el piso no les quita la marca, lo que falta es mirar los
+  casos que cayeron. `cerrado en v1101 · lo que quedaba del piso`
+* **NO mueve el dictamen.** Sigue en «Nada fiable», medido después del cambio,
+  y tenía que no moverse: la validación marca el origen de la categoría del
+  INDICADOR y no fija el nivel de ningún eje (v1088). El control pasa de 10 a
+  **11 de 19** casilleros. `cerrado en v1101`

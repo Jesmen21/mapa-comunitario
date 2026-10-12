@@ -2342,6 +2342,60 @@
              registrosEnMano: regs.length, corridas: corridas, razon: razon };
   }
 
+  /* ── LOS VACÍOS DE CRITERIO HALLADOS AL CORRER (v1101) ─────────────────────
+     Correr los cuatro criterios sobre el registro anterior produce TRES
+     resultados y no dos. Dos ya tenían forma: la entrada cae en una vía
+     —declara su indicador— o no cae en ninguna, y entonces lleva la LISTA
+     VACÍA con su razón, que es la marca que la v1061 inventó para que
+     «revisado y ninguno aplica» no se viera igual que «nadie lo ha mirado».
+
+     El tercero apareció al correrlos sobre el Decreto 0639 de 2025: un hecho
+     documentado, grave y encajado en NINGÚN criterio, no porque el criterio lo
+     haya mirado y lo descarte, sino porque su universo no lo contempla. Eso es
+     un hallazgo sobre los CRITERIOS, y dentro de la lista vacía se lee igual
+     que «lo miré y no aplica» — que es la exención silenciosa de CLAUDE.md
+     entrando por la puerta del criterio en vez de la del dato.
+
+     No se cierra mirando el caso: escribir o ensanchar un criterio con delante
+     el hecho que tiene que clasificar lo deja `construida-para-el-caso` y sin
+     validar (v1077). Lo que SÍ se puede hacer, y es lo que falta, es que el
+     vacío llegue a una pantalla: escrito solo en el registro es un dato que
+     ninguna superficie alcanza, que es la clase C. */
+  function vaciosDeCriterio(dd) {
+    var ls = ((dd || {})._vaciosDeCriterio) || [];
+    var porId = {};
+    (((dd || {}).entradas) || []).forEach(function (e) { if (e && e.id) porId[e.id] = e; });
+    return ls.map(function (v) {
+      var e = porId[v.entrada];
+      return { entrada: v.entrada, enRegistro: !!e,
+               titulo: e ? e.titulo : null, fecha: e ? e.fecha : null,
+               /* Un vacío declarado sobre una entrada que SÍ disparó sería una
+                  contradicción, y se dice en vez de taparse. */
+               contradice: !!(e && (e.indicadores || []).length),
+               hecho: v.hecho, porQue: v.porQueNingunoAplica,
+               cerraria: v.queLoCERRARIA, porQueNoAhora: v.porQueNoSeCierraAhora,
+               noMueve: v.porQueNOCAMBIAELVEREDICTO };
+    });
+  }
+
+  /* Las DOS redacciones, la de cero y la de N (v970): la segunda es la que hace
+     falta el día que aparezca otro vacío, y la primera es la que impide que
+     «ninguno» desaparezca de la pantalla y se lea como «nadie lo ha mirado». */
+  function textoDeVacios(n) {
+    if (!n) {
+      return 'Corridos los criterios sobre el registro del gobierno anterior, no quedó ningún hecho ' +
+             'documentado fuera de todos ellos: cada entrada revisada o cae en una vía o dice por qué ' +
+             'no cae en ninguna. Lo que esto NO dice es que no haya vacíos: dice que nadie ha escrito ' +
+             'uno. Un vacío que nadie notó no aparece acá.';
+    }
+    return cn(n, 'hecho documentado del registro anterior no cabe en NINGUNO de los criterios escritos',
+              'hechos documentados del registro anterior no caben en NINGUNO de los criterios escritos') +
+           ', y eso es un hallazgo sobre los criterios y no sobre el hecho. No se cierra acá: ensanchar ' +
+           'o escribir un criterio con delante el caso que tiene que clasificar es lo que lo deja ' +
+           'tallado a la medida. Y lo que esta cuenta NO cubre: solo los vacíos que alguien escribió. ' +
+           'Un vacío que nadie notó no aparece.';
+  }
+
   /* El cierre de la carta de validación, en UNA función: la ficha no lo arma
      por su cuenta, así que un estado nuevo no puede quedarse sin cierre en
      una pantalla y tenerlo en otra (v880, v1090). */
@@ -4334,6 +4388,28 @@
              ', y va en ' + porPiso[0].v.revisadas
            : ''));
 
+    /* Y el tercer resultado de correr los criterios (v1101): el hecho que no
+       cae en ninguno porque el universo del criterio no lo contempla. El
+       casillero NO exige que no haya vacíos —un vacío declarado es trabajo
+       honesto, no una falla—: exige que los que haya estén COMPLETOS y que
+       cada uno nombre una entrada del registro que exista y no declare
+       indicador. Un vacío a medias se lee como un vacío atendido. */
+    var vcs = vaciosDeCriterio(dd === D ? DA : null);
+    var vMal = vcs.filter(function (v) {
+      return !v.enRegistro || v.contradice || !v.hecho || !v.porQue || !v.cerraria || !v.porQueNoAhora;
+    });
+    caja('Todo vacío de criterio hallado al correr está escrito y completo',
+         vMal.length ? 'falla' : 'pasa',
+         vMal.length
+           ? cn(vMal.length, 'vacío está incompleto o nombra una entrada que no lo sostiene',
+                'vacíos están incompletos o nombran una entrada que no los sostiene') + ': ' +
+             vMal.map(function (v) { return v.entrada; }).join(' ')
+           : vcs.length
+             ? cn(vcs.length, 'vacío declarado, con su hecho, su razón, qué lo cerraría y por qué no se cierra acá',
+                  'vacíos declarados, con su hecho, su razón, qué los cerraría y por qué no se cierran acá')
+             : 'ningún vacío escrito, y la redacción de ese caso está escrita: no dice que no haya vacíos, ' +
+               'dice que nadie ha escrito uno');
+
     var conCuenta = indC.filas.filter(function (f) { return f.criterio && f.n; });
     var pisoActos = conCuenta.filter(function (f) { return !f.unidadExacta; });
     caja('Toda cuenta de indicador declara en qué se mide',
@@ -4750,6 +4826,7 @@
                                 lado (v871). Hacían falta para medir si clasificar el registro
                                 anterior desbloquea algo, y no estaban. */
                              validacion: validacionDe, corridaAtras: corridaHaciaAtras,
+                             vaciosCriterio: vaciosDeCriterio,
                              minimoValidacion: MIN_ACTOS_VALIDACION,
                              veredictoDe: veredictoGeneral, peorNivel: peorNivelDe,
                              ejes: ejesDe, ejeA: ejeA, ejeB: ejeB, ejeC: ejeC, ejeD: ejeD,
@@ -5959,6 +6036,42 @@
         'que se declaran —mecanismos excepcionales, choques con órganos autónomos e información obtenida por ' +
         'tutela— cuentan solo lo declarado: decidir que un hecho es un choque con un órgano autónomo es una ' +
         'lectura sobre un gobierno real, y este módulo no la deduce del texto.'));
+    }
+
+    /* EL VACÍO DE CRITERIO, EN LA PANTALLA (v1101). Estaba escrito en el
+       registro y ninguna superficie lo alcanzaba: clase C. Las dos redacciones
+       se pintan, la de cero y la de N, porque un renglón que desaparece al
+       llegar a cero deja «ninguno» con la cara de «nadie lo ha mirado». */
+    if (DA) {
+      var vcs = vaciosDeCriterio(DA);
+      var vx = el('div', 'sp-c2-vacio' + (vcs.length ? ' falta' : ''));
+      vx.appendChild(el('b', null, 'Hechos del registro anterior que no caben en ningún criterio: ' +
+        vcs.length));
+      vx.appendChild(el('p', null, textoDeVacios(vcs.length)));
+      if (vcs.length) {
+        var ulv = el('ul', 'sp-c2-vaciol');
+        vcs.forEach(function (v) {
+          var li = el('li', null);
+          li.appendChild(el('b', null, (v.fecha ? fechaCorta(v.fecha) + ' · ' : '') +
+            (v.titulo || v.entrada)));
+          li.appendChild(el('p', null, v.hecho));
+          li.appendChild(el('p', 'sp-c2-vpq', 'Por qué no cabe: ' + v.porQue));
+          li.appendChild(el('p', 'sp-c2-vpq', 'Qué lo cerraría: ' + v.cerraria));
+          li.appendChild(el('p', 'sp-c2-vpq', 'Por qué no se cierra acá: ' + v.porQueNoAhora));
+          if (v.noMueve) li.appendChild(el('p', 'sp-c2-vpq', v.noMueve));
+          if (!v.enRegistro) {
+            li.appendChild(el('p', 'sp-c2-vmal', 'Y la entrada que este vacío nombra NO está en el ' +
+              'registro, así que el vacío no se puede ir a mirar.'));
+          }
+          if (v.contradice) {
+            li.appendChild(el('p', 'sp-c2-vmal', 'Y la entrada que este vacío nombra SÍ declara ' +
+              'indicador, que contradice al vacío: una de las dos cosas está mal escrita.'));
+          }
+          ulv.appendChild(li);
+        });
+        vx.appendChild(ulv);
+      }
+      s2.appendChild(vx);
     }
 
     /* Y la comparación con el gobierno anterior, que es justamente la que NO
