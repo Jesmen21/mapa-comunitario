@@ -1,4 +1,4 @@
-const URBIS_CACHE = 'urbis-v1099-seguimiento-sin-novedades-11-oct';
+const URBIS_CACHE = 'urbis-v1100-el-desglose-del-aumento-y-la-nomina';
 const URBIS_ASSETS = [
   './',
   './index.html',

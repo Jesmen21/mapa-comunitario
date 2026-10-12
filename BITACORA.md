@@ -26314,3 +26314,110 @@ misma lista, publicada.
 * **La media histórica del eje B** no existe, y conseguirla no bastaría sin
   igualar la unidad de las cuentas. `pendiente`
 * **No mueve el dictamen.** Sigue en «Nada fiable». `cerrado en v1098`
+
+
+## v1100 · el desglose del aumento, y la nómina que el propio proyecto amplía
+
+Dos hechos que llegaron por capturas de un video de YouTube —un creador
+mostrando en pantalla informes del Observatorio Fiscal de la Javeriana y del
+CARF—. Lo que entra al registro no es el video: son las cifras, corroboradas
+por su cuenta, y lo que no se pudo corroborar queda fuera y fechado.
+
+### Lo primero fue medir qué ya estaba
+
+Antes de escribir nada, un barrido sobre el registro: `575,6` **ya estaba**
+—en la entrada del 1 de septiembre sobre la prima de riesgo, con la
+comparación contra los $634,9 billones y los $59,3 billones de diferencia—, y
+también `FEPC` y `CARF`. Lo que NO estaba era `155,4`, `37,4`, `118,0`,
+`281 billones`, `inflexible`, `8.926` ni `Observatorio Fiscal`.
+
+Es la regla de la v861 aplicada antes de empezar: **declarar ausente algo que
+sí está medido es peor que un dato de menos**, y acá habría significado una
+entrada duplicada sobre el tamaño del presupuesto.
+
+### Lo que entró
+
+**El desglose del aumento.** De los $59,3 billones que creció el presupuesto
+de 2027, **$37,4 billones son servicio de la deuda** —de $118,0 a $155,4
+billones, un alza del 54,7 %—, cerca de dos terceras partes de todo el
+incremento. Entre los rubros que el proyecto incorpora y el anterior no
+contemplaba: $9,6 billones para el FEPC, $6,5 para pensiones, $2,0 para salud
+y unos $700.000 millones para universidades. Y el propio presidente advirtió
+que **$281 billones, el 44 %, salen de deuda**.
+
+**La nómina.** El Observatorio Fiscal comparó los dos proyectos de PGN 2027
+—este gobierno menos el anterior— y encontró **8.926 cargos adicionales** y
+**+6,7 % en el costo de la nómina**, unos $779.034 millones, concentrados en
+Justicia (7.696), Interior (650), Transporte (534) y Ciencia y Tecnología (46).
+
+### Una comprobación que el registro pudo hacer solo
+
+La nota de prensa que trae la cifra **omite Transporte**, y su desglose suma
+8.392: faltan 534 para el total. Con el cuarto sector, cierra exacto en 8.926.
+No es una fuente más — es que las partes son coherentes con el total, que es
+la misma comprobación interna que la v1082 hizo con el acumulado del IPC.
+
+### El intento que falló primero, y queda fechado
+
+La **primera** búsqueda NO corroboró la cifra de los 8.926 cargos, y por eso
+ese día no se publicó. La segunda, más específica, la encontró en La Opinión
+con el desglose y el costo. El PDF del Informe 75 no se pudo abrir: el proxy
+niega ofiscal.org como niega todo lo demás.
+
+Las dos cosas quedan escritas en la entrada, con fecha y canal, porque la regla
+de la v1055 y la v1065 pide exactamente eso: **un intento que falla se FECHA, y
+cuando no se ha intentado eso también se escribe.** Lo que no se puede es que
+«no se corroboró» y «no se buscó» se vean igual.
+
+### Y el contrapunto no es cortesía: es la mitad del hallazgo
+
+Los dos entran con su acotación, y las dos acotaciones son las que impiden que
+el dato se lea como más de lo que dice:
+
+* Del servicio de la deuda, el salto se concentra en el **pago de principal**
+  —$30,7 billones— y no en los intereses, así que son vencimientos heredados y
+  no gasto nuevo que alguien decidió. Y según el CARF **el 88 % del gasto del
+  Estado es inflexible**, dos terceras partes por mandato constitucional o
+  legal: un presidente decide sobre una fracción pequeña. Por eso el rumbo del
+  gasto se juzga donde sí hubo decisión.
+* De los 8.926 cargos, la mayor parte está en **Justicia**, donde el Consejo
+  Superior de la Judicatura venía advirtiendo un déficit de más de $6 billones
+  frente a lo solicitado. Ampliar esa planta responde a una necesidad
+  documentada. Lo que el dato permite comprobar es otra cosa: este Gobierno
+  hizo del tamaño del Estado uno de sus reproches centrales, y su propio
+  proyecto amplía la planta. **Las dos cosas pueden ser ciertas a la vez**, y
+  el registro publica el número sin elegir la lectura.
+
+### Dónde quedó, y una falsa alarma que conviene dejar escrita
+
+Al componer la página, ninguna de las dos cifras aparecía: ni en la placa, ni
+en la ficha, ni en el tablero. Parecía la **clase C** —el dato en el archivo y
+ninguna pantalla que lo alcance— en el sitio más caro.
+
+No lo era, y la medición lo mostró en dos pasos. `sePublica` devolvía
+`publica: true` para las dos, así que no era la puerta de publicación. Y el
+recuento de entradas visibles en la placa dio **5 de 255**: la placa es un
+resumen con las últimas cinco y un botón «Ver el muro completo». En
+`#/al-dia` las dos están enteras, con el desglose de Transporte y el 88 % del
+CARF.
+
+Queda dicho porque la próxima vez que algo «no llegue a la pantalla» el primer
+paso no es sospechar de la clase C: es **contar cuántas entradas muestra esa
+superficie**. Y de paso: `#/linea-de-tiempo` tampoco las lista, y tampoco es un
+fallo — es un índice por tema, con 255 y «elija uno para leerlo», y una entrada
+vieja cualquiera tampoco aparece ahí.
+
+### Lo que esta versión NO hace
+
+* **No toca el bloque `presupuesto`**, que es el que alimenta el nivel del eje
+  C. Las dos entradas son contexto del presupuesto y no sectores con variación
+  real, así que el dictamen no se mueve — y tenía que no moverse.
+  `cerrado en v1100`
+* **No incorpora el 88 % del CARF como entrada propia.** Va dentro del
+  contrapunto de la entrada del presupuesto, que es donde un lector lo
+  necesita, porque las fuentes en mano no fechan la publicación del análisis y
+  una entrada pide una fecha que no se puede inventar. `pendiente`
+* **No leyó el Informe 75 en su fuente primaria.** El proxy niega ofiscal.org;
+  queda pendiente fijar su fecha de publicación. `pendiente`
+* **No mueve el dictamen.** Sigue en «Nada fiable», y el registro pasa de 244 a
+  246 hechos del mandato. `cerrado en v1100`

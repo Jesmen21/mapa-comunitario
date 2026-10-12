@@ -8984,6 +8984,87 @@
       "_porQueFALTABA": "v1097: este decreto estaba NOMBRADO en el detalle de dos entradas —los paquetes de 11 y de 15 decretos dicen «dentro del marco de la emergencia declarada por el decreto 1261»— y no tenía entrada propia, así que I-04 no lo contaba: el acto que FUNDA toda la emergencia estaba en el registro y ningún contador lo alcanzaba, que es la clase C de CLAUDE.md. Con él, I-04 del gobierno actual pasa de 4 a 5. La entrada se abre aunque suba la cuenta, y eso es parte de la medida: una cuenta que omite el acto marco no se puede defender.",
       "_yLOQUESIGUESINENTRADA": "El Decreto 1348 del 31 de agosto de 2026, que modificó este, sigue sin entrada propia: las fuentes en mano lo nombran de paso y ninguna documenta su contenido. Queda dicho acá en vez de inventarle una entrada, y en vez de callarlo — porque callarlo lo dejaría igual que si no existiera.",
       "_divergenciaDEPARTAMENTOS": "Son 15 departamentos y el Decreto 1171 del 11 de agosto declaró el desastre nacional en 12. No se contradicen: son dos actos distintos, con dos instrumentos distintos —Ley 1523 y artículo 215— y dos ámbitos que el Gobierno fijó por separado. Va dicho porque dos cifras del mismo nombre a nueve días de distancia se leen como un error (v1093)."
+    },
+    {
+      "fecha": "2026-09-14",
+      "precision": "aproximada",
+      "categoria": "economia",
+      "titulo": "De los $59,3 billones que creció el presupuesto de 2027, $37,4 billones son para pagar deuda: el servicio pasa de $118,0 a $155,4 billones y el 44 % del total sale de endeudamiento",
+      "categoriaProbatoria": "hecho-probado",
+      "tipoMedicion": "actividad",
+      "detalle": "El proyecto de Presupuesto General de la Nación para 2027 que este Gobierno radicó el 27 de agosto asciende a $634,9 billones, frente a los $575,6 billones del proyecto que había dejado listo la administración saliente: $59,3 billones más. Lo que esta entrada agrega es la COMPOSICIÓN de ese aumento, explicada por el Ministerio de Hacienda durante el trámite. El mayor incremento, con diferencia, es el servicio de la deuda: $37,4 billones adicionales, al pasar de $118,0 a $155,4 billones, un alza del 54,7 %. Es decir, cerca de dos terceras partes de todo lo que creció el presupuesto. Entre los rubros nuevos que el proyecto incorpora y que el anterior no contemplaba figuran $9,6 billones para el Fondo de Estabilización de Precios de los Combustibles (FEPC), más $6,5 billones para pensiones y asignaciones de retiro, $2,0 billones para salud y unos $700.000 millones para universidades públicas. El propio presidente advirtió que $281 billones —el 44 % de los recursos del presupuesto— provienen de deuda.",
+      "contrapunto": "Dos acotaciones que cambian cómo se lee esto y van acá y no en una nota. La primera: una parte grande del servicio de la deuda son vencimientos heredados, no gasto nuevo que alguien decidió —el salto se concentra en el pago de principal, $30,7 billones, más que en los intereses, $6,7 billones—, así que la cuenta llegó, no se inventó. La segunda es de fondo: según el Comité Autónomo de la Regla Fiscal, cerca del 88 % del gasto del Estado es INFLEXIBLE, y dos terceras partes de esa rigidez viene de la Constitución o de la ley. Un presidente, el que sea, decide sobre una fracción pequeña del presupuesto. Por eso el rumbo del gasto se juzga donde sí hubo decisión, y no sobre el total.",
+      "tipoFuente": "verificado",
+      "fuentes": [
+        {
+          "n": "Portafolio · «Presupuesto de la verdad» 2027: así queda la deuda que Colombia debe pagar",
+          "u": "https://www.portafolio.co/economia/gobierno/presupuesto-de-la-verdad-2027-asi-queda-la-deuda-que-colombia-debe-pagar-tras-el-gobierno-petro-502415",
+          "rol": "acto"
+        },
+        {
+          "n": "Noticias RCN · por qué es mayor el presupuesto de 2027 que presentó el Gobierno de De la Espriella",
+          "u": "https://www.noticiasrcn.com/economia/por-que-es-mayor-el-presupuesto-general-de-la-nacion-para-2027-que-presento-el-gobierno-de-de-la-espriella-1055140",
+          "rol": "acto"
+        },
+        {
+          "n": "La República · De la Espriella advirtió que el 44 % de los recursos del presupuesto dependen de deuda",
+          "u": "https://www.larepublica.co/economia/de-la-espriella-advirtio-que-44-de-los-recursos-del-presupuesto-dependen-de-deuda-4480963",
+          "rol": "acto"
+        },
+        {
+          "n": "Portafolio · el presupuesto de 2027 caería 2,3 % real mientras crece el peso del servicio de la deuda",
+          "u": "https://www.portafolio.co/economia/presupuesto-2027-tendria-una-reduccion-real-de-2-3-mientras-crece-el-peso-del-servicio-de-la-deuda-publica-499404",
+          "rol": "contexto"
+        }
+      ],
+      "id": "pgn-2027-composicion-del-aumento",
+      "nivelGobierno": "nacional",
+      "actosQueAgrupa": 1,
+      "indicadores": [],
+      "_porQueListaVacia": "Radicar un proyecto de presupuesto es el cauce ordinario del artículo 346, así que I-04 lo excluye por no ser una facultad de excepción. No hay órgano autónomo en contra (I-05), ni producto técnico intervenido (I-13), ni información negada y entregada tras tutela (I-07), ni muerte en una operación del Estado (I-14).",
+      "_precisionDeLaFECHA": "La fecha va `aproximada` y es la de la aprobación del monto en comisiones, que es cuando estas cifras se discutieron en público. El proyecto se radicó el 27 de agosto y las fuentes en mano no fechan el día exacto en que Hacienda publicó el desglose.",
+      "_quePARTEYAESTABA": "El total de $634,9 billones y la comparación con los $575,6 billones ya estaban en el registro, en la entrada del 1 de septiembre sobre la prima de riesgo. Lo nuevo acá es en qué se reparte el aumento, que es lo que permite discutir el rumbo en vez del tamaño."
+    },
+    {
+      "fecha": "2026-10-01",
+      "precision": "aproximada",
+      "categoria": "economia",
+      "titulo": "El presupuesto de 2027 incorpora 8.926 cargos públicos más que el proyecto anterior y sube 6,7 % el costo de la nómina, según el Observatorio Fiscal de la Javeriana",
+      "categoriaProbatoria": "hecho-probado",
+      "tipoMedicion": "actividad",
+      "detalle": "El Observatorio Fiscal de la Pontificia Universidad Javeriana comparó el costo de la nómina contemplado en los dos proyectos de Presupuesto General de la Nación para 2027 —el de este Gobierno menos el de la administración saliente— y encontró que la nueva propuesta reconoce 8.926 cargos adicionales y una ampliación del 6,7 % en el costo de la nómina, equivalente a unos $779.034 millones. La aparición de cargos se explica en su totalidad por la Rama Ejecutiva, y se concentra en el sector Justicia y del Derecho, con 7.696 cargos nuevos, seguido de Interior (650), Transporte (534) y Ciencia, Tecnología e Innovación (46). El informe anota además que varios sectores sin cargos nuevos registran aumentos de nómina incluso mayores en porcentaje —el Congreso de la República 21,6 % y TIC 14,6 %—, y que el proyecto no hace explícitas las razones de esas variaciones.",
+      "contrapunto": "Un cargo nuevo no es por sí mismo un reproche: la mayor parte está en Justicia, donde el Consejo Superior de la Judicatura venía advirtiendo un déficit de más de $6 billones frente a lo que había solicitado, de modo que ampliar esa planta responde a una necesidad documentada y no a un favor. Lo que el dato sí permite comprobar es otra cosa, y es por eso que entra: este Gobierno hizo del tamaño del Estado y del gasto de funcionamiento del gobierno anterior uno de sus reproches centrales, y su propio proyecto amplía la planta. Las dos cosas pueden ser ciertas a la vez, y el registro publica el número sin elegir la lectura.",
+      "tipoFuente": "verificado",
+      "fuentes": [
+        {
+          "n": "La Opinión · el PGN 2027 incorpora 8.926 cargos adicionales y el costo de nómina aumenta 6,7 %",
+          "u": "https://laopinion.co/economia/pgn-2027-de-de-la-espriella-incorpora-8926-cargos-adicionales-y-el-costo-de-nomina-aumenta",
+          "rol": "acto"
+        },
+        {
+          "n": "El Tiempo · ¿aumentó la nómina pública en el Presupuesto General de la Nación para 2027?",
+          "u": "https://www.eltiempo.com/economia/sectores/aumento-la-nomina-publica-en-el-presupuesto-general-de-la-nacion-para-3581894",
+          "rol": "acto"
+        },
+        {
+          "n": "Cambio · la Rama Judicial alerta un hueco de $6,1 billones en el presupuesto del sector justicia",
+          "u": "https://cambiocolombia.com/justicia/articulo/2026/9/la-preocupacion-de-la-rama-judicial-por-el-hueco-de-61-billones-de-pesos-en-el-presupuesto-para-el-sector",
+          "rol": "contexto"
+        },
+        {
+          "n": "Portafolio · Observatorio Fiscal: el presupuesto de 2027 sería el de mayor peso frente al PIB desde la pandemia",
+          "u": "https://www.portafolio.co/economia/observatorio-fiscal-de-la-u-javeriana-presupuesto-2027-seria-el-de-mayor-peso-frente-al-pib-desde-la-pandemia-502674",
+          "rol": "contexto"
+        }
+      ],
+      "id": "pgn-2027-nomina-8926-cargos",
+      "nivelGobierno": "nacional",
+      "actosQueAgrupa": 1,
+      "indicadores": [],
+      "_porQueListaVacia": "Es el contenido de un proyecto de presupuesto, que es el cauce ordinario: I-04 lo excluye. Los otros cuatro criterios no tienen materia acá.",
+      "_unaCOMPROBACIONPROPIA": "El desglose CUADRA, y esa es una comprobación que este registro pudo hacer por su cuenta: 7.696 de Justicia + 650 de Interior + 534 de Transporte + 46 de Ciencia y Tecnología suman exactamente 8.926. Importa porque la nota de prensa que trae la cifra omite Transporte y su suma queda en 8.392, a 534 del total; con el cuarto sector, cierra. No es una fuente más: es que las partes son coherentes con el total.",
+      "_precisionDeLaFECHA": "La fecha va `aproximada`. El dato es del Informe 75 del Observatorio Fiscal, que analiza el proyecto radicado el 27 de agosto, y las fuentes en mano no fechan el día de su publicación.",
+      "_intentoDeFUENTEPRIMARIA": "Intento del 12 de octubre de 2026, canal BÚSQUEDA —el único que este contenedor tiene, porque el proxy niega todos los dominios—. La primera búsqueda NO corroboró la cifra y por eso no se publicó ese día; la segunda, más específica, la encontró en La Opinión con el desglose y el costo. El PDF del Informe 75 no se pudo abrir: ofiscal.org está bloqueado. Queda pendiente leer el documento primario para fijar su fecha de publicación."
     }
   ],
   "balances": [
