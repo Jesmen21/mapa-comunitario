@@ -13,6 +13,7 @@ estado. El módulo contesta «qué pasa»; esto contesta «cómo sé de quién e
 |---|---|
 | `de-quien-es-la-culpa.html` | 7 páginas A4, sin un solo gráfico: la regla de la fecha |
 | `nada-fiable.html` | 10 páginas A4 con gráficos: de dónde sale el dictamen, y los números del presupuesto |
+| `expediente.html` | 12 páginas A4: TODO lo documentado como reproche, por tema, con el nivel de prueba por hecho |
 | `hacer-pdf.js` | arma el PDF, y **se niega a escribirlo** si alguna hoja se desborda |
 
 ```bash
@@ -21,6 +22,27 @@ node divulgacion/hacer-pdf.js     # el PDF sale acá al lado
 
 El generador arma el primero; para el segundo se cambia el nombre del archivo
 dentro. Que no esté parametrizado es deliberado mientras sean dos.
+
+## El expediente lleva el grado de prueba POR HECHO, y eso no es timidez
+
+Un pliego que mete todo en el mismo saco se desarma con un solo golpe: quien
+no quiere creerlo busca el renglón más flojo y con ese descarta los otros
+treinta. Por eso cada hecho dice **probado / anunciado / en disputa**, y los
+«en disputa» llevan escrito que no sirven para acusar.
+
+Tres cosas que ese documento hace a propósito y que conviene no «mejorar»:
+
+* **Avisa cuándo un reproche que circula NO se sostiene.** La derogatoria de
+  las once circulares laborales se cuenta como hecho, y debajo va que
+  «les tumbaron las extras a los vigilantes» es falso: una circular interpreta,
+  no crea ni quita derechos de ley. Quien use la versión de redes pierde la
+  discusión con razón, y el documento se lo dice antes.
+* **Una página entera de lo que NO es culpa suya** —inflación, desempleo de
+  agosto, deuda heredada, Decreto 1012 del gobierno saliente, decretos de
+  emergencia—, más el 88 % de gasto inflexible del CARF. Es lo que hace
+  creíbles las otras diez.
+* **Y lo que está a su favor**, con su propia página: cero casos de corrupción
+  confirmados, los 60 contratos revocados, los siete menores rescatados.
 
 ## Los gráficos, y por qué están hechos así
 

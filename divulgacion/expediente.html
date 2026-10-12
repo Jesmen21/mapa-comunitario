@@ -1,0 +1,518 @@
+<!doctype html>
+<html lang="es"><head><meta charset="utf-8"><title>Expediente de 66 dias</title>
+<style>
+  @page { size: A4; margin: 0; }
+  * { box-sizing: border-box; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  html, body { margin: 0; padding: 0; background: #fff; }
+  body { font-family: Georgia, "Times New Roman", serif; color: #1b1b1b; }
+  .hoja { width: 210mm; height: 297mm; padding: 16mm 16mm 14mm; page-break-after: always;
+          position: relative; overflow: hidden; }
+  .hoja:last-child { page-break-after: auto; }
+  .sello { position: absolute; top: 7.5mm; right: 16mm; font-family: Verdana, sans-serif;
+           font-size: 7.5pt; letter-spacing: .14em; color: #8a8f94; text-transform: uppercase; }
+  .pie { position: absolute; bottom: 7mm; left: 16mm; right: 16mm; font-family: Verdana, sans-serif;
+         font-size: 7.5pt; color: #8a8f94; display: flex; justify-content: space-between; }
+  h1 { font-size: 36pt; line-height: 1.06; margin: 0 0 5mm; letter-spacing: -.02em; }
+  h2 { font-size: 21pt; line-height: 1.13; margin: 0 0 4mm; letter-spacing: -.01em; }
+  p  { font-size: 12.5pt; line-height: 1.52; margin: 0 0 3.5mm; }
+  .g { font-weight: bold; }
+  .rotulo { font-family: Verdana, sans-serif; font-size: 8.5pt; letter-spacing: .15em;
+            text-transform: uppercase; color: #6b7177; margin: 0 0 3.5mm; }
+  .portada { display: flex; flex-direction: column; justify-content: center; }
+  .portada h1 { font-size: 46pt; }
+  .portada .bajada { font-size: 15.5pt; line-height: 1.45; color: #44494e; margin-top: 2mm; }
+  .caja { border-left: 2.6mm solid #ccc; padding: 4mm 5mm; margin: 0 0 4mm; background: #f7f8f8; }
+  .caja.roja { border-left-color: #d03b3b; background: #FBF1F0; }
+  .caja.azul { border-left-color: #256abf; background: #EFF4FB; }
+  .caja .t { font-family: Verdana, sans-serif; font-size: 10.5pt; font-weight: bold; margin: 0 0 2mm; }
+  .caja p { font-size: 11.5pt; margin: 0 0 2mm; } .caja p:last-child { margin-bottom: 0; }
+  /* ficha de hecho */
+  .hecho { border-top: 1px solid #e2e5e7; padding: 3.2mm 0 0; margin: 0 0 3.2mm; }
+  .hecho:first-of-type { border-top: 1.6px solid #1b1b1b; }
+  .enc { display: flex; justify-content: space-between; align-items: baseline; gap: 4mm; margin-bottom: 1.4mm; }
+  .fch { font-family: Verdana, sans-serif; font-size: 9.5pt; font-weight: bold; color: #1b1b1b;
+         white-space: nowrap; }
+  .sem { font-family: Verdana, sans-serif; font-size: 8pt; font-weight: bold; white-space: nowrap;
+         letter-spacing: .06em; }
+  .p3 { color: #1E6F3C; } .p2 { color: #9a6a00; } .p1 { color: #6b7177; }
+  .hecho .q { font-size: 12pt; line-height: 1.45; margin: 0 0 1.4mm; }
+  .hecho .fnt { font-family: Verdana, sans-serif; font-size: 8.5pt; color: #6b7177; line-height: 1.45; }
+  figure { margin: 0 0 4mm; } svg { display: block; }
+  figcaption { font-family: Verdana, sans-serif; font-size: 8.5pt; color: #6b7177; margin-top: 1.5mm; line-height: 1.45; }
+  .enorme { font-size: 60pt; line-height: 1; font-weight: bold; letter-spacing: -.04em; color: #d03b3b; }
+  .enorme.azul { color: #256abf; }
+  .alcostado { display: flex; align-items: center; gap: 7mm; margin: 3mm 0 4mm; }
+  .alcostado .texto { font-size: 14pt; line-height: 1.4; }
+  ul { margin: 0 0 3.5mm; padding-left: 5.5mm; }
+  li { font-size: 12pt; line-height: 1.45; margin-bottom: 2mm; }
+  .remate { border-top: 2px solid #1b1b1b; padding-top: 3.5mm; margin-top: 2.5mm; }
+</style></head><body>
+
+<!-- 1 PORTADA -->
+<section class="hoja portada">
+  <div class="sello">URBIS · Seguimiento presidencial</div>
+  <p class="rotulo">Expediente · 244 hechos registrados, 66 días de gobierno</p>
+  <h1>Lo que este<br>gobierno hizo.</h1>
+  <p class="bajada">Todo lo que el registro documenta como reproche a Abelardo de la
+  Espriella, con su fecha, su fuente y <span class="g">su nivel de prueba</span>.</p>
+  <p class="bajada">Nada de esto es opinión. Cada renglón se puede abrir y leer.
+  Lo que no está probado va marcado como lo que es.</p>
+  <div class="pie"><span>12 de octubre de 2026 · urbispro.city</span><span>Página 1 de 12</span></div>
+</section>
+
+<!-- 2 COMO LEER -->
+<section class="hoja">
+  <div class="sello">Antes de empezar</div>
+  <p class="rotulo">Lo que hace que esto no sea un panfleto</p>
+  <h2>Cada hecho lleva<br>su nivel de prueba.</h2>
+  <p>Un documento que mete todo en el mismo saco se desarma con un solo golpe:
+  basta encontrar el renglón más flojo. Por eso acá cada cosa dice qué tan
+  probada está.</p>
+  <table style="width:100%; border-collapse:collapse; margin:4mm 0 5mm">
+    <tr><td style="width:38mm; padding:3mm 0; border-bottom:1px solid #e2e5e7"
+        class="sem p3">● ● ●  PROBADO</td>
+      <td style="padding:3mm 0 3mm 4mm; border-bottom:1px solid #e2e5e7; font-size:12pt">
+      Hay documento oficial, decreto, fallo o respuesta escrita de una entidad.
+      Se puede discutir qué significa; que pasó, no.</td></tr>
+    <tr><td style="padding:3mm 0; border-bottom:1px solid #e2e5e7" class="sem p2">● ●  ANUNCIADO</td>
+      <td style="padding:3mm 0 3mm 4mm; border-bottom:1px solid #e2e5e7; font-size:12pt">
+      Se dijo en público y está por cumplirse, o depende de un trámite que no
+      ha terminado.</td></tr>
+    <tr><td style="padding:3mm 0; border-bottom:1px solid #e2e5e7" class="sem p1">●  EN DISPUTA</td>
+      <td style="padding:3mm 0 3mm 4mm; border-bottom:1px solid #e2e5e7; font-size:12pt">
+      Hay dos versiones y ninguna cerrada. <span class="g">No sirve para acusar.</span>
+      Va porque existe, no porque esté probado.</td></tr>
+  </table>
+  <div class="caja azul">
+    <p class="t">Y lo que este expediente NO hace</p>
+    <p>No compara a este gobierno con el anterior. Los dos registros no son la
+    misma clase de cosa —de uno hay bitácora diaria y del otro una selección—
+    y compararlos sería hacer trampa.</p>
+    <p>No le cobra la inflación, ni la deuda heredada, ni el desempleo de
+    agosto. La página 11 explica por qué.</p>
+  </div>
+  <div class="pie"><span>Lo que este gobierno hizo</span><span>Página 2 de 12</span></div>
+</section>
+
+<!-- 3 EL RESUMEN -->
+<section class="hoja">
+  <div class="sello">El resumen</div>
+  <p class="rotulo">La calificación que sale hoy</p>
+  <h2>«Nada fiable»,<br>el último escalón.</h2>
+  <figure>
+    <svg width="640" height="150" viewBox="0 0 640 150" role="img"
+         aria-label="Tres medidores: reglas del juego Dudosa, rumbo del gasto Poco fiable, uso de la fuerza Nada fiable">
+      <g font-family="Verdana, sans-serif">
+        <g font-size="10.5" fill="#8a8f94">
+          <line x1="150" y1="20" x2="620" y2="20" stroke="#e2e5e7"/>
+          <line x1="150" y1="44" x2="620" y2="44" stroke="#e2e5e7"/>
+          <line x1="150" y1="68" x2="620" y2="68" stroke="#e2e5e7"/>
+          <line x1="150" y1="92" x2="620" y2="92" stroke="#e2e5e7"/>
+          <line x1="150" y1="116" x2="620" y2="116" stroke="#e2e5e7"/>
+          <text x="144" y="24" text-anchor="end">Inquebrantable</text>
+          <text x="144" y="48" text-anchor="end">Fiable</text>
+          <text x="144" y="72" text-anchor="end">Dudosa</text>
+          <text x="144" y="96" text-anchor="end">Poco fiable</text>
+          <text x="144" y="120" text-anchor="end">Nada fiable</text>
+        </g>
+        <circle cx="255" cy="68" r="9" fill="#fcfcfb" stroke="#1b1b1b" stroke-width="2.4"/>
+        <circle cx="400" cy="92" r="9" fill="#fcfcfb" stroke="#1b1b1b" stroke-width="2.4"/>
+        <circle cx="545" cy="116" r="11" fill="#d03b3b"/>
+        <g font-size="11" fill="#1b1b1b" text-anchor="middle">
+          <text x="255" y="140" font-weight="bold">Reglas del juego</text>
+          <text x="400" y="140" font-weight="bold">Rumbo del gasto</text>
+          <text x="545" y="140" font-weight="bold">Uso de la fuerza</text>
+        </g>
+      </g>
+    </svg>
+    <figcaption>Tres medidores. La calificación es la del <span class="g">peor</span>, no el
+    promedio: un medidor bueno no tapa uno malo.</figcaption>
+  </figure>
+  <p>Y conviene decirlo de una vez, porque es lo que más se malentiende:
+  <span class="g">«Nada fiable» no sale de la inflación ni de la deuda.</span> Sale de
+  seis niños muertos. Todo lo demás de este expediente está documentado y
+  <span class="g">no</span> es lo que pone la calificación.</p>
+  <div class="caja">
+    <p class="t">Las cuentas gruesas, a 66 días</p>
+    <p>244 hechos registrados · 79 % verificado por terceros ·
+    <span class="g">0 casos de corrupción confirmados</span> · 0 en investigación ·
+    5 cambios de postura contados.</p>
+  </div>
+  <div class="pie"><span>Lo que este gobierno hizo</span><span>Página 3 de 12</span></div>
+</section>
+
+<!-- 4 MUERTES -->
+<section class="hoja">
+  <div class="sello">1 · Uso de la fuerza</div>
+  <p class="rotulo">El medidor que pone la calificación</p>
+  <h2>Seis niños muertos<br>en 23 días.</h2>
+  <div class="hecho">
+    <div class="enc"><span class="fch">11 de agosto</span><span class="sem p3">● ● ●  PROBADO</span></div>
+    <p class="q"><span class="g">Operación Beta</span>, primer bombardeo del gobierno, entre Tibú y
+    San Calixto. <span class="g">Muere un menor de edad</span>, tres campesinos heridos y 40
+    familias desplazadas. Cuatro días después de la posesión.</p>
+  </div>
+  <div class="hecho">
+    <div class="enc"><span class="fch">27 de agosto</span><span class="sem p3">● ● ●  PROBADO</span></div>
+    <p class="q"><span class="g">Operación Amón</span>, El Retorno (Guaviare), contra el frente de
+    alias Calarcá: diez muertos. Se confirma después que <span class="g">tres eran menores
+    de edad</span>.</p>
+  </div>
+  <div class="hecho">
+    <div class="enc"><span class="fch">30 de agosto · 4 de septiembre</span><span class="sem p3">● ● ●  PROBADO</span></div>
+    <p class="q"><span class="g">Operación Azarías</span>, Miraflores (Guaviare). Se anuncia con ocho
+    muertos y el balance se actualiza a 23. El 4 de septiembre
+    <span class="g">Medicina Legal confirma que dos de los cuerpos eran menores de edad</span>.</p>
+  </div>
+  <div class="hecho">
+    <div class="enc"><span class="fch">2 de septiembre</span><span class="sem p3">● ● ●  PROBADO</span></div>
+    <p class="q">El presidente <span class="g">camina entre los 23 cuerpos exhibidos</span> tras la
+    Operación Azarías, y la Presidencia publica las imágenes.</p>
+  </div>
+  <div class="hecho">
+    <div class="enc"><span class="fch">9 de septiembre</span><span class="sem p3">● ● ●  PROBADO</span></div>
+    <p class="q">Un <span class="g">juzgado laboral de Bogotá ordena a la Presidencia retirar</span> las
+    publicaciones del presidente junto a los cadáveres.</p>
+  </div>
+  <div class="hecho">
+    <div class="enc"><span class="fch">10 de septiembre</span><span class="sem p3">● ● ●  PROBADO</span></div>
+    <p class="q">Una <span class="g">jueza de familia ratifica la orden de suspender bombardeos</span> en
+    zonas donde pueda haber menores reclutados. El 13 de septiembre el presidente
+    dice que «respeta» los fallos que frenaron bombardeos y fumigaciones.</p>
+  </div>
+  <div class="caja roja">
+    <p class="t">La vara no la inventó esta página</p>
+    <p>El <span class="g">artículo 135 del Código Penal</span> castiga con 30 a 40 años la muerte
+    de una persona protegida. Un menor de edad siempre lo es. La confirmación
+    de las seis es del <span class="g">Instituto Nacional de Medicina Legal</span>.</p>
+  </div>
+  <div class="pie"><span>Lo que este gobierno hizo</span><span>Página 4 de 12</span></div>
+</section>
+
+<!-- 5 CONTRATOS -->
+<section class="hoja">
+  <div class="sello">2 · Contratos y plata</div>
+  <p class="rotulo">Lo que está documentado</p>
+  <h2>La plata y<br>quién la mueve.</h2>
+  <div class="hecho">
+    <div class="enc"><span class="fch">30 de septiembre</span><span class="sem p3">● ● ●  PROBADO</span></div>
+    <p class="q"><span class="g">Contrato directo por $773,5 millones con Magneto Empleos</span>, la
+    misma firma que operó el «Banco de Talentos» de su campaña durante el
+    empalme. Lo tramita la Presidencia (Dapre), sin licitación, y
+    <span class="g">ninguno de los tres documentos del proceso menciona ese antecedente</span>
+    ni las más de 270.000 hojas de vida recibidas entonces.</p>
+    <p class="fnt">Documentos conocidos por la revista Cambio.</p>
+  </div>
+  <div class="hecho">
+    <div class="enc"><span class="fch">3 de octubre</span><span class="sem p3">● ● ●  PROBADO</span></div>
+    <p class="q">A casi dos meses del terremoto, <span class="g">el Fondo Milagro no ha girado un
+    peso</span>. El Ministerio de Hacienda respondió por escrito que no ha firmado el
+    contrato que constituye el Fondo, sin el cual no se puede nombrar gerente ni
+    junta; el manual de contratación <span class="g">no tiene ni un borrador</span>. Son
+    $624.656 millones para la reconstrucción.</p>
+    <p class="fnt">Respuesta escrita del propio Ministerio de Hacienda, 30 de septiembre.</p>
+  </div>
+  <div class="hecho">
+    <div class="enc"><span class="fch">18 de septiembre</span><span class="sem p3">● ● ●  PROBADO</span></div>
+    <p class="q">Paquete de <span class="g">15 decretos</span> al cierre de la emergencia, entre ellos
+    el que habilita la <span class="g">contratación directa por urgencia manifiesta</span> — es
+    decir, contratar sin licitación.</p>
+  </div>
+  <div class="hecho">
+    <div class="enc"><span class="fch">22 de septiembre</span><span class="sem p3">● ● ●  PROBADO</span></div>
+    <p class="q">Dos juzgados ordenan a la Presidencia y a la fundación de la primera
+    dama <span class="g">informar cuánto recaudaron</span> para el terremoto.</p>
+  </div>
+  <div class="hecho">
+    <div class="enc"><span class="fch">20 de agosto</span><span class="sem p1">●  EN DISPUTA</span></div>
+    <p class="q">Una <span class="g">fundación de la primera dama</span>, sin trayectoria y creada antes
+    de la posesión, encabeza los canales oficiales de donación del terremoto.</p>
+    <p class="fnt">Va con una marca sola: es una coincidencia documentada, no un delito probado.</p>
+  </div>
+  <div class="pie"><span>Lo que este gobierno hizo</span><span>Página 5 de 12</span></div>
+</section>
+
+<!-- 6 LOS CARGOS -->
+<section class="hoja">
+  <div class="sello">3 · Quién quedó en los cargos</div>
+  <p class="rotulo">Todos verificados, todos con decreto o acta</p>
+  <h2>De la campaña<br>al Estado.</h2>
+  <div class="hecho">
+    <div class="enc"><span class="fch">17 y 28 de septiembre</span><span class="sem p3">● ● ●  PROBADO</span></div>
+    <p class="q"><span class="g">Ecopetrol queda en manos de su campaña.</span> La junta directiva,
+    con mayoría de personas cercanas al presidente, la preside
+    <span class="g">Carlos Suárez, su exestratega de campaña</span>. Esa junta elige por
+    unanimidad presidente de la petrolera a <span class="g">Joaquín Gutiérrez, exgerente de
+    su campaña presidencial</span> y exsubgerente de la firma De la Espriella Abogados.</p>
+    <p class="fnt">Gutiérrez no tiene experiencia en la industria de hidrocarburos — y el propio
+    Gobierno había cuestionado la pérdida de conocimiento técnico en Ecopetrol bajo
+    el gobierno anterior.</p>
+  </div>
+  <div class="hecho">
+    <div class="enc"><span class="fch">30 de septiembre</span><span class="sem p3">● ● ●  PROBADO</span></div>
+    <p class="q">Por el <span class="g">Decreto 1479</span>, nombra a <span class="g">Nicolás Gómez Arenas, jefe de
+    su propio despacho</span>, como alcalde ad hoc de Cali para decidir sobre el Plan
+    de Ordenamiento Territorial de la ciudad.</p>
+    <p class="fnt">El impedimento del alcalde Eder es de 2024 y es legítimo; lo que el registro
+    anota es a quién se designó.</p>
+  </div>
+  <div class="hecho">
+    <div class="enc"><span class="fch">3 de septiembre</span><span class="sem p2">● ●  COINCIDENCIA</span></div>
+    <p class="q">Varios de los <span class="g">mayores aportantes de la campaña</span> en segunda vuelta
+    ocupan hoy cargos en el Gobierno.</p>
+    <p class="fnt">Aportar es legal y ocupar un cargo después no es delito. Se anota porque es
+    lo que un elector no puede ver junto en ningún informe oficial — y porque este
+    Gobierno hizo del cruce entre plata y puestos su bandera.</p>
+  </div>
+  <div class="hecho">
+    <div class="enc"><span class="fch">3 de octubre</span><span class="sem p3">● ● ●  PROBADO</span></div>
+    <p class="q">Declara insubsistente al <span class="g">director nacional de Bomberos a los 26 días</span>
+    en el cargo, por audios que lo vinculan con una presunta intermediación.</p>
+    <p class="fnt">Esto cuenta a favor y en contra: muestra reacción rápida, y muestra cómo se
+    escogió.</p>
+  </div>
+  <div class="pie"><span>Lo que este gobierno hizo</span><span>Página 6 de 12</span></div>
+</section>
+
+<!-- 7 TRABAJO -->
+<section class="hoja">
+  <div class="sello">4 · Trabajo y empleo</div>
+  <p class="rotulo">Lo que le pasó a quien busca trabajo</p>
+  <h2>Los concursos,<br>aplazados.</h2>
+  <div class="hecho">
+    <div class="enc"><span class="fch">11 de septiembre</span><span class="sem p3">● ● ●  PROBADO</span></div>
+    <p class="q">El <span class="g">Decreto 1384</span> aplaza los concursos de mérito y los procesos de
+    selección de empleo público hasta 2027, invocando la emergencia del terremoto.
+    Entre ellos el <span class="g">concurso docente, con más de 28.000 vacantes</span>, cuyas
+    inscripciones estaban previstas para noviembre y diciembre; más de 1.000 cargos
+    de las Corporaciones Autónomas Regionales y procesos del orden nacional.</p>
+  </div>
+  <div class="hecho">
+    <div class="enc"><span class="fch">12 de septiembre</span><span class="sem p2">● ●  ANUNCIADO</span></div>
+    <p class="q">Anuncia ante el Congreso que <span class="g">cancelará 10.000 contratos</span> de
+    prestación de servicios del Ministerio de Agricultura en 2027 y suspenderá la
+    compra de tierras, por un <span class="g">recorte del 32 % ($1,3 billones)</span> en esa cartera.</p>
+    <p class="fnt">Es una propuesta dentro del presupuesto de 2027: no es firme hasta que el
+    Congreso lo apruebe.</p>
+  </div>
+  <div class="hecho">
+    <div class="enc"><span class="fch">20 de agosto</span><span class="sem p3">● ● ●  PROBADO</span></div>
+    <p class="q">La <span class="g">Resolución 2708</span> deroga once circulares laborales sobre permisos
+    sindicales, jornada, horas extras, estabilidad reforzada por discapacidad, trabajo
+    doméstico y plataformas digitales.</p>
+    <p class="fnt">Ojo con esto: circula que «les tumbaron las extras a los vigilantes» y que se
+    «eliminó la protección a trabajadores con discapacidad». <span class="g">La resolución NO
+    sostiene eso</span>: una circular interpreta, no crea ni quita derechos de ley. Si lo
+    usas así, te lo tumban con razón.</p>
+  </div>
+  <div class="hecho">
+    <div class="enc"><span class="fch">21 de agosto</span><span class="sem p3">● ● ●  PROBADO</span></div>
+    <p class="q">Primera objeción presidencial del gobierno: devuelve al Congreso, sin
+    sancionar, el proyecto que <span class="g">prohibía bajar los requisitos mínimos de estudio
+    y experiencia</span> para los cargos directivos del Estado. Había superado los cuatro
+    debates.</p>
+  </div>
+  <div class="pie"><span>Lo que este gobierno hizo</span><span>Página 7 de 12</span></div>
+</section>
+
+<!-- 8 PRENSA -->
+<section class="hoja">
+  <div class="sello">5 · Prensa e información</div>
+  <p class="rotulo">Cuatro hechos, todos con documento</p>
+  <h2>Quién puede hablar.</h2>
+  <div class="hecho">
+    <div class="enc"><span class="fch">3 de septiembre</span><span class="sem p3">● ● ●  PROBADO</span></div>
+    <p class="q"><span class="g">Directiva Presidencial 01.</span> Ministros, directores y gerentes de
+    todas las entidades nacionales deben <span class="g">consultar y coordinar previamente con
+    la Presidencia</span> cualquier entrevista o declaración, y sus cuentas dejan de ser
+    canal oficial. El 7 de septiembre se documenta su aplicación al DANE: la entidad
+    <span class="g">cancela sus ruedas de prensa</span>.</p>
+    <p class="fnt">El DANE tiene independencia técnica por ley (Ley 2335). Eso es lo que hace
+    contable el caso: no el texto de la directiva, sino su aplicación documentada.</p>
+  </div>
+  <div class="hecho">
+    <div class="enc"><span class="fch">18 de agosto</span><span class="sem p3">● ● ●  PROBADO</span></div>
+    <p class="q">Las <span class="g">20 emisoras de paz</span>, creadas por el Acuerdo de 2016 en municipios
+    del conflicto, <span class="g">pasan a emitir solo música</span>. La Fundación para la Libertad
+    de Prensa alerta.</p>
+    <p class="fnt">Son dos cosas distintas: investigar si fueron usadas como propaganda es una, y
+    apagarlas mientras tanto es otra. La FLIP objeta la segunda.</p>
+  </div>
+  <div class="hecho">
+    <div class="enc"><span class="fch">24 de septiembre</span><span class="sem p3">● ● ●  PROBADO</span></div>
+    <p class="q">La FLIP califica de <span class="g">«uso indebido»</span> que el presidente envíe
+    solicitudes de rectificación a medios <span class="g">a través de su firma privada de
+    abogados</span>, con la fórmula ya redactada y la advertencia de acciones penales.
+    El detonante: las columnas de Cambio sobre su relación profesional con Alex Saab.</p>
+    <p class="fnt">Pedir rectificación es un derecho de cualquiera. Lo que se registra es quién
+    la pide —el jefe de Estado— y por qué vía.</p>
+  </div>
+  <div class="hecho">
+    <div class="enc"><span class="fch">14 de septiembre</span><span class="sem p1">●  EN DISPUTA</span></div>
+    <p class="q">Declara insubsistente al <span class="g">director del DANE a las tres semanas</span> de
+    nombrarlo —él mismo lo había puesto por decreto el 19 de agosto— y nombra a otro.</p>
+  </div>
+  <div class="pie"><span>Lo que este gobierno hizo</span><span>Página 8 de 12</span></div>
+</section>
+
+<!-- 9 LA PLATA DEL PAIS -->
+<section class="hoja">
+  <div class="sello">6 · La plata del país</div>
+  <p class="rotulo">El presupuesto que este gobierno radicó</p>
+  <h2>Para dónde va<br>el dinero.</h2>
+  <figure>
+    <svg width="640" height="238" viewBox="0 0 640 238" role="img"
+         aria-label="Variación real del presupuesto 2027: Deporte baja 43,5, Salud baja 4,4, Educación baja 3,1, Trabajo sube 10, Defensa sube 14,6, Hacienda sube 34,4">
+      <g font-family="Verdana, sans-serif">
+        <line x1="318" y1="14" x2="318" y2="202" stroke="#1b1b1b" stroke-width="1.4"/>
+        <text x="318" y="218" font-size="10" fill="#6b7177" text-anchor="middle">0</text>
+        <text x="190" y="218" font-size="10" fill="#6b7177" text-anchor="middle">baja</text>
+        <text x="460" y="218" font-size="10" fill="#6b7177" text-anchor="middle">sube</text>
+        <g font-size="11">
+          <text x="14" y="34">Deporte</text>
+          <rect x="88" y="22" width="230" height="17" rx="3" fill="#d03b3b"/>
+          <text x="96" y="35" font-size="11.5" font-weight="bold" fill="#fff">−43,5 %</text>
+          <text x="14" y="64">Salud</text>
+          <rect x="295" y="52" width="23" height="17" rx="3" fill="#d03b3b"/>
+          <text x="288" y="65" font-size="11.5" font-weight="bold" fill="#d03b3b" text-anchor="end">−4,4 %</text>
+          <text x="14" y="94">Educación</text>
+          <rect x="302" y="82" width="16" height="17" rx="3" fill="#d03b3b"/>
+          <text x="295" y="95" font-size="11.5" font-weight="bold" fill="#d03b3b" text-anchor="end">−3,1 %</text>
+          <text x="14" y="124">Trabajo</text>
+          <rect x="318" y="112" width="53" height="17" rx="3" fill="#256abf"/>
+          <text x="379" y="125" font-size="11.5" font-weight="bold" fill="#256abf">+10,0 %</text>
+          <text x="14" y="154">Defensa</text>
+          <rect x="318" y="142" width="77" height="17" rx="3" fill="#256abf"/>
+          <text x="403" y="155" font-size="11.5" font-weight="bold" fill="#256abf">+14,6 %</text>
+          <text x="14" y="184">Hacienda</text>
+          <rect x="318" y="172" width="182" height="17" rx="3" fill="#256abf"/>
+          <text x="508" y="185" font-size="11.5" font-weight="bold" fill="#256abf">+34,4 %</text>
+        </g>
+        <text x="14" y="234" font-size="10" fill="#6b7177">Variación real frente a 2026, descontada la inflación del 6,24 %</text>
+      </g>
+    </svg>
+  </figure>
+  <div class="hecho">
+    <div class="enc"><span class="fch">14 y 23 de septiembre</span><span class="sem p3">● ● ●  PROBADO</span></div>
+    <p class="q">Presupuesto 2027 por <span class="g">$634,9 billones</span>, el más alto de la historia
+    y <span class="g">$59,3 billones más</span> que el proyecto que dejó listo la administración
+    saliente. El propio presidente advirtió que <span class="g">el 44 % —$281 billones— sale
+    de deuda</span>. Del aumento, <span class="g">$37,4 billones son para pagar deuda</span>: el servicio
+    pasa de $118,0 a $155,4 billones. Recorta <span class="g">$170.000 millones a la JEP</span> y
+    cerca del <span class="g">40 % al Ministerio del Deporte</span>, en año de clasificatorios olímpicos.</p>
+  </div>
+  <div class="hecho">
+    <div class="enc"><span class="fch">17 de septiembre</span><span class="sem p2">● ●  DECLARADO</span></div>
+    <p class="q">La ministra de Trabajo advierte ante el Congreso que <span class="g">faltan
+    $5,1 billones</span> para pagar las pensiones de noviembre y diciembre.</p>
+  </div>
+  <div class="pie"><span>Lo que este gobierno hizo</span><span>Página 9 de 12</span></div>
+</section>
+
+<!-- 10 PRECIOS -->
+<section class="hoja">
+  <div class="sello">7 · Los precios</div>
+  <p class="rotulo">Acá hay de las dos, y van las dos</p>
+  <h2>Lo que subió<br>y lo que frenó.</h2>
+  <div class="hecho">
+    <div class="enc"><span class="fch">1 y 6 de septiembre</span><span class="sem p3">● ● ●  PROBADO</span></div>
+    <p class="q"><span class="g">Recargo en el recibo de la luz</span> a quien consuma de más, por el
+    programa de ahorro de la CREG. El presidente lo confirma: «buscamos evitar
+    incrementos desbordados». El 8 de septiembre la ministra de Minas advierte en
+    el Congreso que <span class="g">«la tarifa tiene que subir»</span> por El Niño y el gas caro.</p>
+  </div>
+  <div class="hecho">
+    <div class="enc"><span class="fch">6 de octubre</span><span class="sem p2">● ●  ANUNCIADO</span></div>
+    <p class="q">Estudia <span class="g">eliminar el subsidio al ACPM</span> para vehículos particulares,
+    oficiales y diplomáticos, manteniéndolo para carga y pasajeros.</p>
+  </div>
+  <div class="hecho">
+    <div class="enc"><span class="fch">30 de septiembre</span><span class="sem p3">● ● ●  PROBADO</span></div>
+    <p class="q">El Banco de la República <span class="g">sube la tasa a 12,25 %</span>, su nivel más alto
+    del año: el crédito de vivienda y de consumo se encarece.</p>
+    <p class="fnt">El Banco es independiente: la decisión no es del presidente.</p>
+  </div>
+  <div class="hecho">
+    <div class="enc"><span class="fch">29 de agosto · 1 de octubre</span><span class="sem p3">● ● ●  A SU FAVOR</span></div>
+    <p class="q">Congeló el precio de la gasolina y el ACPM en septiembre tras el terremoto,
+    y el 1 de octubre <span class="g">ordenó revertir el alza de $46 por galón</span>.</p>
+  </div>
+  <div class="caja">
+    <p class="t">La inflación: por qué no entra en el reproche</p>
+    <p>Llegó a 6,29 % en septiembre. Pero la curva venía subiendo desde antes del
+    7 de agosto, y los productos que más subieron —la papa, 78 %— los explica el
+    propio DANE por el <span class="g">aplazamiento de siembras ante El Niño</span>: ciclo agrícola,
+    no política de precios.</p>
+    <p>Lo que sí está medido y pesa: el alza <span class="g">golpea más abajo que arriba</span> —0,41 %
+    mensual en hogares pobres contra 0,32 % en los de ingresos altos, dato del DANE—.</p>
+  </div>
+  <div class="pie"><span>Lo que este gobierno hizo</span><span>Página 10 de 12</span></div>
+</section>
+
+<!-- 11 LO QUE NO -->
+<section class="hoja">
+  <div class="sello">8 · Honestidad</div>
+  <p class="rotulo">Si usas esto, pierdes la discusión</p>
+  <h2>Cinco cosas que NO<br>son culpa suya.</h2>
+  <ul>
+    <li><span class="g">La inflación y el precio de la comida.</span> La curva venía de antes y el
+    ciclo del cultivo es de meses. El propio registro lo marca como contexto, no
+    como resultado de este gobierno.</li>
+    <li><span class="g">El desempleo de 9,4 % en agosto.</span> El mes es casi todo anterior a la
+    posesión, el DANE ajustó la medición por el terremoto, y los 240.000 empleos
+    perdidos en la industria son interanuales.</li>
+    <li><span class="g">La deuda del 60,5 % del PIB.</span> Medida al 30 de junio de 2026.</li>
+    <li><span class="g">El Decreto 1012</span>, que suspendió la meritocracia 15 días: lo firmó el
+    gobierno <span class="g">saliente</span>, y es una medida que se expide cada cuatrienio —Santos
+    en 2018, Duque en 2022—.</li>
+    <li><span class="g">Los decretos de emergencia del terremoto.</span> La Constitución los prevé
+    para desastres así: fue un sismo de 7,4 con más de 330 muertos.</li>
+  </ul>
+  <div class="caja azul">
+    <p class="t">Y el dato que más honestidad exige</p>
+    <p>Según el Comité Autónomo de la Regla Fiscal, <span class="g">el 88 % del gasto del Estado
+    es inflexible</span>: está amarrado por la Constitución o por leyes. Un presidente,
+    el que sea, mueve apenas la décima parte de la plata.</p>
+    <p>Por eso el rumbo del gasto se juzga <span class="g">donde sí decidió</span> — y ahí Educación
+    y Salud bajan.</p>
+  </div>
+  <div class="pie"><span>Lo que este gobierno hizo</span><span>Página 11 de 12</span></div>
+</section>
+
+<!-- 12 A FAVOR Y CIERRE -->
+<section class="hoja">
+  <div class="sello">9 · Cierre</div>
+  <p class="rotulo">Un expediente que solo acusa no sirve</p>
+  <h2>Lo que está<br>a su favor.</h2>
+  <div class="alcostado">
+    <div class="enorme azul">7</div>
+    <div class="texto"><span class="g">Siete menores rescatados vivos</span> en esas mismas
+    operaciones, sacados de grupos armados.</div>
+  </div>
+  <ul>
+    <li><span class="g">Cero casos de corrupción confirmados</span> y cero investigaciones abiertas
+    contra este gobierno, a 66 días.</li>
+    <li>Revocó <span class="g">60 contratos de última hora</span> del Ministerio de la Igualdad en
+    liquidación y radicó 13 denuncias más.</li>
+    <li>La SIC, bajo este gobierno, ordenó priorizar la investigación de un presunto
+    esquema de corrupción contractual por cerca de <span class="g">$2 billones</span>.</li>
+    <li>Sacó al director de Bomberos <span class="g">a los 26 días</span> por unos audios, y donó su
+    primer salario presidencial.</li>
+    <li>Entregó viviendas y subsidios de arriendo a damnificados, y congeló el precio
+    de los combustibles tras el sismo.</li>
+  </ul>
+  <div class="remate">
+    <p class="rotulo" style="margin-bottom:2.5mm">De dónde salió cada dato</p>
+    <p style="font-size:11pt">Medicina Legal · DANE · Ministerio de Hacienda · Comité Autónomo
+    de la Regla Fiscal · decretos y resoluciones citados por su número · fallos de juzgados
+    de Bogotá y Puerto Asís · Fundación para la Libertad de Prensa · revista Cambio ·
+    La Silla Vacía · El Tiempo · El Colombiano · El Espectador · Infobae · Semana ·
+    Portafolio · La República.</p>
+    <p style="font-size:11pt"><span class="g">244 hechos, 79 % verificado por terceros.</span> Cada uno
+    con su enlace, abierto a quien quiera comprobarlo — o corregirlo.</p>
+    <p class="g" style="font-size:16pt; margin-top:3mm">urbispro.city</p>
+  </div>
+  <div class="pie"><span>Lo que este gobierno hizo</span><span>Página 12 de 12</span></div>
+</section>
+
+</body></html>
