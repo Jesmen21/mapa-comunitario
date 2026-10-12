@@ -1,0 +1,440 @@
+<!doctype html>
+<html lang="es"><head><meta charset="utf-8">
+<title>Por que Nada fiable</title>
+<style>
+  @page { size: A4; margin: 0; }
+  * { box-sizing: border-box; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  html, body { margin: 0; padding: 0; background: #fff; }
+  body { font-family: Georgia, "Times New Roman", serif; color: #1b1b1b; }
+  .hoja { width: 210mm; height: 297mm; padding: 17mm 17mm 15mm; page-break-after: always;
+          position: relative; overflow: hidden; }
+  .hoja:last-child { page-break-after: auto; }
+  .sello { position: absolute; top: 8mm; right: 17mm; font-family: Verdana, sans-serif;
+           font-size: 8pt; letter-spacing: .14em; color: #8a8f94; text-transform: uppercase; }
+  .pie { position: absolute; bottom: 8mm; left: 17mm; right: 17mm; font-family: Verdana, sans-serif;
+         font-size: 8pt; color: #8a8f94; display: flex; justify-content: space-between; }
+  h1 { font-size: 38pt; line-height: 1.07; margin: 0 0 5mm; letter-spacing: -.02em; }
+  h2 { font-size: 23pt; line-height: 1.14; margin: 0 0 5mm; letter-spacing: -.01em; }
+  p  { font-size: 13.5pt; line-height: 1.56; margin: 0 0 4mm; }
+  .g { font-weight: bold; }
+  .rotulo { font-family: Verdana, sans-serif; font-size: 9pt; letter-spacing: .15em;
+            text-transform: uppercase; color: #6b7177; margin: 0 0 4mm; }
+  .portada { display: flex; flex-direction: column; justify-content: center; }
+  .portada h1 { font-size: 50pt; }
+  .portada .bajada { font-size: 17pt; line-height: 1.45; color: #44494e; margin-top: 2mm; }
+  .caja { border-left: 3mm solid #ccc; padding: 5mm 6mm; margin: 0 0 5mm; background: #f7f8f8; }
+  .caja.roja  { border-left-color: #d03b3b; background: #FBF1F0; }
+  .caja.azul  { border-left-color: #256abf; background: #EFF4FB; }
+  .caja .t { font-family: Verdana, sans-serif; font-size: 11.5pt; font-weight: bold; margin: 0 0 2.5mm; }
+  .caja p { font-size: 12.5pt; margin: 0 0 2.5mm; }
+  .caja p:last-child { margin-bottom: 0; }
+  figure { margin: 0 0 5mm; }
+  figcaption { font-family: Verdana, sans-serif; font-size: 9.5pt; color: #6b7177; margin-top: 2mm;
+               line-height: 1.5; }
+  svg { display: block; }
+  .enorme { font-size: 72pt; line-height: 1; font-weight: bold; letter-spacing: -.04em; color: #d03b3b; }
+  .enorme.azul { color: #256abf; }
+  .alcostado { display: flex; align-items: center; gap: 8mm; margin: 4mm 0 5mm; }
+  .alcostado .texto { font-size: 15pt; line-height: 1.4; }
+  table { width: 100%; border-collapse: collapse; margin: 3mm 0 4mm; }
+  td, th { font-size: 11.5pt; padding: 2.8mm 2mm; border-bottom: 1px solid #e2e5e7;
+           vertical-align: top; text-align: left; }
+  th { font-family: Verdana, sans-serif; font-size: 9pt; text-transform: uppercase;
+       letter-spacing: .1em; color: #6b7177; border-bottom: 1.5px solid #1b1b1b; }
+  .sem { font-family: Verdana, sans-serif; font-size: 9pt; font-weight: bold; white-space: nowrap; }
+  .s3 { color: #1E6F3C; } .s2 { color: #9a6a00; } .s1 { color: #8a8f94; }
+  ul { margin: 0 0 4mm; padding-left: 6mm; }
+  li { font-size: 13pt; line-height: 1.5; margin-bottom: 2.5mm; }
+  .remate { border-top: 2px solid #1b1b1b; padding-top: 4mm; margin-top: 3mm; }
+</style></head><body>
+
+<!-- 1 PORTADA -->
+<section class="hoja portada">
+  <div class="sello">URBIS · Seguimiento presidencial</div>
+  <p class="rotulo">Con dibujos, y con las fuentes al final</p>
+  <h1>¿Por qué dice<br>«Nada fiable»?</h1>
+  <p class="bajada">Y qué contestan los números cuando alguien dice que
+  «les están quitando las ayudas para que la gente trabaje».</p>
+  <p class="bajada"><span class="g">Esto no defiende a nadie.</span> Son las cuentas
+  del propio Gobierno, del DANE y de la Universidad Javeriana.</p>
+  <div class="pie"><span>12 de octubre de 2026</span><span>Página 1 de 10</span></div>
+</section>
+
+<!-- 2 LA ESCALERA -->
+<section class="hoja">
+  <div class="sello">Primero: qué quiere decir</div>
+  <p class="rotulo">La calificación tiene cinco escalones</p>
+  <h2>«Nada fiable» es el<br>último escalón.</h2>
+  <figure>
+    <svg width="660" height="268" viewBox="0 0 660 268" role="img"
+         aria-label="Escalera de cinco escalones; el gobierno está hoy en el último, Nada fiable">
+      <!-- escalones -->
+      <g font-family="Verdana, sans-serif">
+        <rect x="18"  y="24"  width="118" height="34" rx="4" fill="#eceae5"/>
+        <rect x="18"  y="68"  width="118" height="34" rx="4" fill="#eceae5"/>
+        <rect x="18"  y="112" width="118" height="34" rx="4" fill="#eceae5"/>
+        <rect x="18"  y="156" width="118" height="34" rx="4" fill="#eceae5"/>
+        <rect x="18"  y="200" width="118" height="34" rx="4" fill="#d03b3b"/>
+        <text x="146" y="46"  font-size="15" fill="#1b1b1b">1 · Confiabilidad inquebrantable</text>
+        <text x="146" y="90"  font-size="15" fill="#1b1b1b">2 · Fiable</text>
+        <text x="146" y="134" font-size="15" fill="#1b1b1b">3 · Dudosa</text>
+        <text x="146" y="178" font-size="15" fill="#1b1b1b">4 · Poco fiable</text>
+        <text x="146" y="216" font-size="16" font-weight="bold" fill="#1b1b1b">5 · Nada fiable</text>
+        <text x="146" y="231" font-size="12.5" fill="#6b7177">el peor de los cinco</text>
+        <!-- flecha -->
+        <path d="M612 217 L560 217" stroke="#d03b3b" stroke-width="3" fill="none"/>
+        <path d="M560 217 l10 -6 v12 z" fill="#d03b3b"/>
+        <text x="620" y="213" font-size="13" font-weight="bold" fill="#d03b3b" text-anchor="end">AQUÍ</text>
+        <text x="620" y="229" font-size="13" font-weight="bold" fill="#d03b3b" text-anchor="end">ESTÁ HOY</text>
+        <text x="18" y="258" font-size="12.5" fill="#6b7177">Mejor arriba · peor abajo</text>
+      </g>
+    </svg>
+    <figcaption>Los cinco escalones están escritos desde antes y son los mismos para
+    cualquier gobierno que se mida con esta página.</figcaption>
+  </figure>
+  <div class="caja">
+    <p class="t">Lo primero que hay que entender</p>
+    <p>La calificación <span class="g">no la escribe nadie a mano</span>. Sale de contar
+    hechos, y cada hecho tiene su fecha y su fuente. Si mañana cambia un hecho,
+    cambia sola.</p>
+  </div>
+  <div class="pie"><span>¿Por qué dice «Nada fiable»?</span><span>Página 2 de 10</span></div>
+</section>
+
+<!-- 3 LOS TRES MEDIDORES -->
+<section class="hoja">
+  <div class="sello">De dónde sale</div>
+  <p class="rotulo">No es una nota, son tres medidores</p>
+  <h2>Y manda el peor,<br>no el promedio.</h2>
+  <figure>
+    <svg width="660" height="300" viewBox="0 0 660 300" role="img"
+         aria-label="Tres medidores: reglas del juego en Dudosa, rumbo del gasto en Poco fiable, uso de la fuerza en Nada fiable">
+      <g font-family="Verdana, sans-serif">
+        <!-- rejilla de escalones -->
+        <g font-size="11.5" fill="#8a8f94">
+          <line x1="150" y1="34"  x2="640" y2="34"  stroke="#e2e5e7"/>
+          <line x1="150" y1="78"  x2="640" y2="78"  stroke="#e2e5e7"/>
+          <line x1="150" y1="122" x2="640" y2="122" stroke="#e2e5e7"/>
+          <line x1="150" y1="166" x2="640" y2="166" stroke="#e2e5e7"/>
+          <line x1="150" y1="210" x2="640" y2="210" stroke="#e2e5e7"/>
+          <text x="144" y="38"  text-anchor="end">Inquebrantable</text>
+          <text x="144" y="82"  text-anchor="end">Fiable</text>
+          <text x="144" y="126" text-anchor="end">Dudosa</text>
+          <text x="144" y="170" text-anchor="end">Poco fiable</text>
+          <text x="144" y="214" text-anchor="end">Nada fiable</text>
+        </g>
+        <!-- columnas -->
+        <g>
+          <line x1="245" y1="26" x2="245" y2="218" stroke="#e2e5e7" stroke-width="1"/>
+          <line x1="395" y1="26" x2="395" y2="218" stroke="#e2e5e7" stroke-width="1"/>
+          <line x1="545" y1="26" x2="545" y2="218" stroke="#e2e5e7" stroke-width="1"/>
+          <circle cx="245" cy="122" r="11" fill="#fcfcfb" stroke="#1b1b1b" stroke-width="2.5"/>
+          <circle cx="395" cy="166" r="11" fill="#fcfcfb" stroke="#1b1b1b" stroke-width="2.5"/>
+          <circle cx="545" cy="210" r="13" fill="#d03b3b" stroke="#fcfcfb" stroke-width="2"/>
+        </g>
+        <!-- etiquetas de columna -->
+        <g font-size="12.5" fill="#1b1b1b" text-anchor="middle">
+          <text x="245" y="248" font-weight="bold">Las reglas</text>
+          <text x="245" y="264">del juego</text>
+          <text x="395" y="248" font-weight="bold">El rumbo</text>
+          <text x="395" y="264">del gasto</text>
+          <text x="545" y="248" font-weight="bold">El uso de</text>
+          <text x="545" y="264">la fuerza</text>
+          <text x="545" y="286" font-size="12" font-weight="bold" fill="#d03b3b">ESTE MANDA</text>
+        </g>
+      </g>
+    </svg>
+    <figcaption>Cada medidor cae en un escalón distinto. La calificación final es la
+    del <span class="g">peor</span> de los tres — un medidor bueno no tapa uno malo.</figcaption>
+  </figure>
+  <div class="caja">
+    <p class="t">Por qué no se promedia</p>
+    <p>Si se promediara, bastaría con hacer dos cosas bien para borrar una grave.
+    Con seis niños muertos de por medio, un promedio sería una forma elegante de
+    esconderlo.</p>
+  </div>
+  <div class="pie"><span>¿Por qué dice «Nada fiable»?</span><span>Página 3 de 10</span></div>
+</section>
+
+<!-- 4 LOS SEIS NIÑOS -->
+<section class="hoja">
+  <div class="sello">El medidor que manda</div>
+  <p class="rotulo">Uso de la fuerza y derechos</p>
+  <h2>Seis niños muertos<br>en 23 días.</h2>
+  <div class="alcostado">
+    <div class="enorme">6</div>
+    <div class="texto">Confirmados por <span class="g">Medicina Legal</span>, la entidad del
+    Estado que examina los cuerpos. No lo dijo un periódico.</div>
+  </div>
+  <figure>
+    <svg width="660" height="150" viewBox="0 0 660 150" role="img"
+         aria-label="Línea de tiempo: posesión el 7 de agosto; tres operaciones el 11, 27 y 30 de agosto">
+      <g font-family="Verdana, sans-serif">
+        <line x1="40" y1="60" x2="620" y2="60" stroke="#c9ccd0" stroke-width="2"/>
+        <!-- posesion -->
+        <line x1="60" y1="36" x2="60" y2="84" stroke="#1b1b1b" stroke-width="3"/>
+        <text x="60" y="28" font-size="12" font-weight="bold" text-anchor="middle">7 ago</text>
+        <text x="60" y="102" font-size="11.5" fill="#6b7177" text-anchor="middle">posesión</text>
+        <!-- hitos -->
+        <circle cx="175" cy="60" r="9" fill="#d03b3b"/>
+        <text x="175" y="28" font-size="12" font-weight="bold" text-anchor="middle">11 ago</text>
+        <text x="175" y="102" font-size="11.5" text-anchor="middle">Beta</text>
+        <text x="175" y="118" font-size="12" font-weight="bold" text-anchor="middle">1 niño</text>
+        <circle cx="430" cy="60" r="11" fill="#d03b3b"/>
+        <text x="430" y="28" font-size="12" font-weight="bold" text-anchor="middle">27 ago</text>
+        <text x="430" y="102" font-size="11.5" text-anchor="middle">Amón</text>
+        <text x="430" y="118" font-size="12" font-weight="bold" text-anchor="middle">3 niños</text>
+        <circle cx="545" cy="60" r="10" fill="#d03b3b"/>
+        <text x="545" y="28" font-size="12" font-weight="bold" text-anchor="middle">30 ago</text>
+        <text x="545" y="102" font-size="11.5" text-anchor="middle">Azarías</text>
+        <text x="545" y="118" font-size="12" font-weight="bold" text-anchor="middle">2 niños</text>
+        <text x="40" y="142" font-size="11.5" fill="#6b7177">El tamaño del punto es la cantidad de niños</text>
+      </g>
+    </svg>
+  </figure>
+  <div class="caja roja">
+    <p class="t">Por qué acá no sirve decir «eso lo dejó Petro»</p>
+    <p>Una operación militar <span class="g">se ordena un día y pasa ese mismo día</span>.
+    Las tres fechas están después del 7 de agosto. La primera, cuatro días después.</p>
+  </div>
+  <div class="caja">
+    <p class="t">La vara no la inventó esta página</p>
+    <p>El <span class="g">artículo 135 del Código Penal</span> castiga con 30 a 40 años de
+    cárcel la muerte de una persona protegida. Un niño siempre lo es.</p>
+  </div>
+  <div class="pie"><span>¿Por qué dice «Nada fiable»?</span><span>Página 4 de 10</span></div>
+</section>
+
+<!-- 5 LA ACUSACION -->
+<section class="hoja">
+  <div class="sello">La pregunta del otro lado</div>
+  <p class="rotulo">«Les están quitando las ayudas para que la gente trabaje»</p>
+  <h2>A ver los números.</h2>
+  <p>Si fuera cierto que este gobierno está apretándose el cinturón, el
+  presupuesto sería <span class="g">más chico</span>. Pasó lo contrario.</p>
+  <figure>
+    <svg width="660" height="212" viewBox="0 0 660 212" role="img"
+         aria-label="El presupuesto que dejó listo el gobierno anterior era de 575,6 billones; el que presentó este gobierno es de 634,9 billones">
+      <g font-family="Verdana, sans-serif">
+        <text x="18" y="22" font-size="12.5" fill="#6b7177">Proyecto de presupuesto para 2027, en billones de pesos</text>
+        <!-- barra 1 -->
+        <text x="18" y="62" font-size="13">El que dejó listo el gobierno anterior</text>
+        <rect x="18" y="70" width="449" height="26" rx="4" fill="#9aa0a6"/>
+        <text x="477" y="89" font-size="15" font-weight="bold">$575,6</text>
+        <!-- barra 2 -->
+        <text x="18" y="134" font-size="13">El que presentó <tspan font-weight="bold">este</tspan> gobierno</text>
+        <rect x="18" y="142" width="495" height="26" rx="4" fill="#256abf"/>
+        <text x="523" y="161" font-size="15" font-weight="bold">$634,9</text>
+        <!-- diferencia -->
+        <text x="18" y="196" font-size="14" font-weight="bold" fill="#256abf">Es $59,3 billones MÁS, no menos.</text>
+      </g>
+    </svg>
+    <figcaption>Cifras del Ministerio de Hacienda, recogidas por Portafolio y La República,
+    septiembre de 2026.</figcaption>
+  </figure>
+  <div class="caja azul">
+    <p class="t">Y lo dijo el propio presidente</p>
+    <p>De la Espriella advirtió que <span class="g">el 44 % del presupuesto —$281 billones—
+    sale de deuda</span>. Casi la mitad de la plata de 2027 es prestada.</p>
+  </div>
+  <p>Entonces no es que no haya plata. Hay más que nunca, y casi la mitad es
+  prestada. <span class="g">La pregunta no es cuánta hay: es para dónde va.</span></p>
+  <div class="pie"><span>¿Por qué dice «Nada fiable»?</span><span>Página 5 de 10</span></div>
+</section>
+
+<!-- 6 A DONDE VA EL AUMENTO -->
+<section class="hoja">
+  <div class="sello">Para dónde va</div>
+  <p class="rotulo">De esos $59,3 billones de más</p>
+  <h2>Lo que más creció<br>fue pagar deuda.</h2>
+  <figure>
+    <svg width="660" height="258" viewBox="0 0 660 258" role="img"
+         aria-label="Del aumento del presupuesto, 37,4 billones son servicio de la deuda, 9,6 para el fondo de combustibles, 6,5 pensiones, 2 salud y 0,7 universidades">
+      <g font-family="Verdana, sans-serif">
+        <text x="18" y="18" font-size="12.5" fill="#6b7177">Principales rubros del aumento, en billones de pesos</text>
+        <!-- barras -->
+        <g font-size="13">
+          <text x="18" y="52">Pagar la deuda</text>
+          <rect x="250" y="38" width="374" height="22" rx="4" fill="#d03b3b"/>
+          <text x="258" y="55" font-size="14" font-weight="bold" fill="#fff">$37,4</text>
+          <text x="18" y="94">Fondo de combustibles</text>
+          <rect x="250" y="80" width="96" height="22" rx="4" fill="#9aa0a6"/>
+          <text x="354" y="97" font-size="14" font-weight="bold">$9,6</text>
+          <text x="18" y="136">Pensiones</text>
+          <rect x="250" y="122" width="65" height="22" rx="4" fill="#9aa0a6"/>
+          <text x="323" y="139" font-size="14" font-weight="bold">$6,5</text>
+          <text x="18" y="178">Salud</text>
+          <rect x="250" y="164" width="20" height="22" rx="4" fill="#9aa0a6"/>
+          <text x="278" y="181" font-size="14" font-weight="bold">$2,0</text>
+          <text x="18" y="220">Universidades públicas</text>
+          <rect x="250" y="206" width="7" height="22" rx="3" fill="#9aa0a6"/>
+          <text x="265" y="223" font-size="14" font-weight="bold">$0,7</text>
+        </g>
+        <line x1="250" y1="236" x2="624" y2="236" stroke="#e2e5e7"/>
+        <text x="250" y="252" font-size="11.5" fill="#6b7177">0</text>
+        <text x="624" y="252" font-size="11.5" fill="#6b7177" text-anchor="end">$37,4 billones</text>
+      </g>
+    </svg>
+    <figcaption>El servicio de la deuda pasa de $118,0 a $155,4 billones: sube 54,7 %.
+    Ministerio de Hacienda.</figcaption>
+  </figure>
+  <div class="caja">
+    <p class="t">En palabras simples</p>
+    <p>De cada $100 que creció el presupuesto, <span class="g">unos $63 son para pagarle a
+    quien nos prestó</span>. Eso no es un subsidio que alguien se está robando: es una
+    cuenta que llegó.</p>
+  </div>
+  <div class="pie"><span>¿Por qué dice «Nada fiable»?</span><span>Página 6 de 10</span></div>
+</section>
+
+<!-- 7 QUE SUBE Y QUE BAJA -->
+<section class="hoja">
+  <div class="sello">El medidor del gasto</div>
+  <p class="rotulo">Quitando la inflación: plata de verdad</p>
+  <h2>Qué sube y qué baja<br>en 2027.</h2>
+  <figure>
+    <svg width="660" height="290" viewBox="0 0 660 290" role="img"
+         aria-label="Variación real: Deporte baja 43,5 por ciento, Salud baja 4,4, Educación baja 3,1, Trabajo sube 10, Defensa sube 14,6, Hacienda sube 34,4">
+      <g font-family="Verdana, sans-serif">
+        <!-- eje cero -->
+        <line x1="330" y1="26" x2="330" y2="248" stroke="#1b1b1b" stroke-width="1.5"/>
+        <text x="330" y="266" font-size="11.5" fill="#6b7177" text-anchor="middle">0</text>
+        <text x="190" y="266" font-size="11.5" fill="#6b7177" text-anchor="middle">baja</text>
+        <text x="480" y="266" font-size="11.5" fill="#6b7177" text-anchor="middle">sube</text>
+        <g font-size="12.5">
+          <!-- Deporte -43,5  (escala: 5.6 px por punto) -->
+          <text x="18" y="48">Deporte</text>
+          <rect x="86" y="34" width="244" height="20" rx="4" fill="#d03b3b"/>
+          <text x="96" y="49" font-size="13.5" font-weight="bold" fill="#fff">−43,5 %</text>
+          <!-- Salud -4,4 -->
+          <text x="18" y="83">Salud</text>
+          <rect x="305" y="69" width="25" height="20" rx="4" fill="#d03b3b"/>
+          <text x="297" y="84" font-size="13.5" font-weight="bold" fill="#d03b3b" text-anchor="end">−4,4 %</text>
+          <!-- Educacion -3,1 -->
+          <text x="18" y="118">Educación</text>
+          <rect x="313" y="104" width="17" height="20" rx="4" fill="#d03b3b"/>
+          <text x="305" y="119" font-size="13.5" font-weight="bold" fill="#d03b3b" text-anchor="end">−3,1 %</text>
+          <!-- Trabajo +10 -->
+          <text x="18" y="153">Trabajo</text>
+          <rect x="330" y="139" width="56" height="20" rx="4" fill="#256abf"/>
+          <text x="394" y="154" font-size="13.5" font-weight="bold" fill="#256abf">+10,0 %</text>
+          <!-- Defensa +14,6 -->
+          <text x="18" y="188">Defensa</text>
+          <rect x="330" y="174" width="82" height="20" rx="4" fill="#256abf"/>
+          <text x="420" y="189" font-size="13.5" font-weight="bold" fill="#256abf">+14,6 %</text>
+          <!-- Hacienda +34,4 -->
+          <text x="18" y="223">Hacienda</text>
+          <rect x="330" y="209" width="193" height="20" rx="4" fill="#256abf"/>
+          <text x="531" y="224" font-size="13.5" font-weight="bold" fill="#256abf">+34,4 %</text>
+        </g>
+        <text x="18" y="286" font-size="11.5" fill="#6b7177">Variación real frente a 2026, descontada la inflación del 6,24 %</text>
+      </g>
+    </svg>
+  </figure>
+  <div class="caja roja">
+    <p class="t">Lo que esto quiere decir</p>
+    <p>Para <span class="g">colegios y hospitales</span> va a haber menos plata de verdad que
+    este año. Para <span class="g">el Ejército y el manejo del dinero</span>, más.</p>
+    <p>Se puede estar de acuerdo o no — es una decisión, y se discute. Lo que no se
+    puede decir es que la dejó el gobierno pasado: este presupuesto se radicó
+    en septiembre de 2026.</p>
+  </div>
+  <div class="pie"><span>¿Por qué dice «Nada fiable»?</span><span>Página 7 de 10</span></div>
+</section>
+
+<!-- 8 CONTRATOS Y AYUDAS -->
+<section class="hoja">
+  <div class="sello">Contratos y ayudas</div>
+  <p class="rotulo">Cada cosa con su nivel de prueba</p>
+  <h2>Qué está probado<br>y qué no.</h2>
+  <table>
+    <tr><th>Qué pasó</th><th style="width:78px">Prueba</th></tr>
+    <tr><td><span class="g">Aplazó los concursos de mérito</span> hasta 2027, incluido el de
+      docentes con más de 28.000 vacantes. Decreto 1384, 11 de septiembre.</td>
+      <td class="sem s3">● ● ●<br>HECHO</td></tr>
+    <tr><td><span class="g">El Fondo Milagro no ha girado un peso.</span> A casi dos meses del
+      terremoto, Hacienda respondió por escrito que no ha firmado el contrato
+      ni girado los $624.656 millones de la reconstrucción.</td>
+      <td class="sem s3">● ● ●<br>HECHO</td></tr>
+    <tr><td><span class="g">Contrato directo por $773,5 millones con Magneto Empleos</span>, la
+      firma que operó su Banco de Talentos durante el empalme. Los documentos
+      del proceso no mencionan ese antecedente.</td>
+      <td class="sem s3">● ● ●<br>HECHO</td></tr>
+    <tr><td><span class="g">Cancelará 10.000 contratos</span> de prestación de servicios del
+      Ministerio de Agricultura, con un recorte del 32 % en esa cartera.</td>
+      <td class="sem s2">● ●<br>ANUNCIO</td></tr>
+    <tr><td>Una fundación de la primera dama, creada antes de la posesión,
+      encabeza los canales de donación del terremoto.</td>
+      <td class="sem s1">●<br>EN DISPUTA</td></tr>
+  </table>
+  <div class="caja">
+    <p class="t">Cómo se lee el semáforo</p>
+    <p><span class="g">● ● ● HECHO</span> — hay documento oficial o respuesta escrita de una
+    entidad. <span class="g">● ● ANUNCIO</span> — se dijo, falta que pase.
+    <span class="g">● EN DISPUTA</span> — hay dos versiones y ninguna cerrada.</p>
+    <p>Lo tercero <span class="g">no se usa para acusar</span>. Se publica porque existe, no
+    porque esté probado.</p>
+  </div>
+  <div class="pie"><span>¿Por qué dice «Nada fiable»?</span><span>Página 8 de 10</span></div>
+</section>
+
+<!-- 9 LO QUE NO SIRVE -->
+<section class="hoja">
+  <div class="sello">Honestidad</div>
+  <p class="rotulo">Si usas esto, te lo tumban</p>
+  <h2>Cuatro cosas que NO<br>son culpa suya.</h2>
+  <ul>
+    <li><span class="g">El desempleo de 9,4 % en agosto.</span> El mes es casi todo anterior
+    al 7 de agosto, y el propio DANE ajustó la medición por el terremoto. Los
+    240.000 empleos perdidos en la industria vienen de mucho antes.</li>
+    <li><span class="g">La papa, que subió 78 %.</span> Se sembró meses antes, y el DANE lo
+    atribuye al aplazamiento de siembras por el fenómeno de El Niño.</li>
+    <li><span class="g">La deuda del 60,5 % del PIB.</span> Está medida al 30 de junio de 2026,
+    antes de la posesión.</li>
+    <li><span class="g">El Decreto 1012</span>, que suspendió la meritocracia 15 días. Lo firmó
+    <span class="g">el gobierno saliente</span>, un día antes de entregar, y es una medida
+    que se expide cada cuatrienio: Santos en 2018, Duque en 2022.</li>
+  </ul>
+  <div class="caja azul">
+    <p class="t">Y el dato que más honestidad exige</p>
+    <p>Según el Comité Autónomo de la Regla Fiscal, <span class="g">el 88 % del gasto del
+    Estado es inflexible</span>: está amarrado por la Constitución o por leyes.</p>
+    <p>Un presidente, el que sea, mueve apenas la décima parte de la plata. Por
+    eso el rumbo del gasto se mide donde sí decidió — y ahí es donde Educación
+    y Salud bajan.</p>
+  </div>
+  <div class="pie"><span>¿Por qué dice «Nada fiable»?</span><span>Página 9 de 10</span></div>
+</section>
+
+<!-- 10 A FAVOR Y FUENTES -->
+<section class="hoja">
+  <div class="sello">Cierre</div>
+  <p class="rotulo">Lo bueno también se escribe</p>
+  <h2>Lo que está<br>a su favor.</h2>
+  <div class="alcostado">
+    <div class="enorme azul">7</div>
+    <div class="texto"><span class="g">Siete niños rescatados vivos</span> en esas mismas
+    operaciones, sacados de grupos armados.</div>
+  </div>
+  <ul>
+    <li><span class="g">Cero casos de corrupción</span> comprobados y cero investigaciones
+    abiertas contra este gobierno, hasta hoy.</li>
+    <li>Revocó <span class="g">60 contratos de última hora</span> del Ministerio de la Igualdad
+    y radicó denuncias.</li>
+    <li>Sacó al director de Bomberos <span class="g">a los 26 días</span>, por unos audios.</li>
+    <li>Los decretos de emergencia del terremoto <span class="g">no se le cobran</span>: la
+    Constitución los permite para desastres así.</li>
+  </ul>
+  <div class="remate">
+    <p class="rotulo" style="margin-bottom:3mm">De dónde salió cada número</p>
+    <p style="font-size:12pt">DANE (inflación, desempleo, precios) · Ministerio de Hacienda
+    (presupuesto, deuda, Fondo Milagro) · Medicina Legal (las seis muertes) ·
+    Comité Autónomo de la Regla Fiscal (gasto inflexible) · Observatorio Fiscal de la
+    Universidad Javeriana (nómina y presupuesto) · Portafolio, La República, El
+    Colombiano, revista Cambio y La Silla Vacía.</p>
+    <p class="g" style="font-size:17pt; margin-top:4mm">urbispro.city</p>
+  </div>
+  <div class="pie"><span>¿Por qué dice «Nada fiable»?</span><span>Página 10 de 10</span></div>
+</section>
+
+</body></html>

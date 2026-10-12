@@ -11,12 +11,37 @@ estado. El módulo contesta «qué pasa»; esto contesta «cómo sé de quién e
 
 | Archivo | Qué es |
 |---|---|
-| `de-quien-es-la-culpa.html` | 7 páginas A4. La fuente, y lo único que se corrige |
+| `de-quien-es-la-culpa.html` | 7 páginas A4, sin un solo gráfico: la regla de la fecha |
+| `nada-fiable.html` | 10 páginas A4 con gráficos: de dónde sale el dictamen, y los números del presupuesto |
 | `hacer-pdf.js` | arma el PDF, y **se niega a escribirlo** si alguna hoja se desborda |
 
 ```bash
 node divulgacion/hacer-pdf.js     # el PDF sale acá al lado
 ```
+
+El generador arma el primero; para el segundo se cambia el nombre del archivo
+dentro. Que no esté parametrizado es deliberado mientras sean dos.
+
+## Los gráficos, y por qué están hechos así
+
+Van en **SVG escrito a mano**, sin librería: el PDF se imprime y se manda por
+WhatsApp, así que no puede depender de que un script corra. Y tres reglas que
+no son de gusto:
+
+* **El color nunca lleva el significado solo.** Cada barra trae su número y la
+  palabra «sube» o «baja»; cada peldaño, su nombre. Quien no distingue rojo de
+  azul lee lo mismo.
+* **La pareja de colores está validada**, no escogida a ojo: azul `#256abf` y
+  rojo `#d03b3b` pasan las seis comprobaciones del validador de paletas —
+  separación para daltonismo ΔE 20,4 y contraste sobre el papel por encima de
+  3:1—. El verde y el rojo juntos, que es lo que uno escogería, no pasan.
+* **La escalera va en gris con UN acento.** Un degradado de cinco colores
+  insinuaría una gravedad continua que el módulo no publica: lo que publica es
+  un peldaño, y el gris con el acento rojo es exactamente eso.
+
+Y una colisión que solo se vio mirando el papel: en el gráfico del presupuesto,
+la etiqueta «−43,5 %» de Deporte se montaba encima de la palabra «Deporte».
+Quedó DENTRO de la barra, en blanco. El validador mide color, no geometría.
 
 **El PDF no se sube**, y `.gitignore` lo deja fuera por dos razones. Se
 regenera en un segundo desde el HTML, así que versionar el binario solo
