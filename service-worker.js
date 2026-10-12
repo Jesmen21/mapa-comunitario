@@ -1,4 +1,4 @@
-const URBIS_CACHE = 'urbis-v1102-alertas-vencidas-retiradas';
+const URBIS_CACHE = 'urbis-v1103-seguimiento-presidencial-11-oct';
 const URBIS_ASSETS = [
   './',
   './index.html',

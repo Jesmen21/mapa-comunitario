@@ -3,8 +3,8 @@
   "presidente": "Abelardo de la Espriella",
   "periodo": "2026 – 2030",
   "posesion": "2026-08-07",
-  "actualizado": "2026-10-11",
-  "proximaActualizacion": "2026-10-12",
+  "actualizado": "2026-10-12",
+  "proximaActualizacion": "2026-10-13",
   "categorias": {
     "gobierno": {
       "nombre": "Gobierno y decretos",
@@ -73,6 +73,152 @@
     }
   },
   "entradas": [
+    {
+      "fecha": "2026-10-11",
+      "precision": "exacta",
+      "categoria": "gobierno",
+      "titulo": "El Ejército sostiene combates con la estructura \"Jaime Martínez\" de las disidencias de las Farc en Cajibío, Cauca; el presidente reporta dos muertos, un laboratorio de pasta base y armamento incautado",
+      "categoriaProbatoria": "hecho-probado",
+      "tipoMedicion": "actividad",
+      "indicadores": [],
+      "nivelGobierno": "nacional",
+      "tipoEvidencia": "reporte-periodistico",
+      "detalle": "Tropas de la Brigada 29 del Ejército sostuvieron combates desde la mañana del domingo 11 de octubre de 2026 con integrantes de la estructura residual \"Jaime Martínez\" en la vereda El Dinde, zona rural de Cajibío, Cauca, según líderes sociales citados por El País de Cali los enfrentamientos comenzaron hacia las 6:00 a.m. cuando el grupo armado atacó a uniformados que adelantaban un operativo contra el narcotráfico. El presidente Abelardo de la Espriella anunció el resultado de la operación: dos presuntos integrantes de la estructura muertos y la incautación de armas, un mortero, granadas, un dron y un laboratorio de pasta base de coca.",
+      "contrapunto": "Las cifras de muertos e incautaciones provienen del comunicado presidencial y de la versión oficial del Ejército; al cierre de esta entrada no hay una verificación independiente de ese saldo. El País de Cali reporta preocupación de la comunidad de Cajibío por los combates cerca de viviendas y una escuela de la zona.",
+      "tipoFuente": "verificado",
+      "fuentes": [
+        {
+          "n": "Infobae · De la Espriella anunció golpe a disidencias en Cauca: dos muertos y un laboratorio de coca desmantelado tras combates en Cajibío",
+          "u": "https://www.infobae.com/colombia/2026/10/12/de-la-espriella-anuncio-golpe-a-disidencias-en-cauca-dos-muertos-y-un-laboratorio-de-coca-desmantelado-tras-combates-en-cajibio/",
+          "rol": "acto"
+        },
+        {
+          "n": "Semana · Abelardo de la Espriella anuncia golpe a las disidencias en Cauca: dos presuntos integrantes murieron en operación militar",
+          "u": "https://www.semana.com/nacion/articulo/abelardo-de-la-espriella-anuncia-golpe-a-las-disidencias-en-cauca-dos-presuntos-integrantes-murieron-en-operacion-militar/202642/",
+          "rol": "acto"
+        },
+        {
+          "n": "Infobae · Ejército sostiene combates con las disidencias de las Farc en zona rural de Cajibío, Cauca: crece la preocupación en la comunidad",
+          "u": "https://www.infobae.com/colombia/2026/10/11/ejercito-sostiene-combates-con-las-disidencias-de-las-farc-en-zona-rural-de-cajibio-cauca-crece-la-preocupacion-en-la-comunidad/",
+          "rol": "contexto"
+        },
+        {
+          "n": "El País (Cali) · Combates entre el Ejército y disidencias de las Farc en Cajibío, Cauca: hay tensión en la comunidad",
+          "u": "https://www.elpais.com.co/judicial/combates-entre-el-ejercito-y-disidencias-de-las-farc-en-cajibio-cauca-hay-tension-en-la-comunidad-1105.html",
+          "rol": "contexto"
+        }
+      ]
+    },
+    {
+      "fecha": "2026-10-11",
+      "precision": "aproximada",
+      "categoria": "gobierno",
+      "titulo": "El Gobierno pone en vigencia un nuevo decreto sobre protesta social, que modifica el Decreto 003 de 2021 y crea \"corredores solidarios\" contra los bloqueos permanentes, días antes de las marchas de oposición convocadas para el 14 de octubre",
+      "categoriaProbatoria": "hecho-probado",
+      "tipoMedicion": "actividad",
+      "indicadores": [],
+      "nivelGobierno": "nacional",
+      "estadoProcesal": "en-firme",
+      "tipoEvidencia": "reporte-periodistico",
+      "detalle": "El Gobierno dio por expedido el decreto que modifica el Estatuto de la Protesta (Decreto 003 de 2021), anunciado por el ministro del Interior, Rodrigo Lara, como listo para la firma presidencial. Las fuentes consultadas no coinciden en el día exacto de la firma: El Heraldo e Infobae mencionaron el viernes 9 de octubre, y otro reporte de Infobae situó la firma el viernes 11; El Colombiano confirmó que el decreto ya está en vigencia. El texto mantiene el diálogo como regla general ante las manifestaciones, pero fija ocho causales para darlo por agotado y permitir la intervención directa de la Fuerza Pública contra quienes incurran en ellas: uso de armas de fuego, armas blancas, explosivos o elementos incendiarios; toma de rehenes; ataques contra terceros, servidores públicos, policías o misiones médicas y periodísticas; bloqueo de misiones médicas; afectación de servicios públicos; riesgo de desabastecimiento; porte de armas; y agresiones contra personal de salud o periodistas. Según Lara, los trancones y las molestias propias de una marcha no se consideran violencia. El decreto entra en vigor en la misma semana en que sectores de oposición —convocados por el expresidente Gustavo Petro, Fecode y la Central Unitaria de Trabajadores— llamaron a movilizarse el miércoles 14 de octubre.",
+      "contrapunto": "Esta entrada actualiza la publicada el 30 de septiembre de 2026, cuando el texto era solo un borrador abierto a comentarios. La senadora Jennifer Pedraza criticó la medida diciendo que el Gobierno sigue viendo la protesta como un problema y no como un ejercicio básico de la democracia; sectores del petrismo la califican de restrictiva. La Confederación General del Trabajo (CGT) se apartó de las marchas del 14 de octubre convocadas por Petro. El Ministerio del Interior sostiene que el proyecto surtió las consultas exigidas por la norma. Las fuentes consultadas no registran, al cierre de esta entrada, el número oficial del decreto ni su texto en el Diario Oficial.",
+      "tipoFuente": "verificado",
+      "fuentes": [
+        {
+          "n": "El Colombiano · Gobierno estrena decreto para abordar la protesta social justo antes de marchas de la oposición",
+          "u": "https://www.elcolombiano.com/colombia/protesta-decreto-gobierno-abelardo-de-la-espriella-rodrigo-lara-gustavo-petro-marchas-14-de-octubre-HG42111350",
+          "rol": "acto"
+        },
+        {
+          "n": "Infobae · Listo el nuevo decreto de protesta social en Colombia: presidente De la Espriella lo va a firmar el viernes 11 de octubre de 2026",
+          "u": "https://www.infobae.com/colombia/2026/10/09/listo-el-nuevo-decreto-de-protesta-social-en-colombia-presidente-de-la-espriella-lo-va-a-firmar-el-viernes-11-de-octubre-de-2026/",
+          "rol": "acto"
+        },
+        {
+          "n": "El Heraldo · Presidente De la Espriella firmará este viernes nuevo decreto sobre protestas sociales",
+          "u": "https://www.elheraldo.co/colombia/2026/10/09/presidente-de-la-espriella-firmara-este-viernes-nuevo-decreto-sobre-protestas-sociales/",
+          "rol": "contexto"
+        },
+        {
+          "n": "Semana · Decreto para sancionar la protesta violenta entraría a regir cuando la oposición prepara su primera movilización contra el Gobierno",
+          "u": "https://www.semana.com/politica/articulo/decreto-para-sancionar-la-protesta-violenta-entraria-a-regir-cuando-la-oposicion-prepara-su-primera-movilizacion-contra-el-gobierno/202601/",
+          "rol": "contexto"
+        }
+      ]
+    },
+    {
+      "fecha": "2026-10-10",
+      "precision": "exacta",
+      "categoria": "corrupcion",
+      "titulo": "De la Espriella ordena una investigación a la Fuerza Aérea y pide a la Fiscalía, la Corte Suprema, la Procuraduría y autoridades de EE. UU. revisar la denuncia de la exasesora Eva Ferrer de que la ex primera dama Verónica Alcocer habría movido droga y dinero en aviones oficiales",
+      "categoriaProbatoria": "en-circulacion",
+      "tipoMedicion": "actividad",
+      "indicadores": [],
+      "nivelGobierno": "nacional",
+      "estadoProcesal": "en-revision-judicial",
+      "tipoEvidencia": "reporte-periodistico",
+      "detalle": "La revista Semana publicó declaraciones de Eva Ferrer, exasesora de la ex primera dama Verónica Alcocer, en las que afirma que Alcocer habría trasladado droga y dinero en efectivo entre Colombia y Venezuela en vuelos oficiales durante el gobierno de Gustavo Petro. El presidente Abelardo de la Espriella escribió el 10 de octubre de 2026 en su cuenta de X que ordenó al comandante de la Fuerza Aérea, mayor general Juan Jaime Martínez Ossa, una investigación exhaustiva sobre los hechos denunciados, a cargo de la Inspección General y los organismos de contrainteligencia de la institución, con foco en el personal actual y anterior del Comando Aéreo de Transporte Militar (Catam). El mandatario pidió además a la Fiscalía, la Corte Suprema de Justicia, la Procuraduría y a autoridades de Estados Unidos revisar la denuncia dentro de sus propias competencias, y señaló que de comprobarse la participación de miembros de la Fuerza Aérea, deberán salir de la institución y responder ante las autoridades competentes.",
+      "contrapunto": "Lo que documenta esta entrada es una denuncia pública de una sola fuente —Eva Ferrer, a través de Semana— y la respuesta institucional del Gobierno; no hay, al cierre de esta entrada, una investigación concluida ni una decisión judicial sobre los hechos denunciados. Es la segunda vez que unas declaraciones atribuidas a Ferrer comprometen a Alcocer: en agosto de 2026 circularon unos audios suyos sobre un presunto tráfico de influencias en la compra de aviones militares, que Alcocer negó por escrito ante la Fiscal General y calificó de especulación sin fundamento, y frente a los cuales se puso a disposición de la justicia. Esta nueva denuncia, sobre narcotráfico en vuelos oficiales, es un señalamiento distinto y no está confirmada ni desmentida por verificadores al cierre de esta entrada. No se encontró todavía una respuesta de Alcocer a esta denuncia específica.",
+      "tipoFuente": "declaracion",
+      "fuentes": [
+        {
+          "n": "Infobae · De la Espriella ordenó investigar denuncias en la Fuerza Aérea tras revelaciones de Eva Ferrer sobre presuntos vuelos con droga a Venezuela",
+          "u": "https://www.infobae.com/colombia/2026/10/10/de-la-espriella-ordeno-investigar-denuncias-en-la-fuerza-aerea-tras-revelaciones-de-eva-ferrer-sobre-presuntos-vuelos-con-droga-a-venezuela/",
+          "rol": "acto"
+        },
+        {
+          "n": "El Tiempo · Presidente Abelardo De La Espriella ordena investigación en la Fuerza Aérea tras escándalo de Eva Ferrer y Verónica Alcocer",
+          "u": "https://www.eltiempo.com/politica/abelardo-de-la-espriella/presidente-abelardo-de-la-espriella-ordena-investigacion-en-la-fuerza-aerea-tras-escandalo-de-eva-ferrer-y-veronica-alcocer-3592807",
+          "rol": "acto"
+        },
+        {
+          "n": "Publimetro · ¿Transportaron drogas y millones de dólares en aviones oficiales? De la Espriella ordenó investigar graves denuncias contra Verónica Alcocer",
+          "u": "https://www.publimetro.co/noticias/2026/10/11/transportaron-drogas-y-millones-de-dolares-en-aviones-oficiales-de-la-espriella-ordeno-investigar-graves-denuncias-contra-veronica-alcocer/",
+          "rol": "contexto"
+        },
+        {
+          "n": "El Colombiano · Verónica Alcocer niega acusaciones de Eva Ferrer (audios de agosto de 2026, sobre presunto tráfico de influencias)",
+          "u": "https://www.elcolombiano.com/colombia/veronica-alcocer-niega-acusaciones-eva-ferrer-OL39549623",
+          "rol": "contexto"
+        }
+      ]
+    },
+    {
+      "fecha": "2026-10-09",
+      "precision": "exacta",
+      "categoria": "economia",
+      "titulo": "El Gobierno presenta en Cartagena un decreto que moderniza el régimen de concesiones portuarias, permite inversiones en el último tramo de los contratos y crea un registro único de concesiones",
+      "categoriaProbatoria": "hecho-probado",
+      "tipoMedicion": "actividad",
+      "indicadores": [],
+      "nivelGobierno": "nacional",
+      "tipoEvidencia": "reporte-periodistico",
+      "detalle": "El presidente Abelardo de la Espriella presentó en Cartagena, el 9 de octubre de 2026, junto con la ministra de Transporte, Elsa Noguera, un decreto que modifica el Decreto 1079 de 2015 para actualizar el régimen de concesiones portuarias. La medida permite a los concesionarios presentar proyectos de inversión cuando falten cinco años o menos para el vencimiento de su contrato; si el operador no logra amortizar las obras dentro del plazo, la autoridad evaluará el valor residual y el nuevo adjudicatario o la Nación asumirán el saldo pendiente. El decreto crea además un registro único de concesiones portuarias, con información sobre puertos, muelles y embarcaderos y seguimiento a sus trámites, e incluye incentivos para electrificación de muelles, eficiencia energética, energías no convencionales, combustibles marítimos de menores emisiones y economía circular. Según la ministra Noguera, la norma busca estimular la inversión, fortalecer la competitividad y mejorar la transparencia del sector.",
+      "contrapunto": "Las fuentes consultadas no coinciden en el estado exacto de la norma al momento de la presentación: Noticias RCN y La República reportan que el decreto ya fue firmado, mientras que Publimetro y El Heraldo lo describen como un proyecto que entraría en vigencia en los días siguientes. Ninguna de las fuentes consultadas da el número del decreto ni su fecha de publicación en el Diario Oficial, así que esta entrada no lo afirma.",
+      "tipoFuente": "verificado",
+      "fuentes": [
+        {
+          "n": "Infobae · Abelardo de la Espriella presentó el decreto para modernizar los puertos y ampliar las inversiones en Colombia",
+          "u": "https://www.infobae.com/colombia/2026/10/09/abelardo-de-la-espriella-presento-el-decreto-para-modernizar-los-puertos-y-ampliar-las-inversiones-en-colombia/",
+          "rol": "acto"
+        },
+        {
+          "n": "Noticias RCN · Gobierno firmó decreto para modernizar los puertos en Colombia: ¿qué cambiará?",
+          "u": "https://www.noticiasrcn.com/colombia/gobierno-firmo-decreto-para-modernizar-los-puertos-en-colombia-1070205",
+          "rol": "acto"
+        },
+        {
+          "n": "Publimetro · De La Espriella presenta reforma al régimen portuario: así cambian las concesiones en Colombia",
+          "u": "https://www.publimetro.co/entretenimiento/2026/10/10/de-la-espriella-cambia-las-reglas-de-las-concesiones-portuarias-estos-son-los-siete-puntos-del-nuevo-decreto/",
+          "rol": "contexto"
+        },
+        {
+          "n": "Pulzo · Gobierno expide decreto para modernizar el régimen de concesiones portuarias en Colombia y fomentar inversiones",
+          "u": "https://www.pulzo.com/economia/nuevo-decreto-moderniza-regimen-de-concesiones-portuarias-en-colombia-para-atraer-inversion-PP5326688A",
+          "rol": "contexto"
+        }
+      ]
+    },
     {
       "fecha": "2026-10-07",
       "precision": "exacta",
