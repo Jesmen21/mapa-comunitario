@@ -27094,3 +27094,53 @@ de terminar el mandato son preguntas distintas.**
 * **NO dirime el número de contratos del Invías** —16 en unas fuentes, 11 en
   otras—, que pide el expediente de la entidad. `pendiente`
 * **NO mueve el dictamen.** Sigue en «Nada fiable». `cerrado en v1112`
+
+## v1113 · cuando la respuesta es un ACTO y no una frase
+
+De 32 a **35 de 264**, y el casillero a «216 de 251».
+
+### Tres respuestas, y una clase de respuesta que conviene nombrar
+
+* **La hoja de ruta de las ruedas de prensa.** La Presidencia nunca confirmó
+  ni desmintió el documento —se conoció por actas, y la propia FLIP habló de
+  directrices «que habría impartido»—, pero respondió con un acto fechado:
+  **dos días después expidió la Directiva Presidencial 01, y su texto final NO
+  contiene la restricción a los medios «no amigos»**. El reparo más grave se
+  resolvió retirándolo del texto oficial; el que quedó —la coordinación previa
+  de entrevistas— sigue sin respuesta, y es el que la FLIP objetó después de
+  expedida. Y va dicho lo que eso NO prueba: que la instrucción no circulara,
+  solo que no quedó escrita.
+* **El operativo de Riohacha.** La posición oficial es una palabra —«impecable»
+  dijo el presidente de la acción policial— y nada más apareció sobre las dos
+  preguntas del reproche: por qué murieron cuatro personas si la vivienda
+  estaba rodeada, y por qué el objetivo no fue la captura. Lo único en esa
+  dirección es información preliminar no verificada sobre los escoltas, que no
+  es un pronunciamiento y no se cuenta como tal.
+* **Sincelejo.** La posición del Gobierno trae su propio límite escrito y eso
+  contesta por adelantado el reparo de debido proceso: «no condena ni
+  reemplaza a los jueces». No responde los tres reparos del alcalde —video
+  «editado y manipulado», que se le impidió replicar, y el doble rasero—.
+
+**La clase que conviene nombrar**, porque ya apareció tres veces en dos
+tandas: a veces la respuesta oficial **no es una frase sino un acto** —la
+declaración de renta corregida (v1111), la designación reversada (v1110), la
+directiva expedida sin la restricción (v1113)—. Un acto responde más fuerte
+que una declaración y es más fácil de comprobar, pero hay que leerlo como
+respuesta y no como hecho suelto, o la entrada se queda sin contrargumento
+teniéndolo delante.
+
+### Una comprobación que salió a favor del registro
+
+La búsqueda sobre la réplica de Petro situaba el episodio el 13 de septiembre
+y decía que había PEDIDO la réplica al CNE. El registro dice que la EJERCIÓ
+el 15, desde Bruselas, al amparo del Estatuto de la Oposición. **El registro
+estaba mejor documentado que la búsqueda**, así que no se corrigió nada — y
+queda escrito, porque una comprobación que confirma también es un resultado.
+
+### Lo que esta versión NO hace
+
+* **NO cierra el casillero**: 216 de 251. `pendiente`
+* **NO consigue pronunciamiento del Ministerio de Defensa ni de la Policía**
+  sobre el operativo de Riohacha; queda `sin revisar` en ese punto y dicho
+  dentro del contrargumento. `pendiente`
+* **NO mueve el dictamen.** Sigue en «Nada fiable». `cerrado en v1113`

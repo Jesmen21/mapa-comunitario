@@ -948,9 +948,20 @@
           "n": "Infobae · Presidencia negó que el alcalde de Sincelejo fuera intimidado con armas durante encuentro oficial: «Victimizarse sin razón»",
           "u": "https://www.infobae.com/colombia/2026/10/06/presidencia-nego-que-el-alcalde-de-sincelejo-fuera-intimidado-con-armas-durante-encuentro-oficial-victimizarse-sin-razon/",
           "rol": "efecto"
+        },
+        {
+          "n": "El Tiempo · el duro mensaje del presidente: «no puedo ignorar sus antecedentes»",
+          "u": "https://www.eltiempo.com/politica/abelardo-de-la-espriella/duro-mensaje-del-presidente-de-la-espriella-a-yahir-acuna-alcalde-de-sincelejo-por-investigaciones-en-su-contra-no-puedo-ignorar-sus-antecedentes-3591102",
+          "rol": "acto"
+        },
+        {
+          "n": "El Tiempo · Acuña responde: «el video está editado y manipulado», y denuncia perfilamiento",
+          "u": "https://www.eltiempo.com/colombia/barranquilla/video-escala-la-confrontacion-entre-de-la-espriella-y-yahir-acuna-el-alcalde-de-sincelejo-denuncia-intimidacion-armada-y-habla-de-perfilamiento-3591149",
+          "rol": "efecto"
         }
       ],
-      "nivelGobierno": "nacional"
+      "nivelGobierno": "nacional",
+      "contrargumentoOficial": "La posición del Gobierno trae su propio límite escrito, y es lo que contesta por adelantado el reparo de debido proceso: el presidente dijo que NO condena ni reemplaza a los jueces y que serán las autoridades competentes las que establezcan si hay responsabilidades, mientras sostiene que no puede pasar por alto los antecedentes y las investigaciones, y que Sincelejo y Sucre tendrán inversión pero no «cheques en blanco». Lo que NO responde son los tres reparos concretos del alcalde: que el video difundido estaba «editado y manipulado», que se le impidió replicar durante la actividad, y el doble rasero que alega frente a funcionarios del Gobierno nacional. Sobre ninguno de los tres apareció pronunciamiento en la búsqueda."
     },
     {
       "fecha": "2026-10-03",
@@ -5466,8 +5477,19 @@
           "n": "Vanguardia · en imágenes, el operativo",
           "u": "https://www.vanguardia.com/colombia/2026/09/04/en-imagenes-asi-fue-el-operativo-en-el-que-murio-alias-bendito-menor-en-riohacha/",
           "rol": "contexto"
+        },
+        {
+          "n": "El País · Petro cuestiona el operativo que dio de baja a alias Bendito Menor y a otras tres personas",
+          "u": "https://www.elpais.com.co/politica/petro-cuestiona-el-operativo-que-dio-de-baja-a-alias-bendito-menor-y-otras-tres-personas-no-se-priorizo-la-vida-0529.html",
+          "rol": "acto"
+        },
+        {
+          "n": "Infobae · Petro cuestionó a la Policía tras el operativo que ordenó De la Espriella",
+          "u": "https://www.infobae.com/colombia/2026/09/05/muerte-de-bendito-menor-petro-cuestiono-a-la-policia-nacional-tras-operativo-que-ordeno-de-la-espriella-que-me-explique/",
+          "rol": "efecto"
         }
-      ]
+      ],
+      "contrargumentoOficial": "El presidente respondió con una sola palabra y es la que vale como posición oficial: calificó la acción policial de «impecable». Nada más apareció del lado del Gobierno — ni del Ministerio de Defensa ni de la Policía— sobre las dos preguntas concretas del reproche: por qué murieron las cuatro personas si la vivienda estaba completamente rodeada, y por qué el objetivo no fue la captura. Lo único que circula en esa dirección es información preliminar y no verificada de que los escoltas se habrían enfrentado a los policías, que no es un pronunciamiento oficial y no se puede contar como tal."
     },
     {
       "fecha": "2026-09-04",
@@ -6181,8 +6203,19 @@
           "n": "qhubo Bogotá · Presidencia limita entrevistas y ruedas de prensa a medios que considere \"amigos\"",
           "u": "https://www.qhubobogota.com/asi-paso/presidencia-entrevistas-prensa-medios/",
           "rol": "acto"
+        },
+        {
+          "n": "FLIP · la directriz presidencial limita el acceso a la información y pone en riesgo el periodismo libre y crítico",
+          "u": "https://flip.org.co/pronunciamientos/directriz-presidencial-limita-el-acceso-a-la-informacion-y-pone-en-riesgo-el-ejercicio-libre-y-critico-del-periodismo",
+          "rol": "efecto"
+        },
+        {
+          "n": "Infobae · la FLIP rechaza la directriz: «genera autocensura»",
+          "u": "https://www.infobae.com/colombia/2026/09/02/flip-rechazo-directriz-de-la-presidencia-de-abelardo-de-la-espriella-sobre-su-relacion-con-los-medios-de-comunicacion-genera-autocensura/",
+          "rol": "efecto"
         }
-      ]
+      ],
+      "contrargumentoOficial": "La Presidencia no confirmó ni desmintió la hoja de ruta —que se conoció por actas de reuniones y que la propia FLIP describió como directrices «que habría impartido»—, pero sí respondió con un ACTO fechado y comprobable: **dos días después, el 3 de septiembre, expidió la Directiva Presidencial 01**, y su texto final NO contiene la restricción a los medios «no amigos» que la hoja de ruta traía. Lo que sí conserva es la coordinación previa de entrevistas con la Secretaría de Comunicaciones, que es justamente lo que la FLIP siguió objetando después de expedida. Es decir: el reparo más grave se resolvió retirándolo del texto oficial, y el que quedó sigue sin respuesta. Y queda dicho lo que esto NO prueba: que la instrucción no haya circulado, solo que no quedó escrita en la directiva."
     },
     {
       "fecha": "2026-09-01",
