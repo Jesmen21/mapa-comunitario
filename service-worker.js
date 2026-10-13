@@ -1,4 +1,4 @@
-const URBIS_CACHE = 'urbis-v1107-que-falta-quien-puede-cerrarlo';
+const URBIS_CACHE = 'urbis-v1108-la-respuesta-del-gobierno-en-las-que-deciden';
 const URBIS_ASSETS = [
   './',
   './index.html',

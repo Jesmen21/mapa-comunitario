@@ -2061,9 +2061,20 @@
           "n": "El Heraldo · Mindefensa defendió ante la Cámara el bombardeo en Guaviare contra disidencias de las Farc",
           "rol": "efecto",
           "u": "https://www.elheraldo.co/colombia/2026/09/23/mindefensa-defendio-ante-la-camara-el-bombardeo-en-guaviare-contra-disidencias-de-las-farc/"
+        },
+        {
+          "n": "Infobae · sube a 23 el número de fallecidos tras el operativo Azarías",
+          "u": "https://www.infobae.com/colombia/2026/09/02/sube-a-23-el-numero-de-fallecidos-tras-el-operativo-azarias-abelardo-de-la-espriella-aseguro-que-fue-el-mas-contundente-de-los-ultimos-12-anos/",
+          "rol": "efecto"
+        },
+        {
+          "n": "Diario del Norte · Medicina Legal confirma dos menores entre los 20 cuerpos identificados",
+          "u": "https://diariodelnorte.net/nacion/medicina-legal-confirma-dos-menores-entre-los-20-cuerpos-identificados-tras-operativo-militar-en-guaviare/",
+          "rol": "contexto"
         }
       ],
-      "actosQueAgrupa": 1
+      "actosQueAgrupa": 1,
+      "contrargumentoOficial": "El presidente anunció los resultados junto al ministro de Defensa y la cúpula militar y policial, y los presentó como el golpe «más contundente de los últimos 12 años». Sobre el fondo, el ministro Mora dijo que las Fuerzas Militares y la Policía seguirán operando contra las estructuras armadas ilegales en el marco de la ley, y el presidente que no llegó a negociar «con asesinos, extorsionistas y reclutadores de menores». Esa es toda la respuesta que se consigue: es una defensa GENERAL de la operación y NO se pronuncia sobre los dos menores que Medicina Legal identificó entre los veinte cuerpos plenamente identificados. La diferencia entre el relato oficial y el forense —el Gobierno reportó menores RECUPERADOS, Medicina Legal confirmó menores MUERTOS— sigue sin respuesta oficial."
     },
     {
       "fecha": "2026-08-27",
@@ -2103,9 +2114,15 @@
           "n": "Infobae · Por la muerte de tres menores en bombardeo en el Guaviare, el congresista Óscar Benavides anunció moción de censura al ministro de Defensa: \"se está lavando las manos\"",
           "rol": "efecto",
           "u": "https://www.infobae.com/colombia/2026/09/01/por-la-muerte-de-tres-menores-en-bombardeo-en-el-guaviare-el-congresista-oscar-benavides-anuncio-mocion-de-censura-al-ministro-de-defensa-se-esta-lavando-las-manos/"
+        },
+        {
+          "n": "Cambio · moción de censura a Jorge Mora: las preguntas por la muerte de tres menores",
+          "u": "https://cambiocolombia.com/pais/articulo/2026/9/radican-mocion-de-censura-contra-el-ministro-de-defensa-por-la-operacion-amon",
+          "rol": "contexto"
         }
       ],
-      "actosQueAgrupa": 1
+      "actosQueAgrupa": 1,
+      "contrargumentoOficial": "El ministro de Defensa, general (r) Jorge Eduardo Mora, confirmó que Medicina Legal identificó a tres menores entre los diez muertos —de 15, 15 y 16 años— y sostuvo que se encontraban en «función continua de combate». El Gobierno defendió la legitimidad de la operación con dos argumentos: que el ataque respetó los estándares constitucionales y del Derecho Internacional Humanitario, y que la responsabilidad de la violación recae en los grupos armados que reclutan menores, conducta que el propio ministro calificó de crimen de guerra. Añadió que un menor reclutado no pierde automáticamente la condición de persona protegida y que su situación concreta debe analizarse caso a caso. NO responde las dos preguntas que la moción de censura le hizo: qué inteligencia previa había sobre la presencia de menores en el objetivo, y si se analizaron alternativas menos lesivas antes de atacar."
     },
     {
       "fecha": "2026-08-11",
@@ -2165,9 +2182,16 @@
           "n": "Revista RAYA · El primer bombardeo del gobierno De la Espriella podría ser un «falso positivo» en el Catatumbo, aseguran líderes sociales",
           "u": "https://revistaraya.com/el-primer-bombardeo-del-gobierno-de-la-espriella-podria-ser-un-falso-positivo-en-el-catatumbo-aseguran-lideres-sociales.html",
           "rol": "efecto"
+        },
+        {
+          "n": "El Espectador · MinDefensa en la moción de censura: «un bombardeo no se decide de la noche a la mañana»",
+          "u": "https://www.elespectador.com/judicial/mindefensa-en-mocion-de-censura-un-bombardeo-no-se-decide-de-la-noche-a-la-manana/",
+          "rol": "efecto"
         }
       ],
-      "actosQueAgrupa": 1
+      "actosQueAgrupa": 1,
+      "contrargumentoOficial": "El Gobierno defendió la operación sosteniendo que los abatidos «eran combatientes». Fue uno de los dos hechos que motivaron la moción de censura contra el ministro de Defensa, y en ese debate el ministro agregó el argumento de método: «un bombardeo no se decide de la noche a la mañana», que el planeamiento identifica y delimita los objetivos militares de antemano y que incluye medidas de protección a la población civil bajo los principios de distinción, proporcionalidad y precaución. NO responde qué se hizo para descartar la presencia de un menor en el objetivo antes de atacar.",
+      "_precisionDelNOMBRE": "Al buscar la respuesta oficial, el 13 de octubre de 2026, el nombre «Operación Beta» NO apareció en ninguna de las nueve fuentes consultadas: el HECHO sí está corroborado —una operación en el Catatumbo el 10 de agosto de 2026 contra el ELN, con un menor de 16 años muerto, y uno de los dos casos que motivaron la moción de censura contra el ministro de Defensa—, pero el rótulo no. Se deja escrito en vez de corregir el título sobre una sola búsqueda, y en vez de callarlo: un nombre que ninguna fuente sostiene es un dato más débil que el hecho que nombra. Lo dirime el comunicado del Ministerio de Defensa de esa fecha, que el proxy de este contenedor no deja leer."
     },
     {
       "fecha": "2026-09-30",
@@ -2966,9 +2990,21 @@
           "n": "El Tiempo · Presidente Abelardo de la Espriella hace balance de seguridad tras operativos de los últimos días: van más de 22.000 delincuentes capturados",
           "u": "https://www.eltiempo.com/politica/abelardo-de-la-espriella/presidente-abelardo-de-la-espriella-hace-balance-de-seguridad-tras-operativos-de-los-ultimos-dias-van-mas-de-22-000-delincuentes-capturados-3587411",
           "rol": "acto"
+        },
+        {
+          "n": "Infobae · rescataron a cuatro secuestrados por las disidencias en Antioquia",
+          "u": "https://www.infobae.com/colombia/2026/09/20/rescataron-a-cuatro-personas-secuestradas-por-las-disidencias-de-las-farc-en-antioquia-dos-presuntos-guerrilleros-fueron-dados-de-baja/",
+          "rol": "acto"
+        },
+        {
+          "n": "Asuntos Legales · el balance de 24 horas: 27 capturas y cuatro secuestrados rescatados",
+          "u": "https://www.asuntoslegales.com.co/actualidad/fuerza-publica-reporto-27-capturas-y-cuatro-secuestrados-rescatados-en-24-horas-4486425",
+          "rol": "contexto"
         }
       ],
-      "actosQueAgrupa": 1
+      "actosQueAgrupa": 1,
+      "contrargumentoOficial": "El balance lo presentó el propio presidente, y las fuentes militares y policiales lo sostienen en lo que toca a la operación: tropas del Ejército, con la Fiscalía y la Policía, rescataron a cuatro secuestrados en Gómez Plata (Antioquia) tras un combate con la Estructura 36, con dos muertos y un capturado, entre los muertos alias «Huevo». Sobre los menores el relato oficial de la operación es más modesto que el titular del balance: el Ejército habla de un menor herido trasladado a un centro asistencial en Bello, y dos medios de dos adolescentes recuperados.",
+      "_precisionDeLACIFRA": "Al buscar la respuesta oficial, el 13 de octubre de 2026, se vio que los CUATRO menores no son de esta operación: salen del balance de 24 HORAS que presentó la Presidencia, que agrega operaciones de la Fuerza Pública en todo el país. De la operación de Gómez Plata el Ejército reporta un menor herido, y dos medios hablan de dos adolescentes recuperados. El título de esta entrada junta las dos cifras, que es la misma clase de error que este módulo le reprocha a otros: un agregado leído como un caso. No se corrige el título sobre una búsqueda —lo dirime el comunicado del Ejército, que el proxy no deja leer—, pero queda dicho acá y en el contrargumento, que es donde el lector lo ve."
     },
     {
       "fecha": "2026-09-19",
@@ -3059,6 +3095,16 @@
           "n": "El País · «No es asfixia ni venganza»: la respuesta del presidente De la Espriella a carta enviada por director de la JEP",
           "u": "https://www.elpais.com.co/colombia/no-es-asfixia-ni-venganza-la-respuesta-del-presidente-de-la-espriella-a-carta-enviada-por-director-de-la-jep-2136.html",
           "rol": "acto"
+        },
+        {
+          "n": "El País · De la Espriella rechaza la carta del presidente de la JEP a la Corte Penal Internacional",
+          "u": "https://www.elpais.com.co/politica/de-la-espriella-rechaza-carta-del-presidente-de-la-jep-enviada-a-la-corte-penal-internacional-esto-dijo-el-mandatario-2006.html",
+          "rol": "efecto"
+        },
+        {
+          "n": "Infobae · el texto de la carta que Alejandro Ramelli envió a la CPI",
+          "u": "https://www.infobae.com/colombia/2026/09/19/esta-es-la-carta-que-alejandro-ramelli-presidente-de-la-jep-envio-a-la-corte-penal-internacional-advirtio-que-esta-en-riesgo-el-futuro-del-tribunal/",
+          "rol": "acto"
         }
       ],
       "estadoProcesal": "en-disputa-institucional",
@@ -3069,7 +3115,8 @@
           "base": "jep-carta-cpi-recorte"
         }
       },
-      "actosQueAgrupa": 1
+      "actosQueAgrupa": 1,
+      "contrargumentoOficial": "El presidente rechazó la carta con un argumento de competencia: que «una reasignación fundada en prioridades públicas no constituye una interferencia: es gobernar». Agregó dos cifras: que la JEP ha recibido más de tres billones de pesos desde 2018, y que para 2027 solicitó $947.642 millones. NO responde la SEGUNDA alerta de la carta, que no es presupuestal: la reforma constitucional que pondría las sentencias de la JEP contra miembros de la fuerza pública en revisión automática de la Justicia Penal Militar. Y la primera la responde en el terreno de la competencia presupuestal, no en el del efecto que el presidente del tribunal alega sobre su independencia."
     },
     {
       "fecha": "2026-09-19",
@@ -3862,11 +3909,17 @@
           "n": "Publimetro · Se la cobraron: De la Espriella declaró insubsistente al director del Dane tras afirmar que Petro no manipuló cifras",
           "u": "https://www.publimetro.co/noticias/2026/09/15/se-la-cobraron-de-la-espriella-declaro-insubsistente-al-director-del-dane-tras-afirmar-que-petro-no-manipulo-cifras/",
           "rol": "acto"
+        },
+        {
+          "n": "El Tiempo · Ricardo Valencia responde a su salida: «no encontraba anomalías»",
+          "u": "https://www.eltiempo.com/politica/gobierno/ricardo-valencia-responde-a-su-salida-del-dane-tras-ser-declarado-insubsistente-por-presidente-abelardo-de-la-espriella-no-encontraba-anomalias-3586134",
+          "rol": "efecto"
         }
       ],
       "nivelGobierno": "nacional",
       "estadoProcesal": "en-firme",
-      "tipoEvidencia": "documento-primario"
+      "tipoEvidencia": "documento-primario",
+      "contrargumentoOficial": "La Presidencia publicó sus razones y son dos: que el director dijo no haber encontrado anomalías en los indicadores de julio de 2026 —producidos bajo el gobierno anterior— sin haber corrido antes auditorías profundas, y que desatendió la Directiva Presidencial 001, es decir instrucciones presidenciales que, sostiene, deben cumplirse. El mismo comunicado afirma que el Gobierno respetará y garantizará la independencia técnica del DANE. NO responde el reparo que el propio removido formuló: que la ley exige independencia técnica en TODA la cadena de producción del dato, publicación incluida, y que nunca recibió una objeción previa de la Presidencia sobre su trabajo. Es decir, el Gobierno contesta por qué lo sacó, no por qué eso no toca la independencia que dice garantizar."
     },
     {
       "fecha": "2026-09-14",
@@ -4457,6 +4510,11 @@
           "n": "Cambio · Concursos de mérito en Colombia: Gobierno de Abelardo de la Espriella aplaza procesos hasta 2027",
           "u": "https://cambiocolombia.com/pais/articulo/2026/9/gobierno-de-de-la-espriella-anuncia-cambios-en-concursos-de-merito-asi-se-modificaron-los-procesos",
           "rol": "acto"
+        },
+        {
+          "n": "El Espectador · concursos de méritos de la CNSC: qué cambia tras el nuevo decreto",
+          "u": "https://www.elespectador.com/economia/concursos-de-meritos-de-la-cnsc-que-cambia-tras-el-nuevo-decreto/",
+          "rol": "contexto"
         }
       ],
       "nivelGobierno": "nacional",
@@ -4468,7 +4526,8 @@
           "base": "decreto-1384-aplaza-concursos"
         }
       },
-      "actosQueAgrupa": 1
+      "actosQueAgrupa": 1,
+      "contrargumentoOficial": "El decreto trae su justificación escrita en el artículo 7: aplazar busca preservar la igualdad material, la igualdad de oportunidades y el acceso al empleo público POR MÉRITO de quienes resultaron afectados por el terremoto del 10 de agosto, que no estarían en condiciones de concursar. El Gobierno subraya además dos límites del propio acto: el aplazamiento NO es cancelación —los procesos se retoman en 2027— y para los concursos de la CNSC no opera solo, porque la Comisión decide proceso por proceso mediante resolución motivada, que es lo que de hecho ha hecho: aplazó las inscripciones del CAR y la verificación de requisitos del Territorial 12, y dejó corriendo el EON Corpomojana. NO responde el reparo de fondo —que un acto del Ejecutivo fije el calendario de un órgano que el artículo 130 declara autónomo—, y en la búsqueda no apareció ningún pronunciamiento del Gobierno sobre ese punto."
     },
     {
       "fecha": "2026-09-11",
@@ -4772,6 +4831,16 @@
           "n": "Semana · Presidente anunció 11 nuevos decretos para la reconstrucción tras el terremoto en Colombia",
           "u": "https://www.semana.com/politica/articulo/presidente-anuncio-11-nuevos-decretos-para-la-reconstruccion-tras-el-terremoto-en-colombia/202648/",
           "rol": "acto"
+        },
+        {
+          "n": "Presidencia · el Presidente y su gabinete firmaron 11 decretos al amparo de la emergencia económica",
+          "u": "https://www.presidencia.gov.co/prensa/Paginas/Presidente-De-La-Espriella-y-su-Gabinete-firmaron-11-decretos-al-amparo-260909.aspx",
+          "rol": "acto"
+        },
+        {
+          "n": "Infobae · en qué consisten los once decretos, con el 1379 y el 1380 nombrados",
+          "u": "https://www.infobae.com/colombia/2026/09/10/abelardo-de-la-espriella-firmo-11-decretos-para-acelerar-la-reconstruccion-de-los-territorios-golpeados-por-el-terremoto-en-que-consisten/",
+          "rol": "contexto"
         }
       ],
       "nivelGobierno": "nacional",
@@ -4784,7 +4853,8 @@
         }
       },
       "actosQueAgrupa": 11,
-      "_queCuentaEseNumero": "Los once decretos firmados el 9 de septiembre al cabo del consejo de ministros, dentro del marco del Decreto 1261. La entrada es una; los actos son once."
+      "_queCuentaEseNumero": "Los once decretos firmados el 9 de septiembre al cabo del consejo de ministros, dentro del marco del Decreto 1261. La entrada es una; los actos son once.",
+      "contrargumentoOficial": "La Presidencia publicó su propio comunicado con el objeto declarado de los once decretos: movilizar recursos, darle capacidad financiera a las regiones, garantizar la prestación de los servicios públicos, acelerar la reconstrucción de la infraestructura y sostener la educación. Los dos primeros son nombrables y comprobables: el Decreto 1379 crea el Fondo «Patria Milagro» para concentrar y administrar recursos públicos y privados de la reconstrucción, y el Decreto 1380 habilita de manera extraordinaria al Fondes para aportes en el frente energético. NO responde el reparo que el propio hecho levanta y que ningún congresista ni organismo de control había formulado al cierre de esta búsqueda: que once decretos son instrumentos y no resultados, y que la reconstrucción se mide en familias que recuperan una vivienda y no en actos firmados. El Gobierno declara el instrumento; el resultado todavía no tiene cómo medirse."
     },
     {
       "fecha": "2026-09-09",
@@ -5731,6 +5801,16 @@
           "n": "Cambio · Exdirectores del Dane critican la decisión del Gobierno de cancelar las ruedas de prensa de indicadores económicos",
           "u": "https://cambiocolombia.com/economia/articulo/2026/9/exdirectores-del-dane-alertaron-por-la-orden-del-gobierno-de-frenar-las-ruedas-de-prensa-de-la-inflacion-y-del-desempleo",
           "rol": "efecto"
+        },
+        {
+          "n": "Infobae · las entrevistas de los ministros deberán ser autorizadas por Presidencia",
+          "u": "https://www.infobae.com/colombia/2026/09/03/gobierno-de-abelardo-de-la-espriella-actualizo-las-directrices-para-su-relacion-con-los-medios-entrevistas-con-los-ministros-deberan-ser-autorizadas-por-presidencia/",
+          "rol": "efecto"
+        },
+        {
+          "n": "Ámbito Jurídico · el Gobierno fija reglas sobre vocería oficial y control de comunicaciones",
+          "u": "https://www.ambitojuridico.com/noticias/actualidad/gobierno-fija-reglas-sobre-voceria-oficial-y-control-de-comunicaciones",
+          "rol": "contexto"
         }
       ],
       "nivelGobierno": "nacional",
@@ -5742,7 +5822,8 @@
           "base": "directiva-presidencial-01-comunicaciones"
         }
       },
-      "actosQueAgrupa": 1
+      "actosQueAgrupa": 1,
+      "contrargumentoOficial": "La Presidencia presenta la medida como COORDINACIÓN y no como censura: la Secretaría para las Comunicaciones y Prensa evalúa y autoriza las participaciones, la vocería principal del Gobierno la ejerce el Presidente, los ministros hablan de los temas de su competencia, y las cuentas personales de los funcionarios dejan de ser canal primario o fuente oficial para anunciar decisiones, cifras o resultados. Y hay un cambio comprobable frente a las versiones previas que se habían reportado: el texto final NO contiene la restricción a los medios «no amigos». NO responde el reparo concreto de la FLIP —que la coordinación previa puede funcionar en la práctica como un filtro que demore, condicione o niegue el acceso a un funcionario—, y en la búsqueda no apareció ningún pronunciamiento de la Presidencia posterior al de la Fundación."
     },
     {
       "fecha": "2026-09-02",
@@ -8676,6 +8757,16 @@
           "n": "Moncloa",
           "u": "https://www.moncloa.com/2026/08/13/reconstruccion-colombia-empresas-espanolas-3414876/",
           "rol": "efecto"
+        },
+        {
+          "n": "El Tiempo · la subcuenta «Sismo 2026» y las demás medidas del decreto de desastre nacional",
+          "u": "https://www.eltiempo.com/politica/gobierno/creacion-de-subcuenta-temporal-sismo-2026-y-otras-medidas-que-contempla-el-decreto-mediante-el-cual-se-declaro-el-desastre-nacional-por-el-terremoto-3577801",
+          "rol": "acto"
+        },
+        {
+          "n": "Régimen Legal de Bogotá · Decreto 1171 de 2026, texto normativo",
+          "u": "https://www.alcaldiabogota.gov.co/sisjur/normas/Norma1.jsp?i=193898&dt=S",
+          "rol": "acto"
         }
       ],
       "nivelGobierno": "nacional",
@@ -8688,7 +8779,8 @@
         }
       },
       "tipoFuente": "verificado",
-      "actosQueAgrupa": 1
+      "actosQueAgrupa": 1,
+      "contrargumentoOficial": "La justificación va en los considerandos del propio decreto y es verificable: un sismo de magnitud 7,4 Mw con epicentro en San José del Palmar (Chocó) —el más fuerte registrado en Colombia en cuarenta y siete años—, 330 municipios con afectación, 32 vías, 376 instituciones educativas y miles de viviendas averiadas, y departamentos y municipios que manifestaron por escrito la insuficiencia de sus propias capacidades, que es el supuesto del principio de concurrencia de la Ley 1523. Sobre esa base el Gobierno activó el régimen especial de los artículos 10, 55, 56 y 59 de esa ley, por doce meses prorrogables, y creó en el artículo 7 la subcuenta «Sismo 2026» dentro del Fondo Nacional de Gestión del Riesgo para separar presupuestal y contablemente los recursos. En la búsqueda NO apareció ningún reparo público a la declaratoria, así que lo que falta acá no es la respuesta del Gobierno sino el reproche al que respondería."
     },
     {
       "fecha": "2026-08-10",
@@ -9314,6 +9406,11 @@
           "n": "Portafolio · duración de la emergencia y controles sobre los decretos que de ella salgan",
           "u": "https://www.portafolio.co/economia/gobierno/abc-de-la-emergencia-economica-por-el-terremoto-ayudas-previstas-duracion-y-controles-sobre-los-decretos-500952",
           "rol": "contexto"
+        },
+        {
+          "n": "Consultorsalud · el Decreto 1261 y las medidas extraordinarias que abre",
+          "u": "https://consultorsalud.com/decreto-1261-estado-de-emergencia-economica/",
+          "rol": "contexto"
         }
       ],
       "id": "decreto-1261-emergencia-terremoto",
@@ -9332,7 +9429,8 @@
       "actosQueAgrupa": 1,
       "_porQueFALTABA": "v1097: este decreto estaba NOMBRADO en el detalle de dos entradas —los paquetes de 11 y de 15 decretos dicen «dentro del marco de la emergencia declarada por el decreto 1261»— y no tenía entrada propia, así que I-04 no lo contaba: el acto que FUNDA toda la emergencia estaba en el registro y ningún contador lo alcanzaba, que es la clase C de CLAUDE.md. Con él, I-04 del gobierno actual pasa de 4 a 5. La entrada se abre aunque suba la cuenta, y eso es parte de la medida: una cuenta que omite el acto marco no se puede defender.",
       "_yLOQUESIGUESINENTRADA": "El Decreto 1348 del 31 de agosto de 2026, que modificó este, sigue sin entrada propia: las fuentes en mano lo nombran de paso y ninguna documenta su contenido. Queda dicho acá en vez de inventarle una entrada, y en vez de callarlo — porque callarlo lo dejaría igual que si no existiera.",
-      "_divergenciaDEPARTAMENTOS": "Son 15 departamentos y el Decreto 1171 del 11 de agosto declaró el desastre nacional en 12. No se contradicen: son dos actos distintos, con dos instrumentos distintos —Ley 1523 y artículo 215— y dos ámbitos que el Gobierno fijó por separado. Va dicho porque dos cifras del mismo nombre a nueve días de distancia se leen como un error (v1093)."
+      "_divergenciaDEPARTAMENTOS": "Son 15 departamentos y el Decreto 1171 del 11 de agosto declaró el desastre nacional en 12. No se contradicen: son dos actos distintos, con dos instrumentos distintos —Ley 1523 y artículo 215— y dos ámbitos que el Gobierno fijó por separado. Va dicho porque dos cifras del mismo nombre a nueve días de distancia se leen como un error (v1093).",
+      "contrargumentoOficial": "El decreto declara su propia justificación y es la que el Gobierno sostiene: que las herramientas presupuestales ordinarias —las de la Ley 1523 de 2012— resultaban insuficientes ante un impacto que el propio texto cifra en al menos 30 billones de pesos, y que por eso había que complementarlas con las facultades del artículo 215 y la Ley 137 de 1994. Cita como precedente la reconstrucción del Eje Cafetero tras el sismo de 1999 a través del FOREC. Lo firmó el presidente con la totalidad de los ministros, que es el requisito del artículo 215, y su alcance declarado son decretos con fuerza de ley en materia presupuestal, tributaria, crediticia y de gasto ligados a la atención del desastre. Lo que la suficiencia de las herramientas ordinarias tiene de AFIRMACIÓN y no de demostración es precisamente lo que resuelve el control automático de la Corte Constitucional, cuyo resultado este registro todavía no documenta."
     },
     {
       "fecha": "2026-09-14",

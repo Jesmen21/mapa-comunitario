@@ -26759,3 +26759,81 @@ tiene. La regla de CLAUDE.md funcionó; no se agrega nada.
   y el tablero sigue en 11 de 19: esta tanda no subió ningún casillero, y no
   tenía que subirlo — lo que hizo fue decir qué significa cada uno de los que
   faltan. `cerrado en v1107`
+
+## v1108 · la respuesta del Gobierno, en las entradas que deciden algo
+
+El casillero pide 250 contrargumentos oficiales. Son búsquedas, una por
+entrada, y la pregunta que decide si el trabajo es honesto no es cuántas se
+hacen sino **en qué orden** — buscar «hasta encontrar» es la forma de escoger
+a conveniencia, y en un campo que PESA el riesgo es peor que de costumbre.
+
+### La regla, escrita antes de seguir buscando
+
+1. **Las que declaran indicador** (12). Alimentan una cuenta publicada, y
+   cuatro de ellas el eje D, que es el que fija el dictamen.
+2. **Los casos de corrupción que pesan.** Medido: son cero hoy.
+3. **Las entradas `disputado`** (29), donde el registro ya declara que la
+   naturaleza del hecho está en disputa.
+4. El resto, por fecha descendente.
+
+**Y la mitad importante de la regla es lo que NO se hace: no se marca
+`ausente` en masa.** `ausente` AFIRMA que el Gobierno no respondió y, con su
+constancia, PESA en I-06. Doscientas cuarenta marcas de ausencia sobre una
+búsqueda cada una moverían un indicador publicado sobre una persona real, y el
+estándar de este contenedor está escrito desde la v1003: la búsqueda sostiene
+QUE un hecho ocurrió, no que no ocurrió. Una entrada donde la búsqueda no
+encuentra respuesta **se queda `sin-revisar`**, que es lo que es.
+
+Pasó dos veces y se respetó: **los vuelos presidenciales** —la explicación
+oficial sigue pendiente y lo único que hay es procesal, que el Ministerio
+respondió tarde y un juez le dio 48 horas más por responder incompleto— y el
+**Decreto 1171**, donde no apareció reparo público alguno, así que lo que
+falta no es la respuesta sino el reproche al que respondería. Eso último va
+escrito dentro del contrargumento, no callado.
+
+### Once escritas, y cada una dice qué NO contesta
+
+De 5 a **16 de 264**. Las once nuevas: las tres operaciones militares del eje
+D y el rescate del 20 de septiembre, la carta de la JEP a la CPI, la Directiva
+Presidencial 01, el aplazamiento de los concursos, los decretos 1171 y 1261,
+los once de reconstrucción y la insubsistencia del director del DANE.
+
+**Cada texto dice dos cosas y las dos hacen falta**: qué contestó el Gobierno
+y qué NO contesta del reproche concreto. Sin la segunda, una defensa general
+pasa por una respuesta, que es la mentira contraria a no publicarla. Tres
+ejemplos de lo segundo: en la Operación Amón el ministro explica la «función
+continua de combate» y no las dos preguntas de la moción —qué inteligencia
+previa había sobre la presencia de menores y si se analizaron alternativas
+menos lesivas—; en la carta de la JEP el presidente contesta la competencia
+presupuestal —«una reasignación fundada en prioridades públicas no constituye
+una interferencia: es gobernar»— y no la segunda alerta, la revisión
+automática de sus sentencias por la Justicia Penal Militar; y en el DANE la
+Presidencia dice por qué sacó al director y no por qué eso no toca la
+independencia técnica que el mismo comunicado promete garantizar.
+
+### Dos hallazgos que salieron de buscar, no de leer el código
+
+* **El rescate del 20 de septiembre conflaciona un agregado con un caso.** Los
+  «cuatro menores» del título no son de la operación de Gómez Plata: salen del
+  balance de 24 HORAS de la Presidencia, que agrega operaciones de todo el
+  país. De esa operación el Ejército reporta un menor herido. Es la misma
+  clase de error que este módulo le reprocha a otros, y queda escrito en
+  `_precisionDeLACIFRA` y dentro del contrargumento, que es donde el lector lo
+  ve. No se corrige el título sobre una búsqueda.
+* **«Operación Beta» no aparece en ninguna de las nueve fuentes consultadas.**
+  El HECHO sí está corroborado —una operación en el Catatumbo el 10 de agosto
+  contra el ELN, con un menor de 16 años muerto, uno de los dos casos de la
+  moción de censura—, pero el rótulo no. Un nombre que ninguna fuente sostiene
+  es un dato más débil que el hecho que nombra, y se dice en vez de callarse.
+
+### Lo que esta versión NO hace
+
+* **NO cierra el casillero.** 16 de 264 es trabajo empezado, no terminado, y
+  el tablero sigue en 11 de 19 con el contrargumento en rojo y su trámite
+  escrito. `pendiente`
+* **NO marca ninguna ausencia.** Dos entradas quedaron `sin-revisar` teniendo
+  búsqueda hecha, por la razón de arriba. `cerrado en v1108 · medido y declinado`
+* **NO corrige el título del rescate ni el nombre de la Operación Beta.** Los
+  dos piden un comunicado oficial que el proxy no deja leer; quedan escritos
+  con su fecha de intento y su canal. `pendiente`
+* **NO mueve el dictamen.** Sigue en «Nada fiable». `cerrado en v1108`
