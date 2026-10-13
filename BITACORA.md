@@ -26988,3 +26988,59 @@ el caso retirando el nombramiento, no contestando el reparo de laicidad.**
   piden el Diario Oficial, que el proxy no deja leer; quedan escritos.
   `pendiente`
 * **NO mueve el dictamen.** Sigue en «Nada fiable». `cerrado en v1110`
+
+## v1111 · el fallo que se cayó, y cuatro respuestas más
+
+De 24 a **28 de 264**. Pero lo que justifica la tanda no es el número: es un
+hecho que apareció buscando y que cambiaba el sentido de una entrada.
+
+### Un fallo que se cayó, y que el registro no sabía
+
+La entrada «Cumple el fallo que le ordenó disculparse por el acto religioso de
+su posesión» se leía como lo que decía: cumplió una orden judicial **que había
+declarado una vulneración** del carácter laico del Estado. Buscando la
+respuesta oficial apareció que **el Tribunal Superior de Bogotá REVOCÓ ese
+fallo** y concluyó que la ceremonia no violó la neutralidad religiosa.
+
+Se escribe, y se escribe por la razón que este módulo tiene puesta por
+escrito para los casos archivados: **el desenlace que exonera circula mucho
+menos que la acusación, y por eso hay que escribirlo.** La entrada se
+actualiza —un caso que avanza se actualiza, no se duplica— y lo que no se
+pudo fijar va dicho: la fecha exacta del fallo de segunda instancia.
+
+Y el contrargumento del presidente queda aparte y es preciso: cumplió la orden
+y no aceptó el reproche. Dijo respetar la separación Iglesia-Estado, atribuyó
+la inclusión del momento religioso a las mesas directivas del Congreso —que lo
+aprobaron como punto de «invocación»— y pidió excusas de forma condicional,
+«si ofendió a alguna persona».
+
+### Las otras tres, y una distinción que importa
+
+* **El sobrevuelo de Tumaco.** Hay explicación del lado del Gobierno y el
+  contrargumento dice EXACTAMENTE qué clase de explicación es: no un
+  pronunciamiento oficial sino lo que «fuentes del Gobierno» le dijeron a un
+  diario —que los helicópteros transportaban al comandante del Comando Sur en
+  una visita oficial—, mientras la Presidencia no se pronunciaba. Y aun
+  aceptándola entera no toca el punto jurídico: si ese tránsito requería la
+  autorización del Senado del artículo 173.
+* **La declaración de renta.** La respuesta no fue un argumento sino un ACTO,
+  que es la forma más fuerte de responder: publicó una versión corregida con
+  su cónyuge y $20.455.940.000 en bienes. Y la entrada hereda las dos
+  precisiones que la prensa hace —que corregir no establece ocultamiento, y
+  que la declaración juramentada ante Función Pública no es la tributaria ante
+  la DIAN—. Lo que no responde: por qué la primera salió con omisiones.
+* **El Bloque de Defensa.** El Gobierno explicó QUÉ es, con detalle operativo,
+  y no la objeción: la comparación con las Convivir, el riesgo de justicia por
+  mano propia junto a la flexibilización del porte de armas, y que declarar
+  «objetivo militar» a un cabecilla urbano pertenece al derecho de los
+  conflictos armados. El propio anuncio dejó sin definir naturaleza jurídica,
+  línea de mando, presupuesto y vigencia, que es justo donde esa objeción se
+  resolvería.
+
+### Lo que esta versión NO hace
+
+* **NO fija la fecha del fallo de segunda instancia** ni los números de
+  decreto en disputa de tandas anteriores: los tres piden documentos que el
+  proxy no deja leer. `pendiente`
+* **NO cierra el casillero**: 223 de 251. `pendiente`
+* **NO mueve el dictamen.** Sigue en «Nada fiable». `cerrado en v1111`

@@ -2913,8 +2913,14 @@
           "n": "El Tiempo · La historia detrás de los dos helicópteros de EE. UU. que sobrevolaron Tumaco y generaron polémica en redes",
           "u": "https://www.eltiempo.com/justicia/conflicto-y-narcotrafico/la-historia-detras-de-los-dos-helicopteros-de-ee-uu-que-sobrevolaron-tumaco-y-generaron-polemica-en-redes-3585035",
           "rol": "contexto"
+        },
+        {
+          "n": "Infobae · un juez le da 48 horas al ministro de Defensa para explicar el sobrevuelo",
+          "u": "https://www.infobae.com/colombia/2026/09/23/helicopteros-de-los-marines-de-estados-unidos-sobrevolaron-tumaco-narino-juez-le-dio-48-horas-al-ministro-de-defensa-para-explicar-por-que/",
+          "rol": "efecto"
         }
-      ]
+      ],
+      "contrargumentoOficial": "Hay una explicación del lado del Gobierno y conviene decir EXACTAMENTE qué clase de explicación es: no es un pronunciamiento oficial, sino lo que «fuentes del Gobierno» le dijeron a El Tiempo —que los tres helicópteros transportaban al comandante del Comando Sur, general Francis Donovan, y a su equipo durante una visita oficial a Colombia y Ecuador—. Al momento de los reportes la Presidencia no se había pronunciado públicamente sobre el anuncio de la tutela. Y esa explicación, aun aceptándola entera, no toca el punto jurídico del reclamo: el artículo 173 de la Constitución le da al Senado la facultad de permitir el tránsito de tropas extranjeras, y lo que se discute es si un desplazamiento de esa clase la requería. Un juez, por su parte, le dio 48 horas al ministro de Defensa para explicar el sobrevuelo."
     },
     {
       "fecha": "2026-09-21",
@@ -6356,8 +6362,20 @@
           "n": "Semana · juez ordena al presidente ofrecer disculpas por haber vulnerado la neutralidad religiosa del Estado",
           "u": "https://www.semana.com/nacion/articulo/juez-ordena-al-presidente-abelardo-de-la-espriella-ofrecer-disculpas-por-haber-vulnerado-la-neutralidad-religiosa-del-estado/202631/",
           "rol": "contexto"
+        },
+        {
+          "n": "Infobae · ofrece excusas por el acto religioso: «respeto la separación entre la Iglesia y el Estado»",
+          "u": "https://www.infobae.com/colombia/2026/08/31/de-la-espriella-ofrecio-excusas-por-acto-religioso-en-su-ceremonia-de-posesion-como-presidente-respeto-separacion-entre-la-iglesia-y-el-estado/",
+          "rol": "acto"
+        },
+        {
+          "n": "Pulzo · tumban la orden que exigía a De la Espriella pedir disculpas por el acto religioso",
+          "u": "https://www.pulzo.com/nacion/tumban-orden-que-exigio-espriella-pedir-disculpas-por-acto-religioso-PP5312750",
+          "rol": "efecto"
         }
-      ]
+      ],
+      "contrargumentoOficial": "El presidente cumplió el fallo y dio al mismo tiempo su versión, que tiene tres partes: que respeta la separación entre la Iglesia y el Estado; que la inclusión del momento religioso NO fue decisión suya sino de las mesas directivas del Congreso, que lo aprobaron como punto de «invocación» en el orden del día; y que sus excusas eran condicionales —«si ofendió a alguna persona»—, sin renunciar a manifestar públicamente su fe. Es decir: aceptó la orden y no el reproche.",
+      "_actualizacionDELFALLO": "HECHO NUEVO encontrado el 13 de octubre de 2026 al buscar la respuesta oficial, y se ACTUALIZA la entrada porque cambia su sentido: **el Tribunal Superior de Bogotá REVOCÓ el fallo de primera instancia** y concluyó que la ceremonia de posesión no violó la neutralidad religiosa del Estado. Esta entrada quedaba leyéndose como «cumplió una orden que declaró una vulneración», y la vulneración declarada ya no está en pie. Se escribe por la misma razón por la que este módulo escribe los archivados con etiqueta verde: el desenlace que exonera circula mucho menos que la acusación. Lo que NO se pudo fijar con la búsqueda es la fecha exacta del fallo de segunda instancia, y queda dicho en vez de inventado."
     },
     {
       "fecha": "2026-08-30",
@@ -7414,8 +7432,19 @@
           "n": "BluRadio · no reporta cónyuge en su declaración de renta",
           "u": "https://www.bluradio.com/nacion/de-la-espriella-no-reporta-conyuge-en-su-declaracion-de-renta-tiene-patrimonio-de-10-272-millones-rg10",
           "rol": "acto"
+        },
+        {
+          "n": "Infobae · corrigió su declaración y aclaró sus conflictos de interés: cuentas en Colombia, EE. UU. e Italia",
+          "u": "https://www.infobae.com/colombia/2026/08/25/abelardo-de-la-espriella-corrigio-su-declaracion-de-renta-y-aclaro-sus-conflictos-de-intereses-asi-estan-sus-cuentas-en-colombia-ee-uu-e-italia/",
+          "rol": "efecto"
+        },
+        {
+          "n": "Portafolio · actualizó su declaración: reveló inversiones e incluyó a su cónyuge",
+          "u": "https://www.portafolio.co/economia/gobierno/de-la-espriella-actualizo-su-declaracion-de-renta-revelo-inversiones-en-colombia-y-ee-uu-e-incluyo-a-su-conyuge-501161",
+          "rol": "efecto"
         }
-      ]
+      ],
+      "contrargumentoOficial": "La respuesta del Gobierno no fue un argumento sino un ACTO, que es la forma más fuerte de responder: el 24 de agosto el presidente publicó una versión corregida de la declaración juramentada de bienes y rentas en Función Pública, donde sí registra a su cónyuge, Ana Lucía Pineda Aruachán, y declara bienes patrimoniales por $20.455.940.000, además de aclarar sus conflictos de interés y sus cuentas en Colombia, Estados Unidos e Italia. Dos precisiones que la propia prensa hace y que esta entrada hereda: la corrección por sí sola no establece que haya habido irregularidad ni ocultamiento deliberado, y la declaración juramentada ante Función Pública es un documento distinto de la declaración tributaria ante la DIAN. Lo que NO responde: por qué la primera versión salió con omisiones y datos erróneos."
     },
     {
       "fecha": "2026-08-24",
@@ -9355,8 +9384,19 @@
           "n": "Publimetro · el compromiso de firmarlo el día de la posesión",
           "u": "https://www.publimetro.co/noticias/2026/07/06/el-7-de-agosto-firmare-el-decreto-creando-el-bloque-de-defensa-para-la-seguridad-urbana-abelardo-de-la-espriella-genero-ola-de-reacciones-con-el-anuncio/",
           "rol": "acto"
+        },
+        {
+          "n": "El Colombiano · qué son los bloques de seguridad urbana y dónde estarán",
+          "u": "https://www.elcolombiano.com/colombia/de-la-espriella-y-su-anuncio-de-crear-bloques-de-seguridad-que-son-y-donde-estaran-HJ38570061",
+          "rol": "acto"
+        },
+        {
+          "n": "La Patria · expertos analizan qué hay detrás de la estrategia",
+          "u": "https://www.lapatria.com/sucesos/expertos-analizan-anuncio-de-de-la-espriella-sobre-bloque-de-defensa-que-hay-detras-de-la",
+          "rol": "contexto"
         }
-      ]
+      ],
+      "contrargumentoOficial": "El Gobierno explicó QUÉ es, con detalle operativo: unidades mixtas de reacción policial y judicial, unos 200 policías por bloque, acompañadas de fiscales y con mapas de calor sobre microterritorios críticos, para delitos de alto impacto —extorsión, atraco, homicidio— en las principales ciudades, y con los alcaldes convocados a diseñar la estrategia según el diagnóstico de cada una. Lo que NO respondió es la objeción, que no es sobre la utilidad sino sobre la figura: la comparación con las Convivir, el riesgo de justicia por mano propia al sumarle la flexibilización del porte de armas, y que declarar «objetivo militar» a un cabecilla urbano pertenece al derecho de los conflictos armados y no a la persecución del delito común. Y el propio anuncio dejó sin definir naturaleza jurídica, línea de mando, presupuesto y vigencia, que es donde esa objeción se resolvería."
     },
     {
       "fecha": "2026-02-11",
