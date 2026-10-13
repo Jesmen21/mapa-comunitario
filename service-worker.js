@@ -1,4 +1,4 @@
-const URBIS_CACHE = 'urbis-v1106-las-dos-cosas-que-valida-un-criterio';
+const URBIS_CACHE = 'urbis-v1107-que-falta-quien-puede-cerrarlo';
 const URBIS_ASSETS = [
   './',
   './index.html',

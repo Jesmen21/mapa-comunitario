@@ -11348,5 +11348,57 @@
     "correo": "urbisprocity@gmail.com",
     "plazoDias": 15,
     "lista": []
+  },
+  "marcoBorrador": {
+    "fecha": "2026-10-13",
+    "version": "v1107",
+    "queES": "Un BORRADOR, sin firmar. No lo escribió quien opera el módulo: está DERIVADO de las reglas que el propio módulo ya aplica en su código, una por una y con la regla nombrada al lado, para que quien firme pueda leer lo que el módulo ya decide y firmarlo, corregirlo o reemplazarlo. Mientras no lleve autor y fecha, el casillero del control sigue en rojo, y es correcto que siga: un borrador publicado no es una declaración firmada.",
+    "porQueNOloCIERRA": "Declarar los supuestos de valor es una decisión de quien pone su nombre detrás del módulo, y ningún texto derivado la reemplaza. Lo que este borrador SÍ cambia es que los supuestos dejan de estar escondidos dentro del código: un lector puede discrepar de ellos hoy, sin esperar a que alguien los firme.",
+    "supuestos": [
+      {
+        "s": "Entre los ejes manda el PEOR, nunca el promedio. Promediar un eje grave con uno leve esconde el grave, y lo que se publica es un juicio sobre una persona real.",
+        "deDonde": "Lo aplica `veredictoGeneral` desde la v1086, y las cuatro cuentas del registro desde el principio."
+      },
+      {
+        "s": "Lo que mide la REALIDAD pesa sobre lo que mide la palabra. Que un gobernante se contradiga no fija el veredicto de su gobierno.",
+        "deDonde": "`PESO_EJE`, donde el eje de la palabra está marcado como que no fija el veredicto (v1056, v1089)."
+      },
+      {
+        "s": "Un eje que cuenta muertes solo puede BAJAR el veredicto, nunca subirlo: cero confirmadas no es cero ocurridas.",
+        "deDonde": "La escala del eje D y su peldaño «no alcanzable» (v1091), sobre la regla de la v875."
+      },
+      {
+        "s": "Lo que EXONERA se publica con la misma fuerza que lo que acusa. Un caso archivado se ve, con etiqueta verde, y no pesa.",
+        "deDonde": "Los cinco estados de `casos.lista`: «un registro que solo publica lo que acusa no es un registro»."
+      },
+      {
+        "s": "Un caso que se cae BAJA de estado, no se borra. Borrar es esconder.",
+        "deDonde": "La regla de los cinco estados, escrita en CLAUDE.md y comprobada por `revisar.js` en los dos registros."
+      },
+      {
+        "s": "Una acusación sin documento no es un hecho probado, y una exoneración sin fuente es tan falsa como una acusación sin fuente.",
+        "deDonde": "`EVIDENCIA_DURA` y la guarda que exige quién, fecha y fuentes a todo caso con consecuencia."
+      },
+      {
+        "s": "La MISMA vara mide a los dos gobiernos. Aflojarla en uno sería la manera silenciosa de inclinar la comparación.",
+        "deDonde": "La ficha de los dos registros se calcula con la misma función, y `revisar.js` corre sobre los dos."
+      },
+      {
+        "s": "No se pinta una precisión que no se tiene. Lo que no está medido se declara, con qué falta, quién lo tiene, cómo se pide y cuándo puede existir.",
+        "deDonde": "Los trámites por eje (v1076) y los peldaños `sin-declarar` con su razón (v1093)."
+      },
+      {
+        "s": "Lo que el módulo no puede comprobar lo DICE y lo cuenta. Una comprobación desactivada en silencio se lee igual que un aprobado.",
+        "deDonde": "Los casilleros `sin-correr` del control, que no pueden llevar «pasa» escrito a mano (v1098)."
+      },
+      {
+        "s": "URBIS publica y recomienda; el juicio lo hace quien lee. Ninguna pantalla dice que el sistema decide.",
+        "deDonde": "La regla del sexto módulo, aplicada acá: el veredicto se calcula y se muestra con de qué sale y sobre qué evidencia descansa (v1088)."
+      },
+      {
+        "s": "Y elegir QUÉ se rastrea ya es una decisión de valores. Es inevitable y no es un defecto; esconderla sí lo sería, y por eso existe este marco.",
+        "deDonde": "El texto del pliego que `marcoDeclarado` cita cuando el marco falta."
+      }
+    ]
   }
 }

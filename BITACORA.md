@@ -26654,3 +26654,108 @@ estén las dos redacciones—.
 * **NO mueve el dictamen.** Sigue en «Nada fiable», medido después del cambio.
   El control baja de 12 a **11 de 19** casilleros, que es el precio honesto de
   la corrección. `cerrado en v1106`
+
+## v1107 · qué falta, y QUIÉN puede cerrarlo
+
+La petición era terminar el módulo y salir. La tanda midió los cuatro rojos
+antes de aceptarlos —este proyecto ya se cobró cinco veces un bloqueo que era
+del autor— y el resultado es que **dos se pueden cerrar desde acá y dos no**,
+que es exactamente la distinción que el módulo no publicaba.
+
+### Lo que se midió, y lo que cada medición cambió
+
+* **El contrargumento oficial (250 de 255).** Primera sospecha: que el
+  denominador estuviera mal, como las cinco veces anteriores. **No lo está.**
+  `contrargumentoOficial` es un campo distinto de `contrapunto` —uno es la
+  respuesta del Gobierno, el otro la lectura contraria que escribe el
+  registro—, y 210 entradas tienen el segundo y 5 el primero. Y estrechar el
+  denominador a los actos de gobierno sería falso: a una cifra del país el
+  Gobierno también responde. **El hueco es real y es volumen**, 250 búsquedas,
+  no un bloqueo.
+* **El deflactor de agosto.** La pregunta era si la base se podía recuperar
+  del registro. Se puede intentar: de `bn` y `realPct` sale una base por cada
+  fórmula posible, y las dos son plausibles — **76,52 billones si la fórmula
+  fue compuesta, 76,37 si fue resta simple**, en Educación. El registro no dice
+  cuál se usó, y la diferencia son **0,18 puntos de variación real** publicados
+  sobre el presupuesto de un gobierno. No se puede rehacer acá, y ahora está
+  medido en vez de supuesto.
+
+### El defecto que esas mediciones dejaron ver
+
+La v1098 escribió, en prosa, que «parte de lo que falta no depende de nadie
+acá, y para esos el estado honesto es publicarlos en rojo con su trámite, no
+cerrarlos». Mientras fue prosa, **los cinco rojos se leían IGUAL en la
+pantalla** — y son cuatro cosas que piden acciones opuestas: archivo que
+cualquiera puede hacer hoy, un documento que el proxy niega, una decisión de
+quien firma, y una capacidad por escribir. Es la distinción de la v899
+aplicada al estado del módulo entero.
+
+Y por eso **un recuento no contesta «¿está terminado?»**. «Once de diecinueve»
+no deja saber si hay que ponerse a trabajar o dejar de intentarlo.
+
+Ahora cada casillero declara **con cuál de cinco tipos se cierra y con qué
+trámite**, el campo se exige a TODOS y no solo a los que hoy fallan —uno que
+hoy pasa puede fallar mañana y aparecería sin trámite (v880)—, y el módulo
+calcula la respuesta repartiendo lo que falta por quién puede cerrarlo.
+
+Medido hoy: **8 abiertos · 2 de archivo de acá · 2 fuera del alcance · 1 de
+quien firma · 3 capacidades que el módulo no tiene.** Estado:
+`queda-trabajo-de-aca`, y mientras quede uno el módulo no está hasta donde
+puede llegar. Lo que esto NO dice, escrito en la propia pantalla: que el
+módulo esté bien. Dice qué parte de lo que falta depende de esta casa.
+
+### El marco de supuestos: un borrador, y por qué no cierra nada
+
+Los supuestos de valor del módulo **existían**: están aplicados en su código,
+uno por uno —manda el peor, lo que exonera se publica con la misma fuerza, un
+caso que se cae baja de estado y no se borra, la misma vara mide a los dos
+gobiernos—. Lo que no existía era una superficie donde un lector los viera y
+los discrepara. Es la clase C **en el sitio donde más importa**, porque lo que
+se esconde ahí no es un dato sino un juicio.
+
+Se publican once, **rotulados BORRADOR y sin firmar**, cada uno con la regla
+del módulo de la que sale. Y el casillero **sigue en rojo**, que es lo
+correcto: firmar es la decisión de quien pone su nombre detrás, y ningún texto
+derivado la reemplaza. Lleva su guarda contra el atajo obvio de la tanda
+siguiente — que el borrador empiece a contar como declaración.
+
+### La demostración en rojo, y la inyección que enseñó
+
+Siete inyecciones fieles sobre 731, arnés de tres estados (v1090): el estado
+del módulo tecleado · una redacción borrada · el reparto calculado y sin
+pintar · un supuesto sin su regla · el borrador contando como marco · el
+borrador sin su rótulo. Seis en ROJO a la primera.
+
+**La séptima —un casillero sin su tipo de cierre— salió VERDE**, y es la
+lección: la aserción contaba apariciones del token en todo el archivo, y los
+tipos aparecen también en la tabla `CIERRA` y en la pantalla, así que sobraban
+de largo. Medía el token, no el ARGUMENTO. Con la sangría de la llamada en el
+patrón, la inyección pone la corrida en rojo. Es la segunda tanda seguida en
+que una inyección fiel enseña que el defecto estaba en lo que la aserción
+mide y no en la inyección (v1029).
+
+Y un `ReferenceError` más, cazado por el conteo: 185 palomitas donde la
+corrida anterior tenía 726, porque usé `reg` donde esa parte del archivo no la
+tiene. La regla de CLAUDE.md funcionó; no se agrega nada.
+
+### Lo que esta versión NO hace
+
+* **NO cierra el contrargumento oficial.** Son 250 búsquedas de respuesta
+  oficial, una por entrada, y fingirlas marcando «ausente» sin constancia es
+  justo lo que el módulo prohíbe. Queda con su trámite escrito y clasificado
+  como trabajo que cualquier sesión de acá puede avanzar de a poco.
+  `pendiente`
+* **NO consigue la deuda NETA ni el presupuesto 2026 por sector.** El proxy
+  niega minhacienda.gov.co; medido el 2 de octubre sobre ocho dominios.
+  Clasificados como fuera del alcance, con qué documento haría falta.
+  `pendiente`
+* **NO firma el marco.** El borrador se publica; la firma no la puede poner
+  nadie más que quien opera el módulo. `pendiente`
+* **NO escribe las tres capacidades que faltan** —clasificar el encuadre de
+  una pieza, detectar un menor identificado, recalcular el eje B hacia atrás—.
+  Las tres salen en el control como `sin-correr` con lo que haría falta.
+  `pendiente`
+* **NO mueve el dictamen.** Sigue en «Nada fiable», medido después del cambio,
+  y el tablero sigue en 11 de 19: esta tanda no subió ningún casillero, y no
+  tenía que subirlo — lo que hizo fue decir qué significa cada uno de los que
+  faltan. `cerrado en v1107`

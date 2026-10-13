@@ -2141,6 +2141,31 @@ a.sp-fuente:hover svg{ color:var(--verde-hi); }
 .sp-c2-revl li > p { margin: 2px 0 0; font-size: var(--t-8); }
 .sp-c2-revv { font-weight: 600; }
 
+/* ¿Está terminado? y el trámite de cada casillero abierto (v1107). En ámbar
+   cuando queda trabajo de acá —es lo único accionable— y neutro cuando lo que
+   falta no depende de esta casa: pintar de rojo lo que nadie acá puede cerrar
+   empuja a inventarse una salida, que es lo contrario de lo que se quiere. */
+.sp-c4-fin { margin: 8px 0 12px; padding: 10px 12px; border-radius: 8px;
+  border: 1px solid var(--sp-bd, #cfdce6); }
+.sp-c4-fin.falta { border-style: dashed; border-color: var(--sp-amb, #b26a00); }
+.sp-c4-fin.mal { border-color: #9A3C38; }
+.sp-c4-fin > b { display: block; font-size: var(--t-7); }
+.sp-c4-fin > p { margin: 5px 0 0; font-size: var(--t-8); line-height: 1.5; }
+.sp-c4-finl { margin: 8px 0 0; padding-left: 18px; }
+.sp-c4-finl li { margin-bottom: 6px; font-size: var(--t-8); line-height: 1.45; }
+.sp-c4-finl li > p { margin: 2px 0 0; color: var(--ink-2, #5a6b78); }
+.sp-c4-cctr { margin: 4px 0 0; font-size: var(--t-8); line-height: 1.45;
+  color: var(--ink-2, #5a6b78); }
+
+/* El borrador del marco: rotulado antes del texto, como el editorial. */
+.sp-c4-borr { margin: 10px 0 0; padding: 10px 12px; border-radius: 8px;
+  border: 1px dashed var(--sp-amb, #b26a00); }
+.sp-c4-borr > b { display: block; margin-top: 6px; font-size: var(--t-8); }
+.sp-c4-borr > p { margin: 6px 0 0; font-size: var(--t-8); line-height: 1.5; }
+.sp-c4-borrl { margin: 8px 0 0; padding-left: 18px; }
+.sp-c4-borrl li { margin-bottom: 8px; font-size: var(--t-8); line-height: 1.5; }
+.sp-c4-borrd { margin: 3px 0 0; color: var(--ink-2, #5a6b78); }
+
 
 /* ══════════════════════════════════════════════════════════════════════════
    EL TABLERO · gráficos, el héroe, la opinión firmada y la deuda propia

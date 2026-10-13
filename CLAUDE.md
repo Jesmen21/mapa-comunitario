@@ -1484,6 +1484,27 @@ sección al final de este archivo.
   normal. **La señal de que la regla no se escogió por conveniencia: aplicada,
   BAJÓ el número que la tanda venía a subir** —de 3 de 5 a 2 de 5—, porque
   obligó a retirar tres validaciones que descansaban en la evidencia contraria.
+* **«¿Está terminado?» no se contesta con un recuento** (v1098, v1107). Once
+  de diecinueve no deja saber si hay que ponerse a trabajar o dejar de
+  intentarlo. Cada casillero abierto declara **con cuál de cinco tipos se
+  cierra** —archivo que una sesión de acá puede hacer, un documento que este
+  contenedor no alcanza, una decisión de quien firma, una capacidad por
+  escribir, un hecho de afuera con su fecha— y **con qué trámite**; el estado
+  del módulo se CALCULA repartiendo lo abierto por quién puede cerrarlo. El
+  campo se le exige a TODOS y no solo a los que hoy fallan (v880): uno que hoy
+  pasa puede fallar mañana y saldría sin trámite. Y la frase que lo salva de
+  ser una excusa va en la propia pantalla: no dice que el módulo esté bien,
+  dice qué parte de lo que falta depende de esta casa.
+* **Y lo que está aplicado en el código y no en ninguna pantalla puede ser un
+  JUICIO y no un dato** (v1107). Los supuestos de valor del módulo existían
+  —manda el peor, lo que exonera se publica igual que lo que acusa, borrar es
+  esconder, la misma vara mide a los dos— aplicados uno por uno en su código,
+  y ninguna superficie los enseñaba: la clase C en el sitio donde más importa.
+  Se publican como **BORRADOR sin firmar**, cada uno con la regla de la que
+  sale, y **no cierran el casillero**: firmar es la decisión de quien pone su
+  nombre y ningún texto derivado la reemplaza. Va con su guarda contra el
+  atajo de la tanda siguiente — que el borrador empiece a contar como
+  declaración.
 * **Y una aserción puede medir que algo se CONSTRUYA y no que se ENGANCHE**
   (v1029, v1101). Una guarda contra la clase C se quedó en verde con el bloque
   calculado y sin `appendChild`: en verde sobre exactamente el defecto que

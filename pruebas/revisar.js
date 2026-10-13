@@ -3458,6 +3458,109 @@ console.log('\n  -- la ficha del gobernante --');
       '`corridaHaciaAtras` cuenta como revisada toda entrada con `indicadores` declarado, ' +
       'lista vacía incluida: es eso lo que la de arriba protege');
 
+    /* ═══ ¿ESTÁ TERMINADO? SE CONTESTA, NO SE CUENTA (v1107) ═══════════════
+       La v1098 dejó el control publicando el estado del módulo y escribió al
+       lado, en prosa, que parte de lo que falta no depende de nadie acá. Esa
+       frase era documentación: en la pantalla los cinco rojos se leían IGUAL
+       —volumen de archivo, un documento que el proxy niega, una decisión de
+       quien firma, una capacidad por escribir—, y son cuatro cosas que piden
+       acciones opuestas. Un recuento no contesta «¿está terminado?».
+
+       FALLA CERRADO (v880): el trámite se le exige a TODOS los casilleros y no
+       solo a los que hoy fallan, porque uno que hoy pasa puede fallar mañana y
+       aparecería sin trámite. Un abierto sin clasificar lo denuncia el propio
+       control, con su estado `sin-clasificar`.
+
+       DE QUÉ NO RESPONDE (v945, v952): de que el trámite sea el correcto ni de
+       que la clasificación sea honesta — un casillero de archivo marcado como
+       «fuera del alcance» es la salida barata y ninguna guarda la puede ver
+       (v1008). Lo que se comprueba es que ESTÉ, que el tipo sea de los
+       declarados, que el estado se CALCULE y que llegue a la pantalla. */
+    const CIERRA_OK = /var CIERRA = \{/.test(j70v);
+    const TIPOS = ['archivo-aqui', 'fuera-del-alcance', 'quien-firma', 'capacidad', 'hecho-de-afuera'];
+    const cajas = j70v.match(/caja\(\s*'/g) || [];
+    /* SE MIDE EL ARGUMENTO, NO EL TOKEN EN TODO EL ARCHIVO (v1029, v1107).
+       Contar apariciones del tipo contaba también las cinco de la tabla
+       `CIERRA` y las de la pantalla, así que sobraban de largo: una inyección
+       que dejaba un casillero en `null` la dejó en VERDE. Lo que falta no era
+       la inyección — era lo que la aserción medía. Ahora cuenta el ARGUMENTO,
+       con su sangría, que es como lo escribe la llamada. */
+    const conCierre = (j70v.match(new RegExp("\\n         '(" + TIPOS.join('|') + ")',\\n", 'g')) || []).length;
+    comprobar('MATERIAL · el control tiene casilleros y una tabla de quién los cierra',
+      cajas.length >= 18 && CIERRA_OK,
+      !CIERRA_OK ? 'no existe la tabla `CIERRA`: no habría con qué clasificar'
+        : cajas.length + ' casilleros y la tabla de cierre declarada');
+    comprobar('y cada casillero declara con cuál de los tipos se cierra',
+      cajas.length >= 18 && conCierre >= cajas.length,
+      conCierre < cajas.length
+        ? 'hay ' + cajas.length + ' casilleros y solo ' + conCierre + ' cierres declarados: el que falte ' +
+          'saldría en pantalla sin trámite, que se lee como que nadie sabe qué hacer con él'
+        : 'los ' + cajas.length + ' llevan su tipo de cierre, de los ' + TIPOS.length + ' declarados');
+    /* LA GUARDA DE LA GUARDA (v878), en sus tres mitades: que el estado del
+       módulo se CALCULE y no se teclee, que estén escritas TODAS sus
+       redacciones —incluida la de «no queda nada», que es la que hace falta el
+       día que llegue (v970)—, y que el trámite LLEGUE a la pantalla. */
+    const calcula = /var estado = sinCierre\.length \? 'sin-clasificar'/.test(j70v) &&
+                    /abiertos\.forEach/.test(j70v);
+    /* SE MIDE POR CONTENIDO, NO CONTANDO EL TOKEN (v935). Contar apariciones
+       del id medía cómo quedó escrito el `if`, no que la redacción exista: el
+       estado al que se llega por descarte aparece UNA vez y pasaba por
+       faltante. Lo que tiene que estar es la FRASE que cada estado publica. */
+    const redacciones = [
+      /no declaran quién puede cerrarlo/, /No queda ningún casillero abierto/,
+      /Queda trabajo que una sesión de acá puede hacer/,
+      /Nada de lo que falta lo puede cerrar una sesión de acá/
+    ].every((r) => r.test(j70v));
+    const llega = /sp-c4-fin/.test(j70v) && /cb2\.appendChild\(mb\)/.test(j70v) &&
+                  /sp-c4-cctr/.test(j70v) && /SIN TRÁMITE DECLARADO/.test(j70v);
+    comprobar('y el estado del módulo se calcula, tiene sus cuatro redacciones y llega a la pantalla',
+      calcula && redacciones && llega,
+      !calcula ? 'el estado del módulo dejó de calcularse sobre los casilleros abiertos: un estado escrito ' +
+                 'a mano es una afirmación que nadie vuelve a medir (v903, v1098)'
+      : !redacciones ? 'falta una de las cuatro redacciones; la de «no queda nada» es justo la que hace ' +
+                       'falta el día que el módulo llegue ahí, y sin ella el renglón desaparecería'
+      : !llega ? 'el bloque no se engancha a la pantalla, o el trámite no se pinta: el reparto sería un ' +
+                 'dato que ninguna superficie alcanza, que es la clase C'
+      : 'se calcula repartiendo los abiertos por quién puede cerrarlos, con sus cuatro redacciones, y se ' +
+        'pinta con el trámite de cada casillero abierto');
+
+    /* ═══ EL BORRADOR DEL MARCO NO CIERRA EL CASILLERO (v1107) ═════════════
+       Los supuestos de valor del módulo estaban aplicados en su código y no
+       había superficie donde un lector los viera: clase C en el sitio donde
+       más importa, porque lo que se esconde ahí no es un dato sino un juicio.
+       Publicarlos como BORRADOR lo cierra sin fingir nada — pero la tentación
+       de la tanda siguiente es obvia y por eso va una guarda: **que el
+       borrador cuente como declaración y ponga el casillero en verde.** Firmar
+       es la decisión de quien pone su nombre, y ningún texto derivado la
+       reemplaza. */
+    const regAct1107 = JSON.parse(leer('assets/data/seguimiento-presidencial.json'));
+    const marcoB = (regAct1107.marcoBorrador || {});
+    const sup = Array.isArray(marcoB.supuestos) ? marcoB.supuestos : [];
+    const supMal = sup.filter((x) => !String((x && x.s) || '').trim() ||
+                                     !String((x && x.deDonde) || '').trim());
+    comprobar('MATERIAL · el módulo publica un borrador de sus supuestos de valor',
+      sup.length > 0,
+      sup.length + (sup.length === 1 ? ' supuesto en el borrador' : ' supuestos en el borrador'));
+    comprobar('y cada supuesto dice de qué regla del módulo sale',
+      sup.length > 0 && !supMal.length,
+      !sup.length ? 'no hay borrador: lo dice la de arriba'
+        : supMal.length
+          ? supMal.length + (supMal.length === 1 ? ' supuesto sin su regla nombrada'
+                                                 : ' supuestos sin su regla nombrada') +
+            ': un supuesto sin origen es un valor inventado, que es lo contrario de lo que el borrador hace'
+        : 'los ' + sup.length + ' nombran la regla del módulo de la que salen');
+    const noCierra = /completo: !!\(sup\.length && m\.autor && m\.fecha\)/.test(j70v) &&
+                     !/completo:[^\n]*borrador/.test(j70v);
+    const pintaB = /sp-c4-borr/.test(j70v) && /s4\.appendChild\(bb\)/.test(j70v) &&
+                   /BORRADOR · sin firmar/.test(j70v);
+    comprobar('y el borrador NO cuenta como marco declarado, y se rotula como borrador',
+      noCierra && pintaB,
+      !noCierra ? '`completo` empezó a contar el borrador: un texto derivado no es una firma, y con eso el ' +
+                  'casillero pasaría a verde sin que nadie haya declarado nada'
+      : !pintaB ? 'el borrador no llega a la pantalla o perdió su rótulo: sin el rótulo primero se lee ' +
+                  'como el marco firmado, que es justo lo que no es'
+      : '`completo` sigue pidiendo supuestos firmados con autor y fecha, y el borrador se pinta rotulado');
+
     /* ═══ MIRAR LOS CASOS QUE CAYERON (v1106) ══════════════════════════════
        `probado = revisadas >= 20 && disparos === 0` preguntaba dos cosas con
        una cuenta, y en cuanto un criterio disparaba se quedaba sin poder

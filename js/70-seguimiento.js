@@ -4314,6 +4314,17 @@
       mide: MARCO_MIDE, noMide: MARCO_NO_MIDE,
       autor: String(m.autor || '').trim(), fecha: String(m.fecha || '').trim(),
       supuestos: sup, completo: !!(sup.length && m.autor && m.fecha),
+      /* EL BORRADOR (v1107). Un marco sin firmar no cierra el casillero —firmar
+         es la decisión de quien pone su nombre, y ningún texto derivado la
+         reemplaza—, pero publicar el borrador sí cambia algo real: los
+         supuestos dejan de estar escondidos DENTRO del código, donde un lector
+         no los puede discutir. Es la clase C en el sitio donde más importa, y
+         se cierra sin fingir que el casillero pasó. */
+      borrador: ((((dd || D) || {}).marcoBorrador || {}).supuestos || []).filter(function (x) {
+        return x && String(x.s || '').trim() && String(x.deDonde || '').trim();
+      }),
+      borradorQueEs: String(((((dd || D) || {}).marcoBorrador) || {}).queES || '').trim(),
+      borradorPorQue: String(((((dd || D) || {}).marcoBorrador) || {}).porQueNOloCIERRA || '').trim(),
       /* Un marco sin supuestos declarados es la neutralidad falsa que el
          pliego nombra: «elegir qué indicadores rastrear ya es una decisión de
          valores. Eso es inevitable y no es un defecto. Lo que sí sería un
@@ -4377,7 +4388,46 @@
     var f = [];
     var casos = casosDeCorrupcion(dd);
 
-    function caja(t, estado, det) { f.push({ t: t, estado: estado, det: det }); }
+    /* ── QUIÉN PUEDE CERRAR CADA CASILLERO, Y CON QUÉ (v1107) ─────────────
+       La v1098 dejó el módulo publicando su propio estado y escribió al lado
+       la frase que esta tanda convierte en dato: «parte de lo que falta no
+       depende de nadie acá, y para esos el estado honesto es publicarlos en
+       rojo con su trámite, no cerrarlos». Mientras esa frase fue prosa, los
+       cinco rojos se leían IGUAL — y no lo son: uno es volumen de archivo que
+       cualquier sesión puede hacer, dos piden un documento que este
+       contenedor no puede alcanzar, uno pide una decisión de quien firma, y
+       tres son capacidades que el módulo no tiene.
+
+       Sin esa distinción, «¿está terminado?» solo tiene como respuesta un
+       recuento, y un recuento no contesta la pregunta: un módulo con cinco
+       rojos que nadie acá puede cerrar está TAN terminado como puede estarlo,
+       y uno con un rojo de archivo pendiente no. Es la distinción de la v899
+       —causas que piden acciones distintas se cuentan aparte— aplicada al
+       estado del módulo entero.
+
+       FALLA CERRADO (v880): el campo se le exige a TODOS los casilleros y no
+       solo a los que hoy fallan, porque uno que hoy pasa puede fallar mañana
+       y entonces aparecería sin trámite. Un casillero sin su cierre declarado
+       lo denuncia el propio control. */
+    var CIERRA = {
+      'archivo-aqui':    { t: 'Trabajo de archivo que una sesión de acá puede hacer',
+                           d: 'No hay nada que esperar: es buscar, leer y escribir.' },
+      'fuera-del-alcance': { t: 'Pide un documento que este contenedor no puede alcanzar',
+                           d: 'El proxy niega todos los dominios, así que el único canal es la búsqueda, ' +
+                              'y una serie numérica cae del otro lado de esa raya.' },
+      'quien-firma':     { t: 'Pide una decisión de quien opera el módulo',
+                           d: 'No es archivo: es una declaración que no puede hacer nadie más.' },
+      'capacidad':       { t: 'Pide una capacidad que el módulo todavía no tiene',
+                           d: 'Es código por escribir, y se ve en el diff el día que llegue.' },
+      'hecho-de-afuera': { t: 'Espera un hecho que no depende de nadie',
+                           d: 'Tiene fecha de revisión y adelantarlo sería resolverlo a conveniencia.' }
+    };
+    function caja(t, estado, det, cierra, tramite) {
+      f.push({ t: t, estado: estado, det: det,
+               cierra: cierra || null, cierraT: (CIERRA[cierra] || {}).t || null,
+               cierraD: (CIERRA[cierra] || {}).d || null,
+               tramite: tramite || null });
+    }
 
     /* CALCULADO EN LA v1098. Era un `'pasa'` literal con una frase que
        nombraba la versión que lo hizo, y eso es exactamente la forma del
@@ -4392,16 +4442,22 @@
            ? cn(sinTasa.length, 'indicador se publica sin su tasa', 'indicadores se publican sin su tasa') +
              ': ' + sinTasa.map(function (f) { return f.id; }).join(' ')
            : cn(indC.filas.length, 'indicador', 'indicadores') + ', todos con su tasa sobre ' +
-             cn(indC.dias, 'día de gobierno', 'días de gobierno'));
+             cn(indC.dias, 'día de gobierno', 'días de gobierno'),
+         'capacidad',
+         'El módulo calcula la tasa cuando el indicador tiene cuenta y días de gobierno; un indicador sin tasa es un camino de cálculo por escribir.');
 
     var sinFecha = ent.filter(function (e) { return !e.fecha; }).length;
     caja('Toda afirmación sobre un hecho pasado tiene fecha', sinFecha ? 'falla' : 'pasa',
-         sinFecha ? sinFecha + ' sin fecha' : 'las ' + ent.length + ' la tienen');
+         sinFecha ? sinFecha + ' sin fecha' : 'las ' + ent.length + ' la tienen',
+         'archivo-aqui',
+         'Ponerle fecha a la entrada que no la tenga, buscándola en sus propias fuentes.');
 
     var sinUrl = ent.filter(function (e) { return !fuentesDe(e).length; }).length;
     caja('Ninguna afirmación se publica sin URL', sinUrl ? 'falla' : 'pasa',
          sinUrl ? sinUrl + ' de ' + ent.length + ' sin una sola fuente enlazada'
-                : 'las ' + ent.length + ' traen fuente');
+                : 'las ' + ent.length + ' traen fuente',
+         'archivo-aqui',
+         'Conseguirle fuente a la entrada que no la tenga, o retirarla.');
 
     var pesanSinNivel = casos.filter(function (c) {
       var est = ESTADOS_CASO[c.estado];
@@ -4410,32 +4466,44 @@
     caja('Ningún registro de otro nivel de gobierno alimenta el score', pesanSinNivel ? 'falla' : 'pasa',
          pesanSinNivel ? cn(pesanSinNivel, 'caso que pesa sin declarar su nivel',
                                      'casos que pesan sin declarar su nivel')
-                       : 'todo caso que pesa declara que es nacional');
+                       : 'todo caso que pesa declara que es nacional',
+         'archivo-aqui',
+         'Declarar el nivel del caso que pesa, leyendo cuál autoridad lo lleva.');
 
     var acusaSinDoc = casos.filter(function (c) {
       return c.estado === 'confirmado' && !((c.fuentes || []).length);
     }).length;
     caja('Ninguna acusación sin documento cuenta como hecho probado', acusaSinDoc ? 'falla' : 'pasa',
          acusaSinDoc ? cn(acusaSinDoc, 'confirmado sin fuente', 'confirmados sin fuente')
-      : 'los confirmados traen su fuente');
+      : 'los confirmados traen su fuente',
+         'archivo-aqui',
+         'Conseguir el fallo, la sanción o el documento oficial del caso confirmado, o bajarlo de estado.');
 
     caja('Cada registro tiene contrargumento oficial, lleno o marcado ausente',
          c1.contra.sinRevisar ? 'falla' : 'pasa',
          c1.contra.sinRevisar ? c1.contra.sinRevisar + ' de ' + c1.n + ' sin revisar'
-      : pl(c1.n, 'el declarado', 'los ' + c1.n + ' declarados'));
+      : pl(c1.n, 'el declarado', 'los ' + c1.n + ' declarados'),
+         'archivo-aqui',
+         'Por cada entrada, buscar la respuesta oficial del Gobierno y escribirla; si no la hay, dejar constancia de dónde se buscó y cuándo. Es volumen —doscientas cincuenta— y no un bloqueo: cualquier sesión de acá puede avanzarlo de a poco.');
 
     caja('El editorial está separado y rotulado', ed.hay ? (ed.firmado ? 'pasa' : 'falla') : 'pasa',
          ed.hay ? (ed.firmado ? 'firmado por ' + ed.autor : 'hay editorial SIN autor o SIN fecha')
-                : 'no hay editorial, y la sección lo dice');
+                : 'no hay editorial, y la sección lo dice',
+         'quien-firma',
+         'Firmar el editorial con nombre y fecha, o retirarlo.');
 
     /* Los que este módulo no puede correr. Se nombran con lo que haría falta,
        en vez de darlos por buenos. */
     caja('El set trae piezas distorsionadas de ambos signos y casos de encuadre limpio', 'sin-correr',
          'El registro no clasifica la calidad del encuadre de cada pieza, así que no se puede medir el ' +
-         'balance de la muestra. Haría falta el campo `calidad_del_encuadre` de la Capa 1 del pliego.');
+         'balance de la muestra. Haría falta el campo `calidad_del_encuadre` de la Capa 1 del pliego.',
+         'capacidad',
+         'El módulo no clasifica el encuadre de una pieza; haría falta escribir ese criterio contra referencia externa y primero.');
     caja('Ningún registro trae menores identificados', 'sin-correr',
          'Se revisa a mano al escribir cada entrada; el módulo no tiene cómo comprobarlo por su cuenta. ' +
-         'Los dos hechos del registro que involucran menores están como agregado y sin nombres.');
+         'Los dos hechos del registro que involucran menores están como agregado y sin nombres.',
+         'capacidad',
+         'El módulo no detecta la identificación de un menor en un texto; hoy depende de quien escribe la entrada.');
     /* CORREGIDO EN LA v1098, y el renglón estaba IMPRESO en el papel con una
        afirmación falsa: decía «así que el eje B no publica nivel» y el eje B
        publica «Dudosa» desde la v1092, por otra vía —la identidad y la
@@ -4455,7 +4523,9 @@
          'Y hay una razón por la que conseguirla no bastaría (v1097): las cuentas de los indicadores ' +
          'suman ENTRADAS del registro y no actos, y dos registros agrupan distinto, así que no se pueden ' +
          'poner una al lado de la otra sin igualar la unidad. El eje B publica su nivel por otra vía, que ' +
-         'no necesita la media.');
+         'no necesita la media.',
+         'capacidad',
+         'El módulo no recalcula el eje B sobre el registro anterior; haría falta esa corrida, y la media histórica que pediría está bloqueada por la unidad no igualada.');
 
     /* ═══ EL MÓDULO, MEDIDO CONTRA SÍ MISMO (v1098) ═════════════════════════
        Los casilleros de arriba miden el REGISTRO: que cada hecho tenga fecha,
@@ -4488,7 +4558,9 @@
            ? 'publicado: «' + ((vg.nivel && vg.nivel.t) || '') + '», del eje que puso el peor peldaño'
            : vg.estado === 'piso'
              ? 'publicado como PISO: no puede ser mejor que «' + ((vg.nivel && vg.nivel.t) || '') + '»'
-             : 'no se publica ninguno todavía, y el estado calculado es «' + vg.estado + '»');
+             : 'no se publica ninguno todavía, y el estado calculado es «' + vg.estado + '»',
+         'capacidad',
+         'El dictamen sale de los ejes; si no se publicara, lo que faltaría es que algún eje de realidad publique nivel.');
 
     caja('Cada eje que mide la realidad publica su nivel',
          conNivel.length === real.length ? 'pasa' : 'falla',
@@ -4496,7 +4568,9 @@
          (sinNivel.length
            ? ' · sin nivel: ' + sinNivel.map(function (e) { return e.t; }).join(' · ')
            : ': ' + conNivel.map(function (e) { return e.t + ' «' + e.nivel.t + '»'; }).join(' · ')) +
-         '. El eje de la palabra va aparte: solo puede empeorar el veredicto y no lo fija.');
+         '. El eje de la palabra va aparte: solo puede empeorar el veredicto y no lo fija.',
+         'fuera-del-alcance',
+         'Para el eje que no publique, su escala o su dato; el del gasto pide la serie de deuda NETA del Confis.');
 
     var sinLectura = [];
     ejesC.forEach(function (e) {
@@ -4516,7 +4590,9 @@
              sinLectura.join(' · ') + '. Cada uno dice debajo por qué le falta'
            : cn(ejesC.length * ESCALERA.length, 'peldaño', 'peldaños') + ' de ' +
              cn(ejesC.length, 'eje', 'ejes') + ', cada uno con su lectura o con la razón de que ese eje ' +
-             'no lo alcance');
+             'no lo alcance',
+         'fuera-del-alcance',
+         'Los dos peldaños que faltan son del eje del gasto y piden la deuda NETA —la bruta menos los activos financieros, metodología del Confis—. La bruta que hay (60,5 % del PIB a junio de 2026) no es comparable con el ancla de la Ley 2155, que está definida sobre neta. El proxy de este contenedor niega minhacienda.gov.co, y las netas que circulan son proyecciones secundarias que no coinciden entre sí.');
 
     var val = Object.keys(CRITERIOS).map(function (k) {
       return { k: k, v: validacionDe(k, dd === D ? DA : null) };
@@ -4557,7 +4633,9 @@
              pl(porPiso.length, 'le falta', 'les falta') + ' que el registro anterior ' +
              'llegue a ' + cn(porPiso[0].v.pisoRevisadas, 'entrada revisada', 'entradas revisadas') +
              ', y va en ' + porPiso[0].v.revisadas
-           : ''));
+           : ''),
+         'archivo-aqui',
+         'Documentar en el registro del gobierno anterior hechos que TENGAN materia de I-13, I-07 e I-14 —un producto técnico discutido, información negada y entregada por tutela, una muerte en operación del Estado—, con su regla de selección escrita antes de buscar.');
 
     /* Y el tercer resultado de correr los criterios (v1101): el hecho que no
        cae en ninguno porque el universo del criterio no lo contempla. El
@@ -4579,7 +4657,9 @@
              ? cn(vcs.length, 'vacío declarado, con su hecho, su razón, qué lo cerraría y por qué no se cierra acá',
                   'vacíos declarados, con su hecho, su razón, qué los cerraría y por qué no se cierran acá')
              : 'ningún vacío escrito, y la redacción de ese caso está escrita: no dice que no haya vacíos, ' +
-               'dice que nadie ha escrito uno');
+               'dice que nadie ha escrito uno',
+         'archivo-aqui',
+         'Completar el vacío que esté a medias: su hecho, por qué no cabe, qué lo cerraría y por qué no se cierra todavía.');
 
     var conCuenta = indC.filas.filter(function (f) { return f.criterio && f.n; });
     var pisoActos = conCuenta.filter(function (f) { return !f.unidadExacta; });
@@ -4592,7 +4672,9 @@
            : conCuenta.length
              ? cn(conCuenta.length, 'cuenta con hechos declara su unidad', 'cuentas con hechos declaran su unidad') +
                ': miden ENTRADAS y no actos, y su cifra de actos es exacta'
-             : 'ninguna cuenta tiene hechos todavía, y la redacción de ese caso está escrita');
+             : 'ninguna cuenta tiene hechos todavía, y la redacción de ese caso está escrita',
+         'archivo-aqui',
+         'Declarar `actosQueAgrupa` en la entrada que agrupe más de un acto, contando los del propio título.');
 
     var defl = deflactorAlDia(dd);
     caja('El insumo que la fuente reemplaza cada mes declara su FECHA, no su descripción',
@@ -4603,7 +4685,9 @@
              ? 'el deflactor es de ' + defl.desde + ' y sigue siendo la última lectura publicada'
              : 'el deflactor es de ' + defl.desde + ' y la serie ya trae ' + defl.ultimaF +
                '. No se sube el número a secas: los porcentajes reales están calculados con el viejo y el ' +
-               'registro no guarda la base para rehacerlos, así que lo que se hace es decirlo');
+               'registro no guarda la base para rehacerlos, así que lo que se hace es decirlo',
+         'fuera-del-alcance',
+         'El presupuesto 2026 por sector, de Minhacienda, para rehacer las variaciones reales con el deflactor de septiembre. Medido en la v1107: la base NO se puede recuperar del registro, porque de `bn` y `realPct` salen dos bases distintas según la fórmula que se haya usado —76,52 o 76,37 billones en Educación— y el registro no dice cuál; 0,18 puntos de diferencia en una cifra que se publica sobre una persona real. El proxy niega minhacienda.gov.co.');
 
     var conTramite = real.filter(function (e) { return e.tramite && ((e.tramite.reglas || []).length); });
     var sinTramite = real.filter(function (e) { return !(e.tramite && ((e.tramite.reglas || []).length)); });
@@ -4614,7 +4698,9 @@
          ' · ' + conTramite.map(function (e) {
            var ui = e.tramite.ultimoIntento;
            return 'eje ' + e.eje + ': ' + (ui ? 'intentado el ' + (ui.fecha || 'sin fecha') : 'sin intentar');
-         }).join(' · '));
+         }).join(' · '),
+         'archivo-aqui',
+         'Escribir el trámite del eje que no lo tenga, en el bloque único del registro y con la clave del eje.');
 
     var mc = marcoDeclarado(dd);
     caja('Quien opera el módulo declaró sus supuestos de valor',
@@ -4622,13 +4708,75 @@
          mc.completo
            ? cn(mc.supuestos.length, 'supuesto declarado', 'supuestos declarados') + ' por ' +
              mc.autor + ', ' + mc.fecha
-           : 'sin declarar. No es una falla de archivo: es una decisión de quien firma el módulo, y no ' +
-             'declararla no quita la decisión de valores — la esconde');
+           : (mc.borrador.length
+               ? 'sin FIRMAR, y hay borrador publicado: ' +
+                 cn(mc.borrador.length, 'supuesto derivado de una regla que el módulo ya aplica',
+                    'supuestos derivados de reglas que el módulo ya aplica') + ', cada uno con la regla ' +
+                 'nombrada al lado. Lo que falta es la firma, y no la puede poner nadie más'
+               : 'sin declarar, y sin borrador siquiera') +
+             '. No es una falla de archivo: es una decisión de quien firma el módulo, y no ' +
+             'declararla no quita la decisión de valores — la esconde',
+         'quien-firma',
+         'Leer el borrador que el módulo publica —salido de las reglas que el propio módulo ya aplica— y firmarlo, corregirlo o reemplazarlo. No lo puede hacer nadie más, y no declararlo no quita la decisión de valores: la esconde.');
 
     var falla = f.filter(function (x) { return x.estado === 'falla'; }).length;
     var sinCorrer = f.filter(function (x) { return x.estado === 'sin-correr'; }).length;
+
+    /* ── LA RESPUESTA A «¿ESTÁ TERMINADO?» (v1107) ───────────────────────────
+       Un recuento no la contesta. «Once de diecinueve» no deja saber si lo
+       que falta es trabajo que alguien puede hacer hoy o un documento que
+       este contenedor no puede alcanzar, y esas dos cosas piden lo contrario:
+       una pide ponerse a trabajar, la otra pide dejar de intentarlo y
+       publicar el trámite. Así que el estado se CALCULA repartiendo lo que
+       falta por QUIÉN puede cerrarlo.
+
+       Y lo que esto NO dice, que es lo que lo salva de ser una excusa: no
+       dice que el módulo esté bien. Dice qué parte de lo que falta depende de
+       esta casa. Un módulo cuyo pendiente entero está fuera de alcance está
+       tan terminado como puede estarlo HOY, y eso no es lo mismo que estar
+       completo. */
+    var abiertos = f.filter(function (x) { return x.estado !== 'pasa'; });
+    var porQuien = {};
+    Object.keys(CIERRA).forEach(function (k) { porQuien[k] = 0; });
+    var sinCierre = [];
+    abiertos.forEach(function (x) {
+      if (x.cierra && porQuien[x.cierra] !== undefined) porQuien[x.cierra]++;
+      else sinCierre.push(x.t);
+    });
+    var deAca = porQuien['archivo-aqui'] || 0;
+    var estado = sinCierre.length ? 'sin-clasificar'
+               : !abiertos.length ? 'completo'
+               : deAca ? 'queda-trabajo-de-aca'
+               : 'hasta-donde-llega-esta-casa';
+    var modulo = {
+      estado: estado, abiertos: abiertos.length, deAca: deAca, porQuien: porQuien,
+      sinCierre: sinCierre,
+      /* Los nombres de cada grupo, para que la pantalla no los teclee. */
+      nombres: CIERRA,
+      t: estado === 'sin-clasificar'
+           ? cn(sinCierre.length, 'casillero abierto no declara quién puede cerrarlo',
+                'casilleros abiertos no declaran quién puede cerrarlo')
+       : estado === 'completo' ? 'No queda ningún casillero abierto'
+       : estado === 'queda-trabajo-de-aca'
+           ? 'Queda trabajo que una sesión de acá puede hacer: ' +
+             cn(deAca, 'casillero', 'casilleros')
+           : 'Nada de lo que falta lo puede cerrar una sesión de acá',
+      d: estado === 'sin-clasificar'
+           ? 'Un casillero abierto sin trámite declarado se lee como si nadie supiera qué hacer con él, ' +
+             'y es justamente lo que esta cuenta existe para impedir.'
+       : estado === 'completo' ? 'Los casilleros que el módulo sabe medir están todos en verde. Lo que ' +
+             'el módulo no sabe medir no aparece acá, y eso no es lo mismo que estar completo.'
+       : estado === 'queda-trabajo-de-aca'
+           ? 'Mientras quede uno, el módulo NO está hasta donde puede llegar: hay archivo por hacer y ' +
+             'cada casillero dice cuál.'
+           : 'Lo que falta pide un documento que este contenedor no alcanza, una decisión de quien firma ' +
+             'o una capacidad que el módulo todavía no tiene. Eso no quiere decir que el módulo esté ' +
+             'completo: quiere decir que trabajar más desde acá no lo acerca, y que cada casillero ' +
+             'publica su trámite para quien sí pueda.'
+    };
+
     return { filas: f, pasan: f.length - falla - sinCorrer, falla: falla, sinCorrer: sinCorrer,
-             limpio: falla === 0 };
+             limpio: falla === 0, modulo: modulo };
   }
 
   function casosDeCx(dd) { return (((dd || D).contradicciones || {}).casos || []); }
@@ -6573,6 +6721,33 @@
       s4.appendChild(sb);
     } else {
       s4.appendChild(el('p', 'sp-c4-falta', mar.falta));
+      /* EL BORRADOR, publicado y rotulado como tal (v1107). Los supuestos de
+         valor del módulo existían: están aplicados en su código, uno por uno.
+         Lo que no existía era una superficie donde un lector pudiera verlos y
+         discreparlos — la clase C en el sitio donde más importa, porque lo que
+         se esconde ahí no es un dato sino un juicio.
+
+         Y va con el rótulo primero y en ámbar, por la misma razón por la que
+         el editorial lleva el suyo antes del texto: un borrador debajo de la
+         frase que dice que falta el marco se lee como el marco. */
+      if (mar.borrador.length) {
+        var bb = el('div', 'sp-c4-borr');
+        bb.appendChild(el('span', 'sp-c4-rot', 'BORRADOR · sin firmar'));
+        bb.appendChild(el('b', null, cn(mar.borrador.length,
+          'supuesto derivado de una regla que el módulo ya aplica',
+          'supuestos derivados de reglas que el módulo ya aplica')));
+        if (mar.borradorQueEs) bb.appendChild(el('p', null, mar.borradorQueEs));
+        var ub = el('ul', 'sp-c4-borrl');
+        mar.borrador.forEach(function (x) {
+          var li4 = el('li', null);
+          li4.appendChild(document.createTextNode(x.s));
+          li4.appendChild(el('p', 'sp-c4-borrd', 'De dónde sale: ' + x.deDonde));
+          ub.appendChild(li4);
+        });
+        bb.appendChild(ub);
+        if (mar.borradorPorQue) bb.appendChild(el('p', 'sp-c4-borrd', mar.borradorPorQue));
+        s4.appendChild(bb);
+      }
     }
 
     /* El editorial, en su propia caja y rotulado como opinión ANTES del
@@ -6612,6 +6787,27 @@
     var cb2 = el('div', 'sp-c4-cc');
     cb2.appendChild(el('b', null, 'Control de calidad del pliego · ' + cc.pasan + ' pasan · ' +
       cc.falla + ' fallan · ' + cc.sinCorrer + ' no se pueden correr'));
+    /* LA RESPUESTA A «¿ESTÁ TERMINADO?» (v1107), antes de la lista y no
+       después: es la pregunta con la que cualquiera llega al módulo, y un
+       recuento de diecinueve casilleros no la contesta. */
+    var mo = cc.modulo;
+    var mb = el('div', 'sp-c4-fin' + (mo.estado === 'queda-trabajo-de-aca' ? ' falta'
+                                    : mo.estado === 'sin-clasificar' ? ' mal' : ''));
+    mb.appendChild(el('b', null, '¿Está terminado? · ' + mo.t));
+    mb.appendChild(el('p', null, mo.d));
+    if (mo.abiertos) {
+      var ur = el('ul', 'sp-c4-finl');
+      Object.keys(mo.porQuien).forEach(function (k) {
+        if (!mo.porQuien[k]) return;
+        var li3 = el('li', null);
+        li3.appendChild(el('b', null, cn(mo.porQuien[k], 'casillero', 'casilleros') + ' · ' +
+          mo.nombres[k].t));
+        li3.appendChild(el('p', null, mo.nombres[k].d));
+        ur.appendChild(li3);
+      });
+      mb.appendChild(ur);
+    }
+    cb2.appendChild(mb);
     var uc = el('ul', 'sp-c4-cclista');
     cc.filas.forEach(function (fi) {
       var li = el('li', 'cc-' + fi.estado);
@@ -6619,6 +6815,13 @@
       var d2 = el('div', null);
       d2.appendChild(el('span', null, fi.t));
       d2.appendChild(el('span', 'sp-c4-ccd', fi.det));
+      /* Y EL TRÁMITE, solo en los abiertos: en un casillero que pasa sería
+         ruido, y en uno que falla es lo único que deja seguir la instrucción
+         en vez de volver a averiguarla (v849, v880). */
+      if (fi.estado !== 'pasa') {
+        d2.appendChild(el('p', 'sp-c4-cctr', (fi.cierraT || 'SIN TRÁMITE DECLARADO') +
+          (fi.tramite ? ' — ' + fi.tramite : '')));
+      }
       li.appendChild(d2);
       uc.appendChild(li);
     });
