@@ -1750,5 +1750,74 @@
       "porQueNoSeCierraAhora": "Escribir o ensanchar un criterio con este caso delante lo deja «construida para el caso» y sin validar (v1077): el orden es escribir primero y correr después. Y conviene decir que el vacío no es cómodo para nadie: cerrarlo haría DISPARAR un criterio sobre el gobierno anterior, no al revés.",
       "porQueNOCAMBIAELVEREDICTO": "La validación de un criterio marca el el origen de la categoría del INDICADOR y no fija el nivel de ningún eje (medido en la v1088), así que ni este vacío ni su cierre mueven el dictamen del gobierno actual."
     }
-  ]
+  ],
+  "_revisionDeDisparos": {
+    "fecha": "2026-10-13",
+    "version": "v1106",
+    "laVARA": "Cada disparo se mira contra el `incluye`/`excluye` del PROPIO criterio, que estaba escrito antes y publicado. Esta tanda no redacta ningún criterio: aplica el que hay. La pregunta de cada caso es la que el casillero pide con esas palabras: ¿es el hecho que el criterio busca, o es el cauce normal que se está contando por error?",
+    "queSIGNIFICAcadaVEREDICTO": {
+      "hecho-buscado": "El acto cae en una vía escrita del criterio y es de verdad un apartamiento del régimen ordinario o un choque institucional, no el trámite que la norma manda hacer siempre.",
+      "cauce-normal": "El acto cae en la letra del criterio pero es el trámite obligado u ordinario, así que el criterio lo está contando por error y hay que ESTRECHARLO, como la v1094 estrechó I-05 por el control automático del artículo 214.6."
+    },
+    "casos": [
+      {
+        "entrada": "emergencia-guajira-2023",
+        "criterio": "I-04",
+        "via": "declaratoria de emergencia (económica, social, ecológica o conmoción interior)",
+        "veredicto": "hecho-buscado",
+        "abreRegimen": true,
+        "porQue": "El estado de emergencia del artículo 215 es, por definición constitucional, un apartamiento del régimen ordinario: habilita legislar por decreto sobre materias reservadas al Congreso. Que la Corte lo haya tumbado confirma que era un apartamiento sometido a control, no el trámite de todos los días."
+      },
+      {
+        "entrada": "desastre-nacional-2024-nino",
+        "criterio": "I-04",
+        "via": "declaratoria de desastre nacional (Ley 1523)",
+        "veredicto": "hecho-buscado",
+        "abreRegimen": true,
+        "porQue": "Es la vía que el propio criterio AÑADIÓ al del motor de referencia, así que es la que más merece el examen: una vía añadida ensancha. Y sostiene el examen, porque la declaratoria no es el trámite que la ley manda hacer siempre: es una decisión discrecional que ACTIVA el régimen especial de contratación y el régimen normativo especial de los artículos 65 y 66 de la Ley 1523. Lo que el criterio busca es justamente eso, apartarse del régimen ordinario de contratación y de gasto. La diferencia con el control automático que la v1094 excluyó es nítida: aquel es una obligación procesal que el Ejecutivo no elige, esta es una facultad que el Ejecutivo decide usar."
+      },
+      {
+        "entrada": "desastre-nacional-2024-clima",
+        "criterio": "I-04",
+        "via": "declaratoria de desastre nacional (Ley 1523)",
+        "veredicto": "hecho-buscado",
+        "abreRegimen": true,
+        "porQue": "Misma vía y mismo examen que la de enero, y es una declaratoria distinta con su propio acto y su propia causa: la variabilidad climática, no el fenómeno de El Niño. Dos declaratorias en un mismo año no son una contada dos veces."
+      },
+      {
+        "entrada": "conmocion-interior-catatumbo-2025",
+        "criterio": "I-04",
+        "via": "declaratoria de emergencia (económica, social, ecológica o conmoción interior)",
+        "veredicto": "hecho-buscado",
+        "abreRegimen": true,
+        "porQue": "El estado de conmoción interior del artículo 213 es el apartamiento del régimen ordinario más grave que la Constitución prevé en tiempo de paz, y era el primero en Colombia en diecisiete años: lo contrario de un cauce de rutina."
+      },
+      {
+        "entrada": "decreto-tributario-conmocion-175-2025",
+        "criterio": "I-04",
+        "via": "decreto expedido al amparo de una declaratoria de emergencia",
+        "veredicto": "hecho-buscado",
+        "abreRegimen": false,
+        "porQue": "Crear tributos por decreto es la excepción paradigmática: el artículo 338 reserva esa potestad al Congreso y a las asambleas y concejos. No abre un régimen nuevo —actúa al amparo de la conmoción del Catatumbo, que ya se contó— pero es un acto autónomo con contenido propio."
+      },
+      {
+        "entrada": "decretos-conmocion-tumbados-116-180",
+        "criterio": "I-04",
+        "via": "decreto expedido al amparo de una declaratoria de emergencia",
+        "veredicto": "hecho-buscado",
+        "abreRegimen": false,
+        "porQue": "Once decretos legislativos, cada uno con su contenido, y la Corte le tumbó dos. Tampoco abre régimen: se expiden al amparo de la misma conmoción del Catatumbo."
+      },
+      {
+        "entrada": "desacato-medida-cautelar-fraude",
+        "criterio": "I-05",
+        "via": "una decisión judicial resuelve en contra del Ejecutivo en la controversia",
+        "veredicto": "hecho-buscado",
+        "abreRegimen": null,
+        "porQue": "La otra parte del choque sí es un órgano de autonomía constitucional: la Organización Electoral del artículo 120 —la Registraduría y el Consejo Nacional Electoral—, que la propia entrada nombra como quien desmontó los señalamientos. Y el choque se materializó en actos institucionales de las dos partes, no en declaraciones. Lo que esta revisión NO afirma es cuál juez dictó la medida cautelar: las fuentes de la entrada no lo dicen, y el veredicto descansa en el órgano que la propia entrada nombra, no en un dato que nadie trajo."
+      }
+    ],
+    "yUNHALLAZGOquenoERAELQUESEBUSCABA": "Ninguno de los siete es el cauce normal, así que ningún criterio hay que estrecharlo. Pero mirarlos uno por uno dejó ver otra cosa, que es la clase B y la misma forma de la v1097 un nivel más arriba: **la cuenta de I-04 no declara si su unidad es el ACTO o el RÉGIMEN de excepción**. Los seis disparos son seis entradas y dieciséis actos, pero abren solo CUATRO regímenes —la emergencia de La Guajira, los dos desastres nacionales de 2024 y la conmoción del Catatumbo—: dos de las entradas son decretos expedidos al amparo de una conmoción que ya se contó. Las dos lecturas son legítimas y dicen cosas distintas: «cuántas veces invocó una facultad extraordinaria» son dieciséis, «cuántos regímenes de excepción abrió» son cuatro. Y como en la v1097, la cura no es cambiar el número: es declarar la unidad y publicar las dos cuentas.",
+    "yLOQUEESTAREVISIONNOCUBRE": "Solo los disparos del registro del gobierno ANTERIOR, que son los que deciden la validación de un criterio. Los del registro actual no se revisan acá y su marca no depende de esta revisión. Y que un veredicto sea CIERTO no lo puede comprobar ninguna guarda (v1008): lo que se comprueba es que esté escrito y que cubra todos los disparos."
+  }
 }

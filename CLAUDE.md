@@ -1463,6 +1463,27 @@ sección al final de este archivo.
   una pantalla, con qué hecho, por qué no cabe, qué lo cerraría y por qué no se
   cierra acá. Y conviene medir a quién le conviene: el de la v1101 **haría
   disparar** un criterio sobre el gobierno anterior, no al revés.
+* **Una prueba puede validar con la evidencia CONTRARIA, y se lee igual que
+  una validación** (v1106). `probado = revisadas >= 20 && disparos === 0`
+  despejaba la marca `construida-para-el-caso` con «se corrió sobre otro
+  gobierno y NO disparó» — y no disparar sobre otro registro es exactamente lo
+  que haría un criterio tallado a la medida del propio. Es la clase B: dos
+  propiedades y una codificación. **¿Está tallado al caso?** lo demuestra
+  DISPARAR sobre un registro escrito antes de que el criterio existiera;
+  **¿distingue?** lo demuestra RECHAZAR. Ninguna implica la otra, así que se
+  publican aparte y hacen falta las dos. **Dos señales para buscarla:** que la
+  marca no la pueda quitar ningún trabajo —un pendiente sin salida, v999,
+  v1075, v1088—, y que la pantalla imprima las dos mitades en una línea donde
+  se contradicen. La segunda la vio el PAPEL, no el código.
+* **Y abrir una salida a un pendiente sin salida se paga con su agujero
+  tapado** (v882, v1075, v1106). Si disparar bastara, la salida barata sería
+  un criterio anchísimo que dispare en todo. Validar por disparo pide **tres
+  cosas que no se implican**: que también rechace —ambas cuentas por encima de
+  cero, que es el borde degenerado y no un número escogido—, que la revisión
+  de CADA disparo esté escrita con su razón, y que ninguno sea el cauce
+  normal. **La señal de que la regla no se escogió por conveniencia: aplicada,
+  BAJÓ el número que la tanda venía a subir** —de 3 de 5 a 2 de 5—, porque
+  obligó a retirar tres validaciones que descansaban en la evidencia contraria.
 * **Y una aserción puede medir que algo se CONSTRUYA y no que se ENGANCHE**
   (v1029, v1101). Una guarda contra la clase C se quedó en verde con el bloque
   calculado y sin `appendChild`: en verde sobre exactamente el defecto que

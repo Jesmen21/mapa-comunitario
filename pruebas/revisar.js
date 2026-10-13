@@ -3391,10 +3391,25 @@ console.log('\n  -- la ficha del gobernante --');
                        'la carta diría «gobierno anterior» teniendo el nombre al lado'
         : 'el registro trae «' + regAnt.presidente + '» y la ficha lo alcanza');
 
+    /* SE APRIETA, NO SE AFLOJA (v1106). La aserción buscaba el literal
+       `validado: no · gobiernos anteriores probados: `, que era el contenido
+       de la marca mientras la tarjeta solo existía en el caso NO validado.
+       Desde que se pinta en los dos casos ese literal ya no está, y aflojar
+       la guarda a «existe la clase» sería perderla. Mide ahora tres cosas
+       más precisas: la clase, su regla de CSS, y que el rótulo nombre las dos
+       propiedades por separado en vez de un solo sí/no. */
+    const marcaClase = /sp-c2-noval/.test(j70v) && /sp-c2-noval/.test(leer('css/70-seguimiento.css'));
+    const marcaDosProps = /no tallado a este caso: /.test(j70v) && / · distingue: /.test(j70v);
+    const marcaDosRedacciones = /indicador validado/.test(j70v) && /indicador no validado/.test(j70v);
     comprobar('la marca se pinta junto a la cifra, no en una nota al pie',
-      /sp-c2-noval/.test(j70v) && /validado: no · gobiernos anteriores probados: /.test(j70v) &&
-      /sp-c2-noval/.test(leer('css/70-seguimiento.css')),
-      'sale en la tabla de indicadores y tiene regla que la pinta');
+      marcaClase && marcaDosProps && marcaDosRedacciones,
+      !marcaClase ? 'falta la clase o su regla de CSS: la marca no se pintaría'
+      : !marcaDosProps ? 'el rótulo volvió a un solo sí/no: «no está tallado al caso» y «distingue» son ' +
+                         'dos propiedades y ninguna implica la otra'
+      : !marcaDosRedacciones ? 'falta una de las dos redacciones: con una sola, el indicador validado ' +
+                               'desaparece de la pantalla con la revisión que lo validó dentro'
+      : 'sale en la tabla de indicadores, con regla que la pinta, las dos propiedades nombradas aparte ' +
+        'y las dos redacciones escritas');
 
     /* ═══ UNA LISTA DE INDICADORES VACÍA DICE POR QUÉ (v1094) ══════════════
        `indicadores: []` significa «lo corrí contra los cinco criterios y
@@ -3442,6 +3457,75 @@ console.log('\n  -- la ficha del gobernante --');
                      'comprobación de arriba pasaría en verde sobre entradas que ya no cuentan' :
       '`corridaHaciaAtras` cuenta como revisada toda entrada con `indicadores` declarado, ' +
       'lista vacía incluida: es eso lo que la de arriba protege');
+
+    /* ═══ MIRAR LOS CASOS QUE CAYERON (v1106) ══════════════════════════════
+       `probado = revisadas >= 20 && disparos === 0` preguntaba dos cosas con
+       una cuenta, y en cuanto un criterio disparaba se quedaba sin poder
+       contestar ninguna: la marca `construida-para-el-caso` no había trabajo
+       que la quitara. **Un pendiente que nadie puede bajar** es la señal que
+       este proyecto ya tiene escrita tres veces (v999, v1075, v1088).
+
+       Las dos propiedades son independientes y ninguna implica la otra:
+       disparar sobre un registro escrito ANTES demuestra que los bordes no se
+       dibujaron mirando este caso; RECHAZAR demuestra que distingue. Un
+       criterio anchísimo que dispare en todo cumpliría la primera y ninguna
+       otra, y esa es la salida barata que estas guardas cierran.
+
+       DE QUÉ NO RESPONDE (v945, v952, v1008): de que el veredicto de cada
+       disparo sea CIERTO. Comprueban que ESTÉ escrito, que cubra TODOS los
+       disparos, que traiga su razón, y que el módulo exija las tres cosas
+       antes de dar por validado un criterio que disparó. */
+    const revD = regAnt._revisionDeDisparos || {};
+    const casosRev = Array.isArray(revD.casos) ? revD.casos : [];
+    const disparosReales = [];
+    entAnt.forEach((e) => {
+      ((e && e.indicadores) || []).forEach((k) => { disparosReales.push(k + '·' + (e.id || '«sin id»')); });
+    });
+    const revPorClave = {};
+    casosRev.forEach((c) => { if (c) revPorClave[c.criterio + '·' + c.entrada] = c; });
+    const sinRevisar = disparosReales.filter((k) => !revPorClave[k]);
+    const revSinRazon = casosRev.filter((c) => !String((c && c.porQue) || '').trim() ||
+                                               !String((c && c.veredicto) || '').trim() ||
+                                               !String((c && c.via) || '').trim());
+    const VERED = { 'hecho-buscado': 1, 'cauce-normal': 1 };
+    const revVeredictoRaro = casosRev.filter((c) => !VERED[(c && c.veredicto) || '']);
+    comprobar('MATERIAL · el registro anterior tiene disparos que revisar',
+      disparosReales.length > 0,
+      disparosReales.length + (disparosReales.length === 1 ? ' disparo' : ' disparos') + ' sobre el registro anterior');
+    comprobar('y cada disparo está revisado, con su vía, su veredicto y su razón',
+      disparosReales.length > 0 && !sinRevisar.length && !revSinRazon.length && !revVeredictoRaro.length,
+      !disparosReales.length ? 'no hay disparos: lo dice la de arriba'
+      : sinRevisar.length ? sinRevisar.length + (sinRevisar.length === 1 ? ' disparo sin revisar: ' : ' disparos sin revisar: ') +
+                            sinRevisar.slice(0, 4).join(' ')
+      : revSinRazon.length ? revSinRazon.length + (revSinRazon.length === 1 ? ' caso revisado' : ' casos revisados') +
+                             ' sin vía, sin veredicto o sin razón escrita'
+      : revVeredictoRaro.length ? 'hay un veredicto que no es de los dos conocidos: ' +
+                                  revVeredictoRaro.map((c) => String(c.veredicto)).join(' ')
+      : 'los ' + disparosReales.length + ' revisados, cada uno con su vía, su veredicto y su razón');
+    /* LA GUARDA DE LA GUARDA (v878), en sus cuatro mitades: que el módulo LEA
+       la revisión, que exija las TRES condiciones antes de validar por
+       disparo, que publique las dos propiedades POR SEPARADO, y que la
+       revisión LLEGUE a la pantalla — sin lo último sería un dato que ninguna
+       superficie alcanza, estrenando la clase C en la tanda que lo produjo. */
+    const leeRev = /_revisionDeDisparos\b/.test(j70v);
+    const exigeTres = /rechazos > 0 &&/.test(j70v) && /rev && rev\.completa/.test(j70v) &&
+                      /rev && rev\.cauceNormal\.length/.test(j70v);
+    const dosProps = /noTalladoAlCaso: noTallado/.test(j70v) && /distingue: distinguePorDisparo/.test(j70v) &&
+                     /validado: noTallado && \(distinguePorDisparo \|\| probados > 0\)/.test(j70v);
+    const pintaRev = /sp-c2-rev/.test(j70v) && /lv\.appendChild\(rc\)/.test(j70v);
+    comprobar('y el módulo la lee, exige las tres condiciones, separa las dos propiedades y la pinta',
+      leeRev && exigeTres && dosProps && pintaRev,
+      !leeRev ? '`js/70` dejó de leer `_revisionDeDisparos`: la de arriba vigilaría un bloque que nadie consume'
+      : !exigeTres ? 'validar por disparo dejó de exigir las tres —que rechace, que la revisión esté ' +
+                     'completa y que ninguno sea el cauce normal—, así que un criterio anchísimo que ' +
+                     'dispare en todo se validaría solo'
+      : !dosProps ? 'las dos propiedades volvieron a una sola bandera —o `validado` dejó de exigir las ' +
+                    'dos—, y no disparar sobre otro registro es justamente lo que haría un criterio ' +
+                    'tallado a la medida del propio: validar con eso es validar con la evidencia contraria'
+      : !pintaRev ? 'la revisión no llega a la pantalla: el trabajo que valida el criterio sería un dato ' +
+                    'que ninguna superficie alcanza'
+      : 'la lee, exige las tres, publica «no tallado al caso» y «distingue» aparte, y pinta la revisión ' +
+        'caso por caso');
 
     /* ═══ EL TERCER RESULTADO DE CORRER UN CRITERIO (v1101) ════════════════
        Correr los criterios da TRES resultados y hasta acá tenía forma para

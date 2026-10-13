@@ -1,4 +1,4 @@
-const URBIS_CACHE = 'urbis-v1105-seguimiento-estatuto-14-oct';
+const URBIS_CACHE = 'urbis-v1106-las-dos-cosas-que-valida-un-criterio';
 const URBIS_ASSETS = [
   './',
   './index.html',

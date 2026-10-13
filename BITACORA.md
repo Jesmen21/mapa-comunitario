@@ -26547,3 +26547,110 @@ escrita, y por eso no se agrega nada: se compara el conteo.
   y tenía que no moverse: la validación marca el origen de la categoría del
   INDICADOR y no fija el nivel de ningún eje (v1088). El control pasa de 10 a
   **11 de 19** casilleros. `cerrado en v1101`
+
+## v1106 · las DOS cosas que valida un criterio, y la que se validaba al revés
+
+La tanda salió a bajar el renglón que el control pedía con esas palabras —«lo
+que falta es mirar los casos que cayeron»— y terminó **bajando el número que
+venía a subir**: el casillero pasa de «validados: 3 de 5» a «2 de 5». Eso no
+es un accidente del camino, es el resultado, y va primero.
+
+### Los siete disparos, mirados uno por uno
+
+La vara no la escribió esta tanda: es el `incluye`/`excluye` de cada criterio,
+redactado antes y ya publicado. Siete disparos sobre el registro del gobierno
+anterior —seis de I-04, uno de I-05—, cada uno con su veredicto y su razón en
+`_revisionDeDisparos`, y los siete salieron **«es el hecho que el criterio
+busca»**. Ninguno es el cauce normal, así que ningún criterio hay que
+estrecharlo.
+
+Dos de los siete merecen nombrarse. **La declaratoria de desastre nacional de
+la Ley 1523** es la vía que el propio criterio AÑADIÓ al del motor de
+referencia, y una vía añadida ensancha: es la que más merecía el examen.
+Sostiene, y la diferencia con el control automático que la v1094 excluyó es
+nítida —aquel es una obligación procesal que el Ejecutivo no elige, esta es una
+facultad que decide usar, y activa los regímenes especiales de los artículos 65
+y 66—. Y **el disparo de I-05** cierra el círculo que la v1101 abrió: su otra
+parte sí es un órgano de autonomía constitucional, la Organización Electoral
+del artículo 120, mientras que la consulta popular por decreto tenía enfrente a
+dos RAMAS. El criterio aceptó uno y rechazó el otro por una razón escrita, que
+es lo que significa distinguir.
+
+### Y un hallazgo que no era el que se buscaba
+
+Mirarlos uno por uno dejó ver que **la cuenta de I-04 no declara si su unidad
+es el ACTO o el RÉGIMEN de excepción**. Seis entradas, dieciséis actos — y solo
+**cuatro regímenes**: dos de los disparos son decretos expedidos al amparo de
+una conmoción que ya se contó. Es la clase B y la forma exacta de la v1097 un
+nivel más arriba, y la cura es la misma: no cambiar el número, declarar la
+unidad y publicar las dos cuentas. La ficha lo dice al pie de la revisión.
+
+### Lo que el papel encontró, y es el centro de la tanda
+
+`probado = revisadas >= 20 && disparos === 0` preguntaba **dos cosas con una
+sola cuenta**:
+
+* **¿está TALLADO al caso?** —¿se dibujaron sus bordes mirando este registro?—.
+  Lo demuestra DISPARAR sobre un registro escrito antes de que él existiera.
+* **¿DISTINGUE?** —¿separa el hecho que busca del cauce normal?—. Lo demuestra
+  RECHAZAR.
+
+Dos consecuencias, y la segunda no la vi hasta componer la ficha y leerla:
+
+1. Un criterio que disparaba quedaba marcado `construida-para-el-caso` **para
+   siempre**: no había trabajo que lo quitara. *Un pendiente que nadie puede
+   bajar*, la señal que este proyecto ya tiene escrita tres veces (v999, v1075,
+   v1088).
+2. Y al revés, y es peor: **la vieja prueba validaba con la evidencia
+   contraria.** No disparar sobre otro gobierno es exactamente lo que haría un
+   criterio tallado a la medida del propio. La tarjeta lo imprimió en una sola
+   línea —«validado: sí · no tallado a este caso: no demostrado»— y esa
+   contradicción impresa es lo que delató el defecto. No se veía leyendo el
+   código.
+
+Así que `validado` pide ahora **las dos**, y tres de los cinco criterios
+—I-13, I-07, I-14— vuelven a «no validado» con su razón: distinguen, y les
+falta un registro anterior que TENGA materia de ese criterio. El de Petro no la
+tiene.
+
+### El agujero que la regla nueva tenía que tapar
+
+Si disparar bastara, la salida barata sería escribir un criterio anchísimo que
+dispare en todo. Por eso validar por disparo pide **tres cosas y ninguna
+implica a las otras**: que también RECHACE (ambas cuentas por encima de cero,
+que es el borde degenerado y no un número escogido), que la revisión de CADA
+disparo esté escrita, y que ninguno de esos veredictos sea «cauce normal». Si
+uno lo fuera, el criterio no distingue y hay que estrecharlo — **la regla puede
+empeorar el estado, y de hecho lo empeoró.**
+
+### La demostración en rojo
+
+Siete inyecciones fieles, arnés de tres estados (v1090), todas ROJO sobre 725:
+un disparo sin revisar · un revisado sin su razón · un veredicto que no es de
+los dos conocidos · validar por disparo sin exigir que rechace · `validado`
+bastándole una sola propiedad · la revisión calculada y sin pintar (clase C) ·
+la tarjeta con una sola redacción.
+
+Y una guarda vieja que se APRETÓ en vez de aflojarse: la que exigía el literal
+`validado: no · gobiernos anteriores probados:` se quedó sin texto al pintarse
+la tarjeta en los dos casos. Mide ahora tres cosas más precisas —la clase con
+su regla de CSS, que el rótulo nombre las dos propiedades por separado, y que
+estén las dos redacciones—.
+
+### Lo que esta versión NO hace
+
+* **NO publica la cuenta de REGÍMENES como cifra propia del indicador.** Va
+  dicha al pie de la revisión, que es donde el lector la necesita, pero I-04
+  sigue publicando entradas y su piso de actos. Darle una tercera cuenta pide
+  decidir cuál manda en el titular, y eso es otra tanda. `pendiente`
+* **NO demuestra que I-13, I-07 e I-14 no estén tallados a este caso.** Hace
+  falta un registro anterior con materia de esos criterios —un producto técnico
+  discutido, información negada y entregada por tutela, una muerte en operación
+  del Estado—, y el registro de Petro no la trae. Documentarla sería material
+  nuevo y pide su regla escrita antes. `pendiente`
+* **NO revisa los disparos del registro ACTUAL.** La validación de un criterio
+  cuelga del registro anterior; los del actual no la deciden y la revisión lo
+  dice al lado. `cerrado en v1106 · medido y declinado`
+* **NO mueve el dictamen.** Sigue en «Nada fiable», medido después del cambio.
+  El control baja de 12 a **11 de 19** casilleros, que es el precio honesto de
+  la corrección. `cerrado en v1106`

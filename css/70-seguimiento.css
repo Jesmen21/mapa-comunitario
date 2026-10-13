@@ -2128,6 +2128,19 @@ a.sp-fuente:hover svg{ color:var(--verde-hi); }
 .sp-c2-vpq { color: var(--ink-2, #5a6b78); }
 .sp-c2-vmal { color: #9A3C38; font-weight: 600; }
 
+/* La revisión de los disparos (v1106), dentro de la tarjeta de validación.
+   Un caso que resultó ser el CAUCE NORMAL se marca aparte y en rojo: no es
+   un hallazgo contra nadie, es un criterio que hay que estrechar. */
+.sp-c2-noval.ok { border-color: var(--sp-bd, #cfdce6); }
+.sp-c2-rev { margin: 8px 0 0; padding: 8px 10px; border-left: 3px solid var(--sp-bd, #cfdce6); }
+.sp-c2-rev > b { display: block; font-size: var(--t-8); }
+.sp-c2-rev > p { margin: 6px 0 0; font-size: var(--t-8); line-height: 1.45; }
+.sp-c2-revl { margin: 6px 0 0; padding-left: 18px; }
+.sp-c2-revl li { margin-bottom: 7px; font-size: var(--t-8); line-height: 1.45; }
+.sp-c2-revl li.cauce > b { color: #9A3C38; }
+.sp-c2-revl li > p { margin: 2px 0 0; font-size: var(--t-8); }
+.sp-c2-revv { font-weight: 600; }
+
 
 /* ══════════════════════════════════════════════════════════════════════════
    EL TABLERO · gráficos, el héroe, la opinión firmada y la deuda propia

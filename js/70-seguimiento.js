@@ -2268,14 +2268,55 @@
   function corridaHaciaAtras(dd, id) {
     var ent = ((dd || {}).entradas) || [];
     var ids = idsDelRegistro(dd);
-    var revisadas = 0, disparos = 0;
+    var revisadas = 0, disparos = 0, cuales = [];
     ent.forEach(function (e) {
       if (e && e.indicadores !== undefined) revisadas++;
-      if ((((e && e.indicadores) || []).indexOf(id) >= 0) && pasaElCriterio(e, id, ids).cuenta) disparos++;
+      if ((((e && e.indicadores) || []).indexOf(id) >= 0) && pasaElCriterio(e, id, ids).cuenta) {
+        disparos++;
+        /* QUÉ entradas dispararon, y no solo cuántas (v1106): la revisión de
+           los disparos tiene que poder comprobarse caso por caso, y una cifra
+           no deja saber cuál falta por mirar. */
+        if (e.id) cuales.push(e.id);
+      }
     });
-    return { n: ent.length, revisadas: revisadas, disparos: disparos,
+    return { n: ent.length, revisadas: revisadas, disparos: disparos, cuales: cuales,
+             /* Lo que el criterio RECHAZÓ, que es la otra mitad de distinguir:
+                un criterio que dispara en todo no distingue nada. */
+             rechazos: revisadas - disparos,
              suficiente: revisadas >= MIN_ACTOS_VALIDACION,
              probado: revisadas >= MIN_ACTOS_VALIDACION && disparos === 0 };
+  }
+
+  /* ── LA REVISIÓN DE LOS DISPAROS (v1106) ──────────────────────────────────
+     Lo que el casillero del control pedía con esas palabras: «lo que falta es
+     mirar los casos que cayeron y decidir si el criterio distingue el hecho
+     que busca o si está contando el cauce normal». Esa revisión vive en el
+     REGISTRO y no en el código, por la misma razón que la clasificación de
+     gasto social de la v1092: es una lectura discutible sobre hechos, y se
+     discute mirando los datos.
+
+     Y NO es gratis, al revés que dos corchetes vacíos (v1094): pide un
+     veredicto y una razón por cada disparo. Eso es lo que hace que la marca
+     de validación solo pueda caer cuando el trabajo está hecho. */
+  function revisionDeDisparos(dd, id, cuales) {
+    var r = ((dd || {})._revisionDeDisparos) || {};
+    var todos = (r.casos || []).filter(function (c) { return c && c.criterio === id; });
+    var porEntrada = {};
+    todos.forEach(function (c) { if (c.entrada) porEntrada[c.entrada] = c; });
+    var faltan = (cuales || []).filter(function (x) { return !porEntrada[x]; });
+    var cauce = todos.filter(function (c) { return c.veredicto === 'cauce-normal'; });
+    var sinRazon = todos.filter(function (c) { return !String(c.porQue || '').trim(); });
+    return { casos: todos, cauceNormal: cauce, faltan: faltan, sinRazon: sinRazon,
+             /* COMPLETA es lo único que una guarda puede exigir: que cada disparo
+                tenga su veredicto escrito con su razón. Que el veredicto sea
+                CIERTO no lo puede comprobar nadie (v1008). */
+             completa: !!(cuales || []).length && !faltan.length && !sinRazon.length,
+             /* Y los regímenes que esos actos ABREN, que es la unidad de más
+                arriba (v1097 un nivel por encima): dos de los disparos de I-04
+                son decretos al amparo de una conmoción ya contada. */
+             abren: todos.filter(function (c) { return c.abreRegimen === true; }).length,
+             declaranRegimen: todos.filter(function (c) { return c.abreRegimen === true ||
+                                                                 c.abreRegimen === false; }).length };
   }
 
   function validacionDe(id, anterior) {
@@ -2288,11 +2329,15 @@
     var cat = ind.origenCategoria || 'construida-para-el-caso';
     var oc = ORIGEN_CATEGORIA[cat] || ORIGEN_CATEGORIA['construida-para-el-caso'];
     var regs = anterior ? [anterior] : [];
-    var probados = 0, revisadas = 0, disparos = 0, corridas = [];
+    var probados = 0, revisadas = 0, disparos = 0, rechazos = 0, corridas = [];
+    var cuales = [], rev = null;
     regs.forEach(function (dd) {
       var r = corridaHaciaAtras(dd, id);
       revisadas += r.revisadas;
       disparos += r.disparos;
+      rechazos += r.rechazos;
+      cuales = cuales.concat(r.cuales);
+      if (!rev) rev = revisionDeDisparos(dd, id, r.cuales);
       if (r.probado) probados++;
       /* El NOMBRE, que estaba en el registro y la carta no alcanzaba: el de
          Petro trae `presidente` y acá se buscaba `gobernante` y `titulo`,
@@ -2302,6 +2347,36 @@
       corridas.push({ quien: dd.presidente || dd.gobernante || dd.titulo || 'gobierno anterior', n: r.n,
                       revisadas: r.revisadas, disparos: r.disparos, probado: r.probado });
     });
+    /* ── DOS PROPIEDADES, NO UNA (v1106) ───────────────────────────────────
+       `probado` preguntaba las dos cosas con una sola cuenta y se quedaba sin
+       poder contestar ninguna en cuanto un criterio disparaba:
+
+       * **¿está TALLADO al caso?** —¿se dibujaron sus bordes mirando este
+         registro?—. Un criterio que dispara sobre un registro escrito ANTES
+         de que él existiera demostradamente no lo está, y disparar es la
+         prueba positiva. La bandera `construida-para-el-caso` pregunta
+         exactamente esto;
+       * **¿DISTINGUE?** —¿separa el hecho que busca del cauce normal?—. Eso
+         lo demuestra RECHAZAR, no disparar.
+
+       El módulo despejaba la primera con la evidencia de la segunda, así que
+       un criterio que disparaba quedaba marcado para siempre: **un pendiente
+       que nadie podía bajar**, que es la señal que este proyecto ya tiene
+       escrita tres veces (v999, v1075, v1088). Es la clase B: dos propiedades
+       y una codificación.
+
+       Y el agujero que hay que tapar, porque la salida barata sería escribir
+       un criterio anchísimo que dispare en todo: disparar NO basta. Hacen
+       falta las tres cosas, y ninguna implica a las otras — que también
+       rechace (las dos cuentas por encima de cero, que es el borde degenerado
+       y no un número escogido), que la revisión de CADA disparo esté escrita,
+       y que ninguno de esos veredictos sea «cauce normal». Si uno lo fuera, el
+       criterio no distingue y hay que estrecharlo: la regla puede empeorar el
+       estado, que es lo que la separa de una escogida por conveniencia. */
+    var noTallado = disparos > 0;
+    var distinguePorDisparo = noTallado && rechazos > 0 &&
+                              !!(rev && rev.completa) && !(rev && rev.cauceNormal.length);
+
     /* CUATRO ESTADOS Y NO TRES (v1075), porque piden cosas distintas y el
        cuarto —corrió, no disparó, y sobre poco material— estaba colapsado
        dentro de «no hay material», que es lo que hacía falsa la frase. La
@@ -2318,6 +2393,33 @@
       razon = 'Los actos del registro anterior no se han corrido todavía contra los criterios, así que ' +
               'este no se pudo correr ahí. Que no dispare no demuestra que distinga: demuestra que no ' +
               'hay material.';
+    } else if (distinguePorDisparo) {
+      razon = 'Se corrió contra el registro del gobierno anterior y disparó ' +
+              cn(disparos, 'vez', 'veces') + ', rechazando ' +
+              cn(rechazos, 'entrada', 'entradas') + '. Las dos cosas juntas son la demostración: ' +
+              'disparar sobre un registro escrito ANTES prueba que sus bordes no se dibujaron ' +
+              'mirando este caso, y rechazar prueba que distingue. ' +
+              cn(rev.casos.length, 'disparo está revisado uno por uno', 'disparos están revisados uno por uno') +
+              ' y ninguno resultó ser el cauce normal.';
+    } else if (disparos && rev && !rev.completa) {
+      razon = 'Corrido contra el registro anterior, disparó ' + cn(disparos, 'vez', 'veces') +
+              ', y ' + (rev.faltan.length
+                ? cn(rev.faltan.length, 'de esos casos sigue sin revisar', 'de esos casos siguen sin revisar')
+                : cn(rev.sinRazon.length, 'caso revisado no escribió su razón',
+                     'casos revisados no escribieron su razón')) +
+              '. Disparar sobre otro gobierno es la prueba de que el criterio no está tallado a ESTE ' +
+              'registro, pero por sí solo no demuestra que distinga: eso lo demuestra mirar los casos.';
+    } else if (disparos && rev && rev.cauceNormal.length) {
+      razon = 'Corrido contra el registro anterior disparó ' + cn(disparos, 'vez', 'veces') + ', y al ' +
+              'revisarlos ' + cn(rev.cauceNormal.length, 'resultó ser el cauce normal',
+                                 'resultaron ser el cauce normal') + ': el criterio no distingue ahí y ' +
+              'hay que ESTRECHARLO, como la v1094 lo estrechó por el control automático. Lo que sí queda ' +
+              'demostrado es que no está tallado a este registro.';
+    } else if (disparos && rechazos === 0) {
+      razon = 'Corrido contra el registro anterior disparó en TODAS —' +
+              cn(revisadas, 'entrada revisada', 'entradas revisadas') +
+              '— y no rechazó ninguna: un criterio que no rechaza nada no distingue ' +
+              'nada, por mucho que no esté tallado a este caso.';
     } else if (disparos) {
       razon = 'Corrido contra los registros anteriores, disparó: hay que mirar si el criterio distingue.';
     } else {
@@ -2338,7 +2440,26 @@
              /* Y LA CUENTA, no solo el sí o el no (v1094): el cierre de la carta tiene
                 que decir CUÁNTAS veces disparó, y una cifra en prosa envejece sola. */
              disparos: disparos,
-             validado: probados > 0, gobiernosAnterioresProbados: probados,
+             /* LAS DOS PROPIEDADES, publicadas aparte (v1106): «no está tallado al
+                caso» y «distingue» dicen cosas distintas y ninguna implica la otra,
+                así que juntarlas en un booleano fue lo que dejó el pendiente sin
+                salida. Y lo que la pantalla necesita VIAJA con el dato (v1088). */
+             rechazos: rechazos, cuales: cuales, revision: rev,
+             noTalladoAlCaso: noTallado, distingue: distinguePorDisparo || probados > 0,
+             /* Y VALIDADO ES LAS DOS, no una (v1106, segunda mitad, que la vio el
+                PAPEL y no el código). Con `probados > 0` bastando, la ficha
+                publicaba «validado: sí · no tallado a este caso: no demostrado»
+                en la misma línea, que es una contradicción impresa. Y la razón
+                de fondo es peor que la contradicción: **no disparar sobre otro
+                registro es exactamente lo que haría un criterio tallado a la
+                medida del propio**, así que la vieja prueba no solo no
+                demostraba la primera propiedad — apuntaba al otro lado. Tres de
+                los cinco criterios vuelven con esto a «no validado», y el
+                casillero del control baja de 3 de 5 a 2 de 5: la regla de esta
+                tanda EMPEORA el número que la tanda venía a subir, que es lo
+                único que demuestra que no se escogió por conveniencia. */
+             validado: noTallado && (distinguePorDisparo || probados > 0),
+             gobiernosAnterioresProbados: probados,
              registrosEnMano: regs.length, corridas: corridas, razon: razon };
   }
 
@@ -2401,6 +2522,31 @@
      una pantalla y tenerlo en otra (v880, v1090). */
   function cierreDeValidacion(v) {
     if (!v) return '';
+    /* CINCO CIERRES (v1106). Un criterio que disparó Y está revisado ya no
+       tiene nada pendiente, así que el cierre que mandaba a mirar los casos
+       se contradecía con la razón de encima — el mismo defecto que la v1094
+       arregló acá y que vuelve cada vez que se parte un estado sin partir su
+       cierre (v899). */
+    if (v.distingue && v.noTalladoAlCaso) {
+      return 'No queda nada pendiente de este criterio: disparó sobre un registro escrito antes de ' +
+             'que él existiera —así que sus bordes no se dibujaron mirando este caso—, rechazó ' +
+             cn(v.rechazos, 'entrada', 'entradas') + ' —así que distingue— y cada disparo está ' +
+             'revisado con su razón escrita. Lo que esto NO dice es que el criterio sea el mejor ' +
+             'posible: dice que no está tallado a la medida de este registro y que no cuenta el ' +
+             'cauce normal.';
+    }
+    if (v.noTalladoAlCaso && v.revision && v.revision.cauceNormal.length) {
+      return 'Lo que falta NO es dejar crecer el registro: es ESTRECHAR el criterio. ' +
+             cn(v.revision.cauceNormal.length, 'de los casos revisados resultó ser el cauce normal',
+                'de los casos revisados resultaron ser el cauce normal') + ', y contar el cauce normal ' +
+             'es lo que convierte un criterio en sinónimo de otro. La marca se quita cuando el ' +
+             'criterio excluya esa vía con su razón escrita, y se vuelva a correr.';
+    }
+    if (v.noTalladoAlCaso && v.rechazos === 0) {
+      return 'Lo que falta NO es revisar los casos: es un criterio que rechace algo. Este disparó ' +
+             'en todas las entradas revisadas del registro anterior, y una vara que no rechaza nada ' +
+             'no separa nada.';
+    }
     if (v.disparo) {
       return 'La marca NO se quita dejando crecer el registro: este criterio ya corrió hacia atrás ' +
              'y disparó ' + cn(v.disparos, 'vez', 'veces') + ' en el registro del gobierno ' +
@@ -2408,6 +2554,14 @@
              'decidir si el criterio distingue el hecho que busca o si está contando el cauce ' +
              'normal: si distingue, se declara con su razón; si no, se estrecha. Que dispare sobre ' +
              'otro gobierno es, eso sí, lo contrario de estar tallado al caso de este registro.';
+    }
+    if (v.gobiernosAnterioresProbados > 0 && !v.noTalladoAlCaso) {
+      return 'Lo que falta NO es dejar crecer el registro: ya se corrió sobre ' +
+             cn(v.revisadas, 'entrada revisada', 'entradas revisadas') + ' y no disparó, así que ' +
+             'DISTINGUE. Lo que sigue sin demostrarse es lo otro: que sus bordes no se dibujaran ' +
+             'mirando este registro. No disparar sobre otro gobierno es justamente lo que haría un ' +
+             'criterio tallado a la medida del propio, así que esa corrida no lo demuestra. Hace falta ' +
+             'un registro anterior que TENGA materia de este criterio, y el que hay no la tiene.';
     }
     if (v.corridas.length) {
       return 'La marca se quita sola cuando el registro del gobierno anterior llegue a ' +
@@ -4369,16 +4523,33 @@
     }).filter(function (x) { return x.v; });
     var validados = val.filter(function (x) { return x.v.validado; });
     var dispararon = val.filter(function (x) { return x.v.disparo; });
-    var porPiso = val.filter(function (x) { return !x.v.validado && !x.v.disparo; });
+    /* Y EL CASILLERO TAMBIÉN SE PARTE EN DOS (v899, v1094, v1106). Con la
+       validación partida en dos propiedades, «le falta material» y «le falta
+       la otra propiedad» son dos pendientes distintos y piden cosas
+       distintas: uno pide que el registro anterior crezca, el otro pide un
+       registro anterior que TENGA materia de ese criterio. Juntarlos vuelve a
+       publicar, debajo de un estado, la frase del otro. */
+    var porPiso = val.filter(function (x) { return !x.v.validado && !x.v.disparo &&
+                                                   !x.v.gobiernosAnterioresProbados; });
+    var sinTallar = val.filter(function (x) { return !x.v.validado && x.v.distingue &&
+                                                     !x.v.noTalladoAlCaso; });
     caja('Todo criterio escrito se contrastó contra el registro de un gobierno anterior',
          validados.length === val.length ? 'pasa' : 'falla',
          'validados: ' + validados.length + ' de ' +
          cn(val.length, 'criterio escrito', 'criterios escritos') +
+         ' —hace falta demostrar las DOS cosas, que no esté tallado a este caso y que distinga— ' +
          (dispararon.length
-           ? ' · ' + cn(dispararon.length, 'disparó hacia atrás', 'dispararon hacia atrás') + ' (' +
-             dispararon.map(function (x) { return x.k; }).join(' ') + '), y a ' +
-             pl(dispararon.length, 'ese', 'esos') + ' el piso no les quita la marca: lo que falta es ' +
-             'mirar los casos que cayeron'
+           ? '· ' + cn(dispararon.length, 'disparó hacia atrás', 'dispararon hacia atrás') + ' (' +
+             dispararon.map(function (x) { return x.k; }).join(' ') + '), con ' +
+             pl(dispararon.length, 'su caso revisado uno por uno', 'sus casos revisados uno por uno') + ' '
+           : '') +
+         (sinTallar.length
+           ? '· a ' + cn(sinTallar.length, 'criterio', 'criterios') + ' (' +
+             sinTallar.map(function (x) { return x.k; }).join(' ') + ') ' +
+             pl(sinTallar.length, 'le falta demostrar que no está tallado a este caso',
+                'les falta demostrar que no están tallados a este caso') +
+             ', y no disparar no lo demuestra: hace falta un registro anterior que TENGA materia ' +
+             'de ese criterio'
            : '') +
          (porPiso.length
            ? ' · a ' + cn(porPiso.length, 'criterio', 'criterios') + ' (' +
@@ -5905,11 +6076,28 @@
          Un indicador que este proyecto inventó y que no se ha podido correr
          contra ningún gobierno anterior se parece demasiado a una medición
          contrastada, y esa confusión es peor que no tener el indicador. */
-      if (fi.validacion && !fi.validacion.validado) {
-        var lv = el('li', 'sp-c2-noval');
-        lv.appendChild(el('b', null, fi.id + ' · indicador no validado'));
+      /* Y EL BLOQUE SE PINTA TAMBIÉN CUANDO SÍ ESTÁ VALIDADO (v1106). Con el
+         `!validado` de antes, el día que un criterio se validara DESAPARECÍA
+         de la pantalla entero — y con él la revisión de los disparos, que es
+         el trabajo que lo validó. Un dato que ninguna superficie alcanza se
+         ve igual que uno ausente: clase C, y la habría estrenado justo la
+         tanda que hizo el trabajo. Las dos redacciones se escriben (v970), y
+         además NO dicen lo mismo: «rechazó las 20» y «disparó 6 y rechazó
+         14» son dos demostraciones distintas y el lector tiene que poder
+         saber cuál sostiene a cuál. */
+      if (fi.validacion) {
+        var vok = fi.validacion.validado;
+        var lv = el('li', 'sp-c2-noval' + (vok ? ' ok' : ''));
+        lv.appendChild(el('b', null, fi.id + (vok ? ' · indicador validado' : ' · indicador no validado')));
         lv.appendChild(el('span', 'sp-c2-novalc',
-          'validado: no · gobiernos anteriores probados: ' + fi.validacion.gobiernosAnterioresProbados));
+          'validado: ' + (vok ? 'sí' : 'no') + ' · no tallado a este caso: ' +
+          (fi.validacion.noTalladoAlCaso ? 'demostrado disparando sobre el registro anterior' : 'no demostrado') +
+          ' · distingue: ' + (fi.validacion.distingue ? 'demostrado rechazando' : 'no demostrado') +
+          (fi.validacion.gobiernosAnterioresProbados
+            ? ' · ' + cn(fi.validacion.gobiernosAnterioresProbados,
+                         'gobierno anterior lo corrió sin que disparara',
+                         'gobiernos anteriores lo corrieron sin que disparara')
+            : '')));
         lv.appendChild(el('p', 'sp-c2-novalg' + (fi.validacion.urge ? ' urge' : ''),
           fi.validacion.gravedad + ' · ' + fi.validacion.porQue));
         lv.appendChild(el('p', null, fi.validacion.razon));
@@ -5933,6 +6121,40 @@
            al caso de este registro; lo que queda abierto es si lo que cayó
            es el hecho que el criterio busca o el cauce normal. Eso se
            decide mirando, no creciendo. */
+        /* LA REVISIÓN, CASO POR CASO, en la pantalla. Es lo que el casillero
+           del control pedía, y publicar solo su resultado dejaría al lector
+           sin poder discutirlo: el veredicto de cada disparo es una lectura,
+           y una lectura se publica con su razón o no se publica (v1092). */
+        var rv = fi.validacion.revision;
+        if (rv && rv.casos.length) {
+          var rc = el('div', 'sp-c2-rev');
+          rc.appendChild(el('b', null, 'Los casos que cayeron, mirados uno por uno: ' + rv.casos.length));
+          var ulr = el('ul', 'sp-c2-revl');
+          rv.casos.forEach(function (c) {
+            var li2 = el('li', c.veredicto === 'cauce-normal' ? 'cauce' : null);
+            li2.appendChild(el('b', null, c.entrada));
+            li2.appendChild(el('span', 'sp-c2-revv',
+              c.veredicto === 'cauce-normal' ? ' · es el cauce normal: hay que estrechar el criterio'
+                                             : ' · es el hecho que el criterio busca'));
+            li2.appendChild(el('p', null, 'Vía: ' + c.via));
+            li2.appendChild(el('p', 'sp-c2-vpq', c.porQue));
+            ulr.appendChild(li2);
+          });
+          rc.appendChild(ulr);
+          if (rv.faltan.length) {
+            rc.appendChild(el('p', 'sp-c2-vmal',
+              cn(rv.faltan.length, 'disparo sigue sin revisar', 'disparos siguen sin revisar') + ': ' +
+              rv.faltan.join(' ')));
+          }
+          if (rv.declaranRegimen) {
+            rc.appendChild(el('p', 'sp-c2-vpq',
+              'De esos actos, ' + cn(rv.abren, 'abre un régimen de excepción nuevo',
+                                     'abren un régimen de excepción nuevo') + ' y el resto se expiden ' +
+              'al amparo de uno ya contado. Las dos lecturas son legítimas y dicen cosas distintas: ' +
+              'cuántas veces se invocó una facultad extraordinaria, y cuántos regímenes se abrieron.'));
+          }
+          lv.appendChild(rc);
+        }
         lv.appendChild(el('p', null, cierreDeValidacion(fi.validacion)));
         tb.appendChild(lv);
       }
