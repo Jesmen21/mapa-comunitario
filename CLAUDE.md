@@ -1548,6 +1548,25 @@ sección al final de este archivo.
   carga. Sin él, la de la v1087 llevaba un «SUPERADA EN LA v1094» tecleado a
   mano, y la primera medición contada dijo algo que nadie sabía: **el piso de
   20 entradas revisadas ya estaba alcanzado**.
+* **Y un `sin-correr` dice si alguien lo INTENTÓ** (v1076, v1116). Es la
+  única afirmación que el control puede escribir a mano, y declara que el
+  módulo no puede computar el casillero — pero mudo se lee igual un casillero
+  medido a fondo que uno que nadie ha mirado nunca, y los dos piden lo
+  contrario (v899): el primero, leer la medición antes de repetirla; el
+  segundo, intentarlo. Un intento lleva sus **cuatro partes** —fecha, canal,
+  qué se midió y qué salió—, y cuando no lo hay se escribe que no lo hay.
+  Y el intento que sale que NO se puede vale igual que el que sale que sí:
+  el cribado de menores identificados de la v1116 dio 39 oraciones marcadas
+  y **las 39 falsas**, así que no se publicó como guarda —cero aciertos y
+  treinta y nueve excepciones es la lista que envejece (v895)— y lo que se
+  publicó fue la medición. Esta guarda va en ROJO y no con `?`: los
+  casilleros son CÓDIGO y no datos, así que no pueden vaciarse por una
+  mejora del registro (v965, v970).
+* **Y un patrón de guarda lleva su ENTORNO cuando la frase ya existe en otro
+  sitio** (v854, v1029, v1116). `Nadie lo ha intentado todavía` estaba escrito
+  desde la v1076 para el trámite de un eje, así que la guarda del casillero se
+  quedaba verde con su propia redacción borrada — en verde sobre el defecto
+  que vigila. **Lo delató la inyección, que salió VERDE**, no la lectura.
 * **Y una comprobación que llega a cero se DICE, no desaparece** (v1064). Un
   renglón que se borra solo deja «ya está hecho» con la misma cara que
   «nadie lo ha mirado» —la regla de arriba, dicha en una pantalla—. Tres de

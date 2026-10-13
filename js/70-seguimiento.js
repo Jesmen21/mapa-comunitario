@@ -4593,11 +4593,26 @@
       'hecho-de-afuera': { t: 'Espera un hecho que no depende de nadie',
                            d: 'Tiene fecha de revisión y adelantarlo sería resolverlo a conveniencia.' }
     };
-    function caja(t, estado, det, cierra, tramite) {
+    /* EL INTENTO DE UN `sin-correr` (v1116). Un casillero `sin-correr`
+       declara que el módulo no puede computarlo — y hasta acá eso se leía
+       igual tanto si alguien lo había intentado y había medido por qué no
+       se puede, como si nadie lo había mirado nunca. Son dos cosas y piden
+       acciones distintas (v899): la segunda pide intentarlo, la primera
+       pide leer la medición antes de repetirla.
+
+       Es la misma regla que la v1076 escribió para los trámites de los
+       ejes, aplicada al control del módulo: **las dos redacciones, siempre**
+       (v970, v1055, v1065). Un intento lleva fecha, canal, qué se midió y
+       qué salió; cuando no lo hay, se dice que no lo hay y por qué. */
+    function caja(t, estado, det, cierra, tramite, intento) {
       f.push({ t: t, estado: estado, det: det,
                cierra: cierra || null, cierraT: (CIERRA[cierra] || {}).t || null,
                cierraD: (CIERRA[cierra] || {}).d || null,
-               tramite: tramite || null });
+               tramite: tramite || null,
+               /* Falla cerrado: lo que no se declara sale señalado, no por
+                  omisión (v880). Un `sin-correr` sin este campo lo denuncia
+                  la guarda, y la pantalla lo imprime con su nombre. */
+               intento: intento || null });
     }
 
     /* CALCULADO EN LA v1098. Era un `'pasa'` literal con una frase que
@@ -4686,12 +4701,25 @@
          'El registro no clasifica la calidad del encuadre de cada pieza, así que no se puede medir el ' +
          'balance de la muestra. Haría falta el campo `calidad_del_encuadre` de la Capa 1 del pliego.',
          'capacidad',
-         'El módulo no clasifica el encuadre de una pieza; haría falta escribir ese criterio contra referencia externa y primero.');
+         'El módulo no clasifica el encuadre de una pieza; haría falta escribir ese criterio contra referencia externa y primero.',
+         null);
     caja('Ningún registro trae menores identificados', 'sin-correr',
          'Se revisa a mano al escribir cada entrada; el módulo no tiene cómo comprobarlo por su cuenta. ' +
          'Los dos hechos del registro que involucran menores están como agregado y sin nombres.',
          'capacidad',
-         'El módulo no detecta la identificación de un menor en un texto; hoy depende de quien escribe la entrada.');
+         'El módulo no detecta la identificación de un menor en un texto; hoy depende de quien escribe la entrada.',
+         { fecha: '2026-10-13',
+           canal: 'un cribado automático sobre los dos registros',
+           que: 'marcar toda oración que mencione a un menor y traiga además un nombre propio candidato ' +
+                'al lado, que es la forma más barata de detectar una identificación',
+           salio: 'Sobre 309 entradas, 36 mencionan a un menor y el cribado marcó 39 oraciones. Las 39 ' +
+                  'son FALSOS POSITIVOS: nombres de operaciones militares (Azarías, Amón, Beta), de ' +
+                  'instituciones (Medicina Legal, Rama Judicial, Fuerza Pública) y de un experto ADULTO ' +
+                  'citado en un contrapunto. Ninguna identifica a un menor. Un cribado con cero aciertos ' +
+                  'y treinta y nueve excepciones es la lista que envejece hasta no significar nada ' +
+                  '(v895), así que no se publica como guarda. Y lo que el intento NO descarta: una ' +
+                  'identificación indirecta —el colegio, la cuadra, el nombre de la madre— que ningún ' +
+                  'patrón de texto alcanza.' });
     /* CORREGIDO EN LA v1098, y el renglón estaba IMPRESO en el papel con una
        afirmación falsa: decía «así que el eje B no publica nivel» y el eje B
        publica «Dudosa» desde la v1092, por otra vía —la identidad y la
@@ -4713,7 +4741,16 @@
          'poner una al lado de la otra sin igualar la unidad. El eje B publica su nivel por otra vía, que ' +
          'no necesita la media.',
          'capacidad',
-         'El módulo no recalcula el eje B sobre el registro anterior; haría falta esa corrida, y la media histórica que pediría está bloqueada por la unidad no igualada.');
+         'El módulo no recalcula el eje B sobre el registro anterior; haría falta esa corrida, y la media histórica que pediría está bloqueada por la unidad no igualada.',
+         { fecha: '2026-10-11',
+           canal: 'una medición sobre el propio registro, en la v1097',
+           que: 'si conseguir la media histórica de Petro, Duque y Santos bastaría para recalcular el eje',
+           salio: 'No bastaría, y por una razón que no se arregla con más archivo: las cuentas de los ' +
+                  'indicadores suman ENTRADAS y no actos, y dos registros agrupan distinto —«el Gobierno ' +
+                  'firma 11 decretos» es una entrada y once actos—, así que ponerlas una al lado de la ' +
+                  'otra es la `comparacion_invalida` que este módulo existe para detectar. Lo que esto ' +
+                  'NO midió es la capacidad en sí: nadie ha intentado escribir la corrida, porque sin ' +
+                  'la unidad igualada no tendría con qué comparar.' });
 
     /* ═══ EL MÓDULO, MEDIDO CONTRA SÍ MISMO (v1098) ═════════════════════════
        Los casilleros de arriba miden el REGISTRO: que cada hecho tenga fecha,
@@ -7132,6 +7169,26 @@
       if (fi.estado !== 'pasa') {
         d2.appendChild(el('p', 'sp-c4-cctr', (fi.cierraT || 'SIN TRÁMITE DECLARADO') +
           (fi.tramite ? ' — ' + fi.tramite : '')));
+      }
+      /* Y EL INTENTO, solo en los `sin-correr` (v1116). Las dos redacciones
+         se pintan: sin la de cero, «nadie lo ha mirado» se lee igual que
+         «se midió y no se puede», y la primera pide intentarlo mientras que
+         la segunda pide leer la medición antes de repetirla. */
+      if (fi.estado === 'sin-correr') {
+        var ib = el('div', 'sp-c4-ccin' + (fi.intento ? '' : ' sin'));
+        if (!fi.intento) {
+          ib.appendChild(el('b', null, 'Nadie lo ha intentado todavía'));
+          ib.appendChild(el('p', null,
+            'No hay ningún intento escrito contra este casillero. Eso no quiere decir que sea fácil: ' +
+            'quiere decir que lo que sigue es intentarlo y dejar escrito qué salió, en vez de volver a ' +
+            'razonar desde cero por qué no se puede.'));
+        } else {
+          ib.appendChild(el('b', null, 'Se intentó · ' + fechaCorta(fi.intento.fecha) +
+            ' · ' + fi.intento.canal));
+          ib.appendChild(el('p', null, 'Qué se midió: ' + fi.intento.que));
+          ib.appendChild(el('p', null, 'Qué salió: ' + fi.intento.salio));
+        }
+        d2.appendChild(ib);
       }
       li.appendChild(d2);
       uc.appendChild(li);

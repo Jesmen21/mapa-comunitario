@@ -27355,3 +27355,83 @@ de aeronave no es un viaje del presidente— no es una respuesta oficial.
   `cerrado en v1115 · medido y declinado`
 * **NO mueve el dictamen.** Sigue en «Nada fiable», del eje D.
   `cerrado en v1115`
+
+## v1116 · «el módulo no puede» y «nadie lo ha intentado» se leían igual
+
+El control de calidad publica tres casilleros `sin-correr`. Desde la v1098
+ese es el único estado que el módulo puede escribir a mano, y por una razón
+buena: es una declaración permanente —este módulo no puede computar esto— y
+solo envejece si adquiere la capacidad, que se ve en el diff. Lo que no
+decía es si alguien lo había intentado.
+
+**Son dos cosas y piden acciones contrarias** (v899): un casillero medido a
+fondo pide leer la medición antes de repetirla; uno que nadie ha mirado pide
+intentarlo. Mudos, se leen idénticos — y el lado barato es el segundo, porque
+un `sin-correr` sin intento parece una limitación de la naturaleza. Es la
+regla que la v1076 escribió para los trámites de los ejes, que esta tanda
+encontró sin aplicar en el control del módulo.
+
+### El intento que sí se hizo, y que salió que no
+
+El casillero de los menores identificados —el más caro de los tres, porque
+el eje D cuenta menores muertos y un registro que nombrara a uno estaría
+publicando la identidad de un niño— se intentó de verdad, el 13 de octubre
+de 2026, con un cribado automático sobre los dos registros: marcar toda
+oración que mencione a un menor y traiga además un nombre propio candidato
+al lado.
+
+```
+entradas 309 · mencionan menor 36 · oraciones marcadas 39
+```
+
+**Las 39 son falsos positivos.** Nombres de operaciones militares —Azarías,
+Amón, Beta—, de instituciones —Medicina Legal, Rama Judicial, Fuerza
+Pública— y de un experto ADULTO citado en un contrapunto. Cero aciertos.
+
+Un cribado con cero aciertos y treinta y nueve excepciones es exactamente la
+lista que envejece hasta no significar nada que la v895 prohíbe, así que no
+se publica como guarda. **Lo que sí se publica es la medición**, con su
+fecha, su canal y lo que no descarta: una identificación indirecta —el
+colegio, la cuadra, el nombre de la madre— que ningún patrón de texto
+alcanza. Medido y declinado, con el número al lado en vez de una afirmación.
+
+### Los otros dos
+
+* **El encuadre de cada pieza** — `nadie lo ha intentado`, y se dice con esas
+  palabras. Antes de intentarlo hace falta escribir el criterio contra una
+  referencia externa y primero (v1077), que es otra tanda. `pendiente`
+* **El eje B recalculado hacia atrás** — se intentó el 11 de octubre, pero lo
+  que se midió fue el BLOQUEO y no la capacidad: la v1097 estableció que
+  conseguir la media histórica no bastaría, porque las cuentas suman entradas
+  y dos registros agrupan distinto. El intento lo dice, y dice también que la
+  corrida en sí nadie la ha escrito.
+
+### La guarda, y las dos veces que midió lo que no era
+
+Cuatro comprobaciones nuevas (743 → 747), las cinco inyecciones en rojo,
+incluida la fiel —los tres casilleros mudos, que es el estado de la v1115—.
+Van en ROJO y no con `?` porque los casilleros son CÓDIGO y no datos: no
+pueden vaciarse por una mejora del registro.
+
+Dos tropiezos, los dos de la familia que este archivo ya tiene escrita:
+
+* **`j70v is not defined`** dentro de un bloque que usa `j70c4`. Mató la
+  corrida y el `grep` de `✗` no encontró nada; lo delató el NÚMERO, 258 donde
+  la anterior tenía 743. Es la tercera vez en cuatro tandas.
+* **El patrón de la redacción de cero medía otra frase.** `Nadie lo ha
+  intentado todavía` ya estaba escrito desde la v1076 para el trámite de un
+  eje, así que la guarda se quedaba verde con la redacción del casillero
+  borrada — en verde sobre el defecto que vigila. Lo delató la inyección, que
+  salió VERDE. El patrón lleva ahora su entorno (`el('b', null, …)`).
+
+### Lo que esta versión NO hace
+
+* **NO cierra ninguno de los tres casilleros.** Siguen `sin-correr`, y ese es
+  el resultado honesto: uno se midió y no se puede, uno espera un criterio y
+  uno espera la unidad igualada. `pendiente`
+* **NO escribe el cribado como guarda.** Cero aciertos y 39 excepciones.
+  `cerrado en v1116 · medido y declinado`
+* **NO mueve el estado del módulo.** 11 pasan, 5 fallan, 3 sin correr, 8
+  abiertos — igual que antes, que es la señal de que el cambio no se escogió
+  para que algo pasara (v882). `cerrado en v1116`
+* **NO mueve el dictamen.** Sigue en «Nada fiable». `cerrado en v1116`

@@ -4779,6 +4779,79 @@ console.log('\n  -- la ficha del gobernante --');
         : llamadas.length + ' casilleros · los estados salen de una comparación, salvo los `sin-correr`, ' +
           'que son la declaración de que el módulo no puede computarlos');
 
+    /* ═══ UN `sin-correr` DICE SI ALGUIEN LO INTENTÓ (v1116) ══════════════
+       `sin-correr` es la única afirmación que este control puede escribir a
+       mano, y dice «el módulo no puede computar esto». Lo que NO decía es si
+       alguien lo había intentado. Las dos cosas se leían idénticas —un
+       casillero medido a fondo y uno que nadie ha mirado nunca— y piden
+       acciones contrarias (v899): el segundo pide intentarlo, el primero
+       pide leer la medición antes de repetirla. Es la regla que la v1076
+       escribió para los trámites de los ejes, en el control del módulo.
+
+       MATERIAL: los casilleros `sin-correr` que el código declara. Van en
+       ROJO y no con `?` porque son CÓDIGO y no datos: no pueden vaciarse por
+       una mejora del registro, y si un día no queda ninguno, eso es que el
+       módulo adquirió las tres capacidades, lo cual se ve en el diff (v965,
+       v970, v1097).
+
+       DE QUÉ NO RESPONDE (v945, v952, v1008): de que el intento sea cierto,
+       ni de que fuera un buen intento. Comprueba que esté escrito con sus
+       cuatro partes —fecha, canal, qué se midió y qué salió— o que se diga
+       que no lo hay, y que las dos redacciones lleguen a la pantalla. */
+    const sinCorrer1116 = [];
+    let reSC = /caja\(\s*('(?:[^'\\]|\\.)*')\s*,\s*'sin-correr'/g, mSC;
+    while ((mSC = reSC.exec(trozoCtl))) sinCorrer1116.push(mSC[1].slice(1, 46));
+    /* El intento es el SEXTO argumento de `caja`, así que se cuenta por la
+       forma con la que el código lo escribe: un objeto con sus cuatro
+       claves, o `null` con su redacción de cero en la pantalla. Se mide por
+       CONTENIDO y no por distancia (v935). */
+    const conIntento = (trozoCtl.match(/\{ fecha: '20\d\d-\d\d-\d\d',\n\s+canal:/g) || []).length;
+    const conNull = (trozoCtl.match(/\n\s+null\);/g) || []).length;
+    const declarados = conIntento + conNull;
+    comprobar('MATERIAL · el control declara casilleros que el módulo no puede computar',
+      sinCorrer1116.length > 0,
+      sinCorrer1116.length ? sinCorrer1116.length + ' `sin-correr`: ' + sinCorrer1116.join(' | ')
+        : 'ninguno, y eso querría decir que el módulo adquirió las tres capacidades — que se vería en ' +
+          'el diff y no acá');
+    comprobar('y cada uno declara su intento, o que no lo hay',
+      sinCorrer1116.length > 0 && declarados >= sinCorrer1116.length,
+      declarados >= sinCorrer1116.length && sinCorrer1116.length
+        ? 'los ' + sinCorrer1116.length + ' lo declaran: ' + conIntento + ' con un intento fechado y ' +
+          conNull + ' diciendo que nadie lo ha intentado'
+        : (sinCorrer1116.length - declarados) + ' sin declararlo, y un `sin-correr` mudo se lee igual ' +
+          'tanto si se midió a fondo como si nadie lo ha mirado nunca');
+    /* UN INTENTO LLEVA SUS CUATRO PARTES. Sin la fecha no se puede saber si
+       envejeció; sin el canal, si se intentó por donde la respuesta estaría;
+       sin qué salió, no es un intento sino una intención (v1055, v1065). */
+    const partes = (trozoCtl.match(/canal:/g) || []).length === conIntento &&
+                   (trozoCtl.match(/\n\s+que:/g) || []).length === conIntento &&
+                   (trozoCtl.match(/\n\s+salio:/g) || []).length === conIntento;
+    comprobar('y un intento escrito trae sus cuatro partes: fecha, canal, qué se midió y qué salió',
+      conIntento === 0 || partes,
+      conIntento === 0 ? 'no hay ningún intento escrito hoy, y la regla muerde el día que aparezca el primero'
+        : partes ? 'los ' + conIntento + ' las traen: sin la fecha no se sabe si envejeció, y sin qué ' +
+                   'salió no es un intento sino una intención'
+        : 'alguno va incompleto: `canal`, `que` y `salio` tienen que venir los tres con la fecha');
+    /* LA GUARDA DE LA GUARDA (v878, v1029, v1101): que las DOS redacciones
+       lleguen a la pantalla, y que el bloque se ENGANCHE. Una aserción que
+       midiera solo que se construye se queda en verde sobre el defecto que
+       vigila. */
+    /* El patrón lleva su ENTORNO y no el texto suelto: la misma frase ya
+       estaba escrita desde la v1076 para el trámite de un eje, así que un
+       patrón suelto se quedaba verde con la redacción del casillero
+       borrada — en verde sobre el defecto que vigila. Se busca DENTRO del
+       trozo que importa (v854, v1029). */
+    const redCero = /el\('b', null, 'Nadie lo ha intentado todav[ií]a'\)/.test(j70c4);
+    const redN = /'Se intent[oó] · ' \+ fechaCorta\(fi\.intento\.fecha\)/.test(j70c4);
+    const engIn = /d2\.appendChild\(ib\)/.test(j70c4);
+    comprobar('y las dos redacciones llegan a la pantalla, enganchadas al casillero',
+      redCero && redN && engIn,
+      (redCero && redN && engIn)
+        ? 'la de cero y la de N están escritas y el bloque se cuelga del casillero: sin la de cero, ' +
+          '«nadie lo ha mirado» vuelve a leerse como «se midió y no se puede»'
+        : 'falta: ' + [!redCero ? 'la redacción de cero' : null, !redN ? 'la redacción del intento' : null,
+                       !engIn ? 'el enganche del bloque' : null].filter(Boolean).join(', '));
+
     /* EL PISO DE CASILLEROS. Son código, no datos, así que no pueden
        desaparecer por una mejora del registro: un trinquete absoluto es
        legítimo acá (v965). Lo que protege es que nadie borre el renglón

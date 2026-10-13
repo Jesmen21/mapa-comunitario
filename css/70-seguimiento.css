@@ -2498,3 +2498,18 @@ a.sp-fuente:hover svg{ color:var(--verde-hi); }
 .sp-c2-corrd { margin-bottom: 9px; font-size: var(--t-8); line-height: 1.45; }
 .sp-c2-corrd > b { display: block; margin-top: 3px; }
 .sp-c2-corrd > p { margin: 3px 0 0; color: var(--ink-2, #5a6b78); }
+
+/* El intento de un casillero `sin-correr` (v1116). Va dentro del casillero y
+   no en un pie aparte: lo que un lector pregunta al ver un «?» es si alguien
+   lo miró, y la respuesta tiene que estar donde está el «?». Sin intento va
+   a trazos, que es la forma que este módulo le da a lo pendiente. */
+.sp-c4-ccin {
+  margin: 6px 0 0;
+  padding: 7px 9px;
+  border-left: 3px solid var(--sp-bd, #cfdce6);
+  background: var(--sp-bg2, #F7F9FB);
+  border-radius: 0 6px 6px 0;
+}
+.sp-c4-ccin.sin { border-left-style: dashed; border-left-color: var(--sp-amb, #b26a00); }
+.sp-c4-ccin > b { display: block; font-size: var(--t-8); }
+.sp-c4-ccin > p { margin: 4px 0 0; font-size: var(--t-8); line-height: 1.5; }
