@@ -2446,3 +2446,55 @@ a.sp-fuente:hover svg{ color:var(--verde-hi); }
 .sp-c3-sin-escala{ font-style:italic; }
 /* Los otros ejes que publican nivel y no fijan el dictamen (v1092). */
 .sp-fi-votros{ margin-top:5px; }
+
+/* ══ LA REVISIÓN POSTERIOR DE UNA ENTRADA (v1115) ═════════════════════════
+   Veinticuatro hallazgos vivían en el registro y ninguna pantalla los
+   alcanzaba. La caja va al lado del contrapunto y del contrargumento, que
+   es donde un lector busca «¿esto sigue siendo cierto?», y cada tipo lleva
+   su etiqueta porque cada uno le pide una acción distinta. */
+.sp-c1-rev {
+  margin-top: 14px;
+  padding: 12px 14px;
+  border: 1px solid var(--sp-bd, #cfdce6);
+  border-left: 3px solid var(--sp-ac, #2F4F5E);
+  border-radius: 10px;
+  background: var(--sp-bg2, #F7F9FB);
+}
+.sp-c1-rev > h4 { margin: 0 0 8px; font-size: var(--t-7); }
+.sp-c1-rev-i { margin-top: 10px; }
+.sp-c1-rev-i:first-of-type { margin-top: 0; }
+.sp-c1-rev-i > p { margin: 5px 0 0; font-size: var(--t-8); line-height: 1.55; }
+
+/* Los ocho tipos. El color NO ordena por gravedad: ninguno de estos
+   hallazgos es un cargo contra nadie, son estados del propio registro. */
+.rp-pre { background: #EDF4F7; color: #2F4F5E; border: 1px solid #CBDDE5; }
+.rp-act { background: #FBF3E3; color: #7A5310; border: 1px solid #EDD6AC; }
+.rp-con { background: #F8E9E8; color: #9A3C38; border: 1px solid #E8C7C4; }
+.rp-div { background: #F1EEF8; color: #51457A; border: 1px solid #D6CFE8; }
+.rp-com { background: #EAF4EC; color: #2F5E3C; border: 1px solid #C7E0CE; }
+.rp-int { background: #F1F2F5; color: #5B5F6B; border: 1px dashed #D8DAE0; }
+.rp-vac { background: #F1F2F5; color: #5B5F6B; border: 1px dashed #D8DAE0; }
+.rp-pro { background: #F1F2F5; color: #5B5F6B; border: 1px solid #D8DAE0; }
+.rp-mal { background: #F8E9E8; color: #9A3C38; border: 2px solid #9A3C38; font-weight: 700; }
+
+/* El recuento, en la Capa 1 de la ficha del gobernante. */
+.sp-c1-revc { margin-top: 12px; }
+
+/* Las corridas de criterios contra el registro anterior (v1115). */
+.sp-c2-corr {
+  margin: 10px 0 4px;
+  padding: 10px 12px;
+  border: 1px solid var(--sp-bd, #cfdce6);
+  border-radius: 8px;
+}
+.sp-c2-corr.falta { border-style: dashed; border-color: var(--sp-amb, #b26a00); }
+.sp-c2-corr > b { display: block; font-size: var(--t-7); }
+.sp-c2-corr > p { margin: 5px 0 0; font-size: var(--t-8); line-height: 1.45; }
+.sp-c2-corri { margin-top: 10px; padding-left: 10px; border-left: 2px solid var(--sp-bd, #cfdce6); }
+.sp-c2-corri > b { display: block; font-size: var(--t-8); }
+.sp-c2-corrf { margin: 5px 0 0; font-size: var(--t-8); line-height: 1.5; }
+.sp-c2-corrn { margin: 5px 0 0; font-size: var(--t-8); line-height: 1.5; color: var(--ink-2, #5a6b78); }
+.sp-c2-corrl { margin: 8px 0 0; padding-left: 0; list-style: none; }
+.sp-c2-corrd { margin-bottom: 9px; font-size: var(--t-8); line-height: 1.45; }
+.sp-c2-corrd > b { display: block; margin-top: 3px; }
+.sp-c2-corrd > p { margin: 3px 0 0; color: var(--ink-2, #5a6b78); }

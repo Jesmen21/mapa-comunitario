@@ -3801,6 +3801,179 @@ console.log('\n  -- la ficha del gobernante --');
         : !hayNorma ? 'la exclusión está y NO nombra el artículo en el texto —solo en un comentario—, ' +
                       'así que el lector de la ficha no lo ve'
         : 'excluido, y el art. 214.6 nombrado en el texto que la pantalla pinta');
+
+    /* ═══ NINGÚN CAMPO DEL REGISTRO SE QUEDA SIN LECTOR (v1115) ════════════
+       Veinticuatro hallazgos —un fallo revocado, una designación reversada,
+       seis cifras precisadas— estaban escritos en el registro bajo TRECE
+       claves distintas con guion bajo, y ninguna línea de código las leía.
+       Desde afuera eso se ve exactamente igual que no haberlos encontrado,
+       que es la clase C de CLAUDE.md, en el registro que este módulo
+       publica sobre personas con nombre.
+
+       Y trece nombres para una sola cosa es además la clase B: la cura es
+       un campo, `revisionPosterior`, con el TIPO como dato.
+
+       LA GUARDA PERSIGUE LA CLASE Y NO EL CASO (v874, v885): no busca los
+       trece nombres —una lista así envejece hasta no significar nada
+       (v895)—, busca la FORMA. Un campo con guion bajo es, por convenio de
+       este registro, una nota que no es un dato publicable; si además
+       ninguna línea de código lo nombra, nadie lo lee nunca.
+
+       DE QUÉ NO RESPONDE (v945, v952): de que la nota sea cierta —eso no lo
+       puede comprobar nadie (v1008)—, ni de los campos SIN guion bajo que
+       tampoco tengan lector: perseguir «campo del registro que ninguna
+       pantalla lee» daría docenas de falsos positivos, que es la razón por
+       la que CLAUDE.md deja la clase C anotada y sin guarda. Esta muerde
+       sobre el subconjunto en el que el convenio hace que el falso positivo
+       no exista.
+
+       Y UN LÍMITE MÁS, que va dicho porque es la puerta de atrás: «tener
+       lector» se mide como que el nombre de la clave aparezca en el módulo
+       o en esta misma comprobación. Las dos cuentan a propósito —hay claves
+       que son material de una guarda y no de una pantalla, como
+       `_pendientesFuente`—, pero eso deja abierto que alguien «cierre» una
+       huérfana nombrándola dentro del texto de un fallo. No se puede cerrar
+       sin una lista de excepciones que envejecería (v895), así que se
+       declara en vez de taparse. */
+    const REG1115 = ['assets/data/seguimiento-presidencial.json',
+                     'assets/data/seguimiento-petro.json'];
+    /* La única excepción, con su razón escrita (v895): `_comentario` es la
+       nota de cabecera del archivo —dice cómo se edita el registro, no
+       afirma ningún hecho—, así que no tiene por qué llegar a una pantalla. */
+    const SIN_LECTOR_OK = [['_comentario', 'es la nota de cabecera del archivo sobre cómo se edita, ' +
+                            'y no afirma ningún hecho que un lector deba ver']];
+    /* SE BUSCA EN EL CÓDIGO Y NO EN LOS COMENTARIOS (v926, v1115). La
+       primera versión de esta guarda miraba el archivo entero, y su propia
+       inyección fiel la dejó a medias: tres de las ocho claves de la v1114
+       aparecían en el comentario que acabo de escribir aquí arriba, así que
+       contaban como «leídas». Un nombre citado en una explicación no es un
+       lector. Cuando una inyección fiel no consigue poner algo en rojo, lo
+       que falta no es la inyección — es lo que la aserción mide (v1029). */
+    const rvr = soloCodigo(leer('pruebas/revisar.js'));
+    const j70c = soloCodigo(j70v);
+    const clavesBajas = {};
+    REG1115.forEach((ruta) => {
+      const dd = JSON.parse(leer(ruta));
+      Object.keys(dd).filter((k) => k[0] === '_').forEach((k) => { clavesBajas[k] = (clavesBajas[k] || 0) + 1; });
+      ((dd.entradas) || []).forEach((e) => {
+        Object.keys(e || {}).filter((k) => k[0] === '_').forEach((k) => { clavesBajas[k] = (clavesBajas[k] || 0) + 1; });
+      });
+    });
+    const todasBajas = Object.keys(clavesBajas).sort();
+    const huerfanas = todasBajas.filter((k) => !SIN_LECTOR_OK.some((x) => x[0] === k))
+                                .filter((k) => j70c.indexOf(k) < 0 && rvr.indexOf(k) < 0);
+    /* EL `?` Y NO EL ROJO para el material (v970, v1097): que no quede
+       ninguna clave con guion bajo es el estado BUENO, y una guarda que se
+       pusiera roja al llegar a cero empujaría a dejar notas sueltas en el
+       registro para tener algo que contar. Lo que va en rojo es la
+       propiedad, que sobrevive al cero: ninguna huérfana. */
+    if (!todasBajas.length) {
+      anotarSinMaterial('MATERIAL · el registro trae campos con guion bajo',
+        'los dos registros no traen ninguno, así que no hay sobre qué morder: la regla de abajo sigue ' +
+        'valiendo y muerde el día que alguien escriba el primero');
+    } else {
+      comprobar('MATERIAL · el registro trae campos con guion bajo, que es donde vive la clase C',
+        true, todasBajas.length + (todasBajas.length === 1 ? ' clave distinta: ' : ' claves distintas: ') +
+        todasBajas.join(', '));
+    }
+    comprobar('y ninguna se queda sin un lector en el código',
+      !huerfanas.length,
+      huerfanas.length ? huerfanas.length + ' clave(s) que ninguna línea de código nombra —' +
+          huerfanas.join(', ') + '—: lo escrito ahí no llega a ninguna pantalla, y desde afuera se ' +
+          'lee igual que si nadie lo hubiera encontrado'
+        : (todasBajas.length ? (todasBajas.length === 1 ? 'la única tiene lector' :
+             'las ' + todasBajas.length + ' tienen lector') + ' —el módulo o esta misma ' +
+            'comprobación, que para una clave de guarda es el lector correcto—, y la exenta lo ' +
+            'está con su razón: ' + SIN_LECTOR_OK[0][0] + ' ' + SIN_LECTOR_OK[0][1]
+          : 'no hay ninguna, y el día que aparezca una sin lector esta comprobación muerde'));
+
+    /* Y UNA CLAVE NUMERADA A MANO ES LA MISMA CLASE B (v879, v1115).
+       `_revisionCriterios` y `_revisionCriterios2` eran dos corridas en dos
+       claves: la tercera habría sido `3`. Una lista es una lista. */
+    const numeradas = todasBajas.filter((k) => /\d$/.test(k));
+    comprobar('y ninguna clave del registro lleva un número de orden pegado al nombre',
+      !numeradas.length,
+      numeradas.length ? numeradas.join(', ') + ': eso es una lista escrita a mano, y la siguiente ' +
+          'entrada nace sin lector porque nadie se acuerda de añadir el caso'
+        : 'ninguna; las corridas de criterios viven en un array y no en claves numeradas');
+
+    /* LA TABLA DE TIPOS, Y QUE EL CONVENIO ESCRITO Y EL APLICADO SEAN EL
+       MISMO (v926). La lista va acá, al lado, porque una guarda que leyera
+       los tipos del propio código no podría fallar nunca: comprobaría que la
+       tabla es igual a sí misma. */
+    const TIPOS_REV = ['precision', 'actualizacion', 'contradiccion', 'divergencia',
+                       'comprobacion', 'intento', 'vacio', 'procedencia'];
+    const enCodigo = TIPOS_REV.filter((t) => new RegExp('\\n    ' + t + ': \\{ t:').test(j70v));
+    const notas = [];
+    REG1115.forEach((ruta) => {
+      const dd = JSON.parse(leer(ruta));
+      ((dd.entradas) || []).forEach((e) => {
+        (((e || {}).revisionPosterior) || []).forEach((v) => { notas.push(v); });
+      });
+    });
+    const malTipo = notas.filter((v) => TIPOS_REV.indexOf(String((v || {}).que || '')) < 0);
+    const sinTexto = notas.filter((v) => !String((v || {}).texto || '').trim());
+    if (!notas.length) {
+      anotarSinMaterial('MATERIAL · hay revisiones posteriores escritas',
+        'ninguna entrada trae `revisionPosterior`, así que la tabla de tipos no se ejercita');
+    } else {
+      comprobar('MATERIAL · hay revisiones posteriores escritas, con su tipo',
+        true, notas.length + ' hallazgo(s) en los dos registros');
+    }
+    comprobar('la tabla de tipos del código y la de esta comprobación son la misma',
+      enCodigo.length === TIPOS_REV.length,
+      enCodigo.length === TIPOS_REV.length
+        ? 'los ' + TIPOS_REV.length + ' tipos están declarados en `TIPO_REVISION` con su texto y su lectura'
+        : 'faltan en el código: ' + TIPOS_REV.filter((t) => enCodigo.indexOf(t) < 0).join(', ') +
+          ' — el convenio escrito acá y el aplicado allá se separaron');
+    comprobar('y toda revisión escrita lleva un tipo conocido y un texto',
+      !malTipo.length && !sinTexto.length,
+      malTipo.length ? malTipo.length + ' con un tipo que la tabla no conoce: ' +
+          malTipo.map((v) => String(v.que || '(vacío)')).join(', ')
+        : sinTexto.length ? sinTexto.length + ' con el tipo puesto y el texto en blanco, que no dice nada'
+        : (notas.length ? 'los ' + notas.length + ' traen tipo conocido y texto'
+                        : 'no hay ninguna, y la regla muerde el día que aparezca la primera'));
+
+    /* LA GUARDA DE LA GUARDA (v878, v1029, v1101): que el bloque se
+       CONSTRUYA no basta —una aserción que mide la construcción se queda en
+       verde con el `appendChild` borrado, en verde sobre exactamente el
+       defecto que vigila—. Se exige el ENGANCHE de las tres superficies: la
+       ficha del hecho, el recuento de la Capa 1 y las corridas de criterios. */
+    const engRev = /cc\.appendChild\(rb\)/.test(j70v);
+    const engRec = /s1\.appendChild\(rd\)/.test(j70v);
+    const engCor = /s2\.appendChild\(cx\)/.test(j70v);
+    comprobar('y los tres bloques se ENGANCHAN al documento, no solo se arman',
+      engRev && engRec && engCor,
+      (engRev && engRec && engCor)
+        ? 'la ficha del hecho, el recuento de la Capa 1 y las corridas de criterios se cuelgan de su ' +
+          'sección: un bloque calculado y sin enganchar es el mismo dato que nadie alcanza'
+        : 'sin enganchar: ' + [!engRev ? 'la ficha del hecho' : null, !engRec ? 'el recuento' : null,
+                               !engCor ? 'las corridas' : null].filter(Boolean).join(', '));
+
+    /* LAS DOS REDACCIONES, LA DE CERO Y LA DE N (v970, v1064). La de cero es
+       la que no se puede escribir después: un renglón que desaparece al
+       llegar a cero deja «ya está revisado» con la cara de «nadie lo ha
+       mirado». */
+    const ceroRev = /Ninguna entrada lleva todav[ií]a una revisi[oó]n posterior/.test(j70v);
+    const ceroCor = /Los criterios NO se han corrido contra el registro del gobierno anterior/.test(j70v);
+    const nRev = /hallazgo', 'hallazgos'\) \+ ' en '/.test(j70v);
+    comprobar('y las dos redacciones están escritas, la de cero y la de N',
+      ceroRev && ceroCor && nRev,
+      (ceroRev && ceroCor && nRev)
+        ? 'el recuento y las corridas tienen las dos: la de cero dice que nadie ha vuelto, y no que el ' +
+          'registro esté comprobado'
+        : 'falta: ' + [!ceroRev ? 'la de cero del recuento' : null, !ceroCor ? 'la de cero de las corridas' : null,
+                       !nRev ? 'la de N del recuento' : null].filter(Boolean).join(', '));
+
+    /* Y EL ESTADO DE HOY SE CALCULA, NO SE LEE DEL TEXTO DE LA CORRIDA
+       (v903). Las cifras de cada corrida son las de su fecha —la de la v1087
+       ya había envejecido—, así que al lado va una contada en cada carga. */
+    const hoyCalc = /corridaHaciaAtras\(DA, 'I-04'\)/.test(j70v) && /Medido hoy sobre el registro anterior/.test(j70v);
+    comprobar('y al lado de las corridas va el estado de HOY, contado y no escrito',
+      hoyCalc,
+      hoyCalc ? 'sale de `corridaHaciaAtras` en cada carga, así que no puede quedarse vieja como la de la v1087'
+              : 'desapareció la medida de hoy: las cifras de una corrida son las de su fecha, y sin una ' +
+                'contada al lado un lector no puede saber si siguen valiendo');
   }
 
   /* ═══ UNA FUENTE DE EFECTO NO PRUEBA EL ACTO (v965) ═════════════════════

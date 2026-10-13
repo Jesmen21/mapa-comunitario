@@ -814,8 +814,13 @@
           "base": "desacato-medida-cautelar-fraude"
         }
       },
-      "_retipificada": "v1087: estaba como `contexto-estructural` y es un acto institucional documentado de un tercero, que en este módulo va como `actividad` —igual que la carta del presidente de la JEP a la Corte Penal Internacional en el otro registro—. Con el tipo anterior no podía declarar indicador, y el criterio de I-05 sí entra en ella. El cambio va dicho acá y no en silencio: retipificar una entrada para que quepa una declaración sería acomodar el dato.",
-      "actosQueAgrupa": 1
+      "actosQueAgrupa": 1,
+      "revisionPosterior": [
+        {
+          "que": "actualizacion",
+          "texto": "v1087: estaba como `contexto-estructural` y es un acto institucional documentado de un tercero, que en este módulo va como `actividad` —igual que la carta del presidente de la JEP a la Corte Penal Internacional en el otro registro—. Con el tipo anterior no podía declarar indicador, y el criterio de I-05 sí entra en ella. El cambio va dicho acá y no en silencio: retipificar una entrada para que quepa una declaración sería acomodar el dato."
+        }
+      ]
     },
     {
       "fecha": "2026-08-23",
@@ -1078,8 +1083,13 @@
           "base": "desastre-nacional-2024-clima"
         }
       },
-      "_precisionYNUMERO": "La fecha va `aproximada` —noviembre de 2024— porque las fuentes en mano no dan el día. Y el número del decreto de PRÓRROGA no está firme: el archivo de la Rama Judicial se llama «DECRETO 1190 DE 2025» y su texto dice 1193. Se deja dicho en vez de elegir uno: lo que esta entrada sostiene es el Decreto 1372 de 2024, que las dos versiones recitan igual.",
-      "actosQueAgrupa": 1
+      "actosQueAgrupa": 1,
+      "revisionPosterior": [
+        {
+          "que": "precision",
+          "texto": "La fecha va `aproximada` —noviembre de 2024— porque las fuentes en mano no dan el día. Y el número del decreto de PRÓRROGA no está firme: el archivo de la Rama Judicial se llama «DECRETO 1190 DE 2025» y su texto dice 1193. Se deja dicho en vez de elegir uno: lo que esta entrada sostiene es el Decreto 1372 de 2024, que las dos versiones recitan igual."
+        }
+      ]
     },
     {
       "fecha": "2025-01-24",
@@ -1178,8 +1188,13 @@
           "base": "decreto-tributario-conmocion-175-2025"
         }
       },
-      "_precisionYNUMERO": "La fecha va `aproximada`: las fuentes en mano identifican el decreto por su número —Decreto Legislativo 0175 de 2025— y no dan el día de expedición. El número es lo que la regla de `documento-primario` exige.",
-      "actosQueAgrupa": 1
+      "actosQueAgrupa": 1,
+      "revisionPosterior": [
+        {
+          "que": "precision",
+          "texto": "La fecha va `aproximada`: las fuentes en mano identifican el decreto por su número —Decreto Legislativo 0175 de 2025— y no dan el día de expedición. El número es lo que la regla de `documento-primario` exige."
+        }
+      ]
     },
     {
       "fecha": "2025-06-18",
@@ -1226,10 +1241,21 @@
           "base": "decretos-conmocion-tumbados-116-180"
         }
       },
-      "_precisionYNUMERO": "La fecha `aproximada` es la de la Sentencia C-267 de 2025 según vLex (18 de junio de 2025); la del Decreto 180 no está firme en las fuentes en mano. El ACTO que esta entrada cuenta es la expedición de los decretos por el Ejecutivo, no el fallo: el fallo es su efecto y va con ese rol.",
-      "_rolCorregido": "v1094: esta entrada salió primero titulada por lo que hizo la CORTE y con las cuatro fuentes en `efecto`, así que la guarda de rol la contó `sin-acto` — con razón: el acto que I-04 cuenta es la EXPEDICIÓN de los decretos por el Ejecutivo, y ninguna fuente estaba declarada como documentándola. El defecto era del título, no del rol: el título hablaba de otro sujeto. Se corrigieron los dos juntos, y queda dicho porque cambiar solo el rol habría sido mover una etiqueta para callar la comprobación (v882).",
       "actosQueAgrupa": 11,
-      "_queCuentaEseNumero": "Los once decretos legislativos que el Ejecutivo expidió al amparo de la conmoción del Catatumbo. La entrada es una; los actos son once. Que la Corte tumbara dos es su efecto y no cambia cuántos se expidieron."
+      "revisionPosterior": [
+        {
+          "que": "precision",
+          "texto": "La fecha `aproximada` es la de la Sentencia C-267 de 2025 según vLex (18 de junio de 2025); la del Decreto 180 no está firme en las fuentes en mano. El ACTO que esta entrada cuenta es la expedición de los decretos por el Ejecutivo, no el fallo: el fallo es su efecto y va con ese rol."
+        },
+        {
+          "que": "actualizacion",
+          "texto": "v1094: esta entrada salió primero titulada por lo que hizo la CORTE y con las cuatro fuentes en `efecto`, así que la guarda de rol la contó `sin-acto` — con razón: el acto que I-04 cuenta es la EXPEDICIÓN de los decretos por el Ejecutivo, y ninguna fuente estaba declarada como documentándola. El defecto era del título, no del rol: el título hablaba de otro sujeto. Se corrigieron los dos juntos, y queda dicho porque cambiar solo el rol habría sido mover una etiqueta para callar la comprobación (v882)."
+        },
+        {
+          "que": "precision",
+          "texto": "Los once decretos legislativos que el Ejecutivo expidió al amparo de la conmoción del Catatumbo. La entrada es una; los actos son once. Que la Corte tumbara dos es su efecto y no cambia cuántos se expidieron."
+        }
+      ]
     },
     {
       "fecha": "2022-12-15",
@@ -1303,8 +1329,16 @@
       "indicadores": [],
       "actosQueAgrupa": 1,
       "_porQueListaVacia": "Fijar el salario mínimo por decreto cuando la mesa no acuerda es la facultad ORDINARIA del artículo 8 de la Ley 278 de 1996, no una facultad extraordinaria: el propio mecanismo legal lo prevé con fecha límite. I-04 excluye el cauce normal con esas palabras. No hay órgano de autonomía constitucional en contra (I-05), ni producto técnico de una entidad con independencia técnica (I-13), ni información negada y entregada tras una tutela (I-07), ni muerte en una operación del Estado (I-14).",
-      "_discrepanciaDeFUENTES": "HUBO o NO HUBO acuerdo en la mesa: Bancolombia y Buk dicen que no se logró y que por eso se decretó; El Colombiano dice las dos cosas en la misma nota. El dato del ACTO —número de decreto, monto y fecha— es convergente en las cuatro fuentes y es lo que esta entrada publica; el «sin acuerdo» va en la fuente de contexto y no en el título, porque no está dirimido. Y la discrepancia no mueve la lista vacía: con acuerdo o sin él, el decreto es el cauce ordinario del artículo 8 y I-04 lo excluye igual. Dirimirlo pide el acta de la Comisión, que se pide al Ministerio del Trabajo por petición de información del artículo 23 de la Constitución, y desde este contenedor el proxy niega todos los dominios: no se ha intentado por otro canal.",
-      "_precisionDelPORCENTAJE": "El alza se publica como «cerca del 12 %» y no como 12,07 %: las fuentes en mano dan 12 %, 12,06 % y $139.896, y 139.896 sobre 1.160.000 es 12,06 %. El 12,07 % que circula no apareció en ninguna de las fuentes consultadas, así que no se escribe."
+      "revisionPosterior": [
+        {
+          "que": "divergencia",
+          "texto": "HUBO o NO HUBO acuerdo en la mesa: Bancolombia y Buk dicen que no se logró y que por eso se decretó; El Colombiano dice las dos cosas en la misma nota. El dato del ACTO —número de decreto, monto y fecha— es convergente en las cuatro fuentes y es lo que esta entrada publica; el «sin acuerdo» va en la fuente de contexto y no en el título, porque no está dirimido. Y la discrepancia no mueve la lista vacía: con acuerdo o sin él, el decreto es el cauce ordinario del artículo 8 y I-04 lo excluye igual. Dirimirlo pide el acta de la Comisión, que se pide al Ministerio del Trabajo por petición de información del artículo 23 de la Constitución, y desde este contenedor el proxy niega todos los dominios: no se ha intentado por otro canal."
+        },
+        {
+          "que": "precision",
+          "texto": "El alza se publica como «cerca del 12 %» y no como 12,07 %: las fuentes en mano dan 12 %, 12,06 % y $139.896, y 139.896 sobre 1.160.000 es 12,06 %. El 12,07 % que circula no apareció en ninguna de las fuentes consultadas, así que no se escribe."
+        }
+      ]
     },
     {
       "fecha": "2024-12-24",
@@ -1384,7 +1418,12 @@
       "indicadores": [],
       "actosQueAgrupa": 1,
       "_porQueListaVacia": "Corrido contra los cuatro criterios escritos, NINGUNO aplica, y eso es un hallazgo sobre los criterios y no sobre el hecho. I-04 pide un acto que se aparte del régimen ordinario INVOCANDO una facultad extraordinaria, y acá el Ejecutivo sostuvo lo contrario: que estaba dentro del artículo 104 porque el Senado no había negado formalmente. I-05 pide una diferencia con un «órgano de autonomía constitucional», y las dos contrapartes de este choque son RAMAS —el Senado, legislativa; el Consejo de Estado, judicial—, no los órganos autónomos e independientes del inciso segundo del artículo 113, que es el universo alrededor del cual se escribió ese criterio (sus propias exclusiones citan el artículo 130 y las entidades de independencia solo técnica). I-13, I-07 e I-14 no tienen materia acá. La ambigüedad de I-05 y el vacío que deja quedan declarados en `_vaciosDeCriterio`, y NO se resuelven en esta tanda: ensanchar o estrechar un criterio mirando el caso que tiene que clasificar es exactamente lo que `construida-para-el-caso` prohíbe (v1077).",
-      "_porQueENTRAIGUAL": "Entra aunque no dispare nada porque el hecho está documentado y es el choque institucional más grave del cuatrienio: un decreto que se saltó la competencia de otra rama y que un tribunal frenó. Omitirlo porque no cabe en ningún criterio sería dejar el registro torcido para que los criterios siguieran sin tener nada que rechazar."
+      "revisionPosterior": [
+        {
+          "que": "procedencia",
+          "texto": "Entra aunque no dispare nada porque el hecho está documentado y es el choque institucional más grave del cuatrienio: un decreto que se saltó la competencia de otra rama y que un tribunal frenó. Omitirlo porque no cabe en ningún criterio sería dejar el registro torcido para que los criterios siguieran sin tener nada que rechazar."
+        }
+      ]
     }
   ],
   "casos": {
@@ -1675,72 +1714,6 @@
       }
     ]
   },
-  "_revisionCriterios": {
-    "fecha": "2026-10-09",
-    "version": "v1087",
-    "corrio": "Los cinco criterios escritos —I-04, I-05, I-13, I-07 e I-14— sobre los 7 actos de gobierno de este registro, que es el denominador honesto: a un resultado del país o a un hecho estructural no se le puede exigir una clasificación de actos sin medir un pendiente que nadie puede bajar nunca (v999, v1064).",
-    "resultado": "7 actos revisados · 1 declara indicador · 6 con la lista vacía.",
-    "loQueNOSeCorrio": "I-06, I-09 e I-10 no tienen criterio escrito —salen directos de la Capa 1—, así que no hay vara que correr. Y las otras 25 entradas no son actos: 10 son resultados del país y 15 son contexto estructural.",
-    "yQUEDASINVALIDAR": "Esta corrida NO desbloquea la validación de ningún criterio, y conviene decirlo con el número: `corridaHaciaAtras` cuenta las entradas REVISADAS, y una entrada solo puede revisarse si es un acto, así que el techo de este registro son sus 7 actos y el piso que el módulo exige son 20. Lo que falta no es correr los criterios otra vez: es DOCUMENTAR más actos del gobierno de Petro, con sus fuentes. Eso es archivo, y se puede hacer por búsqueda. — SUPERADA EN LA v1094: ese «techo de 7 actos» era el de octubre de 2026 y ya no vale. La v1094 documentó 9 actos más por una regla escrita antes de buscar, el registro quedó en 16 revisadas, y midió que para I-04 e I-05 el piso de 20 dejó de ser lo que bloquea: los dos DISPARARON acá. Lo que falta está en `_revisionCriterios2`. La cifra de este renglón se queda como estaba porque es el registro de lo que esa corrida encontró; lo que no puede quedarse es sin decir que fue superada.",
-    "discriminantes": [
-      {
-        "caso": "la sanción del CNE a la campaña Petro Presidente 2022",
-        "porQueNO": "I-05 pide un choque con un acto del EJECUTIVO, y la sancionada es la campaña de 2022: no es el Ejecutivo y es anterior al gobierno. Que el sancionado sea el presidente no convierte su campaña en un acto de gobierno."
-      },
-      {
-        "caso": "la Procuraduría destituye a los responsables de los carrotanques de la UNGRD",
-        "porQueNO": "Es un acto institucional de un órgano autónomo contra funcionarios del Ejecutivo, pero no hay controversia documentada: el Ejecutivo no se opuso. I-05 cuenta CHOQUES, y una sanción que nadie disputó no es uno."
-      },
-      {
-        "caso": "la Corte Constitucional avala la mayor parte de la reforma pensional",
-        "porQueNO": "La decisión fue a favor en lo principal. Un criterio que contara como choque un fallo que el Ejecutivo ganó mediría que hubo pleito y no quién perdió."
-      },
-      {
-        "caso": "la exfiscal denuncia presiones para retirar el delito de lavado",
-        "porQueNO": "I-05 excluye la tensión reportada sin documento de ninguna de las partes, y el único acto institucional acá es la respuesta de la Fiscalía, que NIEGA: el órgano no declaró su autonomía afectada, declaró lo contrario. Y no es I-13 porque no hay producto técnico de por medio."
-      },
-      {
-        "caso": "Petro, ya expresidente, pregunta por las cuatro muertes del operativo de Riohacha",
-        "porQueNO": "El operativo dispara I-14, pero NO en este registro: es un acto del gobierno siguiente y la entrada documenta un comentario suyo. Cargarle a un gobierno la operación de otro es el error de línea base que este módulo le señala a otras narrativas."
-      },
-      {
-        "caso": "el tribunal remite a la Comisión de Acusación el caso por desacato a la medida cautelar",
-        "porQueSI": "El único que DISPARA. Hay controversia con un órgano autónomo —la Registraduría, sobre sus denuncias de fraude— y una decisión judicial resolvió en contra del Ejecutivo: la medida cautelar que le ordenaba abstenerse. Entra por esa vía de I-05 y por ninguna otra. Hubo que retipificarla a `actividad`, y el cambio queda escrito en la propia entrada."
-      }
-    ],
-    "yLoQueESTOLEHACEALCRITERIO": "Que I-05 dispare en el registro anterior NO lo valida: lo deja en «disparó, hay que mirar si distingue», que es MÁS exigente que el estado anterior. Se anota igual, y por eso se anota: declararlo todo en lista vacía habría sido la salida barata y habría dado por bueno un criterio sin haberlo puesto a prueba."
-  },
-  "_revisionCriterios2": {
-    "fecha": "2026-10-10",
-    "version": "v1094",
-    "laREGLA": "Qué actos se documentaron, y la regla se escribió ANTES de buscar y antes de saber si disparaban (v1077). Dos vías objetivas y ninguna más: (a) las LEYES que el Ejecutivo sancionó y presentó como su programa —están en el Diario Oficial y su lista es cerrada—; y (b) los ACTOS por los que el Ejecutivo se apartó del régimen ordinario —declaratorias de excepción, de emergencia o de desastre—, que la Constitución y la Ley 1523 someten a control, así que su existencia es pública y su lista también es cerrada.",
-    "yLOQUEESOIMPLICA": "La vía (b) DISPARA I-04 por definición, y eso va dicho de antemano: documentarla no es elegir material a conveniencia — OMITIRLA sería dejar el registro torcido para que el criterio siguiera sin tener nada que rechazar, que es la salida barata que este proyecto tiene prohibida por escrito. El resultado que se publica es el que salga.",
-    "resultado": "9 actos nuevos documentados: 3 leyes del programa (2272 de 2022 paz total, 2277 de 2022 tributaria, 2294 de 2023 plan de desarrollo) y 6 actos de excepción, emergencia o desastre (Decreto 1085 de 2023 emergencia en La Guajira, Decretos 0037 y 1372 de 2024 desastre nacional, Decreto 0062 de 2025 conmoción interior en el Catatumbo, Decreto 0175 de 2025 tributario al amparo de la conmoción, y los Decretos 116 y 180 de 2025 que la Corte tumbó). Las 3 leyes van con la LISTA VACÍA —I-04 excluye la ley ordinaria con esas palabras— y los 6 actos declaran I-04.",
-    "yQUEDASINVALIDAR": "El registro pasa de 7 a 16 entradas revisadas y el piso que el módulo exige son 20, así que NO se alcanzó. Pero medido, el piso ya no es lo que bloquea a dos de los cinco criterios: I-04 e I-05 DISPARARON en este registro —seis veces el primero, una el segundo— y con un disparo el estado pasa a «disparó: hay que mirar si distingue», que no depende del piso. El piso sigue mordiendo a I-13, I-07 e I-14, que no tienen materia acá: faltan 4 actos revisados para llegar a 20.",
-    "yUNAOBSERVACIONQUECONVIENEMEDIRDESPUES": "Que I-04 dispare seis veces sobre OTRO gobierno es, leído de frente, evidencia de que el criterio NO está tallado a la medida del caso de este registro — que es justamente lo que `construida-para-el-caso` teme. La semántica de validación que el módulo tiene hoy lo lee al contrario: solo «no disparó» valida. Las dos lecturas pueden ser ciertas a la vez y esta tanda no las resuelve; queda anotado para que la siguiente lo mida en vez de redescubrirlo.",
-    "discriminantes": [
-      {
-        "caso": "las tres leyes del programa (2272, 2277, 2294)",
-        "porQueNO": "I-04 excluye el «proyecto de ley ordinaria (es el cauce normal, no una excepción)», y una ley sancionada por el cauce ordinario es exactamente eso. Los otros cuatro criterios no tienen materia: no hay órgano autónomo en contra, ni producto técnico, ni información negada y entregada tras tutela, ni muerte en una operación del Estado."
-      },
-      {
-        "caso": "la revisión automática de la Corte sobre los decretos de excepción",
-        "porQueNO": "NO entra por I-05, y por eso el criterio se estrechó en esta misma tanda. El artículo 214.6 obliga al Ejecutivo a enviar el decreto a la Corte al día siguiente de expedirlo: es el cauce obligado, no una controversia. Contarlo habría dado seis choques que son los MISMOS seis decretos que I-04 ya cuenta —dos codificaciones de un solo hecho— y habría convertido I-05 en sinónimo de «declaró una emergencia»."
-      },
-      {
-        "caso": "el Decreto 0175 de 2025, que la Corte dejó en pie con condiciones",
-        "porQueNO": "Tampoco es un choque, y la razón ya estaba escrita en este registro para la reforma pensional: un fallo que el Ejecutivo gana en lo sustancial mediría que hubo pleito y no quién perdió. Entra por I-04 y por ninguna otra vía."
-      },
-      {
-        "caso": "el Decreto 1372 de 2024 y el número de su prórroga",
-        "porQueSI": "Entra por I-04 como declaratoria de desastre, y se deja dicho lo que no está firme: el archivo de la Rama Judicial se llama «DECRETO 1190 DE 2025» y su texto dice 1193. Lo que la entrada sostiene es el Decreto 1372 de 2024, que las dos versiones recitan igual. Elegir uno de los dos números habría sido publicar una precisión que no se tiene."
-      },
-      {
-        "caso": "la emergencia económica por la fiebre amarilla, abril de 2025",
-        "porQueNO": "NO SE DOCUMENTÓ, y la razón importa: el 15 de abril de 2025 el presidente ANUNCIÓ que la decretaría, y la búsqueda no sostiene que el decreto se expidiera. I-04 excluye el «anuncio sin acto administrativo expedido», así que la entrada habría sumado una revisada sin disparo — es decir, habría acercado el registro al piso de 20 sin aportar un acto. Se deja fuera por eso: meterla sería mover el número y no el material."
-      }
-    ]
-  },
   "_vaciosDeCriterio": [
     {
       "entrada": "consulta-popular-por-decreto-suspendida",
@@ -1819,5 +1792,90 @@
     ],
     "yUNHALLAZGOquenoERAELQUESEBUSCABA": "Ninguno de los siete es el cauce normal, así que ningún criterio hay que estrecharlo. Pero mirarlos uno por uno dejó ver otra cosa, que es la clase B y la misma forma de la v1097 un nivel más arriba: **la cuenta de I-04 no declara si su unidad es el ACTO o el RÉGIMEN de excepción**. Los seis disparos son seis entradas y dieciséis actos, pero abren solo CUATRO regímenes —la emergencia de La Guajira, los dos desastres nacionales de 2024 y la conmoción del Catatumbo—: dos de las entradas son decretos expedidos al amparo de una conmoción que ya se contó. Las dos lecturas son legítimas y dicen cosas distintas: «cuántas veces invocó una facultad extraordinaria» son dieciséis, «cuántos regímenes de excepción abrió» son cuatro. Y como en la v1097, la cura no es cambiar el número: es declarar la unidad y publicar las dos cuentas.",
     "yLOQUEESTAREVISIONNOCUBRE": "Solo los disparos del registro del gobierno ANTERIOR, que son los que deciden la validación de un criterio. Los del registro actual no se revisan acá y su marca no depende de esta revisión. Y que un veredicto sea CIERTO no lo puede comprobar ninguna guarda (v1008): lo que se comprueba es que esté escrito y que cubra todos los disparos."
-  }
+  },
+  "revisionesDeCriterios": [
+    {
+      "fecha": "2026-10-09",
+      "version": "v1087",
+      "regla": null,
+      "yEsoImplica": null,
+      "queSeCorrio": "Los cinco criterios escritos —I-04, I-05, I-13, I-07 e I-14— sobre los 7 actos de gobierno de este registro, que es el denominador honesto: a un resultado del país o a un hecho estructural no se le puede exigir una clasificación de actos sin medir un pendiente que nadie puede bajar nunca (v999, v1064).",
+      "resultado": "7 actos revisados · 1 declara indicador · 6 con la lista vacía.",
+      "loQueNOSeCorrio": "I-06, I-09 e I-10 no tienen criterio escrito —salen directos de la Capa 1—, así que no hay vara que correr. Y las otras 25 entradas no son actos: 10 son resultados del país y 15 son contexto estructural.",
+      "yQuedaSinValidar": "Esta corrida NO desbloquea la validación de ningún criterio, y conviene decirlo con el número: `corridaHaciaAtras` cuenta las entradas REVISADAS, y una entrada solo puede revisarse si es un acto, así que el techo de este registro son sus 7 actos y el piso que el módulo exige son 20. Lo que falta no es correr los criterios otra vez: es DOCUMENTAR más actos del gobierno de Petro, con sus fuentes. Eso es archivo, y se puede hacer por búsqueda. — SUPERADA EN LA v1094: ese «techo de 7 actos» era el de octubre de 2026 y ya no vale. La v1094 documentó 9 actos más por una regla escrita antes de buscar, el registro quedó en 16 revisadas, y midió que para I-04 e I-05 el piso de 20 dejó de ser lo que bloquea: los dos DISPARARON acá. Lo que falta está en la corrida siguiente, la de la v1094, que se lee debajo de esta. La cifra de este renglón se queda como estaba porque es el registro de lo que esa corrida encontró; lo que no puede quedarse es sin decir que fue superada.",
+      "observacion": "Que I-05 dispare en el registro anterior NO lo valida: lo deja en «disparó, hay que mirar si distingue», que es MÁS exigente que el estado anterior. Se anota igual, y por eso se anota: declararlo todo en lista vacía habría sido la salida barata y habría dado por bueno un criterio sin haberlo puesto a prueba.",
+      "noTrae": "No documentó material nuevo —corrió los criterios sobre lo que el registro ya tenía—, así que no necesitaba una regla de selección escrita antes de buscar: esa regla protege la BÚSQUEDA de escogerse a conveniencia (v1077) y acá no había búsqueda de qué protegerla.",
+      "discriminantes": [
+        {
+          "caso": "la sanción del CNE a la campaña Petro Presidente 2022",
+          "dispara": false,
+          "porQue": "I-05 pide un choque con un acto del EJECUTIVO, y la sancionada es la campaña de 2022: no es el Ejecutivo y es anterior al gobierno. Que el sancionado sea el presidente no convierte su campaña en un acto de gobierno."
+        },
+        {
+          "caso": "la Procuraduría destituye a los responsables de los carrotanques de la UNGRD",
+          "dispara": false,
+          "porQue": "Es un acto institucional de un órgano autónomo contra funcionarios del Ejecutivo, pero no hay controversia documentada: el Ejecutivo no se opuso. I-05 cuenta CHOQUES, y una sanción que nadie disputó no es uno."
+        },
+        {
+          "caso": "la Corte Constitucional avala la mayor parte de la reforma pensional",
+          "dispara": false,
+          "porQue": "La decisión fue a favor en lo principal. Un criterio que contara como choque un fallo que el Ejecutivo ganó mediría que hubo pleito y no quién perdió."
+        },
+        {
+          "caso": "la exfiscal denuncia presiones para retirar el delito de lavado",
+          "dispara": false,
+          "porQue": "I-05 excluye la tensión reportada sin documento de ninguna de las partes, y el único acto institucional acá es la respuesta de la Fiscalía, que NIEGA: el órgano no declaró su autonomía afectada, declaró lo contrario. Y no es I-13 porque no hay producto técnico de por medio."
+        },
+        {
+          "caso": "Petro, ya expresidente, pregunta por las cuatro muertes del operativo de Riohacha",
+          "dispara": false,
+          "porQue": "El operativo dispara I-14, pero NO en este registro: es un acto del gobierno siguiente y la entrada documenta un comentario suyo. Cargarle a un gobierno la operación de otro es el error de línea base que este módulo le señala a otras narrativas."
+        },
+        {
+          "caso": "el tribunal remite a la Comisión de Acusación el caso por desacato a la medida cautelar",
+          "dispara": true,
+          "porQue": "El único que DISPARA. Hay controversia con un órgano autónomo —la Registraduría, sobre sus denuncias de fraude— y una decisión judicial resolvió en contra del Ejecutivo: la medida cautelar que le ordenaba abstenerse. Entra por esa vía de I-05 y por ninguna otra. Hubo que retipificarla a `actividad`, y el cambio queda escrito en la propia entrada."
+        }
+      ]
+    },
+    {
+      "fecha": "2026-10-10",
+      "version": "v1094",
+      "regla": "Qué actos se documentaron, y la regla se escribió ANTES de buscar y antes de saber si disparaban (v1077). Dos vías objetivas y ninguna más: (a) las LEYES que el Ejecutivo sancionó y presentó como su programa —están en el Diario Oficial y su lista es cerrada—; y (b) los ACTOS por los que el Ejecutivo se apartó del régimen ordinario —declaratorias de excepción, de emergencia o de desastre—, que la Constitución y la Ley 1523 someten a control, así que su existencia es pública y su lista también es cerrada.",
+      "yEsoImplica": "La vía (b) DISPARA I-04 por definición, y eso va dicho de antemano: documentarla no es elegir material a conveniencia — OMITIRLA sería dejar el registro torcido para que el criterio siguiera sin tener nada que rechazar, que es la salida barata que este proyecto tiene prohibida por escrito. El resultado que se publica es el que salga.",
+      "queSeCorrio": null,
+      "resultado": "9 actos nuevos documentados: 3 leyes del programa (2272 de 2022 paz total, 2277 de 2022 tributaria, 2294 de 2023 plan de desarrollo) y 6 actos de excepción, emergencia o desastre (Decreto 1085 de 2023 emergencia en La Guajira, Decretos 0037 y 1372 de 2024 desastre nacional, Decreto 0062 de 2025 conmoción interior en el Catatumbo, Decreto 0175 de 2025 tributario al amparo de la conmoción, y los Decretos 116 y 180 de 2025 que la Corte tumbó). Las 3 leyes van con la LISTA VACÍA —I-04 excluye la ley ordinaria con esas palabras— y los 6 actos declaran I-04.",
+      "loQueNOSeCorrio": null,
+      "yQuedaSinValidar": "El registro pasa de 7 a 16 entradas revisadas y el piso que el módulo exige son 20, así que NO se alcanzó. Pero medido, el piso ya no es lo que bloquea a dos de los cinco criterios: I-04 e I-05 DISPARARON en este registro —seis veces el primero, una el segundo— y con un disparo el estado pasa a «disparó: hay que mirar si distingue», que no depende del piso. El piso sigue mordiendo a I-13, I-07 e I-14, que no tienen materia acá: faltan 4 actos revisados para llegar a 20.",
+      "observacion": "Que I-04 dispare seis veces sobre OTRO gobierno es, leído de frente, evidencia de que el criterio NO está tallado a la medida del caso de este registro — que es justamente lo que `construida-para-el-caso` teme. La semántica de validación que el módulo tiene hoy lo lee al contrario: solo «no disparó» valida. Las dos lecturas pueden ser ciertas a la vez y esta tanda no las resuelve; queda anotado para que la siguiente lo mida en vez de redescubrirlo.",
+      "noTrae": "No volvió a correr los cinco criterios sobre todo el registro —eso lo hizo la corrida anterior—: documentó actos nuevos por la regla de arriba y los clasificó al entrar. Y lo que quedó fuera va caso por caso en los discriminantes, con su razón, en vez de en una frase general.",
+      "discriminantes": [
+        {
+          "caso": "las tres leyes del programa (2272, 2277, 2294)",
+          "dispara": false,
+          "porQue": "I-04 excluye el «proyecto de ley ordinaria (es el cauce normal, no una excepción)», y una ley sancionada por el cauce ordinario es exactamente eso. Los otros cuatro criterios no tienen materia: no hay órgano autónomo en contra, ni producto técnico, ni información negada y entregada tras tutela, ni muerte en una operación del Estado."
+        },
+        {
+          "caso": "la revisión automática de la Corte sobre los decretos de excepción",
+          "dispara": false,
+          "porQue": "NO entra por I-05, y por eso el criterio se estrechó en esta misma tanda. El artículo 214.6 obliga al Ejecutivo a enviar el decreto a la Corte al día siguiente de expedirlo: es el cauce obligado, no una controversia. Contarlo habría dado seis choques que son los MISMOS seis decretos que I-04 ya cuenta —dos codificaciones de un solo hecho— y habría convertido I-05 en sinónimo de «declaró una emergencia»."
+        },
+        {
+          "caso": "el Decreto 0175 de 2025, que la Corte dejó en pie con condiciones",
+          "dispara": false,
+          "porQue": "Tampoco es un choque, y la razón ya estaba escrita en este registro para la reforma pensional: un fallo que el Ejecutivo gana en lo sustancial mediría que hubo pleito y no quién perdió. Entra por I-04 y por ninguna otra vía."
+        },
+        {
+          "caso": "el Decreto 1372 de 2024 y el número de su prórroga",
+          "dispara": true,
+          "porQue": "Entra por I-04 como declaratoria de desastre, y se deja dicho lo que no está firme: el archivo de la Rama Judicial se llama «DECRETO 1190 DE 2025» y su texto dice 1193. Lo que la entrada sostiene es el Decreto 1372 de 2024, que las dos versiones recitan igual. Elegir uno de los dos números habría sido publicar una precisión que no se tiene."
+        },
+        {
+          "caso": "la emergencia económica por la fiebre amarilla, abril de 2025",
+          "dispara": false,
+          "porQue": "NO SE DOCUMENTÓ, y la razón importa: el 15 de abril de 2025 el presidente ANUNCIÓ que la decretaría, y la búsqueda no sostiene que el decreto se expidiera. I-04 excluye el «anuncio sin acto administrativo expedido», así que la entrada habría sumado una revisada sin disparo — es decir, habría acercado el registro al piso de 20 sin aportar un acto. Se deja fuera por eso: meterla sería mover el número y no el material."
+        }
+      ]
+    }
+  ]
 }

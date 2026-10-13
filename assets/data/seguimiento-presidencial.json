@@ -381,7 +381,12 @@
         }
       ],
       "contrargumentoOficial": "El Gobierno defendió el decreto con tres cosas. El ministro del Interior resumió el objetivo —separar la protesta pacífica de los actos violentos: «ni menos derechos para quien protesta ni más espacio para quien destruye»—; sostuvo que el texto se AJUSTÓ tras comentarios públicos y reuniones con organizaciones sociales, con los accionantes del fallo que originó el Decreto 003 y con la fuerza pública; y el presidente endureció el tono diciendo que respetará la protesta pacífica y no permitirá acciones violentas. Lo que NO hay es una réplica punto por punto a la objeción central —cuándo y cómo interviene la Policía, con las ocho causales para dar por agotado el diálogo y los cinco niveles de reacción—, que es donde se juega si el decreto protege la protesta o la acota.",
-      "_contradiccionDELAVIGENCIA": "HALLAZGO del 13 de octubre de 2026, al buscar la respuesta oficial, y se anota en vez de cambiar el título: una fuente de ESE día —El Universal— dice que el presidente «alista» el decreto y que anunció que lo firmará esa semana, es decir que NO estaba firmado; esta entrada lo da por expedido sobre la base de El Colombiano, que reportó que ya estaba en vigencia. La entrada ya declaraba que las fuentes no coinciden en el día de la firma; ahora no coinciden en algo más grave, si está firmado o no. Lo dirime el Diario Oficial, que el proxy de este contenedor no deja leer. No se voltea el título sobre una búsqueda, y tampoco se calla: un decreto dado por vigente que no lo esté es un error de los que este módulo existe para no cometer."
+      "revisionPosterior": [
+        {
+          "que": "contradiccion",
+          "texto": "HALLAZGO del 13 de octubre de 2026, al buscar la respuesta oficial, y se anota en vez de cambiar el título: una fuente de ESE día —El Universal— dice que el presidente «alista» el decreto y que anunció que lo firmará esa semana, es decir que NO estaba firmado; esta entrada lo da por expedido sobre la base de El Colombiano, que reportó que ya estaba en vigencia. La entrada ya declaraba que las fuentes no coinciden en el día de la firma; ahora no coinciden en algo más grave, si está firmado o no. Lo dirime el Diario Oficial, que el proxy de este contenedor no deja leer. No se voltea el título sobre una búsqueda, y tampoco se calla: un decreto dado por vigente que no lo esté es un error de los que este módulo existe para no cometer."
+        }
+      ]
     },
     {
       "fecha": "2026-10-10",
@@ -2266,7 +2271,12 @@
       ],
       "actosQueAgrupa": 1,
       "contrargumentoOficial": "El Gobierno defendió la operación sosteniendo que los abatidos «eran combatientes». Fue uno de los dos hechos que motivaron la moción de censura contra el ministro de Defensa, y en ese debate el ministro agregó el argumento de método: «un bombardeo no se decide de la noche a la mañana», que el planeamiento identifica y delimita los objetivos militares de antemano y que incluye medidas de protección a la población civil bajo los principios de distinción, proporcionalidad y precaución. NO responde qué se hizo para descartar la presencia de un menor en el objetivo antes de atacar.",
-      "_precisionDelNOMBRE": "Al buscar la respuesta oficial, el 13 de octubre de 2026, el nombre «Operación Beta» NO apareció en ninguna de las nueve fuentes consultadas: el HECHO sí está corroborado —una operación en el Catatumbo el 10 de agosto de 2026 contra el ELN, con un menor de 16 años muerto, y uno de los dos casos que motivaron la moción de censura contra el ministro de Defensa—, pero el rótulo no. Se deja escrito en vez de corregir el título sobre una sola búsqueda, y en vez de callarlo: un nombre que ninguna fuente sostiene es un dato más débil que el hecho que nombra. Lo dirime el comunicado del Ministerio de Defensa de esa fecha, que el proxy de este contenedor no deja leer."
+      "revisionPosterior": [
+        {
+          "que": "precision",
+          "texto": "Al buscar la respuesta oficial, el 13 de octubre de 2026, el nombre «Operación Beta» NO apareció en ninguna de las nueve fuentes consultadas: el HECHO sí está corroborado —una operación en el Catatumbo el 10 de agosto de 2026 contra el ELN, con un menor de 16 años muerto, y uno de los dos casos que motivaron la moción de censura contra el ministro de Defensa—, pero el rótulo no. Se deja escrito en vez de corregir el título sobre una sola búsqueda, y en vez de callarlo: un nombre que ninguna fuente sostiene es un dato más débil que el hecho que nombra. Lo dirime el comunicado del Ministerio de Defensa de esa fecha, que el proxy de este contenedor no deja leer."
+        }
+      ]
     },
     {
       "fecha": "2026-09-30",
@@ -3085,7 +3095,12 @@
       ],
       "actosQueAgrupa": 1,
       "contrargumentoOficial": "El balance lo presentó el propio presidente, y las fuentes militares y policiales lo sostienen en lo que toca a la operación: tropas del Ejército, con la Fiscalía y la Policía, rescataron a cuatro secuestrados en Gómez Plata (Antioquia) tras un combate con la Estructura 36, con dos muertos y un capturado, entre los muertos alias «Huevo». Sobre los menores el relato oficial de la operación es más modesto que el titular del balance: el Ejército habla de un menor herido trasladado a un centro asistencial en Bello, y dos medios de dos adolescentes recuperados.",
-      "_precisionDeLACIFRA": "Al buscar la respuesta oficial, el 13 de octubre de 2026, se vio que los CUATRO menores no son de esta operación: salen del balance de 24 HORAS que presentó la Presidencia, que agrega operaciones de la Fuerza Pública en todo el país. De la operación de Gómez Plata el Ejército reporta un menor herido, y dos medios hablan de dos adolescentes recuperados. El título de esta entrada junta las dos cifras, que es la misma clase de error que este módulo le reprocha a otros: un agregado leído como un caso. No se corrige el título sobre una búsqueda —lo dirime el comunicado del Ejército, que el proxy no deja leer—, pero queda dicho acá y en el contrargumento, que es donde el lector lo ve."
+      "revisionPosterior": [
+        {
+          "que": "precision",
+          "texto": "Al buscar la respuesta oficial, el 13 de octubre de 2026, se vio que los CUATRO menores no son de esta operación: salen del balance de 24 HORAS que presentó la Presidencia, que agrega operaciones de la Fuerza Pública en todo el país. De la operación de Gómez Plata el Ejército reporta un menor herido, y dos medios hablan de dos adolescentes recuperados. El título de esta entrada junta las dos cifras, que es la misma clase de error que este módulo le reprocha a otros: un agregado leído como un caso. No se corrige el título sobre una búsqueda —lo dirime el comunicado del Ejército, que el proxy no deja leer—, pero queda dicho acá y en el contrargumento, que es donde el lector lo ve."
+        }
+      ]
     },
     {
       "fecha": "2026-09-19",
@@ -3447,7 +3462,12 @@
         }
       ],
       "actosQueAgrupa": 15,
-      "_queCuentaEseNumero": "El paquete adicional que el Gobierno expidió al cierre de los treinta días: quince decretos legislativos, uno de ellos el de contratación directa por urgencia manifiesta. La entrada es una; los actos son quince."
+      "revisionPosterior": [
+        {
+          "que": "precision",
+          "texto": "El paquete adicional que el Gobierno expidió al cierre de los treinta días: quince decretos legislativos, uno de ellos el de contratación directa por urgencia manifiesta. La entrada es una; los actos son quince."
+        }
+      ]
     },
     {
       "fecha": "2026-09-17",
@@ -4952,8 +4972,13 @@
         }
       },
       "actosQueAgrupa": 11,
-      "_queCuentaEseNumero": "Los once decretos firmados el 9 de septiembre al cabo del consejo de ministros, dentro del marco del Decreto 1261. La entrada es una; los actos son once.",
-      "contrargumentoOficial": "La Presidencia publicó su propio comunicado con el objeto declarado de los once decretos: movilizar recursos, darle capacidad financiera a las regiones, garantizar la prestación de los servicios públicos, acelerar la reconstrucción de la infraestructura y sostener la educación. Los dos primeros son nombrables y comprobables: el Decreto 1379 crea el Fondo «Patria Milagro» para concentrar y administrar recursos públicos y privados de la reconstrucción, y el Decreto 1380 habilita de manera extraordinaria al Fondes para aportes en el frente energético. NO responde el reparo que el propio hecho levanta y que ningún congresista ni organismo de control había formulado al cierre de esta búsqueda: que once decretos son instrumentos y no resultados, y que la reconstrucción se mide en familias que recuperan una vivienda y no en actos firmados. El Gobierno declara el instrumento; el resultado todavía no tiene cómo medirse."
+      "contrargumentoOficial": "La Presidencia publicó su propio comunicado con el objeto declarado de los once decretos: movilizar recursos, darle capacidad financiera a las regiones, garantizar la prestación de los servicios públicos, acelerar la reconstrucción de la infraestructura y sostener la educación. Los dos primeros son nombrables y comprobables: el Decreto 1379 crea el Fondo «Patria Milagro» para concentrar y administrar recursos públicos y privados de la reconstrucción, y el Decreto 1380 habilita de manera extraordinaria al Fondes para aportes en el frente energético. NO responde el reparo que el propio hecho levanta y que ningún congresista ni organismo de control había formulado al cierre de esta búsqueda: que once decretos son instrumentos y no resultados, y que la reconstrucción se mide en familias que recuperan una vivienda y no en actos firmados. El Gobierno declara el instrumento; el resultado todavía no tiene cómo medirse.",
+      "revisionPosterior": [
+        {
+          "que": "precision",
+          "texto": "Los once decretos firmados el 9 de septiembre al cabo del consejo de ministros, dentro del marco del Decreto 1261. La entrada es una; los actos son once."
+        }
+      ]
     },
     {
       "fecha": "2026-09-09",
@@ -5005,7 +5030,13 @@
           "rol": "efecto"
         }
       ],
-      "actosQueAgrupa": 1
+      "actosQueAgrupa": 1,
+      "revisionPosterior": [
+        {
+          "que": "actualizacion",
+          "texto": "HECHO NUEVO del 13 de octubre de 2026, encontrado al buscar la respuesta oficial del Gobierno. El reporte de 103 trayectos y $1.117 millones que esta entrada registra NO era el completo: el Juzgado Noveno Penal del Circuito Especializado de Bogotá le dio al Ministerio de Defensa 48 horas para entregar la información completa, y el consolidado ampliado —del 7 de agosto al 8 de septiembre de 2026, 32 días— subió a 219 movimientos de aeronaves por unos $2.286 millones, de los cuales 138 duraron menos de diez minutos (unos $356 millones) y 43 tuvieron como origen o destino las canchas del Junior en Barranquilla (unos $141 millones). Convergente en Publimetro, Portafolio, Infobae, El Universal y La Voz del Cinaruco. SE ANOTA EN VEZ DE CAMBIAR LAS CIFRAS DEL TÍTULO, y la razón importa: las dos mediciones tienen ventanas distintas —18 días contra 32— y mezclarlas en un total sería el error que la v1085 tiene escrito. Y lo que esta actualización NO resuelve: el consolidado ampliado lo divulgó el representante Bohórquez y no está verificado de forma independiente, varias notas advierten que un movimiento de aeronave no equivale a un viaje personal del presidente —hay posicionamiento, logística, esquema de seguridad y atención del terremoto del 10 de agosto dentro de esa cuenta—, y eso es una advertencia de prensa y no una respuesta oficial del Gobierno, así que el contrargumento de esta entrada sigue `sin-revisar`."
+        }
+      ]
     },
     {
       "fecha": "2026-09-08",
@@ -6476,7 +6507,12 @@
         }
       ],
       "contrargumentoOficial": "El presidente cumplió el fallo y dio al mismo tiempo su versión, que tiene tres partes: que respeta la separación entre la Iglesia y el Estado; que la inclusión del momento religioso NO fue decisión suya sino de las mesas directivas del Congreso, que lo aprobaron como punto de «invocación» en el orden del día; y que sus excusas eran condicionales —«si ofendió a alguna persona»—, sin renunciar a manifestar públicamente su fe. Es decir: aceptó la orden y no el reproche.",
-      "_actualizacionDELFALLO": "HECHO NUEVO encontrado el 13 de octubre de 2026 al buscar la respuesta oficial, y se ACTUALIZA la entrada porque cambia su sentido: **el Tribunal Superior de Bogotá REVOCÓ el fallo de primera instancia** y concluyó que la ceremonia de posesión no violó la neutralidad religiosa del Estado. Esta entrada quedaba leyéndose como «cumplió una orden que declaró una vulneración», y la vulneración declarada ya no está en pie. Se escribe por la misma razón por la que este módulo escribe los archivados con etiqueta verde: el desenlace que exonera circula mucho menos que la acusación. Lo que NO se pudo fijar con la búsqueda es la fecha exacta del fallo de segunda instancia, y queda dicho en vez de inventado."
+      "revisionPosterior": [
+        {
+          "que": "actualizacion",
+          "texto": "HECHO NUEVO encontrado el 13 de octubre de 2026 al buscar la respuesta oficial, y se ACTUALIZA la entrada porque cambia su sentido: **el Tribunal Superior de Bogotá REVOCÓ el fallo de primera instancia** y concluyó que la ceremonia de posesión no violó la neutralidad religiosa del Estado. Esta entrada quedaba leyéndose como «cumplió una orden que declaró una vulneración», y la vulneración declarada ya no está en pie. Se escribe por la misma razón por la que este módulo escribe los archivados con etiqueta verde: el desenlace que exonera circula mucho menos que la acusación. Lo que NO se pudo fijar con la búsqueda es la fecha exacta del fallo de segunda instancia, y queda dicho en vez de inventado."
+        }
+      ]
     },
     {
       "fecha": "2026-08-30",
@@ -6803,7 +6839,12 @@
         }
       ],
       "contrargumentoOficial": "El Gobierno defendió la designación por «idoneidad, diálogo institucional y fortalecimiento de la educación superior», y precisó un dato que varios medios dieron por cierto: que el presidente y el sacerdote NO son primos. Pero la respuesta de fondo —si un capellán de la Presidencia puede ocupar una silla en los órganos directivos de universidades públicas laicas— nunca llegó: el 9 de septiembre de 2026, con el Decreto 1371, el Ministerio de Educación dio por terminadas las designaciones y nombró en su lugar al abogado Camilo Andrés Noguera Abello, director del partido de gobierno. El decreto se justifica en que la facultad de designar incluye la de dar por terminado y volver a designar. Es decir: el Gobierno resolvió el caso RETIRANDO el nombramiento, no contestando el reparo de laicidad, y lo reemplazó por un dirigente político, que abre una pregunta distinta sobre la autonomía universitaria.",
-      "_actualizacion": "HECHO NUEVO encontrado el 13 de octubre de 2026 al buscar la respuesta oficial, y se ACTUALIZA la entrada en vez de abrir otra —un caso que avanza se actualiza, no se duplica—: la designación fue REVERSADA el 9 de septiembre de 2026 por el Decreto 1371 del Ministerio de Educación, y el reemplazo es Camilo Andrés Noguera Abello, director del partido Defensores de la Patria. Dos cosas quedan sin dirimir y van dichas: los medios citan números de decreto distintos para la designación original —1310 y 1320—, y el parentesco con el presidente lo afirman varios medios y lo niega el Gobierno."
+      "revisionPosterior": [
+        {
+          "que": "actualizacion",
+          "texto": "HECHO NUEVO encontrado el 13 de octubre de 2026 al buscar la respuesta oficial, y se ACTUALIZA la entrada en vez de abrir otra —un caso que avanza se actualiza, no se duplica—: la designación fue REVERSADA el 9 de septiembre de 2026 por el Decreto 1371 del Ministerio de Educación, y el reemplazo es Camilo Andrés Noguera Abello, director del partido Defensores de la Patria. Dos cosas quedan sin dirimir y van dichas: los medios citan números de decreto distintos para la designación original —1310 y 1320—, y el parentesco con el presidente lo afirman varios medios y lo niega el Gobierno."
+        }
+      ]
     },
     {
       "fecha": "2026-08-28",
@@ -9649,10 +9690,21 @@
         }
       },
       "actosQueAgrupa": 1,
-      "_porQueFALTABA": "v1097: este decreto estaba NOMBRADO en el detalle de dos entradas —los paquetes de 11 y de 15 decretos dicen «dentro del marco de la emergencia declarada por el decreto 1261»— y no tenía entrada propia, así que I-04 no lo contaba: el acto que FUNDA toda la emergencia estaba en el registro y ningún contador lo alcanzaba, que es la clase C de CLAUDE.md. Con él, I-04 del gobierno actual pasa de 4 a 5. La entrada se abre aunque suba la cuenta, y eso es parte de la medida: una cuenta que omite el acto marco no se puede defender.",
-      "_yLOQUESIGUESINENTRADA": "El Decreto 1348 del 31 de agosto de 2026, que modificó este, sigue sin entrada propia: las fuentes en mano lo nombran de paso y ninguna documenta su contenido. Queda dicho acá en vez de inventarle una entrada, y en vez de callarlo — porque callarlo lo dejaría igual que si no existiera.",
-      "_divergenciaDEPARTAMENTOS": "Son 15 departamentos y el Decreto 1171 del 11 de agosto declaró el desastre nacional en 12. No se contradicen: son dos actos distintos, con dos instrumentos distintos —Ley 1523 y artículo 215— y dos ámbitos que el Gobierno fijó por separado. Va dicho porque dos cifras del mismo nombre a nueve días de distancia se leen como un error (v1093).",
-      "contrargumentoOficial": "El decreto declara su propia justificación y es la que el Gobierno sostiene: que las herramientas presupuestales ordinarias —las de la Ley 1523 de 2012— resultaban insuficientes ante un impacto que el propio texto cifra en al menos 30 billones de pesos, y que por eso había que complementarlas con las facultades del artículo 215 y la Ley 137 de 1994. Cita como precedente la reconstrucción del Eje Cafetero tras el sismo de 1999 a través del FOREC. Lo firmó el presidente con la totalidad de los ministros, que es el requisito del artículo 215, y su alcance declarado son decretos con fuerza de ley en materia presupuestal, tributaria, crediticia y de gasto ligados a la atención del desastre. Lo que la suficiencia de las herramientas ordinarias tiene de AFIRMACIÓN y no de demostración es precisamente lo que resuelve el control automático de la Corte Constitucional, cuyo resultado este registro todavía no documenta."
+      "contrargumentoOficial": "El decreto declara su propia justificación y es la que el Gobierno sostiene: que las herramientas presupuestales ordinarias —las de la Ley 1523 de 2012— resultaban insuficientes ante un impacto que el propio texto cifra en al menos 30 billones de pesos, y que por eso había que complementarlas con las facultades del artículo 215 y la Ley 137 de 1994. Cita como precedente la reconstrucción del Eje Cafetero tras el sismo de 1999 a través del FOREC. Lo firmó el presidente con la totalidad de los ministros, que es el requisito del artículo 215, y su alcance declarado son decretos con fuerza de ley en materia presupuestal, tributaria, crediticia y de gasto ligados a la atención del desastre. Lo que la suficiencia de las herramientas ordinarias tiene de AFIRMACIÓN y no de demostración es precisamente lo que resuelve el control automático de la Corte Constitucional, cuyo resultado este registro todavía no documenta.",
+      "revisionPosterior": [
+        {
+          "que": "procedencia",
+          "texto": "v1097: este decreto estaba NOMBRADO en el detalle de dos entradas —los paquetes de 11 y de 15 decretos dicen «dentro del marco de la emergencia declarada por el decreto 1261»— y no tenía entrada propia, así que I-04 no lo contaba: el acto que FUNDA toda la emergencia estaba en el registro y ningún contador lo alcanzaba, que es la clase C de CLAUDE.md. Con él, I-04 del gobierno actual pasa de 4 a 5. La entrada se abre aunque suba la cuenta, y eso es parte de la medida: una cuenta que omite el acto marco no se puede defender."
+        },
+        {
+          "que": "vacio",
+          "texto": "El Decreto 1348 del 31 de agosto de 2026, que modificó este, sigue sin entrada propia: las fuentes en mano lo nombran de paso y ninguna documenta su contenido. Queda dicho acá en vez de inventarle una entrada, y en vez de callarlo — porque callarlo lo dejaría igual que si no existiera."
+        },
+        {
+          "que": "divergencia",
+          "texto": "Son 15 departamentos y el Decreto 1171 del 11 de agosto declaró el desastre nacional en 12. No se contradicen: son dos actos distintos, con dos instrumentos distintos —Ley 1523 y artículo 215— y dos ámbitos que el Gobierno fijó por separado. Va dicho porque dos cifras del mismo nombre a nueve días de distancia se leen como un error (v1093)."
+        }
+      ]
     },
     {
       "fecha": "2026-09-14",
@@ -9691,8 +9743,16 @@
       "actosQueAgrupa": 1,
       "indicadores": [],
       "_porQueListaVacia": "Radicar un proyecto de presupuesto es el cauce ordinario del artículo 346, así que I-04 lo excluye por no ser una facultad de excepción. No hay órgano autónomo en contra (I-05), ni producto técnico intervenido (I-13), ni información negada y entregada tras tutela (I-07), ni muerte en una operación del Estado (I-14).",
-      "_precisionDeLaFECHA": "La fecha va `aproximada` y es la de la aprobación del monto en comisiones, que es cuando estas cifras se discutieron en público. El proyecto se radicó el 27 de agosto y las fuentes en mano no fechan el día exacto en que Hacienda publicó el desglose.",
-      "_quePARTEYAESTABA": "El total de $634,9 billones y la comparación con los $575,6 billones ya estaban en el registro, en la entrada del 1 de septiembre sobre la prima de riesgo. Lo nuevo acá es en qué se reparte el aumento, que es lo que permite discutir el rumbo en vez del tamaño."
+      "revisionPosterior": [
+        {
+          "que": "precision",
+          "texto": "La fecha va `aproximada` y es la de la aprobación del monto en comisiones, que es cuando estas cifras se discutieron en público. El proyecto se radicó el 27 de agosto y las fuentes en mano no fechan el día exacto en que Hacienda publicó el desglose."
+        },
+        {
+          "que": "procedencia",
+          "texto": "El total de $634,9 billones y la comparación con los $575,6 billones ya estaban en el registro, en la entrada del 1 de septiembre sobre la prima de riesgo. Lo nuevo acá es en qué se reparte el aumento, que es lo que permite discutir el rumbo en vez del tamaño."
+        }
+      ]
     },
     {
       "fecha": "2026-10-01",
@@ -9731,9 +9791,20 @@
       "actosQueAgrupa": 1,
       "indicadores": [],
       "_porQueListaVacia": "Es el contenido de un proyecto de presupuesto, que es el cauce ordinario: I-04 lo excluye. Los otros cuatro criterios no tienen materia acá.",
-      "_unaCOMPROBACIONPROPIA": "El desglose CUADRA, y esa es una comprobación que este registro pudo hacer por su cuenta: 7.696 de Justicia + 650 de Interior + 534 de Transporte + 46 de Ciencia y Tecnología suman exactamente 8.926. Importa porque la nota de prensa que trae la cifra omite Transporte y su suma queda en 8.392, a 534 del total; con el cuarto sector, cierra. No es una fuente más: es que las partes son coherentes con el total.",
-      "_precisionDeLaFECHA": "La fecha va `aproximada`. El dato es del Informe 75 del Observatorio Fiscal, que analiza el proyecto radicado el 27 de agosto, y las fuentes en mano no fechan el día de su publicación.",
-      "_intentoDeFUENTEPRIMARIA": "Intento del 12 de octubre de 2026, canal BÚSQUEDA —el único que este contenedor tiene, porque el proxy niega todos los dominios—. La primera búsqueda NO corroboró la cifra y por eso no se publicó ese día; la segunda, más específica, la encontró en La Opinión con el desglose y el costo. El PDF del Informe 75 no se pudo abrir: ofiscal.org está bloqueado. Queda pendiente leer el documento primario para fijar su fecha de publicación."
+      "revisionPosterior": [
+        {
+          "que": "comprobacion",
+          "texto": "El desglose CUADRA, y esa es una comprobación que este registro pudo hacer por su cuenta: 7.696 de Justicia + 650 de Interior + 534 de Transporte + 46 de Ciencia y Tecnología suman exactamente 8.926. Importa porque la nota de prensa que trae la cifra omite Transporte y su suma queda en 8.392, a 534 del total; con el cuarto sector, cierra. No es una fuente más: es que las partes son coherentes con el total."
+        },
+        {
+          "que": "precision",
+          "texto": "La fecha va `aproximada`. El dato es del Informe 75 del Observatorio Fiscal, que analiza el proyecto radicado el 27 de agosto, y las fuentes en mano no fechan el día de su publicación."
+        },
+        {
+          "que": "intento",
+          "texto": "Intento del 12 de octubre de 2026, canal BÚSQUEDA —el único que este contenedor tiene, porque el proxy niega todos los dominios—. La primera búsqueda NO corroboró la cifra y por eso no se publicó ese día; la segunda, más específica, la encontró en La Opinión con el desglose y el costo. El PDF del Informe 75 no se pudo abrir: ofiscal.org está bloqueado. Queda pendiente leer el documento primario para fijar su fecha de publicación."
+        }
+      ]
     }
   ],
   "balances": [

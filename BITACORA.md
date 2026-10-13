@@ -27205,3 +27205,153 @@ ordenarla, la entrada vuelve a la cuenta.
   Oficial. `pendiente`
 * **NO cierra el casillero**: 212 de 250. `pendiente`
 * **NO mueve el dictamen.** Sigue en «Nada fiable». `cerrado en v1114`
+
+## v1115 · veinticuatro hallazgos escritos y ninguna pantalla que los alcanzara
+
+La tanda empezó para seguir la cola del contrargumento oficial —214 de 250 sin
+revisar, que es el único casillero de archivo que una sesión de acá puede
+bajar— y al mirar dónde escribir el hallazgo de la primera búsqueda se vio que
+el sitio no existía.
+
+### La medición
+
+Las cinco tandas anteriores escribieron sus hallazgos en el registro con un
+nombre distinto cada vez: `_precisionDelNOMBRE`, `_actualizacionDELFALLO`,
+`_contradiccionDELAVIGENCIA`, `_divergenciaDEPARTAMENTOS`,
+`_unaCOMPROBACIONPROPIA`, `_intentoDeFUENTEPRIMARIA`… Medido con un `grep`
+sobre los dos registros y los dos archivos de código:
+
+```
+_contradiccionDELAVIGENCIA  js70=0  revisar=0
+_precisionDelNOMBRE         js70=0  revisar=0
+_actualizacionDELFALLO      js70=0  revisar=0
+…                           (trece claves)
+_sinReprocheAlGobierno      js70=1  revisar=3   ← de las dos que sí se leen
+```
+
+**Trece de quince clases de campo con cero lectores**, veinticuatro hallazgos
+en dieciséis entradas de los dos registros. Entre ellos: que el Tribunal
+Superior de Bogotá REVOCÓ el fallo que ordenaba disculparse por el acto
+religioso de la posesión; que la designación del sacerdote fue reversada por
+el Decreto 1371; que los cuatro menores del rescate del 20 de septiembre no
+son de esa operación sino de un balance nacional de 24 horas. Tres hechos que
+cambian el sentido de su entrada, escritos en el archivo, y **desde afuera
+indistinguibles de no haberlos encontrado**.
+
+Es la **clase C** de CLAUDE.md —un dato que ninguna superficie alcanza se ve
+igual que un dato ausente— en el registro que este módulo publica sobre
+personas con nombre. Y trece nombres para una sola cosa es además la **clase
+B**: la lista numerada a mano del registro de Petro —`_revisionCriterios` y
+`_revisionCriterios2`— tenía ya su segunda entrada esperando la tercera.
+
+Lo que lo hace peor que un descuido: **la tanda que lo cometió cinco veces
+seguidas tiene la clase C escrita en su propio CLAUDE.md**, con su censo y con
+la frase «la próxima se busca por la forma». No se buscó.
+
+### La cura: un campo y el tipo como dato
+
+`revisionPosterior: [{ que, texto }]`, con ocho tipos declarados en
+`TIPO_REVISION` y el tipo elegido por **la acción que le pide al lector**, que
+es la regla de la v899 para separar causas:
+
+| tipo | qué pide |
+|---|---|
+| `precision` | nada más que leerlo al lado del dato |
+| `actualizacion` | releer la entrada: su sentido cambió |
+| `contradiccion` | dirimirla, y mientras tanto no creerle a ninguna |
+| `divergencia` | nada: son dos medidas distintas, y va dicho porque parece un error |
+| `comprobacion` | nada: es el negativo útil, «se revisó y está bien» |
+| `intento` | volver a intentarlo, con su canal y su fecha |
+| `vacio` | buscar la fuente que daría entrada propia a ese hecho |
+| `procedencia` | no contar dos veces el mismo hecho escrito de dos maneras |
+
+Las dos corridas de criterios contra el registro anterior pasaron de dos claves
+numeradas a un array, `revisionesDeCriterios`, con los once casos
+discriminados uno por uno y su razón.
+
+### Tres superficies, y el enganche comprobado
+
+* **La ficha del hecho** pinta cada hallazgo con su etiqueta de tipo y la
+  lectura de ese tipo debajo.
+* **La Capa 1 de la ficha del gobernante** publica el recuento por tipo con
+  las dos redacciones. La de N dice además lo que el número NO mide: «una
+  entrada sin revisión puede estar bien o puede estar sin mirar».
+* **La pantalla de validación** publica las dos corridas enteras, con su
+  regla escrita antes de buscar, su resultado, lo que cada una NO trae, y los
+  once casos con su razón.
+
+### Lo que el papel encontró, y el código no
+
+Componer la ficha y leerla —que es el método que más defectos reales ha
+encontrado acá— dio tres:
+
+* **«1 disparan y 5 no»**, el plural sin `pl`.
+* **Una referencia muerta**: el texto de la corrida de la v1087 mandaba al
+  lector a `_revisionCriterios2`, una clave que esta misma tanda acababa de
+  borrar.
+* **Y la que importa**: las cifras que cada corrida trae adentro son las de SU
+  fecha. La de la v1087 ya había envejecido y lo decía ella misma, a mano, con
+  un «SUPERADA EN LA v1094» tecleado. Un estado se CALCULA (v903), así que al
+  pie de las corridas va el de hoy, contado en cada carga — y lo primero que
+  dijo es que **el piso de 20 entradas revisadas ya se alcanzó**: 20 de 45.
+  No valida nada, y eso también está medido: desde la v1106 `validado` exige
+  que el criterio DISPARE sobre el otro registro, y I-13, I-07 e I-14 no
+  tienen materia allá. El piso dejó de ser lo que bloquea; lo que bloquea es
+  otra cosa y ahora se ve.
+
+### Las guardas
+
+Nueve comprobaciones nuevas, 734 → 743 palomitas. La de fondo **persigue la
+clase y no el caso**: no busca los trece nombres —una lista así envejece hasta
+no significar nada (v895)—, busca la FORMA. *Un campo con guion bajo que
+ninguna línea de código nombre.* Con su única excepción escrita
+(`_comentario`, la nota de cabecera del archivo) y con el `?` en vez del rojo
+para el material, porque que no quede ninguna clave suelta es el estado BUENO
+y un rojo ahí empujaría a dejar notas sueltas para tener algo que contar
+(v970, v1097).
+
+Y **de qué no responde**, dicho al lado (v945, v952): de que la nota sea
+cierta (v1008); de los campos SIN guion bajo, donde el falso positivo sí
+existe y por eso CLAUDE.md deja la clase C sin guarda; y de que «tener lector»
+se mide como que el nombre aparezca en el módulo **o en la propia
+comprobación** —las dos cuentan a propósito, porque hay claves que son
+material de una guarda y no de una pantalla, y eso deja abierto que alguien
+«cierre» una huérfana nombrándola dentro del texto de un fallo—. Se declara en
+vez de taparse.
+
+Las demás: que ninguna clave lleve un número de orden pegado al nombre; que la
+tabla de tipos del código y la de la comprobación sean la misma (v926); que
+toda revisión traiga tipo conocido y texto; que los **tres** bloques se
+ENGANCHEN y no solo se construyan (v1029, v1101); que estén las dos
+redacciones; y que el estado de hoy se cuente y no se escriba.
+
+### El hallazgo de archivo de esta tanda
+
+Buscando la respuesta oficial a los vuelos presidenciales —la entrada que
+declara I-07— no apareció ninguna, y por la regla escrita en la v1108 eso
+deja la entrada `sin-revisar` y no `ausente`: la búsqueda sostiene QUE un
+hecho ocurrió, no que no ocurrió. Lo que sí apareció es que **el reporte de
+103 trayectos y $1.117 millones no era el completo**: el Juzgado Noveno Penal
+del Circuito Especializado de Bogotá le dio al Ministerio de Defensa 48 horas
+para entregarlo entero, y el consolidado ampliado —32 días en vez de 18— subió
+a 219 movimientos por unos $2.286 millones, con 138 de menos de diez minutos.
+Convergente en cinco medios.
+
+**Se anota, no se cambia el título**: las dos mediciones tienen ventanas
+distintas y mezclarlas en un total sería el error de la v1085. Y la nota dice
+lo que no resuelve: que el consolidado lo divulgó un congresista de oposición
+sin verificación independiente, y que la advertencia de prensa —un movimiento
+de aeronave no es un viaje del presidente— no es una respuesta oficial.
+
+### Lo que esta versión NO hace
+
+* **NO baja el casillero del contrargumento.** La búsqueda de esta tanda no
+  encontró respuesta oficial del Gobierno a los vuelos presidenciales, así que
+  la entrada se queda `sin-revisar`, que es lo que es: la búsqueda sostiene
+  QUE un hecho ocurrió, no que no ocurrió (v1003, v1108). `pendiente`
+* **NO lleva las revisiones al muro ni al informe**, solo a la ficha del
+  hecho y al recuento. `pendiente`
+* **NO comprueba que una nota sea cierta.** Eso no lo puede comprobar nadie.
+  `cerrado en v1115 · medido y declinado`
+* **NO mueve el dictamen.** Sigue en «Nada fiable», del eje D.
+  `cerrado en v1115`

@@ -1132,6 +1132,27 @@
     co.appendChild(el('p', 'sp-h-meta', c1.contra.d));
     cc.appendChild(co);
 
+    /* LO QUE SE ENCONTRÓ AL VOLVER SOBRE ESTA ENTRADA (v1115). Va en la
+       ficha del hecho y no en una nota del archivo: veinticuatro hallazgos
+       —cifras precisadas, un fallo revocado, una designación reversada—
+       estaban escritos en el registro y ninguna pantalla los alcanzaba, que
+       desde afuera se ve exactamente igual que no haberlos encontrado. */
+    var rv = c1.revision;
+    if (rv.length) {
+      var rb = el('div', 'sp-c1-rev');
+      rb.appendChild(el('h4', null, rv.length === 1
+        ? 'Lo que se encontró al volver sobre este hecho'
+        : 'Lo que se encontró al volver sobre este hecho · ' + rv.length + ' hallazgos'));
+      rv.forEach(function (v) {
+        var f = el('div', 'sp-c1-rev-i');
+        f.appendChild(tag(v.cls, v.declarado ? v.t : v.t + ' · tipo desconocido'));
+        f.appendChild(el('p', null, v.texto || 'Sin texto: la nota quedó vacía, que no dice nada.'));
+        f.appendChild(el('p', 'sp-h-meta', v.d));
+        rb.appendChild(f);
+      });
+      cc.appendChild(rb);
+    }
+
     $('sp-d-cat').textContent = cat(e.categoria).nombre;
 
     /* LOS CUATRO DATOS QUE LLEVA TODO LO PUBLICADO, juntos y a la vista:
@@ -1713,6 +1734,63 @@
   function estadoProcesalDe(e) { return claseDe(ESTADO_PROCESAL, e && e.estadoProcesal); }
   function tipoEvidenciaDe(e)  { return claseDe(TIPO_EVIDENCIA,  e && e.tipoEvidencia); }
 
+  /* ══ LA REVISIÓN POSTERIOR DE UNA ENTRADA (v1115) ═══════════════════════
+     Lo que una tanda encuentra al volver sobre una entrada ya escrita: una
+     cifra que se precisa, un hecho que siguió, una fuente que la contradice.
+     Vivía en TRECE claves distintas del registro —`_precisionDelNOMBRE`,
+     `_actualizacionDELFALLO`, `_divergenciaDEPARTAMENTOS`…— que NINGÚN
+     código leía: veinticuatro hallazgos escritos en el archivo y ninguna
+     superficie que los alcanzara, que es la clase C de CLAUDE.md en el
+     registro que este módulo publica. Trece nombres para una sola cosa es
+     además la clase B, así que la cura es una sola: un campo, y el TIPO
+     como dato.
+
+     El tipo es lo que de verdad discrimina, y discrimina por la ACCIÓN que
+     le pide al lector: una precisión no pide nada más, una contradicción
+     pide dirimirla, un intento fallido pide volver a intentarlo. Juntarlos
+     mandaría a revisar lo que está bien (v899). */
+  var TIPO_REVISION = {
+    precision: { t: 'Precisión', cls: 'rp-pre',
+      d: 'El hecho no cambia: se afina un nombre, una cifra, una fecha o qué cuenta un número. ' +
+         'No pide nada más que leerlo al lado del dato.' },
+    actualizacion: { t: 'El hecho siguió', cls: 'rp-act',
+      d: 'Después de escrita la entrada pasó algo que cambia su sentido. Un caso que avanza se ' +
+         'actualiza, no se duplica; y lo que lo revierte se escribe igual que lo que lo afirmó.' },
+    contradiccion: { t: 'Una fuente posterior la contradice', cls: 'rp-con',
+      d: 'Otra fuente dice algo incompatible con lo que la entrada da por cierto, y no se pudo ' +
+         'dirimir. Se anota en vez de elegir: elegir sin poder dirimir es inventar.' },
+    divergencia: { t: 'Dos cifras del mismo nombre', cls: 'rp-div',
+      d: 'Dos números que parecen contradecirse y no se contradicen, porque miden cosas distintas. ' +
+         'Va dicho porque desde afuera se lee como un error (v1093).' },
+    comprobacion: { t: 'Comprobado por cuenta propia', cls: 'rp-com',
+      d: 'El registro pudo verificar algo por sí mismo —que las partes sumen el total, por ejemplo—. ' +
+         'Es el negativo útil: «se revisó y está bien» no se lee igual que «nadie lo ha mirado».' },
+    intento: { t: 'Se intentó la fuente y no se pudo', cls: 'rp-int',
+      d: 'Un intento fechado, con su canal y su razón. Sin él, «nadie lo ha buscado» y «se buscó y ' +
+         'no se pudo» se leen igual (v1055, v1065).' },
+    vacio: { t: 'Lo que sigue sin entrada', cls: 'rp-vac',
+      d: 'Un hecho nombrado de paso que ninguna fuente en mano documenta, así que no tiene entrada ' +
+         'propia. Se dice en vez de callarlo: callarlo lo dejaría igual que si no existiera.' },
+    procedencia: { t: 'Qué parte de esto ya estaba', cls: 'rp-pro',
+      d: 'De dónde salió la entrada y qué aporta sobre lo que el registro ya tenía. Es lo que ' +
+         'impide contar dos veces el mismo hecho escrito de dos maneras.' }
+  };
+
+  /* Falla cerrado: un tipo que la tabla no conoce NO se calla ni pasa por
+     bueno — se pinta con el valor escrito y se cuenta aparte, igual que los
+     valores desconocidos de la Capa 1. */
+  function revisionesDe(e) {
+    return (((e || {}).revisionPosterior) || []).map(function (r) {
+      var k = String(((r || {}).que) || '').trim();
+      var c = TIPO_REVISION[k];
+      return { que: k, texto: String(((r || {}).texto) || '').trim(),
+               declarado: !!c,
+               t: c ? c.t : (k || '(sin tipo)'),
+               cls: c ? c.cls : 'rp-mal',
+               d: c ? c.d : 'Ese tipo de revisión no está en la tabla, así que no se puede leer.' };
+    });
+  }
+
   /* El contrargumento no es una tabla de valores: es un texto, o la palabra
      `ausente`, o nada. Los tres estados van con nombre porque los tres piden
      una acción distinta. */
@@ -1793,7 +1871,7 @@
 
   function capaUnoDe(e) {
     return { prueba: categoriaProbatoriaDe(e), medicion: tipoMedicionDe(e), contra: contrargumentoDe(e),
-             procesal: estadoProcesalDe(e), evidencia: tipoEvidenciaDe(e) };
+             procesal: estadoProcesalDe(e), evidencia: tipoEvidenciaDe(e), revision: revisionesDe(e) };
   }
 
   /* El recuento de la Capa 1 sobre un conjunto de entradas. No decide nada:
@@ -1806,7 +1884,13 @@
               prueba: { declarados: 0, sinDeclarar: 0, desconocidos: 0, por: {} },
               medicion: { actividad: 0, resultado: 0, 'contexto-estructural': 0, sinDeclarar: 0, desconocidos: 0 },
               contra: { respondio: 0, ausente: 0, sinConstancia: 0, sinRevisar: 0,
-                        noAplica: 0, noAplicaMal: 0 } };
+                        noAplica: 0, noAplicaMal: 0 },
+              /* El recuento de revisiones posteriores cuenta DOS cosas y no
+                 una: cuántas entradas se revisaron y cuántos hallazgos
+                 salieron. No son lo mismo —una entrada puede traer tres— y
+                 confundirlas haría pasar un registro muy revisado en un
+                 punto por uno revisado en todas partes. */
+              revision: { entradas: 0, notas: 0, por: {}, desconocidas: 0 } };
     (lista || []).forEach(function (e) {
       var c = capaUnoDe(e);
       if (c.prueba.declarado) { r.prueba.declarados++; r.prueba.por[c.prueba.id] = (r.prueba.por[c.prueba.id] || 0) + 1; }
@@ -1827,6 +1911,12 @@
         if (c.contra.contradice) r.contra.noAplicaMal++;
       }
       else r.contra.sinRevisar++;
+      if (c.revision.length) r.revision.entradas++;
+      c.revision.forEach(function (v) {
+        r.revision.notas++;
+        if (v.declarado) r.revision.por[v.que] = (r.revision.por[v.que] || 0) + 1;
+        else r.revision.desconocidas++;
+      });
     });
     return r;
   }
@@ -2526,6 +2616,35 @@
      validar (v1077). Lo que SÍ se puede hacer, y es lo que falta, es que el
      vacío llegue a una pantalla: escrito solo en el registro es un dato que
      ninguna superficie alcanza, que es la clase C. */
+  /* LAS CORRIDAS DE CRITERIOS SOBRE EL REGISTRO ANTERIOR (v1115).
+     Dos corridas —la de la v1087 y la de la v1094—, con once casos
+     discriminados uno por uno y la razón de cada uno. Vivían en dos claves
+     del registro, `_revisionCriterios` y `_revisionCriterios2`, que ningún
+     código leía: el trabajo de poner los criterios a prueba contra otro
+     gobierno estaba hecho, escrito y FUERA del alcance de cualquier lector.
+     Y el sufijo `2` es la misma clase B de los trece nombres: una lista
+     numerada a mano se queda vieja en la tercera.
+
+     Lo que NO cubre, y va dicho: que el texto de una corrida sea cierto no
+     lo puede comprobar nadie (v1008). Lo que esta superficie garantiza es
+     que esté y que se vea. */
+  function corridasDeCriterios(dd) {
+    return (((dd || {}).revisionesDeCriterios) || []).map(function (c) {
+      var ds = ((c || {}).discriminantes) || [];
+      return { fecha: c.fecha || null, version: c.version || null,
+               regla: c.regla || null, yEsoImplica: c.yEsoImplica || null,
+               queSeCorrio: c.queSeCorrio || null, resultado: c.resultado || null,
+               loQueNOSeCorrio: c.loQueNOSeCorrio || null,
+               yQuedaSinValidar: c.yQuedaSinValidar || null,
+               observacion: c.observacion || null, noTrae: c.noTrae || null,
+               discriminantes: ds.map(function (x) {
+                 return { caso: x.caso, dispara: !!x.dispara, porQue: x.porQue };
+               }),
+               disparan: ds.filter(function (x) { return x.dispara; }).length,
+               rechazan: ds.filter(function (x) { return !x.dispara; }).length };
+    });
+  }
+
   function vaciosDeCriterio(dd) {
     var ls = ((dd || {})._vaciosDeCriterio) || [];
     var porId = {};
@@ -5200,7 +5319,9 @@
      lo que deja comprobar la escalera del veredicto, los techos, los rasgos y
      la polémica contra registros armados a mano, sin tener que inventar
      hechos en el JSON público. */
-  window.URBIS_SEG_FICHA = { calcular: fichaHasta, calcularCon: fichaDe, cuentas: cuentasDe,
+  window.URBIS_SEG_FICHA = { revisiones: revisionesDe, tipoRevision: TIPO_REVISION,
+                             corridasDeCriterios: corridasDeCriterios,
+                             calcular: fichaHasta, calcularCon: fichaDe, cuentas: cuentasDe,
                              serie: serieFicha, escalera: ESCALERA, techos: TECHOS,
                              estadosCaso: ESTADOS_CASO, rasgos: RASGOS,
                              polemica: polemicaDe, ordenar: porDiaYPolemica,
@@ -6260,6 +6381,39 @@
       'juntas convertiría la segunda en la primera.',
       exigiblesContra(c1)));
 
+    /* LAS DOS REDACCIONES, la de cero y la de N (v970). La de cero es la
+       que hace falta el día que nadie haya vuelto sobre el registro, y es
+       justo la que no se puede escribir después: un renglón que desaparece
+       deja «ya está revisado» con la misma cara que «nadie lo ha mirado». */
+    var rc = c1.revision;
+    var rd = el('div', 'sp-c1-linea sp-c1-revc');
+    rd.appendChild(el('b', null, 'Revisión posterior del registro'));
+    if (!rc.notas) {
+      rd.appendChild(el('p', 'sp-c1-falta',
+        'Ninguna entrada lleva todavía una revisión posterior. Eso no quiere decir que el registro esté ' +
+        'comprobado: quiere decir que nadie ha vuelto sobre una entrada ya escrita y ha dejado por ' +
+        'escrito qué encontró.'));
+    } else {
+      var ru = el('ul', 'sp-c1-lista');
+      Object.keys(TIPO_REVISION).forEach(function (k) {
+        if (!rc.por[k]) return;
+        var li = el('li', null);
+        li.appendChild(el('span', 'sp-c1-n', String(rc.por[k])));
+        li.appendChild(el('span', null, TIPO_REVISION[k].t));
+        ru.appendChild(li);
+      });
+      rd.appendChild(ru);
+      rd.appendChild(el('p', 'sp-h-meta',
+        cn(rc.notas, 'hallazgo', 'hallazgos') + ' en ' + cn(rc.entradas, 'entrada', 'entradas') +
+        ' de ' + c1.n + '. Cada uno se lee en la ficha del hecho al que pertenece. El número NO mide ' +
+        'qué tan bueno es el registro: mide cuántas veces se volvió sobre él y quedó escrito qué se ' +
+        'encontró, y una entrada sin revisión puede estar bien o puede estar sin mirar.'));
+    }
+    if (rc.desconocidas) rd.appendChild(el('p', 'sp-c1-mal',
+      cn(rc.desconocidas, 'hallazgo', 'hallazgos') + ' con un tipo que la tabla no conoce. Se ven en ' +
+      'la ficha con el valor escrito y no cuentan como declarados.'));
+    s1.appendChild(rd);
+
     if (c1.prueba.desconocidos || c1.medicion.desconocidos) {
       s1.appendChild(el('p', 'sp-c1-mal',
         (c1.prueba.desconocidos + c1.medicion.desconocidos) +
@@ -6495,6 +6649,80 @@
        registro y ninguna superficie lo alcanzaba: clase C. Las dos redacciones
        se pintan, la de cero y la de N, porque un renglón que desaparece al
        llegar a cero deja «ninguno» con la cara de «nadie lo ha mirado». */
+    /* LAS CORRIDAS DE CRITERIOS, EN LA PANTALLA (v1115). Mismo defecto y
+       misma cura que el vacío de abajo: estaban escritas en el registro y
+       ninguna superficie las alcanzaba. Las dos redacciones, la de cero y
+       la de N, porque el día que nadie haya corrido un criterio contra otro
+       gobierno eso tiene que LEERSE y no desaparecer. */
+    if (DA) {
+      var crs = corridasDeCriterios(DA);
+      var cx = el('div', 'sp-c2-corr' + (crs.length ? '' : ' falta'));
+      cx.appendChild(el('b', null, crs.length
+        ? 'Los criterios, corridos contra el registro del gobierno anterior · ' +
+          cn(crs.length, 'corrida', 'corridas')
+        : 'Los criterios NO se han corrido contra el registro del gobierno anterior'));
+      if (!crs.length) {
+        cx.appendChild(el('p', null,
+          'Ninguna corrida está escrita. Un criterio que nunca se midió contra un registro escrito ' +
+          'antes de que el criterio existiera no se puede distinguir de uno tallado a la medida de ' +
+          'los hechos que tiene que clasificar.'));
+      } else {
+        crs.forEach(function (c) {
+          var cb = el('div', 'sp-c2-corri');
+          cb.appendChild(el('b', null, (c.fecha ? fechaCorta(c.fecha) : 'sin fecha') +
+            (c.version ? ' · ' + c.version : '') + ' · ' +
+            cn(c.discriminantes.length, 'caso discriminado', 'casos discriminados') +
+            ' · ' + c.disparan + ' ' + pl(c.disparan, 'dispara', 'disparan') +
+            ' y ' + c.rechazan + ' no'));
+          [['Qué se corrió', c.queSeCorrio],
+           ['La regla, escrita antes de buscar', c.regla],
+           ['Y lo que esa regla implica', c.yEsoImplica],
+           ['Resultado', c.resultado],
+           ['Lo que no se corrió', c.loQueNOSeCorrio],
+           ['Qué queda sin validar', c.yQuedaSinValidar],
+           ['Y una observación', c.observacion]].forEach(function (par) {
+            if (!par[1]) return;
+            var f = el('p', 'sp-c2-corrf');
+            f.appendChild(el('b', null, par[0] + ': '));
+            f.appendChild(el('span', null, par[1]));
+            cb.appendChild(f);
+          });
+          /* Lo que la corrida NO trae se DICE, y no se deja como un renglón
+             ausente: un campo que desaparece se lee igual que uno que nadie
+             tenía que llenar (v970, v1064). */
+          if (c.noTrae) cb.appendChild(el('p', 'sp-c2-corrn', 'Lo que esta corrida NO trae: ' + c.noTrae));
+          var ulc = el('ul', 'sp-c2-corrl');
+          c.discriminantes.forEach(function (x) {
+            var li = el('li', 'sp-c2-corrd' + (x.dispara ? ' si' : ''));
+            li.appendChild(tag(x.dispara ? 'rp-act' : 'rp-pre', x.dispara ? 'Dispara' : 'No dispara'));
+            li.appendChild(el('b', null, x.caso));
+            li.appendChild(el('p', null, x.porQue));
+            ulc.appendChild(li);
+          });
+          cb.appendChild(ulc);
+          cx.appendChild(cb);
+        });
+        /* Y EL ESTADO DE HOY, CALCULADO (v903). Las cifras de cada corrida
+           son las de SU fecha y se quedan como están —son el registro de lo
+           que esa corrida encontró—, así que sin un número de hoy al lado un
+           lector no puede saber si siguen siendo las de ahora. La de la
+           v1087 ya había envejecido y lo decía ella misma, a mano; esta sale
+           de contar. */
+        var hoyR = corridaHaciaAtras(DA, 'I-04');
+        cx.appendChild(el('p', 'sp-c2-corrn',
+          'Medido hoy sobre el registro anterior: ' +
+          cn(hoyR.revisadas, 'entrada revisada', 'entradas revisadas') + ' de ' + hoyR.n +
+          ', y el piso que el módulo exige son ' + MIN_ACTOS_VALIDACION + '. Las cifras que cada ' +
+          'corrida trae adentro son las de SU fecha y no se tocan: son el registro de lo que esa ' +
+          'corrida encontró. Esta se cuenta en cada carga, así que no puede quedarse vieja.'));
+        cx.appendChild(el('p', 'sp-h-meta',
+          'Lo que esta pantalla NO comprueba: que el texto de una corrida sea cierto. Eso no lo puede ' +
+          'comprobar nadie (v1008). Lo que garantiza es que la corrida esté escrita, con sus casos y ' +
+          'sus razones, y que se pueda leer.'));
+      }
+      s2.appendChild(cx);
+    }
+
     if (DA) {
       var vcs = vaciosDeCriterio(DA);
       var vx = el('div', 'sp-c2-vacio' + (vcs.length ? ' falta' : ''));

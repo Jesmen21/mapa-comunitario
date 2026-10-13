@@ -1523,6 +1523,31 @@ sección al final de este archivo.
   calculado y sin `appendChild`: en verde sobre exactamente el defecto que
   vigilaba. **La señal: la inyección que borra solo el enganche no la pone
   roja.** Lo que falta no es la inyección — es lo que la aserción mide.
+* **Una NOTA que una tanda escribe en el registro necesita lector, o es la
+  clase C otra vez** (v1115). Cinco tandas seguidas anotaron lo que
+  encontraban al volver sobre una entrada —un fallo revocado, una designación
+  reversada, seis cifras precisadas— en **trece claves distintas con guion
+  bajo**, y ninguna línea de código leía ninguna: veinticuatro hallazgos en el
+  archivo, cero en la pantalla, que desde afuera se lee **idéntico a no
+  haberlos encontrado**. Trece nombres para una sola cosa es además la clase B,
+  y la clave numerada a mano —`_revisionCriterios2`— es su forma terminal. La
+  cura es **un campo con el TIPO como dato**, y el tipo se elige por la ACCIÓN
+  que le pide al lector (v899): una precisión no pide nada, una contradicción
+  pide dirimirla, un intento fallido pide repetirlo. **Y la guarda persigue la
+  FORMA y no los trece nombres** (v874, v895): *un campo con guion bajo que
+  ninguna línea de código nombre*. Dos cosas la hacen morder de verdad: se
+  busca en el CÓDIGO y no en los comentarios —la primera versión se quedó a
+  medias porque tres de las ocho claves aparecían en el comentario que la
+  explicaba, y un nombre citado en una explicación no es un lector (v926,
+  v1029)—, y el material va con `?` y no en rojo, porque que no quede ninguna
+  clave suelta es el estado BUENO (v970, v1097).
+* **Y una cifra escrita dentro del registro de una corrida es la de SU fecha,
+  así que al lado va una contada** (v903, v1115). El texto de una corrida es
+  un registro histórico y se queda como está —es lo que esa corrida
+  encontró—; lo que no puede faltar es el estado de hoy, calculado en cada
+  carga. Sin él, la de la v1087 llevaba un «SUPERADA EN LA v1094» tecleado a
+  mano, y la primera medición contada dijo algo que nadie sabía: **el piso de
+  20 entradas revisadas ya estaba alcanzado**.
 * **Y una comprobación que llega a cero se DICE, no desaparece** (v1064). Un
   renglón que se borra solo deja «ya está hecho» con la misma cara que
   «nadie lo ha mirado» —la regla de arriba, dicha en una pantalla—. Tres de
