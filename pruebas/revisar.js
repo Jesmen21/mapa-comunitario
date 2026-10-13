@@ -3458,6 +3458,86 @@ console.log('\n  -- la ficha del gobernante --');
       '`corridaHaciaAtras` cuenta como revisada toda entrada con `indicadores` declarado, ' +
       'lista vacía incluida: es eso lo que la de arriba protege');
 
+    /* ═══ EL DENOMINADOR DEL CONTRARGUMENTO (v1109) ═══════════════════════
+       El campo pregunta «¿respondió el Gobierno al reproche?», y lo contaba
+       sobre TODAS las entradas del mandato — incluidas aquellas en las que el
+       Gobierno es el ACUSADOR y no el acusado, como la auditoría forense a la
+       DNI. A esas no hay respuesta oficial que pedirles, así que el pendiente
+       subía cuando el registro crecía y no bajaba cuando alguien trabajaba:
+       la señal que CLAUDE.md tiene escrita CINCO veces (v999, v1060, v1061,
+       v1064, v1075).
+
+       Y esto BAJA el número, así que pide la misma justificación que un
+       umbral nuevo (v882, v1075). Lo que impide el atajo es que la exención
+       **va por ENTRADA y con su razón escrita**, nunca por una regla en el
+       código: una regla exime doscientas de una vez, una razón hay que
+       pensarla una por una, que es la forma de `_porQueListaVacia` (v1094).
+       Por eso el número baja solo tanto como entradas se examinen.
+
+       DE QUÉ NO RESPONDE (v945, v952, v1008): de que la razón sea CIERTA.
+       Comprueba que ESTÉ, que la entrada eximida no traiga ADEMÁS
+       contrargumento —si lo trae, una de las dos cosas está mal escrita—, que
+       el módulo cuente sobre el denominador exigible, y que las eximidas se
+       PUBLIQUEN con su recuento en vez de desaparecer. */
+    const regAct1109 = JSON.parse(leer('assets/data/seguimiento-presidencial.json'));
+    const exim = ((regAct1109.entradas) || []).filter((e) => String((e && e._sinReprocheAlGobierno) || '').trim());
+    const eximSinRazon = ((regAct1109.entradas) || []).filter(
+      (e) => e && e._sinReprocheAlGobierno !== undefined && !String(e._sinReprocheAlGobierno || '').trim());
+    const eximMal = exim.filter((e) => String(e.contrargumentoOficial || '').trim());
+    /* EL `?` Y NO EL ROJO (v970, v1097). Que no haya ninguna eximida es un
+       estado legítimo del registro —puede que toda entrada le reproche algo
+       al Gobierno—, así que ponerlo en rojo empujaría a inventar exenciones
+       para tener material, que es justo la salida barata que estas guardas
+       cierran. Lo que SÍ va en rojo es lo que sobrevive al cero: que ninguna
+       eximida vaya sin razón, y que el módulo cuente sobre el exigible. */
+    if (!exim.length) {
+      anotarSinMaterial('MATERIAL · entradas eximidas del contrargumento',
+        'ninguna entrada declara hoy que no le reproche nada al Gobierno, y eso es un estado legítimo: ' +
+        'lo que no se ejercita es el recuento, no las reglas de abajo');
+    } else {
+      comprobar('MATERIAL · hay entradas eximidas del contrargumento, con su razón',
+        true,
+        exim.length + (exim.length === 1 ? ' entrada declara que no le reprocha nada al Gobierno'
+                                         : ' entradas declaran que no le reprochan nada al Gobierno'));
+    }
+    comprobar('y ninguna eximida va sin razón ni se contradice con su propio contrargumento',
+      !eximSinRazon.length && !eximMal.length,
+      (!exim.length && !eximSinRazon.length) ? 'no hay ninguna eximida, y la regla sigue valiendo: ' +
+          'el día que aparezca una, sin razón o con contrargumento al lado, esta comprobación muerde'
+      : eximSinRazon.length ? eximSinRazon.length + ' con el campo puesto y la razón en blanco: una ' +
+          'exención sin razón es gratis, y gratis es exactamente lo que no puede ser'
+      : eximMal.length ? eximMal.length + ' eximida(s) traen ADEMÁS contrargumento oficial, y una de las ' +
+          'dos cosas está mal escrita'
+      : 'las ' + exim.length + ' traen su razón y ninguna trae además contrargumento');
+    /* LA GUARDA DE LA GUARDA (v878): que el módulo use el denominador
+       exigible en los DOS sitios donde cuenta —el casillero y la puerta de
+       I-06—, que la exención NO pueda escribirse como una regla de código, y
+       que las eximidas lleguen a la pantalla. */
+    /* ATADOS A UNA FUNCIÓN, no copiados (v879, v1109). Estaban en tres sitios
+       y se separaron en la misma tanda que los escribió: la fila de la Capa 1
+       publicaba «233 de 255» mientras el casillero decía «233 de 251». La
+       guarda exige la función Y que ninguna copia sobreviva. */
+    const hayFn = /function exigiblesContra\(c1\)/.test(j70v);
+    const usos = (j70v.match(/exigiblesContra\(c1\)/g) || []).length;
+    const copias = (j70v.match(/c1\.n - c1\.contra\.noAplica/g) || []).length;
+    const usaExigible = hayFn && usos >= 4 && copias === 0;
+    const porEntrada = /e && e\._sinReprocheAlGobierno/.test(j70v);
+    const llegaExim = /Sin reproche al Gobierno/.test(j70v) &&
+                      /ninguna entrada está eximida de la cuenta/.test(j70v);
+    comprobar('y el módulo cuenta sobre el denominador exigible, exime por ENTRADA y lo publica',
+      usaExigible && porEntrada && llegaExim,
+      !usaExigible ? (copias ? copias + ' copia(s) del cálculo del denominador fuera de `exigiblesContra`: ' +
+                        'tres sitios contando lo mismo ya se separaron una vez'
+                      : !hayFn ? 'desapareció `exigiblesContra`, así que el denominador vuelve a estar copiado'
+                      : 'alguno de los tres recuentos dejó de usar la función, y el pendiente vuelve a ' +
+                        'incluir lo que nadie puede bajar')
+      : !porEntrada ? 'la exención dejó de leerse de la entrada: si se calcula con una regla del código, ' +
+                      'exime doscientas de una vez y deja de costar trabajo'
+      : !llegaExim ? 'las eximidas no llegan a la pantalla, o falta la redacción de cero: una exención ' +
+                     'callada se lee igual que un aprobado'
+      : 'cuenta sobre los exigibles en los dos sitios, lee la exención de cada entrada, y publica el ' +
+        'recuento de eximidas con sus dos redacciones');
+
     /* ═══ ¿ESTÁ TERMINADO? SE CONTESTA, NO SE CUENTA (v1107) ═══════════════
        La v1098 dejó el control publicando el estado del módulo y escribió al
        lado, en prosa, que parte de lo que falta no depende de nadie acá. Esa

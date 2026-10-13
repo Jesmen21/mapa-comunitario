@@ -1718,6 +1718,30 @@
      una acción distinta. */
   function contrargumentoDe(e) {
     var v = (e && e.contrargumentoOficial);
+    /* ── EL QUINTO ESTADO: LA ENTRADA NO LE REPROCHA NADA AL GOBIERNO (v1109) ─
+       El campo pregunta «¿respondió el Gobierno al reproche?». Una entrada que
+       no le reprocha nada no tiene qué respuesta esperar — la auditoría
+       forense a la DNI es un acto del Gobierno que acusa al gobierno ANTERIOR,
+       y ahí el Gobierno es el acusador—, así que contarla como «sin revisar»
+       es medir un pendiente que nadie puede bajar nunca. Es la regla que este
+       proyecto tiene escrita CINCO veces (v999, v1060, v1061, v1064, v1075):
+       todo recuento de lo que falta corre sobre las entradas a las que el
+       campo se les puede exigir, y ninguna más.
+
+       Y lo que impide que esto sea estrechar a conveniencia es que la exención
+       va POR ENTRADA y con su razón escrita, nunca por una regla en el código:
+       una regla exime doscientas de una vez, una razón hay que pensarla una
+       por una. Es la forma de `_porQueListaVacia` (v1094). La guarda comprueba
+       que la razón ESTÉ —que sea cierta no lo puede comprobar nadie (v1008)—
+       y que la entrada eximida no traiga además contrargumento, porque
+       entonces una de las dos cosas está mal escrita. */
+    var nr = String((e && e._sinReprocheAlGobierno) || '').trim();
+    if (nr) {
+      return { estado: 'no-aplica', t: 'No hay reproche al Gobierno', texto: '', esDato: false,
+               razon: nr, contradice: !!(v && String(v).trim()),
+               d: 'Esta entrada no le reprocha nada al Gobierno, así que no hay respuesta oficial que ' +
+                  'esperar. La razón va escrita en la entrada y se cuenta aparte: ' + nr };
+    }
     if (v === undefined || v === null || String(v).trim() === '') {
       return { estado: 'sin-revisar', t: 'Sin revisar', texto: '', esDato: false,
                d: 'Todavía nadie revisó si el Gobierno respondió. No es que no haya respondido: es que no lo hemos mirado.' };
@@ -1756,6 +1780,17 @@
              d: 'Lo que el Gobierno contestó sobre este hecho.' };
   }
 
+  /* EL DENOMINADOR EXIGIBLE, EN UNA SOLA FUNCIÓN (v1109). Quedó escrito en
+     TRES sitios —el casillero del control, la puerta de I-06 y la fila de la
+     Capa 1— y se separó en la misma tanda que los escribió: la fila publicaba
+     «233 de 255» mientras el casillero ya decía «233 de 251». Es la clase B
+     en su forma más barata, y la cura es la de siempre: una función, y
+     retirar las copias. Lo que NO se hace es dejar las tres y acordarse de
+     tocarlas todas, que es lo que falló. */
+  function exigiblesContra(c1) {
+    return (c1 && c1.n ? c1.n : 0) - (((c1 || {}).contra || {}).noAplica || 0);
+  }
+
   function capaUnoDe(e) {
     return { prueba: categoriaProbatoriaDe(e), medicion: tipoMedicionDe(e), contra: contrargumentoDe(e),
              procesal: estadoProcesalDe(e), evidencia: tipoEvidenciaDe(e) };
@@ -1770,7 +1805,8 @@
     var r = { n: (lista || []).length,
               prueba: { declarados: 0, sinDeclarar: 0, desconocidos: 0, por: {} },
               medicion: { actividad: 0, resultado: 0, 'contexto-estructural': 0, sinDeclarar: 0, desconocidos: 0 },
-              contra: { respondio: 0, ausente: 0, sinConstancia: 0, sinRevisar: 0 } };
+              contra: { respondio: 0, ausente: 0, sinConstancia: 0, sinRevisar: 0,
+                        noAplica: 0, noAplicaMal: 0 } };
     (lista || []).forEach(function (e) {
       var c = capaUnoDe(e);
       if (c.prueba.declarado) { r.prueba.declarados++; r.prueba.por[c.prueba.id] = (r.prueba.por[c.prueba.id] || 0) + 1; }
@@ -1782,6 +1818,14 @@
       if (c.contra.estado === 'respondio') r.contra.respondio++;
       else if (c.contra.estado === 'ausente') r.contra.ausente++;
       else if (c.contra.estado === 'ausente-sin-constancia') r.contra.sinConstancia++;
+      /* Las eximidas se CUENTAN aparte y no desaparecen: una exención
+         silenciosa se lee igual que un aprobado. Y la que se contradice con
+         su propio contrargumento se cuenta otra vez aparte, porque pide una
+         acción distinta —corregir el dato— y no más archivo (v899). */
+      else if (c.contra.estado === 'no-aplica') {
+        r.contra.noAplica++;
+        if (c.contra.contradice) r.contra.noAplicaMal++;
+      }
       else r.contra.sinRevisar++;
     });
     return r;
@@ -2824,9 +2868,17 @@
          Capa 1, dicha en la cuenta. */
       if (k === 'I-06' && c1.contra.sinRevisar) {
         f.sinCalcular = true;
-        f.razon = c1.contra.sinRevisar + ' de ' + cn(c1.n, 'hecho', 'hechos') +
+        /* El denominador son los hechos a los que el campo SE LES PUEDE
+           exigir, no todos (v1109): sumarle los que no le reprochan nada al
+           Gobierno inflaba el pendiente con entradas que nadie puede bajar. */
+        var exig06 = exigiblesContra(c1);
+        f.razon = c1.contra.sinRevisar + ' de ' + cn(exig06, 'hecho que le reprocha algo al Gobierno',
+                  'hechos que le reprochan algo al Gobierno') +
         pl(c1.contra.sinRevisar, ' está', ' están') + ' sin revisar, así que un cero acá ' +
-                  'diría que el Gobierno respondió a todo y lo que pasa es que nadie lo ha mirado.';
+                  'diría que el Gobierno respondió a todo y lo que pasa es que nadie lo ha mirado.' +
+                  (c1.contra.noAplica ? ' Y ' + cn(c1.contra.noAplica, 'hecho queda fuera de ese ' +
+                   'denominador porque no le reprocha nada', 'hechos quedan fuera de ese denominador ' +
+                   'porque no le reprochan nada') + ', cada uno con su razón escrita.' : '');
       }
       return f;
     });
@@ -4479,10 +4531,27 @@
          'archivo-aqui',
          'Conseguir el fallo, la sanción o el documento oficial del caso confirmado, o bajarlo de estado.');
 
+    /* EL DENOMINADOR HONESTO (v1109). Contaba sobre las 255 entradas del
+       mandato, incluidas las que no le reprochan nada al Gobierno — y a esas
+       no hay respuesta oficial que pedirles. El pendiente subía cuando el
+       registro CRECÍA y no bajaba cuando alguien trabajaba, que es la señal
+       escrita cinco veces en CLAUDE.md. Las eximidas se dicen aparte, con su
+       recuento, porque una exención callada se lee como un aprobado. */
+    var cExigible = exigiblesContra(c1);
     caja('Cada registro tiene contrargumento oficial, lleno o marcado ausente',
-         c1.contra.sinRevisar ? 'falla' : 'pasa',
-         c1.contra.sinRevisar ? c1.contra.sinRevisar + ' de ' + c1.n + ' sin revisar'
-      : pl(c1.n, 'el declarado', 'los ' + c1.n + ' declarados'),
+         (c1.contra.sinRevisar || c1.contra.noAplicaMal) ? 'falla' : 'pasa',
+         (c1.contra.noAplicaMal
+           ? cn(c1.contra.noAplicaMal, 'entrada eximida trae además contrargumento',
+                'entradas eximidas traen además contrargumento') + ', y una de las dos cosas está mal · '
+           : '') +
+         (c1.contra.sinRevisar
+           ? c1.contra.sinRevisar + ' de ' + cExigible + ' sin revisar'
+           : pl(cExigible, 'el declarado', 'los ' + cExigible + ' declarados')) +
+         (c1.contra.noAplica
+           ? ' · y ' + cn(c1.contra.noAplica, 'entrada queda fuera de la cuenta porque no le reprocha nada ' +
+                          'al Gobierno', 'entradas quedan fuera de la cuenta porque no le reprochan nada ' +
+                          'al Gobierno') + ', cada una con su razón escrita'
+           : ' · ninguna entrada está eximida de la cuenta'),
          'archivo-aqui',
          'Por cada entrada, buscar la respuesta oficial del Gobierno y escribirla; si no la hay, dejar constancia de dónde se buscó y cuándo. Es volumen —doscientas cincuenta— y no un bloqueo: cualquier sesión de acá puede avanzarlo de a poco.');
 
@@ -6139,7 +6208,13 @@
       'Nada de esto mueve el veredicto de arriba, y es a propósito: quién cuenta un hecho y qué clase de ' +
       'hecho es son dos ejes, y meterlos en uno deja al módulo sin servir para ninguna de las dos preguntas.');
 
-    function filaC1(titulo, partes, falta, textoFalta) {
+    /* EL DENOMINADOR DE LA FILA, PARAMETRIZADO (v1109). Lo tenía escrito
+       dentro —`c1.n` fijo— y la fila del contrargumento siguió publicando
+       «233 de 255» mientras el casillero del control, dos pantallas más
+       allá, ya publicaba «233 de 251». Dos sitios que cuentan la misma cosa
+       y se separaron en la misma tanda que los tocó: la clase B, otra vez, y
+       solo se vio componiendo el papel y leyéndolo. */
+    function filaC1(titulo, partes, falta, textoFalta, deN) {
       var d = el('div', 'sp-c1-linea');
       d.appendChild(el('b', null, titulo));
       var ul = el('ul', 'sp-c1-lista');
@@ -6152,7 +6227,8 @@
       });
       if (!ul.childNodes.length) ul.appendChild(el('li', 'sp-c1-falta', 'Ninguno declarado todavía.'));
       d.appendChild(ul);
-      if (falta) d.appendChild(el('p', 'sp-c1-falta', falta + ' de ' + c1.n + ' ' + textoFalta));
+      if (falta) d.appendChild(el('p', 'sp-c1-falta',
+        falta + ' de ' + (deN === undefined ? c1.n : deN) + ' ' + textoFalta));
       return d;
     }
 
@@ -6170,12 +6246,19 @@
       c1.medicion.sinDeclarar,
       'sin declarar. Actividad y resultado no se suman nunca: firmar un decreto no es resolver el problema.'));
 
+    /* Y LAS EXIMIDAS, en la misma fila (v1109): una entrada que no le reprocha
+       nada al Gobierno sale de la cuenta, y si saliera en silencio la
+       exención se leería como un aprobado. Va con su propio rótulo, no
+       sumada a «respondió». */
     s1.appendChild(filaC1('Respuesta del Gobierno',
       [{ t: 'Respondió', n: c1.contra.respondio },
-       { t: 'No respondió', n: c1.contra.ausente }],
+       { t: 'No respondió', n: c1.contra.ausente },
+       { t: 'Sin reproche al Gobierno', n: c1.contra.noAplica }],
       c1.contra.sinRevisar,
-      'sin revisar. Que el Gobierno no haya respondido es un dato sobre el Gobierno; que nosotros no lo ' +
-      'hayamos mirado es una deuda nuestra, y contarlas juntas convertiría la segunda en la primera.'));
+      'sin revisar, de los que le reprochan algo al Gobierno. Que el Gobierno no haya respondido es un ' +
+      'dato sobre el Gobierno; que nosotros no lo hayamos mirado es una deuda nuestra, y contarlas ' +
+      'juntas convertiría la segunda en la primera.',
+      exigiblesContra(c1)));
 
     if (c1.prueba.desconocidos || c1.medicion.desconocidos) {
       s1.appendChild(el('p', 'sp-c1-mal',

@@ -1014,7 +1014,8 @@
           "rol": "efecto"
         }
       ],
-      "nivelGobierno": "nacional"
+      "nivelGobierno": "nacional",
+      "_sinReprocheAlGobierno": "Acá el Gobierno es el ACUSADOR y no el acusado: ordenó la auditoría y publicó sus hallazgos contra el gobierno anterior. No hay reproche al Gobierno al que pudiera responder, y la respuesta que faltaría —la del gobierno de Petro— no es «la respuesta oficial» que este campo mide. Es la regla que CLAUDE.md ya tiene escrita: las denuncias del propio Gobierno contra la administración anterior no son casos suyos."
     },
     {
       "fecha": "2026-10-03",
@@ -1878,8 +1879,14 @@
           "n": "Infobae · el senador afirmó que Presidencia no respondió de fondo la tutela",
           "rol": "efecto",
           "u": "https://www.infobae.com/colombia/2026/09/25/senador-afirmo-que-presidencia-no-respondio-de-fondo-tutela-por-donaciones-para-el-terremoto-canalizadas-por-la-fundacion-de-la-primera-dama/"
+        },
+        {
+          "n": "Cambio · la DIAN confirma el permiso para recibir donaciones, y siguen sin revelar cuánto recaudaron",
+          "u": "https://cambiocolombia.com/la-fundacion-de-la-primera-dama-puede-recibir-donaciones-pero-sigue-sin-revelar-cuanto-ha-recaudado",
+          "rol": "contexto"
         }
-      ]
+      ],
+      "contrargumentoOficial": "La respuesta del Gobierno a este reproche es, hasta hoy, PROCESAL y no de fondo, y las dos mitades están documentadas. Un juzgado de familia de Bogotá admitió el 22 de septiembre de 2026 una tutela contra la Presidencia (Dapre), el Ministerio de Hacienda, la fundación y la primera dama, y les dio 48 horas para pronunciarse; el senador que la interpuso, Alejandro Ocampo, afirmó después que la Presidencia NO respondió de fondo —esa afirmación es suya y así va dicha—. El único dato oficial que sí entró a la discusión del lado del Gobierno es de la DIAN: que la fundación está en el Régimen Tributario Especial, es decir habilitada para recibir donaciones, lo que responde una objeción que circulaba y no la que se le hace. Lo que NO ha contestado nadie, ni la fundación ni la Presidencia ni Hacienda, es la pregunta del derecho de petición del 24 de agosto: cuánto se recaudó y cómo se maneja."
     },
     {
       "fecha": "2026-09-24",
@@ -3684,7 +3691,8 @@
           "u": "https://www.pulzo.com/nacion/contratacion-directa-en-dapre-crecio-595-durante-gobierno-de-gustavo-petro-en-colombia-PP5305149A",
           "rol": "acto"
         }
-      ]
+      ],
+      "_sinReprocheAlGobierno": "Lo registrado es una denuncia de un funcionario del Gobierno ante el Congreso sobre la contratación del gobierno anterior. El Gobierno es quien habla, así que la «respuesta oficial» ya ES el contenido de la entrada; pedirle además una respuesta a sí mismo no mide nada."
     },
     {
       "fecha": "2026-09-15",
@@ -5304,8 +5312,19 @@
           "n": "La FM · Operación militar en Nariño deja siete disidentes abatidos y doce heridos",
           "u": "https://www.lafm.com.co/orden-publico/siete-criminales-abatidos-y-doce-heridos-en-narino-410055",
           "rol": "acto"
+        },
+        {
+          "n": "El Colombiano · siete muertos y cinco capturados en la operación militar en Nariño",
+          "u": "https://www.elcolombiano.com/colombia/operacion-militar-narino-7-disidentes-farc-muertos-5-capturados-AC40713175",
+          "rol": "acto"
+        },
+        {
+          "n": "DiariOriente · el operativo deja siete muertos, cinco capturados y doce heridos",
+          "u": "https://diarioriente.com/nacional/operativo-militar-en-n.html",
+          "rol": "contexto"
         }
-      ]
+      ],
+      "contrargumentoOficial": "El Gobierno presentó el hecho en el balance de 24 horas del 6 de septiembre: siete muertos y cinco capturados de la columna móvil Freddy Gutiérrez, adscrita al frente «Franco Benavides» del Estado Mayor Central, con doce heridos, un cuerpo recuperado y material incautado que el Ministerio de Defensa detalla pieza por pieza —un fusil M4, una pistola, ocho granadas artesanales, 946 cartuchos—. Esa es la posición oficial: una operación contra una estructura identificada, con resultado material comprobable. Y lo que NO dice es justamente lo que el reproche pregunta: las autoridades no han establecido públicamente la identidad de los siete muertos, ni han precisado si el cuerpo recuperado corresponde a un integrante de la estructura. Mientras no haya identidades no hay forma de saber si entre ellos había menores, que es la cuenta que este módulo lleva en el eje de la fuerza."
     },
     {
       "fecha": "2026-09-06",
@@ -7047,7 +7066,8 @@
           "u": "https://www.elespectador.com/politica/estos-son-los-detalles-del-libro-de-la-verdad-revelando-82-casos-de-presunta-corrupcion-noticias-hoy/",
           "rol": "contexto"
         }
-      ]
+      ],
+      "_sinReprocheAlGobierno": "Es un informe del propio Gobierno que reporta irregularidades del gobierno anterior: el Gobierno acusa, no es acusado, así que no hay respuesta oficial suya que esperar. Lo que sí falta —y es otra cosa— es la versión de los señalados, que el registro recoge por su propia puerta cuando existe."
     },
     {
       "fecha": "2026-08-26",
@@ -7534,7 +7554,8 @@
           "u": "https://www.pulzo.com/nacion/detalles-libro-verdad-hallazgos-espriella-sobre-petro-PP5278303",
           "rol": "contexto"
         }
-      ]
+      ],
+      "_sinReprocheAlGobierno": "Es una declaración del propio Gobierno sobre denuncias que él mismo presentó contra la administración anterior. No hay reproche al Gobierno en la entrada, así que no hay respuesta oficial que falte: la posición oficial es la entrada."
     },
     {
       "fecha": "2026-08-24",
@@ -9126,7 +9147,8 @@
           "rol": "acto"
         }
       ],
-      "tipoFuente": "verificado"
+      "tipoFuente": "verificado",
+      "_sinReprocheAlGobierno": "El acto registrado es una denuncia DEL Gobierno ante la Fiscalía, la Contraloría y la Procuraduría. El sujeto reprochado son terceros, no el Ejecutivo, de modo que el campo no tiene objeto. Si más adelante alguien le reprocha al Gobierno la denuncia misma —por ejemplo su sustento—, la entrada vuelve a la cuenta y esta razón deja de valer."
     },
     {
       "fecha": "2026-08-05",

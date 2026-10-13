@@ -1505,6 +1505,19 @@ sección al final de este archivo.
   nombre y ningún texto derivado la reemplaza. Va con su guarda contra el
   atajo de la tanda siguiente — que el borrador empiece a contar como
   declaración.
+* **Y la SEXTA del pendiente que nadie puede bajar tiene una forma nueva: el
+  Gobierno es el ACUSADOR** (v999, v1060, v1061, v1064, v1075, v1109). El
+  contrargumento oficial se contaba sobre todas las entradas del mandato,
+  incluidas aquellas en las que el Ejecutivo acusa al gobierno anterior — y a
+  esas no hay respuesta oficial que pedirles. **Se vio buscándola, no leyendo
+  el código.** Y como la cura BAJA el número, pide la justificación de un
+  umbral nuevo (v882): lo que la hace honesta es que **la exención va por
+  ENTRADA y con su razón escrita, nunca por una regla del código** —una regla
+  exime doscientas de una vez, una razón hay que pensarla una por una, que es
+  la forma de `_porQueListaVacia` (v1094)—, así que el número baja solo tanto
+  como entradas se examinen. Las eximidas se publican con su recuento, y una
+  eximida que traiga ADEMÁS contrargumento se cuenta aparte, porque pide
+  corregir el dato y no buscar más archivo (v899).
 * **Y una aserción puede medir que algo se CONSTRUYA y no que se ENGANCHE**
   (v1029, v1101). Una guarda contra la clase C se quedó en verde con el bloque
   calculado y sin `appendChild`: en verde sobre exactamente el defecto que

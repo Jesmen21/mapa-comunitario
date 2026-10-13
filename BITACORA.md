@@ -26837,3 +26837,84 @@ independencia técnica que el mismo comunicado promete garantizar.
   dos piden un comunicado oficial que el proxy no deja leer; quedan escritos
   con su fecha de intento y su canal. `pendiente`
 * **NO mueve el dictamen.** Sigue en «Nada fiable». `cerrado en v1108`
+
+## v1109 · el denominador del contrargumento, y dos más del eje D
+
+### Lo que se vio BUSCANDO, no leyendo el código
+
+Al buscar la «respuesta oficial» de la auditoría forense a la DNI no hay nada
+que buscar: **el Gobierno es el ACUSADOR y no el acusado** —ordenó la auditoría
+y publicó sus hallazgos contra el gobierno anterior—. El campo pregunta «¿el
+Gobierno respondió al reproche?» y ahí no hay reproche al Gobierno.
+
+Y contarla como «sin revisar» es medir un pendiente que nadie puede bajar
+nunca. Es la señal que CLAUDE.md tiene escrita **cinco veces** (v999, v1060,
+v1061, v1064, v1075): el número subía cuando el registro CRECÍA y no bajaba
+cuando alguien trabajaba.
+
+### Esto BAJA el número, así que la regla va antes
+
+La v1107 ya había medido y rechazado la tentación grande: estrechar a «los
+actos de gobierno» sería falso, porque a una cifra del país el Gobierno
+también responde. Lo que se declara acá es más estrecho y comprobable —que la
+entrada no le reprocha nada al Gobierno— y lo que impide el atajo es la forma:
+
+* **la exención va por ENTRADA y con su razón escrita**, nunca por una regla
+  del código: una regla exime doscientas de una vez, una razón hay que
+  pensarla una por una, que es la forma de `_porQueListaVacia` (v1094);
+* **el número baja solo tanto como entradas se examinen** — hoy cinco, y por
+  eso el casillero pasó de «250 de 255» a **«233 de 251»**, que es trabajo de
+  archivo hecho y no un denominador recortado;
+* **las eximidas se PUBLICAN con su recuento**, porque una exención callada se
+  lee igual que un aprobado.
+
+Hay un quinto estado del campo —`no-aplica`— y su contradicción se cuenta
+aparte: una entrada eximida que traiga ADEMÁS contrargumento pide corregir el
+dato, no buscar más archivo (v899).
+
+### Lo que encontró componer el papel y leerlo
+
+**La fila de la Capa 1 seguía publicando «233 de 255» mientras el casillero,
+dos pantallas más allá, ya decía «233 de 251».** El denominador quedó escrito
+en TRES sitios —el casillero, la puerta de I-06 y la fila— y se separó **en la
+misma tanda que los escribió**: la clase B en su forma más barata, cometida
+por quien acababa de arreglarla un nivel más arriba. La cura es la de siempre:
+una función, `exigiblesContra`, y retirar las copias; y la guarda exige que
+no sobreviva ninguna.
+
+### Siete contrargumentos más, y dos entradas que se quedaron sin
+
+De 16 a **18 de 264**. Los dos nuevos: la fundación de la primera dama —donde
+la respuesta documentada es PROCESAL y no de fondo, con la afirmación de que
+«la Presidencia no respondió de fondo» atribuida a quien la hace, el senador
+que interpuso la tutela— y el operativo de El Peñol, donde el Gobierno detalla
+el material incautado pieza por pieza y **no establece la identidad de los
+siete muertos**, que es justo lo que haría falta para saber si había menores.
+
+### La demostración en rojo
+
+Siete inyecciones fieles sobre 734, todas ROJO: exención sin razón · eximida
+que se contradice con su propio contrargumento · eximir por una REGLA del
+código en vez de por razones · el casillero contando sobre todas otra vez · el
+denominador copiado de nuevo en tres sitios · las eximidas sin llegar a la
+pantalla · y la de «sin material».
+
+Esa última enseñó algo y se corrigió: **que no haya ninguna eximida es un
+estado legítimo** —puede que toda entrada le reproche algo al Gobierno—, así
+que su cero va con `?` y no en rojo (v970, v1097). En rojo se queda lo que
+sobrevive al cero: que ninguna eximida vaya sin razón, y que el módulo cuente
+sobre el exigible.
+
+Y un `ReferenceError` más, cazado por el CONTEO: 183 palomitas donde la
+corrida anterior tenía 734, por usar una variable declarada más abajo en el
+archivo.
+
+### Lo que esta versión NO hace
+
+* **NO exime más de cinco entradas.** Cada exención cuesta leer la entrada y
+  escribir su razón, y ese coste es lo que la hace honesta. Las demás siguen
+  contadas. `pendiente`
+* **NO cierra el casillero**: 233 de 251 sigue en rojo, con su trámite.
+  `pendiente`
+* **NO mueve el dictamen.** Sigue en «Nada fiable», y el tablero en 11 de 19.
+  `cerrado en v1109`
