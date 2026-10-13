@@ -1567,6 +1567,27 @@ sección al final de este archivo.
   desde la v1076 para el trámite de un eje, así que la guarda del casillero se
   quedaba verde con su propia redacción borrada — en verde sobre el defecto
   que vigila. **Lo delató la inyección, que salió VERDE**, no la lectura.
+* **Y la SÉPTIMA del pendiente que nadie puede bajar: no acusa NADIE**
+  (v1109, v1117). La sexta era que el Gobierno fuera el acusador; esta es que
+  no haya acusación. Un atentado de un grupo armado cuyo contrapunto dice que
+  los medios no coinciden en el número de heridos no le reprocha nada al
+  Ejecutivo. El discriminante se escribe ANTES de mirar las entradas, con sus
+  tres vías —**(a)** discrepancia entre medios, **(b)** límite de la
+  evidencia, **(c)** conducta de un tercero— y **con lo que NO exime dicho de
+  antemano**, que es la mitad que la hace discriminar: una cifra que el propio
+  Gobierno publica sin auditoría SÍ es un reproche suyo. **La señal de que no
+  está tallada: la predicción escrita falló por el lado bueno** —dijo que
+  eximiría «una parte grande» de las entradas de orden público y de 24
+  examinadas eximió 6, una sola de las cuatro de ese tipo—. Y las dos causas
+  se cuentan APARTE (v899): «el Gobierno acusa» habla de lo que el Gobierno
+  hace, «nadie acusa» de qué clase de hecho se registró.
+* **Y cuando cambia la FORMA de lo que una guarda mide, el verde ya no dice
+  lo mismo** (v1029, v1117). El campo de la exención pasó de texto a objeto y
+  la guarda siguió verde: leía `String(campo).trim()`, y `String({})` devuelve
+  `[object Object]`, que es verdadero — habría dado por buena una exención con
+  la razón EN BLANCO, que es el defecto que esa guarda existe para impedir.
+  **Lo cazó leer el detalle del verde y preguntarse cómo lo sabía**, no una
+  inyección. Al cambiar la forma de un dato se releen las guardas que lo leen.
 * **Y una comprobación que llega a cero se DICE, no desaparece** (v1064). Un
   renglón que se borra solo deja «ya está hecho» con la misma cara que
   «nadie lo ha mirado» —la regla de arriba, dicha en una pantalla—. Tres de

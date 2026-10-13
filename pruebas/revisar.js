@@ -3480,9 +3480,19 @@ console.log('\n  -- la ficha del gobernante --');
        el módulo cuente sobre el denominador exigible, y que las eximidas se
        PUBLIQUEN con su recuento en vez de desaparecer. */
     const regAct1109 = JSON.parse(leer('assets/data/seguimiento-presidencial.json'));
-    const exim = ((regAct1109.entradas) || []).filter((e) => String((e && e._sinReprocheAlGobierno) || '').trim());
+    /* SE LEE `.razon` Y NO EL CAMPO ENTERO (v1029, v1117). La v1117 le dio
+       forma de objeto al campo —causa y razón— y `String({})` devuelve
+       «[object Object]», que es verdadero: la guarda habría dado por buena
+       una exención con la razón EN BLANCO, en verde sobre el defecto que
+       vigila. Lo cazó leer el detalle del verde, no una inyección. */
+    const razonSR = (e) => {
+      const v = (e && e._sinReprocheAlGobierno) || null;
+      if (!v) return '';
+      return String((typeof v === 'object' ? v.razon : v) || '').trim();
+    };
+    const exim = ((regAct1109.entradas) || []).filter((e) => razonSR(e));
     const eximSinRazon = ((regAct1109.entradas) || []).filter(
-      (e) => e && e._sinReprocheAlGobierno !== undefined && !String(e._sinReprocheAlGobierno || '').trim());
+      (e) => e && e._sinReprocheAlGobierno !== undefined && !razonSR(e));
     const eximMal = exim.filter((e) => String(e.contrargumentoOficial || '').trim());
     /* EL `?` Y NO EL ROJO (v970, v1097). Que no haya ninguna eximida es un
        estado legítimo del registro —puede que toda entrada le reproche algo
@@ -3522,7 +3532,12 @@ console.log('\n  -- la ficha del gobernante --');
     const copias = (j70v.match(/c1\.n - c1\.contra\.noAplica/g) || []).length;
     const usaExigible = hayFn && usos >= 4 && copias === 0;
     const porEntrada = /e && e\._sinReprocheAlGobierno/.test(j70v);
-    const llegaExim = /Sin reproche al Gobierno/.test(j70v) &&
+    /* SE APRIETA, NO SE AFLOJA (v1117). La guarda buscaba el rótulo literal
+       «Sin reproche al Gobierno», y la v1117 lo partió en dos causas con sus
+       nombres. Lo que pide ahora es más fuerte que el literal: que la fila se
+       CONSTRUYA recorriendo `CAUSA_SIN_REPROCHE`, de modo que una causa nueva
+       aparezca en la pantalla sin que su autor se acuerde (v867, v1091). */
+    const llegaExim = /Object\.keys\(CAUSA_SIN_REPROCHE\)\.map/.test(j70v) &&
                       /ninguna entrada está eximida de la cuenta/.test(j70v);
     comprobar('y el módulo cuenta sobre el denominador exigible, exime por ENTRADA y lo publica',
       usaExigible && porEntrada && llegaExim,
@@ -3537,6 +3552,45 @@ console.log('\n  -- la ficha del gobernante --');
                      'callada se lee igual que un aprobado'
       : 'cuenta sobre los exigibles en los dos sitios, lee la exención de cada entrada, y publica el ' +
         'recuento de eximidas con sus dos redacciones');
+
+    /* ═══ LAS DOS CAUSAS DE LA EXENCIÓN, APARTE (v899, v1117) ══════════════
+       La v1109 eximió a las entradas en las que el Gobierno es el ACUSADOR.
+       Bajando por las que faltaban apareció una causa distinta: entradas en
+       las que **no acusa nadie** —un atentado de un grupo armado cuyo
+       contrapunto dice que los medios no coinciden en el número de heridos—.
+       Sumadas en un solo renglón se leen como una sola cosa, y dicen cosas
+       distintas: la primera, sobre lo que el Gobierno hace; la segunda,
+       sobre qué clase de hecho se registró.
+
+       DE QUÉ NO RESPONDE (v945, v952, v1008): de que la causa esté bien
+       elegida. Comprueba que la causa esté DECLARADA en la tabla, que la
+       tabla del código y la de acá sean la misma (v926), y que cada causa
+       llegue a la pantalla por construcción y no por un rótulo escrito a
+       mano — para que una causa nueva aparezca sin que su autor se acuerde. */
+    const CAUSAS_SR = ['gobierno-acusador', 'sin-reproche-al-ejecutivo'];
+    const conCausa = {}; let causaMala = 0;
+    ((regAct1109.entradas) || []).forEach((e) => {
+      const v = (e && e._sinReprocheAlGobierno) || null;
+      if (!v) return;
+      const c = (typeof v === 'object') ? String(v.causa || '').trim() : '';
+      if (CAUSAS_SR.indexOf(c) >= 0) conCausa[c] = (conCausa[c] || 0) + 1;
+      else causaMala++;
+    });
+    const tablaOK = CAUSAS_SR.every((c) => new RegExp("'" + c + "': \\{ t:").test(j70v));
+    comprobar('la tabla de causas de la exención del código y la de esta comprobación son la misma',
+      tablaOK,
+      tablaOK ? 'las ' + CAUSAS_SR.length + ' causas están declaradas en `CAUSA_SIN_REPROCHE` con su ' +
+                'rótulo y su lectura'
+        : 'faltan en el código: ' + CAUSAS_SR.filter((c) => !new RegExp("'" + c + "': \\{ t:").test(j70v)).join(', ') +
+          ' — el convenio escrito acá y el aplicado allá se separaron');
+    comprobar('y toda eximida declara una causa que la tabla conoce',
+      causaMala === 0,
+      causaMala === 0
+        ? (exim.length ? 'las ' + exim.length + ' la declaran: ' +
+            CAUSAS_SR.map((c) => (conCausa[c] || 0) + ' ' + c).join(' · ')
+          : 'no hay ninguna eximida, y la regla muerde el día que aparezca la primera')
+        : causaMala + ' con una causa que la tabla no conoce, o sin causa: una exención cuya causa no ' +
+          'se puede leer es gratis, y gratis es exactamente lo que no puede ser');
 
     /* ═══ ¿ESTÁ TERMINADO? SE CONTESTA, NO SE CUENTA (v1107) ═══════════════
        La v1098 dejó el control publicando el estado del módulo y escribió al

@@ -1791,6 +1791,22 @@
     });
   }
 
+  /* LAS DOS CAUSAS POR LAS QUE UNA ENTRADA NO TIENE REPROCHE QUE RESPONDER
+     (v1109, v1117). Van en una tabla y no como texto libre porque se cuentan
+     aparte: piden lecturas distintas de un registro, y una exención cuya
+     causa no se puede leer es gratis. Falla cerrado: una causa que no esté
+     acá se pinta como desconocida y la guarda la denuncia. */
+  var CAUSA_SIN_REPROCHE = {
+    'gobierno-acusador': { t: 'El Gobierno es el acusador',
+      d: 'El acto registrado es una denuncia, una auditoría o una investigación que el propio ' +
+         'Ejecutivo promueve contra terceros. No hay reproche al Gobierno al que responder, y la ' +
+         'posición oficial ya ES el contenido de la entrada.' },
+    'sin-reproche-al-ejecutivo': { t: 'La entrada no le reprocha nada al Ejecutivo',
+      d: 'Lo que el contrapunto señala es una discrepancia entre medios, un límite de la evidencia ' +
+         'disponible o la conducta de un tercero que no es el Ejecutivo. Nada de eso es un cargo al ' +
+         'que un vocero del Gobierno pudiera responder.' }
+  };
+
   /* El contrargumento no es una tabla de valores: es un texto, o la palabra
      `ausente`, o nada. Los tres estados van con nombre porque los tres piden
      una acción distinta. */
@@ -1813,12 +1829,33 @@
        que la razón ESTÉ —que sea cierta no lo puede comprobar nadie (v1008)—
        y que la entrada eximida no traiga además contrargumento, porque
        entonces una de las dos cosas está mal escrita. */
-    var nr = String((e && e._sinReprocheAlGobierno) || '').trim();
+    /* ── Y LA SÉPTIMA FORMA DEL MISMO PENDIENTE (v1117) ───────────────────
+       La v1109 eximió las entradas en las que el Gobierno es el ACUSADOR.
+       Bajando por las que faltaban se vio una causa distinta: entradas en
+       las que **no acusa nadie**. Un atentado de un grupo armado cuyo
+       contrapunto dice que los medios no coinciden en el número de heridos
+       no le reprocha nada al Ejecutivo — el reparo es a las fuentes, o al
+       límite de lo que la evidencia sostiene.
+
+       Las dos causas se cuentan APARTE porque piden lecturas distintas de un
+       registro (v899): «el Gobierno acusa» dice algo sobre lo que el Gobierno
+       hace; «nadie acusa» dice algo sobre qué clase de hecho se registró. Y
+       el discriminante se escribió ANTES de mirar las entradas, con sus tres
+       vías —discrepancia de prensa, límite de la evidencia, conducta de un
+       tercero— y con lo que NO exime dicho de antemano: una cifra que el
+       propio Gobierno publica sin auditoría SÍ es un reproche al Gobierno. */
+    var nrv = (e && e._sinReprocheAlGobierno) || null;
+    var nrc = nrv && typeof nrv === 'object' ? String(nrv.causa || '').trim() : '';
+    var nr = nrv && typeof nrv === 'object' ? String(nrv.razon || '').trim()
+                                            : String(nrv || '').trim();
     if (nr) {
-      return { estado: 'no-aplica', t: 'No hay reproche al Gobierno', texto: '', esDato: false,
+      var cz = CAUSA_SIN_REPROCHE[nrc];
+      return { estado: 'no-aplica', t: cz ? cz.t : 'No hay reproche al Gobierno', texto: '',
+               esDato: false, causa: nrc, causaDeclarada: !!cz,
                razon: nr, contradice: !!(v && String(v).trim()),
-               d: 'Esta entrada no le reprocha nada al Gobierno, así que no hay respuesta oficial que ' +
-                  'esperar. La razón va escrita en la entrada y se cuenta aparte: ' + nr };
+               d: (cz ? cz.d : 'La causa de esta exención no está en la tabla, así que no se puede ' +
+                   'leer para qué se eximió — y una exención que no se puede leer es gratis.') +
+                  ' La razón va escrita en la entrada y se cuenta aparte: ' + nr };
     }
     if (v === undefined || v === null || String(v).trim() === '') {
       return { estado: 'sin-revisar', t: 'Sin revisar', texto: '', esDato: false,
@@ -1884,7 +1921,13 @@
               prueba: { declarados: 0, sinDeclarar: 0, desconocidos: 0, por: {} },
               medicion: { actividad: 0, resultado: 0, 'contexto-estructural': 0, sinDeclarar: 0, desconocidos: 0 },
               contra: { respondio: 0, ausente: 0, sinConstancia: 0, sinRevisar: 0,
-                        noAplica: 0, noAplicaMal: 0 },
+                        noAplica: 0, noAplicaMal: 0,
+                        /* Las dos causas, aparte (v899, v1117): «el Gobierno
+                           acusa» y «nadie acusa» dicen cosas distintas sobre
+                           el registro, y sumadas se leen como una sola. Y la
+                           causa que la tabla no conoce se cuenta también, o
+                           la exención vuelve a ser silenciosa. */
+                        porCausa: {}, causaMala: 0 },
               /* El recuento de revisiones posteriores cuenta DOS cosas y no
                  una: cuántas entradas se revisaron y cuántos hallazgos
                  salieron. No son lo mismo —una entrada puede traer tres— y
@@ -1909,6 +1952,9 @@
       else if (c.contra.estado === 'no-aplica') {
         r.contra.noAplica++;
         if (c.contra.contradice) r.contra.noAplicaMal++;
+        if (c.contra.causaDeclarada) {
+          r.contra.porCausa[c.contra.causa] = (r.contra.porCausa[c.contra.causa] || 0) + 1;
+        } else r.contra.causaMala++;
       }
       else r.contra.sinRevisar++;
       if (c.revision.length) r.revision.entradas++;
@@ -6408,10 +6454,16 @@
        nada al Gobierno sale de la cuenta, y si saliera en silencio la
        exención se leería como un aprobado. Va con su propio rótulo, no
        sumada a «respondió». */
+    /* Y LAS DOS CAUSAS DE LA EXENCIÓN, cada una con su nombre (v1117). Antes
+       iban sumadas en un solo renglón y eso borraba la diferencia entre «el
+       Gobierno acusa» —que dice algo sobre lo que el Gobierno hace— y «nadie
+       acusa», que dice algo sobre qué clase de hecho se registró. */
     s1.appendChild(filaC1('Respuesta del Gobierno',
       [{ t: 'Respondió', n: c1.contra.respondio },
-       { t: 'No respondió', n: c1.contra.ausente },
-       { t: 'Sin reproche al Gobierno', n: c1.contra.noAplica }],
+       { t: 'No respondió', n: c1.contra.ausente }].concat(
+        Object.keys(CAUSA_SIN_REPROCHE).map(function (k) {
+          return { t: CAUSA_SIN_REPROCHE[k].t, n: c1.contra.porCausa[k] || 0 };
+        })),
       c1.contra.sinRevisar,
       'sin revisar, de los que le reprochan algo al Gobierno. Que el Gobierno no haya respondido es un ' +
       'dato sobre el Gobierno; que nosotros no lo hayamos mirado es una deuda nuestra, y contarlas ' +

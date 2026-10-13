@@ -27435,3 +27435,99 @@ Dos tropiezos, los dos de la familia que este archivo ya tiene escrita:
   abiertos — igual que antes, que es la señal de que el cambio no se escogió
   para que algo pasara (v882). `cerrado en v1116`
 * **NO mueve el dictamen.** Sigue en «Nada fiable». `cerrado en v1116`
+
+## v1117 · la séptima: una entrada que no le reprocha nada a nadie
+
+Bajando por las entradas sin contrargumento en orden de fecha —que es el
+orden que la regla de la v1108 fija— apareció otra vez la forma que este
+proyecto lleva seis versiones encontrando: **un pendiente que nadie puede
+bajar**.
+
+El campo pregunta «¿respondió el Gobierno al reproche?». La v1109 eximió a
+las entradas en las que el Gobierno es el **ACUSADOR**. Lo que faltaba es una
+causa distinta: entradas en las que **no acusa nadie**. Un atentado con carro
+bomba en el peaje El Bordo cuyo contrapunto dice que los medios no coinciden
+en el número de heridos; un ataque con drones de un frente disidente cuyo
+contrapunto dice que no hay reclamo de responsabilidad ni captura. A eso no
+hay respuesta oficial que pedirle a nadie, y contarlo como deuda nuestra mide
+lo que nadie puede bajar.
+
+### El discriminante, escrito ANTES de mirar
+
+Como la cura BAJA el número, pide la justificación de un umbral nuevo (v882),
+así que la regla se escribió primero, en el cuaderno, con sus tres vías:
+
+> ¿Hay en esta entrada un reproche AL EJECUTIVO —a un acto suyo, a una
+> omisión suya, o a una cifra que él mismo publica— al que un vocero del
+> Gobierno podría responder?
+
+No lo hay si el contrapunto solo señala **(a)** una discrepancia entre medios,
+**(b)** un límite de la evidencia, o **(c)** la conducta de un tercero que no
+es el Ejecutivo. Y con lo que NO exime dicho de antemano, que es la mitad que
+la hace discriminar: **una cifra que el propio Gobierno publica sin auditoría
+SÍ es un reproche al Gobierno**; una contradicción documentada entre lo que
+predica y lo que hace, también.
+
+### La predicción falló, y eso es la prueba
+
+La regla predijo, por escrito y antes de correrla, que «va a eximir a una
+parte grande de las entradas de categoría `gobierno` que registran hechos de
+orden público». **Aplicada a 24 entradas examinadas una por una, eximió 6** —y
+de las cuatro de orden público del primer lote, solo UNA—. Las otras tres
+traían reproche: el editorial que pide al Gobierno explicar la responsabilidad
+del coronel, la comunidad de Cajibío preocupada por los combates cerca de una
+escuela, la atribución del atentado contra los guardias que el contrapunto
+marca como «la lectura del Gobierno».
+
+Una regla que exime menos de lo que su autor predijo no está tallada a la
+medida del resultado. Si hubiera eximido las 24, la sospecha sería la
+contraria.
+
+### Dos causas, contadas aparte
+
+Sumadas en un renglón se leen como una sola cosa, y dicen cosas distintas
+(v899): «el Gobierno acusa» habla de lo que el Gobierno HACE; «nadie acusa»
+habla de qué clase de hecho se REGISTRÓ. El campo pasó de texto a
+`{causa, razon}`, con `CAUSA_SIN_REPROCHE` como tabla, y la fila de la Capa 1
+se construye **recorriendo la tabla**, de modo que una causa nueva aparece en
+la pantalla sin que su autor se acuerde (v867, v1091).
+
+```
+Respuesta del Gobierno
+  36 Respondió · 5 El Gobierno es el acusador · 6 La entrada no le reprocha nada al Ejecutivo
+  208 de 244 sin revisar, de los que le reprochan algo al Gobierno
+```
+
+### Y un verde que medía «[object Object]»
+
+Al cambiar la forma del campo, la guarda de la v1109 siguió en verde — y
+estaba midiendo otra cosa. Leía `String(e._sinReprocheAlGobierno || '').trim()`,
+y `String({})` devuelve `[object Object]`, que es verdadero: **habría dado por
+buena una exención con la razón EN BLANCO**, que es exactamente el defecto que
+esa guarda existe para impedir. Lo cazó leer el detalle del verde —«las 12
+traen su razón»— y preguntarse cómo lo sabía. Ahora lee `.razon`, y la
+inyección que vacía una razón la pone roja.
+
+Es la forma de la v1029 otra vez: **cuando una guarda sigue verde después de
+que cambió la forma de lo que mide, lo que falta no es la inyección — es lo
+que la aserción mide.**
+
+### Las guardas
+
+Dos nuevas (747 → 749) y una apretada. Cinco inyecciones en rojo, incluida la
+fiel —las doce exenciones vuelven a ser texto sin causa, que es el estado de
+la v1116—. La apretada es la de la v1109: pedía el rótulo literal «Sin
+reproche al Gobierno» y ahora pide que la fila se CONSTRUYA recorriendo
+`CAUSA_SIN_REPROCHE`, que es más fuerte que el literal.
+
+### Lo que esta versión NO hace
+
+* **NO baja el casillero del contrargumento a cero.** De 219 pendientes
+  quedan 213, y 24 entradas examinadas de 252 exigibles. El resto es volumen
+  de archivo, una por una. `pendiente`
+* **NO exime por una regla del código.** Cada una lleva su razón escrita y su
+  cláusula de reversa; el número baja solo tanto como entradas se examinen.
+  `cerrado en v1117`
+* **NO mueve el estado del módulo.** 11 pasan, 5 fallan, 3 sin correr, 8
+  abiertos. `cerrado en v1117`
+* **NO mueve el dictamen.** Sigue en «Nada fiable». `cerrado en v1117`

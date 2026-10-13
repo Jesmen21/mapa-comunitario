@@ -165,7 +165,11 @@
           "u": "https://eltiempo.com/justicia/conflicto-y-narcotrafico/balance-cuatro-municipios-del-cauca-concentran-una-nueva-escalada-de-violencia-en-las-ultimas-72-horas-3592987",
           "rol": "contexto"
         }
-      ]
+      ],
+      "_sinReprocheAlGobierno": {
+        "causa": "sin-reproche-al-ejecutivo",
+        "razon": "Vía (a) y (c) del discriminante escrito antes de mirar: el hecho registrado es un atentado de un grupo armado, y lo que el contrapunto señala es que los medios no coinciden en el número de heridos (tres frente a cinco) ni en el municipio, y que la atribución a la Estructura Carlos Patiño es una hipótesis preliminar del Ejército. Eso es un reparo a las FUENTES y al límite de la evidencia, no un cargo contra el Ejecutivo al que un vocero pudiera responder. Si más adelante alguien le reprocha al Gobierno la RESPUESTA al atentado —la protección del corredor, el tiempo de reacción—, la entrada vuelve a la cuenta y esta razón deja de valer."
+      }
     },
     {
       "fecha": "2026-10-12",
@@ -424,7 +428,10 @@
           "rol": "contexto"
         }
       ],
-      "_sinReprocheAlGobierno": "El Gobierno es el ACUSADOR: ordenó la investigación interna a la Fuerza Aérea y pidió a la Fiscalía, la Corte Suprema, la Procuraduría y a las autoridades de Estados Unidos tomar nota, sobre denuncias que apuntan a la exprimera dama del gobierno anterior. No hay reproche al Gobierno al que responder. Y como en los otros casos de esta forma: si más adelante alguien le reprocha al Gobierno la manera de ordenarla —por ejemplo usar la contrainteligencia de la propia Fuerza para investigar a una figura política—, la entrada vuelve a la cuenta y esta razón deja de valer."
+      "_sinReprocheAlGobierno": {
+        "causa": "gobierno-acusador",
+        "razon": "El Gobierno es el ACUSADOR: ordenó la investigación interna a la Fuerza Aérea y pidió a la Fiscalía, la Corte Suprema, la Procuraduría y a las autoridades de Estados Unidos tomar nota, sobre denuncias que apuntan a la exprimera dama del gobierno anterior. No hay reproche al Gobierno al que responder. Y como en los otros casos de esta forma: si más adelante alguien le reprocha al Gobierno la manera de ordenarla —por ejemplo usar la contrainteligencia de la propia Fuerza para investigar a una figura política—, la entrada vuelve a la cuenta y esta razón deja de valer."
+      }
     },
     {
       "fecha": "2026-10-09",
@@ -520,7 +527,11 @@
           "u": "https://www.infobae.com/colombia/2026/10/08/gobierno-establecio-nuevo-protocolo-para-definir-que-autoridades-extranjeras-que-visiten-colombia-seran-recibidas-por-de-la-espriella/",
           "rol": "acto"
         }
-      ]
+      ],
+      "_sinReprocheAlGobierno": {
+        "causa": "sin-reproche-al-ejecutivo",
+        "razon": "Vía (b): el contrapunto dice que es una norma de procedimiento interno sobre protocolo diplomático y que las fuentes consultadas NO registran controversia pública sobre su contenido; lo demás que señala es un límite nuestro —no se pudo abrir el Diario Oficial desde este contenedor—. Sin controversia no hay reproche al que responder. Si aparece una, la entrada vuelve a la cuenta."
+      }
     },
     {
       "fecha": "2026-10-08",
@@ -580,7 +591,11 @@
           "u": "https://unitel.bo/noticias/agencias/presidenciable-brasileno-bolsonaro-pide-ayuda-contra-el-narco-al-presidente-de-colombia-CB23990453",
           "rol": "contexto"
         }
-      ]
+      ],
+      "_sinReprocheAlGobierno": {
+        "causa": "sin-reproche-al-ejecutivo",
+        "razon": "Vía (b) y (c): lo que el contrapunto precisa es el ALCANCE de lo anunciado —Flávio Bolsonaro es un candidato en campaña y no un jefe de Estado, así que lo coordinado es una intención y no un acuerdo de gobierno a gobierno— y la conducta de terceros, el canal por el que se transmitió. No hay en la entrada un reparo a un acto del Ejecutivo. Si alguien le reprocha al Gobierno haber sostenido la llamada con un candidato extranjero en plena campaña —que es un reproche posible y distinto—, la entrada vuelve a la cuenta."
+      }
     },
     {
       "fecha": "2026-10-07",
@@ -624,7 +639,11 @@
           "u": "https://laultima.com.co/2026/10/08/inflacion-anual-subio-a-629-y-alimentos-volvieron-a-presionar-el-bolsillo-de-los-colombianos/",
           "rol": "acto"
         }
-      ]
+      ],
+      "_sinReprocheAlGobierno": {
+        "causa": "sin-reproche-al-ejecutivo",
+        "razon": "Vía (c), y el propio contrapunto lo dice con todas las letras: esta cifra va como CONTEXTO y no como resultado de este gobierno, porque la tendencia al alza venía de antes del 7 de agosto y dos meses no explican una inflación anual. Es un dato del país y no un acto del Ejecutivo, así que no hay reproche que responder — y pedirle al Gobierno una respuesta sería aceptar la atribución que esta misma entrada rechaza."
+      }
     },
     {
       "fecha": "2026-10-06",
@@ -870,7 +889,11 @@
           "rol": "contexto"
         }
       ],
-      "nivelGobierno": "nacional"
+      "nivelGobierno": "nacional",
+      "_sinReprocheAlGobierno": {
+        "causa": "sin-reproche-al-ejecutivo",
+        "razon": "Vía (b) y (c): a la fecha de la entrada NO existe acuerdo, línea de crédito ni programa pactado —la reunión es una etapa de la negociación—, y las cifras de tasa y monto que circulan son estimaciones de analistas a partir de la cuota de Colombia, no una oferta del FMI. El contrapunto acota lo que la evidencia sostiene y nombra a un tercero que no es el Ejecutivo; no hay reparo a un acto del Gobierno. El día que haya acuerdo y alguien le reproche sus condiciones, la entrada vuelve a la cuenta."
+      }
     },
     {
       "fecha": "2026-10-05",
@@ -1088,7 +1111,10 @@
         }
       ],
       "nivelGobierno": "nacional",
-      "_sinReprocheAlGobierno": "Acá el Gobierno es el ACUSADOR y no el acusado: ordenó la auditoría y publicó sus hallazgos contra el gobierno anterior. No hay reproche al Gobierno al que pudiera responder, y la respuesta que faltaría —la del gobierno de Petro— no es «la respuesta oficial» que este campo mide. Es la regla que CLAUDE.md ya tiene escrita: las denuncias del propio Gobierno contra la administración anterior no son casos suyos."
+      "_sinReprocheAlGobierno": {
+        "causa": "gobierno-acusador",
+        "razon": "Acá el Gobierno es el ACUSADOR y no el acusado: ordenó la auditoría y publicó sus hallazgos contra el gobierno anterior. No hay reproche al Gobierno al que pudiera responder, y la respuesta que faltaría —la del gobierno de Petro— no es «la respuesta oficial» que este campo mide. Es la regla que CLAUDE.md ya tiene escrita: las denuncias del propio Gobierno contra la administración anterior no son casos suyos."
+      }
     },
     {
       "fecha": "2026-10-03",
@@ -1123,7 +1149,11 @@
           "rol": "contexto"
         }
       ],
-      "nivelGobierno": "nacional"
+      "nivelGobierno": "nacional",
+      "_sinReprocheAlGobierno": {
+        "causa": "sin-reproche-al-ejecutivo",
+        "razon": "Vía (b) y (c): el hecho es un ataque de un frente de las disidencias, y lo que el contrapunto registra es que no se encontró reclamo de responsabilidad propio ni captura o imputación por ese ataque. Es la conducta de un tercero y el límite de lo que la evidencia sostiene, no un cargo contra el Ejecutivo. Si alguien le reprocha al Gobierno la respuesta o la prevención, la entrada vuelve a la cuenta."
+      }
     },
     {
       "fecha": "2026-10-04",
@@ -3797,7 +3827,10 @@
           "rol": "acto"
         }
       ],
-      "_sinReprocheAlGobierno": "Lo registrado es una denuncia de un funcionario del Gobierno ante el Congreso sobre la contratación del gobierno anterior. El Gobierno es quien habla, así que la «respuesta oficial» ya ES el contenido de la entrada; pedirle además una respuesta a sí mismo no mide nada."
+      "_sinReprocheAlGobierno": {
+        "causa": "gobierno-acusador",
+        "razon": "Lo registrado es una denuncia de un funcionario del Gobierno ante el Congreso sobre la contratación del gobierno anterior. El Gobierno es quien habla, así que la «respuesta oficial» ya ES el contenido de la entrada; pedirle además una respuesta a sí mismo no mide nada."
+      }
     },
     {
       "fecha": "2026-09-15",
@@ -7251,7 +7284,10 @@
           "rol": "contexto"
         }
       ],
-      "_sinReprocheAlGobierno": "Es un informe del propio Gobierno que reporta irregularidades del gobierno anterior: el Gobierno acusa, no es acusado, así que no hay respuesta oficial suya que esperar. Lo que sí falta —y es otra cosa— es la versión de los señalados, que el registro recoge por su propia puerta cuando existe."
+      "_sinReprocheAlGobierno": {
+        "causa": "gobierno-acusador",
+        "razon": "Es un informe del propio Gobierno que reporta irregularidades del gobierno anterior: el Gobierno acusa, no es acusado, así que no hay respuesta oficial suya que esperar. Lo que sí falta —y es otra cosa— es la versión de los señalados, que el registro recoge por su propia puerta cuando existe."
+      }
     },
     {
       "fecha": "2026-08-26",
@@ -7750,7 +7786,10 @@
           "rol": "contexto"
         }
       ],
-      "_sinReprocheAlGobierno": "Es una declaración del propio Gobierno sobre denuncias que él mismo presentó contra la administración anterior. No hay reproche al Gobierno en la entrada, así que no hay respuesta oficial que falte: la posición oficial es la entrada."
+      "_sinReprocheAlGobierno": {
+        "causa": "gobierno-acusador",
+        "razon": "Es una declaración del propio Gobierno sobre denuncias que él mismo presentó contra la administración anterior. No hay reproche al Gobierno en la entrada, así que no hay respuesta oficial que falte: la posición oficial es la entrada."
+      }
     },
     {
       "fecha": "2026-08-24",
@@ -9361,7 +9400,10 @@
         }
       ],
       "tipoFuente": "verificado",
-      "_sinReprocheAlGobierno": "El acto registrado es una denuncia DEL Gobierno ante la Fiscalía, la Contraloría y la Procuraduría. El sujeto reprochado son terceros, no el Ejecutivo, de modo que el campo no tiene objeto. Si más adelante alguien le reprocha al Gobierno la denuncia misma —por ejemplo su sustento—, la entrada vuelve a la cuenta y esta razón deja de valer."
+      "_sinReprocheAlGobierno": {
+        "causa": "gobierno-acusador",
+        "razon": "El acto registrado es una denuncia DEL Gobierno ante la Fiscalía, la Contraloría y la Procuraduría. El sujeto reprochado son terceros, no el Ejecutivo, de modo que el campo no tiene objeto. Si más adelante alguien le reprocha al Gobierno la denuncia misma —por ejemplo su sustento—, la entrada vuelve a la cuenta y esta razón deja de valer."
+      }
     },
     {
       "fecha": "2026-08-05",
