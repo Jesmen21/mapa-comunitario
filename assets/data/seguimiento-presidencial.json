@@ -3,8 +3,8 @@
   "presidente": "Abelardo de la Espriella",
   "periodo": "2026 – 2030",
   "posesion": "2026-08-07",
-  "actualizado": "2026-10-12",
-  "proximaActualizacion": "2026-10-13",
+  "actualizado": "2026-10-13",
+  "proximaActualizacion": "2026-10-14",
   "categorias": {
     "gobierno": {
       "nombre": "Gobierno y decretos",
@@ -73,6 +73,209 @@
     }
   },
   "entradas": [
+    {
+      "fecha": "2026-10-12",
+      "precision": "exacta",
+      "categoria": "gobierno",
+      "titulo": "En una alocución, el presidente anuncia un estatuto antiterrorista que radicará en el Congreso y advierte que no tolerará violencia en las marchas del 14 de octubre",
+      "categoriaProbatoria": "hecho-probado",
+      "tipoMedicion": "actividad",
+      "indicadores": [],
+      "nivelGobierno": "nacional",
+      "estadoProcesal": "anunciado-sin-acto",
+      "tipoEvidencia": "reporte-periodistico",
+      "detalle": "En una alocución a cadena nacional la noche del lunes 12 de octubre de 2026, el presidente Abelardo de la Espriella anunció un proyecto de estatuto antiterrorista que radicará en el Congreso, y que llamó «la vacuna contra la pandemia de la inseguridad»: según los detalles conocidos, crearía un registro de organizaciones terroristas, permitiría el congelamiento de bienes, cortaría la contratación con el Estado a quienes figuren en ese registro, establecería penas severas por el uso de drones contra civiles y la Fuerza Pública, y sancionaría la asonada contra la Fuerza Pública. En la misma alocución reiteró el decreto que prohíbe los bloqueos permanentes de vías como forma de protesta —el que esta misma base de datos registró el 11 de octubre como ya vigente— y presentó un balance de seguridad: 1.117 afectaciones a integrantes de la Fuerza Pública, 876 capturas y 171 desmovilizaciones, sometimientos y desvinculaciones de grupos armados organizados. De la Espriella advirtió que no tolerará violencia durante el paro nacional convocado para el miércoles 14 de octubre y acusó a los convocantes —sindicatos y sectores de oposición— de buscar «causar el caos» y «desestabilizar el Gobierno».",
+      "contrapunto": "El estatuto antiterrorista es, por ahora, solo un anuncio: ninguna fuente consultada reporta el texto radicado en el Congreso ni su articulado completo, así que el alcance real de las medidas (congelamiento de bienes, corte de contratación) queda sujeto a lo que diga el proyecto cuando se conozca. La acusación presidencial de que los convocantes al paro buscan «causar el caos» es una calificación del propio Gobierno sobre la protesta de oposición, no un hecho verificado por una autoridad independiente.",
+      "tipoFuente": "verificado",
+      "fuentes": [
+        {
+          "n": "El Tiempo · Orden público, estatuto antiterrorismo y marchas del 14 de octubre: ejes de la alocución del presidente Abelardo De La Espriella",
+          "u": "https://www.eltiempo.com/politica/abelardo-de-la-espriella/presidente-abelardo-de-la-espriella-se-dirige-al-pais-este-lunes-12-de-octubre-en-alocucion-3593070",
+          "rol": "acto"
+        },
+        {
+          "n": "El Tiempo · Los cinco mensajes clave de la alocución del presidente Abelardo De la Espriella este lunes 12 de octubre",
+          "u": "https://www.eltiempo.com/politica/abelardo-de-la-espriella/los-cinco-mensajes-clave-de-la-alocucion-del-presidente-abelardo-de-la-espriella-este-lunes-12-de-octubre-3593107",
+          "rol": "acto"
+        },
+        {
+          "n": "La FM · De la Espriella revela detalles del Estatuto Antiterrorista: congelaría bienes y habría sanciones por ataques con drones",
+          "u": "https://www.lafm.com.co/politica/abelardo-de-la-espriella-estauto-antirerrorista-ley-congelar-bienes-sanciones-drones-413756",
+          "rol": "acto"
+        },
+        {
+          "n": "Semana · «Una vacuna contra la delincuencia»: Abelardo De La Espriella anuncia radicación del estatuto antiterrorista en el Congreso",
+          "u": "https://www.semana.com/politica/articulo/una-vacuna-contra-la-delincuencia-abelardo-de-la-espriella-anuncia-radicacion-del-estatuto-antiterrorista-en-el-congreso/202638/",
+          "rol": "contexto"
+        },
+        {
+          "n": "El Heraldo · Esta semana se conocerán el decreto de protesta social y el estatuto antiterrorista anunciados por De la Espriella",
+          "u": "https://www.elheraldo.co/colombia/2026/10/13/esta-semana-se-conoceran-el-decreto-de-protesta-social-y-el-estatuto-antiterrorista-anunciados-por-de-la-espriella/",
+          "rol": "contexto"
+        }
+      ]
+    },
+    {
+      "fecha": "2026-10-12",
+      "precision": "exacta",
+      "categoria": "gobierno",
+      "titulo": "Un atentado con vehículo cargado de explosivos destruye el peaje El Bordo, en la vía Panamericana en el Cauca, deja heridos y el presidente advierte que «cada agresión de los narcoterroristas tendrá consecuencias»",
+      "categoriaProbatoria": "hecho-probado",
+      "tipoMedicion": "actividad",
+      "indicadores": [],
+      "nivelGobierno": "nacional",
+      "tipoEvidencia": "reporte-periodistico",
+      "detalle": "La madrugada del 12 de octubre de 2026 un vehículo acondicionado con explosivos detonó contra el peaje El Bordo, sobre la vía Panamericana en el Cauca, destruyó por completo la infraestructura del peaje y obligó al cierre temporal del corredor mientras las autoridades asegura­ban la zona. La mayoría de los medios consultados —Vanguardia, Infobae, El Colombiano, Minuto30— reportó tres civiles heridos y ninguna víctima mortal; Portafolio, en cambio, habló de cinco trabajadores heridos, cifra que no coincide con el resto y que se deja anotada sin resolver. El Ejército atribuyó preliminarmente el ataque al GAO-r Estructura Carlos Patiño, que según El Tiempo habría intentado una acción similar tres días antes; el hecho se sumó a una escalada de alteraciones del orden público en cuatro municipios del Cauca durante las 72 horas anteriores. El presidente Abelardo de la Espriella se pronunció en su cuenta de X alrededor de una hora después de conocerse los hechos, condenó el atentado y advirtió que «cada agresión de los narcoterroristas tendrá consecuencias»; la ministra de Transporte, Elsa Noguera, también lo rechazó y el Gobierno anunció un refuerzo de la seguridad en el corredor Mojarras-Popayán.",
+      "contrapunto": "La cifra de heridos no es uniforme entre medios (tres frente a cinco) y la atribución a la Estructura Carlos Patiño es, por ahora, una hipótesis preliminar del Ejército y no una conclusión de una investigación cerrada. Las fuentes tampoco coinciden en precisar si el peaje queda en jurisdicción de Patía o de La Sierra, aunque todas ubican el hecho en el corredor de El Bordo, Cauca.",
+      "tipoFuente": "verificado",
+      "fuentes": [
+        {
+          "n": "El Tiempo · Presidente Abelardo De La Espriella se pronunció sobre atentado en la vía Panamericana: 'Cada agresión de los narcoterroristas tendrá consecuencias'",
+          "u": "https://www.eltiempo.com/politica/abelardo-de-la-espriella/presidente-abelardo-de-la-espriella-se-pronuncio-sobre-atentado-en-la-via-panamericana-cada-agresion-de-los-narcoterroristas-tendra-consecuencias-3592986",
+          "rol": "acto"
+        },
+        {
+          "n": "Vanguardia · Explosión en el peaje de El Bordo deja tres heridos y obliga a cerrar la vía Panamericana",
+          "u": "https://www.vanguardia.com/colombia/2026/10/12/explosion-en-el-peaje-de-el-bordo-deja-tres-heridos-y-obliga-a-cerrar-la-via-panamericana/",
+          "rol": "acto"
+        },
+        {
+          "n": "Semana · «Cada agresión de los narcoterroristas tendrá consecuencias»: Abelardo De La Espriella tras atentado al Peaje de El Bordo",
+          "u": "https://www.semana.com/politica/articulo/cada-agresion-de-los-narcoterroristas-tendra-consecuencias-abelardo-de-la-espriella-tras-atentado-al-peaje-de-el-bordo/202608/",
+          "rol": "contexto"
+        },
+        {
+          "n": "Portafolio · Gobierno De La Espriella rechaza atentado terrorista contra peaje El Bordo, en Cauca, que dejó cinco heridos",
+          "u": "https://www.portafolio.co/economia/gobierno/gobierno-de-la-espriella-rechaza-atentado-terrorista-contra-peaje-el-bordo-en-cauca-que-dejo-cinco-heridos-504294",
+          "rol": "contexto"
+        },
+        {
+          "n": "El Tiempo · Balance: cuatro municipios del Cauca concentran una nueva escalada de violencia en las últimas 72 horas",
+          "u": "https://eltiempo.com/justicia/conflicto-y-narcotrafico/balance-cuatro-municipios-del-cauca-concentran-una-nueva-escalada-de-violencia-en-las-ultimas-72-horas-3592987",
+          "rol": "contexto"
+        }
+      ]
+    },
+    {
+      "fecha": "2026-10-12",
+      "precision": "aproximada",
+      "categoria": "gobierno",
+      "titulo": "Tras la fuga de 41 detenidos durante un motín en Santa Marta, el presidente anuncia la salida del comandante de la Policía de la ciudad y el Gobierno ofrece recompensa por su recaptura",
+      "categoriaProbatoria": "hecho-probado",
+      "tipoMedicion": "actividad",
+      "indicadores": [],
+      "nivelGobierno": "nacional",
+      "tipoEvidencia": "reporte-periodistico",
+      "detalle": "En los días previos al 12 de octubre de 2026 —las fuentes consultadas no precisan la fecha exacta del motín— 41 personas detenidas por hurto, microtráfico y otros delitos escaparon del Centro de Traslado por Protección de Santa Marta durante un motín con incendios y disturbios; entre los evadidos estaba alias 'Mongolo', integrante de 'Los Pachencas', que la semana anterior había sido recapturado por el Ejército y el Gaula en Guachaca. El presidente Abelardo de la Espriella anunció el 12 de octubre que el coronel al mando de la Policía en Santa Marta —identificado como Yeison López por unos medios y como Jeyson Haird López Puerto por otros— será llamado a calificar servicios, por su responsabilidad en la fuga, por no informar oportunamente los hechos y por no actuar frente al bloqueo del 11 de octubre en la vía Santa Marta-Barranquilla, a la altura de Tasajera. Según Pulzo, el coronel Jimmy Belalcázar asumiría el mando esta semana. El Gobierno ofreció una recompensa de hasta cinco millones de pesos por información que permita ubicar a los fugados.",
+      "contrapunto": "Un editorial de El Espectador —que se cita como una opinión y no como un hecho— cuestiona que el coronel saliente llevaba apenas un mes en el cargo en Santa Marta, y pide que el Gobierno explique con más detalle en qué consistió su responsabilidad. El nombre exacto del oficial varía entre las fuentes consultadas.",
+      "tipoFuente": "verificado",
+      "fuentes": [
+        {
+          "n": "El Tiempo · Por fuga de 41 detenidos, presidente Abelardo De La Espriella anunció cambios en el mando de la Policía de Santa Marta",
+          "u": "https://www.eltiempo.com/justicia/conflicto-y-narcotrafico/por-fuga-de-41-detenidos-presidente-abelardo-de-la-espriella-anuncio-cambios-en-el-mando-de-la-policia-de-santa-marta-3592992",
+          "rol": "acto"
+        },
+        {
+          "n": "El País (Cali) · Fuga de 41 detenidos provoca salida del comandante de la Policía de Santa Marta",
+          "u": "https://www.elpais.com.co/colombia/tras-fuga-de-41-presos-de-la-espriella-anuncia-cambio-en-la-policia-de-santa-marta-y-designa-nuevo-comandante-1202.html",
+          "rol": "acto"
+        },
+        {
+          "n": "El Universal (Cartagena) · Fuga de 41 detenidos provoca cambios en la Policía de Santa Marta: De la Espriella hizo el anuncio",
+          "u": "https://www.eluniversal.com.co/colombia/2026/10/12/fuga-de-41-detenidos-provoca-cambios-en-la-policia-de-santa-marta-de-la-espriella-hizo-el-anuncio/",
+          "rol": "contexto"
+        },
+        {
+          "n": "Cambio · Fuga de 41 presos en Santa Marta: Gobierno anuncia cambios en la Policía y recompensa por recapturas",
+          "u": "https://cambiocolombia.com/pais/articulo/2026/10/fuga-de-41-presos-tras-un-motin-en-en-santa-marta-de-la-espriella-anuncia-salida-del-comandante-de-policia",
+          "rol": "contexto"
+        },
+        {
+          "n": "El Espectador · Una fuga pone el dedo en la llaga en Santa Marta",
+          "u": "https://www.elespectador.com/opinion/editorial/una-fuga-pone-el-dedo-en-la-llaga-en-santa-marta/",
+          "rol": "contexto"
+        }
+      ]
+    },
+    {
+      "fecha": "2026-10-12",
+      "precision": "exacta",
+      "categoria": "informacion",
+      "titulo": "La firma de abogados del presidente, De la Espriella Lawyers, anuncia acciones legales contra el caricaturista Matador por comentarios sobre la primera dama, y el Gobierno pide a la Fiscalía investigar",
+      "categoriaProbatoria": "hecho-probado",
+      "tipoMedicion": "actividad",
+      "indicadores": [],
+      "nivelGobierno": "nacional",
+      "estadoProcesal": "anunciado-sin-acto",
+      "tipoEvidencia": "reporte-periodistico",
+      "detalle": "El 12 de octubre de 2026 la firma De la Espriella Lawyers —la firma privada de abogados del presidente Abelardo de la Espriella— anunció que emprenderá acciones legales contra el caricaturista Julio César González, conocido como 'Matador', por comentarios que calificó de insultantes contra la primera dama, Ana Lucía Pineda. La disputa se originó cuando Matador cuestionó el manejo de la ayuda a los damnificados del terremoto en Pereira y usó términos despectivos para referirse a la primera dama. La firma enmarcó el caso como parte de una lucha más amplia contra la violencia hacia las mujeres en el discurso público, y dijo que impulsará las acciones legales pertinentes para que las autoridades examinen los hechos, sin precisar aún cuáles ni ante qué autoridad. Por separado, el Gobierno pidió a la Fiscalía investigar, rechazando los ataques a la dignidad y la moral de la primera dama. Algunos medios —Antioquia Amanece y Diario La Libertad— reportaron además una denuncia penal radicada por dos ciudadanos particulares que pide investigar a Matador por injuria, calumnia y hostigamiento agravado; esa denuncia aparece en menos fuentes que el anuncio de la firma, así que se reporta con menor certeza.",
+      "contrapunto": "Esta es la firma PRIVADA del presidente actuando en nombre de la primera dama, no una actuación directa del Estado, aunque el Gobierno la respalda pidiendo investigación a la Fiscalía. Es la misma figura que la Fundación para la Libertad de Prensa (FLIP) ya había calificado de «uso indebido» el 24 de septiembre de 2026, cuando la firma envió solicitudes de rectificación a medios por columnas sobre la relación profesional del presidente con Alex Saab (ver la entrada de esa fecha). Matador había denunciado el 3 de octubre de 2026 un aumento de amenazas de muerte contra él y su familia desde la llegada de De la Espriella al poder. No hay, al cierre de esta entrada, ningún fallo ni imputación contra Matador: solo el anuncio de acciones legales y una solicitud de investigación.",
+      "tipoFuente": "verificado",
+      "fuentes": [
+        {
+          "n": "El Tiempo · Firma de abogados De la Espriella Lawyers anuncia acciones legales contra Matador tras comentarios contra Ana Lucía Pineda, primera dama de Colombia",
+          "u": "https://www.eltiempo.com/politica/gobierno/firma-de-abogados-del-presidente-abelardo-de-la-espriella-anuncia-acciones-legales-tras-ataques-a-la-primera-dama-atribuidos-al-caricaturista-matador-3593105",
+          "rol": "acto"
+        },
+        {
+          "n": "Infobae · Firma de abogados del presidente De la Espriella emprenderá acciones legales contra Matador por insultos a la primera dama, Ana Lucía Pineda",
+          "u": "https://www.infobae.com/colombia/2026/10/12/firma-de-abogados-del-presidente-de-la-espriella-emprendera-acciones-legales-contra-matador-por-insultos-a-la-primera-dama-ana-lucia-pineda/",
+          "rol": "acto"
+        },
+        {
+          "n": "El Heraldo · «Defenderla es responsabilidad de todos»: De la Espriella Lawyers anuncia acciones legales contra 'Matador' por comentarios contra la primera dama",
+          "u": "https://www.elheraldo.co/colombia/2026/10/12/defenderla-es-responsabilidad-de-todos-de-la-espriella-lawyers-anuncia-acciones-legales-contra-matador-por-comentarios-contra-la-primera-dama/",
+          "rol": "contexto"
+        },
+        {
+          "n": "Portafolio · De la Espriella Lawyers anuncia acciones legales contra Matador por comentarios sobre Ana Lucía Pineda",
+          "u": "https://www.portafolio.co/economia/gobierno/de-la-espriella-lawyers-anuncia-acciones-legales-contra-matador-por-comentarios-sobre-ana-lucia-pineda-504345",
+          "rol": "contexto"
+        },
+        {
+          "n": "Publimetro · Matador alertó sobre incremento de amenazas de muerte a él y su familia tras llegada de De la Espriella al poder",
+          "u": "https://www.publimetro.co/entretenimiento/2026/10/03/matador-alerto-sobre-incremento-de-amenazas-de-muerte-a-el-y-su-familia-tras-llegada-de-de-la-espriella-al-poder/",
+          "rol": "contexto"
+        }
+      ]
+    },
+    {
+      "fecha": "2026-10-10",
+      "precision": "exacta",
+      "categoria": "gobierno",
+      "titulo": "Sicarios en moto disparan contra dos guardias del Inpec al salir de la cárcel El Bosque en Barranquilla; el Gobierno lo vincula, sin confirmarlo, con represalias por los traslados de reclusos que ordenó el presidente",
+      "categoriaProbatoria": "hecho-probado",
+      "tipoMedicion": "actividad",
+      "indicadores": [],
+      "nivelGobierno": "nacional",
+      "estadoProcesal": "en-revision-judicial",
+      "tipoEvidencia": "reporte-periodistico",
+      "detalle": "La noche del sábado 10 de octubre de 2026, en el barrio San Martín de Barranquilla, dos dragoneantes provisionales del Inpec —Daniel Steven Tapiero Alférez y Shirly Dallana Acosta Marroquín— que salían de turno de la Penitenciaría El Bosque fueron interceptados por dos sicarios en motocicleta, que les dispararon varias veces; ambos quedaron gravemente heridos y fueron hospitalizados en condición reservada. El Ministerio de Justicia, a cargo de Iván Cancino, y el director del Inpec, coronel Daniel Gutiérrez, rechazaron el ataque y anunciaron un refuerzo de la seguridad de los guardianes. El hecho ocurrió cinco días después de un ataque contra la fachada de la cárcel Modelo de Barranquilla, en un presunto caso de intimidación contra el director de ese penal. El Gobierno relacionó el episodio con los traslados de cabecillas que el presidente Abelardo de la Espriella viene ordenando desde Barranquilla hacia otras cárceles del país desde agosto de 2026, para impedir que sigan coordinando actividades criminales desde el encierro. Dos días después del ataque, la Policía Metropolitana de Barranquilla capturó a Juliánis Paola Altamar Medina, alias 'Lucía', señalada de coordinar el atentado.",
+      "contrapunto": "Las propias autoridades citadas por los medios aclaran que no está confirmado un vínculo directo entre las amenazas previas contra el presidente, el ministro de Justicia y el director del Inpec, y este atentado en particular contra los dos guardias: la relación con los traslados es, por ahora, la lectura del Gobierno y del gremio del Inpec, no una conclusión judicial. La captura de la señalada coordinadora del ataque es un avance procesal, no una condena.",
+      "tipoFuente": "verificado",
+      "fuentes": [
+        {
+          "n": "El Universal (Cartagena) · Sicarios atentan contra 2 guardias del Inpec en Barranquilla: esto se sabe",
+          "u": "https://www.eluniversal.com.co/sucesos/2026/10/11/sicarios-atentan-contra-2-guardias-del-inpec-en-barranquilla-esto-se-sabe/",
+          "rol": "acto"
+        },
+        {
+          "n": "El Heraldo · Violento ataque a guardianes del Inpec: uno recibió seis disparos en distintas partes del cuerpo",
+          "u": "https://www.elheraldo.co/judicial/2026/10/11/violento-ataque-a-guardianes-del-inpec-uno-recibio-seis-disparos-en-distintas-partes-del-cuerpo/",
+          "rol": "acto"
+        },
+        {
+          "n": "El Colombiano · Atentaron contra dos guardias del Inpec en Barranquilla; Gobierno no descarta represalia por traslado de presos",
+          "u": "https://www.elcolombiano.com/colombia/atentaron-contra-dos-guardias-del-inpec-en-barranquilla-traslado-de-presos-LB42167804",
+          "rol": "contexto"
+        },
+        {
+          "n": "La FM · Ataque sicarial contra dragoneantes en Barranquilla",
+          "u": "https://www.lafm.com.co/orden-publico/atentado-inpec-barranquilla-dragoneantes-traslados-carcelarios-presidente-413685",
+          "rol": "contexto"
+        }
+      ]
+    },
     {
       "fecha": "2026-10-11",
       "precision": "exacta",
