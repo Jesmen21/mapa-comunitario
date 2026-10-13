@@ -3779,9 +3779,15 @@
           "n": "El Nuevo Siglo · Proyecto de Presupuesto 2027: un comienzo de debate muy movido y polarizado (cifra el recorte de la Ley de Rescate en $44 a $45 billones adicionales)",
           "u": "https://www.elnuevosiglo.com.co/politica/proyecto-de-presupuesto-2027-un-comienzo-de-debate-muy-movido-y-polarizado",
           "rol": "acto"
+        },
+        {
+          "n": "Infobae · el Gobierno dice que la llevará al Congreso en 10 a 12 días (1 de octubre)",
+          "u": "https://www.infobae.com/colombia/2026/10/01/ley-de-rescate-de-la-economia-gobierno-de-la-espriella-la-llevara-al-congreso-en-10-a-12-dias/",
+          "rol": "efecto"
         }
       ],
-      "id": "ley-de-rescate-ajuste-fiscal"
+      "id": "ley-de-rescate-ajuste-fiscal",
+      "contrargumentoOficial": "El ministro de Hacienda defendió la hoja de ruta con tres afirmaciones comprobables: que la ley NO es una reforma tributaria y no se enfoca en subir impuestos, que combina recorte de gasto con estímulos tributarios y búsqueda de crédito, y que es la primera de tres etapas, la última de ellas el Plan Nacional de Desarrollo. Lo que el Gobierno NO ha puesto todavía sobre la mesa es el articulado: al 1 de octubre seguía anunciando su radicación «en 10 a 12 días», y el Consejo Gremial Nacional —que no es oposición— dijo expresamente que aún espera conocerlo, y que el ajuste debería ser estructural: racionalización del Estado, revisión de subsidios, desmonte del 4x1.000 y reforma del IVA. Mientras el texto no se radique, la cifra del ajuste es un anuncio y no una medida que alguien pueda contrastar."
     },
     {
       "fecha": "2026-09-15",
@@ -5765,8 +5771,14 @@
           "n": "El Colombiano · la apuesta de De la Espriella con la nueva ministra de Educación",
           "u": "https://www.elcolombiano.com/colombia/ilva-myriam-hoyos-y-su-polemica-llegada-al-ministerio-de-educacion-KC40605917",
           "rol": "efecto"
+        },
+        {
+          "n": "Infobae · el vocero del Gobierno aclara la renuncia: «una situación familiar inesperada»",
+          "u": "https://www.infobae.com/colombia/2026/09/09/vocero-del-gobierno-aclaro-la-renuncia-de-viviane-morales-como-ministra-de-educacion-una-situacion-familiar-inesperada/",
+          "rol": "efecto"
         }
-      ]
+      ],
+      "contrargumentoOficial": "El Gobierno dio su versión y es verificable en dos voces. El vocero del Gobierno afirmó que la salida obedeció a «una situación familiar inesperada» y que NO hubo ruptura política con la ministra; la propia Morales precisó después, en entrevista, que se trataba de una situación de salud de una de sus hijas, y su carta de renuncia irrevocable —fechada el 31 de agosto— habla de una contingencia en su hogar que le impedía la dedicación que exige la cartera. El presidente dijo recibir la decisión con pesar y respetar las razones, y anunció el reemplazo el mismo día. Queda una discrepancia menor de fechas que ninguna fuente dirime: varios medios sitúan la aceptación el 2 de septiembre y otro, citando el Decreto 1395, el 15."
     },
     {
       "fecha": "2026-09-03",
@@ -6659,8 +6671,20 @@
           "n": "Pulzo · nombramiento del primo del presidente genera controversia por posible nepotismo",
           "u": "https://www.pulzo.com/nacion/nombramiento-de-rodrigo-londono-de-la-espriella-genera-polemica-por-posible-nepotismo-en-colombia-PP5286538A",
           "rol": "acto"
+        },
+        {
+          "n": "El Colombiano · el Gobierno reversó la designación del sacerdote en los cinco consejos superiores",
+          "u": "https://www.elcolombiano.com/colombia/gobierno-reverso-designacion-del-sacerdote-rodolfo-londono-en-5-consejos-superiores-universitarios-quien-lo-reemplaza-KF41771865",
+          "rol": "efecto"
+        },
+        {
+          "n": "El País · el Gobierno designa al sacerdote como delegado en cinco universidades públicas",
+          "u": "https://www.elpais.com.co/colombia/gobierno-designa-a-sacerdote-primo-de-abelardo-de-la-espriella-como-delegado-en-cinco-universidades-publicas-2728.html",
+          "rol": "acto"
         }
-      ]
+      ],
+      "contrargumentoOficial": "El Gobierno defendió la designación por «idoneidad, diálogo institucional y fortalecimiento de la educación superior», y precisó un dato que varios medios dieron por cierto: que el presidente y el sacerdote NO son primos. Pero la respuesta de fondo —si un capellán de la Presidencia puede ocupar una silla en los órganos directivos de universidades públicas laicas— nunca llegó: el 9 de septiembre de 2026, con el Decreto 1371, el Ministerio de Educación dio por terminadas las designaciones y nombró en su lugar al abogado Camilo Andrés Noguera Abello, director del partido de gobierno. El decreto se justifica en que la facultad de designar incluye la de dar por terminado y volver a designar. Es decir: el Gobierno resolvió el caso RETIRANDO el nombramiento, no contestando el reparo de laicidad, y lo reemplazó por un dirigente político, que abre una pregunta distinta sobre la autonomía universitaria.",
+      "_actualizacion": "HECHO NUEVO encontrado el 13 de octubre de 2026 al buscar la respuesta oficial, y se ACTUALIZA la entrada en vez de abrir otra —un caso que avanza se actualiza, no se duplica—: la designación fue REVERSADA el 9 de septiembre de 2026 por el Decreto 1371 del Ministerio de Educación, y el reemplazo es Camilo Andrés Noguera Abello, director del partido Defensores de la Patria. Dos cosas quedan sin dirimir y van dichas: los medios citan números de decreto distintos para la designación original —1310 y 1320—, y el parentesco con el presidente lo afirman varios medios y lo niega el Gobierno."
     },
     {
       "fecha": "2026-08-28",
@@ -7709,8 +7733,14 @@
           "n": "Noticaribe · el comité de Santurbán va a los tribunales",
           "u": "https://noticaribe.co/comite-santurban-va-a-los-tribunales-y-anuncia-gran-movilizacion-contra-decisiones-del-gobierno-de-la-espriella/",
           "rol": "acto"
+        },
+        {
+          "n": "Cambio · MinAmbiente revocó la resolución que protegía parte del complejo: las razones",
+          "u": "https://cambiocolombia.com/medio-ambiente/articulo/2026/8/minambiente-revoco-resolucion-que-dejo-gobierno-petro-para-proteger-parte-del-complejo-de-paramo-de-santurban-las-razones",
+          "rol": "efecto"
         }
-      ]
+      ],
+      "contrargumentoOficial": "El Ministerio de Ambiente sí dio su razón, y es jurídica: revocó la resolución que el gobierno anterior había dejado para proteger parte del complejo invocando un fallo del Juzgado Octavo Administrativo que ordenó REINICIAR el proceso, y anunció una nueva evaluación técnica y jurídica integral. El reparo que esa razón no cierra lo formula el comité de defensa del páramo y es preciso: sostiene que ese fallo exigía volver a garantizar la participación ciudadana, no desmontar la reserva — es decir, discute el ALCANCE de la orden que el Ministerio invoca. Y sobre la tutela de Bucaramanga en concreto, que cuestiona que la «delimitación progresiva» de la Resolución 863 de 2026 no esté prevista en la Ley 1930 de 2018, no apareció respuesta del Ministerio en la búsqueda."
     },
     {
       "fecha": "2026-08-23",
@@ -8674,8 +8704,14 @@
           "n": "elDiario.es · la tesis del filtro ideológico",
           "u": "https://www.eldiario.es/internacional/espriella-impone-filtro-ideologico-entrada-ayuda-terremoto-veta-rescatistas-mexico_1_13447649.html",
           "rol": "efecto"
+        },
+        {
+          "n": "La Silla Vacía · el detrás de escena de las ayudas extranjeras, con las brigadas certificadas de cada país",
+          "u": "https://www.lasillavacia.com/silla-nacional/el-detras-de-escena-de-las-ayudas-extranjeras-para-el-terremoto/",
+          "rol": "contexto"
         }
-      ]
+      ],
+      "contrargumentoOficial": "El Gobierno niega el filtro ideológico y da una razón TÉCNICA: el director de la UNGRD, David Tamayo, sostuvo que esos cuatro países «nos pueden garantizar grupos de búsqueda y rescate reconocidos por el sistema internacional», y el canciller Omar Bula precisó que la restricción «no incluye otro tipo de ayudas» —de hecho entró ayuda humanitaria de México—. El Gobierno añade que el país tiene capacidad propia: 23 equipos desplegados, y que por eso solo pidió insumos. El reparo que esa razón NO cierra está medido y es concreto: México tiene cinco brigadas certificadas internacionalmente y fue rechazado, y El Salvador no tiene ninguna certificada y fue aceptado. Mientras ese par no se explique, el criterio técnico queda afirmado y no demostrado."
     },
     {
       "fecha": "2026-08-12",
@@ -9390,8 +9426,14 @@
           "n": "El Colombiano · De la Espriella se defiende de la indagación del CNE",
           "u": "https://www.elcolombiano.com/especiales/elecciones-2026/habla-abelardo-de-la-espriella-cne-revocar-candidatura-firmas-falsas-DN36083303",
           "rol": "efecto"
+        },
+        {
+          "n": "Infobae · la campaña niega irregularidades y defiende la legitimidad de la inscripción ante el CNE",
+          "u": "https://www.infobae.com/colombia/2026/05/03/campana-de-abelardo-de-la-espriella-niega-irregularidades-y-defiende-legitimidad-de-su-inscripcion-ante-el-cne/",
+          "rol": "efecto"
         }
-      ]
+      ],
+      "contrargumentoOficial": "Hay respuesta y es de dos partes. La campaña —el movimiento Defensores de la Patria— sostuvo que la candidatura está debidamente inscrita, con todos los requisitos constitucionales y legales y con certificaciones oficiales de las autoridades competentes, y el propio candidato dijo que todas sus firmas pasaron por auditoría y presentó recurso de reposición. La Registraduría, por su lado, descartó el fraude EN SU CASO: dijo haber hallado inconsistencias con posible fraude solo en los apoyos de dos de veintidós grupos significativos de ciudadanos, ninguno de ellos el suyo, y denunció esos dos ante la Fiscalía. Y el dato que ninguna de las dos respuestas discute: de 5.079.000 apoyos presentados quedaron válidos 1.978.108 —el 38,95 %—, por encima del umbral de ley, que es lo que validó la inscripción. Es decir, el 61 % invalidado no está desmentido: está explicado como legal."
     },
     {
       "fecha": "2026-08-19",

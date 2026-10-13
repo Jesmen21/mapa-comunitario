@@ -26918,3 +26918,73 @@ archivo.
   `pendiente`
 * **NO mueve el dictamen.** Sigue en «Nada fiable», y el tablero en 11 de 19.
   `cerrado en v1109`
+
+## v1110 · nueve contrargumentos más, y un hecho nuevo que obligó a actualizar
+
+Tanda de archivo, siguiendo la regla de orden de la v1108. El contrargumento
+oficial pasa de 18 a **24 de 264**, y el casillero de «233 de 251» a «227 de
+251».
+
+### Los seis nuevos, y lo que cada uno NO contesta
+
+* **Viviane Morales.** El vocero del Gobierno: «una situación familiar
+  inesperada», sin ruptura política; ella misma precisó después que era una
+  situación de salud de una hija, y su carta irrevocable del 31 de agosto
+  habla de una contingencia del hogar. Queda una discrepancia de fechas que
+  ninguna fuente dirime —la aceptación el 2 o el 15 de septiembre, según el
+  Decreto 1395— y va escrita.
+* **La «Ley de Rescate».** El ministro afirma que no es reforma tributaria,
+  que combina recorte con estímulos y crédito, y que es la primera de tres
+  etapas. Lo que NO ha puesto es el articulado: al 1 de octubre seguía
+  anunciando su radicación «en 10 a 12 días», y el Consejo Gremial Nacional
+  —que no es oposición— dijo que aún espera conocerlo.
+* **El 61 % de firmas invalidadas.** Hay dos respuestas y conviene separarlas:
+  la campaña defendió la legitimidad de la inscripción, y la Registraduría
+  descartó el fraude EN SU CASO —halló inconsistencias con posible fraude solo
+  en dos de veintidós grupos, ninguno el suyo—. Y el dato que ninguna de las
+  dos discute: quedaron válidos 1.978.108 apoyos, el 38,95 %, por encima del
+  umbral de ley. **El 61 % no está desmentido: está explicado como legal**, que
+  es otra cosa y hay que decirla así.
+* **Los rescatistas extranjeros.** El Gobierno niega el filtro ideológico con
+  una razón técnica —equipos «reconocidos por el sistema internacional»— y
+  aclara que la restricción no cubría otras ayudas. El par que esa razón no
+  explica está medido: México tiene cinco brigadas certificadas y fue
+  rechazado; El Salvador no tiene ninguna certificada y fue aceptado.
+* **El sacerdote en los consejos superiores.** Ver abajo.
+* **Santurbán.** El Ministerio revocó la resolución anterior invocando un
+  fallo que ordenó REINICIAR el proceso; el comité del páramo sostiene que ese
+  fallo exigía volver a garantizar la participación, no desmontar la reserva.
+  La discusión no es sobre el hecho sino sobre el ALCANCE de la orden.
+
+### El hecho nuevo: un caso que avanza se actualiza, no se duplica
+
+Buscando la respuesta oficial del nombramiento del sacerdote apareció que
+**la designación fue REVERSADA** el 9 de septiembre de 2026 por el Decreto
+1371, y que el reemplazo es el director del partido de gobierno. La entrada
+se ACTUALIZA —es la regla escrita del módulo— con las dos cosas que siguen sin
+dirimir: los medios citan números de decreto distintos para la designación
+original (1310 y 1320), y el parentesco con el presidente lo afirman varios
+medios y lo niega el Gobierno.
+
+Y lo que el contrargumento dice, que es lo que importa: **el Gobierno resolvió
+el caso retirando el nombramiento, no contestando el reparo de laicidad.**
+
+### Dos que se quedaron sin, y por qué
+
+* **Los dos balances del primer mes.** La búsqueda no encontró ninguna
+  explicación oficial de la diferencia; lo único que aparece es que 14.914 es
+  el consolidado oficial del 7 de agosto al 6 de septiembre y 14.422 salió de
+  un mensaje del propio presidente, un corte anterior. Eso es una inferencia
+  y no una respuesta, así que la entrada sigue `sin-revisar`.
+* **«Mañanas Blu».** La explicación que existe —audiencia y pauta— es de
+  CARACOL, no del Gobierno, y meterla en el campo del contrargumento oficial
+  la rotularía mal. Además el `contrapunto` de la entrada ya la recoge con
+  precisión. Sigue `sin-revisar`, que es lo que es.
+
+### Lo que esta versión NO hace
+
+* **NO cierra el casillero**: 227 de 251, con su trámite escrito. `pendiente`
+* **NO corrige el número del decreto del sacerdote ni el parentesco.** Los dos
+  piden el Diario Oficial, que el proxy no deja leer; quedan escritos.
+  `pendiente`
+* **NO mueve el dictamen.** Sigue en «Nada fiable». `cerrado en v1110`
