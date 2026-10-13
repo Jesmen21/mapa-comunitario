@@ -112,8 +112,19 @@
           "n": "El Heraldo · Esta semana se conocerán el decreto de protesta social y el estatuto antiterrorista anunciados por De la Espriella",
           "u": "https://www.elheraldo.co/colombia/2026/10/13/esta-semana-se-conoceran-el-decreto-de-protesta-social-y-el-estatuto-antiterrorista-anunciados-por-de-la-espriella/",
           "rol": "contexto"
+        },
+        {
+          "n": "Cambio · las alertas por el proyecto de estatuto antiterrorista",
+          "u": "https://cambiocolombia.com/poder/articulo/2026/10/los-temores-que-genera-el-proyecto-de-estatuto-antiterrorista-del-gobierno-de-la-espriella",
+          "rol": "contexto"
+        },
+        {
+          "n": "El Universal · los cambios que propone el estatuto antiterrorista",
+          "u": "https://www.eluniversal.com.co/colombia/2026/10/06/estatuto-antiterrorista-estos-son-los-cambios-que-propone-el-gobierno-de-la-espriella/",
+          "rol": "acto"
         }
-      ]
+      ],
+      "contrargumentoOficial": "La posición del Gobierno está dicha por sus dos voceros. El presidente lo presenta como «una vacuna contra la delincuencia». El ministro del Interior explica el mecanismo: de un registro de organizaciones catalogadas como terroristas se desprenden normas más severas en materia penitenciaria, penal, de rentas ilícitas y para quienes colaboren con ellas, y sostiene que el proyecto actualiza la legislación vigente. Y hay una garantía que el propio trámite impone y que el Gobierno no niega: por ser ley ESTATUTARIA necesita mayoría absoluta, una sola legislatura y revisión previa de la Corte Constitucional. Lo que NO responde son las objeciones concretas —el registro de terroristas, el congelamiento de cuentas, las restricciones penitenciarias y el efecto sobre la protesta y las garantías judiciales—, que al cierre de esta búsqueda seguían sin réplica porque el texto ni siquiera estaba radicado. Y conviene decir de dónde vienen las versiones más duras de esas objeciones: de la oposición, que es parte interesada, igual que el Gobierno."
     },
     {
       "fecha": "2026-10-12",
@@ -236,8 +247,19 @@
           "n": "Publimetro · Matador alertó sobre incremento de amenazas de muerte a él y su familia tras llegada de De la Espriella al poder",
           "u": "https://www.publimetro.co/entretenimiento/2026/10/03/matador-alerto-sobre-incremento-de-amenazas-de-muerte-a-el-y-su-familia-tras-llegada-de-de-la-espriella-al-poder/",
           "rol": "contexto"
+        },
+        {
+          "n": "El Espectador · la Fiscalía abre indagación contra Matador por las publicaciones sobre la primera dama",
+          "u": "https://elespectador.com/judicial/fiscalia-abre-indagacion-contra-matador-por-publicaciones-contra-la-primera-dama",
+          "rol": "efecto"
+        },
+        {
+          "n": "Publimetro · Matador denuncia problemas con su esquema de seguridad y responsabiliza al presidente",
+          "u": "https://www.publimetro.co/entretenimiento/2026/10/13/matador-aseguro-que-de-la-espriella-tiene-afan-de-empacarlo-en-una-bolsa-blanca-tras-problemas-con-su-seguridad/",
+          "rol": "efecto"
         }
-      ]
+      ],
+      "contrargumentoOficial": "Hay que separar dos cosas que en este caso van juntas y no son lo mismo. La firma de abogados —privada, del presidente— dijo rechazar «expresiones que atentan contra la dignidad humana y recurren a la descalificación y la humillación contra las mujeres», sin detallar qué acciones presentará ni ante qué autoridades. Y el GOBIERNO, que es lo que este campo mide, pidió a la Fiscalía evaluar si hay infracción o delito; la indagación quedó en el Grupo de Violencias Basadas en Género, y la Defensora del Pueblo criticó públicamente al caricaturista. Lo que NO aborda ninguna de las dos posiciones es la objeción de libertad de expresión: la propia firma no la puso como eje de su reclamo. Y hay un hecho posterior que el registro debe seguir: el 13 de octubre el caricaturista denunció problemas con su esquema de seguridad y responsabilizó al presidente."
     },
     {
       "fecha": "2026-10-10",
@@ -346,8 +368,20 @@
           "n": "Semana · Decreto para sancionar la protesta violenta entraría a regir cuando la oposición prepara su primera movilización contra el Gobierno",
           "u": "https://www.semana.com/politica/articulo/decreto-para-sancionar-la-protesta-violenta-entraria-a-regir-cuando-la-oposicion-prepara-su-primera-movilizacion-contra-el-gobierno/202601/",
           "rol": "contexto"
+        },
+        {
+          "n": "El Universal (13 de octubre) · «alista decreto sobre protestas antes de la marcha opositora»",
+          "u": "https://www.eluniversal.com.co/colombia/2026/10/13/de-la-espriella-alista-decreto-sobre-protestas-antes-de-marcha-opositora/",
+          "rol": "contexto"
+        },
+        {
+          "n": "Infobae · el presidente defiende el decreto para intervenir ante hechos violentos",
+          "u": "https://www.infobae.com/colombia/2026/10/13/de-la-espriella-endurece-postura-frente-a-protestas-y-defiende-decreto-para-intervenir-ante-hechos-violentos/",
+          "rol": "efecto"
         }
-      ]
+      ],
+      "contrargumentoOficial": "El Gobierno defendió el decreto con tres cosas. El ministro del Interior resumió el objetivo —separar la protesta pacífica de los actos violentos: «ni menos derechos para quien protesta ni más espacio para quien destruye»—; sostuvo que el texto se AJUSTÓ tras comentarios públicos y reuniones con organizaciones sociales, con los accionantes del fallo que originó el Decreto 003 y con la fuerza pública; y el presidente endureció el tono diciendo que respetará la protesta pacífica y no permitirá acciones violentas. Lo que NO hay es una réplica punto por punto a la objeción central —cuándo y cómo interviene la Policía, con las ocho causales para dar por agotado el diálogo y los cinco niveles de reacción—, que es donde se juega si el decreto protege la protesta o la acota.",
+      "_contradiccionDELAVIGENCIA": "HALLAZGO del 13 de octubre de 2026, al buscar la respuesta oficial, y se anota en vez de cambiar el título: una fuente de ESE día —El Universal— dice que el presidente «alista» el decreto y que anunció que lo firmará esa semana, es decir que NO estaba firmado; esta entrada lo da por expedido sobre la base de El Colombiano, que reportó que ya estaba en vigencia. La entrada ya declaraba que las fuentes no coinciden en el día de la firma; ahora no coinciden en algo más grave, si está firmado o no. Lo dirime el Diario Oficial, que el proxy de este contenedor no deja leer. No se voltea el título sobre una búsqueda, y tampoco se calla: un decreto dado por vigente que no lo esté es un error de los que este módulo existe para no cometer."
     },
     {
       "fecha": "2026-10-10",
@@ -384,7 +418,8 @@
           "u": "https://www.elcolombiano.com/colombia/veronica-alcocer-niega-acusaciones-eva-ferrer-OL39549623",
           "rol": "contexto"
         }
-      ]
+      ],
+      "_sinReprocheAlGobierno": "El Gobierno es el ACUSADOR: ordenó la investigación interna a la Fuerza Aérea y pidió a la Fiscalía, la Corte Suprema, la Procuraduría y a las autoridades de Estados Unidos tomar nota, sobre denuncias que apuntan a la exprimera dama del gobierno anterior. No hay reproche al Gobierno al que responder. Y como en los otros casos de esta forma: si más adelante alguien le reprocha al Gobierno la manera de ordenarla —por ejemplo usar la contrainteligencia de la propia Fuerza para investigar a una figura política—, la entrada vuelve a la cuenta y esta razón deja de valer."
     },
     {
       "fecha": "2026-10-09",
@@ -8082,8 +8117,14 @@
           "n": "Portafolio · así funciona la campaña y sus ayudas entregadas",
           "u": "https://www.portafolio.co/economia/gobierno/colombia-un-solo-corazon-asi-funciona-la-campana-liderada-por-la-primera-dama-y-estas-son-sus-ayudas-entregadas-500491",
           "rol": "contexto"
+        },
+        {
+          "n": "Cambio · la DIAN confirma el permiso para recibir donaciones, y la fundación sigue sin revelar cuánto recaudó",
+          "u": "https://cambiocolombia.com/la-fundacion-de-la-primera-dama-puede-recibir-donaciones-pero-sigue-sin-revelar-cuanto-ha-recaudado",
+          "rol": "efecto"
         }
-      ]
+      ],
+      "contrargumentoOficial": "Del lado oficial hay dos cosas y ninguna contesta lo que se pregunta. La primera: la DIAN confirmó que la fundación está en el Régimen Tributario Especial, es decir habilitada para recibir donaciones — eso responde una objeción que circuló después (que estuviera inhabilitada) y no esta. La segunda: la campaña «Colombia, un solo corazón» es de la propia primera dama y la Presidencia la promovió como canal, de modo que la habilitación de la fundación es una decisión del Gobierno y no un hecho externo que tenga que explicar. Lo que NO ha contestado nadie —ni la fundación, ni la Presidencia, ni el Ministerio de Hacienda— es la pregunta del derecho de petición del 24 de agosto y de las dos tutelas admitidas: cuánto se recaudó y cómo se maneja. El único aporte con cifra pública es el de Fedepalma: .000 millones anunciados, de los cuales 70 millones canalizados por la fundación."
     },
     {
       "fecha": "2026-08-20",

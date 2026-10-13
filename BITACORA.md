@@ -27144,3 +27144,64 @@ queda escrito, porque una comprobación que confirma también es un resultado.
   sobre el operativo de Riohacha; queda `sin revisar` en ese punto y dicho
   dentro del contrargumento. `pendiente`
 * **NO mueve el dictamen.** Sigue en «Nada fiable». `cerrado en v1113`
+
+## v1114 · un decreto dado por vigente, y cuatro respuestas más
+
+De 35 a **39 de 264** con contrargumento, y **6 eximidas**. El casillero queda
+en «212 de 250».
+
+### El hallazgo: una vigencia que una fuente del mismo día contradice
+
+Buscando la respuesta oficial del decreto de protesta social apareció que **El
+Universal, el 13 de octubre, dice que el presidente «alista» el decreto y que
+anunció que lo firmará esa semana** — es decir, que NO estaba firmado. La
+entrada lo da por expedido, apoyada en El Colombiano, que reportó que ya
+estaba en vigencia.
+
+La entrada ya declaraba que las fuentes no coincidían en el DÍA de la firma.
+Ahora no coinciden en algo más grave: **si está firmada o no.** Se anota con
+su fecha y su fuente, y no se voltea el título sobre una búsqueda — lo dirime
+el Diario Oficial, que el proxy no deja leer. Pero tampoco se calla: un
+decreto dado por vigente que no lo esté es exactamente la clase de error que
+este módulo existe para no cometer.
+
+### Las cuatro respuestas
+
+* **El decreto de protesta.** El Gobierno defiende el objetivo —«ni menos
+  derechos para quien protesta ni más espacio para quien destruye»—, sostiene
+  que el texto se AJUSTÓ tras comentarios públicos y reuniones con
+  organizaciones sociales, con los accionantes del fallo del Decreto 003 y con
+  la fuerza pública. No hay réplica punto por punto a la objeción central: las
+  ocho causales para dar por agotado el diálogo y los cinco niveles de
+  reacción de la Fuerza Pública.
+* **El estatuto antiterrorista.** «Una vacuna contra la delincuencia», dice el
+  presidente; el ministro explica el mecanismo del registro de organizaciones.
+  Y hay una garantía que el trámite impone: por ser ley ESTATUTARIA necesita
+  mayoría absoluta, una legislatura y revisión previa de la Corte. Las
+  objeciones concretas no tienen réplica porque el texto ni siquiera estaba
+  radicado — y el contrargumento dice de dónde vienen las versiones más duras
+  de esas objeciones: de la oposición, que es parte interesada igual que el
+  Gobierno.
+* **El caso del caricaturista.** Se separan dos cosas que iban juntas: la
+  firma de abogados es PRIVADA y el Gobierno es quien pidió a la Fiscalía
+  evaluar. Ninguna de las dos posiciones aborda la objeción de libertad de
+  expresión — la propia firma no la puso como eje.
+* **La fundación de la primera dama (20 de agosto).** Del lado oficial hay dos
+  cosas y ninguna contesta lo que se pregunta: la DIAN confirmó el Régimen
+  Tributario Especial —que responde otra objeción— y la campaña es del propio
+  Gobierno. La pregunta del derecho de petición, cuánto se recaudó, sigue sin
+  respuesta.
+
+### La sexta exención
+
+La investigación ordenada a la Fuerza Aérea sobre los vuelos de la exprimera
+dama del gobierno anterior: el Gobierno es el acusador. Con la misma cláusula
+que las cinco anteriores — si alguien le reprocha al Gobierno la MANERA de
+ordenarla, la entrada vuelve a la cuenta.
+
+### Lo que esta versión NO hace
+
+* **NO dirime si el decreto de protesta está firmado.** Pide el Diario
+  Oficial. `pendiente`
+* **NO cierra el casillero**: 212 de 250. `pendiente`
+* **NO mueve el dictamen.** Sigue en «Nada fiable». `cerrado en v1114`
