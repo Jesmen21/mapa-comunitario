@@ -27044,3 +27044,53 @@ aprobaron como punto de «invocación»— y pidió excusas de forma condicional
   proxy no deja leer. `pendiente`
 * **NO cierra el casillero**: 223 de 251. `pendiente`
 * **NO mueve el dictamen.** Sigue en «Nada fiable». `cerrado en v1111`
+
+## v1112 · cuatro respuestas más, y una que es de otro gobierno
+
+De 28 a **32 de 264**, y el casillero a «219 de 251». Tanda de archivo, pero
+con una distinción que vale escribir.
+
+### La respuesta que NO es del gobierno que se está midiendo
+
+El choque por los contratos del Invías en La Guajira ocurrió durante el
+EMPALME: el equipo entrante pidió frenar la firma y la administración saliente
+defendió las adjudicaciones. Es decir, **la «respuesta oficial» a esa objeción
+la dio el gobierno anterior, no el que este módulo mide**, y el contrargumento
+lo dice con esas palabras en vez de dejar que se lea como si fuera del
+Gobierno actual.
+
+El contenido de esa defensa es verificable: la ministra de entonces invocó la
+normatividad vigente, la planificación desde finales de 2025, la licitación
+pública y la sentencia T-302 de 2017; el Invías sumó el CONPES 4161, las
+etapas de la Ley 80 y 105 propuestas recibidas. Y lo que ninguna de las dos
+responde: **la legalidad del trámite y la oportunidad de firmarlo a pocos días
+de terminar el mandato son preguntas distintas.**
+
+### Las otras tres
+
+* **Las desalinizadoras de Santa Marta.** La razón oficial es técnica —«ya no
+  es viable»— y los recursos siguen en el Confis. Lo que no trae es el
+  respaldo: ninguna fuente detalla qué estudio sostiene la no viabilidad, y lo
+  descartado estaba respaldado por el CONPES 4159 de 2025. Descartar un CONPES
+  por inviabilidad técnica sin publicar el estudio deja la decisión afirmada
+  y no demostrada, con el déficit intacto: 753 l/s entregados contra los más
+  de 2.000 proyectados para 2035.
+* **La Universidad de Córdoba.** El presidente respondió el reparo de
+  autonomía de frente: «debe respetarse, pero no significa ausencia de
+  controles». Lo que no resuelve es el choque con otra rama: en julio el
+  Consejo de Estado dejó EN FIRME la reelección del rector, y el anuncio
+  público fue «voy por él». Controlar y anunciar la salida de alguien cuya
+  permanencia un tribunal acaba de confirmar son cosas distintas.
+* **La consulta previa.** La posición tiene dos mitades y las dos se citan:
+  que se va a respetar y garantizar, y que eso «no significa cerrar los ojos
+  frente a los abusos». No responde el reparo que el CRIC hizo ANTES de la
+  reunión —que la consulta se vuelva un trámite exprés— y que es la razón por
+  la que las dos organizaciones más grandes no asistieron. Y lo anunciado
+  sigue sin reglamentación expedida: son reglas anunciadas, no escritas.
+
+### Lo que esta versión NO hace
+
+* **NO cierra el casillero**: 219 de 251, con su trámite. `pendiente`
+* **NO dirime el número de contratos del Invías** —16 en unas fuentes, 11 en
+  otras—, que pide el expediente de la entidad. `pendiente`
+* **NO mueve el dictamen.** Sigue en «Nada fiable». `cerrado en v1112`

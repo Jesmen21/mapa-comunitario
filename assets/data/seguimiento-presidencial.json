@@ -722,9 +722,20 @@
           "n": "latapaoficial · Gobierno de De la Espriella replantea solución al agua de Santa Marta y Petro cuestiona el descarte de las desalinizadoras",
           "u": "https://latapaoficial.com/gobierno-de-de-la-espriella-replantea-solucion-al-agua-de-santa-marta-y-petro-cuestiona-el-descarte-de-las-desalinizadoras/",
           "rol": "efecto"
+        },
+        {
+          "n": "El Espectador · el Gobierno descarta el proyecto de plantas desalinizadoras para Santa Marta",
+          "u": "https://www.elespectador.com/ambiente/blog-el-rio/gobierno-descarta-proyecto-para-construir-plantas-desalinizadoras-para-santa-marta/",
+          "rol": "acto"
+        },
+        {
+          "n": "Infobae · el presidente fija nuevo plazo: «en 10 días volveré»",
+          "u": "https://www.infobae.com/colombia/2026/10/06/abelardo-de-la-espriella-fijo-nuevo-plazo-para-solucionar-el-problema-de-agua-en-santa-marta-en-10-dias-volvere/",
+          "rol": "efecto"
         }
       ],
-      "nivelGobierno": "nacional"
+      "nivelGobierno": "nacional",
+      "contrargumentoOficial": "La razón oficial es técnica y la dio el presidente en persona: el proyecto «ya no es viable desde el punto de vista técnico». Añadió dos cosas comprobables: que los recursos no se retiran —«la plata está en el Confis»— sino que cambian de destino, y que volvería en diez días con la alternativa. Lo que esa razón NO trae es el respaldo: ninguna de las fuentes consultadas detalla qué estudios sostienen la no viabilidad, y el proyecto descartado —dos plantas, Pozos Colorados y Taganga, $786.000 millones— estaba respaldado por el CONPES 4159 de 2025, es decir por un documento de planeación del propio Estado. Descartar un CONPES por inviabilidad técnica sin publicar el estudio que lo declara inviable deja la decisión afirmada y no demostrada. Y el déficit sigue: el sistema produce 1.255 l/s y entrega 753 tras pérdidas, contra los más de 2.000 que la consultoría proyecta para 2035."
     },
     {
       "fecha": "2026-10-06",
@@ -977,9 +988,20 @@
           "n": "El Heraldo · Consejo de Estado declaró legal la elección del rector de Unicórdoba para el período 2026-2031",
           "u": "https://www.elheraldo.co/colombia/2026/08/01/consejo-de-estado-declaro-legal-la-eleccion-del-rector-de-unicordoba-para-el-periodo-2026-2031/",
           "rol": "contexto"
+        },
+        {
+          "n": "La Silla Vacía · busca sacar al rector de UniCórdoba pese al fallo del Consejo de Estado",
+          "u": "https://www.lasillavacia.com/en-vivo/abelardo-busca-sacar-a-rector-de-unicordoba-pese-a-fallo-del-consejo-de-estado/",
+          "rol": "contexto"
+        },
+        {
+          "n": "El Espectador · el rector dice que no renunciará tras las críticas del presidente",
+          "u": "https://www.elespectador.com/educacion/tras-criticas-de-de-la-espriella-rector-de-la-universidad-de-cordoba-dice-que-no-renunciara/",
+          "rol": "efecto"
         }
       ],
-      "nivelGobierno": "nacional"
+      "nivelGobierno": "nacional",
+      "contrargumentoOficial": "El presidente respondió al reparo de autonomía con una frase que lo aborda de frente: «la autonomía universitaria debe respetarse, pero no significa ausencia de controles». La inspección la ordenó al Ministerio de Educación para revisar la rectoría, el proceso electoral y el cumplimiento de los estatutos, y pidió además a la Procuraduría impulsar el proceso disciplinario contra el rector, cuyo archivo había sido revocado en julio. Lo que esa respuesta NO resuelve es el choque con una decisión ya tomada por otra rama: en julio el **Consejo de Estado dejó en firme la reelección** del rector Jairo Torres Oviedo para 2026-2031, y el presidente anunció públicamente «voy por él». El rector dijo que no renunciará. Una cosa es controlar y otra es anunciar la salida de alguien cuya permanencia un tribunal acaba de confirmar, y esa distinción es la que el Gobierno no ha hecho."
     },
     {
       "fecha": "2026-10-03",
@@ -3658,8 +3680,19 @@
           "n": "El Tiempo · Presidente Abelardo De La Espriella se reunió con representantes de comunidades indígenas en Barranquilla: ¿de qué hablaron?",
           "u": "https://www.eltiempo.com/politica/gobierno/presidente-abelardo-de-la-espriella-se-reunio-con-representantes-de-comunidades-indigenas-en-barranquilla-de-que-hablaron-3586728",
           "rol": "acto"
+        },
+        {
+          "n": "Semana · «no significa cerrar los ojos frente a los abusos»: el mensaje sobre la consulta previa",
+          "u": "https://www.semana.com/politica/articulo/abelardo-de-la-espriella-dejo-claro-mensaje-a-los-indigenas-sobre-la-consulta-previa-no-significa-cerrar-los-ojos-frente-a-los-abusos/202600/",
+          "rol": "acto"
+        },
+        {
+          "n": "Las2Orillas · el CRIC y la ONIC no asistieron al encuentro",
+          "u": "https://www.las2orillas.co/las-2-organizaciones-indigenas-mas-poderosas-dejaron-plantado-a-de-la-espriella-en-la-sede-presidencial-de-barranquilla/",
+          "rol": "contexto"
         }
-      ]
+      ],
+      "contrargumentoOficial": "El presidente dio su posición en una frase con dos mitades: «La consulta previa se va a respetar. Es un derecho que mi gobierno va a garantizar», con respeto a las autoridades indígenas, sus territorios, usos y costumbres — y, al mismo tiempo, que garantizarla «no significa cerrar los ojos frente a los abusos», con instrucción de revisar los procedimientos para que intermediarios, funcionarios, empresas o dirigentes no conviertan esos procesos en un negocio. Anunció además más control sobre los recursos y la revisión jurídica de actos de la Agencia Nacional de Tierras sobre el resguardo Guambía. Lo que NO responde: el reparo que el CRIC formuló ANTES de la reunión —que el Gobierno convierta la consulta previa en un trámite exprés— y que es la razón por la que las dos organizaciones más grandes, el CRIC y la ONIC, no asistieron. Y la revisión anunciada sigue sin reglamentación expedida, así que por ahora son reglas anunciadas y no escritas."
     },
     {
       "fecha": "2026-09-16",
@@ -9314,10 +9347,21 @@
           "n": "El Tiempo · Cruce entre la ministra de Transporte designada, Elsa Noguera, y la saliente, María Fernanda Rojas, por contratos en Invías: «absoluto rigor»",
           "u": "https://www.eltiempo.com/politica/gobierno/cruce-entre-ministra-de-transporte-designada-elsa-noguera-y-la-saliente-maria-fernanda-rojas-por-contratos-en-invias-absoluto-rigor-3575814",
           "rol": "acto"
+        },
+        {
+          "n": "El Colombiano · pidió frenar contratos por $3,2 billones del Invías; MinTransporte le respondió",
+          "u": "https://www.elcolombiano.com/colombia/politica/abelardo-de-la-espriella-frenar-contratos-invias-la-guajira-mintransporte-AN39520426",
+          "rol": "efecto"
+        },
+        {
+          "n": "La FM · «no fueron improvisados»: el Invías responde por los contratos de La Guajira",
+          "u": "https://www.lafm.com.co/economia/invias-asegura-contratos-obras-la-guajira-estructurados-2025-niega-improvisacion-406761",
+          "rol": "efecto"
         }
       ],
       "tipoFuente": "disputado",
-      "contrapunto": "Las dos versiones están enfrentadas y ningún tercero las ha dirimido, que es lo que hace disputada la naturaleza de esta fuente. Lo que sí consta: diez contratos de obra y seis de interventoría por más de $3,2 billones para vías terciarias en Riohacha, Maicao, Manaure y Uribia, con vigencias futuras comprometidas hasta 2035. La ministra designada Elsa Noguera calificó de «muy preocupante» lo hallado en el empalme y anunció revisión técnica, jurídica y financiera; la ministra saliente María Fernanda Rojas defendió la adjudicación sosteniendo que la planeación empezó a finales de 2025, que hubo licitación pública con garantías y que los proyectos responden al cumplimiento de la Sentencia T-302 de 2017 de la Corte Constitucional."
+      "contrapunto": "Las dos versiones están enfrentadas y ningún tercero las ha dirimido, que es lo que hace disputada la naturaleza de esta fuente. Lo que sí consta: diez contratos de obra y seis de interventoría por más de $3,2 billones para vías terciarias en Riohacha, Maicao, Manaure y Uribia, con vigencias futuras comprometidas hasta 2035. La ministra designada Elsa Noguera calificó de «muy preocupante» lo hallado en el empalme y anunció revisión técnica, jurídica y financiera; la ministra saliente María Fernanda Rojas defendió la adjudicación sosteniendo que la planeación empezó a finales de 2025, que hubo licitación pública con garantías y que los proyectos responden al cumplimiento de la Sentencia T-302 de 2017 de la Corte Constitucional.",
+      "contrargumentoOficial": "Acá hay DOS gobiernos y conviene no confundirlos: el entrante pidió frenar la firma y el saliente defendió las adjudicaciones, así que la «respuesta oficial» a la objeción es de la administración que entonces estaba en el cargo. La ministra de Transporte de ese momento, María Fernanda Rojas, sostuvo que los procesos cumplen la normatividad vigente, que la planificación venía de finales de 2025, que se hicieron por licitación pública y que responden a la sentencia T-302 de 2017 de la Corte Constitucional sobre La Guajira. El Invías añadió que los procesos arrancaron en diciembre de 2025, cumplieron las etapas de la Ley 80 y hacen parte del CONPES 4161, y que las licitaciones recibieron 105 propuestas, unos diez oferentes por lote. La objeción del entrante —adjudicar recursos comprometidos hasta 2035 a pocos días de terminar el mandato— no la responde ninguna de esas dos cosas: la legalidad del trámite y la oportunidad política de firmarlo son preguntas distintas. Y las fuentes no coinciden en el número de contratos: unas dicen 16 —10 de obra y 6 de interventoría— y otras 11."
     },
     {
       "fecha": "2026-07-19",
