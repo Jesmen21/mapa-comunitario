@@ -76,7 +76,30 @@ cambiar cualquiera de las dos es cambiar un criterio.
 
 ---
 
-## 4 · Contrargumentos no hallados
+## 4 · El lote presupuestal: lo que apareció buscando, y no decidí
 
-Se anotan acá los que busqué y no encontré, para que no se lean como ausencia
-del Gobierno. La lista va en la bitácora de la versión.
+Ninguna de estas la resolví. Van con el contrargumento escrito, porque el
+contrargumento SÍ puedo registrarlo; lo que no puedo es dirimir cuál versión
+es la cierta.
+
+* **El Fondo Milagro.** La respuesta de Hacienda del 30 de septiembre dice
+  que la fiducia no estaba firmada. Vanguardia y Portafolio reportan el 7 de
+  octubre que el Ministerio **contrató directamente a Fiducoldex**, contrato
+  de fiducia **6.001-2026**. No se contradicen necesariamente —la firma pudo
+  ocurrir entre las dos fechas— pero **el registro no afirma cuál es el
+  estado de hoy**, y el contrato no se pudo abrir desde acá.
+* **El subsidio al ACPM.** Apareció un **Decreto 1428 de 2025**, reportado en
+  enero de 2026, que YA retiraba el subsidio a particulares, diplomáticos y
+  oficiales. Si es de este gobierno o del anterior, y si lo de octubre es un
+  desmonte nuevo o la ejecución de aquel, **no se pudo dirimir**.
+* **El decreto de concesiones portuarias.** La búsqueda CORROBORA el reparo
+  de la entrada en vez de resolverlo: unas notas lo dan por expedido por
+  Mintransporte y ABC Economía dice que el proyecto se publicó para
+  comentarios el 5 de octubre y que la Presidencia firmaría después. Sigue
+  sin número de decreto y sin Diario Oficial.
+
+## 5 · Contrargumentos no hallados
+
+Ninguno en este lote: las ocho entradas buscadas devolvieron posición
+oficial. Las que no la devuelvan se anotarán acá con dónde se buscó, para
+que no se lean como ausencia del Gobierno.

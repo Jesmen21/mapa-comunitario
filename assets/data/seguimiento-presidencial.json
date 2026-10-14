@@ -467,7 +467,8 @@
           "u": "https://www.pulzo.com/economia/nuevo-decreto-moderniza-regimen-de-concesiones-portuarias-en-colombia-para-atraer-inversion-PP5326688A",
           "rol": "contexto"
         }
-      ]
+      ],
+      "contrargumentoOficial": "POSICIÓN OFICIAL: el Ministerio de Transporte presenta la norma como una modificación del Decreto 1079 de 2015 —el reglamento del sector— para modernizar el régimen de concesiones portuarias y mejorar la competitividad. Sus puntos: permitir que un concesionario al que le falten cinco años o menos presente proyectos de inversión que no alcanzaría a amortizar, con reconocimiento del valor residual por parte del Estado; ampliar las obras financiables a accesos marítimos y fluviales, conexiones férreas, infraestructura logística y vías vinculadas a la operación portuaria; y crear un registro único de concesiones. LO QUE NO CONTESTA, y CORROBORA el reparo de esta entrada: sigue sin aparecer el número del decreto, su fecha de firma ni su publicación en el Diario Oficial. ABC Economía reporta que el Ministerio publicó el PROYECTO para comentarios el 5 de octubre y que la Presidencia firmaría el decreto definitivo después de revisarlos, mientras otras notas lo dan por expedido. Esta entrada no afirma cuál de las dos versiones es la correcta. Buscado el 14 de octubre de 2026, canal BÚSQUEDA; el Diario Oficial está bloqueado desde este contenedor."
     },
     {
       "fecha": "2026-10-07",
@@ -819,7 +820,8 @@
           "rol": "acto"
         }
       ],
-      "nivelGobierno": "nacional"
+      "nivelGobierno": "nacional",
+      "contrargumentoOficial": "POSICIÓN OFICIAL: el Ejecutivo sustenta la medida en eficiencia económica y sostenibilidad fiscal —el Fondo de Estabilización de Precios de los Combustibles termina subsidiando el diésel de vehículos que no cumplen una función social esencial—, dice que conservaría el apoyo al transporte público colectivo y de carga, y la Superintendencia de Industria y Comercio la considera viable. Entre las alternativas que mantiene abiertas para financiar el FEPC están recursos presupuestales, ajustes de precios o más deuda, y circula una de desmonte en 24 meses con incrementos de unos $213 por galón. LO QUE NO CONTESTA: sigue sin haber un cronograma público ni un decreto expedido, que es el reproche de la entrada. Y UNA PRECISIÓN QUE NO RESUELVO: la búsqueda del 14 de octubre devolvió también un Decreto 1428 de 2025, reportado en enero de 2026, que YA retiraba ese subsidio para particulares, diplomáticos y oficiales. Si ese decreto es de este gobierno o del anterior, y si lo de octubre es un desmonte nuevo o la ejecución de aquel, no se pudo dirimir desde este contenedor y queda anotado en vez de elegido."
     },
     {
       "fecha": "2026-10-06",
@@ -1298,7 +1300,8 @@
           "u": "https://latapaoficial.com/fondo-milagro-sigue-sin-operar-y-los-624-656-millones-aun-no-llegan-a-la-reconstruccion/",
           "rol": "contexto"
         }
-      ]
+      ],
+      "contrargumentoOficial": "La respuesta del Ministerio de Hacienda del 30 de septiembre de 2026 —la que esta entrada cita— es ella misma la posición oficial, y confirma los hechos en vez de disputarlos: la fiducia mercantil sin firmar, ningún peso trasladado al patrimonio autónomo y el manual de contratación sin borrador. LO QUE SÍ APARECIÓ DESPUÉS, buscado el 14 de octubre de 2026, y es posterior a esta entrada: el 7 de octubre Vanguardia y Portafolio reportaron que el Ministerio contrató directamente a Fiducoldex para administrar los recursos, con el contrato de fiducia 6.001-2026, y publicaron cómo funcionaría el mecanismo —proyectos, pagos directos y control sobre los recursos—. Y LO QUE NO CONTESTA: ninguna de las dos fuentes da una fecha para que el Fondo empiece a GIRAR recursos, que es el reproche de esta entrada, ni explica los cincuenta días entre el anuncio del 9 de septiembre y la firma. Las dos versiones no se contradicen necesariamente —la del 30 de septiembre es anterior a la firma—, pero esta entrada no afirma cuál es el estado de hoy: el contrato no se pudo abrir desde este contenedor."
     },
     {
       "fecha": "2026-10-02",
@@ -1414,7 +1417,8 @@
           "rol": "contexto",
           "u": "https://diariodelhuila.com/asi-sera-el-plan-nacional-de-desarrollo-de-abelardo-de-la-espriella-seis-ejes-312-indicadores-y-una-meta-de-crecimiento-del-6/"
         }
-      ]
+      ],
+      "contrargumentoOficial": "POSICIÓN OFICIAL, que es la del propio plan: el Gobierno fija la meta del 6 % de crecimiento anual como la vía para que Colombia entre al top 25 de economías del mundo, y la respalda con un cronograma —12 diálogos territoriales antes del 31 de octubre de 2026, radicación el 7 de febrero de 2027, aprobación proyectada el 5 de mayo—, seis ejes articuladores, siete «Mesas Milagro» diseñadas por el DNP, una batería de 312 indicadores (157 de producto y 155 de resultado) y un portafolio preliminar de 334 proyectos por unos $535,1 billones, con prioridad en la reconstrucción tras el terremoto. LO QUE NO CONTESTA, y es el reproche de esta entrada: **nada de eso responde a la viabilidad de la meta**. El Gobierno no publica el modelo ni el supuesto macroeconómico que sostiene el 6 % anual, ni lo confronta con el desempleo de 9,4 %, la tasa del Banco de la República en su nivel más alto del año y el faltante proyectado para 2027 que él mismo reconoció al acudir al FMI. Un cronograma y un número de indicadores no son un sustento de la cifra. Buscado el 14 de octubre de 2026, canal BÚSQUEDA."
     },
     {
       "fecha": "2026-10-02",
@@ -1488,7 +1492,8 @@
           "rol": "contexto",
           "u": "https://www.lasillavacia.com/en-vivo/de-la-espriella-pide-revertir-el-aumento-de-la-gasolina-para-octubre/"
         }
-      ]
+      ],
+      "contrargumentoOficial": "HAY POSICIÓN OFICIAL Y ESTÁ EN UN COMUNICADO DE LA PRESIDENCIA del 1 de octubre de 2026 (presidencia.gov.co). El Gobierno explica el alza por la actualización del precio reconocido a los productores de ETANOL, y la presenta como un apoyo a los cañicultores del Valle del Cauca afectados por el terremoto del 10 de agosto; el presidente pidió a la ministra de Minas, María Nohemí Arboleda, revertirla «mientras se buscan soluciones permanentes» frente al precio internacional del petróleo, y el Ministerio de Minas la oficializó. Y LO QUE NO CONTESTA, que es el reproche de esta entrada: no explica por qué el propio Gobierno anunció el alza días antes si iba a revertirla, ni publica el costo fiscal de la reversión —los cerca de $8.300 millones de octubre que reportó Blu Radio no los confirma la Presidencia—, ni dice cuál es la fórmula de largo plazo que dice estar estudiando. Buscado el 14 de octubre de 2026, canal BÚSQUEDA."
     },
     {
       "fecha": "2026-10-01",
@@ -2399,7 +2404,8 @@
           "u": "https://www.infobae.com/colombia/2026/09/29/pacto-historico-rechazo-el-acercamiento-del-gobierno-de-abelardo-de-la-espriella-al-fmi-nos-dejo-una-deuda-en-la-pandemia/",
           "rol": "efecto"
         }
-      ]
+      ],
+      "contrargumentoOficial": "POSICIÓN OFICIAL, en palabras del ministro de Hacienda Miguel Gómez Martínez: «se inicia una jornada de trabajo técnico para explorar cuáles son las mejores posibilidades que tiene Colombia para apoyarse en el Fondo Monetario Internacional», y el Gobierno pidió al FMI ADELANTAR su misión en el marco del Artículo IV, presentándola como «un instrumento clave para anclar la confianza». El subdirector gerente del Fondo, Nigel Clarke, nombró las contrapartidas que el organismo esperaría —reducir barreras a la inversión, seguridad, infraestructura, informalidad y predictibilidad regulatoria—. LO QUE NO CONTESTA: no hay monto, plazo, tasa, condiciones ni metas acordadas, y el propio Gobierno no publica qué compromisos fiscales asumiría; lo que hay es una fase técnica, no un programa. Buscado el 14 de octubre de 2026, canal BÚSQUEDA: no se encontró nada posterior sobre la reunión de Washington."
     },
     {
       "fecha": "2026-09-28",
@@ -2687,7 +2693,8 @@
           "u": "https://www.bloomberglinea.com/latinoamerica/colombia/de-la-espriella-anuncia-que-colombia-iniciara-conversaciones-con-el-fmi-ante-crisis-fiscal/",
           "rol": "acto"
         }
-      ]
+      ],
+      "contrargumentoOficial": "POSICIÓN OFICIAL: el Gobierno presenta el acercamiento como «un instrumento clave para anclar la confianza» y atribuye la crisis al «manejo irresponsable de la administración anterior» (El País, 29 de septiembre de 2026); el ministro Gómez Martínez lo describe como una jornada de trabajo técnico para explorar posibilidades, no como una solicitud de crédito. Y LO QUE NO CONTESTA, que es exactamente el reproche de esta entrada y el de la contradicción que el registro ya tiene documentada: **ni el presidente ni el ministro han explicado por qué el mismo ministro descartó un acuerdo con el FMI el 28 de agosto en la Convención Bancaria y un mes después recibió la orden de buscarlo**. Atribuirle la crisis al gobierno anterior no responde al cambio de posición en menos de un mes. Buscado el 14 de octubre de 2026, canal BÚSQUEDA."
     },
     {
       "fecha": "2026-09-26",
@@ -2841,7 +2848,8 @@
           "u": "https://www.semana.com/economia/macroeconomia/articulo/presupuesto-2027-fue-aprobado-en-primer-debate-en-el-congreso-por-635-billones-de-pesos/202658/",
           "rol": "acto"
         }
-      ]
+      ],
+      "contrargumentoOficial": "POSICIÓN OFICIAL: el ministro de Hacienda Miguel Gómez Martínez defendió el proyecto argumentando que las restricciones presupuestales reflejan la situación fiscal que este gobierno RECIBIÓ y las necesidades creadas por el terremoto del 10 de agosto; el Gobierno celebró la aprobación en primer debate y la llamó una decisión responsable del Congreso. El texto del proyecto enmarca el recorte como un ejercicio de racionalización y priorización ante las restricciones fiscales del período, y afirma que se preservan los recursos necesarios para garantizar el funcionamiento y las funciones misionales de la JEP. El senador ponente coordinador Carlos Meisel dijo que todas las entidades entran en austeridad. LO QUE NO CONTESTA: no responde a la advertencia del magistrado Raúl Sánchez de que la JEP no alcanzaría a pagar el edificio que ocupa, ni explica por qué $100.000 millones de ese recorte se trasladan a la justicia ordinaria —que es el punto que el presidente de la JEP llevó a la Corte Penal Internacional—. Y el recorte lo aprueba el CONGRESO: la parte del Gobierno es haberlo propuesto. Buscado el 14 de octubre de 2026, canal BÚSQUEDA."
     },
     {
       "fecha": "2026-09-23",

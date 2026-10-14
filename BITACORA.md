@@ -27627,3 +27627,53 @@ habría quedado con dos ejes mudos y el dictamen saliendo igual.
   `pendiente`
 * **NO mueve el dictamen.** Sigue en «Nada fiable», y ahora sin etiqueta
   penal. `cerrado en v1118`
+
+## v1119 · el lote presupuestal: ocho respuestas oficiales, una por una
+
+Trabajo de noche con la lista de lo que sí y lo que no, que el usuario dejó
+escrita. Lo que SÍ: buscar y registrar respuestas oficiales. Lo que NO:
+cambiar una escala, un criterio o un dictamen, aplicar una calificación
+jurídica, o dar por ausente un contrargumento que no se encontró.
+
+**Por lotes de fuente común y no por fecha**, que es el ajuste que el usuario
+pidió: las entradas presupuestales comparten Minhacienda, Minminas,
+Mintransporte y el DNP, así que buscarlas juntas rinde más que saltar de tema
+en cada una.
+
+### Las ocho
+
+| Entrada | Qué contestó el Gobierno |
+|---|---|
+| El Fondo Milagro sin operar | La respuesta de Hacienda del 30 sep CONFIRMA los hechos; y el 7 oct aparece la contratación de Fiducoldex |
+| El alza de la gasolina revertida | Comunicado de **Presidencia** del 1 oct: el alza venía del precio del etanol y apoyaba a los cañicultores del Valle |
+| La hoja de ruta con el FMI | El ministro Gómez Martínez: «una jornada de trabajo técnico para explorar posibilidades» |
+| La alocución que ordenó ir al FMI | «Un instrumento clave para anclar la confianza», y la crisis atribuida al gobierno anterior |
+| El recorte de $170.000 millones a la JEP | El ministro: las restricciones reflejan la situación fiscal recibida y el terremoto; el texto habla de racionalización |
+| El subsidio al ACPM | Eficiencia económica y sostenibilidad fiscal; la SIC lo considera viable |
+| El decreto de concesiones portuarias | Mintransporte: modifica el Decreto 1079 de 2015, con sus siete puntos |
+| El Plan Nacional de Desarrollo | El cronograma, los seis ejes, 312 indicadores y 334 proyectos por $535,1 billones |
+
+**Cada una lleva su segunda mitad**, que es la regla de la v1108: qué NO
+contesta del reproche concreto. La del PND es la más clara — el Gobierno
+publica cronograma, ejes e indicadores y **nada de eso responde a la
+viabilidad del 6 %**, que es lo que la entrada le reprocha.
+
+Contrargumentos en el registro: **39 → 47**. Pendientes: **213 → 205**.
+
+### Tres cosas que aparecieron y NO decidí
+
+Van enteras en `DECISIONES-PENDIENTES.md`: la contradicción sobre si la
+fiducia del Fondo Milagro estaba firmada; un Decreto 1428 de 2025 que ya
+retiraba el subsidio al ACPM y que no se pudo ubicar en un gobierno; y el
+estado del decreto portuario, donde la búsqueda **corrobora** el reparo de la
+entrada en vez de resolverlo. En las tres el contrargumento queda escrito
+diciendo que la contradicción está abierta.
+
+### Lo que esta versión NO hace
+
+* **NO cierra el casillero del contrargumento.** Quedan 205 de 252
+  exigibles. `pendiente`
+* **NO da por ausente ningún contrargumento.** Las ocho buscadas devolvieron
+  posición oficial; el día que una no lo haga se anota dónde se buscó.
+  `cerrado en v1119`
+* **NO mueve el dictamen.** Sigue en «Nada fiable». `cerrado en v1119`
