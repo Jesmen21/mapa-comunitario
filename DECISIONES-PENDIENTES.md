@@ -5,7 +5,9 @@
 > dejó de declarar I-14. El punto 3 —las dos varas— está **medido y a la
 > espera**: la medición dice que unificar hacia la más exigente deja el eje D
 > en CERO y el veredicto pasa de dictamen «Nada fiable» a piso «No puede ser
-> mejor que Poco fiable». No se aplicó.
+> mejor que Poco fiable». **APLICADO en la v1121**, por decisión del usuario
+> del 14 de octubre: «lo aplico ahora precisamente porque el resultado no me
+> conviene: una vara que solo se usa cuando favorece no es una vara».
 
 Lista de la sesión del 13–14 de octubre. Cada renglón es algo que me apareció
 trabajando y que está en la lista de lo que no puedo decidir sola. **No elegí
@@ -110,3 +112,71 @@ es la cierta.
 Ninguno en este lote: las ocho entradas buscadas devolvieron posición
 oficial. Las que no la devuelvan se anotarán acá con dónde se buscó, para
 que no se lean como ausencia del Gobierno.
+
+
+---
+
+## 6 · EL TRÁMITE QUE DEVUELVE EL EJE D AL VEREDICTO
+
+**Pendiente accionable, y no lo puede hacer esta sesión.** Desde este
+contenedor el proxy niega todos los dominios: el único canal es la búsqueda,
+y la búsqueda sostiene **que** un hecho ocurrió, no que se leyó la página.
+
+**Qué pedir, exactamente:**
+
+> Los informes de necropsia o el oficio de identificación del **Instituto
+> Nacional de Medicina Legal y Ciencias Forenses** correspondientes a la
+> **Operación Amón** (El Retorno, Guaviare, 27 de agosto de 2026) y a la
+> **Operación Azarías** (Miraflores, Guaviare, 30 de agosto de 2026), en lo
+> relativo al **número de personas menores de edad entre los cuerpos
+> identificados y su edad**. Sin nombres ni datos que identifiquen a las
+> víctimas: lo que hace falta es la cifra y la edad, con el sello del
+> Instituto.
+
+**A quién:**
+
+* **Medicina Legal**, por **derecho de petición de información** (art. 23 de
+  la Constitución, Ley 1755 de 2015). Término: **10 días hábiles** para
+  información, prorrogables con aviso motivado.
+* En paralelo, **datos abiertos**: el Instituto publica series de necropsias
+  médico-legales; si la serie del período trae la desagregación por edad y
+  por departamento, sirve igual y **no hay que esperar el término**.
+
+**Qué desbloquea, medido:** con ese documento las dos entradas base pasan de
+`reporte-periodistico` a `documento-primario`, **pasan la puerta**, el eje D
+vuelve a contar **5** y vuelve al veredicto. El dictamen volvería de piso
+«No puede ser mejor que Poco fiable» a **«Nada fiable»**.
+
+Y conviene decirlo al revés también, porque es la parte incómoda: **mientras
+el documento no esté, el módulo publica un peldaño MENOS grave del que la
+evidencia de prensa sugiere.** Eso no es un error: es la vara aplicada en la
+dirección que no conviene, que es la única forma de que valga.
+
+---
+
+## 7 · PROPUESTA, NO IMPLEMENTADA · una clase de evidencia intermedia
+
+**Abierta por el usuario el 14 de octubre, y explícitamente NO implementada
+esta noche, con su razón:** «si la creo justo cuando la medición me dio un
+resultado incómodo, estoy ajustando la regla al resultado — que es lo que
+este módulo existe para detectar».
+
+**La idea:** puede faltar una clase entre `dato-oficial` y
+`reporte-periodistico` — *un dato de fuente oficial conocido por cobertura y
+**no disputado por la contraparte***. Acá el Gobierno no niega que murieran
+menores: discute si esas muertes son ilícitas. Eso es **admisión del hecho y
+disputa de la calificación**, y hoy el módulo lo trata igual que un dato que
+la contraparte niega.
+
+**El orden que el usuario fijó, y que hay que respetar:**
+
+1. escribir el criterio COMPLETO primero, con su `incluye` y su `excluye`;
+2. **aplicarlo a TODO el registro** sin mirar a quién favorece;
+3. recién entonces ver qué mueve.
+
+**La prueba de que no está tallada:** si al correrlo sube cifras del Gobierno
+**y también** hallazgos en contra, la regla es buena. **Si solo mueve una
+cosa, está tallada.** Es la misma forma de la regla del material de la v1077
+y de la predicción escrita de la v1117.
+
+Lo que esta sesión NO debe hacer: escribirla mirando estas dos entradas.

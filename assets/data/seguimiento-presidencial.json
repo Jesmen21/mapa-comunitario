@@ -2136,6 +2136,14 @@
           "u": "https://www.infobae.com/colombia/2026/09/20/siempre-hay-menores-de-edad-la-realidad-detras-de-las-operaciones-militares-en-colombia-y-la-muerte-de-ninos-reclutados/",
           "rol": "contexto"
         }
+      ],
+      "tipoEvidencia": "reporte-periodistico",
+      "estadoProcesal": "en-firme",
+      "revisionPosterior": [
+        {
+          "que": "precision",
+          "texto": "CLASE DE EVIDENCIA DECLARADA el 14 de octubre de 2026, por decisión de quien firma el módulo. Esta entrada ALIMENTA el bloque `fuerza` del eje D y no declaraba `tipoEvidencia`, así que la puerta de evidencia no tenía qué mirar — y un camino que no mira el campo es peor que uno laxo: es ciego. Seis de las ocho fuentes son medios que reportan la confirmación de Medicina Legal, y ninguna publica el documento. La clase honesta es `reporte-periodistico`. Se declara también el estado procesal, `en-firme`, que es lo que es: la confirmación forense ocurrió. Lo que esto NO cambia es el HECHO; lo que cambia es que ahora la puerta lo puede evaluar."
+        }
       ]
     },
     {
@@ -7087,6 +7095,14 @@
           "n": "Infobae · Defensoría del Pueblo alertó sobre el aumento del reclutamiento forzado de menores de edad por grupos armados en Colombia",
           "u": "https://www.infobae.com/colombia/2026/09/01/defensoria-del-pueblo-alerto-sobre-el-aumento-del-reclutamiento-forzado-de-menores-de-edad-por-grupos-armados-en-colombia-son-cientos-los-casos-reportados-entre-2024-y-2026/",
           "rol": "contexto"
+        }
+      ],
+      "tipoEvidencia": "reporte-periodistico",
+      "estadoProcesal": "en-firme",
+      "revisionPosterior": [
+        {
+          "que": "precision",
+          "texto": "CLASE DE EVIDENCIA DECLARADA el 14 de octubre de 2026, por decisión de quien firma el módulo. Esta entrada ALIMENTA el bloque `fuerza` del eje D y no declaraba `tipoEvidencia`, así que la puerta de evidencia no tenía qué mirar — y un camino que no mira el campo es peor que uno laxo: es ciego. Las ocho fuentes son cobertura de prensa. Ninguna publica el documento de Medicina Legal: lo CITAN. La clase honesta es `reporte-periodistico`, y declararla es lo que hace que la puerta de evidencia del eje la pueda mirar. Se declara también el estado procesal, `en-firme`, que es lo que es: la confirmación forense ocurrió. Lo que esto NO cambia es el HECHO; lo que cambia es que ahora la puerta lo puede evaluar."
         }
       ]
     },

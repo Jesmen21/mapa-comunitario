@@ -3899,53 +3899,112 @@
      que no hay ninguna investigación penal abierta. Devolverlos acá es lo
      único que hace que una pantalla nueva los herede sin que su autor se
      acuerde. */
-  function nivelEjeD(mue, F) {
-    var n = (mue || []).reduce(function (a, x) { return a + (Number(x.n) || 0); }, 0);
+  /* Un solo sitio donde se juntan el nivel y lo que lo acota: las dos
+     salidas —con peldaño y sin él— tienen que llevar lo MISMO al lector, o
+     el día que el eje deje de publicar el hecho desaparece de la pantalla
+     (v867, v1121). */
+  function extender(base, mas) {
+    Object.keys(mas || {}).forEach(function (k) { base[k] = mas[k]; });
+    return base;
+  }
+
+  function nivelEjeD(mue, F, reg) {
+    /* ══ LA MISMA PUERTA DE EVIDENCIA QUE EL INDICADOR (v1121) ═══════════
+       Hasta la v1120 este eje contaba del bloque `fuerza` con su propia
+       vara, mientras el indicador I-14 —que nombra el MISMO hecho— exigía
+       evidencia dura y contaba CERO. Dos codificaciones de una regla con
+       dos varas distintas (clase B), y el dictamen salía de la menos
+       exigente: **un control de evidencia que el dictamen puede rodear no
+       es un control.**
+
+       Se unifica hacia ARRIBA, por decisión de quien firma el módulo del 14
+       de octubre de 2026, y conviene dejar escrito con qué criterio se tomó:
+       **se aplicó precisamente porque el resultado no le convenía** —el eje
+       deja de fijar el veredicto y el dictamen baja de «Nada fiable» a un
+       piso—. Una vara que solo se usa cuando favorece no es una vara.
+
+       Y lo que NO pasa: el hecho no se cae. Lo que no pasa la puerta se
+       cuenta aparte, con su razón, y se publica igual (v899, v970). */
+    var porId = {};
+    (((reg || {}).entradas) || []).forEach(function (e) { if (e && e.id) porId[e.id] = e; });
+    var puerta = function (m) {
+      var b = porId[m && m.base];
+      if (!b) return { pasa: false, por: 'su entrada base no está en el registro' };
+      if (b.tipoEvidencia === undefined || b.tipoEvidencia === null || b.tipoEvidencia === '') {
+        return { pasa: false, por: 'su entrada base no declara clase de evidencia' };
+      }
+      if (!EVIDENCIA_DURA[b.tipoEvidencia]) {
+        return { pasa: false, por: 'su entrada base es `' + b.tipoEvidencia + '` y la puerta pide un ' +
+                 'documento primario o un dato oficial' };
+      }
+      return { pasa: true, por: '' };
+    };
+    var cuentan = [], sinPuerta = [];
+    (mue || []).forEach(function (m) {
+      var q = puerta(m);
+      if (q.pasa) cuentan.push(m);
+      else sinPuerta.push({ op: m.op, fecha: m.fecha, lugar: m.lugar, n: Number(m.n) || 0,
+                            confirma: m.confirma || null, porQue: q.por });
+    });
+    var n = cuentan.reduce(function (a, x) { return a + (Number(x.n) || 0); }, 0);
+    var nSinPuerta = sinPuerta.reduce(function (a, x) { return a + x.n; }, 0);
     var quien = {};
     (mue || []).forEach(function (x) { if (x.confirma) quien[x.confirma] = 1; });
     var confirman = Object.keys(quien);
+    var FF0 = F || {};
+    var comun = {
+      sinPuerta: sinPuerta, nSinPuerta: nSinPuerta,
+      queNOMide: ESCALA_EJE_D.queNOMide,
+      fuera: (FF0.fueraDelConteo || []).map(function (x) {
+        return { op: x.op, fecha: x.fecha, lugar: x.lugar, n: Number(x.n) || 0,
+                 confirma: x.confirma || null, porQue: x.porQueFueraDelConteo || null };
+      }),
+      nFuera: (FF0.fueraDelConteo || []).reduce(function (a, x) { return a + (Number(x.n) || 0); }, 0),
+      porQueHayFuera: FF0.porQueHayFueraDelConteo || null,
+      contraOficial: (FF0.contrargumentoOficial && FF0.contrargumentoOficial.texto) || null,
+      contraQuien: (FF0.contrargumentoOficial && FF0.contrargumentoOficial.quien) || null,
+      /* Las dos redacciones, también acá (v970): el refactor de la v1121 se
+         las llevó por delante al juntar las dos salidas en un bloque común,
+         y sin ellas una respuesta que falta deja de decirse. */
+      sinContra: !(FF0.contrargumentoOficial && FF0.contrargumentoOficial.texto) &&
+        'El registro no trae la respuesta del Gobierno a estas muertes. Publicar el número sin ella ' +
+        'es publicar media cosa, y este módulo lo tiene prohibido para los casos de corrupción: la ' +
+        'misma vara vale acá.',
+      procesal: (FF0.estadoProcesal && FF0.estadoProcesal.texto) || null,
+      hayInvestigacion: !!(FF0.estadoProcesal && FF0.estadoProcesal.hayInvestigacion),
+      sinProcesal: !(FF0.estadoProcesal && FF0.estadoProcesal.texto) &&
+        'El registro no dice si hay o no una investigación abierta por estas muertes. Sin eso, un ' +
+        'lector no puede distinguir un hecho que nadie ha mirado de uno que está en manos de un juez.'
+    };
     if (!n) {
-      return { nivel: null, n: 0, confirman: confirman,
-               porque: 'Este eje no publica nivel porque el registro no documenta ningún menor de ' +
-                       'edad muerto en una operación militar con confirmación forense. Eso NO quiere ' +
-                       'decir que no haya habido: quiere decir que este registro no lo tiene ' +
-                       'documentado, y un eje no puede certificar una ausencia que no midió.' };
+      /* LAS DOS REDACCIONES DE CERO, que no son la misma (v899, v970): «no
+         hay nada documentado» y «hay hechos documentados y ninguno pasa la
+         puerta de evidencia» piden acciones contrarias — la primera pide
+         buscar el hecho, la segunda pide el DOCUMENTO de un hecho que ya
+         está. Confundirlas es leer un pendiente de archivo como una
+         ausencia de hechos. */
+      return extender({ nivel: null, n: 0, confirman: confirman,
+               porNoPublicar: nSinPuerta ? 'puerta-de-evidencia' : 'sin-material',
+               porque: nSinPuerta
+                 ? cn(nSinPuerta, 'menor de edad muerto en una operación militar del Estado está ' +
+                      'documentado en este registro y NO pasa la puerta de evidencia de este eje',
+                      'menores de edad muertos en operaciones militares del Estado están documentados ' +
+                      'en este registro y NINGUNO pasa la puerta de evidencia de este eje') +
+                   '. EL HECHO NO SE CAE: lo que falta es la clase de prueba. El documento ' +
+                   'forense NO ESTÁ EN NUESTRO PODER; la confirmación consta por cobertura de prensa. Por eso ' +
+                   'este eje no fija peldaño, y por eso el hecho se publica igual, acá abajo.'
+                 : 'Este eje no publica nivel porque el registro no documenta ningún menor de ' +
+                   'edad muerto en una operación militar con confirmación forense. Eso NO quiere ' +
+                   'decir que no haya habido: quiere decir que este registro no lo tiene ' +
+                   'documentado, y un eje no puede certificar una ausencia que no midió.' }, comun);
     }
     var corte = null;
     for (var i = 0; i < ESCALA_EJE_D.cortes.length; i++) {
       if (n >= ESCALA_EJE_D.cortes[i].desde) { corte = ESCALA_EJE_D.cortes[i]; break; }
     }
     if (!corte) return { nivel: null, n: n, confirman: confirman, porque: 'Ningún corte de la escala aplica.' };
-    var FF = F || {};
-    return {
+    return extender({
       nivel: corte.id, n: n, corte: corte, confirman: confirman,
-      queNOMide: ESCALA_EJE_D.queNOMide,
-      /* Falla cerrado: si el bloque no los trae, se dice que faltan en vez de
-         publicar el número solo (v880, v970). Un número de muertes sin la
-         respuesta del Gobierno al lado es exactamente lo que este módulo
-         tiene prohibido en los casos de corrupción. */
-      /* LO QUE SE SACÓ DEL CONTEO, con su razón (v1120). Un hecho puede
-         estar documentado y aun así no sostener una cifra que fija un
-         juicio público — son dos varas distintas (v899). Viaja con el nivel
-         porque si no, un hecho excluido y nadie que lo nombre se lee igual
-         que un hecho que nunca se documentó, que es la clase C. */
-      fuera: (FF.fueraDelConteo || []).map(function (x) {
-        return { op: x.op, fecha: x.fecha, lugar: x.lugar, n: Number(x.n) || 0,
-                 confirma: x.confirma || null, porQue: x.porQueFueraDelConteo || null };
-      }),
-      nFuera: (FF.fueraDelConteo || []).reduce(function (a, x) { return a + (Number(x.n) || 0); }, 0),
-      porQueHayFuera: FF.porQueHayFueraDelConteo || null,
-      contraOficial: (FF.contrargumentoOficial && FF.contrargumentoOficial.texto) || null,
-      contraQuien: (FF.contrargumentoOficial && FF.contrargumentoOficial.quien) || null,
-      sinContra: !(FF.contrargumentoOficial && FF.contrargumentoOficial.texto) &&
-        'El registro no trae la respuesta del Gobierno a estas muertes. Publicar el número sin ella ' +
-        'es publicar media cosa, y este módulo lo tiene prohibido para los casos de corrupción: la ' +
-        'misma vara vale acá.',
-      procesal: (FF.estadoProcesal && FF.estadoProcesal.texto) || null,
-      hayInvestigacion: !!(FF.estadoProcesal && FF.estadoProcesal.hayInvestigacion),
-      sinProcesal: !(FF.estadoProcesal && FF.estadoProcesal.texto) &&
-        'El registro no dice si hay o no una investigación abierta por estas muertes. Sin eso, un ' +
-        'lector no puede distinguir un hecho que nadie ha mirado de uno que está en manos de un juez.',
       porque: cn(n, 'menor de edad muerto en una operación militar del Estado, confirmado ' +
                     'forensemente por Medicina Legal',
                     'menores de edad muertos en operaciones militares del Estado, confirmados ' +
@@ -3955,12 +4014,9 @@
               ' Su umbral no se escribió para esta pregunta: es el mismo de ' +
               ESCALA_EJE_D.umbralPrestadoDe + '.',
       descansaEn: 'La confirmación es de ' + (confirman.join(' · ') || 'una autoridad forense') +
-                  ', y en este registro consta por el reporte de los medios que la citan, no por el ' +
-                  'documento del Instituto. Conseguirlo está pedido en el trámite de este eje. Y hay ' +
-                  'algo que conviene decir: el documento NO movería este nivel, porque ya está en el ' +
-                  'peldaño que la escala pone para dos o más. Lo que haría es cambiar la clase de ' +
-                  'evidencia, no el resultado.'
-    };
+                  ', y cuenta acá porque su entrada base pasa la puerta de evidencia de este eje, que ' +
+                  'es la misma del indicador I-14: un documento primario o un dato oficial.'
+    }, comun);
   }
 
   function ejeD(dd) {
@@ -4050,7 +4106,7 @@
          por encima o por debajo de otros gobiernos. Eso es una comparación,
          no el nivel. Las premisas de una tanda anterior también se miden
          (v925). */
-      var nd = nivelEjeD(mue, F);
+      var nd = nivelEjeD(mue, F, reg);
       r.nivelCalc = nd;
       /* La LECTURA de este peldaño en ESTE eje sale del corte de su propia
          escala, que ya la traía escrita: «Dos o más menores de edad muertos
@@ -4368,6 +4424,32 @@
     var sin = real.filter(function (e) { return !e.nivel; });
     var peor = peorNivelDe(real);
 
+    /* ══ EL HECHO SE PUBLICA AUNQUE SU EJE NO FIJE PELDAÑO (v1121) ═══════
+       La placa pintaba lo que acota el número solo para los ejes que MANDAN,
+       y el día que el eje D dejó de publicar —porque sus hechos no pasan la
+       puerta de evidencia— el hecho entero habría desaparecido de la
+       pantalla con él: cinco menores muertos, el contrargumento del
+       Gobierno y el estado procesal, todos fuera, como si el hecho se
+       hubiera caído. **No se cayó: lo que falta es la clase de prueba.**
+
+       Así que un eje que no publica pero TIENE material documentado viaja
+       igual, con su hecho y con la razón de por qué no fija peldaño. Es la
+       distinción de la v899 llevada al veredicto: «no hay nada» y «hay algo
+       que no alcanza para un peldaño» piden lecturas contrarias. */
+    var hechos = real.filter(function (e) {
+      var c = e && e.nivelCalc;
+      return !e.nivel && !!c && ((c.nSinPuerta || 0) > 0 || (c.nFuera || 0) > 0);
+    }).map(function (e) {
+      var c = e.nivelCalc;
+      return { eje: e.eje, t: e.t, porque: c.porque || '', porNoPublicar: c.porNoPublicar || null,
+               nSinPuerta: c.nSinPuerta || 0, sinPuerta: c.sinPuerta || [],
+               queNOMide: c.queNOMide || '', fuera: c.fuera || [], nFuera: c.nFuera || 0,
+               porQueHayFuera: c.porQueHayFuera || '',
+               contraOficial: c.contraOficial || '', contraQuien: c.contraQuien || '',
+               sinContra: c.sinContra || '', procesal: c.procesal || '',
+               hayInvestigacion: !!c.hayInvestigacion, sinProcesal: c.sinProcesal || '' };
+    });
+
     /* UN NIVEL FUERA DE LA ESCALERA NO SE CALLA (v1086).
        `nivel-fuera-de-escala` solo se alcanzaba si TODOS los ejes traían un
        id malo; con uno malo y dos sin nivel, el módulo decía «2 de 3 no
@@ -4432,7 +4514,7 @@
     if (sin.length && saturado) {
       return {
         estado: 'dictamen', t: ESCALERA[peor.i].t, palabra: palabra || null,
-        nivel: ESCALERA[peor.i], nivelI: peor.i, usados: peor.usados,
+        nivel: ESCALERA[peor.i], nivelI: peor.i, usados: peor.usados, hechos: hechos,
         porSaturacion: true, deCuantos: real.length,
         faltan: sin.map(function (e) { return { eje: e.eje, t: e.t, falta: e.falta || '' }; }),
         /* La frase sigue a dos puntos, así que el denominador entra en
@@ -4456,7 +4538,7 @@
       return {
         estado: 'piso', t: 'No puede ser mejor que «' + ESCALERA[peor.i].t + '»',
         palabra: palabra || null,
-        piso: ESCALERA[peor.i], pisoI: peor.i, usados: peor.usados,
+        piso: ESCALERA[peor.i], pisoI: peor.i, usados: peor.usados, hechos: hechos,
         deCuantos: real.length,
         faltan: sin.map(function (e) { return { eje: e.eje, t: e.t, falta: e.falta || '' }; }),
         /* «Uno de los 1 ejes» tampoco es castellano, así que el denominador
@@ -4515,7 +4597,7 @@
     if (peor.i >= 0) {
       return {
         estado: 'dictamen', t: ESCALERA[peor.i].t, palabra: palabra || null,
-        nivel: ESCALERA[peor.i], nivelI: peor.i, usados: peor.usados,
+        nivel: ESCALERA[peor.i], nivelI: peor.i, usados: peor.usados, hechos: hechos,
         deCuantos: real.length,
         /* `cn` ANTEPONE el número, así que anidarlo imprimía «3 Los 3 ejes …
            y el dictamen es 3 el PEOR de los 3». Se usa `pl`, que no cuenta.
@@ -5726,7 +5808,24 @@
          deja de ser silenciosa (v966). */
       if (vg.faltan && vg.faltan.length) {
         placa.appendChild(el('p', 'sp-fi-vfaltan',
-          'Falta medir: ' + vg.faltan.map(function (x) { return x.t.toLowerCase(); }).join(' · ') + '.'));
+          /* «Falta medir» y «midió y su prueba no alcanza» NO son lo mismo
+             (v899, v1121): el primero pide buscar el hecho y el segundo pide
+             el DOCUMENTO de un hecho que ya está. Con la unificación de
+             varas de la v1121 el eje D cae en el segundo, y llamarlo «falta
+             medir» diría que no hay nada medido — que es justo lo contrario
+             de lo que pasó. */
+          (function () {
+            var conHecho = {};
+            (vg.hechos || []).forEach(function (h) { conHecho[h.eje] = 1; });
+            var nada = vg.faltan.filter(function (x) { return !conHecho[x.eje]; });
+            var conPrueba = vg.faltan.filter(function (x) { return conHecho[x.eje]; });
+            return [nada.length ? 'Falta medir: ' + nada.map(function (x) {
+                     return x.t.toLowerCase(); }).join(' · ') + '.' : '',
+                    conPrueba.length ? 'Midió y su prueba no alcanza para un peldaño: ' +
+                      conPrueba.map(function (x) { return x.t.toLowerCase(); }).join(' · ') +
+                      ' — el hecho está abajo, con lo que le falta.' : ''
+                   ].filter(Boolean).join(' ');
+          })()));
       }
       /* DE QUÉ SALE EL PELDAÑO, en la placa y no dos pantallas más adentro
          (v1088). Lo vio el papel: la placa publicaba «No puede ser mejor que
@@ -5771,6 +5870,55 @@
           ' y no declara qué significa en su propia medición: ' +
           sinLectura.map(function (u) { return u.t; }).join(' · ') + '.'));
       }
+      /* UNA SOLA función para lo que acota un número, llamada desde los dos
+         sitios —el eje que manda y el eje que no publica— porque si fueran
+         dos copias se separarían a la tanda siguiente (v879). */
+      function pintarLoQueAcota(u, dest) {
+        if (!u.contraOficial && !u.sinContra && !u.procesal && !u.sinProcesal &&
+            !(u.fuera && u.fuera.length) && !(u.sinPuerta && u.sinPuerta.length)) return;
+        var cb = el('div', 'sp-fi-vcontra');
+        if (u.contraOficial) {
+          cb.appendChild(el('b', null, 'La respuesta del Gobierno' +
+            (u.contraQuien ? ' · ' + u.contraQuien : '')));
+          cb.appendChild(el('p', null, u.contraOficial));
+        } else if (u.sinContra) {
+          cb.appendChild(el('b', null, 'Falta la respuesta del Gobierno'));
+          cb.appendChild(el('p', 'sp-fi-vmal', u.sinContra));
+        }
+        /* Lo que NO pasa la puerta y lo que se sacó por una DECISIÓN son dos
+           cosas distintas y piden acciones distintas (v899): lo primero pide
+           un documento, lo segundo ya se resolvió y está dicho. */
+        if (u.sinPuerta && u.sinPuerta.length) {
+          cb.appendChild(el('b', null, 'Documentado, y sin la clase de prueba que este eje exige · ' +
+            cn(u.nSinPuerta, 'caso', 'casos')));
+          u.sinPuerta.forEach(function (x) {
+            cb.appendChild(el('p', null, x.op + (x.fecha ? ' · ' + fechaCorta(x.fecha) : '') +
+              (x.lugar ? ' · ' + x.lugar : '') + ' · ' + x.n +
+              (x.confirma ? ' · confirma ' + x.confirma : '') + '. No cuenta porque ' + x.porQue + '.'));
+          });
+        }
+        if (u.fuera && u.fuera.length) {
+          cb.appendChild(el('b', null, 'Lo que NO entra en esta cifra, por decisión · ' +
+            cn(u.nFuera, 'caso documentado', 'casos documentados')));
+          u.fuera.forEach(function (x) {
+            cb.appendChild(el('p', null, x.op + (x.fecha ? ' · ' + fechaCorta(x.fecha) : '') +
+              (x.lugar ? ' · ' + x.lugar : '') + ' · ' + x.n + '. ' +
+              (x.porQue || 'Sin razón escrita, que es lo que no puede ser.')));
+          });
+          if (u.porQueHayFuera) cb.appendChild(el('p', 'sp-h-meta', u.porQueHayFuera));
+        }
+        if (u.procesal) {
+          cb.appendChild(el('b', null, u.hayInvestigacion
+            ? 'Estado procesal · hay investigación abierta'
+            : 'Estado procesal · NO consta investigación abierta'));
+          cb.appendChild(el('p', null, u.procesal));
+        } else if (u.sinProcesal) {
+          cb.appendChild(el('b', null, 'Falta el estado procesal'));
+          cb.appendChild(el('p', 'sp-fi-vmal', u.sinProcesal));
+        }
+        (dest || placa).appendChild(cb);
+      }
+
       var deDonde = mandan.map(function (u) {
         return u.t + (u.porque ? ': ' + u.porque : '');
       }).filter(Boolean);
@@ -5796,42 +5944,22 @@
         if (noMide.length) {
           placa.appendChild(el('p', 'sp-fi-vlim', 'Lo que esto NO dice: ' + noMide.join(' — ')));
         }
-        mandan.forEach(function (u) {
-          if (!u.contraOficial && !u.sinContra && !u.procesal && !u.sinProcesal) return;
-          var cb = el('div', 'sp-fi-vcontra');
-          if (u.contraOficial) {
-            cb.appendChild(el('b', null, 'La respuesta del Gobierno' +
-              (u.contraQuien ? ' · ' + u.contraQuien : '')));
-            cb.appendChild(el('p', null, u.contraOficial));
-          } else if (u.sinContra) {
-            cb.appendChild(el('b', null, 'Falta la respuesta del Gobierno'));
-            cb.appendChild(el('p', 'sp-fi-vmal', u.sinContra));
-          }
-          /* Y LO EXCLUIDO, junto al número y no en otra pantalla: quien lee
-             una cifra tiene derecho a saber qué se dejó fuera de ella y por
-             qué, sobre todo cuando lo excluido es un hecho documentado. */
-          if (u.fuera && u.fuera.length) {
-            cb.appendChild(el('b', null, 'Lo que NO entra en esta cifra · ' +
-              cn(u.nFuera, 'caso documentado', 'casos documentados')));
-            u.fuera.forEach(function (x) {
-              cb.appendChild(el('p', null, x.op + (x.fecha ? ' · ' + fechaCorta(x.fecha) : '') +
-                (x.lugar ? ' · ' + x.lugar : '') + ' · ' + x.n +
-                '. ' + (x.porQue || 'Sin razón escrita, que es lo que no puede ser.')));
-            });
-            if (u.porQueHayFuera) cb.appendChild(el('p', 'sp-h-meta', u.porQueHayFuera));
-          }
-          if (u.procesal) {
-            cb.appendChild(el('b', null, u.hayInvestigacion
-              ? 'Estado procesal · hay investigación abierta'
-              : 'Estado procesal · NO consta investigación abierta'));
-            cb.appendChild(el('p', null, u.procesal));
-          } else if (u.sinProcesal) {
-            cb.appendChild(el('b', null, 'Falta el estado procesal'));
-            cb.appendChild(el('p', 'sp-fi-vmal', u.sinProcesal));
-          }
-          placa.appendChild(cb);
-        });
+        mandan.forEach(pintarLoQueAcota);
       }
+
+      /* ── Y EL HECHO DE UN EJE QUE NO FIJA PELDAÑO (v1121) ───────────────
+         Va DESPUÉS del dictamen y con su propio rótulo, no escondido: el
+         día que el eje D dejó de publicar, su hecho habría desaparecido con
+         él. El hecho no se cayó — lo que falta es la clase de prueba, y eso
+         es justamente lo que esta caja dice. */
+      (vg.hechos || []).forEach(function (h) {
+        var hb = el('div', 'sp-fi-vhecho');
+        hb.appendChild(el('h4', null, 'Un hecho que este módulo registra y que NO fija peldaño · ' + h.t));
+        hb.appendChild(el('p', 'sp-fi-vhecho-p', h.porque));
+        if (h.queNOMide) hb.appendChild(el('p', 'sp-fi-vlim', 'Lo que esto NO dice: ' + h.queNOMide));
+        pintarLoQueAcota(h, hb);
+        placa.appendChild(hb);
+      });
       /* Y LOS OTROS EJES QUE PUBLICAN, con su peldaño y sin su párrafo: no
          fijan el dictamen —manda el peor— pero callarlos dejaría la placa
          diciendo que solo uno midió. Su lectura entera está en su eje. */

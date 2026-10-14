@@ -1612,6 +1612,40 @@ sección al final de este archivo.
   (`s.count(a)==1`), igual que en un reemplazo. Lo cazaron tres guardas a la
   vez —entre ellas la atadura de la bandera `escala` de la v1091—; sin ellas
   el módulo habría quedado con dos ejes mudos y el dictamen saliendo igual.
+* **Dos varas para un mismo hecho: el dictamen sale siempre de la más
+  floja** (v1121). El eje D contaba del bloque `fuerza` con su propia vara
+  mientras el indicador I-14 —que nombra el MISMO hecho— exigía evidencia
+  dura y contaba CERO: **un control de evidencia que el dictamen puede
+  rodear no es un control**. Se unifica hacia ARRIBA, y la señal de que no
+  es interesada es la contraria de siempre: **aplicarla EMPEORÓ la posición
+  de quien decide** —el dictamen bajó de «Nada fiable» a un piso dos
+  peldaños más arriba—. Lo dijo el usuario y queda citado: *una vara que solo
+  se usa cuando favorece no es una vara.*
+* **Y un campo que nadie MIRA es peor que uno laxo: es ciego** (v1121). Dos
+  de las tres bases del bloque `fuerza` no declaraban `tipoEvidencia`, y no
+  les costaba nada porque el eje no leía ese campo. **Un campo sin declarar
+  y un campo declarado débil se leen igual, y solo el segundo se puede
+  discutir.** La guarda: ninguna base puede alimentar un eje que publica sin
+  declarar su clase de evidencia, ni apuntar a una entrada que no existe.
+* **Y el HECHO no se cae con su eje** (v899, v1121). Al unificar, el eje dejó
+  de publicar y con él habría desaparecido de la pantalla todo lo que lo
+  acompaña —cinco menores muertos, la respuesta del Gobierno, el estado
+  procesal—, que se lee como que el hecho se cayó. No se cayó: **lo que falta
+  es la clase de prueba.** Un eje que no publica pero tiene material viaja
+  igual dentro del veredicto, con su caja propia y con la línea que convierte
+  la ausencia en un dato: *el documento no está en nuestro poder; la
+  confirmación consta por cobertura de prensa*. Y «falta medir» deja de valer
+  para él: **midió, y su prueba no alcanza**, que pide otra acción.
+* **Y una regla nueva no se escribe el día que la medición incomoda** (v882,
+  v1077, v1117, v1121). Al quedar el eje sin peldaño apareció la idea de una
+  clase de evidencia intermedia —un dato oficial conocido por cobertura y no
+  disputado por la contraparte—, que puede ser correcta y **no se
+  implementó**: crearla justo cuando el resultado incomoda es ajustar la
+  regla al resultado. El orden que la haría honesta queda escrito: redactar
+  el criterio entero con su `incluye` y su `excluye`, **correrlo sobre TODO
+  el registro sin mirar a quién favorece**, y recién entonces ver qué mueve.
+  **Si sube cifras del Gobierno y también hallazgos en contra, la regla es
+  buena; si solo mueve una cosa, está tallada.**
 * **Y una comprobación que llega a cero se DICE, no desaparece** (v1064). Un
   renglón que se borra solo deja «ya está hecho» con la misma cara que
   «nadie lo ha mirado» —la regla de arriba, dicha en una pantalla—. Tres de

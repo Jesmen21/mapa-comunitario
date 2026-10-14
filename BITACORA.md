@@ -27748,3 +27748,82 @@ vista, que es exactamente lo que pidió.
   documentos de Medicina Legal, y el proxy no deja pedirlos. `pendiente`
 * **NO mueve el dictamen.** Sigue en «Nada fiable», ahora con n = 5.
   `cerrado en v1120`
+
+## v1121 · unificar hacia arriba, y el hecho que no se cae con su eje
+
+Decisión del usuario, y con la razón escrita: **«lo aplico ahora precisamente
+porque el resultado no me conviene: una vara que solo se usa cuando favorece
+no es una vara».** Queda citada porque es la justificación que esta regla
+pedía (v882): la unificación BAJA la gravedad de lo que el módulo publica.
+
+### Lo que se unificó
+
+El eje D contaba del bloque `fuerza` con su propia vara, mientras el
+indicador I-14 —que nombra el MISMO hecho— exigía evidencia dura y contaba
+CERO. Dos codificaciones de una regla con dos varas (clase B), y **el
+dictamen salía de la menos exigente**. Un control de evidencia que el
+dictamen puede rodear no es un control.
+
+```
+ANTES (v1120):  dictamen · «Nada fiable»                       B:dudosa C:poco-fiable D:nada-fiable
+AHORA (v1121):  piso     · «No puede ser mejor que Poco fiable» B:dudosa C:poco-fiable
+```
+
+### Las dos bases ciegas
+
+De las tres bases del bloque, **dos no declaraban `tipoEvidencia`**. No les
+costaba nada, porque el eje no miraba ese campo — y **un camino que no mira
+el campo es peor que uno laxo: es ciego**, porque un campo sin declarar y un
+campo declarado débil se leen igual y solo el segundo se puede discutir.
+Declaradas según lo que de verdad tienen: `reporte-periodistico`, que es lo
+que son —ocho y seis fuentes de prensa que CITAN a Medicina Legal, ninguna
+que publique el documento—.
+
+### Y el hecho NO se cae con su eje
+
+Este era el riesgo real de la unificación, y se vio antes de que pasara: la
+placa pintaba lo que acota un número solo para los ejes que MANDAN. Con el
+eje D fuera del veredicto, **el hecho entero habría desaparecido de la
+pantalla con él** —cinco menores muertos, el contrargumento del Gobierno, el
+estado procesal—, como si el hecho se hubiera caído.
+
+No se cayó. Un eje que no publica pero **tiene material documentado** viaja
+igual dentro del veredicto, con su propia caja y su rótulo: *«Un hecho que
+este módulo registra y que NO fija peldaño»*. Y la línea que el usuario pidió,
+que es la que convierte una ausencia en un dato:
+
+> **EL HECHO NO SE CAE: lo que falta es la clase de prueba. El documento
+> forense NO ESTÁ EN NUESTRO PODER; la confirmación consta por cobertura de
+> prensa.**
+
+El pintado se sacó a **UNA** función llamada desde los dos sitios: dos copias
+se habrían separado a la tanda siguiente (v879).
+
+### Dos defectos que vio el papel y no el código
+
+* **Los asteriscos de markdown se imprimían literales.** El pintor usa texto,
+  no HTML, así que `**…**` salía con los asteriscos puestos.
+* **«Falta medir: uso de la fuerza y derechos»** era ahora falso. El eje SÍ
+  midió; lo que no alcanza es la prueba. Son dos cosas que piden acciones
+  contrarias (v899) —la primera pide buscar el hecho, la segunda pide el
+  DOCUMENTO de un hecho que ya está—, y ahora se dicen aparte: *«Midió y su
+  prueba no alcanza para un peldaño»*.
+
+### Las guardas
+
+Tres nuevas (751 → 754), cuatro inyecciones en rojo incluida la fiel. Ninguna
+base puede alimentar el eje sin declarar su clase de evidencia ni apuntar a
+una entrada que no existe; el eje mide con la MISMA puerta que su indicador;
+y lo que acota el número se pinta también para el eje que no publica.
+
+### Lo que esta versión NO hace
+
+* **NO crea la clase de evidencia intermedia** —un dato oficial conocido por
+  cobertura y no disputado por la contraparte—. Queda propuesta en
+  `DECISIONES-PENDIENTES.md` con el orden que la hace honesta: escribir el
+  criterio entero, correrlo sobre TODO el registro, y recién entonces ver qué
+  mueve. `pendiente`
+* **NO consigue el documento forense.** El trámite queda escrito con qué
+  pedir, a quién y qué desbloquea. `pendiente`
+* **SÍ mueve el dictamen**, y a menos grave: de «Nada fiable» a piso «No
+  puede ser mejor que Poco fiable». `cerrado en v1121`

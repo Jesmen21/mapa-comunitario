@@ -2536,3 +2536,16 @@ a.sp-fuente:hover svg{ color:var(--verde-hi); }
 .sp-fi-vcontra > b:first-child { margin-top: 0; }
 .sp-fi-vcontra > p { margin: 4px 0 0; font-size: var(--t-8); line-height: 1.55; }
 .sp-fi-vmal { color: #9A3C38; font-weight: 600; }
+
+/* Un hecho que el módulo registra y que NO fija peldaño (v1121). Va con su
+   propio rótulo y no escondido: el día que un eje deja de publicar, su
+   hecho desaparecería con él y se leería como que el hecho se cayó. */
+.sp-fi-vhecho {
+  margin: 14px 0 0;
+  padding: 12px 14px;
+  border: 2px solid var(--sp-amb, #b26a00);
+  border-radius: 10px;
+  background: var(--sp-bg2, #F7F9FB);
+}
+.sp-fi-vhecho > h4 { margin: 0 0 6px; font-size: var(--t-7); color: var(--sp-amb, #b26a00); }
+.sp-fi-vhecho-p { margin: 0; font-size: var(--t-8); line-height: 1.6; font-weight: 600; }

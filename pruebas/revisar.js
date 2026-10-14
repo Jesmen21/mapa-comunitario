@@ -4446,7 +4446,7 @@ console.log('\n  -- la ficha del gobernante --');
          · y declara SOBRE QUÉ evidencia descansa (v1085). */
     const tramoD = (j70c3.match(/function ejeD\(dd\) \{[\s\S]*?\n  \}/) || [''])[0];
     const escD = (j70c3.match(/var ESCALA_EJE_D = \{[\s\S]*?\n  \};/) || [''])[0];
-    const nivD = (j70c3.match(/function nivelEjeD\(mue, F\) \{[\s\S]*?\n  \}/) || [''])[0];
+    const nivD = (j70c3.match(/function nivelEjeD\(mue, F, reg\) \{[\s\S]*?\n  \}\n/) || [''])[0];
     const mitD = [
       ['la escala del eje D está escrita, aparte del eje', escD.length > 0],
       /* SE APRIETA, NO SE AFLOJA (v1118). La aserción pedía el artículo 135
@@ -4473,8 +4473,16 @@ console.log('\n  -- la ficha del gobernante --');
        /r\.nivel = nd\.nivel[\s\S]{0,120}nivelDeEje\(nd\.nivel, nd\.corte && nd\.corte\.d/.test(tramoD)],
       ['y no se publica sin su lectura por eje',
        /r\.publicable = !!\(r\.nivel && r\.nivel\.lectura\)/.test(tramoD)],
+      /* SE APRIETA (v1121): la v1121 juntó las dos salidas en un bloque
+         común, así que el `return` literal cambió. La aserción pide ahora
+         las DOS cosas que importan: que siga volviendo a null, y que
+         distinga las dos razones de cero —sin material, o con material que
+         no pasa la puerta—, que piden acciones contrarias (v899). */
       ['y vuelve a null sin material, no al peldaño bueno',
-       /if \(!n\) \{\n      return \{ nivel: null/.test(nivD)],
+       /if \(!n\) \{[\s\S]{0,900}nivel: null/.test(nivD) &&
+       /porNoPublicar: nSinPuerta \? 'puerta-de-evidencia' : 'sin-material'/.test(nivD)],
+      ['y aplica al bloque `fuerza` la MISMA puerta de evidencia que el indicador',
+       /EVIDENCIA_DURA\[b\.tipoEvidencia\]/.test(nivD) && /sinPuerta\.push/.test(nivD)],
       ['y declara sobre qué evidencia descansa', /descansaEn:/.test(nivD)],
       /* LO QUE ACOTA EL NÚMERO VIAJA CON ÉL (v867, v1088, v1118): la
          respuesta del Gobierno y el estado procesal estaban en el
@@ -4549,7 +4557,15 @@ console.log('\n  -- la ficha del gobernante --');
        construido y sin colgar deja el número publicado solo, que es el
        defecto entero. */
     const engQN = /placa\.appendChild\(el\('p', 'sp-fi-vlim'/.test(j70c3);
-    const engCO = /placa\.appendChild\(cb\)/.test(j70c3);
+    /* SE APRIETA (v1121). La v1121 sacó el pintado a UNA función, llamada
+       desde los dos sitios —el eje que manda y el eje que NO publica—, así
+       que el `placa.appendChild(cb)` literal ya no está. La aserción pide
+       ahora lo que de verdad importa y es más fuerte: que la función exista,
+       que se cuelgue de su destino, y que se llame TAMBIÉN para los ejes que
+       no fijan peldaño — que es el caso en el que el hecho desaparecería. */
+    const engCO = /\(dest \|\| placa\)\.appendChild\(cb\)/.test(j70c3) &&
+                  /mandan\.forEach\(pintarLoQueAcota\)/.test(j70c3) &&
+                  /pintarLoQueAcota\(h, hb\)/.test(j70c3);
     const viajaU = /queNOMide: \(e\.nivelCalc/.test(j70c3) && /contraOficial: \(e\.nivelCalc/.test(j70c3);
     comprobar('y lo que acota el número llega a la placa, enganchado y viajando con el veredicto',
       engQN && engCO && viajaU,
@@ -4558,6 +4574,68 @@ console.log('\n  -- la ficha del gobernante --');
           'cuelgan de la placa: un eje nuevo que publique nivel los hereda sin que su autor se acuerde'
         : 'falta: ' + [!viajaU ? 'viajar con el veredicto' : null, !engQN ? 'el enganche de «qué no mide»' : null,
                        !engCO ? 'el enganche de la respuesta del Gobierno' : null].filter(Boolean).join(', '));
+
+    /* ═══ NINGUNA BASE ALIMENTA UN EJE SIN DECLARAR SU EVIDENCIA (v1121) ══
+       Medido el 14 de octubre de 2026: de las tres bases del bloque
+       `fuerza`, **dos no declaraban `tipoEvidencia`**. No les costaba nada,
+       porque el eje contaba con su propia vara y no miraba ese campo — y un
+       camino que no mira el campo es **peor que uno laxo: es ciego**. Un
+       campo sin declarar y un campo declarado débil se leían igual, y solo
+       el segundo se puede discutir.
+
+       Va en ROJO y no con `?`: el bloque puede quedarse sin material
+       legítimamente, y para eso está la línea de arriba; lo que no puede
+       pasar nunca es que una base que SÍ está no declare de qué clase es su
+       prueba.
+
+       DE QUÉ NO RESPONDE (v945, v952): de que la clase declarada sea la
+       correcta. Eso lo decide quien escribe la entrada mirando sus fuentes.
+       Comprueba que ESTÉ y que la base exista en el registro. */
+    const reg1121 = JSON.parse(leer('assets/data/seguimiento-presidencial.json'));
+    const porId1121 = {};
+    ((reg1121.entradas) || []).forEach((e) => { if (e && e.id) porId1121[e.id] = e; });
+    const basesF = [].concat(((reg1121.fuerza || {}).menoresMuertos) || [],
+                             ((reg1121.fuerza || {}).menoresRecuperados) || [],
+                             ((reg1121.fuerza || {}).fueraDelConteo) || []);
+    const sinBase = basesF.filter((m) => !porId1121[m && m.base]);
+    const sinClase = basesF.filter((m) => {
+      const b = porId1121[m && m.base];
+      return b && (b.tipoEvidencia === undefined || b.tipoEvidencia === null || b.tipoEvidencia === '');
+    });
+    if (!basesF.length) {
+      anotarSinMaterial('MATERIAL · el bloque `fuerza` trae operaciones con su base',
+        'el bloque está vacío hoy, así que no hay ninguna base que mirar; la regla de abajo muerde el ' +
+        'día que vuelva a haber una');
+    } else {
+      comprobar('MATERIAL · el bloque `fuerza` trae operaciones con su base',
+        true, basesF.length + ' operacion(es) con `base` declarada');
+    }
+    comprobar('y ninguna base alimenta el eje sin declarar su clase de evidencia',
+      !sinBase.length && !sinClase.length,
+      sinBase.length ? sinBase.length + ' operacion(es) cuya entrada base NO está en el registro: ' +
+          sinBase.map((m) => m.base || '(sin base)').join(' · ') + ' — una cifra apoyada en una ' +
+          'entrada que no existe no se puede ir a comprobar'
+        : sinClase.length ? sinClase.length + ' base(s) sin `tipoEvidencia`: ' +
+            sinClase.map((m) => m.base).join(' · ') + '. La puerta de evidencia del eje no tiene qué ' +
+            'mirar, y un camino que no mira el campo es peor que uno laxo: es ciego'
+        : (basesF.length ? 'las ' + basesF.length + ' declaran su clase de evidencia y su base está en ' +
+            'el registro, así que la puerta las puede evaluar una por una'
+          : 'no hay ninguna, y la regla muerde el día que aparezca la primera'));
+
+    /* Y LA UNIFICACIÓN MISMA: que el eje use la MISMA puerta que el
+       indicador que nombra el mismo hecho. Dos varas para un hecho es la
+       clase B, y el dictamen salía de la menos exigente — un control que el
+       dictamen puede rodear no es un control. */
+    const mismaPuerta = /EVIDENCIA_DURA\[b\.tipoEvidencia\]/.test(nivD);
+    const i14Dura = /requiere: function \(c\) \{[\s\S]{0,200}EVIDENCIA_DURA\[c\.evidencia\.id\]/.test(
+      (j70c3.split("'I-14': {")[1] || '').split('\n  };')[0]);
+    comprobar('y el eje D mide con la MISMA puerta de evidencia que su indicador',
+      mismaPuerta && i14Dura,
+      (mismaPuerta && i14Dura)
+        ? 'las dos leen `EVIDENCIA_DURA`: el eje no puede publicar un peldaño sobre una prueba que su ' +
+          'propio indicador rechaza'
+        : !i14Dura ? 'el indicador I-14 dejó de exigir evidencia dura, así que ya no hay vara alta que igualar'
+        : 'el eje volvió a contar con su propia vara: un control que el dictamen puede rodear no es un control');
 
     const malD = mitD.filter((x) => !x[1]).map((x) => x[0]);
     comprobar('el eje D publica nivel CALCULADO, con su escala contra referencia externa y su umbral prestado',
