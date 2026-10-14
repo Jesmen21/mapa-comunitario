@@ -2554,3 +2554,13 @@ a.sp-fuente:hover svg{ color:var(--verde-hi); }
    no compite con los que cuentan. */
 .sp-c1-lista li.sp-c1-z{opacity:.72}
 .sp-c1-lista li.sp-c1-z .sp-c1-n{color:var(--t-mut,#6b7a85)}
+
+/* Por qué un indicador no alimenta su eje (v1124). Va debajo de su razón, en
+   el mismo tono de la razón pero marcado, porque pide una acción distinta. */
+.sp-c2-noalim{ display:block; margin-top:.25rem; font-size:var(--t-9);
+  color:var(--ink-2); border-left:2px solid var(--ink-2); padding-left:.5rem; }
+
+/* Un indicador que existe, se calcula y el eje no usa todavía (v1124). Se ve
+   junto a los que sí usa, para que «no lo usa» no se lea como «no existe». */
+.sp-c3-reten{ margin:.4rem 0 0; font-size:var(--t-8); color:var(--ink-2);
+  border-left:2px dashed var(--ink-2); padding-left:.5rem; }

@@ -1035,9 +1035,28 @@ sección al final de este archivo.
   v891, v897, v903, v1000, v1053). En JavaScript `\b` trata las vocales
   acentuadas como NO-palabra; una cota `[^)]` sobre código con paréntesis es
   un recorte silencioso; y un token sin su paréntesis casa por prefijo.
-* **Mirar el papel.** Componer el documento o la pantalla y LEERLO es el
-  método que más defectos reales ha encontrado acá (v874, v882, v885, v887,
-  v974, v978, v985, v987, v1031, v1055). Ninguno se veía leyendo el código.
+* **Mirar el papel, y es OBLIGATORIO al cerrar** (v874, v882, v885, v887,
+  v974, v978, v985, v987, v1031, v1055, v1085, v1092, v1121, v1123, v1124).
+  Componer el documento o la pantalla y LEERLO es el método que más defectos
+  reales ha encontrado acá, y **ninguno se veía leyendo el código**. Van
+  siete solo en las últimas tandas: una clave duplicada que publicaba la
+  razón en blanco, un número publicado sin decir de qué era, asteriscos de
+  markdown impresos como texto, una línea que decía «falta medir» de un eje
+  que había medido, una frase que mandaba a pedir un trámite retirado, dos
+  renglones en cero que el texto afirmaba visibles y el pintor escondía, y
+  una razón que colgaba de una bandera que la tanda acababa de quitar.
+  Por eso es una regla y no una recomendación:
+
+  > **Toda tanda que cambie lo que se imprime termina leyendo el papel. Y el
+  > papel es la prueba, no el código que lo genera.**
+
+  Lo que eso quiere decir en la práctica: se compone la pantalla de verdad
+  —el navegador, la hoja, el PDF— y se LEE el texto que sale, no el literal
+  que lo produce ni la aserción que lo mide. Una guarda comprueba que algo
+  esté; solo el papel dice si lo que está se puede leer sin mentir. Y la
+  forma del defecto es siempre la misma: **el código es correcto y el
+  resultado no**, porque entre los dos hay un pintor, una concatenación, una
+  bandera o una condición que nadie volvió a mirar.
 * **Una decisión de espacio se juzga midiendo las dos composiciones** (v919),
   no leyendo la lista: un panel en la lista de lo que cedió no siempre pagó
   por lo que se salvó.
@@ -1061,6 +1080,29 @@ sección al final de este archivo.
   guarda necesita una tabla de dónde mirar y esa tabla es lo que envejece. **La
   lista de a quién se le exige sale de `PESO_EJE`**, así que un eje nuevo nace
   con la declaración exigida sin que su autor se acuerde.
+* **Y un indicador que es una TASA sobre un subconjunto declara su cobertura
+  y no alimenta un veredicto hasta que el subconjunto deje de explicarla**
+  (v1124). I-06 pasó a contar «posición oficial buscada y no hallada», que es
+  una tasa sobre lo revisado: con una parte del registro revisada, cualquier
+  cifra mide **nuestro ritmo de trabajo y no al Gobierno** —revisar cien
+  entradas más la hace saltar sin que cambie nada afuera—. Dos condiciones que
+  no se implican (v899): **la cobertura va en el MISMO renglón que la cifra**
+  —«1 de 46 revisadas · cobertura 18,9 % de 243» dice algo muy distinto de «1
+  de 243»— y **no alimenta el eje hasta su umbral**. El umbral se escribe
+  ANTES de calcular con él y **sale de una propiedad, no de un número**: la
+  mitad es el borde exacto donde lo no revisado deja de poder mandar sobre la
+  tasa, que es un borde degenerado como el «ambas cuentas por encima de cero»
+  de la v1106 y no algo que se pueda acomodar. Y la segunda mitad es la que de
+  verdad muerde: mientras las tandas revisen **por lotes de fuente común** —un
+  lote se elige porque ahí era probable hallar la posición—, el muestreo es
+  por conveniencia y sesga hacia las entradas con posición hallable, así que
+  ni el 90 % de cobertura alcanza. Por eso **el sesgo se DECLARA y no se
+  calcula** (v880), y mientras tanto la tasa se publica como **PISO** (v1086,
+  v1097). **La señal de que el umbral no está tallado: aplicado no mejora nada
+  y no cambia ninguna cifra publicada** — el eje B siguió con los mismos tres
+  indicadores y su peldaño donde estaba. Y escribir el umbral antes de mirar
+  no basta como coartada cuando el número ya se vio en la pantalla de la tanda
+  anterior: lo que protege es que la propiedad no cambie con el número.
 * **«NO HALLADO», nunca «NO RESPONDIÓ»** (v961, v1123). Lo dijo el usuario y
   queda citado: *lo primero es un hecho sobre nuestra búsqueda; lo segundo es
   una afirmación sobre la conducta del Gobierno, y no la podemos hacer: puede

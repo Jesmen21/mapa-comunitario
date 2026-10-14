@@ -192,7 +192,12 @@ Lo que esta sesión NO debe hacer: escribirla mirando estas dos entradas.
 
 ---
 
-## 8 · I-06 se quedó sin fuente que nadie pueda escribir · `pendiente`
+## 8 · I-06 se quedó sin fuente que nadie pueda escribir
+
+> **`cerrado en v1124`** — el usuario autorizó el cambio de criterio, con dos
+> condiciones: tasa sobre lo revisado con su cobertura en el mismo renglón, y
+> sin alimentar el eje B hasta un umbral de cobertura escrito ANTES de
+> calcularlo. Las dos están aplicadas y medidas.
 
 **Es una consecuencia medida de la v1123, y la decisión es suya porque cambia
 un criterio.**

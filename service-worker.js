@@ -1,4 +1,4 @@
-const URBIS_CACHE = 'urbis-v1123-buscado-y-no-hallado';
+const URBIS_CACHE = 'urbis-v1124-i06-cuenta-lo-que-se-puede-declarar';
 const URBIS_ASSETS = [
   './',
   './index.html',

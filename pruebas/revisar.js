@@ -2134,22 +2134,32 @@ console.log('\n  -- la ficha del gobernante --');
        hay que vigilar: el eje mide desviación contra una media histórica y de
        I-13 no hay ninguna, así que meterlo compararía cuatro indicadores
        contra una referencia y el quinto contra nada. */
-    const ejeBLista = (j70i13.match(/var IND_EJE_B = \[([^\]]*)\]/) || ['', ''])[1];
+    /* La lista del eje B dejó de ser una constante en la v1124: I-06 entra
+       solo cuando pasa su umbral de cobertura, así que la base se lee de
+       `IND_EJE_B_BASE` y lo que se vigila es que I-13 no esté en ninguna de
+       las dos formas. */
+    const ejeBLista = (j70i13.match(/var IND_EJE_B_BASE = \[([^\]]*)\]/) || ['', ''])[1];
+    const ejeBArma = (j70i13.match(/function indEjeB\(c1\) \{[\s\S]*?\n  \}/) || [''])[0];
     comprobar('I-13 se publica como indicador propio',
       /'I-13': \{/.test(j70i13) && /'I-13': \{ t: 'Interferencia/.test(j70i13) &&
       /ORDEN_IND = \[[^\]]*'I-13'/.test(j70i13),
       'con su criterio, su fila y su puesto en el orden');
 
     comprobar('y NO entra al eje B, que no tiene media histórica suya',
-      ejeBLista.length > 0 && ejeBLista.indexOf('I-13') < 0,
-      ejeBLista ? 'el eje B mide I-04, I-05, I-06 e I-07 contra su media; I-13 no tiene media'
-                : 'no se encontró IND_EJE_B');
+      ejeBLista.length > 0 && ejeBLista.indexOf('I-13') < 0 &&
+      !!ejeBArma && ejeBArma.indexOf('I-13') < 0,
+      !ejeBLista ? 'no se encontró IND_EJE_B_BASE'
+        : !ejeBArma ? 'no se encontró indEjeB(c1), que es quien arma la lista'
+        : ejeBLista.indexOf('I-13') >= 0 ? 'I-13 está en la base del eje B'
+        : ejeBArma.indexOf('I-13') >= 0 ? 'I-13 se le agrega a la lista al armarla'
+        : 'el eje B mide I-04, I-05 e I-07 contra su media, y I-06 solo si pasa su umbral; ' +
+          'I-13 no tiene media y no entra por ninguna de las dos vías');
 
     /* La guarda de la guarda: si el eje dejara de leer esa lista, la de arriba
        seguiría en verde sobre una constante que no decide nada. */
     comprobar('y el eje B sigue leyendo esa lista para armar sus filas',
-      /IND_EJE_B\.indexOf\(f\.id\) >= 0/.test(j70i13),
-      'ejeB filtra sus indicadores por IND_EJE_B');
+      /var listaB = indEjeB\(/.test(j70i13) && /listaB\.indexOf\(f\.id\) >= 0/.test(j70i13),
+      'ejeB filtra sus indicadores por la lista que `indEjeB` arma, no por una constante');
 
     /* Y una guarda de clase sobre el registro: I-05 e I-13 son mutuamente
        excluyentes por construcción —una entidad es autónoma o no lo es—, así
@@ -3614,6 +3624,115 @@ console.log('\n  -- la ficha del gobernante --');
       : eximMal.length ? eximMal.length + ' eximida(s) traen ADEMÁS contrargumento oficial, y una de las ' +
           'dos cosas está mal escrita'
       : 'las ' + exim.length + ' traen su razón y ninguna trae además contrargumento');
+
+    /* ═══ I-06 ES UNA TASA SOBRE LO REVISADO, Y NO ALIMENTA UN EJE HASTA SU
+           UMBRAL DE COBERTURA (v1124) ═════════════════════════════════════
+       La v1123 retiró la afirmación «el Gobierno no respondió» y con ella
+       dejó a I-06 sin fuente escribible. El usuario autorizó cambiar lo que
+       cuenta —a «posición oficial buscada y no hallada», que es simétrico y
+       comprobable— con DOS condiciones, y esta guarda es cada una de ellas:
+
+       (a) SE PUBLICA COMO TASA SOBRE LO REVISADO, con su cobertura en el
+           MISMO renglón. «1 de 46» y «1 de 243» son juicios muy distintos
+           sobre lo mismo, y sin la cobertura al lado no se pueden separar.
+
+       (b) NO ALIMENTA EL EJE B hasta pasar su umbral. Con una parte del
+           registro revisada, la tasa mide nuestro RITMO DE TRABAJO y no al
+           Gobierno: revisar cien entradas más la haría saltar sin que
+           cambiara nada afuera.
+
+       Y EL UMBRAL NO PUEDE ESTAR TALLADO, que es lo que el usuario pidió
+       comprobar. Tres mitades, y la tercera es la que lo impide:
+       la mitad es un BORDE DEGENERADO —el punto exacto donde lo no revisado
+       deja de poder mandar sobre la tasa—, va con su razón escrita en el
+       código, y **el sesgo por conveniencia se declara y no se calcula**, así
+       que la segunda condición falla cerrado (v880): mientras los lotes se
+       escojan por dónde era fácil hallar la posición, ninguna cobertura
+       alcanza.
+
+       DE QUÉ NO RESPONDE (v945): de que el 0,5 sea el mejor umbral posible
+       —es el borde donde la propiedad cambia, no un óptimo—, y de que la
+       declaración de sesgo sea cierta, que no lo puede comprobar nadie
+       (v1008). Comprueba que el umbral esté escrito con su razón, que la
+       lista del eje salga de él, y que la cobertura llegue a la pantalla.
+
+       VA EN ROJO (v970, v1097): mide CÓDIGO, no material del registro. */
+    {
+      const umb = (j70v.match(/var UMBRAL_I06 = \{[\s\S]*?\n  \};/) || [''])[0];
+      const mitadesU = [
+        ['el umbral existe con su razón escrita', !!umb && /porQue:/.test(umb) && /cobertura: 0\.5/.test(umb)],
+        /* La frase se busca DENTRO de un literal (v1097): «el borde exacto
+           donde lo no revisado deja de poder mandar» está cortada por el
+           `' +` de la concatenación, y un patrón que cruza dos literales
+           mide cómo quedó partida la línea y no el contenido. */
+        ['y nombra el borde degenerado, no un número escogido',
+         /La mitad no es un n[uú]mero escogido/.test(umb) && /es el borde exacto donde/.test(umb)],
+        ['y la segunda condición —el sesgo por conveniencia— va declarada aparte',
+         /ySinSesgo:/.test(umb) && /lotes de fuente com[uú]n/.test(umb)],
+        ['y el sesgo se DECLARA, no se calcula, así que falla cerrado',
+         /var sesgo = true;/.test(j70v)]
+      ];
+      const malU = mitadesU.filter((x) => !x[1]).map((x) => x[0]);
+      comprobar('el umbral de cobertura de I-06 está escrito, con su razón y su segunda condición',
+        malU.length === 0,
+        malU.length ? 'falla: ' + malU.join(' · ')
+          : 'la mitad con su razón de borde degenerado, el sesgo por conveniencia declarado aparte, ' +
+            'y el sesgo como declaración y no como cálculo — así ninguna cobertura lo abre sola');
+
+      /* LA LISTA DEL EJE SALE DEL UMBRAL (clase B): si la condición viviera
+         escrita en un sitio y aplicada en otro, se separarían. */
+      const armaB = (j70v.match(/function indEjeB\(c1\) \{[\s\S]*?\n  \}/) || [''])[0];
+      const sale = !!armaB && /cob\.alimenta \? IND_EJE_B_BASE\.concat\(\['I-06'\]\)/.test(armaB) &&
+                   !/var IND_EJE_B = \[/.test(j70v);
+      comprobar('y la lista del eje B sale de ese umbral, no de una constante con I-06 dentro',
+        sale,
+        !armaB ? 'no se encontró indEjeB(c1)'
+          : /var IND_EJE_B = \[/.test(j70v) ? 'quedó la constante vieja con I-06: dos codificaciones de la regla'
+          /* El detalle dice QUÉ mitad falló (v973, v1051). Sin este renglón,
+             una lista que concatena I-06 sin preguntar por el umbral salía
+             con el texto del verde impreso estando en rojo — la octava vez de
+             esa familia, y la cazó la inyección y no la lectura. */
+          : !/cob\.alimenta \? IND_EJE_B_BASE\.concat\(\['I-06'\]\)/.test(armaB)
+            ? 'la lista no consulta el umbral: I-06 entra pase lo que pase con la cobertura'
+          : 'I-06 entra solo cuando `coberturaI06` dice que alimenta');
+
+      /* LA GUARDA DE LA GUARDA (v878): que la cobertura y el piso LLEGUEN a
+         la pantalla, y que el eje diga que I-06 existe y no lo usa. Sin esto
+         las dos condiciones del usuario quedan incumplidas en silencio — que
+         es el defecto que el papel encontró en esta misma tanda. */
+      const mitadesP6 = [
+        ['la razón se pinta siempre que exista, no solo en `sinCalcular`',
+         /if \(fi\.razon\) mid\.appendChild/.test(j70v)],
+        ['la cobertura va en el MISMO renglón que la cifra',
+         /' · cobertura ' \+/.test(j70v) && /' exigibles'/.test(j70v)],
+        ['la tasa se declara PISO mientras el muestreo sea por conveniencia',
+         /es un PISO: lo revisado se escoge por lotes de fuente/.test(j70v)],
+        ['por qué no alimenta su eje va en renglón propio',
+         /if \(fi\.porQueNoAlimenta\) mid\.appendChild/.test(j70v)],
+        ['y el eje dice que existe un indicador que no usa',
+         /retenidos: ind\.filas\.filter/.test(j70v) &&
+         /existe, se calcula y este eje NO lo usa todav[ií]a/.test(j70v)]
+      ];
+      const malP6 = mitadesP6.filter((x) => !x[1]).map((x) => x[0]);
+      comprobar('y la cobertura, el piso y el «existe y no lo uso» LLEGAN a la pantalla',
+        malP6.length === 0,
+        malP6.length ? 'falla: ' + malP6.join(' · ')
+          : 'las cinco: la razón sin depender de `sinCalcular`, la cobertura pegada a la cifra, el ' +
+            'piso con su causa, el porqué del eje en renglón propio, y el retenido calculado de la ' +
+            'resta —así un indicador nuevo que quede fuera aparece sin que su autor se acuerde');
+
+      /* Y QUE I-06 CUENTE `noHallado` Y NO `ausente`: sin esto el indicador
+         vuelve a quedarse sin fuente escribible, que es el pendiente que
+         nadie puede bajar por octava vez. */
+      comprobar('y I-06 cuenta lo que SÍ se puede declarar, no la afirmación retirada',
+        /'I-06': c1\.contra\.noHallado/.test(j70v) &&
+        /t: 'Posici[oó]n oficial buscada y no hallada'/.test(j70v),
+        /'I-06': c1\.contra\.ausente/.test(j70v)
+          ? 'sigue contando `ausente`, que ya no es declarable: un pendiente que nadie puede bajar'
+          : !/t: 'Posici[oó]n oficial buscada y no hallada'/.test(j70v)
+            ? 'el indicador no se renombró: su título sigue afirmando algo sobre el Gobierno'
+            : 'cuenta `noHallado`, y su título dice que habla de la búsqueda y no de la conducta');
+    }
 
     /* ═══ «BUSCADO Y NO HALLADO» NO ES «NO RESPONDIÓ» (v961, v1123) ════════
        La regla, dicha por el usuario y citada: *«no hallado», nunca «no

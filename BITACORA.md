@@ -28080,3 +28080,127 @@ de esta guarda se leen dentro de su propio bloque.
   decide si con esto se publica.
 * **No declara ausente ningún contrargumento.** `cerrado en v1123 · medido y
   declinado`: el módulo perdió esa capacidad a propósito.
+
+## v1124 · I-06 cuenta lo que sí se puede declarar, con su cobertura al lado
+
+**La decisión del usuario, y sus dos condiciones.** La v1123 retiró la
+afirmación «el Gobierno no respondió» y con eso dejó a I-06 —«registros sin
+respuesta oficial»— sin fuente escribible: la octava forma del pendiente que
+nadie puede bajar. El usuario autorizó cambiar lo que cuenta, a **«posición
+oficial buscada y no hallada»**, con dos condiciones: **tasa sobre lo revisado
+con su cobertura en el mismo renglón**, y **sin alimentar el eje B** hasta un
+umbral escrito antes de calcularlo.
+
+### El umbral, y por qué «lo escribí antes» no basta como protección
+
+Se escribió antes de calcular nada con él, y eso **no es la protección**: la
+cobertura de hoy ya se había visto en la pantalla de la v1123. Decir «no la he
+mirado» habría sido falso, y queda dicho en el propio código. Lo que protege es
+otra cosa: **el umbral sale de una PROPIEDAD y no de un número**, y la
+propiedad no cambia si la cobertura fuera 18 %, 30 % o 45 %.
+
+**Dos condiciones que no se implican** (v899):
+
+* **(a) Cobertura mayoritaria.** Mientras lo no revisado sea más que lo
+  revisado, lo no revisado puede por sí solo invertir cualquier tasa. Pasada
+  la mitad, no puede. Es un **borde degenerado** —el punto exacto donde el
+  resto deja de poder mandar—, no un número escogido: la misma forma que el
+  «ambas cuentas por encima de cero» de la v1106, y no hay nada que acomodar
+  ahí.
+* **(b) El conjunto revisado deja de escogerse por dónde era fácil hallar.**
+  Esta es la que de verdad muerde, y **la (a) sola no la cubre**. Las tandas
+  revisan por lotes de fuente común, y un lote se elige porque ahí era
+  probable encontrar la posición oficial: eso sesga lo revisado **hacia** las
+  entradas con posición hallable, así que la tasa medida de «no hallada» queda
+  **por debajo** de la verdadera. Ni el 90 % de cobertura arregla un muestreo
+  por conveniencia.
+
+**Y el sesgo se DECLARA, no se calcula** (v880). Es un hecho sobre cómo se
+eligieron los lotes y nadie puede medirlo desde acá, así que mientras esté
+declarado la segunda condición no se cumple: falla cerrado, y ninguna
+cobertura abre la puerta sola. Lo mide una inyección que lo convierte en un
+cálculo —la puerta trasera obvia— y sale roja.
+
+**Mientras tanto la tasa se publica como PISO**, que es la forma que este
+módulo ya tiene declarada (v1086, v1097): si el sesgo empuja hacia abajo, lo
+medido es una cota inferior. Un piso se dice; no se calla ni se presenta como
+medición.
+
+**La señal de que el umbral no está tallado: aplicado no mejora nada y no
+cambia ninguna cifra publicada.** El eje B sigue con I-04, I-05 e I-07, su
+peldaño sigue en «Dudosa» y el veredicto en piso «No puede ser mejor que Poco
+fiable». Lo único que cambió es que I-06 dejó de ser un pendiente sin salida.
+
+### Lo que sale en pantalla
+
+```
+I-06 · Posición oficial buscada y no hallada                    1,5 / 100 d
+1 posición oficial buscada y no hallada de 46 revisadas · cobertura 18,9 %
+de 243 exigibles · es un PISO: lo revisado se escoge por lotes de fuente
+común, que sesga hacia las entradas con posición hallable, así que la tasa
+verdadera solo puede ser igual o mayor · 12 hechos quedan fuera del
+denominador porque no le reprochan nada, cada uno con su razón escrita
+  │ No alimenta el eje B: con 18,9 % de cobertura, lo no revisado es más que
+  │ lo revisado y podría por sí solo invertir esta tasa. La mitad no es un
+  │ número escogido: es el borde exacto donde lo no revisado deja de poder
+  │ mandar sobre la tasa.
+```
+
+Y en el panel del eje B, junto a los tres que sí usa:
+
+```
+I-06 · Posición oficial buscada y no hallada — existe, se calcula y este eje
+NO lo usa todavía. No alimenta el eje B: con 18,9 % de cobertura…
+```
+
+### Dos defectos que encontró el PAPEL, y ninguna guarda miraba
+
+1. **La razón colgaba de `sinCalcular`.** `pintarIndicadores` solo imprimía
+   `fi.razon` cuando la fila no se podía calcular. Al quitar esa bandera —I-06
+   ahora SÍ se calcula— la cobertura, el piso y el porqué del eje **se
+   calculaban y no llegaban a ninguna pantalla**: las dos condiciones del
+   usuario incumplidas en silencio, la clase C en el renglón exacto donde las
+   puso. Ahora se pinta siempre que exista, y el porqué del eje va en renglón
+   propio porque pide otra acción (v899).
+2. **El panel del eje B no decía que I-06 existe.** Pintaba tres indicadores y
+   nada más, así que «el eje no lo usa» se leía igual que «no existe» (v1064).
+   Ahora los retenidos se **calculan de la resta** y viajan dentro del eje
+   (v867, v1088), de modo que un indicador nuevo que quede fuera aparece sin
+   que su autor se acuerde.
+
+Y una tercera, de prosa: la razón **repetía la misma frase dos veces**
+seguidas. Solo se ve leyendo.
+
+### Demostrada en rojo, con cinco inyecciones fieles
+
+| Inyección | Resultado |
+|---|---|
+| I-06 vuelve a contar `ausente`, como en la v1123 | **ROJO** · «un pendiente que nadie puede bajar» |
+| I-06 entra al eje B sin consultar el umbral | **ROJO** · «la lista no consulta el umbral» |
+| el sesgo se CALCULA en vez de declararse | **ROJO** · «el sesgo se DECLARA, no se calcula» |
+| la razón vuelve a colgar de `sinCalcular` | **ROJO** · nombra esa mitad |
+| el eje deja de exponer sus retenidos | **ROJO** · «el eje dice que existe un indicador que no usa» |
+
+760 → **764 palomitas**.
+
+**Y la segunda inyección imprimió el texto del VERDE estando en rojo** —octava
+vez en este repositorio—. La cadena de detalles no cubría el caso de una lista
+que concatena sin preguntar. La cazó la inyección, no la lectura, y el renglón
+que faltaba ya está.
+
+Y una guarda propia cayó en la trampa de la v1097: buscaba una frase **cortada
+por el `' +`** de la concatenación, así que salió roja teniendo el texto
+delante.
+
+### Lo que esta versión NO hace
+
+* **No cambia cómo se escogen los lotes.** `pendiente`: mientras la revisión
+  sea por fuente común, la segunda condición no se cumple y I-06 no alimenta
+  el eje por más cobertura que haya. Abrirla pide muestreo aleatorio o
+  cobertura completa de un estrato declarado, y eso es una decisión sobre cómo
+  se trabaja, no una guarda.
+* **No mueve ningún peldaño.** `cerrado en v1124 · medido y declinado`: el
+  veredicto sigue en piso «No puede ser mejor que Poco fiable».
+* **No valida el criterio de I-06 contra el gobierno anterior.** `pendiente`:
+  es nuevo, así que nace `construida-para-el-caso` como corresponde, y lo
+  declara.

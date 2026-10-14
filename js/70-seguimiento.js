@@ -2422,7 +2422,18 @@
               d: 'Muertes ocurridas durante o como resultado de una operación de agentes del Estado, o ' +
                  'bajo su custodia, que según el estándar internacional obligan a abrir una investigación ' +
                  'independiente. Cuenta el HECHO que activa el deber, no si la investigación se abrió.' },
-    'I-06': { t: 'Registros sin respuesta oficial', dec: false,               d: 'Hechos en los que se buscó la respuesta del Gobierno y no la hay. Sale de la Capa 1.' },
+    /* CAMBIÓ LO QUE CUENTA EN LA v1124. Era «Registros sin respuesta
+       oficial», alimentado por el estado `ausente` —«el Gobierno no
+       respondió»—, que la v1123 retiró por ser una afirmación sobre la
+       conducta de una administración que este módulo no puede sostener. Con
+       eso el indicador quedó sin fuente escribible: un pendiente que nadie
+       puede bajar, por octava vez. Ahora cuenta lo que SÍ se puede
+       establecer, que es un hecho sobre nuestra búsqueda. Es simétrico entre
+       gobiernos y comprobable, y por eso el cambio es legítimo; lo que lo
+       hace honesto es que va como TASA sobre lo revisado y con su cobertura
+       al lado, y que no alimenta el eje B hasta `UMBRAL_I06`. */
+    'I-06': { t: 'Posición oficial buscada y no hallada', dec: false, origenCategoria: 'construida-para-el-caso',
+              d: 'Hechos en los que se buscó la posición oficial del Gobierno, con dónde, cuándo y qué, y no se halló. NO dice que el Gobierno no respondiera: pudo hacerlo en un canal que la búsqueda no alcanzó. Sale de la Capa 1, y se publica como tasa sobre lo revisado y no sobre el registro entero.' },
     'I-09': { t: 'Actividad reportada', dec: false,               d: 'Lo que el Gobierno hizo. No es lo mismo que lo que cambió, y no se suma con ello.' },
     'I-10': { t: 'Resultados medidos', dec: false,               d: 'Lo que cambió en el país. Que se mida no dice quién lo causó.' }
   };
@@ -2991,18 +3002,15 @@
        tres significan lo mismo —los indicadores que tienen criterio— y
        ninguna decisión razonable las separaría. */
     var CON_CRITERIO = Object.keys(CRITERIOS);
-    /* I-06 SIGUE CONTANDO `ausente` Y NO `noHallado` (v1123), a propósito:
-       su definición es «registros sin respuesta oficial», que es una
-       afirmación sobre el Gobierno, y un «no hallado» no la establece.
-       Ascenderlo acá sería recuperar por la puerta de atrás la afirmación que
-       la v1123 retiró. La consecuencia —que `ausente` ya no es declarable, y
-       entonces I-06 se queda sin fuente que nadie pueda escribir— es un
-       pendiente que nadie puede bajar, de la clase que este proyecto lleva
-       siete versiones persiguiendo, y está dicho en DECISIONES-PENDIENTES.md:
-       cambiar lo que I-06 cuenta es cambiar un criterio, y eso no lo decide
-       una sesión de trabajo. Mientras tanto I-06 publica `sinCalcular` con su
-       razón, que es lo que ya hacía. */
-    var crudo = { 'I-06': c1.contra.ausente, 'I-09': c1.medicion.actividad, 'I-10': c1.medicion.resultado };
+    /* I-06 CUENTA `noHallado` DESDE LA v1124. La v1123 lo dejó contando
+       `ausente` a propósito y dijo por qué: ascender un «no hallado» a un
+       indicador que se llamaba «registros sin respuesta oficial» habría
+       recuperado por la puerta de atrás la afirmación que esa versión acababa
+       de retirar. Lo que cambió no es el ascenso sino el INDICADOR: ya no se
+       llama así ni afirma eso. Cuenta lo que la búsqueda puede establecer, y
+       lo paga con dos condiciones —tasa sobre lo revisado con su cobertura al
+       lado, y sin alimentar el eje B hasta `UMBRAL_I06`—. */
+    var crudo = { 'I-06': c1.contra.noHallado, 'I-09': c1.medicion.actividad, 'I-10': c1.medicion.resultado };
     CON_CRITERIO.forEach(function (k) { crudo[k] = 0; });
     /* TRES estados y no dos, que es la distinción de la v899 dicha sobre la
        clasificación: «declara uno», «se corrieron los criterios y ninguno
@@ -3080,23 +3088,44 @@
          es otro objeto: pedírselo al propio registro sería comprobar que es
          igual a sí mismo. */
       f.validacion = validacionDe(k, dd === D ? DA : null);
-      /* I-06 es el único que no se puede publicar como cero: un cero ahí
-         diría que el Gobierno respondió a todo, cuando lo que pasa es que
-         nadie lo ha revisado. Es la distinción de los tres estados de la
-         Capa 1, dicha en la cuenta. */
-      if (k === 'I-06' && c1.contra.sinRevisar) {
-        f.sinCalcular = true;
-        /* El denominador son los hechos a los que el campo SE LES PUEDE
-           exigir, no todos (v1109): sumarle los que no le reprochan nada al
-           Gobierno inflaba el pendiente con entradas que nadie puede bajar. */
-        var exig06 = exigiblesContra(c1);
-        f.razon = c1.contra.sinRevisar + ' de ' + cn(exig06, 'hecho que le reprocha algo al Gobierno',
-                  'hechos que le reprochan algo al Gobierno') +
-        pl(c1.contra.sinRevisar, ' está', ' están') + ' sin revisar, así que un cero acá ' +
-                  'diría que el Gobierno respondió a todo y lo que pasa es que nadie lo ha mirado.' +
-                  (c1.contra.noAplica ? ' Y ' + cn(c1.contra.noAplica, 'hecho queda fuera de ese ' +
-                   'denominador porque no le reprocha nada', 'hechos quedan fuera de ese denominador ' +
-                   'porque no le reprochan nada') + ', cada uno con su razón escrita.' : '');
+      /* I-06 VA COMO TASA SOBRE LO REVISADO, con su cobertura en el mismo
+         renglón (v1124). Hasta la v1123 se publicaba `sinCalcular` mientras
+         quedara algo sin revisar, y eso era correcto para lo que contaba
+         entonces: un cero sobre el registro entero habría dicho que el
+         Gobierno respondió a todo. Contando «buscada y no hallada» el
+         denominador honesto es otro — lo REVISADO—, y entonces la cifra sí
+         se puede publicar; lo que no se puede es publicarla sin decir sobre
+         cuánto se midió, porque «1 de 45» y «1 de 243» son juicios muy
+         distintos sobre lo mismo.
+
+         Y VA COMO PISO mientras el conjunto revisado se escoja por lotes de
+         fuente común: ese muestreo sesga hacia las entradas con posición
+         hallable, así que la tasa medida solo puede quedarse corta (v1086,
+         v1097). El piso se dice; no se calla ni se presenta como medición. */
+      if (k === 'I-06') {
+        var cob06 = coberturaI06(c1);
+        f.sobreRevisadas = cob06.revisadas;
+        f.cobertura = cob06;
+        f.esPiso = !cob06.alimenta;
+        f.razon = cn(crudo['I-06'], 'posición oficial buscada y no hallada',
+                     'posiciones oficiales buscadas y no halladas') + ' de ' +
+                  cn(cob06.revisadas, 'revisada', 'revisadas') + ' · cobertura ' +
+                  miles(cob06.pct * 100, 1) + ' % de ' + cob06.exigibles + ' exigibles' +
+                  (cob06.alimenta ? '' : ' · es un PISO: lo revisado se escoge por lotes de fuente ' +
+                   'común, que sesga hacia las entradas con posición hallable, así que la tasa ' +
+                   'verdadera solo puede ser igual o mayor') +
+                  (c1.contra.noAplica ? ' · ' + cn(c1.contra.noAplica, 'hecho queda fuera del ' +
+                   'denominador porque no le reprocha nada', 'hechos quedan fuera del denominador ' +
+                   'porque no le reprochan nada') + ', cada uno con su razón escrita' : '');
+        /* Las dos redacciones, la de alimenta y la de no (v970). La segunda
+           es la que hace falta el día que la cobertura pase la mitad. */
+        f.alimentaEje = cob06.alimenta;
+        f.porQueNoAlimenta = cob06.alimenta ? '' :
+          (!cob06.pasaCobertura
+            ? 'No alimenta el eje B: con ' + miles(cob06.pct * 100, 1) + ' % de cobertura, lo no revisado ' +
+              'es más que lo revisado y podría por sí solo invertir esta tasa. ' + UMBRAL_I06.porQue
+            : 'La cobertura ya pasa de la mitad, y aun así no alimenta el eje B. ' +
+              UMBRAL_I06.ySinSesgo);
       }
       return f;
     });
@@ -3345,7 +3374,91 @@
      Así que el indicador se publica y el eje no lo usa. El día que exista la
      media de los tres gobiernos, entra acá con los otros cuatro — y hay una
      guarda para que no entre antes. */
-  var IND_EJE_B = ['I-04', 'I-05', 'I-06', 'I-07'];
+  /* ── EL UMBRAL DE COBERTURA DE I-06 (v1124) ─────────────────────────────
+     ESTE BLOQUE SE ESCRIBIÓ ANTES DE CALCULAR NADA CON ÉL, y hay que decir
+     por qué eso no basta como protección: la cobertura de hoy ya se vio en
+     la pantalla de la v1123 —45 revisadas—, así que «no la he mirado» sería
+     falso. La protección es otra, y es la que vale: **el umbral sale de una
+     PROPIEDAD y no de un número**, y la propiedad no cambia si la cobertura
+     de hoy fuera 18 %, 30 % o 45 %.
+
+     EL PROBLEMA. I-06 pasa a contar «posición oficial buscada y no hallada»,
+     que es una TASA sobre lo revisado. Con una parte del registro revisada,
+     cualquier cifra que dé mide nuestro RITMO DE TRABAJO y no al Gobierno: si
+     mañana se revisan cien entradas más y aparecen veinte sin posición
+     hallada, el indicador salta sin que haya cambiado nada afuera. Lo dijo el
+     usuario y es exacto.
+
+     LA PROPIEDAD, en dos condiciones que NO se implican y por eso van las dos
+     (v899). Un indicador que es una tasa sobre un subconjunto puede alimentar
+     un veredicto publicado solo cuando el subconjunto ya no puede ser la
+     explicación de la tasa:
+
+     (a) COBERTURA MAYORITARIA. Mientras lo no revisado sea MÁS que lo
+         revisado, lo no revisado puede por sí solo invertir cualquier tasa —
+         basta con que se comporte distinto—. Pasada la mitad, no puede. Es un
+         BORDE DEGENERADO y no un número escogido, igual que el «ambas cuentas
+         por encima de cero» de la v1106: la mitad es el punto exacto donde el
+         resto deja de poder mandar, y no hay nada que acomodar ahí.
+
+     (b) EL CONJUNTO REVISADO DEJA DE ESCOGERSE POR DÓNDE ERA FÁCIL HALLAR.
+         Esta es la que de verdad muerde, y la (a) sola no la cubre. Las
+         tandas revisan POR LOTES DE FUENTE COMÚN, y un lote se elige porque
+         ahí era probable encontrar la posición oficial. Eso sesga el conjunto
+         revisado HACIA las entradas con posición hallable, así que la tasa
+         medida de «no hallada» queda por DEBAJO de la verdadera. Mientras el
+         muestreo sea por conveniencia, ni el 90 % de cobertura arregla eso.
+
+     QUÉ SE PUBLICA MIENTRAS TANTO, y por qué es honesto: la tasa sale como
+     **PISO** y no como medición. Si el sesgo empuja hacia abajo, lo medido es
+     una cota inferior de lo verdadero — que es exactamente la forma que este
+     módulo ya tiene declarada para el veredicto (v1086) y para el conteo de
+     actos (v1097). Un piso no se calla: se publica diciendo de qué es piso.
+
+     Y LA SEÑAL DE QUE EL UMBRAL NO ESTÁ TALLADO: aplicado, **no mejora nada**
+     y no cambia ninguna cifra publicada. El eje B sigue con los tres
+     indicadores que ya usaba y su peldaño sigue donde estaba. Lo único que
+     cambia es que I-06 deja de ser un pendiente que nadie puede bajar. */
+  var UMBRAL_I06 = {
+    cobertura: 0.5,
+    porQue: 'La mitad no es un número escogido: es el borde exacto donde lo no revisado deja de ' +
+            'poder mandar sobre la tasa, igual que el «ambas cuentas por encima de cero» de la ' +
+            'v1106. No hay nada que acomodar ahí.',
+    ySinSesgo: 'Y hace falta además que el conjunto revisado deje de escogerse por dónde era fácil ' +
+               'hallar la posición oficial. Las tandas revisan por lotes de fuente común, y un lote ' +
+               'se elige porque ahí era probable encontrarla: eso sesga lo revisado HACIA las ' +
+               'entradas con posición hallable, así que la tasa de «no hallada» queda por debajo de ' +
+               'la verdadera. Ni el 90 % de cobertura arregla un muestreo por conveniencia.',
+    mientrasTanto: 'Mientras cualquiera de las dos falte, la tasa se publica como PISO —la ' +
+                   'verdadera solo puede ser igual o mayor— y no alimenta el eje B.'
+  };
+
+  /* I-06 NO está en esta lista hasta que pase `UMBRAL_I06` (v1124). La lista
+     se arma con una función y no se teclea, para que la condición no pueda
+     quedarse escrita en un sitio y aplicada en otro (clase B). */
+  var IND_EJE_B_BASE = ['I-04', 'I-05', 'I-07'];
+  function indEjeB(c1) {
+    var cob = coberturaI06(c1);
+    return cob.alimenta ? IND_EJE_B_BASE.concat(['I-06']) : IND_EJE_B_BASE.slice();
+  }
+
+  /* LA COBERTURA, calculada y no escrita (v903). Devuelve también las dos
+     redacciones, la de alimenta y la de no alimenta (v970). */
+  function coberturaI06(c1) {
+    var exig = exigiblesContra(c1);
+    var rev = ((c1 || {}).contra || {});
+    var revisadas = (rev.respondio || 0) + (rev.noHallado || 0) +
+                    (rev.noHalladoSinConstancia || 0) + (rev.ausente || 0) + (rev.sinConstancia || 0);
+    var pct = exig ? revisadas / exig : 0;
+    /* El sesgo NO se calcula: es un hecho sobre cómo se eligieron los lotes,
+       y nadie puede medirlo desde acá. Se declara, y mientras esté declarado
+       la segunda condición no se cumple — falla cerrado (v880). */
+    var sesgo = true;
+    return { exigibles: exig, revisadas: revisadas, pct: pct,
+             pasaCobertura: pct > UMBRAL_I06.cobertura, sesgoPorConveniencia: sesgo,
+             alimenta: pct > UMBRAL_I06.cobertura && !sesgo };
+  }
+
   /* El eje D tiene su indicador desde la v1077. Va en su propia lista y no
      dentro de la del B: son dos preguntas distintas y meterlos juntos sería
      exactamente lo que la regla de oro del pliego prohíbe. */
@@ -3353,7 +3466,11 @@
 
   function ejeB(dd, corte) {
     var ind = indicadoresDe(dd, corte);
-    var filas = ind.filas.filter(function (f) { return IND_EJE_B.indexOf(f.id) >= 0; });
+    /* LA LISTA SALE DE UNA FUNCIÓN (v1124), no de la constante: I-06 entra
+       solo cuando pasa `UMBRAL_I06`, y si la condición viviera escrita acá y
+       aplicada en otro sitio serían dos codificaciones de una regla. */
+    var listaB = indEjeB(capaUnoDe_conjunto(hechosDelMandato(dd || D)));
+    var filas = ind.filas.filter(function (f) { return listaB.indexOf(f.id) >= 0; });
     /* EL NIVEL (v1092), contra la escala de este eje: identidad y firmeza
        del hallazgo de un tercero, sin umbral numérico. */
     var ndB = nivelEjeB(filas, hechosDelMandato(dd || D));
@@ -3366,6 +3483,16 @@
       tramite: tramiteDe(dd || D, 'B'),
       pregunta: '¿qué le está pasando a las reglas del juego?',
       dias: ind.dias, poder: ind.poder, filas: filas,
+      /* LOS QUE EXISTEN Y ESTE EJE NO USA (v1124), calculados de la misma
+         resta y no tecleados: así un indicador nuevo que quede fuera aparece
+         sin que su autor se acuerde (v867). Viajan DENTRO del eje porque es
+         la pantalla la que los necesita y no se reconstruyen allí (v1088). */
+      retenidos: ind.filas.filter(function (f) {
+        return IND_EJE_B_BASE.indexOf(f.id) < 0 && listaB.indexOf(f.id) < 0 &&
+               f.porQueNoAlimenta;
+      }).map(function (f) {
+        return { id: f.id, t: f.t, porQue: f.porQueNoAlimenta };
+      }),
       /* EL NIVEL, calculado contra la escala de la v1092: identidad y firmeza
          del hallazgo de un tercero, sin umbral numérico. */
       nivel: nivB, publicable: !!(nivB && nivB.lectura), nivelCalc: ndB,
@@ -6872,7 +6999,18 @@
       var mid = el('div', 'sp-c2-mid');
       mid.appendChild(el('b', null, fi.t));
       mid.appendChild(el('span', null, fi.d));
-      if (fi.sinCalcular) mid.appendChild(el('span', 'sp-c2-razon', 'No se puede calcular todavía: ' + fi.razon));
+      /* LA RAZÓN SE PINTA SIEMPRE QUE EXISTA (v1124). Hasta acá colgaba de
+         `sinCalcular`, así que una fila que SÍ se calcula pero lleva su
+         cobertura, su piso y por qué no alimenta un eje —todo lo que I-06
+         ganó en esta tanda— lo calculaba y no lo enseñaba: la clase C, en el
+         renglón donde el usuario puso sus dos condiciones. Lo encontró
+         componer la pantalla y leerla, no el código. */
+      if (fi.razon) mid.appendChild(el('span', 'sp-c2-razon',
+        (fi.sinCalcular ? 'No se puede calcular todavía: ' : '') + fi.razon));
+      /* Y POR QUÉ NO ALIMENTA SU EJE, en renglón propio: es otra cosa que la
+         razón de la cifra —pide una acción distinta (v899), subir cobertura y
+         cambiar cómo se escogen los lotes— y juntas se leen como una sola. */
+      if (fi.porQueNoAlimenta) mid.appendChild(el('span', 'sp-c2-noalim', fi.porQueNoAlimenta));
       li.appendChild(mid);
       var cif = el('div', 'sp-c2-cif');
       if (fi.sinCalcular) cif.appendChild(el('b', null, '—'));
@@ -7322,6 +7460,19 @@
          caso, así que la fila de I-14 viajaba en el objeto del eje D y
          ninguna pantalla la alcanzaba: la clase C de CLAUDE.md. */
       if (ej.filas && ej.filas.length) {
+        /* EL INDICADOR QUE EXISTE Y NO ESTÁ EN ESTA LISTA SE DICE (v1064,
+           v1124). El eje B pinta tres indicadores y un cuarto —I-06— existe,
+           se calcula y se queda fuera por su umbral de cobertura. Sin este
+           renglón, «el eje no lo usa» se lee igual que «no existe», que es la
+           clase C en la pantalla donde se juzga al eje. Las dos redacciones
+           van escritas: la de retenido y la de completo (v970). */
+        (ej.retenidos || []).forEach(function (r) {
+          var pr = el('p', 'sp-c3-reten');
+          pr.appendChild(el('b', null, r.id + ' · ' + r.t +
+            ' — existe, se calcula y este eje NO lo usa todavía. '));
+          pr.appendChild(document.createTextNode(r.porQue));
+          li.appendChild(pr);
+        });
         var ub = el('ul', 'sp-c3-ind');
         ej.filas.forEach(function (fi) {
           var lb = el('li', null);
