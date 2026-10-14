@@ -3,8 +3,8 @@
   "presidente": "Abelardo de la Espriella",
   "periodo": "2026 – 2030",
   "posesion": "2026-08-07",
-  "actualizado": "2026-10-13",
-  "proximaActualizacion": "2026-10-14",
+  "actualizado": "2026-10-14",
+  "proximaActualizacion": "2026-10-15",
   "categorias": {
     "gobierno": {
       "nombre": "Gobierno y decretos",
@@ -73,6 +73,42 @@
     }
   },
   "entradas": [
+    {
+      "fecha": "2026-10-14",
+      "precision": "exacta",
+      "categoria": "gobierno",
+      "titulo": "Colombia vive su primera gran movilización nacional contra el Gobierno, convocada por centrales obreras y Fecode con la participación anunciada de Gustavo Petro; hay disturbios focalizados en Bogotá y el presidente agradece a un sindicato de la Procuraduría por rechazar las marchas",
+      "categoriaProbatoria": "hecho-probado",
+      "tipoMedicion": "actividad",
+      "indicadores": [],
+      "nivelGobierno": "nacional",
+      "detalle": "El miércoles 14 de octubre de 2026 se realizó la primera jornada de movilización nacional contra el Gobierno de Abelardo de la Espriella, convocada por la Central Unitaria de Trabajadores (CUT), Fecode y otras organizaciones sindicales y sociales, con ejes declarados en la defensa del salario mínimo, el poder adquisitivo, la educación pública y la salud. En Bogotá, la Secretaría de Gobierno distrital identificó unos quince puntos de concentración —Fecode citó en el Parque Nacional a las 9:30 a. m.— con recorridos previstos hacia la Plaza de Bolívar, y la Asociación Distrital de Educadores (ADE) convocó un paro de 24 horas. El expresidente Gustavo Petro había anunciado el día anterior que participaría en la marcha de la capital y pidió que fuera pacífica. La jornada es la primera gran prueba de calle para la oposición desde la posesión de De la Espriella y ocurre bajo el decreto que modificó el Estatuto de la Protesta (Decreto 003 de 2021), en vigencia desde el 11 de octubre. Según El Colombiano, desde temprano hubo focos de alteración del orden público en Bogotá: cerca de la Universidad Distrital, encapuchados bloquearon la avenida Circunvalar con canecas de basura y se enfrentaron con la Policía, con lanzamiento de bombas molotov y 'papas bomba', lo que obligó a cerrar temporalmente la vía y a desviar rutas zonales y alimentadoras de TransMilenio. El ministro del Interior, Rodrigo Lara, dijo que se habían preparado medidas para evitar bloqueos, con seguimiento especial de Policía y Fuerzas Militares en Valle del Cauca, Cauca y Nariño. El presidente De la Espriella garantizó el derecho a la protesta pacífica y advirtió sobre hechos violentos, y agradeció públicamente al sindicato SINTRAPROJUDICIALES de la Procuraduría General de la Nación por rechazar las marchas y pedir a sus afiliados no participar, calificando el pronunciamiento de 'valiente'.",
+      "contrapunto": "Al cierre de esta entrada la jornada seguía en curso y ninguna fuente consultada entregó un balance consolidado de heridos, capturados o asistencia total: los disturbios reportados por El Colombiano están localizados en un punto de Bogotá (la Circunvalar, cerca de la Universidad Distrital) y no describen la totalidad de las marchas, que en su mayoría transcurrieron sin ese reporte. La Confederación General del Trabajo (CGT) ya se había apartado de esta convocatoria desde antes del 14 de octubre, así que la oposición sindical a las marchas no se limita al sindicato de la Procuraduría que el presidente destacó. El respaldo presidencial a un sindicato que pidió no marchar, el mismo día en que otros sindicatos sí convocaban, es una posición del propio Gobierno sobre una disputa entre organizaciones sindicales, no un hecho verificado por un tercero independiente.",
+      "tipoFuente": "verificado",
+      "fuentes": [
+        {
+          "n": "El Colombiano · Disturbios en Bogotá calientan la jornada de marchas del petrismo; vea los recorridos y evite trancones",
+          "u": "https://www.elcolombiano.com/colombia/disturbios-marchas-petrismo-bogota-recorridos-14-octubre-LH42232292",
+          "rol": "acto"
+        },
+        {
+          "n": "El Heraldo · De la Espriella agradece a sindicato de la Procuraduría por rechazar las marchas de este miércoles: 'Valiente pronunciamiento'",
+          "u": "https://elheraldo.co/colombia/2026/10/14/de-la-espriella-agradece-a-sindicato-de-la-procuraduria-por-rechazar-las-marchas-de-este-miercoles-valiente-pronunciamiento",
+          "rol": "acto"
+        },
+        {
+          "n": "Infobae · Gustavo Petro invitó a marchar este miércoles 14 de octubre contra las políticas de Abelardo de la Espriella: 'Por el salario mínimo vital'",
+          "u": "https://www.infobae.com/colombia/2026/10/13/gustavo-petro-invito-a-marchar-este-14-de-octubre-contra-las-politicas-de-abelardo-de-la-espriella-por-el-salario-minimo-vital/",
+          "rol": "contexto"
+        },
+        {
+          "n": "Portafolio · Marchas del 14 de octubre en Bogotá: Petro anuncia su asistencia y Fecode cita en Parque Nacional",
+          "u": "https://www.portafolio.co/economia/regiones/marchas-del-14-de-octubre-en-bogota-petro-anuncia-su-asistencia-y-fecode-cita-en-parque-nacional-504386",
+          "rol": "contexto"
+        }
+      ],
+      "contrargumentoOficial": "El Gobierno, por boca del presidente y del ministro del Interior, sostiene que garantiza la protesta pacífica como derecho y que las medidas del nuevo decreto —los 'corredores solidarios' y las ocho causales para la intervención de la Fuerza Pública— buscan evitar bloqueos y proteger a terceros, no impedir la movilización. El respaldo presidencial al sindicato de la Procuraduría que pidió no marchar se presenta como una adhesión a esa postura, no como una prohibición. Lo que el Gobierno no responde, porque la jornada seguía en curso al cierre de esta entrada, es si las medidas del decreto se aplicaron en la práctica durante los disturbios reportados en la Circunvalar."
+    },
     {
       "fecha": "2026-10-12",
       "precision": "exacta",
