@@ -3080,15 +3080,7 @@
       "titulo": "La Fuerza Pública rescata a cuatro secuestrados y a cuatro menores reclutados por grupos armados; muere alias 'Huevo', señalado cabecilla de disidencias de 'Calarcá', en un operativo en Gómez Plata, Antioquia",
       "categoriaProbatoria": "hecho-probado",
       "tipoMedicion": "actividad",
-      "indicadores": [
-        "I-14"
-      ],
-      "indicadoresPor": {
-        "I-14": {
-          "via": "muerte causada por el uso de la fuerza o de armas de fuego por agentes del Estado",
-          "base": "rescate-cuatro-menores-20sep"
-        }
-      },
+      "indicadores": [],
       "estadoProcesal": "en-firme",
       "tipoEvidencia": "reporte-periodistico",
       "nivelGobierno": "nacional",
@@ -3137,8 +3129,13 @@
         {
           "que": "precision",
           "texto": "Al buscar la respuesta oficial, el 13 de octubre de 2026, se vio que los CUATRO menores no son de esta operación: salen del balance de 24 HORAS que presentó la Presidencia, que agrega operaciones de la Fuerza Pública en todo el país. De la operación de Gómez Plata el Ejército reporta un menor herido, y dos medios hablan de dos adolescentes recuperados. El título de esta entrada junta las dos cifras, que es la misma clase de error que este módulo le reprocha a otros: un agregado leído como un caso. No se corrige el título sobre una búsqueda —lo dirime el comunicado del Ejército, que el proxy no deja leer—, pero queda dicho acá y en el contrargumento, que es donde el lector lo ve."
+        },
+        {
+          "que": "actualizacion",
+          "texto": "CORRECCIÓN DE CLASIFICACIÓN, 14 de octubre de 2026, por decisión de quien firma el módulo. Esta entrada declaraba I-14 y el `excluye` del propio criterio dice «lesión, captura, RESCATE o desaparición sin muerte». Un rescate es un hecho favorable y no una muerte en una operación del Estado: era un error de clasificación, no una lectura discutible. Se retira la declaración y la vía que la acompañaba. Lo que NO cambia: la entrada sigue registrada igual, y los cuatro menores recuperados siguen contados en `fuerza.menoresRecuperados`, que es donde corresponden. Y una precisión que ya estaba anotada y sigue valiendo: esos cuatro salen del balance de 24 horas de la Presidencia y no de la operación de Gómez Plata."
         }
-      ]
+      ],
+      "_porQueListaVacia": "Corrida la vara de los cinco criterios escritos sobre esta entrada el 14 de octubre de 2026, no cae en ninguna vía. I-14 la excluye con esas palabras —«rescate sin muerte»—; los otros cuatro no tienen materia acá: no hay acto de excepción, ni choque con un órgano autónomo, ni producto técnico, ni información negada y entregada tras tutela."
     },
     {
       "fecha": "2026-09-19",
@@ -11583,16 +11580,6 @@
     "corte": "2026-09-30",
     "menoresMuertos": [
       {
-        "op": "Operación Beta",
-        "fecha": "2026-08-11",
-        "lugar": "Tibú y San Calixto, Norte de Santander",
-        "n": 1,
-        "confirma": "Instituto Nacional de Medicina Legal y Ciencias Forenses",
-        "base": "operacion-beta-catatumbo-menor",
-        "acto": "operacion-beta-catatumbo-menor",
-        "nota": "La edad exacta no se afirma: las coberturas coinciden en que era menor de edad y no en un número."
-      },
-      {
         "op": "Operación Amón",
         "fecha": "2026-08-27",
         "lugar": "El Retorno, Guaviare",
@@ -11660,7 +11647,21 @@
         "operacion-beta-catatumbo-menor",
         "operacion-amon-tres-menores"
       ]
-    }
+    },
+    "fueraDelConteo": [
+      {
+        "op": "Operación Beta",
+        "fecha": "2026-08-11",
+        "lugar": "Tibú y San Calixto, Norte de Santander",
+        "n": 1,
+        "confirma": "Instituto Nacional de Medicina Legal y Ciencias Forenses",
+        "base": "operacion-beta-catatumbo-menor",
+        "acto": "operacion-beta-catatumbo-menor",
+        "nota": "La edad exacta no se afirma: las coberturas coinciden en que era menor de edad y no en un número.",
+        "porQueFueraDelConteo": "Decisión de quien firma el módulo, 14 de octubre de 2026. TRES debilidades sobre el mismo dato: la confirmación de Medicina Legal consta por el TITULAR de La FM y no por el documento del Instituto; la edad exacta no se afirma —las coberturas coinciden en que era menor y no en un número—; y una fuente de efecto, Revista RAYA, plantea que el bombardeo «podría ser un falso positivo». Aplica la misma regla que el reporte de vuelos de la Fuerza Aeroespacial: que un documento exista no es que lo tengamos. El HECHO se queda registrado con su evidencia tal cual es; lo que sale es su aporte al conteo del eje."
+      }
+    ],
+    "porQueHayFueraDelConteo": "Un hecho puede estar documentado y aun así no sostener una cifra que fija un juicio público. Lo que entra al conteo pide una vara; lo que se publica como hecho pide otra, y son dos cosas distintas (v899). Esta lista existe para que lo excluido NO desaparezca: un hecho que se saca del conteo y nadie vuelve a nombrar se lee igual que un hecho que nunca se documentó."
   },
   "fiscal": {
     "_nota": "CIFRAS FISCALES ESTRUCTURADAS, para que los gráficos del tablero las LEAN en vez de llevarlas escritas a mano. Van acá y no en `entradas` porque NO son actos de este gobierno: son el contexto fiscal contra el que se leen sus decisiones, con su fecha de corte y sus fuentes. Meterlas como hechos del mandato las haría contar en los indicadores por 100 días, y un pronunciamiento del CARF anterior a la posesión no es una decisión del presidente. Toda cifra nueva acá lleva `fuentes` con su `rol` y se comprueba que cuadre con sus sumandos antes de publicarse.",

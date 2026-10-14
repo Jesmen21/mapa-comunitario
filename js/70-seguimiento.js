@@ -3924,6 +3924,17 @@
          publicar el número solo (v880, v970). Un número de muertes sin la
          respuesta del Gobierno al lado es exactamente lo que este módulo
          tiene prohibido en los casos de corrupción. */
+      /* LO QUE SE SACÓ DEL CONTEO, con su razón (v1120). Un hecho puede
+         estar documentado y aun así no sostener una cifra que fija un
+         juicio público — son dos varas distintas (v899). Viaja con el nivel
+         porque si no, un hecho excluido y nadie que lo nombre se lee igual
+         que un hecho que nunca se documentó, que es la clase C. */
+      fuera: (FF.fueraDelConteo || []).map(function (x) {
+        return { op: x.op, fecha: x.fecha, lugar: x.lugar, n: Number(x.n) || 0,
+                 confirma: x.confirma || null, porQue: x.porQueFueraDelConteo || null };
+      }),
+      nFuera: (FF.fueraDelConteo || []).reduce(function (a, x) { return a + (Number(x.n) || 0); }, 0),
+      porQueHayFuera: FF.porQueHayFueraDelConteo || null,
       contraOficial: (FF.contrargumentoOficial && FF.contrargumentoOficial.texto) || null,
       contraQuien: (FF.contrargumentoOficial && FF.contrargumentoOficial.quien) || null,
       sinContra: !(FF.contrargumentoOficial && FF.contrargumentoOficial.texto) &&
@@ -4203,6 +4214,9 @@
                        del Gobierno ni la noticia de que no hay investigación
                        abierta es publicar media cosa. */
                     queNOMide: (e.nivelCalc && e.nivelCalc.queNOMide) || '',
+                    fuera: (e.nivelCalc && e.nivelCalc.fuera) || [],
+                    nFuera: (e.nivelCalc && e.nivelCalc.nFuera) || 0,
+                    porQueHayFuera: (e.nivelCalc && e.nivelCalc.porQueHayFuera) || '',
                     contraOficial: (e.nivelCalc && e.nivelCalc.contraOficial) || '',
                     contraQuien: (e.nivelCalc && e.nivelCalc.contraQuien) || '',
                     sinContra: (e.nivelCalc && e.nivelCalc.sinContra) || '',
@@ -5792,6 +5806,19 @@
           } else if (u.sinContra) {
             cb.appendChild(el('b', null, 'Falta la respuesta del Gobierno'));
             cb.appendChild(el('p', 'sp-fi-vmal', u.sinContra));
+          }
+          /* Y LO EXCLUIDO, junto al número y no en otra pantalla: quien lee
+             una cifra tiene derecho a saber qué se dejó fuera de ella y por
+             qué, sobre todo cuando lo excluido es un hecho documentado. */
+          if (u.fuera && u.fuera.length) {
+            cb.appendChild(el('b', null, 'Lo que NO entra en esta cifra · ' +
+              cn(u.nFuera, 'caso documentado', 'casos documentados')));
+            u.fuera.forEach(function (x) {
+              cb.appendChild(el('p', null, x.op + (x.fecha ? ' · ' + fechaCorta(x.fecha) : '') +
+                (x.lugar ? ' · ' + x.lugar : '') + ' · ' + x.n +
+                '. ' + (x.porQue || 'Sin razón escrita, que es lo que no puede ser.')));
+            });
+            if (u.porQueHayFuera) cb.appendChild(el('p', 'sp-h-meta', u.porQueHayFuera));
           }
           if (u.procesal) {
             cb.appendChild(el('b', null, u.hayInvestigacion

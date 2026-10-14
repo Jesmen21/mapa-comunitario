@@ -27677,3 +27677,74 @@ diciendo que la contradicción está abierta.
   posición oficial; el día que una no lo haga se anota dónde se buscó.
   `cerrado en v1119`
 * **NO mueve el dictamen.** Sigue en «Nada fiable». `cerrado en v1119`
+
+## v1120 · el sexto sale del conteo, el rescate deja de declarar I-14
+
+Dos decisiones del usuario, aplicadas; una tercera **medida y no aplicada**,
+porque él pidió el número antes de decidir.
+
+### 1 · La Operación Beta sale del CONTEO y se queda como HECHO
+
+Tres debilidades sobre el mismo dato: la confirmación de Medicina Legal
+consta por el TITULAR de La FM y no por el documento del Instituto; la edad
+exacta no se afirma; y una fuente de efecto plantea que el bombardeo «podría
+ser un falso positivo». Aplica la regla del reporte de vuelos de la FAC: **que
+un documento exista no es que lo tengamos.**
+
+El eje pasa de **n = 6 a n = 5**. El peldaño no se mueve —el corte es «dos o
+más»— y el dictamen sigue en «Nada fiable».
+
+Y lo excluido **no desaparece**: va en `fuerza.fueraDelConteo`, viaja con el
+nivel y **se pinta junto al número**, bajo el rótulo «Lo que NO entra en esta
+cifra», con su razón entera. Un hecho que se saca del conteo y que nadie
+vuelve a nombrar se lee igual que un hecho que nunca se documentó — la clase
+C, en el sitio donde más importa.
+
+### 2 · El rescate del 20 de septiembre deja de declarar I-14
+
+El `excluye` del propio criterio dice «lesión, captura, RESCATE o desaparición
+sin muerte». Era un error de clasificación y no una lectura discutible. Se
+retira la declaración y su vía, con el motivo escrito en la entrada, y la
+entrada queda con la **lista vacía** y su `_porQueListaVacia`.
+
+**Medido, lo que cambió en otros conteos: nada.** I-14 pasa de 4 entradas
+declarantes a 3 y su cuenta sigue en **0**, porque lo que la frena es la
+puerta de evidencia y no el número de declarantes. Tablero igual: 11 pasan,
+5 fallan, 3 sin correr, 8 abiertos.
+
+### 3 · LA MEDICIÓN que bloquea la unificación — no se aplicó
+
+**Por qué I-14 cuenta cero, entrada por entrada:**
+
+```
+NO | 30 ago | operacion-azarias-acto          evidencia: reporte-periodistico ✗ · procesal: en-firme ✓
+NO | 27 ago | operacion-amon-acto             evidencia: reporte-periodistico ✗ · procesal: en-firme ✓
+NO | 11 ago | operacion-beta-catatumbo-menor  evidencia: reporte-periodistico ✗ · procesal: en-firme ✓
+```
+
+La puerta exige `documento-primario` o `dato-oficial`. **El estado procesal
+pasa en las tres; lo único que falla es la clase de evidencia.**
+
+**Y la misma puerta aplicada al bloque `fuerza`: pasarían CERO de los cinco.**
+Dos de las tres bases ni siquiera declaran `tipoEvidencia`.
+
+**Simulado en memoria, sin escribir nada:**
+
+```
+HOY (n=5):            dictamen · «Nada fiable»            B:dudosa C:poco-fiable D:nada-fiable
+SI SE UNIFICA (n=0):  piso     · «No puede ser mejor que «Poco fiable»»   B:dudosa C:poco-fiable
+```
+
+Unificar hacia la vara más exigente **retira el eje D del veredicto**: el
+dictamen deja de ser un dictamen cerrado y vuelve a ser un PISO, dos peldaños
+más arriba. **No se aplicó.** La decisión es del usuario, con el número a la
+vista, que es exactamente lo que pidió.
+
+### Lo que esta versión NO hace
+
+* **NO unifica las dos varas.** Medido y a la espera de la decisión.
+  `pendiente`
+* **NO baja la evidencia de ninguna entrada.** Lo que falta son los
+  documentos de Medicina Legal, y el proxy no deja pedirlos. `pendiente`
+* **NO mueve el dictamen.** Sigue en «Nada fiable», ahora con n = 5.
+  `cerrado en v1120`

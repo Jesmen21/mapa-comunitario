@@ -1,5 +1,12 @@
 # Lo que apareció de noche y NO decidí · 14 de octubre de 2026
 
+> **ESTADO AL 14 DE OCTUBRE, TARDE.** Los puntos 1 y 2 los DECIDIÓ el usuario
+> y están aplicados en la v1120: el sexto menor salió del conteo y el rescate
+> dejó de declarar I-14. El punto 3 —las dos varas— está **medido y a la
+> espera**: la medición dice que unificar hacia la más exigente deja el eje D
+> en CERO y el veredicto pasa de dictamen «Nada fiable» a piso «No puede ser
+> mejor que Poco fiable». No se aplicó.
+
 Lista de la sesión del 13–14 de octubre. Cada renglón es algo que me apareció
 trabajando y que está en la lista de lo que no puedo decidir sola. **No elegí
 ninguna.** Van con lo que medí, para que la decisión se tome mirando un número
