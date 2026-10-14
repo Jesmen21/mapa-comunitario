@@ -1,4 +1,4 @@
-const URBIS_CACHE = 'urbis-v1117-la-septima-nadie-acusa';
+const URBIS_CACHE = 'urbis-v1118-el-hecho-sin-la-etiqueta-penal';
 const URBIS_ASSETS = [
   './',
   './index.html',

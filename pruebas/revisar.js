@@ -4446,11 +4446,21 @@ console.log('\n  -- la ficha del gobernante --');
          · y declara SOBRE QUÉ evidencia descansa (v1085). */
     const tramoD = (j70c3.match(/function ejeD\(dd\) \{[\s\S]*?\n  \}/) || [''])[0];
     const escD = (j70c3.match(/var ESCALA_EJE_D = \{[\s\S]*?\n  \};/) || [''])[0];
-    const nivD = (j70c3.match(/function nivelEjeD\(mue\) \{[\s\S]*?\n  \}/) || [''])[0];
+    const nivD = (j70c3.match(/function nivelEjeD\(mue, F\) \{[\s\S]*?\n  \}/) || [''])[0];
     const mitD = [
       ['la escala del eje D está escrita, aparte del eje', escD.length > 0],
+      /* SE APRIETA, NO SE AFLOJA (v1118). La aserción pedía el artículo 135
+         del Código Penal, y esa referencia se RETIRÓ porque era una
+         calificación penal que este módulo no puede hacer: Medicina Legal
+         confirma muertes y edades, no confirma que alguien sea «persona
+         protegida», que es una categoría del DIH que determina un juez. La
+         aserción pide ahora la referencia que SÍ corresponde —el deber de
+         investigar— y, además, lo que la anterior no pedía: que ningún
+         texto del eje nombre un tipo penal. */
       ['y nombra su referencia externa donde el lector la ve',
-       /Art[ií]culo 135 del C[oó]digo Penal/.test(escD)],
+       /Protocolo de Minnesota/.test(escD) && /Principios B[áa]sicos/.test(escD)],
+      ['y declara en la propia escala qué NO mide', /queNOMide:/.test(escD) &&
+       /no dice que esas muertes sean/i.test(escD)],
       ['y declara que su categoría es preexistente, no construida acá',
        /origenCategoria: 'juridica-preexistente'/.test(escD)],
       ['y dice de dónde tomó PRESTADO su umbral', /umbralPrestadoDe:/.test(escD)],
@@ -4466,6 +4476,15 @@ console.log('\n  -- la ficha del gobernante --');
       ['y vuelve a null sin material, no al peldaño bueno',
        /if \(!n\) \{\n      return \{ nivel: null/.test(nivD)],
       ['y declara sobre qué evidencia descansa', /descansaEn:/.test(nivD)],
+      /* LO QUE ACOTA EL NÚMERO VIAJA CON ÉL (v867, v1088, v1118): la
+         respuesta del Gobierno y el estado procesal estaban en el
+         contrapunto de dos entradas, y la placa que publica la cifra no los
+         alcanzaba — clase C en el sitio donde el módulo califica en público
+         a una persona. */
+      ['y la respuesta del Gobierno viaja con el nivel', /contraOficial:/.test(nivD) &&
+       /sinContra:/.test(nivD)],
+      ['y el estado procesal también, con su redacción de cuando falta',
+       /procesal:/.test(nivD) && /sinProcesal:/.test(nivD)],
       /* Sobre el CÓDIGO y no sobre los comentarios (v926): mi propio
          comentario cita la frase vieja para explicar por qué se corrigió, y
          la aserción cruda tropezaba con ella. `soloCodigo` deja las cadenas
@@ -4474,6 +4493,72 @@ console.log('\n  -- la ficha del gobernante --');
       ['y la razón del eje ya no dice que el nivel dependa de la serie',
        !/un nivel no sale/.test(soloCodigo(tramoD)) && /no necesita contra/.test(tramoD)]
     ];
+    /* ═══ NINGÚN TEXTO DEL EJE D CALIFICA PENALMENTE UN HECHO (v1118) ═════
+       Hasta la v1117 la escala de este eje estaba escrita contra el
+       **artículo 135 del Código Penal —homicidio en persona protegida—**, y
+       sus textos de pantalla contaban «muertes de persona protegida
+       confirmadas por autoridad forense». Eso encadenaba hecho forense →
+       tipo penal → dictamen público **sin investigación, sin imputación y
+       sin fallo**, y el artículo 135 es un crimen de guerra.
+
+       El defecto de fondo: Medicina Legal confirma MUERTES y EDADES. No
+       confirma que alguien sea «persona protegida», que es una categoría del
+       Derecho Internacional Humanitario y depende de si la persona
+       participaba directamente en hostilidades — lo determina un juez. Y hay
+       contrargumento registrado: el Ministerio de Defensa invoca «función
+       continua de combate». Puede perder, pero existe.
+
+       El hecho se sostiene solo. La etiqueta penal era lo único refutable.
+
+       LA GUARDA PERSIGUE LA CLASE Y NO EL CASO (v874, v885): no busca el
+       artículo 135, busca **cualquier tipo penal o calificación de
+       responsabilidad en los textos del eje que salen a pantalla**. Y se
+       busca sobre el CÓDIGO y no sobre los comentarios (v926): el comentario
+       que explica por qué se retiró cita la frase vieja a propósito, y una
+       aserción cruda tropezaría con ella — que es exactamente la trampa que
+       la v1116 pagó con un patrón sin su entorno.
+
+       DE QUÉ NO RESPONDE (v945, v952): de los otros ejes. El eje B nombra
+       artículos de la Constitución y el C el artículo 350, y eso es correcto
+       —son normas de competencia y de prioridad del gasto, no tipos penales—.
+       Esta guarda cubre el eje que cuenta muertes, que es donde la etiqueta
+       penal califica a una persona. */
+    const PENAL_PROHIBIDO = [
+      ['persona protegida', 'es la categoría del DIH que define el tipo penal, y la determina un juez'],
+      ['C[óo]digo Penal', 'nombrar el Código Penal es calificar el hecho como delito'],
+      ['homicidio', 'es un tipo penal'],
+      ['crimen', 'afirma que el hecho es un crimen, que es lo que decide un juez'],
+      ['tipifica', 'tipificar es exactamente la operación que este módulo no puede hacer'],
+      ['falso positivo', 'es una calificación de responsabilidad, no un hecho forense']
+    ];
+    const textoD = soloCodigo(escD) + '\n' + soloCodigo(nivD);
+    const penalD = PENAL_PROHIBIDO.filter((p) => new RegExp(p[0], 'i').test(textoD));
+    comprobar('ningún texto del eje D que sale a pantalla califica penalmente el hecho',
+      escD.length > 0 && penalD.length === 0,
+      !escD.length ? 'NO PUDO CORRER: no se encontró la escala del eje D'
+        : penalD.length
+          ? penalD.length + ' calificación(es) penal(es) de vuelta en los textos del eje: ' +
+            penalD.map((p) => '«' + p[0] + '» — ' + p[1]).join(' · ') +
+            '. El hecho —menores muertos en operaciones militares, con confirmación forense— se ' +
+            'sostiene solo; la etiqueta penal es lo único que se puede tumbar.'
+          : 'los textos cuentan un HECHO: ' + PENAL_PROHIBIDO.length + ' etiquetas penales vigiladas ' +
+            'y ninguna presente. Lo que el eje NO mide va dicho en la propia escala y llega a la placa.');
+
+    /* Y LA GUARDA DE LA GUARDA (v878, v1029, v1101): que lo que acota el
+       número se ENGANCHE a la placa, no solo que se calcule. Un bloque
+       construido y sin colgar deja el número publicado solo, que es el
+       defecto entero. */
+    const engQN = /placa\.appendChild\(el\('p', 'sp-fi-vlim'/.test(j70c3);
+    const engCO = /placa\.appendChild\(cb\)/.test(j70c3);
+    const viajaU = /queNOMide: \(e\.nivelCalc/.test(j70c3) && /contraOficial: \(e\.nivelCalc/.test(j70c3);
+    comprobar('y lo que acota el número llega a la placa, enganchado y viajando con el veredicto',
+      engQN && engCO && viajaU,
+      (engQN && engCO && viajaU)
+        ? 'qué no mide, la respuesta del Gobierno y el estado procesal viajan dentro de `usados` y se ' +
+          'cuelgan de la placa: un eje nuevo que publique nivel los hereda sin que su autor se acuerde'
+        : 'falta: ' + [!viajaU ? 'viajar con el veredicto' : null, !engQN ? 'el enganche de «qué no mide»' : null,
+                       !engCO ? 'el enganche de la respuesta del Gobierno' : null].filter(Boolean).join(', '));
+
     const malD = mitD.filter((x) => !x[1]).map((x) => x[0]);
     comprobar('el eje D publica nivel CALCULADO, con su escala contra referencia externa y su umbral prestado',
       tramoD.length > 0 && malD.length === 0,

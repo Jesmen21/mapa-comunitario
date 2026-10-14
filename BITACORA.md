@@ -27531,3 +27531,99 @@ reproche al Gobierno» y ahora pide que la fila se CONSTRUYA recorriendo
 * **NO mueve el estado del módulo.** 11 pasan, 5 fallan, 3 sin correr, 8
   abiertos. `cerrado en v1117`
 * **NO mueve el dictamen.** Sigue en «Nada fiable». `cerrado en v1117`
+
+## v1118 · el eje D estaba haciendo una calificación penal
+
+Lo pidió el usuario, en estos términos: «Medicina Legal confirma muertes y
+edades; NO confirma "persona protegida", que es una categoría del DIH y
+depende de si la persona participaba directamente en hostilidades. Eso lo
+determina un juez.»
+
+Tenía razón, y el defecto era de fondo. Desde la v1077 la escala del eje D
+estaba escrita contra el **artículo 135 del Código Penal —homicidio en
+persona protegida—** y sus textos de pantalla contaban «muertes de persona
+protegida confirmadas por autoridad forense». El módulo encadenaba **hecho
+forense → tipo penal → dictamen público**, sin investigación, sin imputación
+y sin fallo. El artículo 135 es un crimen de guerra.
+
+Peor: hay contrargumento registrado —el Ministerio de Defensa invoca «función
+continua de combate»— y vivía en el contrapunto de dos entradas, a dos
+pantallas del número que fijaba el dictamen.
+
+### Lo que se midió antes de tocar nada
+
+**(a) ¿De dónde sale el sexto menor?** Los seis salen del bloque `fuerza`:
+Beta 1 (11 ago, Norte de Santander) + Amón 3 (27 ago, Guaviare) + Azarías 2
+(30 ago, Guaviare). **Los cinco de la investigación de octubre son Amón +
+Azarías**; el sexto es Beta, de otro departamento y anterior a las dos. No
+está inventado, pero **su evidencia es de otra clase** —`reporte-periodistico`,
+la confirmación forense consta por el titular de La FM y no por el documento,
+la edad exacta no se afirma, y una fuente de efecto dice que podría ser un
+falso positivo—. Queda anotado en `DECISIONES-PENDIENTES.md` y **no lo
+resolví**: con cinco en vez de seis el peldaño no se mueve, porque el corte
+es «dos o más».
+
+**(b) ¿El rescate del 20 de septiembre sostiene el eje?** **No.** Está en
+`menoresRecuperados`, no en `menoresMuertos`: no suma ni uno. Lo que sí queda
+abierto es que esa entrada **declara I-14**, y el `excluye` de I-14 dice
+«lesión, captura, rescate o desaparición sin muerte». Anotado, no tocado:
+quitar un indicador declarado es mover una clasificación.
+
+**Y un tercer hallazgo que nadie pidió:** la fila del indicador **I-14 cuenta
+CERO** —sus cuatro entradas no pasan la puerta de evidencia dura— mientras el
+eje publica **6** leídos del bloque `fuerza`. Dos codificaciones del mismo
+hecho con dos varas, y el dictamen sale de la menos exigente. Anotado.
+
+### Lo que cambió
+
+* La referencia de la escala pasa del artículo 135 al **Protocolo de
+  Minnesota** y los **Principios Básicos sobre el empleo de la fuerza (ONU,
+  1990)** — el deber de INVESTIGAR, que es lo que el hecho sí obliga.
+* Los cortes y el texto del nivel cuentan **«menores de edad muertos en
+  operaciones militares del Estado, confirmados forensemente por Medicina
+  Legal»**. La etiqueta del DIH sale también del `incluye` de I-14, **sin
+  cambiar su extensión**: el indicador seguía y sigue contando cero.
+* La escala declara **`queNOMide`**, y se pinta: «cuenta un HECHO y no un
+  delito… si una muerte en una operación militar es lícita o no lo determina
+  un juez».
+* **La respuesta del Gobierno y el estado procesal viajan con el nivel** y se
+  pintan junto al número, con sus dos redacciones. Hoy el estado procesal
+  dice lo que hay que decir: *NO consta ninguna imputación ni investigación
+  penal formal*; lo que consta es control político, la moción de censura del
+  1 de septiembre.
+
+### El recálculo
+
+**No se mueve.** Dictamen «Nada fiable», eje D `nada-fiable`, n = 6. Tablero
+igual: 11 pasan, 5 fallan, 3 sin correr, 8 abiertos. Lo que cambió no es el
+peldaño: es que el número ya no viene con una etiqueta penal pegada y sí con
+lo que lo acota.
+
+### La guarda, y el error que casi cuesta dos escalas
+
+Dos comprobaciones nuevas (749 → 751) y tres apretadas. La de fondo persigue
+la CLASE: **ningún texto del eje D que salga a pantalla puede nombrar un tipo
+penal** —seis etiquetas vigiladas, buscadas sobre el código y no sobre los
+comentarios, porque el comentario que explica la corrección cita la frase
+vieja a propósito—. Cuatro inyecciones en rojo, incluida la fiel, que
+devuelve el artículo 135 y saca cuatro etiquetas de golpe.
+
+**Y un error mío que hay que dejar escrito porque casi sale caro:** el primer
+parche cortó por rebanada entre dos anclas y **borró `ESCALA_EJE_B` y
+`ESCALA_EJE_C` enteras**, con sus dos funciones de nivel — 15.006 bytes. La
+causa: `find()` sobre un ancla que **no era única**, «LA REFERENCIA, nombrada
+acá donde el lector la ve», que es la misma frase en los comentarios de tres
+ejes, así que tomó la del eje B. Lo cazaron tres guardas a la vez, una de
+ellas la atadura de la bandera `escala` de la v1091. Sin ellas el módulo
+habría quedado con dos ejes mudos y el dictamen saliendo igual.
+
+### Lo que esta versión NO hace
+
+* **NO decide si el sexto menor cuenta.** Su evidencia es de otra clase y la
+  decisión es de quien firma. `pendiente`
+* **NO quita el I-14 declarado en la entrada del rescate.** Es mover una
+  clasificación. `pendiente`
+* **NO resuelve que I-14 cuente 0 y el eje 6.** Pide decidir cuál vara vale.
+  `pendiente`
+* **NO mueve el dictamen.** Sigue en «Nada fiable», y ahora sin etiqueta
+  penal. `cerrado en v1118`

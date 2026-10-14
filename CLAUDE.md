@@ -1588,6 +1588,30 @@ sección al final de este archivo.
   la razón EN BLANCO, que es el defecto que esa guarda existe para impedir.
   **Lo cazó leer el detalle del verde y preguntarse cómo lo sabía**, no una
   inyección. Al cambiar la forma de un dato se releen las guardas que lo leen.
+* **Un módulo que cuenta HECHOS no los CALIFICA jurídicamente** (v1118). La
+  escala del eje D estaba escrita contra el **artículo 135 del Código Penal
+  —homicidio en persona protegida—** y la pantalla contaba «muertes de persona
+  protegida confirmadas por autoridad forense»: el módulo encadenaba **hecho
+  forense → tipo penal → dictamen público** sin investigación, sin imputación
+  y sin fallo, y ese artículo es un crimen de guerra. **Medicina Legal
+  confirma muertes y edades; no confirma que alguien sea «persona protegida»**,
+  que es una categoría del DIH que depende de si participaba en hostilidades y
+  la determina un juez. La cura: contar el hecho —menores muertos en
+  operaciones militares, confirmados forensemente—, declarar **qué NO mide** en
+  la propia escala, y que **la respuesta del Gobierno y el estado procesal
+  viajen con el número** y se pinten a su lado (v867, v1088). **El hecho grave
+  se sostiene solo; la etiqueta penal es lo único refutable.** La guarda
+  persigue la CLASE —seis etiquetas penales vigiladas en los textos del eje,
+  sobre el código y no sobre los comentarios (v926)— y no el artículo 135.
+* **Y un parche por REBANADA entre dos anclas borra lo que haya en medio**
+  (v1118). `find()` sobre «LA REFERENCIA, nombrada acá donde el lector la ve»
+  —la misma frase en los comentarios de TRES ejes— tomó la del eje B, y el
+  corte hasta el ancla final **se llevó `ESCALA_EJE_B` y `ESCALA_EJE_C`
+  enteras, con sus dos funciones de nivel: 15.006 bytes**. La regla es de una
+  línea: **antes de cortar por un ancla se comprueba que sea ÚNICA**
+  (`s.count(a)==1`), igual que en un reemplazo. Lo cazaron tres guardas a la
+  vez —entre ellas la atadura de la bandera `escala` de la v1091—; sin ellas
+  el módulo habría quedado con dos ejes mudos y el dictamen saliendo igual.
 * **Y una comprobación que llega a cero se DICE, no desaparece** (v1064). Un
   renglón que se borra solo deja «ya está hecho» con la misma cara que
   «nadie lo ha mirado» —la regla de arriba, dicha en una pantalla—. Tres de

@@ -2513,3 +2513,26 @@ a.sp-fuente:hover svg{ color:var(--verde-hi); }
 .sp-c4-ccin.sin { border-left-style: dashed; border-left-color: var(--sp-amb, #b26a00); }
 .sp-c4-ccin > b { display: block; font-size: var(--t-8); }
 .sp-c4-ccin > p { margin: 4px 0 0; font-size: var(--t-8); line-height: 1.5; }
+
+/* Lo que el eje NO mide, la respuesta del Gobierno y el estado procesal,
+   junto al número que fija el dictamen (v1118). Van en la placa y no en
+   otra pantalla: un número que califica en público a una persona no puede
+   salir sin lo que lo acota. */
+.sp-fi-vlim {
+  margin: 8px 0 0;
+  font-size: var(--t-8);
+  line-height: 1.55;
+  font-weight: 600;
+}
+.sp-fi-vcontra {
+  margin: 10px 0 0;
+  padding: 10px 12px;
+  border: 1px solid var(--sp-bd, #cfdce6);
+  border-left: 3px solid var(--sp-ac, #2F4F5E);
+  border-radius: 0 8px 8px 0;
+  background: var(--sp-bg2, #F7F9FB);
+}
+.sp-fi-vcontra > b { display: block; margin-top: 7px; font-size: var(--t-8); }
+.sp-fi-vcontra > b:first-child { margin-top: 0; }
+.sp-fi-vcontra > p { margin: 4px 0 0; font-size: var(--t-8); line-height: 1.55; }
+.sp-fi-vmal { color: #9A3C38; font-weight: 600; }

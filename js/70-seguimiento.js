@@ -2191,7 +2191,7 @@
       incluye: [
         'muerte causada por el uso de la fuerza o de armas de fuego por agentes del Estado',
         'muerte de una persona bajo custodia del Estado',
-        'muerte de una persona protegida —menor de edad, rendida, herida o fuera de combate— en una operación del Estado',
+        'muerte de un menor de edad, o de alguien que estaba rendido o herido, en una operación del Estado',
         'muerte ocurrida en una operación del Estado cuya causa no está establecida'
       ],
       excluye: [
@@ -3803,34 +3803,53 @@
 
      LA REFERENCIA, nombrada acá donde el lector la ve y no en un comentario
      —`soloCodigo` los quita, así que una guarda no puede comprobarla ahí
-     (v926)—: el **artículo 135 del Código Penal colombiano, homicidio en
-     persona protegida**, que tipifica la muerte de una persona protegida por
-     el derecho internacional humanitario —entre ellas la población civil y
-     quien está fuera de combate— con pena de 30 a 40 años. La categoría
-     existe sin este proyecto: es `juridica-preexistente`, la misma marca de
-     origen que el indicador I-14 ya llevaba.
+     (v926)—: el **Protocolo de Minnesota de la ONU sobre la investigación de
+     muertes potencialmente ilícitas** y los **Principios Básicos sobre el
+     empleo de la fuerza y de armas de fuego (ONU, 1990)**. Son las mismas
+     referencias del indicador I-14 y existen sin este proyecto: es
+     `juridica-preexistente`.
+
+     Y LO QUE CAMBIÓ EN LA v1118, que es la corrección de fondo de este eje:
+     **la escala estaba escrita contra el artículo 135 del Código Penal
+     —homicidio en persona protegida— y eso era una CALIFICACIÓN PENAL que
+     este módulo no puede hacer.** Medicina Legal confirma muertes y edades;
+     NO confirma que alguien sea «persona protegida», que es una categoría
+     del Derecho Internacional Humanitario y depende de si la persona
+     participaba directamente en hostilidades. Eso lo determina un juez, y
+     acá no hay investigación, ni imputación, ni fallo. El módulo encadenaba
+     hecho forense → tipo penal → dictamen público, y el tipo del artículo
+     135 es un crimen de guerra.
+
+     El hecho es gravísimo y se sostiene solo: **menores de edad muertos en
+     operaciones militares, confirmados forensemente**. La etiqueta penal no
+     agregaba nada que el hecho no dijera, y era lo único refutable.
 
      EL UMBRAL NO SE ELIGIÓ, SE TOMÓ PRESTADO. Son los mismos cortes que la
      cuenta de casos de corrupción de este módulo ya tenía declarados —uno
-     confirmado baja a «Poco fiable», dos o más a «Nada fiable»— y no unos
-     escritos para esta pregunta. Un umbral nuevo se elige para que algo pase
-     (v882, v1075); uno ya declarado, y para otra cosa, no se puede acomodar.
+     baja a «Poco fiable», dos o más a «Nada fiable»— y no unos escritos para
+     esta pregunta. Un umbral nuevo se elige para que algo pase (v882,
+     v1075); uno ya declarado, y para otra cosa, no se puede acomodar.
 
-     Y conviene decir que el préstamo es CONSERVADOR y no severo: el artículo
-     135 castiga con 30 a 40 años, muy por encima de un caso de corrupción,
-     así que aplicar la misma vara a una muerte de persona protegida pide
-     MENOS de lo que su gravedad legal sostendría. No se endureció.
-
-     DE QUÉ NO RESPONDE: esta escala no dice que la operación fuera ilegal ni
-     que haya responsabilidad de nadie. Cuenta un hecho —una persona
-     protegida murió en una operación del Estado, con autoridad forense que lo
-     confirma— y ese hecho existe con independencia de cómo termine la
-     investigación. El deber de investigar es justamente lo que el indicador
-     nombra. */
+     DE QUÉ NO RESPONDE, y va también en la pantalla y no solo acá: esta
+     escala **no dice que la operación fuera ilegal, ni que esas muertes sean
+     un delito, ni que haya responsabilidad de nadie**. Cuenta un hecho con
+     confirmación forense, publica al lado la respuesta del Gobierno y dice
+     si hay o no una investigación abierta. El deber de investigar es lo que
+     el indicador nombra; el resultado de esa investigación no lo anticipa
+     nadie acá. */
   var ESCALA_EJE_D = {
-    referencia: 'Artículo 135 del Código Penal colombiano (homicidio en persona protegida), que ' +
-                'tipifica la muerte de una persona protegida por el derecho internacional ' +
-                'humanitario con pena de 30 a 40 años.',
+    referencia: 'Protocolo de Minnesota de la ONU sobre la investigación de muertes potencialmente ' +
+                'ilícitas, y los Principios Básicos sobre el empleo de la fuerza y de armas de fuego ' +
+                'por los funcionarios encargados de hacer cumplir la ley (ONU, 1990), que obligan al ' +
+                'Estado a investigar de forma pronta, independiente, imparcial y efectiva toda muerte ' +
+                'ocurrida en una operación suya.',
+    /* QUÉ NO MIDE, dicho en el objeto y pintado en la pantalla (v1118). Iba
+       solo en un comentario, y un comentario no llega a ningún lector. */
+    queNOMide: 'Esta escala cuenta un HECHO y no un delito: cuántos menores de edad murieron en ' +
+               'operaciones militares con confirmación forense. NO dice que esas muertes sean ' +
+               'ilícitas, ni que alguien sea responsable de ellas. Si una ' +
+               'muerte en una operación militar es lícita o no lo determina un juez, caso por caso, ' +
+               'y este registro no lo anticipa.',
     origenCategoria: 'juridica-preexistente',
     umbralPrestadoDe: 'la cuenta de casos de corrupción confirmados de este mismo módulo',
     /* LOS PELDAÑOS QUE ESTA ESCALA NO ALCANZA, con su razón (v1091).
@@ -3841,30 +3860,30 @@
 
        Y lo que declara es importante y un lector debería saberlo: **este eje
        no puede decir que un gobierno esté bien.** Solo cuenta muertes de
-       persona protegida confirmadas, así que con cero confirmadas no sube a
+       menores de edad muertos con confirmación forense, así que con cero no sube a
        un peldaño bueno: devuelve null, porque un registro sin nada
        documentado no puede certificar que no haya pasado nada (v875). Es un
        eje que solo baja. */
     noAlcanza: {
-      'inquebrantable': 'Este eje no puede certificar que un gobierno esté bien. Cuenta muertes de ' +
-        'persona protegida confirmadas por autoridad forense, y cero confirmadas no significa cero ' +
-        'ocurridas: significa que este registro no tiene ninguna documentada. Con cero, el eje no ' +
-        'publica nivel en vez de publicar un peldaño bueno.',
+      'inquebrantable': 'Este eje no puede certificar que un gobierno esté bien. Cuenta menores de ' +
+        'edad muertos en operaciones militares con confirmación forense, y cero confirmados no ' +
+        'significa cero ocurridos: significa que este registro no tiene ninguno documentado. Con ' +
+        'cero, el eje no publica nivel en vez de publicar un peldaño bueno.',
       'fiable': 'Por la misma razón que el peldaño de arriba: esta escala solo baja. No hay ninguna ' +
         'cantidad de muertes confirmadas que produzca «Fiable», y la ausencia de muertes documentadas ' +
         'no es una medición de que no las haya habido.',
-      'dudosa': 'Esta escala no tiene un corte intermedio: una sola muerte de persona protegida ' +
-        'confirmada en una operación del Estado ya entra en «Poco fiable», porque el artículo 135 del ' +
-        'Código Penal la tipifica como un crimen y no como una duda. Poner «Dudosa» en medio sería ' +
-        'inventar un umbral para suavizar el primero.'
+      'dudosa': 'Esta escala no tiene un corte intermedio, y la razón es del HECHO y no de ninguna ' +
+        'ley penal: que un menor de edad muera en una operación militar del Estado no es una duda ' +
+        'sobre el gobierno que la ordenó, es un hecho confirmado por una autoridad forense. Poner ' +
+        '«Dudosa» en medio sería inventar un umbral para suavizar el primero.'
     },
     cortes: [
       { desde: 2, id: 'nada-fiable',
-        d: 'Dos o más muertes de persona protegida confirmadas por autoridad forense en operaciones ' +
-           'del Estado.' },
+        d: 'Dos o más menores de edad muertos en operaciones militares del Estado, confirmados ' +
+           'forensemente por Medicina Legal.' },
       { desde: 1, id: 'poco-fiable',
-        d: 'Una muerte de persona protegida confirmada por autoridad forense en una operación del ' +
-           'Estado.' }
+        d: 'Un menor de edad muerto en una operación militar del Estado, confirmado forensemente ' +
+           'por Medicina Legal.' }
     ]
   };
 
@@ -3873,29 +3892,55 @@
      no hay ninguna, devuelve null y NO el peldaño bueno: cero medido y cero
      ocurrido son cosas distintas (v875), y este eje no puede certificar que
      no haya habido ninguna. Las dos redacciones van escritas (v970). */
-  function nivelEjeD(mue) {
+  /* El contrargumento del Gobierno y el estado procesal VIAJAN con el nivel
+     (v867, v1088, v1118). Estaban escritos en el contrapunto de dos entradas
+     y la superficie que publica el número no los alcanzaba: un lector veía
+     «6 muertes confirmadas» sin la respuesta oficial al lado ni la noticia de
+     que no hay ninguna investigación penal abierta. Devolverlos acá es lo
+     único que hace que una pantalla nueva los herede sin que su autor se
+     acuerde. */
+  function nivelEjeD(mue, F) {
     var n = (mue || []).reduce(function (a, x) { return a + (Number(x.n) || 0); }, 0);
     var quien = {};
     (mue || []).forEach(function (x) { if (x.confirma) quien[x.confirma] = 1; });
     var confirman = Object.keys(quien);
     if (!n) {
       return { nivel: null, n: 0, confirman: confirman,
-               porque: 'Este eje no publica nivel porque el registro no documenta ninguna muerte de ' +
-                       'persona protegida con confirmación forense. Eso NO quiere decir que no haya ' +
-                       'habido: quiere decir que este registro no la tiene documentada, y un eje no ' +
-                       'puede certificar una ausencia que no midió.' };
+               porque: 'Este eje no publica nivel porque el registro no documenta ningún menor de ' +
+                       'edad muerto en una operación militar con confirmación forense. Eso NO quiere ' +
+                       'decir que no haya habido: quiere decir que este registro no lo tiene ' +
+                       'documentado, y un eje no puede certificar una ausencia que no midió.' };
     }
     var corte = null;
     for (var i = 0; i < ESCALA_EJE_D.cortes.length; i++) {
       if (n >= ESCALA_EJE_D.cortes[i].desde) { corte = ESCALA_EJE_D.cortes[i]; break; }
     }
     if (!corte) return { nivel: null, n: n, confirman: confirman, porque: 'Ningún corte de la escala aplica.' };
+    var FF = F || {};
     return {
       nivel: corte.id, n: n, corte: corte, confirman: confirman,
-      porque: cn(n, 'muerte de persona protegida confirmada por autoridad forense en una operación ' +
-                    'del Estado', 'muertes de persona protegida confirmadas por autoridad forense en ' +
-                    'operaciones del Estado') +
-              '. La escala de este eje está escrita contra el ' + ESCALA_EJE_D.referencia +
+      queNOMide: ESCALA_EJE_D.queNOMide,
+      /* Falla cerrado: si el bloque no los trae, se dice que faltan en vez de
+         publicar el número solo (v880, v970). Un número de muertes sin la
+         respuesta del Gobierno al lado es exactamente lo que este módulo
+         tiene prohibido en los casos de corrupción. */
+      contraOficial: (FF.contrargumentoOficial && FF.contrargumentoOficial.texto) || null,
+      contraQuien: (FF.contrargumentoOficial && FF.contrargumentoOficial.quien) || null,
+      sinContra: !(FF.contrargumentoOficial && FF.contrargumentoOficial.texto) &&
+        'El registro no trae la respuesta del Gobierno a estas muertes. Publicar el número sin ella ' +
+        'es publicar media cosa, y este módulo lo tiene prohibido para los casos de corrupción: la ' +
+        'misma vara vale acá.',
+      procesal: (FF.estadoProcesal && FF.estadoProcesal.texto) || null,
+      hayInvestigacion: !!(FF.estadoProcesal && FF.estadoProcesal.hayInvestigacion),
+      sinProcesal: !(FF.estadoProcesal && FF.estadoProcesal.texto) &&
+        'El registro no dice si hay o no una investigación abierta por estas muertes. Sin eso, un ' +
+        'lector no puede distinguir un hecho que nadie ha mirado de uno que está en manos de un juez.',
+      porque: cn(n, 'menor de edad muerto en una operación militar del Estado, confirmado ' +
+                    'forensemente por Medicina Legal',
+                    'menores de edad muertos en operaciones militares del Estado, confirmados ' +
+                    'forensemente por Medicina Legal') +
+              '. Es un HECHO y no una calificación jurídica: ' + ESCALA_EJE_D.queNOMide +
+              ' La escala de este eje está escrita contra el ' + ESCALA_EJE_D.referencia +
               ' Su umbral no se escribió para esta pregunta: es el mismo de ' +
               ESCALA_EJE_D.umbralPrestadoDe + '.',
       descansaEn: 'La confirmación es de ' + (confirman.join(' · ') || 'una autoridad forense') +
@@ -3994,13 +4039,14 @@
          por encima o por debajo de otros gobiernos. Eso es una comparación,
          no el nivel. Las premisas de una tanda anterior también se miden
          (v925). */
-      var nd = nivelEjeD(mue);
+      var nd = nivelEjeD(mue, F);
       r.nivelCalc = nd;
       /* La LECTURA de este peldaño en ESTE eje sale del corte de su propia
-         escala, que ya la traía escrita: «Dos o más muertes de persona
-         protegida confirmadas por autoridad forense en operaciones del
-         Estado». Sin ella la ficha pintaría la definición de la escalera de
-         la palabra —casos de corrupción— sobre un eje que no los cuenta. */
+         escala, que ya la traía escrita: «Dos o más menores de edad muertos
+         en operaciones militares del Estado, confirmados forensemente por
+         Medicina Legal». Sin ella la ficha pintaría la definición de la
+         escalera de la palabra —casos de corrupción— sobre un eje que no los
+         cuenta. */
       r.nivel = nd.nivel
         ? nivelDeEje(nd.nivel, nd.corte && nd.corte.d, 'escala-eje-d')
         : null;
@@ -4150,6 +4196,18 @@
                        del módulo. */
                     porque: (e.nivelCalc && e.nivelCalc.porque) || '',
                     descansaEn: (e.nivelCalc && e.nivelCalc.descansaEn) || '',
+                    /* Y LO QUE EL EJE NO MIDE, con la respuesta oficial y el
+                       estado procesal, viajando igual (v1118). Si el número
+                       llega a la placa, lo que lo acota tiene que llegar con
+                       él: publicar «6 muertes confirmadas» sin la respuesta
+                       del Gobierno ni la noticia de que no hay investigación
+                       abierta es publicar media cosa. */
+                    queNOMide: (e.nivelCalc && e.nivelCalc.queNOMide) || '',
+                    contraOficial: (e.nivelCalc && e.nivelCalc.contraOficial) || '',
+                    contraQuien: (e.nivelCalc && e.nivelCalc.contraQuien) || '',
+                    sinContra: (e.nivelCalc && e.nivelCalc.sinContra) || '',
+                    procesal: (e.nivelCalc && e.nivelCalc.procesal) || '',
+                    sinProcesal: (e.nivelCalc && e.nivelCalc.sinProcesal) || '',
                     /* La LECTURA del peldaño en ese eje, viajando con el
                        veredicto (v867, v1090): el titular de la página es un
                        peldaño de la escala común, y sin la lectura del eje
@@ -5711,6 +5769,41 @@
         if (sobre.length) {
           placa.appendChild(el('p', 'sp-fi-vbase sp-fi-vbase-2', sobre.join(' — ')));
         }
+        /* ── QUÉ NO MIDE, LA RESPUESTA DEL GOBIERNO Y EL ESTADO PROCESAL,
+           JUNTO AL NÚMERO (v1118) ─────────────────────────────────────────
+           Los tres estaban en otra pantalla o en ninguna. El número que fija
+           un dictamen público sobre una persona no puede salir solo: sin
+           «esto es un hecho y no un delito» se lee como una condena; sin la
+           respuesta del Gobierno se publica media cosa —la misma vara que
+           este módulo aplica a los casos de corrupción—; y sin el estado
+           procesal, un hecho que nadie ha llevado a un juez se lee igual que
+           uno que ya está en manos de uno. */
+        var noMide = mandan.map(function (u) { return u.queNOMide; }).filter(Boolean);
+        if (noMide.length) {
+          placa.appendChild(el('p', 'sp-fi-vlim', 'Lo que esto NO dice: ' + noMide.join(' — ')));
+        }
+        mandan.forEach(function (u) {
+          if (!u.contraOficial && !u.sinContra && !u.procesal && !u.sinProcesal) return;
+          var cb = el('div', 'sp-fi-vcontra');
+          if (u.contraOficial) {
+            cb.appendChild(el('b', null, 'La respuesta del Gobierno' +
+              (u.contraQuien ? ' · ' + u.contraQuien : '')));
+            cb.appendChild(el('p', null, u.contraOficial));
+          } else if (u.sinContra) {
+            cb.appendChild(el('b', null, 'Falta la respuesta del Gobierno'));
+            cb.appendChild(el('p', 'sp-fi-vmal', u.sinContra));
+          }
+          if (u.procesal) {
+            cb.appendChild(el('b', null, u.hayInvestigacion
+              ? 'Estado procesal · hay investigación abierta'
+              : 'Estado procesal · NO consta investigación abierta'));
+            cb.appendChild(el('p', null, u.procesal));
+          } else if (u.sinProcesal) {
+            cb.appendChild(el('b', null, 'Falta el estado procesal'));
+            cb.appendChild(el('p', 'sp-fi-vmal', u.sinProcesal));
+          }
+          placa.appendChild(cb);
+        });
       }
       /* Y LOS OTROS EJES QUE PUBLICAN, con su peldaño y sin su párrafo: no
          fijan el dictamen —manda el peor— pero callarlos dejaría la placa
