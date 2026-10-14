@@ -1861,35 +1861,69 @@
       return { estado: 'sin-revisar', t: 'Sin revisar', texto: '', esDato: false,
                d: 'Todavía nadie revisó si el Gobierno respondió. No es que no haya respondido: es que no lo hemos mirado.' };
     }
-    /* LA CONSTANCIA DE BÚSQUEDA (v961). El motor de referencia la exige y la
-       razón es la misma por la que este campo tiene tres estados y no dos:
-       `ausente` AFIRMA que el Gobierno no respondió, y una afirmación sobre
-       una persona real necesita algo detrás. Sin decir dónde se buscó y
-       cuándo, «ausente» y «no lo miré» se escriben igual de fácil y se leen
-       igual de mal — y el primero pesa en el indicador I-06.
+    /* ── «BUSCADO Y NO HALLADO» NO ES «NO RESPONDIÓ» (v961, v1123) ────────
+       La v961 escribió la CONSTANCIA DE BÚSQUEDA —dónde y cuándo— porque
+       `ausente` y «no lo miré» se escribían igual de fácil. La constancia
+       estaba bien; lo que estaba mal era lo que la constancia respaldaba.
 
-       Así que son CUATRO estados y el cuarto es la guarda: un `ausente` a
-       secas se ve, con su literal impreso, y NO pesa. No se tira ni se
-       asciende, que es la decisión de la v931 con la fecha sin distinguir. */
-    if (v && typeof v === 'object' && v.ausente) {
+       `ausente` publicaba **«El Gobierno no respondió»**, y eso es una
+       afirmación sobre la CONDUCTA de una administración que este módulo no
+       puede sostener: puede haber respondido en un canal que no miramos —una
+       rueda de prensa, una alocución, un comunicado que el buscador no
+       devolvió, una respuesta radicada que no se publica—. Lo que sí podemos
+       afirmar es un hecho sobre NUESTRA BÚSQUEDA: la buscamos, acá, con estos
+       términos, y no la hallamos. Lo dijo el usuario y queda como regla: *lo
+       primero es un hecho sobre nuestra búsqueda; lo segundo es una
+       afirmación sobre la conducta del Gobierno, y no la podemos hacer.*
+
+       Son TRES campos y ninguno sobra, la misma forma que el trámite de la
+       v1065 y el intento de la v1116: **dónde** se buscó, **cuándo**, y
+       **qué** se buscó. El tercero es el que la v961 no pedía y es el que
+       hace la diferencia entre una búsqueda y un gesto: sin saber qué se
+       preguntó, «no se halló» no dice nada — se pudo haber buscado la cosa
+       equivocada. Sin los tres, el estado NO se declara (v880).
+
+       Y NO ALIMENTA NINGÚN INDICADOR, a propósito. I-06 cuenta «registros sin
+       respuesta oficial», que es una afirmación sobre el Gobierno; un «no
+       hallado» no la establece. Ascenderlo a I-06 sería recuperar por la
+       puerta de atrás justo la afirmación que se acaba de retirar. La
+       consecuencia —que I-06 se queda sin fuente que nadie pueda escribir— es
+       real y está dicha en DECISIONES-PENDIENTES.md: cambiar lo que I-06
+       cuenta es cambiar un criterio, y eso no lo decide esta sesión. */
+    if (v && typeof v === 'object' && (v.noHallado || v.ausente)) {
       var fu = (v.busco || []).filter(function (x) { return String(x || '').trim(); });
-      if (fu.length && String(v.fecha || '').trim()) {
-        return { estado: 'ausente', t: 'El Gobierno no respondió', texto: '', esDato: true,
-                 busco: fu, fecha: String(v.fecha).trim(),
-                 d: 'Se buscó una respuesta oficial en ' + fu.join(', ') + ' el ' + String(v.fecha).trim() +
-                    ', y no la hay. Eso es un dato sobre el Gobierno, no un vacío del registro.' };
+      var fq = String(v.que || '').trim();
+      var ff = String(v.fecha || '').trim();
+      /* `ausente` DEJA DE SER DECLARABLE (v1123). No se borra el
+         reconocimiento del campo —la rutina diaria es otra sesión y podría
+         escribirlo— pero no publica su afirmación: cae acá, y si trae los
+         tres campos se lee como lo que de verdad sostiene. */
+      if (fu.length && ff && fq) {
+        return { estado: 'no-hallado', t: 'Buscado y no hallado', texto: '', esDato: false,
+                 busco: fu, fecha: ff, que: fq, eraAusente: !!v.ausente && !v.noHallado,
+                 halló: String(v.loQueSiSeHallo || '').trim(),
+                 d: 'Se buscó la posición oficial el ' + ff + ' en ' + fu.join(', ') +
+                    '. Qué se buscó: ' + fq + '. No se halló. Eso es un hecho sobre esta ' +
+                    'búsqueda y NO sobre la conducta del Gobierno: puede haber respondido en un ' +
+                    'canal que no miramos. Por eso se ve, se cuenta aparte y no pesa en ningún ' +
+                    'indicador.' };
       }
-      return { estado: 'ausente-sin-constancia', t: 'Ausente, sin constancia de búsqueda', texto: '',
-               esDato: false, busco: fu,
-               d: 'Dice que el Gobierno no respondió y no dice dónde se buscó ni cuándo. Afirmar un silencio ' +
-                  'sin constancia es un señalamiento sin respaldo, así que se ve y no pesa en el indicador.' };
+      var fal = [];
+      if (!fu.length) fal.push('dónde se buscó');
+      if (!ff) fal.push('cuándo');
+      if (!fq) fal.push('qué se buscó');
+      return { estado: 'no-hallado-sin-constancia', t: 'No hallado, sin constancia de búsqueda',
+               texto: '', esDato: false, busco: fu, falta: fal,
+               d: 'Dice que no se halló respuesta y no dice ' + fal.join(' ni ') + '. Una búsqueda sin ' +
+                  'constancia no se puede distinguir de no haber buscado, así que se ve y no cuenta. Se ' +
+                  'escribe { noHallado: true, busco: [...], fecha: "AAAA-MM-DD", que: "..." }.' };
     }
     var s = String(v).trim();
-    if (s.toLowerCase() === 'ausente') {
-      return { estado: 'ausente-sin-constancia', t: 'Ausente, sin constancia de búsqueda', texto: '',
-               esDato: false, busco: [],
-               d: 'Escrito como la palabra suelta «ausente», sin dónde se buscó ni cuándo. Se escribe ' +
-                  '{ ausente: true, busco: [...], fecha: "AAAA-MM-DD" } para que cuente.' };
+    if (s.toLowerCase() === 'ausente' || s.toLowerCase() === 'no-hallado') {
+      return { estado: 'no-hallado-sin-constancia', t: 'No hallado, sin constancia de búsqueda',
+               texto: '', esDato: false, busco: [], falta: ['dónde se buscó', 'cuándo', 'qué se buscó'],
+               d: 'Escrito como una palabra suelta, sin dónde ni cuándo ni qué se buscó. Se escribe ' +
+                  '{ noHallado: true, busco: [...], fecha: "AAAA-MM-DD", que: "..." } para que cuente.' };
     }
     return { estado: 'respondio', t: 'Respuesta oficial', texto: s, esDato: true,
              d: 'Lo que el Gobierno contestó sobre este hecho.' };
@@ -1920,7 +1954,13 @@
     var r = { n: (lista || []).length,
               prueba: { declarados: 0, sinDeclarar: 0, desconocidos: 0, por: {} },
               medicion: { actividad: 0, resultado: 0, 'contexto-estructural': 0, sinDeclarar: 0, desconocidos: 0 },
+              /* `ausente` se queda en CERO desde la v1123 y no se borra la
+                 clave: el conteo es la guarda de que nadie la reviva. Los dos
+                 estados nuevos van aparte porque piden acciones distintas
+                 (v899): `noHallado` pide leer la constancia antes de repetir
+                 la búsqueda; `noHalladoSinConstancia` pide escribirla. */
               contra: { respondio: 0, ausente: 0, sinConstancia: 0, sinRevisar: 0,
+                        noHallado: 0, noHalladoSinConstancia: 0,
                         noAplica: 0, noAplicaMal: 0,
                         /* Las dos causas, aparte (v899, v1117): «el Gobierno
                            acusa» y «nadie acusa» dicen cosas distintas sobre
@@ -1945,6 +1985,8 @@
       if (c.contra.estado === 'respondio') r.contra.respondio++;
       else if (c.contra.estado === 'ausente') r.contra.ausente++;
       else if (c.contra.estado === 'ausente-sin-constancia') r.contra.sinConstancia++;
+      else if (c.contra.estado === 'no-hallado') r.contra.noHallado++;
+      else if (c.contra.estado === 'no-hallado-sin-constancia') r.contra.noHalladoSinConstancia++;
       /* Las eximidas se CUENTAN aparte y no desaparecen: una exención
          silenciosa se lee igual que un aprobado. Y la que se contradice con
          su propio contrargumento se cuenta otra vez aparte, porque pide una
@@ -2949,6 +2991,17 @@
        tres significan lo mismo —los indicadores que tienen criterio— y
        ninguna decisión razonable las separaría. */
     var CON_CRITERIO = Object.keys(CRITERIOS);
+    /* I-06 SIGUE CONTANDO `ausente` Y NO `noHallado` (v1123), a propósito:
+       su definición es «registros sin respuesta oficial», que es una
+       afirmación sobre el Gobierno, y un «no hallado» no la establece.
+       Ascenderlo acá sería recuperar por la puerta de atrás la afirmación que
+       la v1123 retiró. La consecuencia —que `ausente` ya no es declarable, y
+       entonces I-06 se queda sin fuente que nadie pueda escribir— es un
+       pendiente que nadie puede bajar, de la clase que este proyecto lleva
+       siete versiones persiguiendo, y está dicho en DECISIONES-PENDIENTES.md:
+       cambiar lo que I-06 cuenta es cambiar un criterio, y eso no lo decide
+       una sesión de trabajo. Mientras tanto I-06 publica `sinCalcular` con su
+       razón, que es lo que ya hacía. */
     var crudo = { 'I-06': c1.contra.ausente, 'I-09': c1.medicion.actividad, 'I-10': c1.medicion.resultado };
     CON_CRITERIO.forEach(function (k) { crudo[k] = 0; });
     /* TRES estados y no dos, que es la distinción de la v899 dicha sobre la
@@ -6690,10 +6743,20 @@
       var d = el('div', 'sp-c1-linea');
       d.appendChild(el('b', null, titulo));
       var ul = el('ul', 'sp-c1-lista');
+      /* UN CERO QUE SIGNIFICA ALGO SE DICE, NO DESAPARECE (v1064, v1123).
+         Por defecto un renglón en cero se oculta, y está bien: una categoría
+         sin ninguna entrada es ruido. Pero hay ceros que son el dato — el de
+         «afirmado como no respondió» dice que el módulo PUDO hacer esa
+         afirmación y decidió no hacerla—, y escondidos se leen igual que si
+         la capacidad nunca hubiera existido. Se declara con `cero: true` en
+         la parte, que es opt-in: lo contrario llenaría todas las filas de
+         ceros. Lo encontró componer la pantalla y LEERLA: el texto de abajo
+         decía «por eso ese renglón está en cero y se deja a la vista» y el
+         renglón no estaba. */
       partes.forEach(function (p) {
-        if (!p.n) return;
-        var li = el('li', null);
-        li.appendChild(el('span', 'sp-c1-n', String(p.n)));
+        if (!p.n && !p.cero) return;
+        var li = el('li', p.n ? null : 'sp-c1-z');
+        li.appendChild(el('span', 'sp-c1-n', String(p.n || 0)));
         li.appendChild(el('span', null, p.t));
         ul.appendChild(li);
       });
@@ -6727,15 +6790,26 @@
        Gobierno acusa» —que dice algo sobre lo que el Gobierno hace— y «nadie
        acusa», que dice algo sobre qué clase de hecho se registró. */
     s1.appendChild(filaC1('Respuesta del Gobierno',
+      /* «BUSCADO Y NO HALLADO» ES UN RENGLÓN PROPIO (v1123), y el de «No
+         respondió» se queda con su cero a la vista: la clave no se borró, y
+         un renglón que desaparece deja «ya no pasa» con la cara de «nadie lo
+         ha mirado» (v1064, v970). Las dos redacciones van en el mismo sitio
+         para que el lector vea que el módulo PUDO decir «no respondió» y
+         decidió no decirlo. */
       [{ t: 'Respondió', n: c1.contra.respondio },
-       { t: 'No respondió', n: c1.contra.ausente }].concat(
+       { t: 'Buscado y no hallado', n: c1.contra.noHallado },
+       { t: 'No hallado, sin constancia de búsqueda', n: c1.contra.noHalladoSinConstancia, cero: true },
+       { t: 'Afirmado como «el Gobierno no respondió» — este módulo ya no lo afirma',
+         n: c1.contra.ausente, cero: true }].concat(
         Object.keys(CAUSA_SIN_REPROCHE).map(function (k) {
           return { t: CAUSA_SIN_REPROCHE[k].t, n: c1.contra.porCausa[k] || 0 };
         })),
       c1.contra.sinRevisar,
-      'sin revisar, de los que le reprochan algo al Gobierno. Que el Gobierno no haya respondido es un ' +
-      'dato sobre el Gobierno; que nosotros no lo hayamos mirado es una deuda nuestra, y contarlas ' +
-      'juntas convertiría la segunda en la primera.',
+      'sin revisar, de los que le reprochan algo al Gobierno. Tres cosas que se leen parecido y no lo ' +
+      'son: que la posición oficial NO SE HAYA HALLADO es un hecho sobre nuestra búsqueda; que el ' +
+      'Gobierno NO HAYA RESPONDIDO sería un hecho sobre el Gobierno, y este módulo ya no lo afirma ' +
+      '—por eso ese renglón está en cero y se deja a la vista—; y que nosotros no lo hayamos mirado ' +
+      'es una deuda nuestra. Contarlas juntas convertiría la última en la primera.',
       exigiblesContra(c1)));
 
     /* LAS DOS REDACCIONES, la de cero y la de N (v970). La de cero es la

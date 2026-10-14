@@ -27944,3 +27944,139 @@ sexta dejó de ser una tarea para ser un estado. El control del módulo sigue en
 repartidos en 2 de archivo de acá, 3 fuera del alcance del contenedor, 3 de
 capacidad por escribir y 1 de quien firma. **Ninguno de los nueve es un
 trámite.**
+
+## v1123 · «buscado y no hallado» no es «el Gobierno no respondió»
+
+**La medición que la abrió.** El usuario preguntó qué entradas sostienen hoy
+los dos ejes que publican, y cuántas tienen contrargumento. La respuesta
+resultó ser **cuatro de 255**, el 1,6 % del registro:
+
+| Eje | Entrada | Estado al medir |
+|---|---|---|
+| B «Dudosa» | `jep-carta-cpi-recorte` | tenía contrargumento |
+| B «Dudosa» | `vuelos-presidenciales-reporte-fac` | sin contrargumento |
+| C «Poco fiable» | `pgn-2027-monto-aprobado-comisiones` | sin contrargumento |
+| C «Poco fiable» | `ipc-agosto-2026` (el deflactor) | contada como pendiente, y no le reprocha nada |
+
+Las otras 251 son completitud: no mueven el piso ni un peldaño. **El conteo
+que el módulo publica es sobre 255 entradas y no sobre las 264 del archivo**
+—nueve son de precampaña y la Capa 1 las deja fuera—, así que el denominador
+honesto es 243 exigibles, no 252. La cifra que esta sesión había reportado
+antes salía de contar el archivo a mano, no de preguntarle al módulo.
+
+### Lo que la medición encontró, que no era lo que se buscaba
+
+`pgn-2027` **sí tenía posición oficial** y se escribió: el ministro de
+Hacienda defendió el presupuesto como la opción posible, con la Ley de Rescate
+para bajar el déficit de 9,4 % a 7,2 %, y el encuadre oficial sobre Educación
+es que sigue siendo la mayor partida y crece 2,8 %. **Las dos afirmaciones son
+ciertas a la vez** —2,8 % nominal con 6,24 % de inflación da −3,2 puntos
+reales, que es el −3,1 % que la ficha publica—, que es exactamente por qué
+este panel imprime dos columnas.
+
+`ipc-agosto-2026` **no era un pendiente sino una exención**: es la inflación
+del DANE, una cifra del país sin `nivelGobierno`, y no hay cargo al que un
+vocero pudiera responder. Cae en la clase de la v1117 y le faltaba su razón.
+
+`vuelos-presidenciales-reporte-fac` **no tiene posición oficial hallable**, y
+ahí estaba el defecto de fondo.
+
+### El defecto: la constancia respaldaba la afirmación equivocada
+
+La v961 escribió la CONSTANCIA DE BÚSQUEDA —dónde y cuándo— porque `ausente`
+y «no lo miré» se escribían igual de fácil. **La constancia estaba bien. Lo
+que estaba mal era lo que respaldaba.** El estado publicaba, con todas las
+letras, **«El Gobierno no respondió»** — una afirmación sobre la conducta de
+una administración que este módulo no puede sostener: pudo responder en una
+rueda de prensa, una alocución, un comunicado que el buscador no devolvió o
+una respuesta radicada que no se publica. La regla queda citada del usuario:
+*lo primero es un hecho sobre nuestra búsqueda; lo segundo es una afirmación
+sobre la conducta del Gobierno, y no la podemos hacer.*
+
+Y el campo que faltaba es el tercero: **QUÉ se buscó**. Sin él, «no se halló»
+no dice nada — se pudo haber buscado la cosa equivocada. Son tres y ninguno
+sobra, la misma forma que el trámite de la v1065 y el intento de la v1116.
+
+### Lo que se escribió
+
+* **`ausente` deja de ser declarable.** No se borra el reconocimiento del
+  campo —la rutina diaria es otra sesión y podría escribirlo— pero ya no
+  publica su afirmación: cae en `no-hallado`, y si trae los tres campos se
+  lee como lo que de verdad sostiene. Ninguna entrada de los dos registros lo
+  usaba, así que no se perdió ningún dato.
+* **`no-hallado` NO alimenta ningún indicador.** I-06 sigue contando
+  `ausente`, a propósito: su definición es «registros sin respuesta oficial»,
+  que es una afirmación sobre el Gobierno, y un «no hallado» no la establece.
+  Ascenderlo sería recuperar por la puerta de atrás lo que se acaba de
+  retirar.
+* **La entrada de los vuelos** declara su búsqueda: 14 de octubre, catorce
+  medios nombrados, y qué se buscó —la posición de fondo de Presidencia, el
+  DAPRE, la Casa Militar o MinDefensa sobre el propósito de los
+  desplazamientos—. Con lo que SÍ se halló, que son dos cosas y ninguna es de
+  fondo: una respuesta **procesal** —MinDefensa sostuvo ante el juzgado que ya
+  había respondido de fondo, y el juzgado concluyó que faltaban datos y le dio
+  48 horas— y una descripción **de prensa y no del Gobierno** sobre que un
+  movimiento de aeronave no es un viaje presidencial. Y la línea que lo
+  sostiene: *un documento entregado por orden judicial no es una posición
+  sobre el reproche.*
+* **Las dos ventanas de la cifra, conservadas.** 7–24 ago (18 días) → 103
+  movimientos y $1.117.705.478,79; 7 ago–8 sep (32 días) → 219 y
+  $2.286.796.769. **Verificado antes de entrarlas: la segunda INCLUYE a la
+  primera, no es aditiva**, y no se suman. Se conservan las dos porque el
+  crecimiento de la cifra por orden de juez ES parte del hallazgo. Y el
+  titular declara la **unidad**: son movimientos de aeronave —posicionamiento,
+  logística, comitiva, esquema de seguridad— y no viajes del presidente
+  (v1097).
+
+### Lo que la lectura del PAPEL encontró, y el código no
+
+Los dos renglones en cero **no se pintaban**: `filaC1` esconde los ceros, que
+por defecto está bien. Pero el texto de abajo decía «por eso ese renglón está
+en cero y se deja a la vista» — **el texto del verde impreso estando en rojo,
+por séptima vez en este repositorio**. Un cero que ES el dato se declara por
+renglón con `cero: true`, opt-in, porque lo contrario llena la fila de ceros.
+
+### La guarda, en tres mitades que no se implican
+
+1. **Estructural, en rojo:** el módulo ya no publica la afirmación.
+2. **Los tres campos, en rojo:** sin dónde, cuándo y qué, el estado no se
+   declara (v880), y el detalle nombra cuál falta.
+3. **El material, con `?` y no en rojo** (v970, v1097): que no haya ninguna
+   entrada «no hallada» es el estado BUENO —querría decir que toda posición
+   oficial se halló—, así que un rojo ahí pondría la salida barata en dejar
+   entradas sin buscar.
+
+Más la guarda de la guarda: que el renglón llegue a la fila, que el de «no
+respondió» viaje marcado para pintarse en cero, y que el pintor respete esa
+marca — **las tres juntas, porque cualquiera sola deja el cero invisible**. Se
+mide la propiedad y no la redacción (v890): la primera versión de esta mitad
+buscaba el texto exacto del renglón y se puso roja cuando yo mismo lo reescribí.
+
+**DE QUÉ NO RESPONDE** (v945): de que la búsqueda declarada se haya hecho de
+verdad (v1008), y de I-06.
+
+### Demostrada en rojo, con cuatro inyecciones fieles
+
+| Inyección | Resultado |
+|---|---|
+| vuelve «El Gobierno no respondió», como en la v1122 | **ROJO** · nombra las dos mitades que fallan |
+| el estado se declara con solo dos campos, como pedía la v961 | **ROJO** · «acepta el estado sin alguno de los tres campos» |
+| el renglón nuevo no llega a la fila de la Capa 1 | **ROJO** · «falta alguno de los dos renglones» |
+| la entrada de los vuelos se declara sin constancia | **ROJO** · la nombra por su id |
+
+756 → **760 palomitas**. Y una corrida MURIÓ en el camino, por una variable de
+un bloque vecino: es la cuarta vez de esa familia, y por eso los dos registros
+de esta guarda se leen dentro de su propio bloque.
+
+### Lo que esta versión NO hace
+
+* **No cambia lo que I-06 cuenta.** `pendiente`, y escrito en
+  `DECISIONES-PENDIENTES.md` §8: al retirar `ausente`, I-06 se queda sin
+  fuente que nadie pueda escribir — la octava forma del pendiente que nadie
+  puede bajar. Arreglarlo es cambiar un criterio que alimenta un eje que
+  publica, y eso no lo decide una sesión de trabajo.
+* **No mueve ningún peldaño.** `cerrado en v1123 · medido y declinado`: el
+  veredicto sigue en piso «No puede ser mejor que Poco fiable», y el usuario
+  decide si con esto se publica.
+* **No declara ausente ningún contrargumento.** `cerrado en v1123 · medido y
+  declinado`: el módulo perdió esa capacidad a propósito.

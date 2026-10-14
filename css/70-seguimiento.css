@@ -2549,3 +2549,8 @@ a.sp-fuente:hover svg{ color:var(--verde-hi); }
 }
 .sp-fi-vhecho > h4 { margin: 0 0 6px; font-size: var(--t-7); color: var(--sp-amb, #b26a00); }
 .sp-fi-vhecho-p { margin: 0; font-size: var(--t-8); line-height: 1.6; font-weight: 600; }
+
+/* Un renglón de la Capa 1 cuyo CERO es el dato (v1123): se ve, en gris, y
+   no compite con los que cuentan. */
+.sp-c1-lista li.sp-c1-z{opacity:.72}
+.sp-c1-lista li.sp-c1-z .sp-c1-n{color:var(--t-mut,#6b7a85)}

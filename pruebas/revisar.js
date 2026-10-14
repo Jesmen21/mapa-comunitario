@@ -3614,6 +3614,108 @@ console.log('\n  -- la ficha del gobernante --');
       : eximMal.length ? eximMal.length + ' eximida(s) traen ADEMÁS contrargumento oficial, y una de las ' +
           'dos cosas está mal escrita'
       : 'las ' + exim.length + ' traen su razón y ninguna trae además contrargumento');
+
+    /* ═══ «BUSCADO Y NO HALLADO» NO ES «NO RESPONDIÓ» (v961, v1123) ════════
+       La regla, dicha por el usuario y citada: *«no hallado», nunca «no
+       respondió». Lo primero es un hecho sobre nuestra búsqueda. Lo segundo
+       es una afirmación sobre la conducta del Gobierno, y no la podemos
+       hacer: puede haber respondido en un canal que no miramos.*
+
+       La v961 ya exigía la CONSTANCIA —dónde y cuándo—. La constancia estaba
+       bien; lo que estaba mal era lo que respaldaba: `ausente` publicaba «El
+       Gobierno no respondió». Esta guarda tiene TRES mitades que no se
+       implican:
+
+       1 · ESTRUCTURAL, en rojo: el módulo ya no publica esa afirmación. Mide
+           CÓDIGO, así que no puede vaciarse por una mejora de los datos.
+       2 · LOS TRES CAMPOS, en rojo: el estado no se declara sin dónde, cuándo
+           y QUÉ se buscó. El tercero es el que la v961 no pedía, y es el que
+           separa una búsqueda de un gesto: sin saber qué se preguntó, «no se
+           halló» no dice nada.
+       3 · MATERIAL, con `?` y no en rojo (v970, v1097): que HAYA alguna
+           entrada en ese estado lo ponen los DATOS, y que no haya ninguna es
+           el estado bueno —querría decir que toda posición oficial se halló—.
+           Un rojo ahí pondría la salida barata en dejar entradas sin buscar.
+
+       DE QUÉ NO RESPONDE (v945): de que la búsqueda declarada se haya hecho
+       de verdad, que no lo puede comprobar nadie (v1008); y de I-06, que
+       sigue contando `ausente` a propósito — ascender un «no hallado» a I-06
+       sería recuperar por la puerta de atrás la afirmación retirada. */
+    {
+      const noPubl = !/t: 'El Gobierno no respondi[oó]'/.test(j70v);
+      const hayEstado = /estado: 'no-hallado', t: 'Buscado y no hallado'/.test(j70v);
+      const niegaConducta = /NO sobre la conducta del Gobierno/.test(j70v);
+      const malE = [];
+      if (!noPubl) malE.push('sigue publicando «El Gobierno no respondió»');
+      if (!hayEstado) malE.push('no existe el estado «Buscado y no hallado»');
+      if (!niegaConducta) malE.push('el estado no dice que NO habla de la conducta del Gobierno');
+      comprobar('el módulo NO afirma que el Gobierno no respondió: afirma que no se halló',
+        malE.length === 0,
+        malE.length ? 'falla: ' + malE.join(' · ')
+          : 'el estado es «Buscado y no hallado», dice que es un hecho sobre la búsqueda y no sobre ' +
+            'la conducta del Gobierno, y la afirmación contraria ya no se publica');
+
+      /* LOS TRES CAMPOS, exigidos en el código y no de palabra. */
+      const tramoC = (j70v.match(/if \(v && typeof v === 'object' && \(v\.noHallado \|\| v\.ausente\)\) \{[\s\S]*?\n    \}/) || [''])[0];
+      const pideTres = /fu\.length && ff && fq/.test(tramoC) &&
+                       /v\.busco/.test(tramoC) && /v\.fecha/.test(tramoC) && /v\.que/.test(tramoC);
+      comprobar('y no se declara sin los TRES campos: dónde, cuándo y qué se buscó',
+        !!tramoC && pideTres,
+        !tramoC ? 'no se encontró la rama de «no hallado»'
+          : !pideTres ? 'acepta el estado sin alguno de los tres campos: una búsqueda sin constancia no ' +
+                        'se distingue de no haber buscado'
+          : 'los tres se exigen juntos, y lo que falte se nombra uno por uno en el detalle');
+
+      /* Y QUE LLEGUE A LA PANTALLA (v878): sin este renglón, el estado es
+         documentación y la entrada se sigue viendo como una sin revisar. */
+      /* Se mide la PROPIEDAD y no la redacción (v890, v935): que el renglón
+         nuevo viaje con su cuenta, que el viejo viaje marcado `cero: true`
+         —sin eso el pintor lo esconde y el texto de abajo, que dice «ese
+         renglón está en cero y se deja a la vista», queda mintiendo— y que
+         el pintor respete esa marca. Las tres juntas, porque cualquiera de
+         las tres sola deja el cero invisible. */
+      const mitadesP = [
+        ['el renglón nuevo viaja con su cuenta', /t: 'Buscado y no hallado', n: c1\.contra\.noHallado/.test(j70v)],
+        ['el de «no respondió» viaja marcado para pintarse en cero',
+         /n: c1\.contra\.ausente, cero: true/.test(j70v)],
+        ['y el pintor de la fila respeta esa marca', /if \(!p\.n && !p\.cero\) return;/.test(j70v)]
+      ];
+      const malP = mitadesP.filter((x) => !x[1]).map((x) => x[0]);
+      comprobar('y el estado LLEGA a la fila de la Capa 1, con el cero de «no respondió» a la vista',
+        malP.length === 0,
+        malP.length ? 'falla: ' + malP.join(' · ')
+          : 'los dos renglones se pintan: el nuevo con su cuenta, y el viejo en cero y visible, ' +
+            'para que se vea que el módulo PUDO decirlo y decidió no decirlo (v1064, v970)');
+
+      /* EL MATERIAL, con `?`: su cero es el estado BUENO. */
+      /* Los dos registros se leen ACÁ y no se toman de otro bloque: la v1116
+         y la v1090 costaron una corrida cada una por usar una variable de un
+         bloque vecino, y un ReferenceError mata el resumen entero. */
+      const regNH = JSON.parse(leer('assets/data/seguimiento-presidencial.json'));
+      const regNHa = JSON.parse(leer('assets/data/seguimiento-petro.json'));
+      const nh = [], nhMal = [];
+      [['actual', regNH], ['anterior', regNHa]].forEach(([q, rg]) => {
+        ((rg || {}).entradas || []).forEach((e) => {
+          const c = e.contrargumentoOficial;
+          if (!c || typeof c !== 'object' || !(c.noHallado || c.ausente)) return;
+          const ok = (c.busco || []).filter((x) => String(x || '').trim()).length &&
+                     String(c.fecha || '').trim() && String(c.que || '').trim();
+          (ok ? nh : nhMal).push(q + '/' + (e.id || '?'));
+        });
+      });
+      if (!nh.length && !nhMal.length) {
+        anotarSinMaterial('MATERIAL · entradas con la posición oficial buscada y no hallada',
+          'ninguna entrada lo declara hoy, y ese es el estado BUENO: querría decir que toda posición ' +
+          'oficial buscada se halló. Las reglas de arriba se miden contra el código y siguen mordiendo');
+      } else {
+        comprobar('MATERIAL · toda entrada «no hallada» trae su constancia completa',
+          nhMal.length === 0,
+          nhMal.length ? 'sin los tres campos: ' + nhMal.join(' · ')
+            : nh.length + (nh.length === 1 ? ' entrada declara su búsqueda con dónde, cuándo y qué: '
+                                           : ' entradas declaran su búsqueda con dónde, cuándo y qué: ') +
+              nh.join(' · '));
+      }
+    }
     /* LA GUARDA DE LA GUARDA (v878): que el módulo use el denominador
        exigible en los DOS sitios donde cuenta —el casillero y la puerta de
        I-06—, que la exención NO pueda escribirse como una regla de código, y

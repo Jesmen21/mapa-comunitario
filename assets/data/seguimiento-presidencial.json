@@ -4131,8 +4131,19 @@
           "n": "Forbes Colombia · Gobierno radica Presupuesto de $634,9 billones para 2027, $59 billones más que el proyecto de Petro",
           "u": "https://forbes.co/economia-y-finanzas/gobierno-radica-presupuesto-de-6349-billones-para-2027-59-billones-mas-que-el-proyecto-de-petro",
           "rol": "acto"
+        },
+        {
+          "n": "Infobae · Así serán distribuidos los $634,9 billones del presupuesto de la Nación en 2027",
+          "u": "https://www.infobae.com/colombia/2026/08/28/asi-seran-distribuidos-los-6349-billones-del-presupuesto-de-la-nacion-en-2027-estos-son-los-sectores-que-mas-recursos-recibiran/",
+          "rol": "contexto"
+        },
+        {
+          "n": "IFM Noticias · Presupuesto 2027: Educación crece 2,8 % en total, pero su inversión y la de ciencia caen",
+          "u": "https://ifmnoticias.com/educacion/presupuesto-2027-educacion-crece-2-8-en-total-pero-su-inversion-y-la-de-ciencia-/",
+          "rol": "contexto"
         }
-      ]
+      ],
+      "contrargumentoOficial": "El Gobierno defiende el proyecto en dos frentes y los dos son verificables. SOBRE EL CONJUNTO: el ministro de Hacienda, Miguel Gómez, reconoció ante el Congreso las dificultades fiscales y presentó el presupuesto como la opción posible dada la situación económica, diciendo que no es el presupuesto con el que el Gobierno habría querido empezar; la meta oficial es bajar el déficit proyectado de 9,4 % a 7,2 % con la reforma tributaria llamada Ley de Rescate, radicada en paralelo. SOBRE EDUCACIÓN, que es el sector que esta ficha señala: el encuadre oficial es que el Ministerio de Educación sigue siendo la mayor asignación del presupuesto, con cerca de $78,7 billones, y que crece 2,8 % frente a 2026. LAS DOS AFIRMACIONES SON CIERTAS A LA VEZ y por eso este panel imprime las dos columnas: 2,8 % de crecimiento nominal con una inflación anual de 6,24 % da una caída real de unos 3,2 puntos, que es la cifra que esta ficha publica (−3,1 %). El desacuerdo no es sobre el número: es sobre en qué pesos se cuenta. Lo que el Gobierno NO contesta acá es por qué la caída real se concentra en Salud y Educación mientras Defensa y Hacienda suben en términos reales."
     },
     {
       "fecha": "2026-09-14",
@@ -5030,7 +5041,7 @@
       "fecha": "2026-09-09",
       "precision": "exacta",
       "categoria": "gobierno",
-      "titulo": "Un reporte de la Fuerza Aeroespacial, entregado tras una tutela, registra 103 trayectos presidenciales y $1.117 millones en 18 días, con 64 vuelos de menos de diez minutos",
+      "titulo": "Un reporte de la Fuerza Aeroespacial, entregado tras una tutela, registra 103 movimientos de aeronaves y $1.117 millones en 18 días; ampliado por orden de juez a 32 días, sube a 219 movimientos y $2.286 millones",
       "id": "vuelos-presidenciales-reporte-fac",
       "nivelGobierno": "nacional",
       "categoriaProbatoria": "hecho-probado",
@@ -5048,7 +5059,7 @@
       },
       "detalle": "El representante a la Cámara José Luis Bohórquez (Pacto Histórico, Boyacá) radicó un derecho de petición ante el Ministerio de Defensa por los desplazamientos aéreos del presidente. El Ministerio guardó silencio durante semanas y solo respondió después de que Bohórquez interpusiera una tutela y un juzgado la admitiera. La respuesta, fechada el 8 de septiembre de 2026, incluye un reporte elaborado por la Fuerza Aeroespacial Colombiana con fechas, aeronaves, rutas, horas de vuelo, número de integrantes de la comitiva y costos. Entre el 7 y el 24 de agosto de 2026 —18 días— el documento registra 103 trayectos aéreos por $1.117.705.478,79; de ellos, 64 duraron menos de diez minutos y 36 corresponden al tramo entre el aeropuerto de Barranquilla y la sede Adelita de Char. Un tramo entre esos dos puntos en un UH-60L con cuatro integrantes de comitiva costó $1.812.489,64, y otro entre los mismos puntos, entre las 7:05 y las 7:15 de la mañana, $3.624.979,29. Las aeronaves reportadas incluyen helicópteros UH-60L Black Hawk y el Boeing 737-700 BBJ presidencial. El 17 de septiembre un juez le dio al Ministerio de Defensa un plazo de 48 horas para entregar la información completa, de modo que la entrega no se dio por satisfecha.",
       "tipoFuente": "verificado",
-      "contrapunto": "Lo que está documentado es el núcleo de cifras, y viene de un documento de la propia entidad entregado por obligación judicial: eso no lo degrada que quien lo pidiera sea de oposición —se clasifica el encuadre, no la evidencia—. Pero hay que separar tres cosas de ese núcleo. Primero, la proyección: la cifra de que, al mismo ritmo, el helicóptero presidencial costaría $22.665 millones en un año, casi el doble de lo que gastó el gobierno Petro en cuatro, es una proyección de la revista Cambio y no un hecho registrado; supone que el ritmo de 18 días se sostiene doce meses. Segundo, la lectura: «derroche», «caprichos» o «no hay austeridad» es el encuadre de un congresista de oposición, legítimo y comprobable como opinión, no como dato. Tercero, la cifra de los 36 trayectos circula en tres formulaciones distintas como si fueran la misma —unos medios dicen que duraron menos de cinco minutos, otros que menos de seis, y otros los describen como el tramo Barranquilla–Adelita de Char—; acá se deja la tercera, que es la que el reporte permite verificar, y se dejan dichas las otras dos. NO se incorpora la afirmación de que «34 vuelos registran cero pasajeros», que circuló en redes: no aparece en ninguna de las fuentes revisadas y sería verificable en el documento primario si trae columna de comitiva. Y la simetría, sin la cual esto sería propaganda y no control político: los cuestionamientos por uso de aviones y helicópteros oficiales no empiezan con este gobierno, fueron tema recurrente de la oposición durante los cuatro años de Petro, y durante la campaña el hoy vicepresidente José Manuel Restrepo enumeró entre lo que eliminarían «el helicóptero», en referencia al uso que le daba la entonces vicepresidenta Francia Márquez. Falta el contrargumento oficial: a la fecha no se registró respuesta sustantiva de Presidencia ni de la Casa Militar sobre protocolos de seguridad.",
+      "contrapunto": "Lo que está documentado es el núcleo de cifras, y viene de un documento de la propia entidad entregado por obligación judicial: eso no lo degrada que quien lo pidiera sea de oposición —se clasifica el encuadre, no la evidencia—. Pero hay que separar tres cosas de ese núcleo. Primero, la proyección: la cifra de que, al mismo ritmo, el helicóptero presidencial costaría $22.665 millones en un año, casi el doble de lo que gastó el gobierno Petro en cuatro, es una proyección de la revista Cambio y no un hecho registrado; supone que el ritmo de 18 días se sostiene doce meses. Segundo, la lectura: «derroche», «caprichos» o «no hay austeridad» es el encuadre de un congresista de oposición, legítimo y comprobable como opinión, no como dato. Tercero, la cifra de los 36 trayectos circula en tres formulaciones distintas como si fueran la misma —unos medios dicen que duraron menos de cinco minutos, otros que menos de seis, y otros los describen como el tramo Barranquilla–Adelita de Char—; acá se deja la tercera, que es la que el reporte permite verificar, y se dejan dichas las otras dos. NO se incorpora la afirmación de que «34 vuelos registran cero pasajeros», que circuló en redes: no aparece en ninguna de las fuentes revisadas y sería verificable en el documento primario si trae columna de comitiva. Y la simetría, sin la cual esto sería propaganda y no control político: los cuestionamientos por uso de aviones y helicópteros oficiales no empiezan con este gobierno, fueron tema recurrente de la oposición durante los cuatro años de Petro, y durante la campaña el hoy vicepresidente José Manuel Restrepo enumeró entre lo que eliminarían «el helicóptero», en referencia al uso que le daba la entonces vicepresidenta Francia Márquez. Sobre la posición oficial, lo que esta entrada afirma es un hecho sobre NUESTRA búsqueda y no sobre la conducta del Gobierno: se buscó y no se halló una posición de fondo de Presidencia, el DAPRE, la Casa Militar o el Ministerio de Defensa sobre el propósito de los desplazamientos. El detalle de dónde, cuándo y qué se buscó va en el campo de contrargumento.",
       "fuentes": [
         {
           "n": "Cambio · Vuelos presidenciales de Abelardo de la Espriella: la tutela que reveló $1.117 millones en gastos en 18 días",
@@ -5081,8 +5092,39 @@
         {
           "que": "actualizacion",
           "texto": "HECHO NUEVO del 13 de octubre de 2026, encontrado al buscar la respuesta oficial del Gobierno. El reporte de 103 trayectos y $1.117 millones que esta entrada registra NO era el completo: el Juzgado Noveno Penal del Circuito Especializado de Bogotá le dio al Ministerio de Defensa 48 horas para entregar la información completa, y el consolidado ampliado —del 7 de agosto al 8 de septiembre de 2026, 32 días— subió a 219 movimientos de aeronaves por unos $2.286 millones, de los cuales 138 duraron menos de diez minutos (unos $356 millones) y 43 tuvieron como origen o destino las canchas del Junior en Barranquilla (unos $141 millones). Convergente en Publimetro, Portafolio, Infobae, El Universal y La Voz del Cinaruco. SE ANOTA EN VEZ DE CAMBIAR LAS CIFRAS DEL TÍTULO, y la razón importa: las dos mediciones tienen ventanas distintas —18 días contra 32— y mezclarlas en un total sería el error que la v1085 tiene escrito. Y lo que esta actualización NO resuelve: el consolidado ampliado lo divulgó el representante Bohórquez y no está verificado de forma independiente, varias notas advierten que un movimiento de aeronave no equivale a un viaje personal del presidente —hay posicionamiento, logística, esquema de seguridad y atención del terremoto del 10 de agosto dentro de esa cuenta—, y eso es una advertencia de prensa y no una respuesta oficial del Gobierno, así que el contrargumento de esta entrada sigue `sin-revisar`."
+        },
+        {
+          "que": "precision",
+          "texto": "LA UNIDAD DE ESTE CONTEO, dicha al lado de la cifra (v1097, v1123). La unidad es el MOVIMIENTO DE AERONAVE y no el viaje del presidente (v1097): el reporte cuenta posicionamientos, traslados logísticos, transporte de comitiva y movimientos del esquema de seguridad. 219 movimientos no son 219 viajes presidenciales, y publicar la cifra sin la unidad al lado es lo que permite leerla como lo segundo."
+        },
+        {
+          "que": "precision",
+          "texto": "LAS DOS VENTANAS, y por qué se conservan las dos (v1085, v1123). Las dos cifras son de la MISMA serie con fechas de corte distintas, y la segunda INCLUYE a la primera: 7–24 de agosto de 2026 (18 días) → 103 movimientos y $1.117.705.478,79; 7 de agosto–8 de septiembre de 2026 (32 días) → 219 movimientos y $2.286.796.769. No son aditivas y no se suman. Se conservan las dos porque el CRECIMIENTO de la cifra por orden judicial es parte del hallazgo: el primer reporte no era el completo, y lo que lo completó fue un juez."
         }
-      ]
+      ],
+      "contrargumentoOficial": {
+        "noHallado": true,
+        "fecha": "2026-10-14",
+        "busco": [
+          "búsqueda web, tres consultas dirigidas a la posición oficial",
+          "Cambio",
+          "El Universal",
+          "Vanguardia",
+          "Portafolio",
+          "Infobae",
+          "Publimetro",
+          "La Silla Vacía",
+          "Cuestión Pública",
+          "Radio Santafé",
+          "El Diario (Pereira)",
+          "DiariOriente",
+          "Seguimiento.co",
+          "El Noticion",
+          "La Veintitrés"
+        ],
+        "que": "Una posición oficial de la Presidencia, el DAPRE, la Casa Militar o el Ministerio de Defensa sobre el PROPÓSITO oficial de los desplazamientos cuestionados y sobre los protocolos de seguridad que los sustentan. No el reporte de cifras, que ya está en esta entrada: la respuesta al reproche.",
+        "loQueSiSeHallo": "Dos cosas, y ninguna es una posición de fondo. PRIMERA, una respuesta PROCESAL: ante el juzgado, el Ministerio de Defensa sostuvo que SÍ había dado respuesta de fondo al derecho de petición y explicó que la elaboró con información de la Jefatura del Estado Mayor Conjunto de las Fuerzas Militares; el Juzgado Noveno Penal del Circuito Especializado de Bogotá concluyó que faltaban datos y le dio 48 horas para entregarlos. SEGUNDA, una descripción de prensa y no del Gobierno: varias notas advierten que los registros son movimientos de aeronaves de la Fuerza Pública —posicionamiento, logística y esquema de seguridad— y no viajes personales del presidente. Eso es contexto de un medio, no una justificación oficial, y no se le atribuye al Gobierno. SOBRE LA PRIMERA, lo que la sostiene: un documento entregado por orden judicial no es una posición sobre el reproche. Y Cambio consigna que, a la fecha de su nota, ni el Ministerio de Defensa ni la Presidencia han explicado qué actividad oficial se realiza en el destino de los trayectos cortos de Barranquilla. ESO ES LO QUE LA COBERTURA REVISADA DICE, y no es lo mismo que afirmar que el Gobierno no respondió: pudo haberlo hecho en un canal que esta búsqueda no alcanzó."
+      }
     },
     {
       "fecha": "2026-09-08",
@@ -5380,7 +5422,11 @@
           "rol": "acto"
         }
       ],
-      "id": "ipc-agosto-2026"
+      "id": "ipc-agosto-2026",
+      "_sinReprocheAlGobierno": {
+        "causa": "sin-reproche-al-ejecutivo",
+        "razon": "Es la inflación anual que publica el DANE, una cifra del país y no un acto de gobierno —la entrada no declara nivelGobierno—. No le reprocha nada al Ejecutivo: no hay cargo al que un vocero pudiera responder, y pedirle contrargumento sería medir un pendiente que nadie puede bajar. Entra al módulo como INSUMO —es el deflactor con el que el eje C descuenta la inflación— y por esa vía sostiene un eje que publica, lo cual no la convierte en un reproche: lo que el eje reprocha es el reparto del gasto, no la inflación."
+      }
     },
     {
       "fecha": "2026-09-07",

@@ -188,3 +188,45 @@ cosa, está tallada.** Es la misma forma de la regla del material de la v1077
 y de la predicción escrita de la v1117.
 
 Lo que esta sesión NO debe hacer: escribirla mirando estas dos entradas.
+
+
+---
+
+## 8 · I-06 se quedó sin fuente que nadie pueda escribir · `pendiente`
+
+**Es una consecuencia medida de la v1123, y la decisión es suya porque cambia
+un criterio.**
+
+El indicador I-06 se llama «Registros sin respuesta oficial» y su definición
+es: *hechos en los que se buscó la respuesta del Gobierno y no la hay.* Se
+alimenta del estado `ausente` de la Capa 1 — el que afirmaba «El Gobierno no
+respondió».
+
+La v1123 retiró esa afirmación, porque no la podemos hacer: el Gobierno pudo
+responder en un canal que no miramos. Lo que ahora se puede declarar es
+«buscado y no hallado», que es un hecho sobre nuestra búsqueda.
+
+**Y eso deja a I-06 sin fuente escribible.** No es un error de esta tanda —el
+estado retirado no lo usaba ninguna entrada, así que I-06 ya contaba cero y
+publicaba `sinCalcular` con su razón—, pero sí es exactamente la forma del
+**pendiente que nadie puede bajar** que este proyecto lleva siete versiones
+persiguiendo: un indicador cuya condición ningún trabajo correcto puede
+satisfacer nunca.
+
+**Las dos salidas, y la que NO tomé:**
+
+* **Ascender «no hallado» a I-06.** *No lo hice.* Sería recuperar por la
+  puerta de atrás la afirmación que se acaba de retirar: el indicador seguiría
+  diciendo «sin respuesta oficial» con evidencia que solo sostiene «no
+  hallada».
+* **Cambiar lo que I-06 cuenta** — de «registros sin respuesta oficial» a
+  «registros cuya posición oficial se buscó y no se halló». Es defendible:
+  mide la disponibilidad pública de la posición del Gobierno, es simétrico
+  entre gobiernos y es comprobable. **Pero cambiar un criterio no lo decide
+  una sesión de trabajo**, y menos uno que alimenta el eje B, que hoy publica.
+
+**Mientras tanto I-06 publica `sinCalcular` con su razón, que es lo correcto
+y lo que ya hacía.** Si usted autoriza el cambio, el orden es el de siempre:
+redactar el criterio entero con su `incluye` y su `excluye`, correrlo sobre
+TODO el registro y el de Petro sin mirar a quién favorece, y recién entonces
+ver qué mueve.

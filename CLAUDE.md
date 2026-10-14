@@ -1061,6 +1061,28 @@ sección al final de este archivo.
   guarda necesita una tabla de dónde mirar y esa tabla es lo que envejece. **La
   lista de a quién se le exige sale de `PESO_EJE`**, así que un eje nuevo nace
   con la declaración exigida sin que su autor se acuerde.
+* **«NO HALLADO», nunca «NO RESPONDIÓ»** (v961, v1123). Lo dijo el usuario y
+  queda citado: *lo primero es un hecho sobre nuestra búsqueda; lo segundo es
+  una afirmación sobre la conducta del Gobierno, y no la podemos hacer: puede
+  haber respondido en un canal que no miramos.* La v961 ya exigía la
+  constancia —dónde y cuándo—; la constancia estaba bien y lo que estaba mal
+  era lo que respaldaba. Son **tres campos**: dónde, cuándo y **qué se
+  buscó**, y el tercero es el que separa una búsqueda de un gesto — sin saber
+  qué se preguntó, «no se halló» no dice nada, se pudo buscar la cosa
+  equivocada. Y **no alimenta ningún indicador**: ascender un «no hallado» a
+  uno que cuenta «registros sin respuesta oficial» es recuperar por la puerta
+  de atrás la afirmación que se retiró. **La consecuencia se dice, no se
+  tapa**: el indicador se queda sin fuente escribible, que es el pendiente
+  que nadie puede bajar por octava vez, y arreglarlo es cambiar un criterio.
+* **Y un cero que SIGNIFICA algo se pinta** (v1064, v1123). Esconder los
+  renglones en cero está bien por defecto —una categoría vacía es ruido— y
+  es falso para el cero que ES el dato: «afirmado como no respondió · 0» dice
+  que el módulo PUDO hacer esa afirmación y decidió no hacerla, y escondido
+  se lee igual que si la capacidad nunca hubiera existido. Se declara por
+  renglón y no por fila, con `cero: true`, porque lo contrario llena la
+  pantalla de ceros. **Lo encontró componer la pantalla y LEERLA**: el texto
+  decía «ese renglón está en cero y se deja a la vista» y el renglón no
+  estaba — el texto del verde impreso estando en rojo, por séptima vez.
 * **Y una lista de pendientes registra ESTADOS, no TAREAS DE TERCEROS**
   (v1122). Lo dijo el usuario y queda citado: *un pendiente inválido le asigna
   deberes a alguien que no está en esta mesa.* Uno válido dice **qué falta y
