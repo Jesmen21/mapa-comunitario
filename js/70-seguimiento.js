@@ -3388,19 +3388,30 @@
      serie para los gobiernos anteriores, que es la misma condición de
      validez de archivo que bloquea el eje B. Lo que cambia es que publica
      sus cifras, como el eje B publica sus cuatro números desde la v958. */
-  /* El trámite viaja con el vacío, y se lee del registro POR LA CLAVE DEL
-     EJE. Devuelve null cuando no está escrito: un trámite inventado acá sería
-     peor que ninguno, porque se leería como averiguado.
+  /* QUÉ CLASE DE PRUEBA LE FALTA AL EJE, leída del registro POR LA CLAVE DEL
+     EJE. Devuelve null cuando no está escrita: una declaración inventada acá
+     sería peor que ninguna, porque se leería como averiguada.
 
      Vive en un solo bloque, `tramites`, y no dentro del dato de cada eje
      (v1076). Con uno en `presupuesto`, otro en `fuerza` y el del B sin casa,
      la guarda necesitaría una tabla de dónde mirar — y esa tabla es
-     exactamente lo que se queda viejo cuando alguien agrega un eje. */
+     exactamente lo que se queda viejo cuando alguien agrega un eje. La clave
+     del bloque se quedó como estaba porque la escribe también la rutina
+     diaria, que es otra sesión; lo que cambió en la v1122 es lo que lleva
+     dentro.
+
+     EL CUARTO CAMPO YA NO ES `como` (v1122). Decía cómo se consigue el
+     documento, y para el eje D eso era un derecho de petición con su término
+     legal: una tarea de un tercero metida en una lista de pendientes. Ahora
+     es `porQueLimita` — por qué su ausencia limita lo que el módulo puede
+     publicar —, que es lo que un pendiente válido sí tiene que decir y lo
+     único que un lector de la ficha puede usar. Y va exigido igual que los
+     otros tres: un eje que no lo traiga no publica declaración (v880). */
   function tramiteDe(dd, eje) {
     var t = (((dd || {}).tramites) || {})[eje] || null;
     if (!t || !(t.reglas || []).length) return null;
     var reglas = (t.reglas || []).filter(function (r) {
-      return r && r.que && r.quien && r.como && r.cuando;
+      return r && r.que && r.quien && r.porQueLimita && r.cuando;
     });
     if (!reglas.length) return null;
     return { eje: eje, reglas: reglas, ultimoIntento: t.ultimoIntento || null };
@@ -3457,11 +3468,12 @@
       sectores: sec, sinDeflactar: sinReal.map(function (s) { return s.t; }),
       bajan: bajan.length, suben: sec.length - bajan.length,
       falta: '', lectura: '', unidades: '', reglas: null,
-      /* EL TRAMITE DEL VACIO (v1065). Nombrar el documento y callar como se
-         consigue convierte un vacio en un muro (v849, v880): quien lee no
-         sabe si es trabajo de una tarde, de un derecho de peticion o de
-         esperar a que pase un ano. Se LEE del registro y no se escribe acá,
-         para que la rutina diaria lo corrija sin tocar este archivo. */
+      /* QUE LE FALTA A ESTE EJE (v1065, reescrito en la v1122). Nombrar el
+         documento y callar POR QUE su ausencia limita lo que el eje publica
+         convierte un vacio en un muro (v849, v880). Lo que NO va es como se
+         consigue: eso seria asignarle un deber a quien no esta en esta mesa.
+         Se LEE del registro y no se escribe acá, para que la rutina diaria lo
+         corrija sin tocar este archivo. */
       tramite: tramiteDe(dd || D, 'C')
     };
 
@@ -3713,7 +3725,7 @@
      Con las dos del mismo lado del ancla del 55 % —por encima— el corte
      parecería claro, y aun así no se escribe: son proyecciones de fuente
      secundaria, y un peldaño publicado sobre una persona real no se apoya en
-     eso. Lo que lo cerraría está nombrado abajo, en el trámite. */
+     eso. Qué clase de prueba lo cerraría está nombrado abajo. */
   var ESCALA_EJE_C = {
     referencia: 'Artículo 350 de la Constitución —el gasto público social tiene prioridad sobre ' +
                 'cualquier otra asignación, salvo las excepciones de seguridad nacional—, artículo ' +
@@ -4050,10 +4062,10 @@
 
     var r = {
       eje: 'D', t: 'Uso de la fuerza y derechos', enLista: 'el uso de la fuerza',
-      /* Las DOS reglas de este eje piden cosas de clase distinta y por eso el
-         tramite las separa: la serie oficial tiene entidad y termino, y el
-         indicador no tiene tramite ante nadie —lo escribe quien firma el
-         modulo— pero tampoco puede escribirse mirando este registro (v1076). */
+      /* QUE LE FALTA A ESTE EJE, leido del registro (v1076, v1122). Es la
+         clase de prueba que le falta y por que eso limita lo que publica; lo
+         que NO lleva es como conseguirla, porque este modulo publica estados
+         y no le asigna deberes a quien no esta en esta mesa. */
       tramite: tramiteDe(dd || D, 'D'),
       pregunta: '\u00bfqu\u00e9 le est\u00e1 pasando a la gente en las operaciones del Estado?',
       /* EL NIVEL, calculado (v1088). Antes era `null` escrito a mano con su
@@ -4136,7 +4148,7 @@
                             'para el nivel es la serie hist\u00f3rica de arriba.'
                           : 'ninguna cuenta todav\u00eda, porque el ' +
                             'criterio pide la confirmaci\u00f3n forense u oficial y lo que hay es el relato de ' +
-                            'los medios. Es el mismo documento que el tr\u00e1mite de abajo manda a pedir.')
+                            'los medios. Es la misma clase de prueba que el bloque de abajo declara que falta.')
                       : 'ninguna entrada lo declara todav\u00eda.'));
       r.lectura = 'Este eje publica sus cifras y NO publica nivel, igual que el eje C publica sus recortes ' +
                   'desde la v1055: una cifra confirmada no es un dictamen. Y las dos listas no se suman ni ' +
@@ -5116,16 +5128,18 @@
 
     var conTramite = real.filter(function (e) { return e.tramite && ((e.tramite.reglas || []).length); });
     var sinTramite = real.filter(function (e) { return !(e.tramite && ((e.tramite.reglas || []).length)); });
-    caja('Todo eje que necesita un documento declara su trámite: qué, quién lo tiene, cómo se pide y cuándo',
+    caja('Todo eje que necesita un documento declara qué prueba le falta, dónde vive, por qué limita y cuándo',
          conTramite.length === real.length ? 'pasa' : 'falla',
-         conTramite.length + ' de ' + real.length + ' con trámite completo' +
-         (sinTramite.length ? ' · sin trámite: ' + sinTramite.map(function (e) { return e.t; }).join(' · ') : '') +
+         conTramite.length + ' de ' + real.length + ' con los cuatro campos' +
+         (sinTramite.length ? ' · sin declarar: ' + sinTramite.map(function (e) { return e.t; }).join(' · ') : '') +
          ' · ' + conTramite.map(function (e) {
            var ui = e.tramite.ultimoIntento;
            return 'eje ' + e.eje + ': ' + (ui ? 'intentado el ' + (ui.fecha || 'sin fecha') : 'sin intentar');
          }).join(' · '),
          'archivo-aqui',
-         'Escribir el trámite del eje que no lo tenga, en el bloque único del registro y con la clave del eje.');
+         'Escribir, para el eje que no lo tenga, qué clase de prueba le falta y por qué eso limita lo que publica, ' +
+         'en el bloque único del registro y con la clave del eje. Lo que NO se escribe es cómo conseguirla: una lista ' +
+         'de pendientes de este proyecto registra estados, no tareas de terceros (v1122).');
 
     var mc = marcoDeclarado(dd);
     caja('Quien opera el módulo declaró sus supuestos de valor',
@@ -5187,7 +5201,7 @@
              cn(deAca, 'casillero', 'casilleros')
            : 'Nada de lo que falta lo puede cerrar una sesión de acá',
       d: estado === 'sin-clasificar'
-           ? 'Un casillero abierto sin trámite declarado se lee como si nadie supiera qué hacer con él, ' +
+           ? 'Un casillero abierto que no declara qué lo cerraría se lee como si nadie supiera qué hacer con él, ' +
              'y es justamente lo que esta cuenta existe para impedir.'
        : estado === 'completo' ? 'Los casilleros que el módulo sabe medir están todos en verde. Lo que ' +
              'el módulo no sabe medir no aparece acá, y eso no es lo mismo que estar completo.'
@@ -5197,7 +5211,7 @@
            : 'Lo que falta pide un documento que este contenedor no alcanza, una decisión de quien firma ' +
              'o una capacidad que el módulo todavía no tiene. Eso no quiere decir que el módulo esté ' +
              'completo: quiere decir que trabajar más desde acá no lo acerca, y que cada casillero ' +
-             'publica su trámite para quien sí pueda.'
+             'publica qué lo cerraría para quien sí pueda.'
     };
 
     return { filas: f, pasan: f.length - falla - sinCorrer, falla: falla, sinCorrer: sinCorrer,
@@ -6407,13 +6421,19 @@
      este módulo. */
   function bloqueTramite(tr) {
     var d = el('div', 'sp-c3-tram');
-    d.appendChild(el('b', 'sp-c3-tram-h', 'Cómo se consigue'));
+    /* «Cómo se consigue» hasta la v1121, con una línea «Cómo se pide» por
+       regla. Para el eje D esa línea era un derecho de petición con su
+       término legal — una TAREA asignada a una entidad que no está en esta
+       mesa, y este módulo no reparte deberes: publica estados. El encabezado
+       y los renglones dicen ahora QUÉ falta y POR QUÉ limita lo que se
+       publica, que es lo único que un lector de la ficha puede usar. */
+    d.appendChild(el('b', 'sp-c3-tram-h', 'Qué clase de prueba le falta'));
     var ul = el('ul', 'sp-c3-tram-l');
     tr.reglas.forEach(function (r) {
       var li = el('li', null, null);
       li.appendChild(el('b', null, r.que));
-      li.appendChild(el('p', null, 'Quién lo tiene: ' + r.quien));
-      li.appendChild(el('p', null, 'Cómo se pide: ' + r.como));
+      li.appendChild(el('p', null, 'Dónde vive esa prueba: ' + r.quien));
+      li.appendChild(el('p', null, 'Por qué limita lo que se publica: ' + r.porQueLimita));
       li.appendChild(el('p', 'sp-c3-tram-c', 'Cuándo puede existir: ' + r.cuando));
       ul.appendChild(li);
     });

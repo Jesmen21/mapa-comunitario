@@ -2441,7 +2441,15 @@ console.log('\n  -- la ficha del gobernante --');
      DE QUÉ NO RESPONDE, dicho y no disimulado (v945): al eje A no se le
      exige. Lo que le falta es un HECHO con fecha de revisión escrita —el 21
      de noviembre de 2026—, no un documento que alguien pueda ir a pedir, y
-     pedirle un trámite mandaría a tramitar lo que no se tramita. */
+     pedirle una declaración de prueba faltante mandaría a declarar lo que no
+     falta.
+
+     EL CUARTO CAMPO CAMBIÓ EN LA v1122, y con él lo que esta guarda mide.
+     Era `como` —cómo se consigue el documento—, y para el eje D eso era un
+     derecho de petición con su término legal: una TAREA asignada a una
+     entidad que no está en esta mesa. Ahora es `porQueLimita`: por qué su
+     ausencia limita lo que el módulo puede publicar. Las dos mitades de esa
+     regla se miden aparte, más abajo, en «ningún pendiente reparte deberes». */
   {
     const j70t = soloCodigo(leer('js/70-seguimiento.js'));
     const regT = JSON.parse(leer('assets/data/seguimiento-presidencial.json'));
@@ -2467,7 +2475,7 @@ console.log('\n  -- la ficha del gobernante --');
 
     /* Los cuatro campos, en TODAS las reglas de TODOS los ejes, y el detalle
        dice en cuál regla de cuál eje falla (v973). */
-    const CAMPOS = ['que', 'quien', 'como', 'cuando'];
+    const CAMPOS = ['que', 'quien', 'porQueLimita', 'cuando'];
     const incompletas = [];
     let nReglas = 0;
     Object.keys(tramites || {}).filter((k) => k[0] !== '_').forEach((e) => {
@@ -2477,7 +2485,7 @@ console.log('\n  -- la ficha del gobernante --');
         if (fal.length) incompletas.push(e + '/' + (r.k || '?') + ' sin ' + fal.join(' ni '));
       });
     });
-    comprobar('cada regla dice QUÉ falta, QUIÉN lo tiene, CÓMO se pide y CUÁNDO puede existir',
+    comprobar('cada regla dice QUÉ falta, DÓNDE vive, POR QUÉ limita y CUÁNDO puede existir',
       nReglas > 0 && incompletas.length === 0,
       !nReglas ? 'no hay reglas que medir'
                : incompletas.length ? 'falla: ' + incompletas.join(' · ')
@@ -2507,12 +2515,12 @@ console.log('\n  -- la ficha del gobernante --');
     /* El código lo LEE por la clave del eje y no lo teclea. */
     const tramoT = (j70t.match(/function tramiteDe\(dd, eje\) \{[\s\S]*?\n  \}/) || [''])[0];
     const leePorEje = /\(\(\(dd \|\| \{\}\)\.tramites\) \|\| \{\}\)\[eje\]/.test(tramoT);
-    const descartaAMedias = /r\.que && r\.quien && r\.como && r\.cuando/.test(tramoT);
-    comprobar('el eje LEE su trámite del registro por su clave y descarta el que venga a medias',
+    const descartaAMedias = /r\.que && r\.quien && r\.porQueLimita && r\.cuando/.test(tramoT);
+    comprobar('el eje LEE del registro por su clave lo que le falta, y descarta lo que venga a medias',
       !!tramoT && leePorEje && descartaAMedias,
       !tramoT ? 'no se encontró tramiteDe(dd, eje)'
               : !leePorEje ? 'no lo lee de `tramites` por la clave del eje'
-              : !descartaAMedias ? 'acepta una regla a medias: media instrucción se sigue peor que ninguna'
+              : !descartaAMedias ? 'acepta una regla a medias: media declaración se lee peor que ninguna'
               : 'sale del registro por su clave, y una regla incompleta no se pinta');
 
     /* UNA SOLA CODIFICACIÓN (clase B): la copia vieja no se quedó. */
@@ -2534,7 +2542,8 @@ console.log('\n  -- la ficha del gobernante --');
     const mitadesT = [
       ['el pintor de ejes lo pinta', /if \(ej\.tramite\) li\.appendChild\(bloqueTramite\(ej\.tramite\)\);/.test(j70t)],
       ['bloqueTramite imprime los cuatro campos',
-       /Qui[eé]n lo tiene: /.test(j70t) && /C[oó]mo se pide: /.test(j70t) && /Cu[aá]ndo puede existir: /.test(j70t)],
+       /D[oó]nde vive esa prueba: /.test(j70t) && /Por qu[eé] limita lo que se publica: /.test(j70t) &&
+       /Cu[aá]ndo puede existir: /.test(j70t)],
       ['y la clase tiene regla en el css', /\.sp-c3-tram\{/.test(leer('css/70-seguimiento.css'))]
     ];
     const malT = mitadesT.filter((x) => !x[1]).map((x) => x[0]);
@@ -2553,6 +2562,92 @@ console.log('\n  -- la ficha del gobernante --');
                  : !pintaAlgo ? 'ya no pinta ningún trámite: no hay qué atar a una clase'
                  : atadoAC ? 'atado al eje C: los otros siguen siendo un muro'
                  : 'cualquier eje que traiga trámite lo publica');
+
+
+    /* ═══ NINGÚN PENDIENTE REPARTE DEBERES (v1122) ═════════════════════════
+       La regla que la paga, dicha por el usuario: **las listas de pendientes
+       de este proyecto registran ESTADOS, no TAREAS DE TERCEROS.** Un
+       pendiente válido dice qué falta y por qué eso limita lo que el módulo
+       puede publicar. Uno inválido le asigna un deber a alguien que no está
+       en esta mesa — y entonces el módulo queda esperando un plazo legal que
+       nadie de acá controla, con la lista creciendo sola.
+
+       Lo que la pagó: el cuarto campo del bloque se llamaba `como` —«cómo se
+       pide»—, y para el eje D decía «se pide por derecho de petición,
+       gratuito, con término de quince días hábiles». Eso estaba IMPRESO en la
+       ficha, bajo el encabezado «Cómo se consigue».
+
+       LA SEÑAL, Y POR QUÉ LA GUARDA ES DE SUPERFICIE Y NO DE PALABRAS. El
+       vocabulario del trámite —«derecho de petición», «radicar», «días
+       hábiles»— aparece 30 veces en el registro, y 26 de esas son CONTENIDO:
+       un representante radicó un derecho de petición ante MinDefensa, un
+       decreto dura doce meses prorrogables. Son hechos registrados, no
+       pendientes, y una guarda que los persiguiera sería la lista de
+       excepciones que envejece hasta no significar nada (v895), como el
+       cribado de menores de la v1116. Medido sobre las superficies de
+       PENDIENTE y solo sobre ellas, los aciertos eran 2 de 4. **El
+       discriminante es la SUPERFICIE, no la palabra.**
+
+       Dos mitades que no se implican, y por eso van aparte (v899):
+       la ESTRUCTURAL —ninguna regla puede traer un campo cuyo oficio sea
+       decir cómo se consigue algo— y la de TEXTO sobre esas superficies.
+
+       DE QUÉ NO RESPONDE (v945): de las entradas del registro, donde esas
+       mismas palabras son el hecho que se documenta; y de que `porQueLimita`
+       diga la verdad, que no lo puede comprobar nadie (v1008). Comprueba que
+       el campo del deber no esté y que las superficies de pendiente no
+       repartan uno.
+
+       VA EN ROJO Y NO CON `?` (v970, v1097): mide ESQUEMA y CÓDIGO, no
+       material del registro, así que no puede vaciarse por una mejora. */
+    const ejesT = Object.keys(tramites || {}).filter((k) => k[0] !== '_');
+    const conComo = [];
+    ejesT.forEach((e) => {
+      ((tramites[e] || {}).reglas || []).forEach((r) => {
+        if (Object.prototype.hasOwnProperty.call(r || {}, 'como')) conComo.push(e + '/' + (r.k || '?'));
+      });
+    });
+    comprobar('ninguna regla de pendiente trae el campo que dice CÓMO se consigue',
+      ejesT.length > 0 && conComo.length === 0,
+      !ejesT.length ? 'no hay reglas que medir: la guarda se quedó sin material'
+        : conComo.length ? 'vuelve el campo `como`, que es una tarea de tercero: ' + conComo.join(' · ')
+        : 'las ' + nReglas + ' reglas de los ' + ejesT.length + ' ejes declaran `porQueLimita` y ninguna `como`');
+
+    /* LA MITAD DE TEXTO, sobre las superficies de PENDIENTE y ninguna más.
+       La lista de superficies se DERIVA —los ejes salen de PESO_EJE, arriba—
+       en vez de tecleárse eje por eje (v1091). */
+    const DEBER = /derecho de petici[oó]n(?! vencido)|radicar (un|una|el|la) (derecho|solicitud|petici)|d[ií]as h[aá]biles|prorrogable con|Ley 1755|se pide por derecho|t[eé]rmino de (quince|diez|cinco|\d+)/i;
+    const supT = [];
+    ejesT.forEach((e) => {
+      const b = tramites[e] || {};
+      ((b.reglas || []).forEach((r) => {
+        ['que', 'quien', 'porQueLimita', 'cuando'].forEach((c) => {
+          supT.push(['registro · tramites.' + e + '/' + (r.k || '?') + '.' + c, String((r || {})[c] || '')]);
+        });
+      }));
+      if (b._nota) supT.push(['registro · tramites.' + e + '._nota', String(b._nota)]);
+      if (b.ultimoIntento) supT.push(['registro · tramites.' + e + '.ultimoIntento',
+                                      String(b.ultimoIntento.resultado || '')]);
+    });
+    /* El control del módulo: sus casilleros llevan lo que los cerraría, y eso
+       es la otra lista de pendientes que el módulo publica. Se acota a
+       `controlDeCalidad` para no barrer los criterios, donde «derecho de
+       petición vencido» es la VÍA de I-07 y es correcta. */
+    const cuerpoCtrl = (j70t.match(/function controlDeCalidad\(dd, corte\) \{[\s\S]*?\n  \}\n/) || [''])[0];
+    if (cuerpoCtrl) supT.push(['js/70 · controlDeCalidad', cuerpoCtrl]);
+    const hayDec = fs.existsSync(R('DECISIONES-PENDIENTES.md'));
+    if (hayDec) supT.push(['DECISIONES-PENDIENTES.md', leer('DECISIONES-PENDIENTES.md')]);
+
+    const reparten = supT.filter((x) => DEBER.test(x[1])).map((x) => x[0]);
+    comprobar('y ninguna superficie de pendiente le asigna un deber a un tercero',
+      supT.length >= 10 && !!cuerpoCtrl && reparten.length === 0,
+      !cuerpoCtrl ? 'no se encontró controlDeCalidad: la lista de casilleros quedaría sin barrer'
+        : supT.length < 10 ? 'solo ' + supT.length + ' superficies: la guarda se quedó sin material'
+        : reparten.length ? 'reparte un deber: ' + reparten.join(' · ')
+        : supT.length + ' superficies de pendiente barridas —las ' + nReglas + ' reglas con sus cuatro ' +
+          'campos, las notas, los intentos, los casilleros del control y DECISIONES-PENDIENTES.md— y ' +
+          'ninguna pide un trámite. No cubre las entradas del registro, donde esas mismas palabras son ' +
+          'el hecho documentado: medido, 26 de 30 apariciones son contenido y no pendiente');
   }
 
 

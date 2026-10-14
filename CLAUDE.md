@@ -1056,11 +1056,31 @@ sección al final de este archivo.
   pide y **cuándo puede existir**—, y el último es el que más se olvida: sin
   él, un vacío que solo cierra el calendario (el EJECUTADO de un presupuesto
   cuyo año no ha empezado) se lee como archivo que alguien no fue a buscar.
-* **Y los trámites viven en UN solo bloque del registro, con la clave del
-  eje** (v1076), no dentro del dato de cada uno: con tres sitios, la guarda
-  necesita una tabla de dónde mirar y esa tabla es lo que envejece. **La
-  lista de a quién se le exige sale de `PESO_EJE`**, así que un eje nuevo
-  nace con el trámite exigido sin que su autor se acuerde.
+* **Y lo que le falta a cada eje vive en UN solo bloque del registro, con la
+  clave del eje** (v1076), no dentro del dato de cada uno: con tres sitios, la
+  guarda necesita una tabla de dónde mirar y esa tabla es lo que envejece. **La
+  lista de a quién se le exige sale de `PESO_EJE`**, así que un eje nuevo nace
+  con la declaración exigida sin que su autor se acuerde.
+* **Y una lista de pendientes registra ESTADOS, no TAREAS DE TERCEROS**
+  (v1122). Lo dijo el usuario y queda citado: *un pendiente inválido le asigna
+  deberes a alguien que no está en esta mesa.* Uno válido dice **qué falta y
+  por qué eso limita lo que el módulo puede publicar**; uno inválido dice a
+  qué entidad pedirlo, por cuál vía y con qué término legal — y entonces el
+  módulo queda esperando un plazo que nadie de acá controla, con la lista
+  creciendo sola y pareciendo trabajo. Por eso el cuarto campo del bloque de
+  arriba dejó de ser `como` —«cómo se pide»— y pasó a ser `porQueLimita`.
+  **Buscar un dato ya publicado NO es un trámite**: es investigación, y se
+  hace. Lo que sale de la lista es la acción cuyo desenlace depende de un
+  tercero y de un plazo. **Y lo que se queda, aunque incomode, es la
+  honestidad de la pantalla**: la línea que dice que el documento no está en
+  nuestro poder y que la confirmación consta por prensa no es una tarea, es el
+  estado, y retirarla sería esconder lo que el módulo no tiene.
+  **La guarda persigue la SUPERFICIE y no la palabra** (v895, v1116): el
+  vocabulario del trámite aparece 30 veces en el registro y 26 son CONTENIDO
+  —un representante que radicó un derecho de petición es un hecho, no un
+  pendiente—, así que barrerlo entero sería la lista de excepciones que
+  envejece. Medida sobre las superficies de pendiente y solo sobre ellas, dio
+  2 aciertos de 4.
 * **Un intento que falla se FECHA, con su canal y su razón** (v1055, v1065).
   Y **cuando NO se ha intentado, eso también se escribe** (v1076): la v1065
   imprimía la línea solo si había intento, así que en los ejes sin ninguno

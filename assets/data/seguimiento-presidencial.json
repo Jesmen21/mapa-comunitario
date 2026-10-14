@@ -11321,34 +11321,34 @@
     "lista": []
   },
   "tramites": {
-    "_nota": "EL TRÁMITE DE CADA EJE, EN UN SOLO SITIO (v1076). La v1065 escribió el del eje C dentro de `presupuesto`, que es donde vive su dato. Con el del B y el del D eso serían tres bloques en tres sitios con una sola convención, y dos copias de una advertencia se separan (v867): la guarda necesitaría una tabla de dónde mirar, y esa tabla es lo que se queda viejo. Van acá, con la clave del eje, y `tramiteDe` los lee por esa clave. Cada regla lleva sus cuatro campos —qué, quién lo tiene, cómo se pide y cuándo puede existir— y ninguno sobra.",
+    "_nota": "QUÉ CLASE DE PRUEBA LE FALTA A CADA EJE, EN UN SOLO SITIO (v1076, reescrito en la v1122). Vive en un solo bloque con la clave del eje —y no dentro del dato de cada uno— porque con tres sitios la guarda necesita una tabla de dónde mirar, y esa tabla es lo que envejece (v867). LA v1122 LE QUITÓ EL CAMPO `como`. Ese campo decía cómo se consigue el documento, y para el eje D eso era un derecho de petición con su término legal: una TAREA asignada a alguien que no está en esta mesa. Una lista de pendientes de este proyecto registra ESTADOS, no tareas de terceros. En su lugar va `porQueLimita`, que es lo que un pendiente válido sí tiene que decir: por qué su ausencia limita lo que el módulo puede publicar. Los cuatro campos son ahora: qué falta, dónde vive esa prueba, por qué limita, y cuándo puede existir.",
     "B": {
       "reglas": [
         {
           "k": "media-historica",
           "que": "La media histórica de I-04 a I-07 para Petro, Duque y Santos, por 100 días y con los mismos criterios. Sin ella los cuatro indicadores de este eje no tienen contra qué compararse.",
-          "quien": "Nadie la publica, y esa es la primera cosa que hay que saber: no es una fuente que se descargue, es un registro que se construye. Los hechos están en el Diario Oficial de cada vigencia y en la prensa de la época, y el registro de Petro ya existe en este repositorio, en assets/data/seguimiento-petro.json.",
-          "como": "Se clasifican los actos de cada gobierno con los MISMOS cuatro criterios escritos y se normaliza por 100 días. Dos cosas la invalidan si se hacen distinto, y por eso van dichas: cambiarle un borde a un criterio entre un gobierno y otro, y comparar un cuatrienio completo contra los primeros meses de este.",
-          "cuando": "Puede empezarse hoy y no depende de nadie de afuera: los hechos ocurrieron y están documentados. Lo que no existe todavía es el registro clasificado. El de Petro tiene 6 entradas revisadas de 32, y el piso de validación de los criterios pide 20 — así que el mismo trabajo que levanta esta media le quita el «validado: no» a los cuatro indicadores."
+          "quien": "Nadie la publica, y esa es la primera cosa que hay que saber: no es una fuente que se descargue, es un registro que se construye. Los hechos están en el Diario Oficial de cada vigencia y en la prensa de la época, y el registro de Petro ya existe en este repositorio, en assets/data/seguimiento-petro.json. No depende de nadie de afuera.",
+          "cuando": "Puede empezarse hoy y no depende de nadie de afuera: los hechos ocurrieron y están documentados. Lo que no existe todavía es el registro clasificado. El de Petro tiene 6 entradas revisadas de 32, y el piso de validación de los criterios pide 20 — así que el mismo trabajo que levanta esta media le quita el «validado: no» a los cuatro indicadores.",
+          "porQueLimita": "El eje B publica peldaño por su escala, que no necesita la media. Lo que no puede sin ella es decir si lo que midió es mucho o poco PARA UN GOBIERNO COLOMBIANO: sus cuatro indicadores salen con su tasa por 100 días y sin nada al lado. Por eso la ficha publica la cifra y no una comparación."
         }
       ]
     },
     "C": {
-      "_nota": "EL TRÁMITE DE LO QUE LE FALTA AL EJE C (v1065). El eje nombraba las dos reglas que le faltan y callaba cómo se consiguen, que por la regla de este proyecto (v849, v880) convierte un vacío en un muro: quien lee no sabe si es trabajo de una tarde, de un derecho de petición o de esperar a que pase un año. Va en el registro y no en el código para que la rutina diaria lo pueda actualizar sin tocar js/70, igual que las cifras.",
+      "_nota": "QUÉ LE FALTA AL EJE C (v1065, reescrito en la v1122). El eje nombraba las dos reglas que le faltan y callaba por qué eso limitaba lo que publica, que por la regla de este proyecto (v849, v880) convierte un vacío en un muro. Va en el registro y no en el código para que la rutina diaria lo pueda actualizar sin tocar js/70, igual que las cifras. Ninguna de las dos reglas de este eje es un trámite: son documentos ya publicados, y buscar un dato publicado es investigación y no una tarea de tercero.",
       "reglas": [
         {
           "k": "ejecutado",
           "que": "El EJECUTADO por sector, que es otra cifra que el aprobado.",
-          "quien": "Ministerio de Hacienda y Crédito Público: la ejecución presupuestal del SIIF Nación y el decreto de liquidación de cada vigencia. El DNP publica aparte la ejecución de inversión.",
-          "como": "Son documentos públicos y se descargan del portal de Minhacienda; no hace falta derecho de petición. Lo que hace falta es una máquina que alcance el dominio.",
-          "cuando": "Para 2027 NO PUEDE EXISTIR todavía, y eso no es descuido de nadie: el presupuesto no es ley y el año no ha empezado. La ejecución de 2027 se publica durante 2027 y cierra en 2028. Lo que sí existe hoy es la de los años cerrados, que es justamente la que sirve para la comparación histórica de la regla siguiente."
+          "quien": "Es publicación ordinaria del Ministerio de Hacienda —la ejecución del SIIF Nación y el decreto de liquidación de cada vigencia— y del DNP para la ejecución de inversión. No hay que pedírsela a nadie; lo que falta es una máquina que alcance el dominio, y desde este contenedor el proxy los niega todos.",
+          "cuando": "Para 2027 NO PUEDE EXISTIR todavía, y eso no es descuido de nadie: el presupuesto no es ley y el año no ha empezado. La ejecución de 2027 se publica durante 2027 y cierra en 2028. Lo que sí existe hoy es la de los años cerrados, que es justamente la que sirve para la comparación histórica de la regla siguiente.",
+          "porQueLimita": "Mientras solo esté el aprobado, este eje mide lo que el Gobierno PIDIÓ gastar y no lo que gastó. La ficha lo dice con esas palabras: una orientación del gasto declarada no es una orientación del gasto ejecutada, y el peldaño del eje descansa sobre la primera."
         },
         {
           "k": "serie-anterior",
           "que": "El mismo reparto por sector, año por año, para Petro, Duque y Santos, con su variación real.",
-          "quien": "Minhacienda para el PGN por sector de cada vigencia, y el DANE para el IPC con el que se deflacta.",
-          "como": "Se arma año por año, y solo vale si cada año usa la MISMA regla de agregación de Defensa y Policía que usa esta ficha, que es la regla 2 de las siete del pliego. Mezclar un año con Defensa sola y otro con Defensa más Policía produce una variación que no existió.",
-          "cuando": "Existe hoy: son documentos ya publicados. Lo único que falta es poder leerlos."
+          "quien": "Minhacienda para el PGN por sector de cada vigencia, y el DANE para el IPC con el que se deflacta. Las dos son publicaciones ordinarias y ya existen; lo único que falta es poder leerlas.",
+          "cuando": "Existe hoy: son documentos ya publicados. Lo único que falta es poder leerlos.",
+          "porQueLimita": "Sin ella las variaciones del eje son contra el año anterior y nada más. No hay con qué decir si este reparto por sector es inusual, así que el eje publica la variación y no un juicio de que sea atípica. Y solo valdría si cada año usara la MISMA regla de agregación de Defensa y Policía que usa esta ficha: mezclar un año con Defensa sola y otro con Defensa más Policía produce una variación que no existió."
         }
       ],
       "ultimoIntento": {
@@ -11362,10 +11362,10 @@
       "reglas": [
         {
           "k": "series-oficiales",
-          "que": "Las series de muertes y lesiones en operaciones del Estado, y la misma serie para los gobiernos anteriores.",
-          "quien": "El Instituto Nacional de Medicina Legal y Ciencias Forenses, que produce la cifra forense de muertes violentas; la Defensoría del Pueblo, por sus alertas tempranas; y la Procuraduría General, por los procesos disciplinarios abiertos. Son tres entidades y tres documentos distintos: ninguna de las tres publica lo que publican las otras dos.",
-          "como": "Las cifras agregadas de Medicina Legal son publicación ordinaria. El desagregado por operación no lo es, y se pide por derecho de petición —gratuito, con término de quince días hábiles—. Se piden la de este gobierno y la de los anteriores EN LA MISMA solicitud: con una sola, las cifras no tienen contra qué compararse y el nivel no sale igual.",
-          "cuando": "Las de los años cerrados existen hoy. La de 2026 cierra con el año, así que la comparación completa de este gobierno no está antes de 2027. Y desde la v1077 este mismo documento hace falta por una segunda razón: es lo que el indicador I-14 exige para CONTAR las entradas que ya lo declaran. Las entradas que lo declaran no cuentan ninguna mientras lo que haya sea el relato de los medios sobre lo que Medicina Legal confirmó, y no la confirmación de Medicina Legal. El número exacto lo publica la ficha y no se teclea acá, que es como una cifra envejece sola."
+          "que": "La confirmación forense del Instituto Nacional de Medicina Legal sobre cuántos menores de edad murieron en las operaciones Amón y Azarías y qué edad tenían, y la misma serie para los gobiernos anteriores.",
+          "quien": "La cifra forense de muertes violentas la produce Medicina Legal; la Defensoría del Pueblo publica sus alertas tempranas y la Procuraduría los procesos disciplinarios abiertos. Son tres entidades y tres documentos distintos: ninguna de las tres publica lo que publican las otras dos. Las cifras AGREGADAS de Medicina Legal son publicación ordinaria; el desagregado por operación no lo es.",
+          "cuando": "Las series de los años cerrados existen hoy; la de 2026 cierra con el año, así que la comparación completa de este gobierno no está antes de 2027. Y desde la v1077 esta misma prueba hace falta por una segunda razón: es la que el indicador I-14 exige para CONTAR las entradas que ya lo declaran, que hoy son el relato de los medios sobre lo que Medicina Legal confirmó y no la confirmación de Medicina Legal. El número exacto lo publica la ficha y no se teclea acá, que es como una cifra envejece sola.",
+          "porQueLimita": "Es lo que separa a este eje de publicar peldaño, y se mide: las dos bases que lo alimentan son `reporte-periodistico`, la puerta de evidencia del módulo pide documento primario o dato oficial, así que el eje cuenta CERO y el veredicto sale como PISO y no como peldaño. El hecho no se cae con el eje —los menores muertos, la respuesta del Gobierno y el estado procesal se publican igual—: lo que falta es la clase de prueba, no el hecho. Y conviene decirlo en la dirección incómoda: mientras no esté, el módulo publica un peldaño MENOS grave del que la evidencia de prensa sugiere."
         }
       ],
       "_cerradas": [

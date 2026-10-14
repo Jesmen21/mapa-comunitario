@@ -13,7 +13,7 @@
 
    La versión va acá y en vision-territorial.html, idéntica, como en los
    otros siete archivos de versión del sitio: revisar.js lo comprueba. */
-const VT_CACHE = 'urbis-vt-v1121-unificar-hacia-arriba';
+const VT_CACHE = 'urbis-vt-v1122-los-pendientes-son-estados';
 const VT_ASSETS = [
   './vision-territorial.html',
   './css/90-vt.css',

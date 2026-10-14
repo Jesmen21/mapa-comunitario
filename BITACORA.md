@@ -27827,3 +27827,120 @@ y lo que acota el número se pinta también para el eje que no publica.
   pedir, a quién y qué desbloquea. `pendiente`
 * **SÍ mueve el dictamen**, y a menos grave: de «Nada fiable» a piso «No
   puede ser mejor que Poco fiable». `cerrado en v1121`
+
+## v1122 · los pendientes son estados, no tareas de terceros
+
+**La regla que la paga, dicha por el usuario y citada:** *«Las listas de
+pendientes de este proyecto registran ESTADOS, no TAREAS DE TERCEROS. Un
+pendiente válido dice qué falta y por qué eso limita lo que el módulo puede
+publicar. Un pendiente inválido le asigna deberes a alguien que no está en
+esta mesa.»*
+
+**Lo que la pagó.** La v1121 dejó el eje D sin publicar peldaño por falta de
+confirmación forense, y escribió —en `DECISIONES-PENDIENTES.md` y en el
+registro— a qué entidad pedir el documento, por cuál vía legal y con qué
+término: *derecho de petición, art. 23 de la Constitución, Ley 1755 de 2015,
+diez días hábiles prorrogables*. Eso estaba IMPRESO en la ficha, bajo el
+encabezado **«Cómo se consigue»**, con una línea «Cómo se pide» por regla. Un
+módulo que publica juicios sobre personas no reparte deberes: publica estados.
+
+### Qué se retiró, exactamente
+
+| Dónde | Qué decía | Qué dice |
+|---|---|---|
+| `tramites.D.reglas[0].como` | «se pide por derecho de petición —gratuito, con término de quince días hábiles—» | el campo **no existe** |
+| `tramites.*.reglas[].como` (4) | «cómo se pide» | **`porQueLimita`**: por qué su ausencia limita lo que el módulo publica |
+| `DECISIONES-PENDIENTES.md` §6 | «Qué pedir, exactamente» + «A quién» con la vía y el término | el ESTADO: qué clase de prueba falta, qué bloquea, y qué se publica igual |
+| ficha · encabezado | «Cómo se consigue» | «Qué clase de prueba le falta» |
+| ficha · por regla | «Quién lo tiene» · «Cómo se pide» | «Dónde vive esa prueba» · «Por qué limita lo que se publica» |
+| eje D · `falta` | «Es el mismo documento que el trámite de abajo **manda a pedir**» | «Es la misma clase de prueba que el bloque de abajo declara que falta» |
+| control · 3 textos | «sin trámite declarado», «publica su trámite» | «no declara qué lo cerraría», «publica qué lo cerraría» |
+
+**Lo que NO se tocó, porque no es un trámite sino honestidad de la pantalla:**
+la caja del eje D en la placa, entera, incluida *«el documento forense NO ESTÁ
+EN NUESTRO PODER; la confirmación consta por cobertura de prensa»*, y la línea
+del eje *«Midió y su prueba no alcanza para un peldaño»*. Retirarlas sería
+esconder lo que el módulo no tiene.
+
+**Y lo que sigue siendo trabajo propio:** buscar un dato ya publicado es
+investigación, no un trámite. Si aparece una serie de necropsias de Medicina
+Legal con desagregación por edad, departamento y manera de muerte que cubra
+agosto y septiembre de 2026, las dos bases pasan a `dato-oficial`, cruzan la
+puerta y el dictamen se recalcula.
+
+### La guarda persigue la SUPERFICIE y no la palabra
+
+**Medido antes de escribirla**, que es lo que la salvó de ser la lista de
+excepciones de la v895. El vocabulario del trámite —«derecho de petición»,
+«radicar», «días hábiles», «Ley 1755»— aparece **30 veces en el registro**, y
+**26 son CONTENIDO**: un representante radicó un derecho de petición ante
+MinDefensa (y esa es, literalmente, la vía de I-07), un decreto dura doce
+meses prorrogables, una moción de censura se radicó. Son hechos documentados,
+no pendientes. Perseguirlos sería el cribado de menores de la v1116: muchos
+aciertos aparentes, todos falsos.
+
+Medido sobre las **superficies de pendiente y solo sobre ellas** —las cuatro
+reglas con sus cuatro campos, las notas del bloque, los intentos, los
+casilleros de `controlDeCalidad` y `DECISIONES-PENDIENTES.md`, veinte en
+total— los aciertos fueron **2 de 4**. **El discriminante es la superficie, no
+la palabra**, y por eso la guarda se acota a `controlDeCalidad` y no barre
+js/70 entero, donde «derecho de petición vencido» es un renglón correcto del
+`incluye` de I-07.
+
+**Dos mitades que no se implican, y por eso van aparte** (v899): la
+ESTRUCTURAL —ninguna regla puede traer un campo cuyo oficio sea decir cómo se
+consigue algo— y la de TEXTO sobre esas superficies. La inyección lo mostró:
+devolver el campo `como` pone roja la primera y deja verde la segunda, porque
+la segunda barre los campos declarados y `como` ya no es uno.
+
+**Va en ROJO y no con `?`** (v970, v1097): mide ESQUEMA y CÓDIGO, no material
+del registro, así que no puede vaciarse por una mejora de los datos.
+
+**DE QUÉ NO RESPONDE** (v945): de las entradas del registro, donde esas mismas
+palabras son el hecho que se documenta; y de que `porQueLimita` diga la
+verdad, que no lo puede comprobar nadie (v1008).
+
+### Demostrada en rojo, con cuatro inyecciones fieles
+
+| Inyección | Resultado |
+|---|---|
+| vuelve `tramites.D.reglas[0].como` tal como estaba en la v1121 | **ROJO** · «vuelve el campo `como`, que es una tarea de tercero: D/series-oficiales» |
+| el deber se cuela en `porQueLimita` | **ROJO** · «reparte un deber: registro · tramites.D/series-oficiales.porQueLimita» |
+| §6 de `DECISIONES-PENDIENTES.md` vuelve con «A quién: … Ley 1755 … 10 días hábiles» | **ROJO** · «reparte un deber: DECISIONES-PENDIENTES.md» |
+| un casillero del control manda a radicar | **ROJO** · «reparte un deber: js/70 · controlDeCalidad» |
+
+Las cuatro con su aserción, ninguna `MURIÓ`, y el conteo de palomitas subió de
+754 a **756** (v1090: se compara el conteo contra el de la corrida anterior).
+
+### Lo que la lectura del PAPEL encontró, y el código no
+
+El bloque de la ficha se compuso y se leyó. El eje D seguía diciendo, en su
+línea de «Falta para poder publicarlo», *«Es el mismo documento que el trámite
+de abajo **manda a pedir**»* — una frase que ninguna guarda miraba y que
+contradecía todo lo demás de la tanda. Es la enésima vez que componer la
+pantalla y LEERLA encuentra lo que el código no.
+
+### Lo que esta versión NO hace
+
+* **No renombra la clave `tramites` del registro ni la función `tramiteDe`.**
+  `pendiente`: la escribe también la rutina diaria, que es otra sesión y
+  no se entera de un renombre. Lo que cambió es lo que lleva dentro y lo que
+  sale a pantalla. El día que se renombre, va con su guarda de que no quede la
+  clave vieja.
+* **No comprueba que `porQueLimita` sea CIERTO.** `cerrado en v1122 · medido y
+  declinado`: que la marca ESTÉ es lo que una guarda puede hacer; que sea
+  cierta, no (v1008).
+* **No barre js/70 entero con el vocabulario del deber.** `cerrado en v1122 ·
+  medido y declinado`: 26 de 30 apariciones son contenido legítimo, y la guarda
+  sería la lista de excepciones que envejece (v895).
+
+### Lo que quedó en las listas
+
+`DECISIONES-PENDIENTES.md` pasa a **siete secciones, cuatro abiertas**: las
+tres primeras se marcaron `cerrado en v1120` / `cerrado en v1121` —las había
+cerrado esta misma serie de tandas y nadie volvió a marcarlas (v1006)— y la
+sexta dejó de ser una tarea para ser un estado. El control del módulo sigue en
+**19 casilleros · 10 pasan · 6 fallan · 3 sin correr**, con los nueve abiertos
+repartidos en 2 de archivo de acá, 3 fuera del alcance del contenedor, 3 de
+capacidad por escribir y 1 de quien firma. **Ninguno de los nueve es un
+trámite.**

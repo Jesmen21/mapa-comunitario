@@ -18,6 +18,9 @@ y no una impresión.
 
 ## 1 · El sexto menor: de dónde sale, y por qué su evidencia es de otra clase
 
+> **`cerrado en v1120`** — el usuario decidió que queda FUERA del conteo. n = 5,
+> con el sexto publicado aparte en «lo que NO entra en esta cifra, por decisión».
+
 **Medido.** Los seis del eje D salen del bloque `fuerza` del registro, tres
 operaciones:
 
@@ -56,6 +59,9 @@ cambia la evidencia y no el resultado.
 
 ## 2 · El rescate del 20 de septiembre NO sostiene el eje D — y declara un indicador que lo excluye
 
+> **`cerrado en v1120`** — la entrada dejó de declarar I-14 y escribió su
+> `_porQueListaVacia`.
+
 **Medido, y corrige lo que le reporté antes.** Esa entrada está en
 `menoresRecuperados`, no en `menoresMuertos`: **no suma ni uno** a los seis.
 Yo se la listé entre las que declaran I-14 y eso era cierto, pero daba a
@@ -71,6 +77,10 @@ indicador declarado es mover una clasificación**, y eso está en su lista.
 
 ## 3 · El indicador I-14 cuenta CERO y el eje D publica SEIS
 
+> **`cerrado en v1121`** — las dos varas se unificaron hacia la más exigente.
+> El eje cuenta por la misma puerta que I-14, cuenta cero, y el veredicto pasó
+> de dictamen «Nada fiable» a piso «No puede ser mejor que Poco fiable».
+
 **Medido, y es el hallazgo más incómodo de la noche.** La fila del indicador
 I-14 devuelve `n: 0`. Las cuatro entradas que lo declaran no pasan su puerta,
 porque I-14 exige **evidencia dura** y las cuatro llevan `reporte-periodistico`.
@@ -85,7 +95,7 @@ cambiar cualquiera de las dos es cambiar un criterio.
 
 ---
 
-## 4 · El lote presupuestal: lo que apareció buscando, y no decidí
+## 4 · El lote presupuestal: lo que apareció buscando, y no decidí · `pendiente`
 
 Ninguna de estas la resolví. Van con el contrargumento escrito, porque el
 contrargumento SÍ puedo registrarlo; lo que no puedo es dirimir cuál versión
@@ -107,7 +117,7 @@ es la cierta.
   comentarios el 5 de octubre y que la Presidencia firmaría después. Sigue
   sin número de decreto y sin Diario Oficial.
 
-## 5 · Contrargumentos no hallados
+## 5 · Contrargumentos no hallados · `pendiente`
 
 Ninguno en este lote: las ocho entradas buscadas devolvieron posición
 oficial. Las que no la devuelvan se anotarán acá con dónde se buscó, para
@@ -116,45 +126,43 @@ que no se lean como ausencia del Gobierno.
 
 ---
 
-## 6 · EL TRÁMITE QUE DEVUELVE EL EJE D AL VEREDICTO
+## 6 · LO QUE LE FALTA AL EJE D · estado, no tarea
 
-**Pendiente accionable, y no lo puede hacer esta sesión.** Desde este
-contenedor el proxy niega todos los dominios: el único canal es la búsqueda,
-y la búsqueda sostiene **que** un hecho ocurrió, no que se leyó la página.
+**Esta sección era un trámite y la v1122 lo retiró.** Decía a qué entidad
+pedir el documento, por cuál vía legal y con qué término — es decir, le
+asignaba un deber a alguien que no está en esta mesa. Una lista de pendientes
+de este proyecto registra ESTADOS: qué falta y por qué eso limita lo que el
+módulo puede publicar. Lo que sigue es eso, y nada más.
 
-**Qué pedir, exactamente:**
+**El estado, medido:** las dos entradas que sostienen el eje D —Operación
+Amón y Operación Azarías— tienen `tipoEvidencia: reporte-periodistico`. La
+puerta de evidencia del módulo pide `documento-primario` o `dato-oficial`,
+la misma que exige el indicador I-14 desde la v1077. Por eso el eje cuenta
+**cero** y el veredicto sale como **piso** y no como peldaño.
 
-> Los informes de necropsia o el oficio de identificación del **Instituto
-> Nacional de Medicina Legal y Ciencias Forenses** correspondientes a la
-> **Operación Amón** (El Retorno, Guaviare, 27 de agosto de 2026) y a la
-> **Operación Azarías** (Miraflores, Guaviare, 30 de agosto de 2026), en lo
-> relativo al **número de personas menores de edad entre los cuerpos
-> identificados y su edad**. Sin nombres ni datos que identifiquen a las
-> víctimas: lo que hace falta es la cifra y la edad, con el sello del
-> Instituto.
+**Qué clase de prueba lo cambiaría:** una confirmación forense del número y
+la edad de los menores, de Medicina Legal. No va acá cómo conseguirla.
 
-**A quién:**
+**Lo que NO cambia mientras tanto, y se publica igual:** los cinco menores
+muertos, la respuesta del Ministerio de Defensa, el estado procesal y la
+línea que convierte la ausencia en dato — *el documento forense no está en
+nuestro poder; la confirmación consta por cobertura de prensa*. El hecho no
+se cae con su eje: lo que falta es la clase de prueba, no el hecho.
 
-* **Medicina Legal**, por **derecho de petición de información** (art. 23 de
-  la Constitución, Ley 1755 de 2015). Término: **10 días hábiles** para
-  información, prorrogables con aviso motivado.
-* En paralelo, **datos abiertos**: el Instituto publica series de necropsias
-  médico-legales; si la serie del período trae la desagregación por edad y
-  por departamento, sirve igual y **no hay que esperar el término**.
+**Y la dirección incómoda, dicha:** mientras esa prueba no esté, el módulo
+publica un peldaño **menos** grave del que la evidencia de prensa sugiere.
+Eso no es un error — es la vara aplicada donde no conviene, que es la única
+forma de que valga.
 
-**Qué desbloquea, medido:** con ese documento las dos entradas base pasan de
-`reporte-periodistico` a `documento-primario`, **pasan la puerta**, el eje D
-vuelve a contar **5** y vuelve al veredicto. El dictamen volvería de piso
-«No puede ser mejor que Poco fiable» a **«Nada fiable»**.
-
-Y conviene decirlo al revés también, porque es la parte incómoda: **mientras
-el documento no esté, el módulo publica un peldaño MENOS grave del que la
-evidencia de prensa sugiere.** Eso no es un error: es la vara aplicada en la
-dirección que no conviene, que es la única forma de que valga.
+**Si en una búsqueda ordinaria apareciera** una serie de necropsias
+médico-legales con desagregación por edad, departamento y manera de muerte
+que cubra agosto y septiembre de 2026, sirve y se usa: buscar un dato ya
+publicado es investigación, no un trámite. No se persigue ni se le dedica
+una tanda.
 
 ---
 
-## 7 · PROPUESTA, NO IMPLEMENTADA · una clase de evidencia intermedia
+## 7 · PROPUESTA, NO IMPLEMENTADA · una clase de evidencia intermedia · `pendiente`
 
 **Abierta por el usuario el 14 de octubre, y explícitamente NO implementada
 esta noche, con su razón:** «si la creo justo cuando la medición me dio un
