@@ -1,4 +1,4 @@
-const URBIS_CACHE = 'urbis-v1124-i06-cuenta-lo-que-se-puede-declarar';
+const URBIS_CACHE = 'urbis-v1125-alerta-sismo-los-santos-santander';
 const URBIS_ASSETS = [
   './',
   './index.html',

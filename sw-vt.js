@@ -13,7 +13,7 @@
 
    La versión va acá y en vision-territorial.html, idéntica, como en los
    otros siete archivos de versión del sitio: revisar.js lo comprueba. */
-const VT_CACHE = 'urbis-vt-v1124-i06-cuenta-lo-que-se-puede-declarar';
+const VT_CACHE = 'urbis-vt-v1125-alerta-sismo-los-santos-santander';
 const VT_ASSETS = [
   './vision-territorial.html',
   './css/90-vt.css',
