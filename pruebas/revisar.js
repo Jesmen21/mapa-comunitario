@@ -3625,6 +3625,162 @@ console.log('\n  -- la ficha del gobernante --');
           'dos cosas está mal escrita'
       : 'las ' + exim.length + ' traen su razón y ninguna trae además contrargumento');
 
+    /* ═══ EL EDITORIAL: NINGUNA AFIRMACIÓN SIN REGISTRO, NINGÚN TIPO PENAL,
+           Y EL CIERRE SIEMPRE VISIBLE (v1125) ══════════════════════════════
+       El editorial es CAPA 4 —opinión firmada, rotulada, aparte del cálculo—
+       y no alimenta ningún eje ni indicador. Lo que esta guarda vigila son
+       las cuatro condiciones que lo separan de un panfleto:
+
+       1 · CADA AFIRMACIÓN ENLAZA A SU REGISTRO. No una lista suelta al lado
+           del texto —esa decía sobre qué se apoyaba el editorial entero y no
+           QUÉ sostenía cada frase, así que una afirmación sin respaldo se
+           escondía detrás de las que sí lo tenían—. Y la base tiene que
+           EXISTIR: cuatro de las diecisiete de esta tanda apuntaban a ids que
+           yo había supuesto y no estaban en el registro.
+       2 · NINGÚN TIPO PENAL, la misma clase de la v1118 y la misma lista, en
+           un solo sitio para los dos lectores (v879). Que el texto vaya
+           rotulado como opinión no lo salva: encadena hecho → tipo penal →
+           juicio público igual que lo hacía la escala del eje D.
+       3 · EL CIERRE VA VISIBLE Y AL MISMO NIVEL. «También encontré lo que no
+           esperaba» no puede quedar plegado ni en letra chica: es lo que
+           separa esto de un panfleto, y el atajo de la tanda siguiente es
+           mandarlo a un <details> «para ahorrar espacio».
+       4 · NO ALIMENTA NADA. Ningún eje ni indicador lo lee.
+
+       DE QUÉ NO RESPONDE (v945): de que la opinión sea correcta, ni de que el
+       registro que cita diga lo que el autor cree que dice. Comprueba que
+       cada afirmación tenga un registro que EXISTE, que ninguna nombre un
+       tipo penal, y que el cierre llegue a la pantalla.
+
+       VA EN ROJO (v970): el material es el editorial mismo, y su cero no es
+       una mejora — un editorial sin afirmaciones es un editorial retirado, y
+       para eso está la rama de «no hay», que se mide aparte. */
+    {
+      const edReg = (regAct1109 || {}).analisisEditorial || null;
+      const afs = (edReg || {}).afirmaciones || [];
+      const idsAct = new Set(((regAct1109 || {}).entradas || []).map((e) => e.id).filter(Boolean));
+      const idsCon = new Set(((((regAct1109 || {}).contradicciones) || {}).casos || [])
+        .map((c) => c.id).filter(Boolean));
+      const regAnt1125 = JSON.parse(leer('assets/data/seguimiento-petro.json'));
+      const idsAnt = new Set((regAnt1125.entradas || []).map((e) => e.id).filter(Boolean));
+      const existe = (r) => idsAct.has(r) || idsCon.has(r) || idsAnt.has(r);
+
+      if (!afs.length) {
+        anotarSinMaterial('MATERIAL · el editorial declara sus afirmaciones',
+          'no hay editorial escrito hoy, y eso es un estado legítimo: el módulo lo publica diciendo que ' +
+          'no lo hay. Las reglas de abajo se miden contra el código y siguen mordiendo');
+      } else {
+        comprobar('MATERIAL · el editorial declara sus afirmaciones, una por una',
+          true, afs.length + ' afirmaciones declaradas, firmadas por ' +
+          ((edReg || {}).autor || '(sin autor)') + ', ' + ((edReg || {}).fecha || '(sin fecha)'));
+      }
+
+      /* 1 · cada afirmación con su base, y la base EXISTE. */
+      const malBase = afs.filter((a) => !((a.base || []).length) ||
+                                        (a.base || []).some((r) => !existe(r)))
+        .map((a) => a.k + (!(a.base || []).length ? ' (sin base)'
+          : ' → ' + (a.base || []).filter((r) => !existe(r)).join(' ')));
+      comprobar('ninguna afirmación del editorial se publica sin un registro que la sostenga',
+        !afs.length || malBase.length === 0,
+        !afs.length ? 'no hay editorial: nada que medir'
+          : malBase.length ? 'sin registro: ' + malBase.join(' · ')
+          : 'las ' + afs.length + ' anclan en un registro que existe —entradas de este gobierno, del ' +
+            'anterior y contradicciones—, así que si el registro cambia y una deja de estar sostenida, ' +
+            'esta comprobación lo dice');
+
+      /* 1b · y ningún trozo del texto cita una afirmación que no existe. */
+      const kk = new Set(afs.map((a) => a.k));
+      const rotas = [];
+      ['corta', 'cortaCierre', 'larga', 'largaCierre'].forEach((q) => {
+        ((edReg || {})[q] || []).forEach((par) => (par || []).forEach((ch) => {
+          if (ch.a && !kk.has(ch.a)) rotas.push(q + '/' + ch.a);
+        }));
+      });
+      const huerf = afs.filter((a) => {
+        let v = false;
+        ['corta', 'cortaCierre', 'larga', 'largaCierre'].forEach((q) => {
+          ((edReg || {})[q] || []).forEach((par) => (par || []).forEach((ch) => {
+            if (ch.a === a.k) v = true; }));
+        });
+        return !v;
+      }).map((a) => a.k);
+      comprobar('y el texto y las afirmaciones no se separan: ninguna cita rota, ninguna declarada sin usar',
+        !afs.length || (rotas.length === 0 && huerf.length === 0),
+        !afs.length ? 'no hay editorial: nada que medir'
+          : rotas.length ? 'el texto cita afirmaciones que no existen: ' + rotas.join(' · ')
+          : huerf.length ? 'afirmaciones declaradas que ningún trozo cita: ' + huerf.join(' · ')
+          : 'las ' + afs.length + ' se declaran y las ' + afs.length + ' se citan: la lista y el texto no ' +
+            'pueden quedarse una sin la otra (clase B)');
+
+      /* 2 · ningún tipo penal, con la MISMA lista del eje D. */
+      const listaPenal = (j70v.match(/var ETIQUETA_PENAL = \[([\s\S]*?)\];/) || ['', ''])[1];
+      const PEN = [...listaPenal.matchAll(/'([^']+)'/g)].map((m) => m[1]);
+      const conPenal = [], exentas = [];
+      afs.forEach((a) => PEN.forEach((px) => {
+        if (!new RegExp(px, 'i').test(String(a.dice || ''))) return;
+        /* LA EXENCIÓN VA POR AFIRMACIÓN Y CON SU RAZÓN ESCRITA (v1094, v1109,
+           v1125), nunca como una regla del código. La diferencia que la
+           justifica: la prohibición de la v1118 es contra encadenar hecho →
+           tipo penal → juicio público SOBRE ALGUIEN, y una serie estadística
+           de la Policía no tiene sujeto. Pero esa distinción no se puede
+           automatizar sin falsos positivos (v895), así que no se automatiza:
+           se declara una por una, se cuenta y se publica.
+           Y NO ALCANZA AL EJE D: su guarda mide con la lista entera y sin
+           exención posible, así que esto no abre allá ninguna puerta. */
+        const razon = String(a._noEsCalificacion || '').trim();
+        if (razon.length > 120) exentas.push(a.k + ' → ' + px);
+        else conPenal.push(a.k + ' → ' + px + (razon ? ' (razón demasiado corta)' : ''));
+      }));
+      comprobar('ninguna afirmación del editorial califica penalmente, o declara por qué no lo hace',
+        PEN.length >= 6 && conPenal.length === 0,
+        PEN.length < 6 ? 'la lista de etiquetas penales se encogió: ' + PEN.length + ' de 6'
+          : conPenal.length ? 'califica penalmente y sin razón escrita: ' + conPenal.join(' · ')
+          : 'las ' + PEN.length + ' etiquetas vigiladas sobre las ' + afs.length + ' afirmaciones' +
+            (exentas.length
+              ? ' · ' + exentas.length + ' nombra una categoría penal con su razón escrita de por qué no ' +
+                'es una calificación: ' + exentas.join(' · ') + '. La exención va por afirmación y no por ' +
+                'regla, y NO alcanza al eje D'
+              : ' y ninguna la nombra') +
+            '. Es la MISMA lista que lee el eje D, en un solo sitio (v879)');
+
+      /* 3 y 4 · el cierre llega visible, y nada lo alimenta. */
+      const mitadesEd = [
+        ['el cierre lo pinta la misma función que el cuerpo', /var cierre = larga \? ed\.cuerpo\.largaCierre/.test(j70v)],
+        ['y va en el mismo <section>, sin plegar', /cj = el\('div', 'sp-edit-cierre'\)/.test(j70v) &&
+         !/sp-edit-cierre[\s\S]{0,400}<?details/.test(j70v)],
+        /* El selector del cierre se busca con su llave PEGADA y con espacio:
+           `.sp-edit-cierre{` y `.sp-edit-cierre {` son el mismo selector y el
+           patrón de la primera versión solo veía el segundo, así que la
+           inyección que le ponía `font-size` salió VERDE (v1029). Y se
+           compara contra el tamaño del CUERPO, no contra un número escrito
+           acá, para que subir la escala del módulo no deje esto mintiendo. */
+        ['y su letra no es más chica que la del cuerpo', (function () {
+          const css = leer('css/70-seguimiento.css');
+          const cuerpo = (css.match(/\.sp-edit-txt\s*\{[^}]*font-size:\s*var\(--t-(\d)\)/) || [])[1];
+          const cierre = (css.match(/\.sp-edit-cierre\s*\{[^}]*font-size:\s*var\(--t-(\d)\)/) || [])[1];
+          const h = (css.match(/\.sp-edit-cierre-h\s*\{[^}]*font-size:\s*var\(--t-(\d)\)/) || [])[1];
+          /* La escala es al revés: --t-9 es MÁS chico que --t-7. */
+          return !!cuerpo && !!h && Number(h) <= 8 && (cierre === undefined || Number(cierre) <= Number(cuerpo));
+        })()],
+        ['el enlace al texto completo sale solo desde la corta', /if \(!larga\) \{[\s\S]{0,260}sp-edit-mas/.test(j70v)],
+        ['y un pintor solo para los dos textos', (j70v.match(/function bloqueEditorial\(/g) || []).length === 1 &&
+         /bloqueEditorial\(true\)/.test(j70v) && /bloqueEditorial\(false\)/.test(j70v)]
+      ];
+      const malEd = mitadesEd.filter((x) => !x[1]).map((x) => x[0]);
+      comprobar('y el cierre «lo que no esperaba» va visible, al mismo nivel y sin plegar',
+        malEd.length === 0,
+        malEd.length ? 'falla: ' + malEd.join(' · ')
+          : 'lo pinta la misma función que el cuerpo, en el mismo bloque y sin <details>, así que una ' +
+            'tanda futura no lo puede mandar a un desplegable sin romper esto');
+
+      comprobar('y el editorial no alimenta ningún eje ni ningún indicador',
+        !/analisisEditorial/.test((j70v.match(/function ejeB\([\s\S]*?\n  \}/) || [''])[0] +
+                                  (j70v.match(/function indicadoresDe\([\s\S]*?\n  \}/) || [''])[0]) &&
+        !/editorialDe\(/.test((j70v.match(/function veredictoGeneral\([\s\S]*?\n  \}/) || [''])[0]),
+        'ni los ejes ni los indicadores ni el veredicto lo leen: es capa 4 y el dictamen sería el mismo ' +
+        'si el editorial no existiera');
+    }
+
     /* ═══ I-06 ES UNA TASA SOBRE LO REVISADO, Y NO ALIMENTA UN EJE HASTA SU
            UMBRAL DE COBERTURA (v1124) ═════════════════════════════════════
        La v1123 retiró la afirmación «el Gobierno no respondió» y con ella

@@ -5,7 +5,7 @@
   "posesion": "2022-08-07",
   "entrega": "2026-08-07",
   "cerrado": true,
-  "cobertura": "Este registro NO es exhaustivo: son 45 hechos escogidos de cuatro años, con fuente cada uno, elegidos para cubrir tanto lo que se le reconoce como lo que se le reprocha. La ficha cuenta solo los 38 que ocurrieron DENTRO del mandato, hasta el 7 de agosto de 2026; los 7 posteriores —lo que se dijo de él y lo que él dijo ya como expresidente— quedan en el registro y a la vista, pero no pesan en un veredicto sobre su gobierno. El porcentaje de verificación se calcula sobre esos 38, no sobre todo lo que pasó en el cuatrienio.",
+  "cobertura": "Este registro NO es exhaustivo: son 46 hechos escogidos de cuatro años, con fuente cada uno, elegidos para cubrir tanto lo que se le reconoce como lo que se le reprocha. La ficha cuenta solo los 39 que ocurrieron DENTRO del mandato, hasta el 7 de agosto de 2026; los 7 posteriores —lo que se dijo de él y lo que él dijo ya como expresidente— quedan en el registro y a la vista, pero no pesan en un veredicto sobre su gobierno. El porcentaje de verificación se calcula sobre esos 39, no sobre todo lo que pasó en el cuatrienio. LAS CIFRAS DE ESTA NOTA LAS COMPRUEBA `revisar.js` contra el registro en cada corrida: una cuenta tecleada dentro de un texto fijo envejece sola (v903), y esta envejeció el día que la v1125 agregó una entrada.",
   "actualizado": "2026-10-10",
   "categorias": {
     "gobierno": {
@@ -1422,6 +1422,39 @@
         {
           "que": "procedencia",
           "texto": "Entra aunque no dispare nada porque el hecho está documentado y es el choque institucional más grave del cuatrienio: un decreto que se saltó la competencia de otra rama y que un tribunal frenó. Omitirlo porque no cabe en ningún criterio sería dejar el registro torcido para que los criterios siguieran sin tener nada que rechazar."
+        }
+      ]
+    },
+    {
+      "fecha": "2026-04-23",
+      "id": "directiva-03-vocerias-2026",
+      "precision": "exacta",
+      "categoria": "gobierno",
+      "titulo": "La Directiva Presidencial 03 exige aval previo de la Presidencia para que ministros y directores hablen a nombre del Gobierno",
+      "nivelGobierno": "nacional",
+      "categoriaProbatoria": "hecho-probado",
+      "tipoMedicion": "actividad",
+      "tipoEvidencia": "documento-primario",
+      "detalle": "El presidente Gustavo Petro firmó el 23 de abril de 2026 la Directiva Presidencial 03, que concentra la vocería del Gobierno: ministros, directores y jefes de entidades adscritas solo pueden pronunciarse sobre asuntos de su competencia y necesitan autorización previa y expresa para fijar posiciones políticas a nombre del Gobierno, incluso en temas de su propia cartera. Toda comunicación pública que pueda afectar al Ejecutivo debe coordinarse con la oficina de comunicaciones de la Presidencia. El 2 de mayo la jefatura de prensa recordó públicamente la regla a funcionarios de nivel ministerial, citando la directiva.",
+      "contrapunto": "SE REGISTRA PARA QUE UNA COMPARACIÓN SEA POSIBLE, y conviene decir en qué dirección corta. Una restricción equivalente del gobierno ACTUAL no se puede presentar como una innovación suya: la anterior administración expidió esta directiva antes. Eso NO exonera a ninguna de las dos —concentrar la vocería es la misma restricción venga de quien venga— y tampoco las iguala sin más: esta directiva es de VOCERÍA a nombre del Gobierno, y habría que comparar texto contra texto antes de afirmar que son la misma medida. Lo que esta entrada establece es que la práctica es anterior, no que las dos sean idénticas. Y no debe confundirse con la otra directiva de prensa del mismo gobierno, la que pedía a los servidores abstenerse de estigmatizar periodistas, que es otro documento y otro propósito.",
+      "tipoFuente": "verificado",
+      "indicadores": [],
+      "_porQueListaVacia": "Se corrieron los cuatro criterios escritos sobre esta entrada el 15 de octubre de 2026 y no cae en ninguna vía. No es una facultad de excepción de los artículos 212 a 215 (I-04); ningún órgano autónomo se pronunció en contra (I-05); no interfiere una entidad con independencia técnica de ley, porque regula la vocería del propio Ejecutivo sobre sí mismo (I-13); y no hay información obtenida por tutela (I-07). ES UN VACÍO DE CRITERIO y conviene decirlo: una restricción interna a la comunicación oficial no la contempla ninguno de los cuatro universos, y el criterio que la clasificaría no se escribe en la tanda que encuentra el caso (v1101).",
+      "fuentes": [
+        {
+          "n": "Presidencia de la República · Directiva Presidencial No. 03 del 23 de abril de 2026 (texto)",
+          "u": "https://www.apccolombia.gov.co/sites/default/files/2026-05/DIRECTIVA%20PRESIDENCIAL%20No.%2003%20DEL%2023%20DE%20ABRIL%20DE%202026.pdf",
+          "rol": "acto"
+        },
+        {
+          "n": "Régimen Legal de Bogotá · Directiva 03 de 2026, Presidencia de la República",
+          "u": "https://www.alcaldiabogota.gov.co/sisjur/normas/Norma1.jsp?i=193060&dt=S",
+          "rol": "acto"
+        },
+        {
+          "n": "El Heraldo · Presidencia le recuerda a Carlos Carrillo que está prohibido dar declaraciones sin autorización del presidente Petro",
+          "u": "https://www.elheraldo.co/colombia/2026/05/02/presidencia-recuerda-a-carlos-carrillo-que-esta-prohibido-dar-declaraciones-sin-autorizacion-del-presidente-petro/",
+          "rol": "contexto"
         }
       ]
     }

@@ -28204,3 +28204,124 @@ delante.
 * **No valida el criterio de I-06 contra el gobierno anterior.** `pendiente`:
   es nuevo, así que nace `construida-para-el-caso` como corresponde, y lo
   declara.
+
+## v1127 · el editorial, con cada afirmación anclada a su registro
+
+**Lo que la abrió.** La v1124 cerró con una PARADA: cuatro afirmaciones del
+editorial no las sostenía ningún registro, y una —el déficit— estaba publicada
+sin decir de qué año, colisionando con el desempleo de agosto. El usuario
+contestó que la causa era suya: el editorial salió de un informe de
+investigación y esas entradas nunca se pasaron al módulo. *«Usted buscó bien;
+buscó donde no estaban.»*
+
+### Siete entradas nuevas, y dos que yo encontré de más
+
+Las cinco del usuario: el **CARF** (déficit total 2027 cercano al 10 % del PIB,
+primario 4,5 %, deuda neta 67 %, «insostenible»), los **subsidios de energía y
+gas** ($2,26 bn asignados frente a $7,29 bn requeridos, con el contrapeso del
+FEPC por $9,6 bn en la misma entrada), **AtlasIntel** (51,8 %, n=1.904, RDR,
+±2, con sus tres marcas), los **delitos de agosto** (−6 % homicidios, −37 %
+sexuales, −79 % secuestro, con el acumulado al alza, los seis días del gobierno
+anterior y la extorsión en disputa que por eso NO se publica) y la
+**regionalización del DNP** (25 de 32, preliminar e indicativa, con la tabla
+de los 32 sin obtener).
+
+Y **dos que la tabla del usuario asumía y tampoco estaban**: el **Congreso
+derrotando la objeción** —lo buscué y existe: las plenarias insistieron y pasó
+a la Corte, que aún no falla, así que la ley no rige— y la **Directiva
+Presidencial 03 del 23 de abril de 2026**, que es un acto del gobierno ANTERIOR
+y por eso entró en `seguimiento-petro.json` y no acá.
+
+**Y el déficit: ninguna de las dos cifras que circulaban.** 9,4 % colisiona con
+el desempleo de agosto y 4,4 % con los intereses como porcentaje del PIB —dos
+pares de cifras idénticas con significados distintos en el mismo registro—, así
+que se publica la del CARF, que es la fuente técnica, con las dos colisiones
+escritas en su contrapunto.
+
+### La forma: afirmaciones, no una lista suelta
+
+El editorial era `{texto, registros[]}`: la lista decía sobre qué se apoyaba el
+editorial ENTERO y no **qué sostenía cada frase**, así que una afirmación sin
+respaldo se escondía detrás de las que sí lo tenían. Ahora son **17
+afirmaciones** con su `base`, y los párrafos se arman con trozos que citan la
+clave: **el enlace cae sobre la frase y no sobre el párrafo**.
+
+Y la base resuelve en **tres sitios**: entradas de este gobierno, entradas del
+ANTERIOR —el editorial compara dos gobiernos, así que un hecho del otro tiene
+que poder anclar en el suyo— y **contradicciones**, porque «prometió mérito» no
+es un acto de gobierno y no tiene entrada: vive en la contradicción documentada,
+cuya identidad de objeto sigue sin declarar, y eso va dicho en la nota.
+
+**Cuatro de las diecisiete apuntaban a ids que yo había supuesto.** Las entradas
+existían; los ids no. Y tres entradas del registro **no tenían id ninguno**, así
+que se los puse: un ancla por título se rompe el día que alguien retitula.
+
+### Lo que el PAPEL encontró, y ninguna guarda miraba
+
+**El editorial se pintaba DOS VECES, y la segunda dentro de un `<button>`.** Lo
+puse en `placaDe`, sin ver que esa función **se reusa dentro del botón del
+hero**: el bloque salía duplicado y con un `<a>` metido dentro de un botón —HTML
+inválido y, peor, un enlace que el teclado no alcanza. Se ve mirando de quién
+cuelga cada bloque en el DOM, no leyendo el código.
+
+**Y el cierre repetía su título palabra por palabra:** el `<h4>` decía «También
+encontré lo que no esperaba» y el párrafo empezaba «También encontré lo que no
+esperaba: la aprobación…». La cura no es una excepción para ese texto: el
+título se pinta **solo si la primera frase del cierre no lo dice ya**, que es
+una regla medible.
+
+### La guarda, en cinco mitades
+
+1. **Ninguna afirmación sin registro**, y el registro tiene que EXISTIR.
+2. **El texto y la lista no se separan**: ninguna cita rota, ninguna afirmación
+   declarada que nadie cite (clase B).
+3. **Ningún tipo penal**, con la MISMA lista del eje D, ahora en `ETIQUETA_PENAL`
+   y en un solo sitio (v879).
+4. **El cierre visible, al mismo nivel y sin plegar**, con su letra comparada
+   contra la del cuerpo y no contra un número escrito en la guarda.
+5. **No alimenta nada**: ni ejes, ni indicadores, ni el veredicto.
+
+### La exención penal, y por qué no es aflojar
+
+La guarda mordió en el acto: **«los homicidios de agosto cayeron 6 %»** contiene
+`homicidio`, una de las seis etiquetas. Y es un falso positivo real: ahí nombra
+la **serie estadística de la Policía** y no califica la conducta de nadie. La
+prohibición de la v1118 es contra encadenar hecho → tipo penal → juicio público
+**sobre alguien**; un conteo agregado no tiene sujeto.
+
+**No se aflojó la guarda y no se reescribió el texto del autor.** Se aplicó la
+forma que este módulo ya tiene para esto (v1094, v1109): **la exención va por
+AFIRMACIÓN y con su razón escrita**, nunca como una regla del código —una regla
+abre la puerta a doscientas de una vez y esta hay que pensarla una por una—, se
+cuenta, y **se publica en el detalle de la guarda**. Y **no alcanza al eje D**:
+su guarda sigue midiendo con la lista entera y sin exención posible, así que por
+construcción esto no abre nada allá.
+
+### Demostrada en rojo, con cinco inyecciones fieles
+
+| Inyección | Resultado |
+|---|---|
+| una afirmación apunta a un id que no existe | **ROJO** · lo nombra |
+| la exención penal se queda sin razón escrita | **ROJO** · «califica penalmente y sin razón escrita» |
+| el cierre se manda a un `<details>` | **ROJO** |
+| el cierre en letra más chica que el cuerpo | **ROJO**, tras arreglar la aserción |
+| el texto cita una afirmación que no existe | **ROJO** · la nombra |
+
+764 → **770 palomitas**. Y la cuarta **salió VERDE la primera vez**: el patrón
+pedía un espacio entre el selector y la llave que la regla inyectada no tenía
+(`.sp-edit-cierre{`). Lo que faltaba no era la inyección — era lo que la
+aserción medía (v1029). Ahora compara el tamaño del cierre contra el del
+CUERPO, no contra un número escrito en la guarda.
+
+### Lo que esta versión NO hace
+
+* **No mueve ningún peldaño.** `cerrado en v1127 · medido y declinado`: el
+  editorial es capa 4 y el veredicto sigue en piso «No puede ser mejor que Poco
+  fiable». Las siete entradas nuevas no declaran indicador, y cada una dice por
+  qué.
+* **No automatiza la distinción entre nombrar un tipo penal y nombrar una
+  categoría estadística.** `pendiente`: no se puede sin falsos positivos
+  (v895), así que se declara una por una con su razón.
+* **No resuelve la identidad de objeto de la contradicción del mérito.**
+  `pendiente`: tiene fecha de revisión el 21 de noviembre de 2026, y la
+  afirmación que se apoya en ella lo dice.

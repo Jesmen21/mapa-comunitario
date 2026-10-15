@@ -899,6 +899,7 @@
       "precision": "exacta",
       "categoria": "creditos",
       "titulo": "Una delegación del Ministerio de Hacienda, encabezada por el viceministro técnico Juan Sebastián Betancur, se reúne en Washington con el FMI para avanzar en la financiación que el Gobierno busca ante un hueco de unos $200 billones en el presupuesto de 2027",
+      "id": "fmi-delegacion-washington",
       "categoriaProbatoria": "hecho-probado",
       "tipoMedicion": "actividad",
       "indicadores": [],
@@ -7802,6 +7803,7 @@
       "precision": "exacta",
       "categoria": "emergencia",
       "titulo": "El balance del terremoto sube a 331 muertos y 240 desaparecidos",
+      "id": "terremoto-balance-331-muertos",
       "categoriaProbatoria": "hecho-probado",
       "tipoMedicion": "resultado",
       "detalle": "Con corte al 24 de agosto, la UNGRD reportó 331 personas fallecidas, 4.439 heridas, 240 desaparecidas y 364 rescatadas de los escombros. Frente al balance del 23 de agosto (329 muertos, 234 desaparecidos), suben las cifras de fallecidos y desaparecidos. El reporte suma 31.540 viviendas destruidas y 178.555 averiadas.",
@@ -9950,6 +9952,174 @@
           "texto": "Intento del 12 de octubre de 2026, canal BÚSQUEDA —el único que este contenedor tiene, porque el proxy niega todos los dominios—. La primera búsqueda NO corroboró la cifra y por eso no se publicó ese día; la segunda, más específica, la encontró en La Opinión con el desglose y el costo. El PDF del Informe 75 no se pudo abrir: ofiscal.org está bloqueado. Queda pendiente leer el documento primario para fijar su fecha de publicación."
         }
       ]
+    },
+    {
+      "fecha": "2026-09-11",
+      "id": "carf-deficit-2027-insostenible",
+      "precision": "exacta",
+      "categoria": "economia",
+      "titulo": "El CARF advierte que el ajuste fiscal no puede aplazarse y proyecta para 2027 un déficit total cercano al 10 % del PIB: califica el escenario de insostenible",
+      "categoriaProbatoria": "hecho-probado",
+      "tipoMedicion": "contexto-estructural",
+      "tipoEvidencia": "dato-oficial",
+      "detalle": "El Comité Autónomo de la Regla Fiscal (CARF) —el órgano técnico independiente que vigila el cumplimiento de la regla fiscal— publicó el 11 de septiembre de 2026 su concepto sobre el escenario fiscal. Sus cifras: déficit TOTAL del Gobierno Nacional Central cercano al 10 % del PIB para 2027, déficit PRIMARIO de 4,5 %, deuda NETA en 67 % del PIB y un ajuste requerido de alrededor de 2,2 % del PIB. El Comité califica el escenario de «insostenible» y sostiene que el ajuste no puede aplazarse. SON CUATRO MEDIDAS DISTINTAS Y NO SE MEZCLAN: el déficit total incluye el pago de intereses; el primario los excluye; la deuda neta descuenta los activos financieros de la bruta, y es la medida sobre la que está definido el ancla de la Ley 2155 (ver `presupuesto.deudaBruta`, que publica la BRUTA y dice por qué no es comparable).",
+      "contrapunto": "POR QUÉ ESTA ENTRADA Y NO LAS OTRAS CIFRAS DE DÉFICIT QUE CIRCULAN, dicho porque el registro tiene dos colisiones de número medidas el 14 de octubre de 2026 y callarlas sería exactamente el defecto que este módulo persigue. PRIMERA COLISIÓN: 9,4 % es a la vez el déficit proyectado de 2027 que reportó Infobae el 1 de septiembre Y el desempleo de agosto que este mismo registro documenta. SEGUNDA COLISIÓN: 4,4 % es a la vez el déficit de 2026 que este Gobierno recalculó Y los intereses de deuda como porcentaje del PIB según un cálculo de la Contraloría. Dos pares de cifras idénticas con significados distintos dentro del mismo registro. Se publica la del CARF y no las otras porque es la fuente TÉCNICA e independiente, con metodología declarada. La diferencia entre el 9,4 % de Infobae y el ~10 % del CARF es menor y no cambia ninguna lectura; queda registrada acá como valor en disputa, con la del CARF como la que vale.",
+      "tipoFuente": "verificado",
+      "fuentes": [
+        {
+          "n": "Infobae · CARF advierte que el ajuste fiscal no puede aplazarse: déficit total llegaría al 10 % del PIB",
+          "u": "https://www.infobae.com/colombia/2026/09/11/carf-advierte-que-ajuste-fiscal-no-puede-aplazarse-deficit-total-llegaria-al-10-del-pib/",
+          "rol": "acto"
+        },
+        {
+          "n": "El País (Cali) · CARF alerta sobre un escenario fiscal insostenible para Colombia",
+          "u": "https://www.elpais.com.co/economia/carf-alerta-sobre-un-escenario-fiscal-insostenible-para-colombia-2534.html",
+          "rol": "acto"
+        }
+      ],
+      "revisionPosterior": [
+        {
+          "que": "divergencia",
+          "texto": "DOS CIFRAS DEL MISMO NOMBRE, y las dos colisiones están escritas en el contrapunto. El déficit proyectado de 2027 aparece como 9,4 % (Infobae, 1 sep) y como cercano al 10 % (CARF, 11 sep). Se toma la del CARF por ser la fuente técnica independiente; la otra queda registrada como valor en disputa y la diferencia es menor."
+        }
+      ]
+    },
+    {
+      "fecha": "2026-09-30",
+      "id": "subsidios-energia-gas-desfinanciados-2027",
+      "precision": "exacta",
+      "categoria": "economia",
+      "titulo": "El presupuesto de 2027 deja los subsidios de energía y gas de los estratos 1 y 2 financiados en una tercera parte: $2,26 billones asignados frente a $7,29 billones requeridos",
+      "nivelGobierno": "nacional",
+      "categoriaProbatoria": "hecho-probado",
+      "tipoMedicion": "actividad",
+      "tipoEvidencia": "dato-oficial",
+      "indicadores": [],
+      "_porQueListaVacia": "Se corrieron los cuatro criterios escritos sobre esta entrada el 15 de octubre de 2026 y no cae en ninguna vía. No es una facultad de excepción (I-04): el proyecto de presupuesto es el cauce ordinario del artículo 346. No hay órgano autónomo pronunciándose en contra (I-05) ni entidad con independencia técnica de ley interferida (I-13). Y no hay información obtenida por tutela (I-07): las cifras las publicaron los medios a partir del propio proyecto radicado.",
+      "detalle": "El proyecto de Presupuesto General de la Nación para 2027 asigna $2,26 billones a los subsidios de energía eléctrica y gas natural de los usuarios de estratos 1 y 2, frente a unos $7,29 billones que el propio cálculo sectorial estima necesarios: quedan financiados en cerca del 31 % y desfinanciados en cerca del 69 %. El faltante desagregado es de unos $3,96 billones en energía eléctrica y $1,08 billones en gas natural. A esa brecha se suma una carga acumulada previa de alrededor de $1,8 billones en mora a julio de 2026. Al 30 de septiembre de 2026 no se encontró evidencia de que el trámite legislativo hubiera restaurado la partida.",
+      "contrapunto": "EL CONTRAPESO VA EN LA MISMA ENTRADA Y NO APARTE, porque sin él esta cifra se lee como un descuido y no es eso. EL MISMO presupuesto incorporó el pasivo oculto del Fondo de Estabilización de Precios de los Combustibles (FEPC) por unos $9,6 billones, que es un acto de transparencia fiscal real: reconocer una deuda que los presupuestos anteriores no mostraban. El hallazgo de esta entrada NO es el desfinanciamiento a secas, sino el CONTRASTE DISTRIBUTIVO: el mismo ejercicio que sinceró un pasivo de $9,6 billones dejó en una tercera parte el subsidio que llega al recibo de los hogares de estratos 1 y 2. Y lo que esta entrada NO afirma: que la brecha sea deliberada, ni que no pueda cerrarse en el trámite; al 30 de septiembre simplemente no se halló evidencia de que se hubiera cerrado.",
+      "tipoFuente": "verificado",
+      "fuentes": [
+        {
+          "n": "El Tiempo · Presupuesto para 2027 subió $59,3 billones pero no hay plata para pagar subsidios de energía y gas de las familias más pobres",
+          "u": "https://www.eltiempo.com/economia/sectores/presupuesto-para-2027-subio-59-3-billones-pero-no-hay-plata-para-pagar-subsidios-de-energia-y-gas-de-las-familias-mas-pobres-3584328",
+          "rol": "acto"
+        },
+        {
+          "n": "El Colombiano · Presupuesto 2027: los huecos",
+          "u": "https://www.elcolombiano.com/inicio/presupuesto-2027-huecos-gobierno-petro-de-la-espriella-GO40395407",
+          "rol": "acto"
+        }
+      ]
+    },
+    {
+      "fecha": "2026-09-10",
+      "id": "atlasintel-aprobacion-primer-mes",
+      "precision": "exacta",
+      "categoria": "politica",
+      "titulo": "AtlasIntel mide la aprobación del presidente en 51,8 % al cierre de su primer mes, con 43,2 % de desaprobación, en un campo que coincidió con el rescate por el terremoto",
+      "categoriaProbatoria": "hecho-probado",
+      "tipoMedicion": "contexto-estructural",
+      "tipoEvidencia": "dato-oficial",
+      "detalle": "La encuesta Latam Pulse de AtlasIntel para Bloomberg, con campo entre el 30 de agosto y el 3 de septiembre de 2026, n = 1.904, método Random Digital Recruitment y margen de ±2 puntos, mide 51,8 % de aprobación y 43,2 % de desaprobación de la gestión del presidente Abelardo de la Espriella. El 52,8 % califica al Gobierno de excelente o bueno y su imagen personal positiva llega al 54 %, la primera entre diecisiete políticos medidos. En la MISMA medición, Gustavo Petro conserva un 52 % de imagen positiva, prácticamente empatado: es un dato contraintuitivo y por eso se registra acá y no se omite.",
+      "contrapunto": "TRES MARCAS QUE VIAJAN CON ESTA CIFRA Y NO SE PUEDEN SEPARAR DE ELLA. PRIMERA: el campo coincide con el operativo de rescate por el terremoto del 10 de agosto, así que la cifra carga un efecto de cohesión ante catástrofe; presentarla como veredicto sobre políticas públicas es un error interpretativo. SEGUNDA: no hay consenso de encuestas, hay una medición y media. No se localizó ninguna encuesta posterior a la posesión de Invamer, Datexco, CNC, Guarumo, YanHaas ni Cifras y Conceptos. TERCERA: CB Global Data corrobora la dirección —53,6 % de imagen positiva— pero NO publica ficha técnica, y por eso esa medida está marcada `cuestionada` en el bloque de encuestas de este registro. AtlasIntel entra sin esa marca porque sí publicó ficha completa: fechas de campo, tamaño de muestra, método y margen. La marca de calidad se queda donde corresponde y no se traslada.",
+      "tipoFuente": "verificado",
+      "_sinReprocheAlGobierno": {
+        "causa": "sin-reproche-al-ejecutivo",
+        "razon": "Es la medición de una encuestadora sobre la opinión pública, no un acto del Ejecutivo ni un cargo contra él: no hay reproche al que un vocero del Gobierno pudiera responder, y además la cifra le es favorable. Pedirle contrargumento sería medir un pendiente que nadie puede bajar."
+      },
+      "fuentes": [
+        {
+          "n": "Cambio · AtlasIntel: De la Espriella cierra su primer mes con 51,8 % de aprobación",
+          "u": "https://cambiocolombia.com/poder/articulo/2026/9/atlasintel-de-la-espriella-cierra-su-primer-mes-con-518-por-ciento-de-aprobacion",
+          "rol": "acto"
+        },
+        {
+          "n": "Infobae · El 54 % de los colombianos tiene una imagen positiva de Abelardo de la Espriella a un mes de su mandato, según AtlasIntel",
+          "u": "https://www.infobae.com/colombia/2026/09/10/el-54-de-los-colombianos-tiene-una-imagen-positiva-de-abelardo-de-la-espriella-a-un-mes-de-su-mandato-segun-atlasintel/",
+          "rol": "acto"
+        }
+      ]
+    },
+    {
+      "fecha": "2026-09-26",
+      "id": "delitos-agosto-2026-policia",
+      "precision": "exacta",
+      "categoria": "seguridad",
+      "titulo": "Las cifras preliminares de la Policía muestran en agosto una caída de 6 % en homicidios, 37 % en delitos sexuales y 79 % en secuestro frente a agosto de 2025 — con el acumulado del año en sentido contrario",
+      "categoriaProbatoria": "hecho-probado",
+      "tipoMedicion": "resultado",
+      "tipoEvidencia": "dato-oficial",
+      "detalle": "Cifras PRELIMINARES de la Policía Nacional para agosto de 2026 frente a agosto de 2025: homicidios 1.169 contra 1.244, una caída del 6 %; delitos sexuales 2.040 contra 3.253, una caída del 37 %; y secuestro con una caída del 79 %. Es el dato de RESULTADO más claro del periodo: casi todo lo demás que este registro documenta mide ACTIVIDAD —actos firmados, anuncios, decretos— y no efecto.",
+      "contrapunto": "TRES SALVEDADES QUE VIAJAN CON EL NÚMERO Y NO APARTE, porque cualquiera de las tres cambia lo que la cifra significa. PRIMERA: el ACUMULADO de enero a agosto va en sentido CONTRARIO —9.434 homicidios frente a 9.256 en el mismo periodo de 2025, un alza del 2 %—, así que la caída es de un mes y no de una tendencia. SEGUNDA: agosto incluye SEIS DÍAS del gobierno anterior, porque la posesión fue el 7, de modo que el mes no es íntegramente atribuible a esta administración. TERCERA: la cifra de EXTORSIÓN está en disputa dentro del propio Estado —el Ministerio de Defensa reporta 499 casos y la Policía Nacional 717, una diferencia de 218 que es el 44 % de la cifra oficial—, así que la caída del 62 % en extorsión que circuló NO es verificable y por eso NO se publica en esta entrada. Y una validación que conviene registrar por venir de fuera del oficialismo: el representante Julio César Triana, de Cambio Radical, revisó las cifras con el Ministerio de Defensa y las declaró «100 % reales y verificables». Es validación POLÍTICA y no técnica, y así se nombra.",
+      "tipoFuente": "verificado",
+      "_sinReprocheAlGobierno": {
+        "causa": "sin-reproche-al-ejecutivo",
+        "razon": "Es una serie de la Policía Nacional sobre la evolución de los delitos, no un cargo contra el Ejecutivo: no hay reproche al que un vocero pudiera responder. Y lo que la entrada sí discute —el acumulado al alza, los seis días del gobierno anterior y la extorsión en disputa— son límites de la propia medición, que es la vía (b) del discriminante, no un reproche."
+      },
+      "fuentes": [
+        {
+          "n": "El Heraldo · Homicidios bajaron 6 % en el primer mes del gobierno de Abelardo de la Espriella",
+          "u": "https://www.elheraldo.co/colombia/2026/09/26/homicidios-bajaron-6-en-el-primer-mes-del-gobierno-de-abelardo-de-la-espriella/",
+          "rol": "acto"
+        },
+        {
+          "n": "El Tiempo · Revelan informe que valida la caída en secuestro, extorsión y homicidios presentadas por el Gobierno tras revisión con MinDefensa",
+          "u": "https://www.eltiempo.com/politica/partidos-politicos/revelan-informe-que-valida-la-caida-en-secuestro-extorsion-y-homicidios-presentadas-por-el-gobierno-de-la-espriella-tras-revision-con-mindefensa-3590075",
+          "rol": "contexto"
+        }
+      ]
+    },
+    {
+      "fecha": "2026-09-30",
+      "id": "regionalizacion-2027-dnp-25-de-32",
+      "precision": "aproximada",
+      "categoria": "economia",
+      "titulo": "La inversión regionalizable cae de $89,5 a $87 billones y 25 de los 32 departamentos enfrentan recortes, según datos preliminares del DNP presentados al Congreso",
+      "nivelGobierno": "nacional",
+      "categoriaProbatoria": "hecho-probado",
+      "tipoMedicion": "actividad",
+      "tipoEvidencia": "dato-oficial",
+      "indicadores": [],
+      "_porQueListaVacia": "Se corrieron los cuatro criterios escritos sobre esta entrada el 15 de octubre de 2026 y no cae en ninguna vía. El proyecto de presupuesto es el cauce ordinario del artículo 346 y no una facultad de excepción (I-04); ningún órgano autónomo se pronuncia en contra (I-05); el DNP es una entidad del propio Ejecutivo y no un órgano autónomo, y nada indica interferencia en su independencia técnica (I-13); y las cifras se presentaron al Congreso, no se obtuvieron por tutela (I-07).",
+      "detalle": "Según datos preliminares del Departamento Nacional de Planeación presentados al Congreso, la inversión regionalizable total del presupuesto pasa de $89,5 billones en 2026 a $87 billones en 2027, y 25 de los 32 departamentos enfrentan recortes. Varios caen MÁS que el Huila, que fue el caso que más circuló: San Andrés −36 %, Vichada −33 %, Atlántico −25 %, Tolima −25 % y Bolívar −20 %, frente al −14,3 % del Huila. Y en pesos absolutos la proporción se invierte: el Huila pierde $236.604 millones y Antioquia pierde $633.709 millones, 2,7 veces más.",
+      "contrapunto": "DOS MARCAS OBLIGATORIAS. PRIMERA: el propio DNP marca estos datos como «preliminares e indicativos», sujetos a cambio durante el trámite legislativo, así que no son la asignación final. SEGUNDA: la tabla completa de los 32 departamentos NO se obtuvo, de modo que no se sabe cuáles siete suben ni cuánto. El desmentido del «golpe al Huila» es sólido —hay cinco departamentos que caen más en porcentaje y uno que pierde casi el triple en pesos— pero es INCOMPLETO, y así debe leerse. Y una nota de método que vale registrar porque muestra que ninguno de los dos encuadres disponibles es neutral: El Colombiano titula el recorte de Antioquia como culpa del «presupuesto que dejó Petro», mientras los medios del Huila lo atribuyen a De la Espriella. El mismo dato, dos responsables.",
+      "tipoFuente": "disputado",
+      "fuentes": [
+        {
+          "n": "La Silla Vacía · Los territorios administran la escasez: el presupuesto 2027 recorta la inversión regional",
+          "u": "https://www.lasillavacia.com/red-de-expertos/red-social/los-territorios-administran-la-escasez-el-presupuesto-2027-recorta-la-inversion-regional/",
+          "rol": "acto"
+        }
+      ]
+    },
+    {
+      "fecha": "2026-09-24",
+      "id": "congreso-rechaza-objecion-ley-merito",
+      "precision": "exacta",
+      "categoria": "gobierno",
+      "titulo": "Las plenarias de Senado y Cámara rechazan las objeciones del Gobierno a la ley de mérito e insisten en el texto: el proyecto pasa a revisión de la Corte Constitucional",
+      "nivelGobierno": "nacional",
+      "categoriaProbatoria": "hecho-probado",
+      "tipoMedicion": "actividad",
+      "tipoEvidencia": "reporte-periodistico",
+      "detalle": "Las plenarias de Senado y Cámara acogieron el informe de las subcomisiones que RECHAZÓ los reparos formulados por el Ejecutivo al Proyecto de Ley 056 de 2024 Cámara — 345 de 2024 Senado, el del senador Hernán Cadavid que prohíbe disminuir los requisitos mínimos de estudio y experiencia para los cargos directivos del Estado. Las cámaras decidieron INSISTIR en el texto, con una modificación relacionada con su título, y el proyecto quedó en trámite hacia la Corte Constitucional, que debe resolver sobre las objeciones de inconstitucionalidad. Es el desenlace de la objeción que este registro documenta en `objecion-ley-merito-cargos-directivos`.",
+      "contrapunto": "LO QUE ESTO SÍ Y NO ESTABLECE. SÍ: que el Congreso —incluida la coalición de gobierno— no acogió los reparos del Ejecutivo y mantuvo el texto. NO: que la ley esté en firme. Las objeciones por inconstitucionalidad pasan a la Corte Constitucional, que puede darle la razón al Gobierno; mientras la Corte no se pronuncie, la ley no rige. Y este registro NO le asigna indicador a esta entrada: es un acto del Legislativo y no del Ejecutivo, y declarar un indicador acá movería un eje con un hecho que los criterios escritos no clasificaron.",
+      "tipoFuente": "verificado",
+      "fuentes": [
+        {
+          "n": "Infobae · Proyecto de meritocracia pasa a la Corte Constitucional: este es el trámite y los posibles escenarios tras acuerdo entre el Congreso y Gobierno",
+          "u": "https://www.infobae.com/colombia/2026/09/24/proyecto-de-meritocracia-pasa-a-la-corte-constitucional-este-es-el-tramite-y-los-posibles-escenarios-tras-acuerdo-entre-el-congreso-y-gobierno/",
+          "rol": "acto"
+        },
+        {
+          "n": "El Tiempo · Congreso alista subcomisiones para evaluar las objeciones presidenciales a la ley del senador Hernán Cadavid",
+          "u": "https://www.eltiempo.com/politica/congreso/congreso-alista-subcomisiones-para-evaluar-las-objeciones-presidenciales-a-la-ley-del-senador-hernan-cadavid-sobre-requisitos-en-altos-cargos-publicos-3580679",
+          "rol": "contexto"
+        }
+      ],
+      "indicadores": [],
+      "_porQueListaVacia": "Se corrieron los cuatro criterios escritos sobre esta entrada el 15 de octubre de 2026 y no cae en ninguna vía, y la razón de fondo es el AUTOR del acto: el acto es del LEGISLATIVO y no del Ejecutivo. I-04 cuenta facultades de excepción del Gobierno; I-05 cuenta choques en los que un órgano autónomo se pronuncia contra el Ejecutivo, y el Congreso no es un órgano autónomo en el sentido del criterio —es una rama—; I-13 cuenta interferencia en entidades con independencia técnica de ley; I-07 cuenta información obtenida por tutela. Declarar un indicador acá movería un eje con un hecho que los criterios escritos no clasificaron, que es exactamente lo que la regla del orden prohíbe (v1077)."
     }
   ],
   "balances": [
@@ -10442,6 +10612,7 @@
       {
         "estado": "documentada",
         "tema": "Mérito en el empleo público: prometió blindarlo y objetó la ley que lo blindaba",
+        "id": "contra-merito-empleo-publico",
         "identidadRazon": "SIN DECLARAR a propósito, y no por falta de lectura. El Gobierno objetó por mecanismo —constitucionalidad e inconveniencia— y no por el fondo, así que de si presenta o no una vía alternativa para blindar los requisitos depende que lo prometido y lo objetado sean el mismo objeto. Esa prueba quedó escrita de antemano, con su fecha, para que no se resuelva a conveniencia: se revisa el 21 de noviembre de 2026 y hasta entonces este caso no baja el peldaño.",
         "antes": "Cuatro piezas con fecha. (1) Programa de gobierno «País Milagro», mayo de 2026: meritocracia estricta con estándares internacionales de eficiencia, y una reforma integral del Estado que promete eliminar «la burocracia clientelista». (2) 4 de julio de 2026: «Aquí no hay cuotas políticas ni favores que pagar», al prometer que los cargos los ocuparía gente con capacidad técnica y resultados probados. (3) 13 de julio de 2026, presentación del Banco Nacional de Talentos: «por primera vez en la historia de Colombia» un presidente electo lanza «una plataforma nacional digital de reclutamiento basada exclusivamente en el mérito». (4) Agosto de 2026, el «Libro de la Verdad» entregado a los organismos de control: entre las conductas que le denuncia al gobierno anterior está haber BAJADO LOS REQUISITOS de distintos cargos, afectando la gobernabilidad y la eficacia del aparato estatal.",
         "despues": "El 21 de agosto de 2026 objetó el Proyecto de Ley 056 de 2024 Cámara — 345 de 2024 Senado, que prohibía disminuir los requisitos mínimos de los cargos directivos del sector público y que había superado los cuatro debates. Es la primera objeción presidencial de su gobierno, y recayó sobre una ley de su propia coalición: su autor, el senador Hernán Cadavid (Centro Democrático), dijo haberse enterado por los medios y la calificó de «desconcertante».",
@@ -11957,5 +12128,469 @@
         "deDonde": "El texto del pliego que `marcoDeclarado` cita cuando el marco falta."
       }
     ]
+  },
+  "analisisEditorial": {
+    "autor": "Daniel Mendoza · URBIS",
+    "fecha": "2026-10-14",
+    "_nota": "EL EDITORIAL, CON CADA AFIRMACIÓN ATADA A SU REGISTRO (v1125). Es CAPA 4: opinión firmada, rotulada, visualmente aparte del cálculo, y NO alimenta ningún eje ni ningún indicador. La forma no es un texto suelto con una lista de registros al lado —eso dejaba la lista sin decir QUÉ sostiene cada cual— sino una lista de AFIRMACIONES con su `base`, y los párrafos armados con trozos que citan la clave de la afirmación. Así el enlace cae sobre la frase y no sobre el párrafo, y una afirmación sin registro se puede denunciar una por una.",
+    "afirmaciones": [
+      {
+        "k": "intereses-vs-inversion",
+        "dice": "En 2027 Colombia va a pagar más en intereses de deuda —94,42 billones— que todo lo que va a invertir, 86,96.",
+        "base": [
+          "pgn-2027-monto-aprobado-comisiones",
+          "pgn-2027-composicion-del-aumento"
+        ],
+        "nota": "Las dos cifras salen del bloque `presupuesto.heroe`, que las publica con su advertencia de cuadre."
+      },
+      {
+        "k": "deficit-carf",
+        "dice": "El CARF proyecta para 2027 un déficit total cercano al 10 % del PIB y llama el escenario insostenible.",
+        "base": [
+          "carf-deficit-2027-insostenible"
+        ],
+        "nota": "Se usa la cifra del CARF y no el 9,4 % que circuló, porque 9,4 % colisiona con el desempleo de agosto en este mismo registro. La entrada lo explica."
+      },
+      {
+        "k": "fmi",
+        "dice": "El gobierno terminó sentándose con el FMI.",
+        "base": [
+          "fmi-delegacion-washington"
+        ]
+      },
+      {
+        "k": "recorte-sectorial",
+        "dice": "Descontada la inflación, educación cae 3,1 % y salud 4,4 % mientras defensa sube 14,6 %.",
+        "base": [
+          "pgn-2027-monto-aprobado-comisiones"
+        ],
+        "nota": "Variaciones reales del bloque `presupuesto`, deflactadas con el IPC anual de agosto (6,24 %) que el propio bloque declara."
+      },
+      {
+        "k": "subsidios",
+        "dice": "Los subsidios de energía y gas de los estratos 1 y 2 quedaron financiados en un tercio de lo que se necesita.",
+        "base": [
+          "subsidios-energia-gas-desfinanciados-2027"
+        ],
+        "nota": "La entrada trae el contrapeso en el mismo sitio: el mismo presupuesto sinceró el pasivo del FEPC por $9,6 billones."
+      },
+      {
+        "k": "merito-promesa",
+        "dice": "Prometió mérito.",
+        "base": [
+          "contra-merito-empleo-publico"
+        ],
+        "nota": "La promesa la sostiene la CONTRADICCIÓN documentada del registro, que es donde vive: una promesa de campaña no es un acto de gobierno y no tiene entrada propia en la línea de tiempo. Su identidad de objeto está SIN DECLARAR a propósito, con su razón escrita y fecha de revisión el 21 de noviembre de 2026, así que esta afirmación se apoya en un expediente abierto y eso va dicho."
+      },
+      {
+        "k": "merito-objecion",
+        "dice": "Objetó la ley que lo blindaba, de su propia coalición.",
+        "base": [
+          "objecion-ley-merito-cargos-directivos"
+        ]
+      },
+      {
+        "k": "merito-congreso",
+        "dice": "El Congreso le derrotó la objeción.",
+        "base": [
+          "congreso-rechaza-objecion-ley-merito"
+        ],
+        "nota": "Las plenarias insistieron en el texto y pasó a la Corte Constitucional, que todavía no se ha pronunciado: la ley no rige."
+      },
+      {
+        "k": "merito-decreto",
+        "dice": "Después aplazó los concursos por decreto.",
+        "base": [
+          "decreto-1384-aplaza-concursos"
+        ]
+      },
+      {
+        "k": "vuelos-cifra",
+        "dice": "El reporte de los vuelos presidenciales —219 movimientos y 2.286 millones en 32 días— salió porque un juez lo ordenó.",
+        "base": [
+          "vuelos-presidenciales-reporte-fac"
+        ],
+        "nota": "La unidad es el movimiento de aeronave y no el viaje del presidente, y la entrada lo dice."
+      },
+      {
+        "k": "vuelos-sin-respuesta",
+        "dice": "Nadie del gobierno ha explicado para qué fueron.",
+        "base": [
+          "vuelos-presidenciales-reporte-fac"
+        ],
+        "nota": "Es un hecho sobre NUESTRA búsqueda y no sobre la conducta del Gobierno: la entrada declara dónde, cuándo y qué se buscó, en catorce medios, y no se halló."
+      },
+      {
+        "k": "menores",
+        "dice": "Cinco menores muertos en operaciones militares, con confirmación forense reportada, y ninguna investigación penal conocida.",
+        "base": [
+          "operacion-amon-tres-menores",
+          "operacion-azarias-balance-forense"
+        ],
+        "nota": "El Gobierno sostiene que participaban en hostilidades; es una tesis de una de las partes y ninguna autoridad judicial se ha pronunciado. El módulo cuenta el HECHO y no lo califica penalmente."
+      },
+      {
+        "k": "aprobacion",
+        "dice": "La aprobación va en 51,8 %, medida en pleno rescate por el terremoto.",
+        "base": [
+          "atlasintel-aprobacion-primer-mes"
+        ],
+        "nota": "AtlasIntel es la única medición del periodo con ficha técnica completa. El campo coincide con el rescate, así que carga un efecto de cohesión."
+      },
+      {
+        "k": "delitos",
+        "dice": "Los homicidios de agosto cayeron 6 % y el secuestro 79 %.",
+        "base": [
+          "delitos-agosto-2026-policia"
+        ],
+        "nota": "Con sus tres salvedades: el acumulado de enero a agosto va al alza (+2 %), agosto incluye seis días del gobierno anterior, y la extorsión está en disputa dentro del propio Estado, así que su caída no se publica.",
+        "_noEsCalificacion": "La palabra «homicidios» acá nombra la SERIE ESTADÍSTICA de la Policía Nacional —la categoría con la que esa entidad publica sus cifras— y no califica la conducta de ninguna persona ni de ningún hecho registrado. La prohibición de la v1118 es contra encadenar hecho → tipo penal → juicio público sobre alguien, que es lo que hacía la escala del eje D al hablar de «homicidio en persona protegida»: ahí había un sujeto y una imputación implícita. Acá hay un conteo agregado sin sujeto. LA EXENCIÓN VA POR AFIRMACIÓN Y CON SU RAZÓN ESCRITA, nunca como una regla del código: una regla abriría la puerta a doscientas de una vez y esta hay que pensarla una por una (v1094, v1109). Y NO alcanza al eje D: su guarda sigue midiendo con la lista entera y sin exención posible."
+      },
+      {
+        "k": "regional",
+        "dice": "El recorte regional tocó a 25 de 32 departamentos, no a uno.",
+        "base": [
+          "regionalizacion-2027-dnp-25-de-32"
+        ],
+        "nota": "Datos preliminares e indicativos del DNP, y la tabla completa de los 32 no se obtuvo: no se sabe cuáles siete suben."
+      },
+      {
+        "k": "directiva-anterior",
+        "dice": "La directiva que restringe a los funcionarios hablar con prensa tampoco es una invención de este gobierno: el anterior expidió una igual en abril.",
+        "base": [
+          "directiva-03-vocerias-2026"
+        ],
+        "nota": "Entrada del registro del gobierno ANTERIOR. La entrada precisa que establece que la práctica es anterior, no que las dos medidas sean idénticas."
+      },
+      {
+        "k": "terremoto",
+        "dice": "Hay un terremoto de por medio, con 331 muertos, que atraviesa cada una de estas cifras.",
+        "base": [
+          "terremoto-balance-331-muertos"
+        ]
+      }
+    ],
+    "rotulo": "OPINIÓN",
+    "corta": [
+      [
+        {
+          "t": "Este módulo mide. Yo opino, y lo hago acá, con mi nombre."
+        }
+      ],
+      [
+        {
+          "t": "Los números del país se están poniendo rojos y no es una manera de hablar: "
+        },
+        {
+          "t": "en 2027 Colombia va a pagar más en intereses de deuda —94,42 billones— que todo lo que va a invertir, 86,96",
+          "a": "intereses-vs-inversion"
+        },
+        {
+          "t": ". "
+        },
+        {
+          "t": "El CARF proyecta para 2027 un déficit total cercano al 10 % del PIB y llama el escenario insostenible",
+          "a": "deficit-carf"
+        },
+        {
+          "t": ". "
+        },
+        {
+          "t": "El gobierno terminó sentándose con el FMI",
+          "a": "fmi"
+        },
+        {
+          "t": "."
+        }
+      ],
+      [
+        {
+          "t": "Y el recorte no cayó donde menos duele. "
+        },
+        {
+          "t": "Descontada la inflación, educación cae 3,1 % y salud 4,4 % mientras defensa sube 14,6 %",
+          "a": "recorte-sectorial"
+        },
+        {
+          "t": ". "
+        },
+        {
+          "t": "Los subsidios de energía y gas de los estratos 1 y 2 quedaron financiados en un tercio de lo que se necesita",
+          "a": "subsidios"
+        },
+        {
+          "t": ": eso llega al recibo de la casa de la gente que menos tiene."
+        }
+      ],
+      [
+        {
+          "t": "Prometió mérito",
+          "a": "merito-promesa"
+        },
+        {
+          "t": " y "
+        },
+        {
+          "t": "objetó la ley que lo blindaba, de su propia coalición",
+          "a": "merito-objecion"
+        },
+        {
+          "t": ". Después "
+        },
+        {
+          "t": "aplazó los concursos por decreto",
+          "a": "merito-decreto"
+        },
+        {
+          "t": ". Mucha gente votó por esa promesa."
+        }
+      ],
+      [
+        {
+          "t": "Y cuando algo le sale mal sale una explicación, no una respuesta: "
+        },
+        {
+          "t": "el reporte de los vuelos presidenciales —219 movimientos y 2.286 millones en 32 días— salió porque un juez lo ordenó",
+          "a": "vuelos-cifra"
+        },
+        {
+          "t": ", y "
+        },
+        {
+          "t": "nadie del gobierno ha explicado para qué fueron",
+          "a": "vuelos-sin-respuesta"
+        },
+        {
+          "t": "."
+        }
+      ],
+      [
+        {
+          "t": "Por encima de todo: "
+        },
+        {
+          "t": "cinco menores muertos en operaciones militares, con confirmación forense reportada, y ninguna investigación penal conocida",
+          "a": "menores"
+        },
+        {
+          "t": "."
+        }
+      ],
+      [
+        {
+          "t": "Lo que yo leo es un gobierno que gasta más en deuda que en construir, que recortó donde más duele, que prometió una cosa y hace otra, y que entrega la información cuando lo obligan."
+        }
+      ]
+    ],
+    "cortaCierre": [
+      [
+        {
+          "t": "También encontré lo que no esperaba: "
+        },
+        {
+          "t": "la aprobación va en 51,8 % —medida en pleno rescate por el terremoto—",
+          "a": "aprobacion"
+        },
+        {
+          "t": ", "
+        },
+        {
+          "t": "los homicidios de agosto cayeron 6 % y el secuestro 79 %",
+          "a": "delitos"
+        },
+        {
+          "t": ", y "
+        },
+        {
+          "t": "el recorte regional tocó a 25 de 32 departamentos, no a uno",
+          "a": "regional"
+        },
+        {
+          "t": ". No cambia lo que pienso, pero va escrito. Un tablero que solo encuentra lo que su dueño ya creía no mide nada."
+        }
+      ]
+    ],
+    "larga": [
+      [
+        {
+          "t": "Este módulo mide. Yo opino, y lo hago acá, aparte, con mi nombre."
+        }
+      ],
+      [
+        {
+          "t": "Armé esto porque me cansé de ver mi feed lleno de titulares que nadie verifica, de los dos lados. Quería saber qué queda cuando uno revisa uno por uno. Esto es lo que quedó, y lo que yo leo en eso."
+        }
+      ],
+      [
+        {
+          "t": "LOS NÚMEROS DEL PAÍS SE ESTÁN PONIENDO ROJOS, y no es una manera de hablar. "
+        },
+        {
+          "t": "En 2027 Colombia va a pagar más en intereses de deuda que todo lo que va a invertir: 94,42 billones contra 86,96",
+          "a": "intereses-vs-inversion"
+        },
+        {
+          "t": ". "
+        },
+        {
+          "t": "El CARF —el comité técnico independiente que vigila la regla fiscal— proyecta para 2027 un déficit total cercano al 10 % del PIB y llamó el escenario insostenible",
+          "a": "deficit-carf"
+        },
+        {
+          "t": ". "
+        },
+        {
+          "t": "El gobierno terminó sentándose con el FMI",
+          "a": "fmi"
+        },
+        {
+          "t": ". Un presupuesto que crece y una inversión que cae al mismo tiempo no es una paradoja: es deuda."
+        }
+      ],
+      [
+        {
+          "t": "Y LOS RECORTES NO CAYERON DONDE MENOS DUELE. "
+        },
+        {
+          "t": "Descontada la inflación, educación cae 3,1 % y salud 4,4 %, mientras defensa sube 14,6 %",
+          "a": "recorte-sectorial"
+        },
+        {
+          "t": ". Pero lo que más me pesa es otra cifra: "
+        },
+        {
+          "t": "los subsidios de energía y gas para los estratos 1 y 2 quedaron financiados en una tercera parte de lo que se necesita",
+          "a": "subsidios"
+        },
+        {
+          "t": ". Eso no llega a un debate en el Congreso. Llega al recibo de la casa de la gente que menos tiene."
+        }
+      ],
+      [
+        {
+          "t": "PROMETIÓ MÉRITO Y ESTÁ HACIENDO OTRA COSA. "
+        },
+        {
+          "t": "En campaña dijo que aquí no había cuotas políticas ni favores que pagar, y denunció que el gobierno anterior bajaba los requisitos de los cargos públicos",
+          "a": "merito-promesa"
+        },
+        {
+          "t": ". Después "
+        },
+        {
+          "t": "objetó la ley que prohibía bajarlos —una ley de su propia coalición, cuyo autor dijo públicamente que estaba desconcertado",
+          "a": "merito-objecion"
+        },
+        {
+          "t": ". Y "
+        },
+        {
+          "t": "por decreto aplazó los concursos de mérito hasta final de año, habilitando en el mismo plazo el nombramiento de plantas temporales",
+          "a": "merito-decreto"
+        },
+        {
+          "t": ". "
+        },
+        {
+          "t": "El Congreso le derrotó la objeción",
+          "a": "merito-congreso"
+        },
+        {
+          "t": ". Mucha gente votó por esa promesa."
+        }
+      ],
+      [
+        {
+          "t": "Y CUANDO ALGO LE SALE MAL, SALE UNA EXPLICACIÓN, NO UNA RESPUESTA. "
+        },
+        {
+          "t": "El reporte de los vuelos presidenciales no salió porque alguien decidiera publicarlo: salió porque un juez lo ordenó, y después otro juez tuvo que ordenar que lo ampliaran. Son 219 movimientos de aeronave y 2.286 millones de pesos en 32 días",
+          "a": "vuelos-cifra"
+        },
+        {
+          "t": ". "
+        },
+        {
+          "t": "Hasta donde este módulo buscó —y buscó en catorce medios— nadie del gobierno ha explicado para qué fueron",
+          "a": "vuelos-sin-respuesta"
+        },
+        {
+          "t": ". Un documento entregado porque lo obligaron no es una respuesta."
+        }
+      ],
+      [
+        {
+          "t": "Eso es un patrón de comunicación, y lo vengo viendo desde la campaña: una narrativa armada con asesores, las redes como herramienta central, y un relato listo para cada hecho adverso antes de que termine el día."
+        }
+      ],
+      [
+        {
+          "t": "Y HAY ALGO QUE ESTÁ POR ENCIMA DE TODO LO DEMÁS. "
+        },
+        {
+          "t": "Cinco menores de edad muertos en operaciones militares del Estado, con confirmación forense reportada por la prensa. El gobierno sostiene que participaban en hostilidades. Puede ser que un juez le dé la razón. Lo que no hay, hasta hoy, es una investigación penal conocida que lo establezca",
+          "a": "menores"
+        },
+        {
+          "t": ". Que un país discuta eso y nadie abra una investigación me parece lo más grave de todo lo que este módulo registró."
+        }
+      ],
+      [
+        {
+          "t": "LO QUE YO LEO EN TODO ESTO es un gobierno que gasta más en pagar deuda que en construir, que recortó donde más duele, que prometió una cosa y está haciendo otra, y que entrega la información cuando lo obligan. Cada quien puede leer otra cosa con los mismos datos. Están todos acá abajo con su fuente."
+        }
+      ]
+    ],
+    "largaCierre": [
+      [
+        {
+          "t": "Ahora, lo que encontré y no esperaba. Lo escribo porque si solo publico lo que me daba la razón, esto no sirve para nada."
+        }
+      ],
+      [
+        {
+          "t": "La aprobación de este gobierno está en 51,8 % —AtlasIntel, la única encuesta del periodo con ficha técnica completa— y hay que decir que se midió entre el 30 de agosto y el 3 de septiembre, en pleno rescate por el terremoto, así que carga un efecto de cohesión",
+          "a": "aprobacion"
+        },
+        {
+          "t": ". "
+        },
+        {
+          "t": "Los homicidios de agosto cayeron 6 % frente al año pasado y el secuestro 79 %, aunque el acumulado de enero a agosto va al alza y la cifra de extorsión está en disputa",
+          "a": "delitos"
+        },
+        {
+          "t": ". "
+        },
+        {
+          "t": "El recorte al presupuesto regionalizado no fue un castigo contra ningún departamento en particular: 25 de los 32 perdieron, y varios más que el que yo creía",
+          "a": "regional"
+        },
+        {
+          "t": ". "
+        },
+        {
+          "t": "La directiva que restringe a los funcionarios hablar con prensa tampoco es una invención de este gobierno: el anterior expidió una igual en abril",
+          "a": "directiva-anterior"
+        },
+        {
+          "t": ". Y "
+        },
+        {
+          "t": "hay un terremoto de por medio, con 331 muertos",
+          "a": "terremoto"
+        },
+        {
+          "t": ", que atraviesa cada una de estas cifras y que sería deshonesto no mencionar."
+        }
+      ],
+      [
+        {
+          "t": "Nada de eso cambia lo que pienso. Pero tenía que estar escrito. Un tablero que solo encuentra lo que su dueño ya creía no está midiendo nada."
+        }
+      ]
+    ],
+    "tituloCierre": "También encontré lo que no esperaba",
+    "noAlimenta": "Este texto es OPINIÓN firmada y no alimenta ningún eje, ningún indicador ni el veredicto. El veredicto de esta página se calcula contando el registro, y seguiría siendo el mismo si este editorial no existiera."
   }
 }

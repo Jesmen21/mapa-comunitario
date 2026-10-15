@@ -1103,6 +1103,41 @@ sección al final de este archivo.
   indicadores y su peldaño donde estaba. Y escribir el umbral antes de mirar
   no basta como coartada cuando el número ya se vio en la pantalla de la tanda
   anterior: lo que protege es que la propiedad no cambie con el número.
+* **Una OPINIÓN firmada ancla cada afirmación, no el texto entero** (v1127).
+  El editorial era un texto con una lista de `registros` al lado: eso decía
+  sobre qué se apoyaba el editorial ENTERO y no **qué sostenía cada frase**,
+  así que una afirmación sin respaldo se escondía detrás de las que sí lo
+  tenían. Son **afirmaciones con su `base`**, y los párrafos se arman con
+  trozos que citan la clave, de modo que el enlace cae sobre la frase. La
+  base resuelve en los TRES sitios donde vive el material —entradas de este
+  gobierno, del anterior y contradicciones—, porque una opinión que compara
+  dos gobiernos tiene que poder anclar un hecho del otro, y una promesa de
+  campaña no es un acto y vive en la contradicción. **El ancla es por `id` y
+  nunca por título** (clase B: un retitulado la rompe en silencio), así que
+  una entrada sin id se lo gana antes de poder sostener nada. Y **la guarda
+  ata el texto y la lista en las dos direcciones**: ninguna cita rota y
+  ninguna afirmación declarada que nadie cite.
+  **Y el cierre que da la contraria al autor va visible y al mismo nivel**: es
+  lo que separa un tablero de un panfleto, y el atajo de la tanda siguiente
+  es mandarlo a un desplegable «para ahorrar espacio», así que la guarda mide
+  que no sea un `<details>` y que su letra no sea más chica **que la del
+  cuerpo** —comparada contra el cuerpo y no contra un número escrito en la
+  guarda, que es como una aserción envejece (v890)—.
+* **Y una PROHIBICIÓN de clase se exime por ÍTEM y con su razón, nunca por
+  regla** (v1094, v1109, v1127). La guarda penal de la v1118 marcó
+  «los homicidios de agosto cayeron 6 %», y era un falso positivo real: ahí
+  `homicidio` nombra la SERIE ESTADÍSTICA de la Policía y no califica la
+  conducta de nadie — la prohibición es contra encadenar hecho → tipo penal →
+  juicio público **sobre alguien**, y un conteo agregado no tiene sujeto. Lo
+  que **no** se hace es aflojar la lista ni reescribir el texto del autor; y
+  lo que tampoco se hace es automatizar la distinción, que daría falsos
+  positivos y terminaría en la lista que envejece (v895). Se declara la
+  exención **en el ítem, con su razón escrita**, se cuenta y se publica en el
+  detalle de la guarda. **Dos cosas la hacen honesta:** una regla eximiría
+  doscientos de una vez y una razón hay que pensarla uno por uno; y la
+  exención **no alcanza a la otra superficie** —el eje D sigue midiendo con la
+  lista entera y sin exención posible—, así que por construcción no abre allá
+  ninguna puerta.
 * **«NO HALLADO», nunca «NO RESPONDIÓ»** (v961, v1123). Lo dijo el usuario y
   queda citado: *lo primero es un hecho sobre nuestra búsqueda; lo segundo es
   una afirmación sobre la conducta del Gobierno, y no la podemos hacer: puede

@@ -1,4 +1,4 @@
-const URBIS_CACHE = 'urbis-v1126-marchas-14-octubre-primer-paro-nacional';
+const URBIS_CACHE = 'urbis-v1127-el-editorial-con-cada-afirmacion-anclada';
 const URBIS_ASSETS = [
   './',
   './index.html',

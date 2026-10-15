@@ -2564,3 +2564,31 @@ a.sp-fuente:hover svg{ color:var(--verde-hi); }
    junto a los que sí usa, para que «no lo usa» no se lea como «no existe». */
 .sp-c3-reten{ margin:.4rem 0 0; font-size:var(--t-8); color:var(--ink-2);
   border-left:2px dashed var(--ink-2); padding-left:.5rem; }
+
+/* ── LA OPINIÓN FIRMADA (v1125) ─────────────────────────────────────────────
+   Serif, para que se distinga del cálculo sin depender de que alguien lea la
+   etiqueta. El cierre va al MISMO tamaño que el resto y sin plegar: es lo que
+   separa esto de un panfleto, y esconderlo sería vaciarlo. */
+.sp-edit{ font-family:Georgia,'Times New Roman',serif; border-left:3px solid var(--ink-2);
+  padding:.9rem 0 .2rem 1rem; margin:1.4rem 0 .6rem; }
+.sp-edit-ojo{ font-family:system-ui,sans-serif; font-size:var(--t-9); letter-spacing:.09em;
+  text-transform:uppercase; color:var(--ink-2); margin:0 0 .5rem; }
+.sp-edit-txt{ font-size:var(--t-7); line-height:1.6; margin:0 0 .7rem; }
+.sp-edit-af{ border-bottom:1px dotted var(--ink-2); cursor:help; }
+.sp-edit-af.flojo{ border-bottom-style:dashed; }
+.sp-edit-af.sinbase,.sp-edit-rota{ background:#FBE9E7; border-bottom:2px solid #C0392B; }
+.sp-edit-cierre{ margin:1.1rem 0 .2rem; padding-top:.8rem; border-top:1px solid var(--ink-2); }
+.sp-edit-cierre-h{ font-family:system-ui,sans-serif; font-size:var(--t-8); margin:0 0 .5rem; }
+.sp-edit-pie{ font-family:system-ui,sans-serif; font-size:var(--t-8); color:var(--ink-2); margin:.6rem 0 0; }
+.sp-edit-mas{ display:inline-block; font-family:system-ui,sans-serif; font-size:var(--t-8);
+  margin:.5rem 0 0; }
+.sp-edit-ap{ font-family:system-ui,sans-serif; margin:1rem 0 0; }
+.sp-edit-ap>b{ font-size:var(--t-8); }
+.sp-edit-aps{ list-style:none; padding:0; margin:.5rem 0 0; display:grid; gap:.55rem; }
+.sp-edit-aps li{ font-size:var(--t-8); border-left:2px solid var(--ink-2); padding-left:.6rem; }
+.sp-edit-aps li p{ margin:.15rem 0 0; color:var(--ink-2); }
+.sp-edit-aps li.sp-edit-flojo{ border-left-color:#8A5D12; }
+.sp-edit-aps li.sp-edit-sinbase{ border-left-color:#C0392B; }
+.sp-edit-nota{ font-style:italic; }
+.sp-edit-regla{ font-family:system-ui,sans-serif; font-size:var(--t-8); color:var(--ink-2);
+  margin:.9rem 0 0; }

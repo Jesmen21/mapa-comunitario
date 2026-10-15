@@ -4901,34 +4901,108 @@
 
   /* El editorial. Devuelve SIEMPRE un objeto con su estado, nunca null: «no
      hay editorial» y «hay editorial sin firmar» piden cosas distintas. */
+  /* LAS SEIS ETIQUETAS PENALES, en UN solo sitio (v1118, v1125). El eje D ya
+     no puede nombrar un tipo penal y el EDITORIAL tampoco: una opinión
+     firmada que califica jurídicamente un hecho encadena hecho forense →
+     tipo penal → juicio público igual que lo hacía la escala, y que vaya
+     rotulada como opinión no la salva. La lista vive acá y la leen los dos,
+     para que no sean dos codificaciones de la misma regla (v879). */
+  var ETIQUETA_PENAL = ['persona protegida', 'C[óo]digo Penal', 'homicidio', 'crimen',
+                        'tipifica', 'falso positivo'];
+
+  /* Dónde puede anclar una afirmación del editorial: las entradas de este
+     registro, las del ANTERIOR —el editorial compara dos gobiernos, así que
+     un hecho del otro tiene que poder anclar en el suyo— y las
+     contradicciones, que son material del registro y no entradas. */
+  function baseDelEditorial(dd, ref) {
+    var ent = (dd || {}).entradas || [];
+    for (var i = 0; i < ent.length; i++) {
+      if (ent[i].id === ref) return { reg: ent[i], donde: 'entrada', anterior: false };
+    }
+    var con = (((dd || {}).contradicciones) || {}).casos || [];
+    for (var j = 0; j < con.length; j++) {
+      if (con[j].id === ref) return { reg: con[j], donde: 'contradicción', anterior: false };
+    }
+    var ant = (DA || {}).entradas || [];
+    for (var k = 0; k < ant.length; k++) {
+      if (ant[k].id === ref) return { reg: ant[k], donde: 'entrada del gobierno anterior', anterior: true };
+    }
+    return null;
+  }
+
   function editorialDe(dd) {
     dd = dd || D;
     var e = (dd || {}).analisisEditorial;
-    if (!e || !String(e.texto || '').trim()) {
+    if (!e || !((e.afirmaciones || []).length) ) {
       return { hay: false, t: 'Sin análisis editorial firmado',
                d: 'Esta sección existe para la postura de quien opera URBIS, con su nombre y su fecha. ' +
                   'Hoy no hay ninguna escrita, y eso es un estado legítimo: lo que no sería legítimo es ' +
                   'una opinión sin firma, o una opinión metida dentro del cálculo.' };
     }
-    var ent = (dd.entradas) || [];
-    var apoyos = (e.registros || []).map(function (ref) {
-      var reg = null;
-      for (var i = 0; i < ent.length; i++) {
-        if (ent[i].id === ref || ent[i].titulo === ref) { reg = ent[i]; break; }
-      }
-      var cp = reg ? categoriaProbatoriaDe(reg) : null;
-      /* La marca que el pliego pide en la interfaz: si el editorial se apoya
-         en una atribución causal o en una afirmación en circulación, se ve.
-         No lo descalifica —una opinión puede apoyarse en lo que quiera— pero
-         el lector tiene que poder ver sobre qué se está apoyando. */
-      var flojo = !!(cp && (cp.id === 'atribucion-causal' || cp.id === 'en-circulacion'));
-      return { ref: ref, hallado: !!reg, titulo: reg ? reg.titulo : '', clase: cp, flojo: flojo };
+    /* CADA AFIRMACIÓN, con el registro que la sostiene (v1125). Antes era una
+       lista suelta de `registros` al lado del texto: decía SOBRE QUÉ se
+       apoyaba el editorial entero y no QUÉ sostenía cada frase, así que una
+       afirmación sin respaldo se escondía detrás de las que sí lo tenían. */
+    var porK = {};
+    var afirm = (e.afirmaciones || []).map(function (a) {
+      var bases = (a.base || []).map(function (ref) {
+        var b = baseDelEditorial(dd, ref);
+        var cp = b ? categoriaProbatoriaDe(b.reg) : null;
+        /* La marca que el pliego pide: si una afirmación se apoya en una
+           atribución causal o en algo en circulación, se ve. No la
+           descalifica —una opinión puede apoyarse en lo que quiera— pero el
+           lector tiene que poder ver sobre qué se apoya. */
+        return { ref: ref, hallado: !!b, donde: b ? b.donde : '',
+                 titulo: b ? (b.reg.titulo || b.reg.tema || '') : '',
+                 anterior: !!(b && b.anterior), clase: cp,
+                 flojo: !!(cp && (cp.id === 'atribucion-causal' || cp.id === 'en-circulacion')) };
+      });
+      /* UN TIPO PENAL NO SE NOMBRA, tampoco acá (v1118, v1125). Se mide sobre
+         la afirmación y no sobre el texto entero, para que el detalle diga
+         CUÁL frase lo trae. */
+      var penal = ETIQUETA_PENAL.filter(function (x) {
+        return new RegExp(x, 'i').test(String(a.dice || ''));
+      });
+      var o = { k: a.k, dice: String(a.dice || ''), nota: String(a.nota || ''), bases: bases,
+                sinBase: !bases.length || bases.some(function (x) { return !x.hallado; }),
+                flojas: bases.filter(function (x) { return x.flojo; }).length,
+                penal: penal };
+      porK[a.k] = o;
+      return o;
+    });
+    /* Los trozos del texto citan la clave de su afirmación. Un trozo que cite
+       una que no existe se marca y no se pinta como enlace: fallar cerrado
+       (v880), porque un enlace a ninguna parte se lee como un enlace. */
+    function trozos(bloque) {
+      return (bloque || []).map(function (par) {
+        return (par || []).map(function (ch) {
+          var k = ch.a || null;
+          return { t: String(ch.t || ''), a: k, af: k ? (porK[k] || null) : null,
+                   rota: !!(k && !porK[k]) };
+        });
+      });
+    }
+    var cuerpo = { corta: trozos(e.corta), cortaCierre: trozos(e.cortaCierre),
+                   larga: trozos(e.larga), largaCierre: trozos(e.largaCierre) };
+    var rotas = 0;
+    Object.keys(cuerpo).forEach(function (q) {
+      cuerpo[q].forEach(function (par) { par.forEach(function (c) { if (c.rota) rotas++; }); });
     });
     return {
-      hay: true, texto: String(e.texto), autor: String(e.autor || '').trim(),
-      fecha: String(e.fecha || '').trim(), apoyos: apoyos,
-      flojos: apoyos.filter(function (a) { return a.flojo; }).length,
-      huerfanos: apoyos.filter(function (a) { return !a.hallado; }).length,
+      hay: true, autor: String(e.autor || '').trim(), fecha: String(e.fecha || '').trim(),
+      rotulo: String(e.rotulo || 'OPINIÓN'), tituloCierre: String(e.tituloCierre || ''),
+      noAlimenta: String(e.noAlimenta || ''),
+      afirmaciones: afirm, cuerpo: cuerpo, citasRotas: rotas,
+      /* Las tres cuentas que la pantalla y la guarda necesitan, calculadas
+         acá y no reconstruidas allá (v867, v1088). */
+      sinBase: afirm.filter(function (a) { return a.sinBase; }).length,
+      flojas: afirm.filter(function (a) { return a.flojas; }).length,
+      conPenal: afirm.filter(function (a) { return a.penal.length; }).length,
+      /* Compatibilidad con el casillero del control, que cuenta huérfanos. */
+      apoyos: afirm.reduce(function (ac, a) { return ac.concat(a.bases); }, []),
+      huerfanos: afirm.reduce(function (ac, a) {
+        return ac + a.bases.filter(function (x) { return !x.hallado; }).length; }, 0),
+      flojos: afirm.reduce(function (ac, a) { return ac + a.flojas; }, 0),
       firmado: !!(String(e.autor || '').trim() && String(e.fecha || '').trim())
     };
   }
@@ -6684,6 +6758,15 @@
 
     // ── 1 · Placa y veredicto ──────────────────────────────────────────────
     izq.appendChild(placaDe(f, reg));
+    /* LA OPINIÓN FIRMADA, JUSTO DEBAJO DEL VEREDICTO Y FUERA DE LA PLACA
+       (v1125). Va DESPUÉS del cálculo y no antes: un párrafo de opinión
+       encima del veredicto se lee como su resumen. Y va FUERA de `placaDe`
+       porque esa función se reusa dentro de un `<button>` en el hero, así
+       que el editorial salía dos veces y la segunda con un enlace METIDO
+       DENTRO DE UN BOTÓN — inválido y, peor, intocable con el teclado. Lo
+       encontró componer la pantalla y mirar de quién cuelga cada bloque, no
+       el código. */
+    izq.appendChild(bloqueEditorial(false));
 
     var ver = el('section', 'sp-fi-ver-box sp-fi-v-' + f.veredicto.id);
     /* LA ESCALERA ARRANCABA SIN ROTULO, con «Fiable» marcado en verde y sin
@@ -7643,36 +7726,16 @@
       }
     }
 
-    /* El editorial, en su propia caja y rotulado como opinión ANTES del
-       texto. El pliego lo pide así y la razón es de lectura: un párrafo de
-       opinión debajo de treinta cifras se lee como una cifra más si el
-       rótulo llega después. */
-    var ed = editorialDe(D);
-    var eb = el('div', 'sp-c4-edi' + (ed.hay ? '' : ' sin'));
-    eb.appendChild(el('span', 'sp-c4-rot', 'Opinión, no cálculo'));
-    if (!ed.hay) {
-      eb.appendChild(el('b', null, ed.t));
-      eb.appendChild(el('p', null, ed.d));
-    } else {
-      eb.appendChild(el('b', null, (ed.autor || 'Sin autor declarado') +
-        (ed.fecha ? ' · ' + fechaLarga(ed.fecha) : ' · sin fecha')));
-      eb.appendChild(el('p', null, ed.texto));
-      if (!ed.firmado) eb.appendChild(el('p', 'sp-c4-falta', 'Esta opinión está sin firmar. El pliego exige ' +
-        'autor y fecha visibles: una opinión sin firma no se puede defender ni discutir.'));
-      if (ed.apoyos.length) {
-        var ua = el('ul', 'sp-c4-apoyos');
-        ed.apoyos.forEach(function (a) {
-          var la = el('li', a.flojo ? 'flojo' : null);
-          la.appendChild(el('span', null, a.hallado ? a.titulo : ('(no se encontró: ' + a.ref + ')')));
-          if (a.flojo) la.appendChild(el('b', null, 'se apoya en ' + a.clase.t.toLowerCase()));
-          ua.appendChild(la);
-        });
-        eb.appendChild(ua);
-      }
-    }
-    eb.appendChild(el('p', 'sp-c4-pie',
-      'Esta sección no alimenta ningún cálculo de las anteriores, y ningún registro la cita como fuente.'));
-    s4.appendChild(eb);
+    /* EL EDITORIAL COMPLETO VIVE ACÁ (v1125), en la ficha ampliada, y la
+       PLACA lleva el corto con su enlace. Hasta la v1124 este sitio tenía su
+       propio pintor, que imprimía `ed.texto` — el campo que la v1125 retiró
+       al pasar el editorial a afirmaciones con su registro. Dos pintores con
+       la misma regla se separan (v879), y lo que se habría separado acá es
+       el CIERRE: la parte que ninguna pantalla debería poder dejar fuera.
+       Uno solo, y el argumento decide cuál texto. */
+    var edLargo = bloqueEditorial(true);
+    edLargo.id = 'sp-edit-completo';
+    s4.appendChild(edLargo);
 
     /* El control de calidad del pliego: «si algún casillero falla, el módulo
        publica el resultado CON la marca de la falla visible». */
@@ -8733,47 +8796,139 @@
      cálculo y ningún cálculo lo cita como evidencia. El texto, el autor y la
      fecha los escribe una persona en el registro; este código no los
      inventa. */
-  function bloqueEditorial() {
+  /* Pinta un bloque de párrafos de trozos. Cada trozo que cita una
+     afirmación sale como ENLACE al registro que la sostiene: el enlace cae
+     sobre la frase y no sobre el párrafo, que es lo que permite ver qué
+     sostiene qué. Un trozo con una cita ROTA —que nombra una afirmación que
+     no existe— sale marcado y SIN enlace: un enlace a ninguna parte se lee
+     igual que uno bueno (v880). */
+  function parrafosEditorial(bloque, dest) {
+    (bloque || []).forEach(function (par) {
+      var pEl = el('p', 'sp-edit-txt');
+      par.forEach(function (ch) {
+        if (ch.rota) {
+          var bad = el('span', 'sp-edit-rota', ch.t);
+          bad.title = 'Esta frase cita una afirmación que no está declarada en el registro.';
+          pEl.appendChild(bad);
+          return;
+        }
+        if (!ch.af) { pEl.appendChild(document.createTextNode(ch.t)); return; }
+        var b0 = (ch.af.bases || [])[0];
+        var sp = el('span', 'sp-edit-af' + (ch.af.flojas ? ' flojo' : '') +
+                            (ch.af.sinBase ? ' sinbase' : ''), ch.t);
+        sp.title = ch.af.sinBase
+          ? 'Sin registro que la sostenga.'
+          : 'Lo sostiene: ' + (b0 ? (b0.donde + ' · ' + b0.titulo) : '') +
+            (ch.af.nota ? ' — ' + ch.af.nota : '');
+        pEl.appendChild(sp);
+      });
+      dest.appendChild(pEl);
+    });
+  }
+
+  /* ══ LA OPINIÓN FIRMADA ════════════════════════════════════════════════════
+     Bloque propio y en SERIF, para que se distinga de los datos sin
+     necesidad de una etiqueta: la tipografía hace el trabajo que una etiqueta
+     haría peor, porque una etiqueta se puede pasar por alto y una letra
+     distinta no.
+
+     Y la regla de oro del pliego sigue en pie: esto NO alimenta ningún
+     cálculo y ningún cálculo lo cita como evidencia. El texto, el autor, la
+     fecha y el registro que sostiene cada afirmación los escribe una persona
+     en el registro; este código no los inventa.
+
+     `larga` decide cuál de los dos textos se pinta: la placa lleva el corto
+     con un enlace, y la ficha ampliada el completo. Es UNA función para los
+     dos, porque dos pintores con la misma regla se separan (v879) — y lo que
+     se separaría acá es justamente el cierre, que es la parte que nadie
+     debería poder dejar fuera. */
+  function bloqueEditorial(larga) {
     var ed = editorialDe(D) || {};
-    var s = el('section', 'sp-edit');
-    s.appendChild(el('p', 'sp-edit-ojo', 'Opinión firmada'));
-    if (ed.hay && ed.texto) {
-      s.appendChild(el('p', 'sp-edit-txt', ed.texto));
-      var pie = el('p', 'sp-edit-pie');
-      pie.appendChild(el('b', null, ed.autor || 'Sin firmar'));
-      if (ed.fecha) pie.appendChild(el('span', null, ' · ' + fechaLarga(ed.fecha)));
-      s.appendChild(pie);
-      /* Los apoyos NO son fuentes: son referencias a entradas de este mismo
-         registro, y cada una dice si se encontró y de qué clase probatoria
-         es. Un apoyo flojo —una atribución causal, una afirmación en
-         circulación— se marca: no descalifica la opinión, pero el lector
-         tiene que poder ver sobre qué se apoya. */
-      if (ed.apoyos && ed.apoyos.length) {
-        var w = el('div', 'sp-edit-ap');
-        w.appendChild(el('b', null, 'Se apoya en estos registros'));
-        var ul = el('ul', 'sp-edit-aps');
-        ed.apoyos.forEach(function (a) {
-          var li = el('li', a.flojo ? 'sp-edit-flojo' : null);
-          li.appendChild(el('span', null, a.hallado ? a.titulo : a.ref));
-          if (!a.hallado) li.appendChild(tag('cp-mal', 'no está en el registro'));
-          else if (a.clase) li.appendChild(tag(a.flojo ? 'dis' : 'ok', a.clase.t));
-          ul.appendChild(li);
-        });
-        w.appendChild(ul);
-        s.appendChild(w);
-      }
-    } else {
+    var s = el('section', 'sp-edit' + (larga ? ' sp-edit-larga' : ''));
+    s.appendChild(el('p', 'sp-edit-ojo', ed.rotulo || 'OPINIÓN'));
+    if (!ed.hay) {
       s.appendChild(el('p', 'sp-edit-txt sp-edit-marca',
         'Acá va la opinión firmada de quien opera URBIS. El texto lo escribe una persona, no este programa: ' +
         'firmar una opinión sobre un presidente en ejercicio con el nombre de otro sería lo más grave que este ' +
         'módulo podría hacer, y lo sería aunque la opinión fuera buena. Mientras no esté escrita, este bloque ' +
         'dice que no está.'));
       s.appendChild(el('p', 'sp-edit-pie sp-edit-marca',
-        'Pendiente: autor, fecha y los enlaces a los registros que la sustentan.'));
+        'Pendiente: autor, fecha y el registro que sostiene cada afirmación.'));
+      s.appendChild(el('p', 'sp-edit-regla',
+        'Una opinión firmada y enlazada a evidencia se defiende; un juicio metido dentro de un cálculo solo se ' +
+        'desacredita. Por eso esto no mueve ninguna cifra de esta pantalla, y ninguna cifra lo cita como prueba.'));
+      return s;
     }
+
+    parrafosEditorial(larga ? ed.cuerpo.larga : ed.cuerpo.corta, s);
+
+    /* ── EL CIERRE VA SIEMPRE, VISIBLE Y AL MISMO NIVEL (v1125) ───────────
+       «También encontré lo que no esperaba» NO es opcional ni plegable: es
+       lo que separa esto de un panfleto. Va en el MISMO <section>, con el
+       mismo tamaño de letra que el resto y sin <details>, y lo pinta la
+       misma función que el cuerpo — que es lo único que impide que una tanda
+       futura lo mande a un desplegable «para ahorrar espacio». */
+    var cierre = larga ? ed.cuerpo.largaCierre : ed.cuerpo.cortaCierre;
+    if (cierre && cierre.length) {
+      var cj = el('div', 'sp-edit-cierre');
+      /* El título va SOLO si la primera frase del cierre no lo dice ya. En la
+         versión corta el párrafo empieza «También encontré lo que no
+         esperaba: …», así que el encabezado lo repetía palabra por palabra.
+         Es una regla medible y no una excepción para un texto: se compara el
+         arranque del cierre contra el título. */
+      var pri = ((cierre[0] || [])[0] || {}).t || '';
+      if (ed.tituloCierre &&
+          pri.slice(0, ed.tituloCierre.length).toLowerCase() !== ed.tituloCierre.toLowerCase()) {
+        cj.appendChild(el('h4', 'sp-edit-cierre-h', ed.tituloCierre));
+      }
+      parrafosEditorial(cierre, cj);
+      s.appendChild(cj);
+    }
+
+    var pie = el('p', 'sp-edit-pie');
+    pie.appendChild(el('b', null, ed.autor || 'Sin firmar'));
+    if (ed.fecha) pie.appendChild(el('span', null, ' \u00b7 ' + fechaLarga(ed.fecha)));
+    s.appendChild(pie);
+
+    /* Desde la placa se llega al texto completo; desde el completo no hay a
+       dónde ir. El enlace va DESPUÉS del cierre para que nadie lo tome como
+       «y lo demás está allá». */
+    if (!larga) {
+      var a = el('a', 'sp-edit-mas', 'Leer el an\u00e1lisis completo \u2192');
+      a.href = '#sp-edit-completo';
+      s.appendChild(a);
+    }
+
+    /* QUÉ SOSTIENE CADA AFIRMACIÓN, en la ficha ampliada. En la placa sería
+       media pantalla de tabla encima del veredicto; acá es el aparato de la
+       opinión y va entero. */
+    if (larga && ed.afirmaciones.length) {
+      var w = el('div', 'sp-edit-ap');
+      w.appendChild(el('b', null, 'Qu\u00e9 sostiene cada afirmaci\u00f3n'));
+      var ul = el('ul', 'sp-edit-aps');
+      ed.afirmaciones.forEach(function (af) {
+        var li = el('li', (af.sinBase ? 'sp-edit-sinbase' : (af.flojas ? 'sp-edit-flojo' : null)));
+        li.appendChild(el('b', null, af.dice));
+        if (!af.bases.length) {
+          li.appendChild(el('p', null, 'SIN REGISTRO QUE LA SOSTENGA.'));
+        } else {
+          af.bases.forEach(function (b) {
+            li.appendChild(el('p', null, b.hallado
+              ? (b.donde + ' \u00b7 ' + b.titulo + (b.clase ? ' \u00b7 ' + b.clase.t : ''))
+              : ('NO SE HALL\u00d3 EN EL REGISTRO: ' + b.ref)));
+          });
+        }
+        if (af.nota) li.appendChild(el('p', 'sp-edit-nota', af.nota));
+        ul.appendChild(li);
+      });
+      w.appendChild(ul);
+      s.appendChild(w);
+    }
+
     s.appendChild(el('p', 'sp-edit-regla',
-      'Una opinión firmada y enlazada a evidencia se defiende; un juicio metido dentro de un cálculo solo se ' +
-      'desacredita. Por eso esto no mueve ninguna cifra de esta pantalla, y ninguna cifra lo cita como prueba.'));
+      (ed.noAlimenta ? ed.noAlimenta + ' ' : '') +
+      'Una opini\u00f3n firmada y enlazada a evidencia se defiende; un juicio metido dentro de un c\u00e1lculo ' +
+      'solo se desacredita. Por eso esto no mueve ninguna cifra de esta pantalla, y ninguna cifra lo cita como prueba.'));
     return s;
   }
 
