@@ -3,8 +3,8 @@
   "presidente": "Abelardo de la Espriella",
   "periodo": "2026 – 2030",
   "posesion": "2026-08-07",
-  "actualizado": "2026-10-14",
-  "proximaActualizacion": "2026-10-15",
+  "actualizado": "2026-10-16",
+  "proximaActualizacion": "2026-10-17",
   "categorias": {
     "gobierno": {
       "nombre": "Gobierno y decretos",
@@ -73,6 +73,122 @@
     }
   },
   "entradas": [
+    {
+      "fecha": "2026-10-16",
+      "precision": "exacta",
+      "categoria": "seguridad",
+      "id": "blindaje-360-barranquilla-2026-10-16",
+      "titulo": "La Policía y el Ejército despliegan 587 uniformados en la \"Operación Blindaje 360\" en Barranquilla y reportan 56 capturas y 34 allanamientos en la madrugada",
+      "categoriaProbatoria": "hecho-probado",
+      "tipoMedicion": "actividad",
+      "indicadores": [],
+      "nivelGobierno": "nacional",
+      "estadoProcesal": "en-firme",
+      "tipoEvidencia": "reporte-periodistico",
+      "detalle": "El presidente Abelardo de la Espriella anunció en la madrugada de este viernes 16 de octubre de 2026 los resultados de la \"Operación Blindaje 360\" en Barranquilla: 587 uniformados de la Policía y el Ejército desplegados, con un balance hasta las 4:00 a. m. de 56 capturas —28 en flagrancia y 28 por orden judicial— y 34 allanamientos. El mandatario difundió el operativo con la frase «Serán los delincuentes quienes padezcan el terror», y en otro mensaje: «Mira el miedo que tienen».",
+      "contrapunto": "Las cifras del balance inicial —587 uniformados, 56 capturas, 34 allanamientos— las coinciden tres medios, pero son el balance del propio Gobierno y no de una fuente independiente. Ninguna de las fuentes consultadas reporta, al cierre de esta entrada, cuántas de esas 56 capturas terminaron en imputación o en libertad, que es lo que distingue una detención de una condena.",
+      "tipoFuente": "verificado",
+      "fuentes": [
+        {
+          "n": "Vanguardia · Abelardo De La Espriella anuncia 56 capturas en Barranquilla tras operativo con 587 uniformados",
+          "u": "https://www.vanguardia.com/colombia/2026/10/16/abelardo-de-la-espriella-anuncia-56-capturas-en-barranquilla-tras-operativo-con-587-uniformados/",
+          "rol": "acto"
+        },
+        {
+          "n": "Semana · «Serán los delincuentes quienes padezcan el terror»: De La Espriella anuncia operativo en Barranquilla que deja 56 capturados",
+          "u": "https://www.semana.com/politica/articulo/seran-los-delincuentes-quienes-padezcan-el-terror-de-la-espriella-anuncia-operativo-en-barranquilla-que-deja-56-capturados/202633/",
+          "rol": "acto"
+        },
+        {
+          "n": "Pulzo · De la Espriella se pegó tremenda madrugada y anunció megaoperativo: «Mira el miedo que tienen»",
+          "u": "https://www.pulzo.com/nacion/operacion-blindaje-360-liderada-por-presidente-abelardo-espriella-PP5331678",
+          "rol": "acto"
+        }
+      ],
+      "_porQueListaVacia": "Corrida la vara de los cinco criterios escritos sobre esta entrada el 16 de octubre de 2026, no cae en ninguna vía. No hay acto de excepción (I-04), ni choque con un órgano autónomo (I-05), ni producto técnico (I-13), ni información negada y entregada tras tutela (I-07), ni muerte en la operación (I-14): son solo capturas y allanamientos."
+    },
+    {
+      "fecha": "2026-10-15",
+      "precision": "aproximada",
+      "categoria": "legitimidad",
+      "id": "encuesta-atlasintel-dos-meses-2026-10",
+      "titulo": "La aprobación de gestión de De la Espriella cae a 48,7 % a los dos meses de gobierno, según AtlasIntel para Bloomberg Línea, y la corrupción es la principal preocupación ciudadana",
+      "categoriaProbatoria": "hecho-probado",
+      "tipoMedicion": "contexto-estructural",
+      "detalle": "La encuesta Latam Pulse de AtlasIntel para Bloomberg Línea, con trabajo de campo entre el 2 y el 7 de octubre de 2026 sobre 2.893 encuestados (margen de error de 2 puntos, 95 % de confianza), midió por separado cuatro cosas que conviene no mezclar: la APROBACIÓN de la gestión de De la Espriella bajó a 48,7 % (desaprueban 44,6 %), frente al 51,8 % de aprobación de la encuesta anterior de septiembre; la EVALUACIÓN del gobierno en conjunto la califica de excelente o buena el 47,7 %; y su IMAGEN POSITIVA personal —si el encuestado tiene una opinión favorable de él como figura pública, una pregunta distinta de la gestión— bajó a 49 % frente al 54 % de agosto. Entre los problemas del país, el 57,8 % de los encuestados señaló la corrupción como el principal, por encima de la inseguridad y el narcotráfico (45,4 %).",
+      "contrapunto": "Las fuentes no coinciden en el nombre de la cifra del 48,7 %: El Espectador y La Veintitrés la llaman APROBACIÓN de la gestión, mientras Pulzo tituló la misma cifra como IMAGEN. Esta entrada sigue la mayoría y la publica como aprobación, separada de la imagen positiva (49 %), y deja dicha la discrepancia en vez de callarla. No encontré, al cierre de esta entrada, la fecha exacta de publicación del informe ni la ficha técnica completa de AtlasIntel: los datos de campo citados provienen de la cobertura periodística, no del informe original.",
+      "tipoFuente": "verificado",
+      "_sinReprocheAlGobierno": {
+        "causa": "sin-reproche-al-ejecutivo",
+        "razon": "Es una medición de opinión pública sobre la gestión y la imagen del presidente, no una acusación puntual que el Gobierno deba responder punto por punto."
+      },
+      "fuentes": [
+        {
+          "n": "El Espectador · Aprobación de De la Espriella se ubicó en 48,7 % tras dos meses en el poder: AtlasIntel",
+          "u": "https://www.elespectador.com/politica/aprobacion-de-de-la-espriella-cayo-segun-la-encuesta-de-atlasintel-esta-es-la-encuesta/",
+          "rol": "acto"
+        },
+        {
+          "n": "Pulzo · Imagen del presidente Abelardo de la Espriella cae a 48,7 % tras dos meses de gobierno, según encuesta de AtlasIntel",
+          "u": "https://www.pulzo.com/nacion/aprobacion-del-presidente-abelardo-de-la-espriella-cae-al-48-7-en-colombia-segun-encuesta-atlasintel-PP5331666A",
+          "rol": "contexto"
+        },
+        {
+          "n": "Bloomberg Línea · De la Espriella pierde imagen positiva y Sheinbaum se consolida entre presidentes mejor valorados de América Latina",
+          "u": "https://www.bloomberglinea.com/latinoamerica/de-la-espriella-pierde-imagen-positiva-y-sheinbaum-se-consolida-entre-presidentes-mejor-valorados-de-america-latina/",
+          "rol": "contexto"
+        },
+        {
+          "n": "La Veintitrés · Aprobación de De la Espriella cae a 48,7% y corrupción lidera preocupaciones en Colombia",
+          "u": "https://laveintitres.com/aprobacin-de-de-la-espriella-cae-a-487-y-corrupcin-lidera-preocupaciones-en-colombia/",
+          "rol": "contexto"
+        }
+      ]
+    },
+    {
+      "fecha": "2026-10-14",
+      "precision": "exacta",
+      "categoria": "israel",
+      "id": "embajada-jerusalen-2026-10-14",
+      "titulo": "Colombia inaugura su embajada en Jerusalén, 46 años después de trasladarla a Tel Aviv, en cumplimiento de una promesa de campaña del presidente, y Palestina pide revertir la decisión",
+      "categoriaProbatoria": "hecho-probado",
+      "tipoMedicion": "actividad",
+      "indicadores": [],
+      "nivelGobierno": "nacional",
+      "estadoProcesal": "en-firme",
+      "tipoEvidencia": "reporte-periodistico",
+      "detalle": "El canciller colombiano Omar Bula Escobar encabezó este miércoles 14 de octubre de 2026, junto con su homólogo israelí Gideon Sa'ar, la inauguración de la embajada de Colombia en Jerusalén, 46 años después de que el país trasladara su sede a Tel Aviv. La embajadora designada es Tania Gilinski Bacal, posesionada el 2 de octubre. Bula dijo que la apertura reanuda una relación que «nunca debió haber sido interrumpida» y planteó cooperación en seguridad, comercio, inversión, agricultura, ciencia y tecnología. Según la Cancillería israelí, con esta apertura Jerusalén suma diez embajadas extranjeras. El traslado cumple una promesa de campaña del presidente Abelardo de la Espriella y se suma a otros pasos de su gobierno hacia Israel: el pleno restablecimiento de relaciones diplomáticas en agosto, el reconocimiento de la soberanía israelí sobre los Altos del Golán y el retiro del respaldo de Colombia a la demanda de Sudáfrica contra Israel ante la Corte Internacional de Justicia.",
+      "contrapunto": "La decisión revierte la ruptura de relaciones que el gobierno de Gustavo Petro impuso en 2024 por la guerra en Gaza. El estatus de Jerusalén es un asunto no resuelto en el derecho internacional —también reclamada por los palestinos como capital de un futuro Estado—, y la mayoría de los países mantiene su embajada ante Israel en Tel Aviv y no en Jerusalén; solo Estados Unidos y un grupo reducido de países tienen allí su sede. Según Cambio Colombia, el gobierno palestino pidió revertir la decisión.",
+      "tipoFuente": "verificado",
+      "fuentes": [
+        {
+          "n": "Vanguardia · Colombia inaugura embajada en Jerusalén tras restablecer relaciones con Israel: así cambia su representación diplomática",
+          "u": "https://www.vanguardia.com/colombia/2026/10/14/colombia-inaugura-embajada-en-jerusalen-tras-restablecer-relaciones-con-israel-asi-cambia-su-representacion-diplomatica/",
+          "rol": "acto"
+        },
+        {
+          "n": "La República · Colombia inauguró su embajada en Jerusalén tras restablecer relaciones con Israel",
+          "u": "https://www.larepublica.co/economia/colombia-inauguro-su-embajada-en-jerusalen-tras-restablecer-relaciones-con-israel-4502516",
+          "rol": "acto"
+        },
+        {
+          "n": "Portafolio · Colombia abre su embajada en Jerusalén y busca fortalecer relaciones diplomáticas con Israel",
+          "u": "https://www.portafolio.co/economia/gobierno/colombia-abre-su-embajada-en-jerusalen-y-busca-fortalecer-relaciones-diplomaticas-con-israel-504424",
+          "rol": "acto"
+        },
+        {
+          "n": "Cambio Colombia · Embajada de Colombia reabrirá en Jerusalén, 46 años después de su traslado a Tel Aviv",
+          "u": "https://cambiocolombia.com/internacional/articulo/2026/10/embajada-de-colombia-reabrira-en-jerusalen-46-anos-despues-de-su-traslado-a-tel-aviv",
+          "rol": "contexto"
+        },
+        {
+          "n": "Cambio Colombia · Colombia abre su embajada en Jerusalén: Israel celebra y Palestina pide revertir la decisión",
+          "u": "https://cambiocolombia.com/poder/articulo/2026/10/colombia-abre-su-embajada-en-jerusalen-israel-celebra-y-palestina-pide-revertir-la-decision",
+          "rol": "efecto"
+        }
+      ],
+      "_porQueListaVacia": "Corrida la vara de los cinco criterios escritos sobre esta entrada el 16 de octubre de 2026, no cae en ninguna vía. Es un acto ordinario de política exterior, no una facultad extraordinaria (I-04); no hay choque con un órgano autónomo (I-05) ni acto sobre una entidad técnica (I-13); no hay información negada y entregada tras tutela (I-07); y no hay muerte en una operación del Estado (I-14)."
+    },
     {
       "fecha": "2026-10-14",
       "precision": "exacta",
