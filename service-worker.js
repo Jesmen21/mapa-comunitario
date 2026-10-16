@@ -1,4 +1,4 @@
-const URBIS_CACHE = 'urbis-v1127-el-editorial-con-cada-afirmacion-anclada';
+const URBIS_CACHE = 'urbis-v1128-mantenimiento-alertas-vencidas';
 const URBIS_ASSETS = [
   './',
   './index.html',
