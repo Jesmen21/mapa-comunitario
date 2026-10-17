@@ -1,6 +1,6 @@
 {
   "_comentario": "Alertas EDITORIALES del equipo URBIS (desastres verificados). Se publican editando este archivo — no requieren la hoja de cálculo ni credenciales. El mapa las dibuja junto a las que ya están en la base; si coinciden las coordenadas, se muestra una sola. Reglas: solo desastres naturales de fuente oficial, nunca violencia ni homicidios; coordenadas geocodificadas, jamás estimadas a ojo; sin fuente no se publica.",
-  "actualizado": "2026-10-16",
+  "actualizado": "2026-10-17",
   "alertas": [
     {
       "tipo": "Sismo",
@@ -51,6 +51,21 @@
       ],
       "fuente": "Servicio Geológico Colombiano (SGC) / prensa nacional",
       "url": "https://www.infobae.com/colombia/2026/10/13/temblo-hoy-13-de-octubre-de-2026-en-colombia-el-sismo-de-magnitud-50-sacudio-a-santander/"
+    },
+    {
+      "tipo": "Sismo",
+      "titulo": "Sismo de magnitud 4,1 — 16 de octubre de 2026, Riosucio, Chocó",
+      "lat": 6.87,
+      "lng": -77.49,
+      "desde": "2026-10-16",
+      "expira": "2026-10-30",
+      "lineas": [
+        "📅 Ocurrió el viernes 16 de octubre de 2026 a las 8:02 a. m. (hora de Colombia).",
+        "📊 Magnitud 4,1 (boletín preliminar, sujeto a revisión) · profundidad superficial (menor a 30 km) · epicentro en Riosucio, a unos 40 km de Juradó, Chocó (6,87° N / 77,49° O, Servicio Geológico Colombiano). Hasta el momento no se reportaron heridos ni daños materiales.",
+        "ℹ️ Alerta informativa del equipo URBIS con base en el Servicio Geológico Colombiano y prensa nacional (El Heraldo, Noticias RCN, El Tiempo, Pulzo). No es un reporte ciudadano."
+      ],
+      "fuente": "Servicio Geológico Colombiano (SGC) / prensa nacional",
+      "url": "https://www.elheraldo.co/colombia/2026/10/16/nuevo-sismo-en-choco-este-16-de-octubre-registro-una-magnitud-de-41-con-epicentro-en-riosucio/"
     }
   ]
 }

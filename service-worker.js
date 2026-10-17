@@ -1,4 +1,4 @@
-const URBIS_CACHE = 'urbis-v1129-seguimiento-presidencial-16-oct';
+const URBIS_CACHE = 'urbis-v1130-alerta-sismo-riosucio-choco';
 const URBIS_ASSETS = [
   './',
   './index.html',
