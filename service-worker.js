@@ -1,4 +1,4 @@
-const URBIS_CACHE = 'urbis-v1130-alerta-sismo-riosucio-choco';
+const URBIS_CACHE = 'urbis-v1131-seguimiento-presidencial-museo-julito-bustos-antiterrorista';
 const URBIS_ASSETS = [
   './',
   './index.html',

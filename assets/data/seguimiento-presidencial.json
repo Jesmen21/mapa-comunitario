@@ -3,8 +3,8 @@
   "presidente": "Abelardo de la Espriella",
   "periodo": "2026 – 2030",
   "posesion": "2026-08-07",
-  "actualizado": "2026-10-16",
-  "proximaActualizacion": "2026-10-17",
+  "actualizado": "2026-10-17",
+  "proximaActualizacion": "2026-10-18",
   "categorias": {
     "gobierno": {
       "nombre": "Gobierno y decretos",
@@ -76,17 +76,158 @@
     {
       "fecha": "2026-10-16",
       "precision": "exacta",
-      "categoria": "seguridad",
-      "id": "blindaje-360-barranquilla-2026-10-16",
-      "titulo": "La Policía y el Ejército despliegan 587 uniformados en la \"Operación Blindaje 360\" en Barranquilla y reportan 56 capturas y 34 allanamientos en la madrugada",
+      "categoria": "gobierno",
+      "id": "museo-nacional-retiro-obras-2026-10-16",
+      "titulo": "El Ministerio de las Culturas ordena retirar más de 30 obras del Museo Nacional sobre memoria del conflicto, paz y diversidad, dentro de la \"contrarrevolución cultural\" anunciada por el presidente",
       "categoriaProbatoria": "hecho-probado",
       "tipoMedicion": "actividad",
       "indicadores": [],
       "nivelGobierno": "nacional",
       "estadoProcesal": "en-firme",
       "tipoEvidencia": "reporte-periodistico",
-      "detalle": "El presidente Abelardo de la Espriella anunció en la madrugada de este viernes 16 de octubre de 2026 los resultados de la \"Operación Blindaje 360\" en Barranquilla: 587 uniformados de la Policía y el Ejército desplegados, con un balance hasta las 4:00 a. m. de 56 capturas —28 en flagrancia y 28 por orden judicial— y 34 allanamientos. El mandatario difundió el operativo con la frase «Serán los delincuentes quienes padezcan el terror», y en otro mensaje: «Mira el miedo que tienen».",
-      "contrapunto": "Las cifras del balance inicial —587 uniformados, 56 capturas, 34 allanamientos— las coinciden tres medios, pero son el balance del propio Gobierno y no de una fuente independiente. Ninguna de las fuentes consultadas reporta, al cierre de esta entrada, cuántas de esas 56 capturas terminaron en imputación o en libertad, que es lo que distingue una detención de una condena.",
+      "detalle": "El 16 de octubre de 2026 se conoció que el Ministerio de las Culturas, las Artes y los Saberes ordenó desmontar al menos 30 piezas de las salas permanentes del Museo Nacional de Colombia, en Bogotá: afiches, fotografías y materiales ligados a los movimientos LGBTI, al feminismo, a la Unión Patriótica, a la Constitución de 1991 y al Acuerdo de Paz de 2016, entre ellos los afiches de las campañas presidenciales de Carlos Pizarro y Bernardo Jaramillo Ossa. El presidente De la Espriella había dicho que instruyó a la ministra Paola Holguín para que desapareciera de los espacios públicos lo que calificó como una «oda al terrorismo» en la que, según él, aparecen Pizarro y otros señalados como terroristas. La ministra Holguín defendió la decisión en redes sociales diciendo que esas obras promovían «adoctrinamiento político» y que el Museo Nacional no puede ser un espacio que justifique el delito o revictimice a las personas.",
+      "contrapunto": "Dos trabajadores del museo le dijeron a La Silla Vacía que una decisión así debía pasar por los comités curatoriales, y no hay confirmación de que eso ocurriera. María José Pizarro, hija de Carlos Pizarro Leongómez, acusó al presidente de intentar «proscribir» la figura y el legado de paz de su padre y escribió que decidió, «como en los tiempos del fascismo paramilitar, matarlo de nuevo». El exdirector del DANE Juan Daniel Oviedo pidió al museo explicar qué se retiró, por qué y cómo garantizará que esa memoria siga representada. La activista Marcela Sánchez, de Colombia Diversa, llamó al retiro «el verdadero borrado». Al cierre de esta entrada el museo no había precisado públicamente el número exacto de obras retiradas ni los criterios técnicos aplicados.",
+      "tipoFuente": "verificado",
+      "fuentes": [
+        {
+          "n": "Infobae · Ministra de Cultura Paola Holguín justificó el desmonte de 30 obras que estaban expuestas en el Museo Nacional: «Adoctrinamiento político»",
+          "u": "https://www.infobae.com/colombia/2026/10/16/ministra-de-cultura-paola-holguin-justifico-el-desmonte-de-30-obras-que-estaban-expuesta-en-el-museo-nacional-adoctrinamiento-politico/",
+          "rol": "acto"
+        },
+        {
+          "n": "La Silla Vacía · Gobierno, en su batalla cultural, ordenó desmontar más de 30 obras del Museo Nacional",
+          "u": "https://www.lasillavacia.com/silla-nacional/gobierno-ordeno-desmontar-mas-de-30-obras-del-museo-nacional/",
+          "rol": "acto"
+        },
+        {
+          "n": "90 Minutos · Gobierno ordena retirar alrededor de 30 obras del Museo Nacional sobre paz, diversidad y memoria",
+          "u": "https://90minutos.co/colombia/gobierno-ordena-retirar-obras-museo-nacional-16-10-2026/",
+          "rol": "contexto"
+        },
+        {
+          "n": "BBC / El Deber · La polémica por la retirada de decenas de obras del Museo Nacional de Colombia (y qué dice de la 'batalla cultural' de De la Espriella)",
+          "u": "https://eldeber.com.bo/bbc/la-polemica-por-la-retirada-de-decenas-de-obras-del-museo-nacional-de-colombia-y-que-dice-de-la-batalla-cultural-de-de-la-espriella--2026101618446",
+          "rol": "contexto"
+        }
+      ],
+      "_porQueListaVacia": "Corrida la vara de los cinco criterios escritos sobre esta entrada el 16 de octubre de 2026, no cae en ninguna vía. No es un decreto al amparo de una emergencia (I-04); no es un órgano autónomo declarando que un acto del Ejecutivo afecta su autonomía (I-05); no hay información negada tras tutela (I-07); no es una instrucción sobre contenido de información TÉCNICA —I-13 mide estadísticas y cifras oficiales, no curaduría museística— (I-13); y no hay muerte en una operación (I-14): es una orden administrativa de retirar piezas de un museo."
+    },
+    {
+      "fecha": "2026-10-16",
+      "precision": "exacta",
+      "categoria": "seguridad",
+      "id": "captura-alias-julito-bucaramanga-2026-10-16",
+      "titulo": "El presidente anuncia la captura de alias \"Julito\", uno de los más buscados de Bucaramanga, en un operativo contra la banda \"Los del Sur\" en Floridablanca",
+      "categoriaProbatoria": "hecho-probado",
+      "tipoMedicion": "actividad",
+      "indicadores": [],
+      "nivelGobierno": "nacional",
+      "tipoEvidencia": "reporte-periodistico",
+      "detalle": "El presidente Abelardo de la Espriella anunció el 16 de octubre de 2026, por redes sociales, un operativo contra el «brazo sicarial» del grupo narcoterrorista Los del Sur en Floridablanca (área metropolitana de Bucaramanga): cinco personas capturadas y un menor de edad aprehendido, con cuatro armas de fuego, cerca de 4.000 dosis de base de coca, cuatro kilos de marihuana, dinero y celulares incautados. Entre los capturados está alias 'Julito', señalado por el presidente de coordinar homicidios selectivos y microtráfico y de estar vinculado a cerca de 20 hechos violentos, entre ellos la masacre de Villa Esperanza —cuatro víctimas— y el feminicidio de su expareja, Valeria Espitia. Según Vanguardia, 'Julito' llevaba varios meses prófugo tras escapar de un centro de reclusión para menores en Bogotá, y registra además una orden de captura por un homicidio del 18 de septiembre en Floridablanca.",
+      "contrapunto": "El relato del operativo y las cifras provienen del anuncio del propio presidente en redes sociales, reproducido por la prensa; no se halló, al cierre de esta entrada, un comunicado independiente de la Policía o la Fiscalía que lo respalde con su propio número de caso. Los cerca de 20 hechos violentos atribuidos a 'Julito' —incluida la masacre y el feminicidio— son señalamientos del mandatario, no una condena: su eventual responsabilidad deberá establecerse en cada proceso judicial. Entre los aprehendidos hay un menor de edad, lo que implica un trámite distinto —el del sistema de responsabilidad penal para adolescentes— que ninguna de las fuentes detalla.",
+      "tipoFuente": "declaracion",
+      "fuentes": [
+        {
+          "n": "Vanguardia · Presidente De La Espriella confirmó la captura de alias 'Julito': los detalles del operativo",
+          "u": "https://www.vanguardia.com/judicial/2026/10/16/presidente-abelardo-confirmo-la-captura-de-alias-julito-estos-son-los-detalles-del-operativo/",
+          "rol": "acto"
+        },
+        {
+          "n": "Infobae · Cayó 'Julito', uno de los más buscados de Bucaramanga: lo señalan de sicariato, tráfico de drogas, una masacre y feminicidio",
+          "u": "https://www.infobae.com/colombia/2026/10/16/cayo-julito-uno-de-los-mas-buscados-de-bucaramanga-lo-senalan-de-sicariato-trafico-de-drogas-una-masacre-y-feminicidio/",
+          "rol": "contexto"
+        },
+        {
+          "n": "Pulzo · De la Espriella anunció golpe contra peligrosa banda: cayó alias 'Julito', señalado de varios homicidios",
+          "u": "https://www.pulzo.com/nacion/espriella-anuncio-recaptura-alias-julito-senalado-varias-muertes-PP5332359",
+          "rol": "contexto"
+        }
+      ],
+      "_porQueListaVacia": "Corrida la vara de los cinco criterios escritos sobre esta entrada el 16 de octubre de 2026, no cae en ninguna vía. No hay decreto de excepción (I-04), ni choque con un órgano autónomo (I-05), ni información negada tras tutela (I-07), ni producto técnico (I-13); y no hay muerte en la operación (I-14) porque fue una captura, no un operativo con resultado letal."
+    },
+    {
+      "fecha": "2026-10-16",
+      "precision": "exacta",
+      "categoria": "corrupcion",
+      "id": "corte-suprema-extradicion-bustos-2026-10-16",
+      "titulo": "La Corte Suprema deja en firme la condena de 10 años contra el exmagistrado Leonidas Bustos (\"cartel de la toga\") y pide al Gobierno gestionar su extradición desde Canadá",
+      "categoriaProbatoria": "hecho-probado",
+      "tipoMedicion": "contexto-estructural",
+      "tipoEvidencia": "reporte-periodistico",
+      "detalle": "La Sala de Casación Penal de la Corte Suprema de Justicia dejó en firme, el 16 de octubre de 2026, la condena de diez años (según otras fuentes, 10 años y 3 meses) contra el exmagistrado José Leonidas Bustos Martínez por cohecho propio y concierto para delinquir, en el caso conocido como el 'cartel de la toga'. El tribunal, con fundamento en el principio de reciprocidad —Colombia ha atendido pedidos de extradición de Canadá en casos similares—, le pidió al Gobierno del presidente Abelardo de la Espriella que, a través de la Cancillería y de la embajada de Colombia en Canadá, gestione que Bustos —quien vive en ese país desde 2019— sea puesto a disposición de las autoridades colombianas.",
+      "contrapunto": "Es un fallo de la Corte Suprema sobre un caso anterior al actual Gobierno; lo que corresponde al Gobierno de De la Espriella es apenas el trámite diplomático que la Corte le pidió iniciar, y esta entrada no encontró, al cierre, confirmación de que la Cancillería ya lo haya adelantado ni de una posición de Canadá sobre una eventual extradición.",
+      "tipoFuente": "verificado",
+      "fuentes": [
+        {
+          "n": "El Espectador · Corte Suprema confirma condena contra el exmagistrado Leonidas Bustos por cartel de la toga",
+          "u": "https://www.elespectador.com/judicial/corte-suprema-deja-en-firme-condena-con-el-exmagistrado-leonidas-bustos-por-cartel-de-la-tocorte-suprema-confirma-condena-contra-el-exmagistrado-leonidas-bustos-por-cartel-de-la-toga/",
+          "rol": "acto"
+        },
+        {
+          "n": "Semana · Corte Suprema le pide al gobierno de Abelardo De La Espriella que gestione la extradición del exmagistrado Leonidas Bustos",
+          "u": "https://www.semana.com/nacion/articulo/corte-suprema-le-pide-al-gobierno-de-abelardo-de-la-espriella-que-gestione-la-extradicion-del-exmagistrado-leonidas-bustos/202621/",
+          "rol": "acto"
+        },
+        {
+          "n": "El Universal · Corte Suprema ratifica condena a Leonidas Bustos y pide su extradición desde Canadá",
+          "u": "https://www.eluniversal.com.co/colombia/2026/10/16/corte-suprema-ratifica-condena-a-leonidas-bustos-y-pide-su-extradicion-desde-canada/",
+          "rol": "contexto"
+        },
+        {
+          "n": "RTVC Noticias · Corte Suprema pide al Gobierno gestionar la extradición de Leónidas Bustos desde Canadá para que responda ante la justicia colombiana",
+          "u": "https://www.rtvcnoticias.com/justicia/corte-suprema-pide-gestionar-la-extradicion-de-leonidas-bustos-desde-canada",
+          "rol": "contexto"
+        }
+      ]
+    },
+    {
+      "fecha": "2026-10-15",
+      "precision": "exacta",
+      "categoria": "gobierno",
+      "id": "estatuto-antiterrorista-aval-politica-criminal-2026-10-15",
+      "titulo": "El Consejo de Política Criminal avala el estatuto antiterrorista del Gobierno, 11 votos contra 3, y el proyecto queda listo para radicarse en el Congreso",
+      "categoriaProbatoria": "hecho-probado",
+      "tipoMedicion": "actividad",
+      "indicadores": [],
+      "nivelGobierno": "nacional",
+      "estadoProcesal": "en-tramite-legislativo",
+      "tipoEvidencia": "reporte-periodistico",
+      "detalle": "En una sesión reservada realizada el jueves 15 de octubre de 2026 —tras un primer aplazamiento—, el Consejo de Política Criminal avaló el proyecto de estatuto antiterrorista que prepara el Gobierno de Abelardo de la Espriella, con alrededor de 11 votos a favor y 3 en contra, según La FM. El proyecto crea un Registro Nacional de Organizaciones y Actores Terroristas, permite congelar los fondos y activos de quienes figuren en él y crea un régimen de reclusión especial para cabecillas; por tocar derechos, se radicará en paralelo como ley estatutaria —que exige mayoría absoluta en el Congreso— y como ley ordinaria, y deberá superar ocho debates, cuatro en cada cámara. El aval del Consejo es un concepto consultivo, que no obliga al Gobierno; el siguiente paso es la revisión jurídica de Presidencia antes de radicarlo.",
+      "contrapunto": "Los tres votos en contra fueron, según la prensa, de la Corte Suprema de Justicia, la defensora del Pueblo, Iris Marín, y el Pacto Histórico. Sectores de oposición y de derechos humanos han cuestionado el impacto del proyecto sobre las libertades civiles, mientras el ministro del Interior, Rodrigo Lara, lo defendió. La cifra exacta de la votación («alrededor de 11») proviene de reportes de prensa y no de un acta oficial publicada.",
+      "tipoFuente": "verificado",
+      "fuentes": [
+        {
+          "n": "El Heraldo · Consejo de Política Criminal avaló el Estatuto Antiterrorista que el Gobierno presentará ante el Congreso",
+          "u": "https://www.elheraldo.co/colombia/2026/10/16/consejo-de-politica-criminal-avalo-el-estatuto-antiterrorista-que-el-gobierno-presentara-ante-el-congreso/",
+          "rol": "acto"
+        },
+        {
+          "n": "Infobae · Estatuto Antiterrorista recibió el aval del Consejo de Política Criminal: el Gobierno se alista para su radicación en el Congreso",
+          "u": "https://www.infobae.com/colombia/2026/10/16/estatuto-antiterrorista-recibio-el-aval-del-consejo-de-politica-criminal-el-gobierno-se-alista-para-su-radicacion-en-el-congreso/",
+          "rol": "acto"
+        },
+        {
+          "n": "Prensa Latina · Colombia: Consejo de Política Criminal avala Estatuto Antiterrorista",
+          "u": "https://www.prensa-latina.cu/2026/10/16/colombia-consejo-de-politica-criminal-avala-estatuto-antiterrorista/",
+          "rol": "contexto"
+        }
+      ],
+      "_porQueListaVacia": "Corrida la vara de los cinco criterios escritos sobre esta entrada el 16 de octubre de 2026, no cae en ninguna vía. No es un decreto —es un concepto consultivo previo a un proyecto de ley— (I-04); los votos en contra de la Corte Suprema y la Defensoría del Pueblo son dentro de una votación consultiva sobre un proyecto, no una declaración formal de que un acto YA VIGENTE del Ejecutivo afecta su autonomía (I-05); no hay información negada tras tutela (I-07), ni producto técnico (I-13), ni muerte en operación (I-14)."
+    },
+    {
+      "fecha": "2026-10-16",
+      "precision": "exacta",
+      "categoria": "seguridad",
+      "id": "blindaje-360-barranquilla-2026-10-16",
+      "titulo": "El presidente lidera personalmente la \"Operación Blindaje 360\" en Barranquilla: balance final de 72 capturas, 50 allanamientos y 17 armas de fuego incautadas",
+      "categoriaProbatoria": "hecho-probado",
+      "tipoMedicion": "actividad",
+      "indicadores": [],
+      "nivelGobierno": "nacional",
+      "estadoProcesal": "en-firme",
+      "tipoEvidencia": "reporte-periodistico",
+      "detalle": "El presidente Abelardo de la Espriella encabezó en persona, en la madrugada del viernes 16 de octubre de 2026, la \"Operación Blindaje 360\" contra cinco estructuras criminales de Barranquilla y su área metropolitana —el Clan del Golfo, Los Costeños, Los Pepes, Los del Freseo y Los Porteños—. El primer reporte, hacia las 4:00 a. m., habló de 587 uniformados desplegados, 56 capturas y 34 allanamientos; el balance FINAL que el propio mandatario entregó ese mismo día subió a 72 personas capturadas —30 por orden judicial y 42 en flagrancia, según Semana—, 50 allanamientos, 17 armas de fuego, una granada y más de seis kilos de estupefacientes incautados. Según Infobae, la distribución por delito fue 16 por concierto para delinquir, 18 por hurto, 14 por tráfico de estupefacientes, 14 por porte ilegal de armas, tres por homicidio y siete por otras conductas; la Fiscalía habló de la desarticulación PARCIAL de las cinco estructuras. Entre los capturados están alias 'Keko' y alias 'Ñoño', señalados de vínculos con esas bandas: el presidente confrontó a 'Keko' —según El Heraldo, por un video en el que el capturado decía no temerle al mandatario— y, según esa misma fuente, le dijo por teléfono «Así es que se doma a un bandido». También fue capturado un ciudadano francés con un kilogramo de cocaína, cuya deportación inmediata ordenó el presidente.",
+      "contrapunto": "Las cifras del balance —72 capturas, 50 allanamientos, 17 armas— las coinciden varios medios, pero siguen siendo el balance del propio Gobierno, entregado por el presidente, y no el de una fuente independiente; las fuentes tampoco coinciden del todo en el desglose entre flagrancia y orden judicial (Semana cita 30 y 42, otra nota suma 32 y 42, que darían 74 y no 72). La Fiscalía habló de desarticulación PARCIAL, no total, de las cinco estructuras. Y ninguna de las fuentes consultadas reporta, al cierre de esta entrada, cuántas de las 72 capturas terminaron en imputación o en libertad, que es lo que distingue una detención de una condena.",
       "tipoFuente": "verificado",
       "fuentes": [
         {
@@ -103,9 +244,34 @@
           "n": "Pulzo · De la Espriella se pegó tremenda madrugada y anunció megaoperativo: «Mira el miedo que tienen»",
           "u": "https://www.pulzo.com/nacion/operacion-blindaje-360-liderada-por-presidente-abelardo-espriella-PP5331678",
           "rol": "acto"
+        },
+        {
+          "n": "El Heraldo · De la Espriella entrega balance de la Operación Blindaje 360 que deja 72 capturados: «¡Aquí no hay tregua, ni contemplaciones con la delincuencia!»",
+          "u": "https://www.elheraldo.co/judicial/2026/10/16/de-la-espriella-entrega-balance-de-la-operacion-blindaje-360-que-deja-72-capturados-aqui-no-hay-tregua-ni-contemplaciones-con-la-delincuencia/",
+          "rol": "acto"
+        },
+        {
+          "n": "El Heraldo · «Así es que se doma a un bandido»: De la Espriella confrontó a alias Keko tras la Operación Blindaje 360",
+          "u": "https://elheraldo.co/judicial/2026/10/16/asi-es-que-se-doma-a-un-bandido-de-la-espriella-confronto-a-alias-keko-tras-la-operacion-blindaje-360",
+          "rol": "contexto"
+        },
+        {
+          "n": "Semana · De La Espriella reveló balance final de megaoperativo en Barranquilla: ciudadano francés dentro de los capturados",
+          "u": "https://www.semana.com/politica/articulo/de-la-espriella-revelo-balance-final-de-megaoperativo-en-barranquilla-ciudadano-frances-dentro-de-los-capturados/202639/",
+          "rol": "acto"
+        },
+        {
+          "n": "El Tiempo · '¡Se acabó la guachafita!': el presidente De La Espriella lideró operativo en Barranquilla; 72 capturados y golpes a cabecillas de bandas criminales",
+          "u": "https://www.eltiempo.com/colombia/barranquilla/se-acabo-la-guachafita-el-presidente-de-la-espriella-lidero-operativo-en-barranquilla-72-capturados-y-golpes-a-cabecillas-de-bandas-criminales-3594138",
+          "rol": "contexto"
+        },
+        {
+          "n": "Infobae · Abelardo de la Espriella encaró a Keko, un señalado líder criminal, durante operativos en Barranquilla",
+          "u": "https://www.infobae.com/colombia/2026/10/16/abelardo-de-la-espriella-encaro-a-keko-un-senalado-lider-criminal-durante-operativos-en-barranquilla-decias-que-no-comias-de-tigre-guapito-por-telefono/",
+          "rol": "contexto"
         }
       ],
-      "_porQueListaVacia": "Corrida la vara de los cinco criterios escritos sobre esta entrada el 16 de octubre de 2026, no cae en ninguna vía. No hay acto de excepción (I-04), ni choque con un órgano autónomo (I-05), ni producto técnico (I-13), ni información negada y entregada tras tutela (I-07), ni muerte en la operación (I-14): son solo capturas y allanamientos."
+      "_porQueListaVacia": "Corrida la vara de los cinco criterios escritos sobre esta entrada ya con el balance final el 16 de octubre de 2026, sigue sin caer en ninguna vía. No hay acto de excepción (I-04), ni choque con un órgano autónomo (I-05), ni producto técnico (I-13), ni información negada y entregada tras tutela (I-07), ni muerte en la operación (I-14): son capturas, allanamientos y una deportación ordenada administrativamente."
     },
     {
       "fecha": "2026-10-15",

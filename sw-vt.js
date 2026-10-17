@@ -13,7 +13,7 @@
 
    La versión va acá y en vision-territorial.html, idéntica, como en los
    otros siete archivos de versión del sitio: revisar.js lo comprueba. */
-const VT_CACHE = 'urbis-vt-v1130-alerta-sismo-riosucio-choco';
+const VT_CACHE = 'urbis-vt-v1131-seguimiento-presidencial-museo-julito-bustos-antiterrorista';
 const VT_ASSETS = [
   './vision-territorial.html',
   './css/90-vt.css',
