@@ -12925,5 +12925,163 @@
     ],
     "tituloCierre": "También encontré lo que no esperaba",
     "noAlimenta": "Este texto es OPINIÓN firmada y no alimenta ningún eje, ningún indicador ni el veredicto. El veredicto de esta página se calcula contando el registro, y seguiría siendo el mismo si este editorial no existiera."
+  },
+  "delitosAltoImpacto": {
+    "_nota": "CIFRAS ESTRUCTURADAS de los delitos de alto impacto, para que un gráfico futuro las LEA en vez de sacarlas de la prosa de una entrada. Guarda SOLO los casos por delito y por mes: la variación se CALCULA (v903) y nunca se teclea, y al lado va `reportadoPct` —lo que la fuente publicó— para poder contrastar lo calculado con lo publicado. Este bloque NO cambia ninguna pantalla todavía: se registra y se grafica después.",
+    "titulo": "Delitos de alto impacto: agosto de 2026 frente a agosto de 2025",
+    "unidad": "casos registrados en el mes",
+    "caracter": "preliminar",
+    "corte": "2026-09-26",
+    "estadoProcesal": "dato-oficial-preliminar",
+    "meses": [
+      "2025-08",
+      "2026-08"
+    ],
+    "filas": [
+      {
+        "k": "homicidios",
+        "t": "Homicidios",
+        "casos": {
+          "2025-08": 1244,
+          "2026-08": 1169
+        },
+        "reportadoPct": -6
+      },
+      {
+        "k": "secuestro",
+        "t": "Secuestro",
+        "casos": {
+          "2025-08": 86,
+          "2026-08": 18
+        },
+        "reportadoPct": -79
+      },
+      {
+        "k": "secuestro-extorsivo",
+        "t": "Secuestro extorsivo",
+        "casos": {
+          "2025-08": 37,
+          "2026-08": 11
+        },
+        "reportadoPct": -70
+      },
+      {
+        "k": "extorsion",
+        "t": "Extorsión",
+        "casos": {
+          "2025-08": 1299,
+          "2026-08": 499
+        },
+        "reportadoPct": -62,
+        "disputa": {
+          "estado": "en disputa, sin reconciliación metodológica publicada",
+          "porQue": "Dos entidades del mismo Gobierno publican cifras distintas para el MISMO mes y nadie ha explicado la diferencia metodológica. Se registran las DOS y el gráfico debe mostrar las dos: elegir una sería decidir por el lector cuál vale.",
+          "cifras": [
+            {
+              "fuente": "MinDefensa",
+              "casos": 499
+            },
+            {
+              "fuente": "Policía Nacional",
+              "casos": 717
+            }
+          ],
+          "diferenciaCasos": 218,
+          "noPublicarPct": "El −62 % sale de la cifra de MinDefensa y la entrada `delitos-agosto-2026-policia` ya decidió NO publicarlo: con dos cifras oficiales sin reconciliar, el porcentaje no es verificable. `reportadoPct` guarda lo que la fuente publicó para poder contrastarlo, NO para graficarlo como resultado. Con la cifra de la Policía la caída sería del 44,8 %, y esa distancia es justo lo que el gráfico tiene que mostrar.",
+          "pctSegunPolicia": -44.8
+        }
+      },
+      {
+        "k": "victimas-masacre",
+        "t": "Víctimas de masacre",
+        "casos": {
+          "2025-08": 64,
+          "2026-08": 27
+        },
+        "reportadoPct": -58
+      },
+      {
+        "k": "delitos-sexuales",
+        "t": "Delitos sexuales",
+        "casos": {
+          "2025-08": 3253,
+          "2026-08": 2040
+        },
+        "reportadoPct": -37
+      }
+    ],
+    "acumulado": {
+      "titulo": "Homicidios acumulados de enero a agosto",
+      "k": "homicidios-acumulado",
+      "casos": {
+        "2025": 9256,
+        "2026": 9434
+      },
+      "reportadoPct": 2,
+      "porQueVaAlLado": "El mes baja y el acumulado del año SUBE. Publicar solo el mes deja una lectura que el propio dato desmiente, así que el acumulado va en el mismo bloque y no en otra pantalla (v1064)."
+    },
+    "salvedades": [
+      "Son cifras PRELIMINARES de la Policía Nacional: pueden cambiar con la consolidación.",
+      "Agosto de 2026 incluye SEIS DÍAS del gobierno anterior —la posesión fue el 7 de agosto—, así que el mes no es atribuible por entero a este Gobierno.",
+      "En el acumulado del año, extorsión y masacres SUBIERON. La caída es del mes, no del año."
+    ],
+    "_noEsCalificacion": {
+      "categoriaEstadistica": "«Homicidios», «secuestro», «extorsión», «víctimas de masacre» y «delitos sexuales» son los nombres de las SERIES con las que la Policía Nacional y MinDefensa reportan sus cifras mensuales. Son rótulos de columna de una tabla oficial, no imputaciones.",
+      "sinSujeto": "El bloque entero no tiene sujeto. No nombra —ni permite identificar— a ninguna persona, unidad, entidad ni cargo a quien se le atribuya ninguno de estos hechos: son conteos agregados de un mes contra el mismo mes del año anterior.",
+      "razon": "El bloque existe para publicar el dato oficial con sus tres salvedades y con la cifra en disputa a la vista. Quitarle el nombre de la serie lo volvería incomprobable contra la fuente, que es justo lo que hace auditable a un registro."
+    },
+    "fuentes": [
+      {
+        "n": "El Heraldo · Homicidios bajaron 6 % en el primer mes del gobierno de Abelardo de la Espriella",
+        "rol": "dato",
+        "u": "https://www.elheraldo.co/colombia/2026/09/26/homicidios-bajaron-6-en-el-primer-mes-del-gobierno-de-abelardo-de-la-espriella/"
+      },
+      {
+        "n": "El Tiempo · Revelan informe que valida la caída en secuestro, extorsión y homicidios presentadas por el Gobierno De la Espriella tras revisión con MinDefensa",
+        "rol": "dato",
+        "u": "https://www.eltiempo.com/politica/partidos-politicos/revelan-informe-que-valida-la-caida-en-secuestro-extorsion-y-homicidios-presentadas-por-el-gobierno-de-la-espriella-tras-revision-con-mindefensa-3590075"
+      }
+    ],
+    "_relacionConLaEntrada": "La entrada `delitos-agosto-2026-policia` publica estas mismas cifras en prosa y NO se toca: es lo que esa corrida escribió, con su fecha. Comprobado al registrar el bloque: coinciden homicidios (1.169 contra 1.244), delitos sexuales (2.040 contra 3.253), secuestro (−79 %), el acumulado (9.434 contra 9.256, +2 %), los seis días del gobierno anterior y la disputa de extorsión (499 contra 717, 218 de diferencia). El bloque AGREGA dos filas que la entrada no trae —secuestro extorsivo y víctimas de masacre— y eso no la contradice: la amplía."
+  },
+  "subsidios": {
+    "_nota": "CIFRAS ESTRUCTURADAS de los subsidios de energía y gas para estratos 1 y 2 en el presupuesto de 2027. El faltante se CALCULA de necesario menos asignado (v903) y no se teclea. Este bloque NO cambia ninguna pantalla todavía.",
+    "titulo": "Subsidios de energía y gas para estratos 1 y 2: lo que se necesita y lo que quedó asignado",
+    "unidad": "billones de pesos",
+    "anio": 2027,
+    "corte": "2026-09-10",
+    "estadoProcesal": "proyecto-de-presupuesto",
+    "necesarioBn": 7.29,
+    "asignadoBn": 2.26,
+    "desglose": [
+      {
+        "k": "energia",
+        "t": "Energía eléctrica",
+        "faltanteBn": 3.96
+      },
+      {
+        "k": "gas",
+        "t": "Gas natural",
+        "faltanteBn": 1.08
+      }
+    ],
+    "moraAcumuladaBn": 1.8,
+    "moraCorte": "2026-07-31",
+    "salvedades": [
+      "Es el PROYECTO de presupuesto, no el ejecutado: la cifra puede cambiar en el trámite.",
+      "El desglose por servicio suma 5,04 billones y la resta directa da 5,03: es redondeo de las cifras publicadas, no una tercera cifra."
+    ],
+    "fuentes": [
+      {
+        "n": "El Tiempo · Presupuesto para 2027 subió $59,3 billones, pero no hay plata para pagar subsidios de energía y gas de las familias más pobres",
+        "rol": "dato",
+        "u": "https://www.eltiempo.com/economia/sectores/presupuesto-para-2027-subio-59-3-billones-pero-no-hay-plata-para-pagar-subsidios-de-energia-y-gas-de-las-familias-mas-pobres-3584328"
+      },
+      {
+        "n": "El Colombiano · el faltante de subsidios de energía y gas en el presupuesto de 2027",
+        "rol": "dato",
+        "u": "https://www.elcolombiano.com/negocios/economia/presupuesto-2027-subsidios-energia-gas-estratos-1-y-2"
+      }
+    ]
   }
 }
