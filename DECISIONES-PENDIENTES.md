@@ -453,3 +453,39 @@ archivos de la bitácora existan y cuenta sus secciones, pero **no comprueba
 que la versión publicada tenga la suya**. Por eso tres tandas pudieron
 saltársela sin un solo rojo. Una guarda que lo midiera es código y no datos,
 así que iría en rojo y no con `?` (v965, v970).
+
+## 14 · La placa dice «De los 3 ejes … ya publican nivel 2» · `pendiente`
+
+**Hallado al leer el papel de la v1140, y NO es de esa tanda:** la frase está
+idéntica en `0fe87e9` y el diff de la v1140 no toca ni una línea que la
+contenga. Se anota para la v1142, que es la que el traspaso reserva para *lo
+que la composición revele al leer el papel*.
+
+**El hecho.** La placa del veredicto compone, en `js/70-seguimiento.js`:
+
+```
+'De los ' + n + ' ejes que miden la realidad' + ' ya publican nivel ' + k + ', y el peor…'
+```
+
+y sale **«De los 3 ejes que miden la realidad ya publican nivel 2, y el peor
+de ellos es "Poco fiable"»**. El sujeto —el 2— cae **después** del verbo, así
+que la frase no dice lo que quiere decir: se lee como si los 3 ejes
+publicaran el nivel 2. Lo correcto es *«2 de los 3 ejes que miden la realidad
+ya publican nivel»*.
+
+**Es la clase de la v1086**, el ayudante de prosa que ANTEPONE el número
+anidado dentro de una frase ya contada, y por eso no se ve leyendo el código:
+las dos mitades son correctas por separado y la unión no. Se vio componiendo
+la página y leyéndola.
+
+**Por qué limita.** Es la superficie más cara del módulo —el juicio público
+sobre una persona con nombre— y la frase existe justamente para que un lector
+no confunda un piso con el dictamen. Una ambigüedad gramatical ahí trabaja
+contra lo único que esa frase tiene que lograr.
+
+**Por qué no se arregló ahora.** La v1140 tenía un encargo literal: mover el
+texto **sin cambiar una palabra**. Corregir la redacción de la placa es
+cambiar texto publicado sobre una persona real, y eso lo decide quien firma el
+módulo, no la tanda que pasaba por ahí. **Y hay un canje que decir:** la
+frase se arma por concatenación en un solo sitio, así que el arreglo es de una
+línea; lo que no es de una línea es la decisión de tocarla.
