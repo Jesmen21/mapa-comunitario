@@ -12141,7 +12141,8 @@
           "u": "https://occidente.co/empresario/deuda-bruta-del-gobierno-nacional-central-equivale-al-60-5-del-pib/",
           "rol": "acto"
         }
-      ]
+      ],
+      "_sinPintarTodavia": "HALLAZGO de la guarda de texto inalcanzable, en su primera corrida (v1139). Este bloque lleva escrito justo lo que la v1093 exige —la MEDIDA de la cifra, contra qué NO se puede comparar y por qué otras cifras del mismo nombre difieren— y NINGUNA pantalla lo alcanza: el módulo publica «60,5 %» y se queda sin las cuatro frases que impiden confundir una deuda bruta con una neta. Es la clase C en el sitio que esa regla existe para proteger. Pintarlo toca una pantalla, así que va a la v1141 y aquí queda el estado declarado, contado y con su nombre, no callado."
     }
   },
   "fuerza": {
@@ -12368,7 +12369,8 @@
           "pista": "719.000 millones",
           "defecto": "La cifra no se sostuvo al contrastarla con el acto que la soportaría."
         }
-      ]
+      ],
+      "_sinPintarTodavia": "HALLAZGO de la misma corrida (v1139). Las cuatro cifras que el módulo se vetó a sí mismo traen escrito POR QUÉ no se sostuvieron, y ese texto no llega a ningún lector: desde afuera, una cifra retirada por defecto propio se ve igual que una que nunca existió. Pintarlo toca una pantalla y va a la v1141."
     }
   },
   "rectificaciones": {
@@ -13042,7 +13044,8 @@
         "u": "https://www.eltiempo.com/politica/partidos-politicos/revelan-informe-que-valida-la-caida-en-secuestro-extorsion-y-homicidios-presentadas-por-el-gobierno-de-la-espriella-tras-revision-con-mindefensa-3590075"
       }
     ],
-    "_relacionConLaEntrada": "La entrada `delitos-agosto-2026-policia` publica estas mismas cifras en prosa y NO se toca: es lo que esa corrida escribió, con su fecha. Comprobado al registrar el bloque: coinciden homicidios (1.169 contra 1.244), delitos sexuales (2.040 contra 3.253), secuestro (−79 %), el acumulado (9.434 contra 9.256, +2 %), los seis días del gobierno anterior y la disputa de extorsión (499 contra 717, 218 de diferencia). El bloque AGREGA dos filas que la entrada no trae —secuestro extorsivo y víctimas de masacre— y eso no la contradice: la amplía."
+    "_relacionConLaEntrada": "La entrada `delitos-agosto-2026-policia` publica estas mismas cifras en prosa y NO se toca: es lo que esa corrida escribió, con su fecha. Comprobado al registrar el bloque: coinciden homicidios (1.169 contra 1.244), delitos sexuales (2.040 contra 3.253), secuestro (−79 %), el acumulado (9.434 contra 9.256, +2 %), los seis días del gobierno anterior y la disputa de extorsión (499 contra 717, 218 de diferencia). El bloque AGREGA dos filas que la entrada no trae —secuestro extorsivo y víctimas de masacre— y eso no la contradice: la amplía.",
+    "_sinPintarTodavia": "Este bloque se registró en la v1138 y NINGUNA pantalla lo pinta: se grafica en la v1141. Mientras tanto su texto —`salvedades` y las razones de la disputa— es inalcanzable para un lector, y eso es un ESTADO declarado y no un descuido: la guarda de texto inalcanzable lo cuenta aparte y lo nombra. El día que el bloque se pinte, este campo se retira y la guarda exige que su texto llegue a una superficie."
   },
   "subsidios": {
     "_nota": "CIFRAS ESTRUCTURADAS de los subsidios de energía y gas para estratos 1 y 2 en el presupuesto de 2027. El faltante se CALCULA de necesario menos asignado (v903) y no se teclea. Este bloque NO cambia ninguna pantalla todavía.",
@@ -13082,6 +13085,7 @@
         "rol": "dato",
         "u": "https://www.elcolombiano.com/negocios/economia/presupuesto-2027-subsidios-energia-gas-estratos-1-y-2"
       }
-    ]
+    ],
+    "_sinPintarTodavia": "Este bloque se registró en la v1138 y NINGUNA pantalla lo pinta: se grafica en la v1141. Mientras tanto su texto —`salvedades` y las razones de la disputa— es inalcanzable para un lector, y eso es un ESTADO declarado y no un descuido: la guarda de texto inalcanzable lo cuenta aparte y lo nombra. El día que el bloque se pinte, este campo se retira y la guarda exige que su texto llegue a una superficie."
   }
 }

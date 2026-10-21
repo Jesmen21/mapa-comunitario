@@ -14947,6 +14947,129 @@ console.log('\n  -- el marcado que vive dentro del JavaScript (v1025) --');
     }
   })();
 
+console.log('\n  -- antes de mover el texto a pestanas: conteos y alcance (v1139) --');
+/* ══ LAS DOS GUARDAS QUE SE ESCRIBEN ANTES DE MOVER NADA ════════════════════
+   La v1140 mueve TODO el texto del módulo a pestañas y la v1141 cambia la
+   portada por gráficos. Ese es el momento en que un módulo pierde texto sin
+   que nadie lo note: no se borra nada: simplemente deja de haber una
+   superficie que lo alcance, y desde afuera eso se lee IGUAL que si nunca
+   hubiera existido (la clase C de CLAUDE.md).
+
+   Por eso estas dos se escriben ANTES, con el estado de hoy medido, y no
+   después: una guarda escrita el día siguiente mide el mundo ya movido y da
+   por bueno lo que se haya perdido en el camino.
+
+   SON DOS Y NO UNA porque piden cosas distintas (v899): una cuenta CUÁNTO
+   hay, la otra si lo que hay LLEGA a alguien. Un texto puede seguir en el
+   archivo —y contar— sin que ninguna pantalla lo pinte. */
+(() => {
+  const regA = JSON.parse(leer('assets/data/seguimiento-presidencial.json'));
+  const regB = JSON.parse(leer('assets/data/seguimiento-petro.json'));
+  const ed = regA.analisisEditorial || {};
+
+  /* ── 1 · LOS SEIS CONTEOS NO BAJAN ──────────────────────────────────────
+     PISO MEDIDO EL 21 DE OCTUBRE DE 2026, con el texto todavía en su sitio
+     de siempre. Es un trinquete ABSOLUTO y acá es legítimo (v965): la
+     pregunta de esa regla es si el pendiente puede crecer sin que nadie haga
+     nada mal, y esto no es un pendiente — es cuánto material publica el
+     módulo, que solo baja si alguien lo quita.
+
+     Y SI BAJA LEGÍTIMAMENTE —una entrada retirada, una afirmación que el
+     autor saca—, el rojo es lo correcto: obliga a que esa decisión sea
+     visible y a bajar el piso a mano, con su razón. Un piso que se
+     actualizara solo no mediría nada (v903). */
+  const PISO = { afirmaciones: 17, entradas: 324, contrargumentos: 50,
+                 exenciones: 5, contradicciones: 15, casos: 14 };
+  const nContra = (r) => (r.entradas || []).filter((e) => e.contrargumentoOficial).length;
+  const nExEnt = (r) => (r.entradas || []).filter((e) => e._noEsCalificacion).length;
+  const hoy = {
+    afirmaciones: (ed.afirmaciones || []).length,
+    entradas: (regA.entradas || []).length + (regB.entradas || []).length,
+    contrargumentos: nContra(regA) + nContra(regB),
+    exenciones: nExEnt(regA) + nExEnt(regB) +
+      (ed.afirmaciones || []).filter((a2) => a2._noEsCalificacion).length +
+      ['delitosAltoImpacto', 'subsidios'].filter((k) => (regA[k] || {})._noEsCalificacion).length,
+    contradicciones: ((regA.contradicciones || {}).casos || []).length +
+                     ((regB.contradicciones || {}).casos || []).length,
+    casos: ((regA.casos || {}).lista || []).length + ((regB.casos || {}).lista || []).length
+  };
+  const bajaron = Object.keys(PISO).filter((k) => hoy[k] < PISO[k])
+    .map((k) => k + ': ' + hoy[k] + ' < ' + PISO[k]);
+  comprobar('ninguno de los seis conteos del módulo bajó de su piso',
+    bajaron.length === 0,
+    bajaron.length ? 'BAJÓ, y mover texto a una pestaña no puede bajar ninguno: ' + bajaron.join(' · ')
+      : Object.keys(PISO).map((k) => k + ' ' + hoy[k] + (hoy[k] > PISO[k] ? ' (+' + (hoy[k] - PISO[k]) + ')' : ''))
+        .join(' · ') + ' — piso medido el 21 de octubre de 2026, antes de las pestañas');
+
+  /* ── 2 · NINGÚN TEXTO PUBLICADO QUEDA SIN SUPERFICIE ────────────────────
+     Mide las claves del registro que llevan TEXTO LARGO y pregunta si alguna
+     línea de `js/70` las nombra. Una clave que ningún consumidor lee es un
+     texto que no llega a ningún lector.
+
+     EL DISCRIMINANTE, medido y no elegido: de 77 claves con texto largo, 15
+     no las nombra nadie, y la mayoría son NOTAS INTERNAS con guion bajo
+     —`_comentario`, `_notaAnclaje`, `_notaMenores`—, que la v1115 ya vigila
+     con su propia guarda y su `?`. Perseguirlas acá sería contarlas dos
+     veces. Así que esta mira las claves SIN guion bajo, que son las que el
+     módulo publica.
+
+     Y LO QUE TODAVÍA NO SE PINTA VA DECLARADO POR ÍTEM, con su razón
+     (v1094): los dos bloques de datos de la v1138 se registraron para
+     graficarse en la v1141, así que su texto hoy no llega a nadie. Eso es un
+     ESTADO —`_sinPintarTodavia`— y no un descuido: se cuenta aparte, se
+     nombra, y el día que el bloque se pinte el campo se retira y su texto
+     pasa a exigirse como el de todos.
+
+     VA EN ROJO (v970): mide el registro contra el CÓDIGO servido, y el
+     estado bueno es cero. No puede vaciarse por una mejora de los datos. */
+  const cod = soloCodigo(leer('js/70-seguimiento.js'));
+  /* `_sinPintarTodavia` se reconoce A CUALQUIER PROFUNDIDAD y no solo en los
+     bloques de primer nivel: dos de los hallazgos de la primera corrida
+     —`presupuesto.deudaBruta` y `publicacion.vetadasPorDefectoPropio`— viven
+     dentro de bloques que SÍ se pintan, y exigirlos al bloque entero habría
+     eximido de paso todo lo que ese bloque publica. */
+  const sinPintar = [];
+  const claves = {}, enBloqueSinPintar = {};
+  (function w(o, r, exento) {
+    if (typeof o === 'string') {
+      if (o.length >= 40) {
+        const k = r.split('.').pop().replace(/\[\]/g, '');
+        if (k[0] === '_') return;
+        if (exento) { enBloqueSinPintar[k] = (enBloqueSinPintar[k] || 0) + 1; return; }
+        claves[k] = (claves[k] || 0) + 1;
+      }
+      return;
+    }
+    if (Array.isArray(o)) return o.forEach((x) => w(x, r + '[]', exento));
+    if (o && typeof o === 'object') {
+      const aqui = exento || !!o._sinPintarTodavia;
+      if (!exento && o._sinPintarTodavia) sinPintar.push(r || '(raíz)');
+      return Object.keys(o).forEach((k) => w(o[k], r ? r + '.' + k : k, aqui));
+    }
+  })(regA, '', false);
+
+  const lee = (k) => new RegExp('\\.' + k + '\\b|[\'"]' + k + '[\'"]').test(cod);
+  const huerfanas = Object.keys(claves).filter((k) => !lee(k));
+  const nSinPintar = sinPintar.length;
+
+  comprobar('MATERIAL · hay texto del registro que medir y código que lo lea',
+    Object.keys(claves).length >= 40 && cod.length > 10000,
+    Object.keys(claves).length + ' claves con texto largo · js/70 con ' + cod.length + ' car. de código');
+
+  comprobar('ningún texto publicado del registro queda sin superficie que lo alcance',
+    Object.keys(claves).length >= 40 && huerfanas.length === 0,
+    huerfanas.length
+      ? 'ninguna línea de js/70 nombra: ' + huerfanas.join(' · ') +
+        ' — o se pinta, o el bloque declara `_sinPintarTodavia` con su razón'
+      : Object.keys(claves).length + ' claves con texto largo y todas tienen quien las lea' +
+        (nSinPintar
+          ? ' · ' + nSinPintar + ' bloque(s) declarados SIN PINTAR todavía y contados aparte: ' +
+            sinPintar.join(', ') + ', con ' +
+            Object.keys(enBloqueSinPintar).length + ' claves de texto que hoy no alcanzan a nadie'
+          : ' · ningún bloque declarado sin pintar') +
+        '. No cubre las notas internas con guion bajo, que vigila la guarda de la v1115');
+})();
+
 console.log('\n  -- el contraste de las paletas propuestas (v1138) --');
 /* ══ NINGÚN PAR TEXTO/FONDO DE UNA PALETA BAJA DE 4,5:1 ═════════════════════
    Medido sobre la página compuesta antes de escribirla: la portada tenía
