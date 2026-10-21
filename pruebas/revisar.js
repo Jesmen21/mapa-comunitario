@@ -3875,6 +3875,67 @@ console.log('\n  -- la ficha del gobernante --');
               : ' y ninguna la nombra') +
             '. Es la MISMA lista que lee el eje D, en un solo sitio (v879)');
 
+      /* ══ 2b · Y LA MISMA VARA SOBRE LOS TÍTULOS DE LAS ENTRADAS (v1136) ══
+         La guarda penal nació sobre el eje D (v1118) y creció al editorial
+         (v1127). Los TÍTULOS quedaban fuera, y son la superficie que más se
+         lee: la del muro, la de la línea de tiempo, la que se copia a
+         WhatsApp. Medido antes de escribirla, cuatro títulos nombraban un
+         tipo penal sobre una persona identificable —tres con su estado
+         procesal al lado y uno sin él—, y ninguno pasaba por ninguna guarda.
+
+         Se reescribieron al HECHO PROCESAL y el tipo penal se quedó en
+         `detalle` con su fuente, que es la salida que la regla manda: a una
+         afirmación que atribuye conducta a alguien no se le concede exención
+         nunca (v1128).
+
+         LA EXENCIÓN ES LA MISMA DE SIEMPRE: por ÍTEM, nunca por regla, con
+         sus TRES partes declaradas en el propio título —`categoriaEstadistica`,
+         `sinSujeto` y `razon`— y nombrada en el detalle de esta guarda, para
+         que se discuta frase por frase y no por un contador.
+
+         LA MISMA LISTA, en un solo sitio (v879): `ETIQUETA_PENAL` de `js/70`,
+         la que ya leen el eje D y el editorial. Si alguien la encoge, las
+         tres guardas se enteran a la vez.
+
+         DE QUÉ NO RESPONDE (v945): de `detalle`, `contrapunto` y las demás
+         superficies largas, donde el tipo penal con su estado procesal es
+         justamente lo que hay que publicar; y de que la razón de una exención
+         sea cierta, que no lo puede comprobar nadie (v1008). */
+      {
+        const PARTES = ['categoriaEstadistica', 'sinSujeto', 'razon'];
+        const malos = [], exentosT = [];
+        [['assets/data/seguimiento-presidencial.json', 'actual'],
+         ['assets/data/seguimiento-petro.json', 'anterior']].forEach(([arch, cual]) => {
+          const reg = JSON.parse(leer(arch));
+          const items = (reg.entradas || []).map((e) => ['entrada', e])
+            .concat((((reg.casos || {}).lista) || []).map((c) => ['caso', c]));
+          items.forEach(([clase, it]) => {
+            const t = String(it.titulo || '');
+            PEN.forEach((px) => {
+              if (!new RegExp(px, 'i').test(t)) return;
+              const ex = it._noEsCalificacion || null;
+              const faltan = PARTES.filter((q) => String((ex || {})[q] || '').trim().length < 40);
+              if (ex && !faltan.length) exentosT.push(cual + ' · «' + t.slice(0, 70) + '…» → ' + px);
+              else malos.push(cual + ' · ' + clase + ' · «' + t.slice(0, 80) + '…» → ' + px +
+                (ex ? ' (su exención no declara ' + faltan.join(' ni ') + ')' : ' (sin exención declarada)'));
+            });
+          });
+        });
+        comprobar('ningún TÍTULO del registro califica penalmente, o declara por qué no lo hace',
+          PEN.length >= 6 && malos.length === 0,
+          PEN.length < 6 ? 'la lista de etiquetas penales se encogió: ' + PEN.length + ' de 6'
+            : malos.length ? 'título que nombra un tipo penal sin su exención completa: ' + malos.join(' · ') +
+              ' — la salida es reescribirlo al HECHO PROCESAL y dejar el tipo penal en `detalle` con su ' +
+              'fuente; a un título que atribuye conducta a alguien NO se le concede exención nunca'
+            : 'las ' + PEN.length + ' etiquetas sobre los títulos de los DOS registros' +
+              (exentosT.length
+                ? ' · ' + exentosT.length + ' eximido' + (exentosT.length === 1 ? '' : 's') +
+                  ' por ítem, cada uno con sus tres partes: ' + exentosT.join(' · ')
+                : ' y ninguno la nombra') +
+              '. No cubre `detalle` ni `contrapunto`, donde el tipo penal con su estado procesal es lo ' +
+              'que hay que publicar');
+      }
+
       /* 3 y 4 · el cierre llega visible, y nada lo alimenta. */
       /* LA EXENCIÓN ES POR AFIRMACIÓN, NUNCA POR PALABRA (v1128). Una palabra
          exenta deja pasar TODO lo que venga después —cada afirmación futura
@@ -14885,6 +14946,179 @@ console.log('\n  -- el marcado que vive dentro del JavaScript (v1025) --');
       }
     }
   })();
+
+console.log('\n  -- ningun menor identificado en el registro (v1136) --');
+/* ══ NI UN NOMBRE DE MENOR EN EL REGISTRO ═══════════════════════════════════
+   Lo que la pagó: una víctima menor de edad estaba NOMBRADA con nombre
+   completo en dos campos —el `detalle` de una entrada y el título de una de
+   sus fuentes—, y el cribado de la v1116 no la vio porque exigía una EDAD en
+   la misma oración y ahí decía «una estudiante». Treinta y nueve oraciones
+   marcadas, treinta y nueve falsas, y la que importaba fuera del barrido.
+
+   EL CRIBADO AMPLIO no pide edad: pide una palabra que nombre a un menor
+   —estudiante, niña, niño, joven, adolescente, menor, reclutada, asesinada y
+   las demás— con un NOMBRE PROPIO en la misma oración. Medido al escribirlo:
+   51 coincidencias brutas, 14 tras descontar instituciones, lugares y alias,
+   y 2 reales — las dos, la misma persona.
+
+   LAS DOCE QUE NO SON, Y POR QUÉ NO SE AUTOMATIZAN: son adultos con cargo
+   —dos ministros, un alcalde, dos magistradas, un experto— junto a una
+   palabra del contexto. Distinguir «ministro» de «víctima» por código daría
+   la lista de excepciones que envejece (v895, v1116), así que lo que se
+   descuenta es lo comprobable —el nombre de una institución, de un lugar o de
+   un alias— y lo que queda se LEE. La lista de descartes va acá, con su
+   razón, y cada entrada nueva que caiga se mira a mano.
+
+   VA EN ROJO Y NO CON `?` (v970): su material no son los datos sino la lista
+   de descartes y el propio cribado, y el estado BUENO es cero coincidencias.
+   Un `?` acá diría «no hay nada que mirar» el día que alguien borre el
+   cribado.
+
+   DE QUÉ NO RESPONDE (v945): de un menor identificado sin nombre propio —por
+   su colegio, su barrio y su edad juntos, por ejemplo—, que este cribado no
+   ve; y de las URL de las fuentes, donde el nombre puede ir en el `slug` y
+   retirarlo rompería el enlace. */
+(() => {
+  const CTX = /\b(estudiante|colegial|escolar|ni[ñn]a|ni[ñn]o|ni[ñn]os|ni[ñn]as|joven|j[óo]venes|adolescent\w*|menor|menores|beb[ée]|infante|reclutad\w*|asesinad\w*|secuestrad\w*|abusad\w*|v[íi]ctima)\b/i;
+  const NOM = /\b([A-ZÁÉÍÓÚÑ][a-záéíóúñ]{2,}(?:\s+[A-ZÁÉÍÓÚÑ][a-záéíóúñ]{2,}){1,2})\b/g;
+  /* NO es una lista de excepciones de CASOS: son clases de cosa que no son una
+     persona —institución, lugar, medio, alias, norma—, más los adultos con
+     cargo público que el registro nombra, cada uno con su razón de una línea. */
+  const NO_ES_MENOR = [
+    [/^(Corte|Fiscal|Procuradur|Contralor|Ministerio|Polic|Ej[ée]rcito|Armada|Fuerza|Instituto|Medicina|Consejo|Sala|Casaci|Congreso|C[áa]mara|Senado|Gobierno|Presidencia|Naciones|Estados|Banco|Departamento|Agencia|Comisi|Unidad|Direcci|Alcald|Gobernaci|Secretar|Universidad|Defensor|Nacional|Tribunal|Rama|Human |Observatorio|Bloque|Operaci|Subestructura|Estructura|Comandos|Autodefensas|Clan|Frente|Batall)/, 'institución u organización'],
+    [/^(Nueva|Norte|Sur|Villa|Barrio|Calle|Avenida|Parque|Puerto|R[íi]o|Sierra|Catatumbo|Guaviare|Cauca|Antioquia|Bogot|Medell|Cali|Barranquilla|Cartagena|Bucaramanga|C[úu]cuta|Tib[úu]|Riohacha|Sincelejo|Miraflores|G[óo]mez Plata|Costa Rica|La Guajira|San |Santa |El |La |Los |Las )/, 'lugar'],
+    [/^(Seg[úu]n|Revista|Semana|Infobae|Blu|Caracol|RCN|Noticias|Radio|El Tiempo|El Espectador|La Naci|Presidente)/, 'medio o muletilla de cita'],
+    [/^(Decreto|Ley|Resoluci|Sentencia|Protocolo|Principios|Derecho|Acuerdo|Tratado|Programa|Plan|Reclusi|Alimentaci)/, 'norma o programa'],
+    [/^(Bendito|Na[íi]n|Iv[áa]n Mordisco|Carolina Ram|Juan Carlos)/, 'alias o cabecilla, no un menor'],
+    [/^(Yahir Acu[ñn]a|Javier Rinc[óo]n|Jorge Eduardo Mora|Jorge Mora|Indalecio Dangond|Andr[ée]s Barreto|Ana Mar[íi]a Saavedra|Diana Fajardo|Jos[ée] Fernando Reyes|Rosa Ang[ée]lica Tarazona|Nova Soporte|Iv[áa]n Cepeda)/, 'persona adulta con cargo o parte del hecho, leída una por una']
+  ];
+  const descarta = (x) => NO_ES_MENOR.some(([re]) => re.test(x));
+
+  const hallados = [];
+  let oraciones = 0;
+  ['assets/data/seguimiento-presidencial.json', 'assets/data/seguimiento-petro.json'].forEach((arch) => {
+    const d = JSON.parse(leer(arch));
+    const campos = [];
+    (function w(o, r) {
+      if (typeof o === 'string') { campos.push([r, o]); return; }
+      if (Array.isArray(o)) return o.forEach((x, i) => w(x, r + '[]'));
+      if (o && typeof o === 'object') return Object.keys(o).forEach((k) => w(o[k], r ? r + '.' + k : k));
+    })(d, '');
+    campos.forEach(([r, s2]) => {
+      /* Las URL quedan fuera a propósito: el nombre puede ir en el `slug` y
+         tocarlo rompe el enlace, que es la prueba. */
+      if (/fuentes\[\]\.u$/.test(r)) return;
+      s2.split(/(?<=[.;:])\s+/).forEach((or) => {
+        if (!CTX.test(or)) return;
+        oraciones++;
+        let m; NOM.lastIndex = 0; const vistos = {};
+        while ((m = NOM.exec(or))) {
+          const x = m[1];
+          if (vistos[x] || descarta(x)) continue;
+          vistos[x] = 1;
+          hallados.push(arch.split('/').pop().replace('seguimiento-', '') + ' · ' + r + ' · «' + x + '»');
+        }
+      });
+    });
+  });
+
+  comprobar('MATERIAL · el cribado amplio recorre las oraciones que hablan de menores',
+    oraciones >= 50, oraciones + ' oraciones con una palabra que nombra a un menor, en los dos registros');
+
+  comprobar('ningún menor queda identificado con nombre propio en el registro',
+    oraciones >= 50 && hallados.length === 0,
+    hallados.length
+      ? 'nombre propio junto a una palabra de menor: ' + hallados.join(' · ') +
+        ' — si es una víctima menor de edad, se retira el nombre y se deja la nota; si es un adulto o una ' +
+        'institución, entra en la lista de descartes CON su razón'
+      : 'cero en ' + oraciones + ' oraciones, con ' + NO_ES_MENOR.length + ' clases de descarte declaradas ' +
+        '—institución, lugar, medio, norma, alias y adulto con cargo—. No cubre a un menor identificado sin ' +
+        'nombre propio, ni las URL de las fuentes, donde el nombre puede ir en el slug y retirarlo rompería ' +
+        'el enlace');
+
+  /* LA GUARDA DE LA GUARDA (v878): que la cita abreviada DIGA que lo está. Un
+     título de fuente recortado en silencio es una cita alterada; con su marca
+     y su nota, es una abreviatura declarada. */
+  const regM = JSON.parse(leer('assets/data/seguimiento-presidencial.json'));
+  const conNota = (regM.entradas || []).filter((e) => e._notaMenores);
+  /* Se cuentan las CITAS marcadas y no las apariciones del texto: la propia
+     nota lo menciona al explicarse, y contarla inflaría el número publicado
+     (v1054 — una cifra del registro no se concatena en crudo). */
+  let marcadas = 0;
+  (regM.entradas || []).forEach((e) => (e.fuentes || []).forEach((f) => {
+    if (String(f.n || '').indexOf('[nombre omitido]') >= 0) marcadas++;
+  }));
+  comprobar('y toda cita abreviada por esta regla lo declara, con su marca y su nota',
+    marcadas === 0 ? conNota.length === 0 : conNota.length > 0,
+    marcadas === 0 && !conNota.length ? 'ninguna cita abreviada y ninguna nota: nada que declarar'
+      : marcadas && conNota.length ? marcadas + ' cita(s) marcadas con «[nombre omitido]» y ' +
+        conNota.length + ' entrada(s) con su `_notaMenores`, que dice por qué se abrevió y que el enlace sigue intacto'
+      : marcadas ? 'hay ' + marcadas + ' cita(s) abreviadas y ninguna entrada lo declara: una cita recortada en ' +
+        'silencio es una cita alterada'
+      : 'hay nota de abreviatura y ninguna cita marcada: la nota sobró o la marca se perdió');
+})();
+
+console.log('\n  -- la tarjeta del enlace, que es la unica superficie que viaja sola (v1136) --');
+/* ══ TODA PÁGINA PUBLICADA LLEVA SU TARJETA ════════════════════════════════
+   Medido antes de escribirla: las CINCO páginas tenían 0 etiquetas Open
+   Graph, así que un enlace pegado en WhatsApp salía sin miniatura y cuatro de
+   cinco sin descripción.
+
+   POR QUÉ NECESITA GUARDA, que es lo que no se ve: estas etiquetas **no se
+   notan desde el sitio**. Nadie las ve navegando, no hay pantalla que las
+   enseñe y romperlas no rompe nada — es la clase C de CLAUDE.md aplicada a lo
+   que el sitio dice de sí mismo cuando lo comparten. Sin esto, la primera
+   edición de un <head> se las lleva y nos enteramos por una captura.
+
+   TRES COSAS QUE SE MIDEN Y NO UNA:
+   · que las cinco llevan las cinco etiquetas pedidas;
+   · que las URL son ABSOLUTAS — quien arma la tarjeta no es el navegador que
+     está en la página, es un servidor que trae el HTML suelto, y una ruta
+     relativa ahí no resuelve;
+   · que la imagen EXISTE en el disco y mide 1200×630, porque una etiqueta que
+     apunta a un archivo que no está se lee igual que no tenerla.
+
+   DE QUÉ NO RESPONDE (v945): de que la descripción sea buena, ni de que la
+   tarjeta se vea bien en cada aplicación —eso pide pegar el enlace, y este
+   contenedor no tiene red—. */
+(() => {
+  const PAGS = ['index.html', 'seguimiento.html', 'analisis-ia.html',
+                'vision-territorial.html', 'reportes.html'];
+  const PIDE = ['og:title', 'og:description', 'og:url', 'og:image'];
+  comprobar('MATERIAL · se leen las cinco páginas publicadas',
+    PAGS.every((f) => fs.existsSync(R(f))), PAGS.join(' · '));
+
+  const sinEtiqueta = [], relativas = [];
+  PAGS.forEach((f) => {
+    const h = leer(f);
+    PIDE.forEach((e) => { if (!new RegExp('property="' + e + '"').test(h)) sinEtiqueta.push(f + ' → ' + e); });
+    if (!/name="twitter:card"\s+content="summary_large_image"/.test(h)) sinEtiqueta.push(f + ' → twitter:card');
+    [...h.matchAll(/property="og:(url|image)"\s+content="([^"]*)"/g)]
+      .forEach((m) => { if (!/^https:\/\/urbispro\.city\//.test(m[2])) relativas.push(f + ' → og:' + m[1] + ' = ' + m[2]); });
+  });
+  comprobar('las cinco páginas llevan su tarjeta, con URL absolutas de urbispro.city',
+    sinEtiqueta.length === 0 && relativas.length === 0,
+    sinEtiqueta.length ? 'sin etiqueta: ' + sinEtiqueta.join(' · ')
+      : relativas.length ? 'URL que no es absoluta de urbispro.city: ' + relativas.join(' · ') +
+        ' — quien arma la tarjeta trae el HTML suelto y no puede resolverla'
+      : 'las ' + PAGS.length + ' con ' + (PIDE.length + 1) + ' etiquetas cada una, y sus URL absolutas');
+
+  /* LA GUARDA DE LA GUARDA (v878): que la imagen que las cinco nombran EXISTA
+     y tenga la medida que declaran. Se leen los dos enteros del encabezado
+     IHDR del PNG, que es donde viven el ancho y el alto. */
+  const rel = (leer('seguimiento.html').match(/property="og:image"\s+content="https:\/\/urbispro\.city\/([^"]+)"/) || [])[1];
+  let w = 0, h2 = 0, hay = false;
+  if (rel && fs.existsSync(R(rel))) {
+    const b = fs.readFileSync(R(rel)); hay = true;
+    w = b.readUInt32BE(16); h2 = b.readUInt32BE(20);
+  }
+  comprobar('y la imagen que nombran está en el disco y mide 1200×630',
+    hay && w === 1200 && h2 === 630,
+    !rel ? 'ninguna página declara og:image: no hay imagen que comprobar'
+      : !hay ? 'la etiqueta apunta a ' + rel + ' y ese archivo no está: se lee igual que no tener tarjeta'
+      : (w === 1200 && h2 === 630) ? rel + ' · ' + w + '×' + h2
+      : rel + ' mide ' + w + '×' + h2 + ' y declara 1200×630');
+})();
 
 console.log('\n  -- las fechas de calendario se anclan a Colombia (v1135) --');
 /* ══ NINGUNA FECHA DE CALENDARIO SE SERIALIZA EN UTC ════════════════════════

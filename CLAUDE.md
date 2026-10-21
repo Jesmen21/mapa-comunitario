@@ -210,7 +210,7 @@ Hacen falta **dos servidores levantados**, y se caen entre sesiones:
 # el estático, SIEMPRE desde la raíz del repositorio
 (setsid python3 -m http.server 8199 &)
 # el motor, en 8787
-(cd /home/user/urbis-motor && setsid node servidor.js &)
+(cd ../urbis-motor && setsid node servidor.js &)
 ```
 
 Ojo con levantarlos con un `cd` encadenado: el directorio queda cambiado y el
@@ -813,11 +813,11 @@ escrito, así que va escrito:
 
 ```bash
 service postgresql start
-cd /home/user/urbis-motor
+cd ../urbis-motor      # el repositorio privado del motor, al lado de este
 VT_DATABASE_URL_MIGRADOR="postgres://vt_migrador:vt_migrador_local@127.0.0.1:5432/urbis_vt_pruebas" \
   node vt/migrar.js && node vt/semilla.js
 VT_DATABASE_URL="postgres://vt_app:vt_app_local@127.0.0.1:5432/urbis_vt_pruebas" \
-  URBIS_SECRETO="secreto-de-pruebas-locales-no-es-el-de-produccion" \
+  URBIS_SECRETO="$URBIS_SECRETO_PRUEBAS" \
   nohup node servidor.js > /tmp/motor.log 2>&1 &
 ```
 
@@ -865,10 +865,13 @@ por ser superusuario. `FORCE` alcanza al DUEÑO de la tabla (`vt_migrador`), que
 es lo que impide que una función `SECURITY DEFINER` cruce territorios; no
 alcanza al superusuario.
 
-**El secreto tiene que ser EXACTAMENTE ese**: es el que `tvision.js` usa para
-firmar sus licencias de prueba, y con otro la firma no valida —401— y el
-cliente recibe null. No es el de producción y no es un secreto: está escrito
-en la suite, que está en el repositorio. Una licencia entra al módulo solo si
+**El secreto tiene que ser EXACTAMENTE el que la suite usa**: `tvision.js`
+firma con él sus licencias de prueba, y con otro la firma no valida —401— y el
+cliente recibe null. No es el de producción. **Su valor no se escribe acá**
+(v1136): este archivo se publica en urbispro.city junto con el resto del
+repositorio, así que lo que se teclee en él queda en internet, y el nombre de
+la variable alcanza para saber qué hay que poner. El valor se lee de la propia
+suite, que es donde tiene que estar. Una licencia entra al módulo solo si
 lleva `vt: { dane, rol }` (`emitir-licencia.js --dane 54001 --rol gobernante`).
 
 ### Lo que falta, y se dice en pantalla

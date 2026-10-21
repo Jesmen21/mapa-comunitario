@@ -181,7 +181,12 @@
           "u": "https://cambiocolombia.com/pais/articulo/2026/7/homicidios-bajaron-92-por-ciento-y-el-secuestro-cayo-70-por-ciento-en-cundinamarca-durante-el-primer-semestre-de-2026",
           "rol": "acto"
         }
-      ]
+      ],
+      "_noEsCalificacion": {
+        "categoriaEstadistica": "«Homicidios» y «secuestro» son los nombres de las series oficiales de criminalidad con las que se reporta el dato departamental que la entrada registra, no la calificación de la conducta de nadie.",
+        "sinSujeto": "La afirmación no tiene sujeto. Es una variación porcentual de dos series en un departamento y un semestre; no nombra ni permite identificar a ninguna persona, unidad, entidad ni cargo.",
+        "razon": "La entrada registra un dato del gobierno anterior que va en dirección contraria a la tendencia nacional, y se publica porque la misma vara mide a los dos gobiernos. El nombre de la serie es lo que permite comprobarla contra la fuente."
+      }
     },
     {
       "fecha": "2025-12-30",
@@ -826,10 +831,10 @@
       "fecha": "2026-08-23",
       "precision": "exacta",
       "categoria": "corrupcion",
-      "titulo": "El fiscal general niega haber ordenado quitarle delitos a Nicolás Petro: «La acusación por lavado de activos y enriquecimiento ilícito se mantiene»",
+      "titulo": "El fiscal general niega haber ordenado retirar cargos del proceso contra Nicolás Petro y afirma que la acusación se mantiene intacta",
       "categoriaProbatoria": "hecho-probado",
       "tipoMedicion": "contexto-estructural",
-      "detalle": "Un día después de que la exfiscal del caso denunciara presiones para retirar el delito de lavado, la Fiscalía respondió que la acusación contra Nicolás Petro se mantiene intacta y calificó lo dicho por la exfiscal Lucy Laborde como «conjeturas, rumores, creencias falsas o interpretaciones subjetivas sin sustento».",
+      "detalle": "Un día después de que la exfiscal del caso denunciara presiones para retirar el delito de lavado de activos del proceso —la acusación formal de la Fiscalía contra Nicolás Petro, del 11 de enero de 2024, es por enriquecimiento ilícito de servidor público y lavado de activos—, la Fiscalía respondió que la acusación contra Nicolás Petro se mantiene intacta y calificó lo dicho por la exfiscal Lucy Laborde como «conjeturas, rumores, creencias falsas o interpretaciones subjetivas sin sustento».",
       "contrapunto": "Las dos versiones están en el registro y ninguna está probada: la denuncia de la exfiscal y el desmentido de la Fiscalía. La entrada del 22 de agosto trae la primera; esta trae la segunda, porque publicar solo la acusación y no la respuesta es tomar partido sin decirlo.",
       "tipoFuente": "disputado",
       "fuentes": [
@@ -1522,7 +1527,7 @@
       },
       {
         "id": "nicolas-petro",
-        "titulo": "Nicolás Petro, acusado por lavado de activos y enriquecimiento ilícito con dinero de la campaña de 2022",
+        "titulo": "Nicolás Petro: la Fiscalía lo acusó formalmente el 11 de enero de 2024 por el dinero de la campaña de 2022 y el juicio oral sigue pendiente",
         "estado": "en-investigacion",
         "nivelGobierno": "nacional",
         "queSeConfirmo": "La Fiscalía lo acusó formalmente el 11 de enero de 2024 por enriquecimiento ilícito de servidor público y lavado de activos. La etapa preparatoria se cerró el 2 de junio de 2026 y el juicio oral quedó a la espera de que el Tribunal Superior de Barranquilla resuelva más de 800 apelaciones de pruebas. Se declaró inocente de los dos cargos. No hay fallo.",

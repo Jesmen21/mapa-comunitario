@@ -66,9 +66,10 @@ window.URBIS_CONFIG = {
     APPS_SCRIPT_ENDPOINT: 'https://script.google.com/macros/s/AKfycbw-P002YjsFDWoNguJG10Y5MJVwEenSRaSdqJKe1c31wJ1n2e1_bxMfHTF0XziQbOdioA/exec',
     // Referencia informativa. QUIEN DECIDE es el servidor: el .gs compara el
     // correo de la sesión contra su propio URBIS_AUTH.ADMIN_EMAIL, y este
-    // valor no otorga nada. Estuvo desalineado con el servidor
-    // (barrazapolo2@gmail.com contra urbisprocity@gmail.com), lo que no
-    // rompía nada pero confundía al leer el código.
+    // valor no otorga nada. Estuvo desalineado con el del servidor, lo que no
+    // rompía nada pero confundía al leer el código. El correo que lo estaba
+    // no se escribe acá: este archivo se sirve en urbispro.city/js/00-config.js
+    // y era un correo personal publicado (v1136).
     ADMIN_EMAIL: 'urbisprocity@gmail.com',
     SESSION_KEY: 'urbis_auth_session_v1',
     CODE_LENGTH: 6,

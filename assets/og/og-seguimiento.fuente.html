@@ -1,0 +1,56 @@
+<!doctype html><html lang="es"><head><meta charset="utf-8">
+<style>
+  @page { size: 1200px 630px; margin: 0; }
+  *{box-sizing:border-box;margin:0;padding:0}
+  :root{
+    --celeste:#34CCFE; --celeste-hi:#0B6E9B; --celeste-deep:#06405A;
+    --marfil:#F7F6F1; --ink:#152229; --ink-2:#5F6B72; --linea:#E1E5E7; --amarillo:#FABD0A;
+  }
+  body{width:1200px;height:630px;background:var(--marfil);font-family:Georgia,'Times New Roman',serif;
+       color:var(--ink);overflow:hidden;position:relative}
+  .barra{height:10px;background:linear-gradient(90deg,var(--celeste-deep) 0%,var(--celeste-hi) 45%,var(--celeste) 100%)}
+  .caja{padding:52px 68px 0}
+  .sello{font-family:system-ui,sans-serif;font-size:15px;letter-spacing:.16em;text-transform:uppercase;
+         color:var(--celeste-hi);font-weight:700}
+  h1{font-size:76px;line-height:1.05;margin-top:22px;letter-spacing:-.015em}
+  .dek{font-family:system-ui,sans-serif;font-size:24px;line-height:1.5;color:var(--ink-2);
+       margin-top:26px;max-width:830px}
+  .piso{position:absolute;left:68px;bottom:150px;display:flex;align-items:center;gap:16px}
+  .peldano{font-family:system-ui,sans-serif;font-size:17px;font-weight:700;letter-spacing:.04em;
+           background:#fff;border:2px solid var(--celeste-hi);color:var(--celeste-hi);
+           border-radius:999px;padding:11px 22px}
+  .nota{font-family:system-ui,sans-serif;font-size:16px;color:var(--ink-2)}
+  .pie{position:absolute;left:0;right:0;bottom:0;height:78px;border-top:1px solid var(--linea);
+       background:#fff;display:flex;align-items:center;justify-content:space-between;padding:0 68px;
+       font-family:system-ui,sans-serif;font-size:17px;color:var(--ink-2)}
+  .marca{font-weight:700;color:var(--ink);letter-spacing:.02em}
+  .marca span{color:var(--celeste-hi)}
+  .esc{position:absolute;right:68px;top:168px;display:flex;flex-direction:column;gap:9px;align-items:flex-end}
+  .p{font-family:system-ui,sans-serif;font-size:14px;color:#9AA4AA;display:flex;align-items:center;gap:10px}
+  .p i{display:block;height:9px;background:var(--linea);border-radius:2px}
+  .p.on{color:var(--celeste-hi);font-weight:700}
+  .p.on i{background:var(--celeste-hi)}
+</style></head><body>
+<div class="barra"></div>
+<div class="caja">
+  <div class="sello">Seguimiento presidencial · Colombia</div>
+  <h1>Lo que el Gobierno<br>hizo, con su fuente.</h1>
+  <p class="dek">Registro público de actos del Gobierno de Abelardo de la Espriella,
+     con fecha, fuente y estado procesal. El veredicto no se escribe: se calcula.</p>
+  <div class="esc">
+    <div class="p"><span>Inquebrantable</span><i style="width:34px"></i></div>
+    <div class="p"><span>Fiable</span><i style="width:52px"></i></div>
+    <div class="p"><span>Dudosa</span><i style="width:70px"></i></div>
+    <div class="p on"><span>Poco fiable</span><i style="width:88px"></i></div>
+    <div class="p"><span>Nada fiable</span><i style="width:106px"></i></div>
+  </div>
+</div>
+<div class="piso">
+  <span class="peldano">PISO · no puede ser mejor que «Poco fiable»</span>
+  <span class="nota">Es una cota, no el dictamen.</span>
+</div>
+<div class="pie">
+  <div class="marca">URBIS<span>_CO</span> · urbispro.city</div>
+  <div>Se recalcula con cada hecho documentado</div>
+</div>
+</body></html>

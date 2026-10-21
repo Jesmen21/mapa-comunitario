@@ -2776,12 +2776,12 @@
       "fecha": "2026-09-29",
       "precision": "exacta",
       "categoria": "gobierno",
-      "titulo": "De la Espriella confirma en Tibú la captura de alias 'El Pollo', señalado cabecilla de una subestructura de disidencias de las Farc vinculado al reclutamiento y homicidio de una menor y a ataques con drones explosivos en el Catatumbo",
+      "titulo": "De la Espriella confirma en Tibú la captura de alias 'El Pollo', a quien la Fuerza Pública presenta como cabecilla de una subestructura de disidencias de las Farc en el Catatumbo",
       "categoriaProbatoria": "hecho-probado",
       "tipoMedicion": "actividad",
       "indicadores": [],
       "nivelGobierno": "nacional",
-      "detalle": "El 29 de septiembre el presidente Abelardo de la Espriella confirmó la captura de alias 'El Pollo' en el barrio Villa Paz del municipio de Tibú (Norte de Santander), en una operación de la Segunda División del Ejército con apoyo de la Fuerza Aérea Colombiana y la Policía Nacional. Según la Fuerza Pública, alias 'El Pollo' es señalado cabecilla de la comisión «Estructura 33» —también identificada como Subestructura Jorge Suárez Briceño— de las disidencias de las Farc que opera en el Catatumbo, estructura en la que llevaría más de cuatro años. Las autoridades lo investigan por su presunta responsabilidad en el reclutamiento forzado y el homicidio de una estudiante, Mónica Liseth Beltrán, en esa región, y lo señalan también de coordinar ataques con drones cargados de explosivos contra la Fuerza Pública en el Catatumbo.",
+      "detalle": "El 29 de septiembre el presidente Abelardo de la Espriella confirmó la captura de alias 'El Pollo' en el barrio Villa Paz del municipio de Tibú (Norte de Santander), en una operación de la Segunda División del Ejército con apoyo de la Fuerza Aérea Colombiana y la Policía Nacional. Según la Fuerza Pública, alias 'El Pollo' es señalado cabecilla de la comisión «Estructura 33» —también identificada como Subestructura Jorge Suárez Briceño— de las disidencias de las Farc que opera en el Catatumbo, estructura en la que llevaría más de cuatro años. Las autoridades lo investigan por su presunta responsabilidad en el reclutamiento forzado y el homicidio de una estudiante menor de edad en esa región, y lo señalan también de coordinar ataques con drones cargados de explosivos contra la Fuerza Pública en el Catatumbo.",
       "contrapunto": "Se trata de señalamientos de la Fuerza Pública y la Fiscalía: no hay, al cierre de esta entrada, una condena que establezca la responsabilidad penal de alias 'El Pollo' en el homicidio de la menor ni en los ataques con drones que se le atribuyen.",
       "tipoFuente": "verificado",
       "fuentes": [
@@ -2791,7 +2791,7 @@
           "rol": "acto"
         },
         {
-          "n": "El Tiempo · Capturan a alias 'Pollo' en Tibú por el presunto reclutamiento y asesinato de la menor Mónica Liseth Beltrán en el Catatumbo",
+          "n": "El Tiempo · Capturan a alias 'Pollo' en Tibú por el presunto reclutamiento y asesinato de una menor [nombre omitido] en el Catatumbo",
           "u": "https://www.eltiempo.com/colombia/otras-ciudades/capturan-a-alias-pollo-en-tibu-por-el-presunto-reclutamiento-y-asesinato-de-la-menor-monica-liseth-beltran-de-14-anos-en-el-catatumbo-3589698",
           "rol": "acto"
         },
@@ -2805,7 +2805,8 @@
           "u": "https://www.semana.com/nacion/articulo/alias-el-pollo-seria-uno-de-los-cerebros-de-los-ataques-de-drones-con-explosivos-en-el-catatumbo/202614/",
           "rol": "acto"
         }
-      ]
+      ],
+      "_notaMenores": "El nombre de la víctima menor de edad se retiró de esta entrada el 21 de octubre de 2026, en el `detalle` y en el TÍTULO DE UNA FUENTE, por la regla de menores de este registro: no se publican nombres, fotos ni datos que identifiquen a un menor. El título de la fuente queda ABREVIADO y marcado con «[nombre omitido]», no reescrito: el ENLACE está intacto y lleva al titular original, donde el nombre sí aparece —es público y lo publicó El Tiempo—, así que quien verifique llega al mismo sitio. Abreviar una cita y callarla no son lo mismo, y por eso la abreviatura se declara acá y se ve en la propia cita."
     },
     {
       "fecha": "2026-09-28",
@@ -7145,7 +7146,7 @@
       "tipoMedicion": "actividad",
       "indicadores": [],
       "nivelGobierno": "nacional",
-      "detalle": "Mediante nueve resoluciones —tres por cada mesa—, firmadas el 28 de agosto, el Gobierno puso fin a los procesos de diálogo que la administración de Gustavo Petro había abierto con estas tres estructuras armadas bajo la política de \"paz total\". La Resolución 342 de 2026 cierra la mesa con las disidencias de alias Calarcá al concluir que hubo incumplimiento de los acuerdos pactados; el Gobierno revocó también el reconocimiento de vocería a los integrantes de los Comandos de la Frontera, liderados por Geovanny Andrés Rojas, alias \"Araña\", tras concluir que usaban la mesa como fachada operativa para sostener el narcotráfico; y la Resolución 348 del 28 de agosto cierra el proceso con las Autodefensas Conquistadoras de la Sierra Nevada por no demostrar voluntad real de paz ni disposición a un sometimiento judicial, con la reactivación de las órdenes de captura contra sus cabecillas. El paquete incluyó además resoluciones que autorizan la extradición a Estados Unidos de varios cabecillas, entre ellos el propio alias \"Araña\", quien había actuado como gestor de paz durante el gobierno de Petro.",
+      "detalle": "Mediante nueve resoluciones —tres por cada mesa—, firmadas el 28 de agosto, el Gobierno puso fin a los procesos de diálogo que la administración de Gustavo Petro había abierto con estas tres estructuras armadas bajo la política de \"paz total\". La Resolución 342 de 2026 cierra la mesa con las disidencias de alias Calarcá al concluir que hubo incumplimiento de los acuerdos pactados; el Gobierno revocó también el reconocimiento de vocería a los integrantes de los Comandos de la Frontera, liderados por Geovanny Andrés Rojas, alias \"Araña\": según la resolución del propio Gobierno, la razón fue que el grupo usaba la mesa «como fachada operativa». Es la motivación de un acto administrativo del Ejecutivo y no una decisión judicial. El estado procesal de Rojas, documentado en este mismo registro: capturado en Bogotá en febrero de 2025 con fines de extradición, con el trámite suspendido mientras fue vocero en los diálogos del gobierno anterior, y extraditado a Estados Unidos el 25 de septiembre de 2026. No consta, a la fecha de corte de esta entrada, fallo que establezca su responsabilidad penal; y la Resolución 348 del 28 de agosto cierra el proceso con las Autodefensas Conquistadoras de la Sierra Nevada por no demostrar voluntad real de paz ni disposición a un sometimiento judicial, con la reactivación de las órdenes de captura contra sus cabecillas. El paquete incluyó además resoluciones que autorizan la extradición a Estados Unidos de varios cabecillas, entre ellos el propio alias \"Araña\", quien había actuado como gestor de paz durante el gobierno de Petro.",
       "contrapunto": "El expresidente Gustavo Petro defendió su política de \"paz total\" tras el desmonte de las mesas y afirmó que los diálogos dejaron más paz en Medellín, redujeron a la mitad las tasas de homicidio en Nariño y Putumayo —donde dijo que \"se salvaron miles de vidas\"— y permitieron la erradicación voluntaria de cerca de 25.000 hectáreas de coca mediante sustitución de cultivos.",
       "tipoFuente": "verificado",
       "fuentes": [
@@ -8303,7 +8304,12 @@
           "u": "https://www.elheraldo.co/judicial/2026/08/24/seguridad-la-prioridad-de-de-la-espriella-ante-la-ola-criminal-en-el-atlantico/",
           "rol": "acto"
         }
-      ]
+      ],
+      "_noEsCalificacion": {
+        "categoriaEstadistica": "«Ola de homicidios» nombra el AGREGADO de muertes violentas que la Policía Nacional contabiliza en la ciudad en ese periodo: es la serie con la que esa entidad reporta, no la calificación de la conducta de nadie.",
+        "sinSujeto": "La afirmación no tiene sujeto. No nombra —ni permite identificar— a ninguna persona, unidad, entidad ni cargo a quien se le atribuya haber cometido esas muertes: el sujeto de la frase es el presidente, y lo que se le atribuye es haber liderado un consejo de seguridad.",
+        "razon": "El hecho que la entrada registra es que el presidente lideró un consejo de seguridad y anunció una política; la palabra penal describe el contexto que lo motivó, contado como cifra agregada. Reescribirlo sin la palabra haría perder por qué se convocó el consejo."
+      }
     },
     {
       "fecha": "2026-08-23",
@@ -10356,7 +10362,12 @@
           "u": "https://www.eltiempo.com/politica/partidos-politicos/revelan-informe-que-valida-la-caida-en-secuestro-extorsion-y-homicidios-presentadas-por-el-gobierno-de-la-espriella-tras-revision-con-mindefensa-3590075",
           "rol": "contexto"
         }
-      ]
+      ],
+      "_noEsCalificacion": {
+        "categoriaEstadistica": "«Homicidios» y «secuestro» son los nombres de las SERIES que publica la Policía Nacional: las categorías con las que esa entidad reporta sus cifras mensuales, igual que «delitos sexuales» en la misma tabla. No son imputaciones: son rótulos de columna.",
+        "sinSujeto": "La afirmación no tiene sujeto. Es un conteo agregado de un mes contra el mismo mes del año anterior, y no nombra ni permite identificar a ninguna persona, unidad, entidad ni cargo a quien se le atribuya ninguno de esos hechos.",
+        "razon": "Es la misma cifra que el editorial cita y que ya lleva su exención allá: la entrada existe para publicar el dato oficial con su salvedad —el acumulado del año va en sentido contrario—, y quitarle el nombre de la serie la volvería incomprobable contra la fuente."
+      }
     },
     {
       "fecha": "2026-09-30",
@@ -11219,7 +11230,7 @@
       },
       {
         "id": "lavado-tuso-sierra",
-        "titulo": "Lavado de activos y enriquecimiento ilícito por el dinero de «El Tuso» Sierra: la Fiscalía lo archivó sin encontrar mérito",
+        "titulo": "La Fiscalía archivó sin hallazgo la indagación que pidió la Corte Suprema a partir del testimonio de «El Tuso» Sierra",
         "estado": "archivado",
         "nivelGobierno": "nacional",
         "queSeConfirmo": "Que no hubo hallazgo. La Corte Suprema pidió investigarlo por lavado de activos y enriquecimiento ilícito a partir del testimonio del narcotraficante Juan Carlos «El Tuso» Sierra, que dijo haberle pagado una suma alta para entrar al proceso de Justicia y Paz. La Fiscalía Sexta Especializada precluyó a su favor a finales de 2014 y el proceso quedó archivado en 2021. La Fiscalía 13 Especializada dejó escrito que «no existe evidencia o elemento material probatorio del cual se pueda inferir la comisión de los delitos de lavado de activos o enriquecimiento ilícito».",
@@ -12672,7 +12683,21 @@
       ],
       [
         {
-          "t": "Lo que yo leo es un gobierno que gasta más en deuda que en construir, que recortó donde más duele, que prometió una cosa y hace otra, y que entrega la información cuando lo obligan."
+          "t": "Lo que yo leo es un gobierno que gasta más en deuda que en construir, que recortó donde más duele, "
+        },
+        {
+          "t": "que prometió mérito para los cargos públicos",
+          "a": "merito-promesa"
+        },
+        {
+          "t": " y "
+        },
+        {
+          "t": "el 21 de agosto objetó la ley de mérito aprobada por el Congreso",
+          "a": "merito-objecion"
+        },
+        {
+          "t": ", y que entrega la información cuando lo obligan."
         }
       ]
     ],
@@ -12831,7 +12856,21 @@
       ],
       [
         {
-          "t": "LO QUE YO LEO EN TODO ESTO es un gobierno que gasta más en pagar deuda que en construir, que recortó donde más duele, que prometió una cosa y está haciendo otra, y que entrega la información cuando lo obligan. Cada quien puede leer otra cosa con los mismos datos. Están todos acá abajo con su fuente."
+          "t": "LO QUE YO LEO EN TODO ESTO es un gobierno que gasta más en pagar deuda que en construir, que recortó donde más duele, "
+        },
+        {
+          "t": "que prometió mérito para los cargos públicos",
+          "a": "merito-promesa"
+        },
+        {
+          "t": " y "
+        },
+        {
+          "t": "el 21 de agosto objetó la ley de mérito aprobada por el Congreso",
+          "a": "merito-objecion"
+        },
+        {
+          "t": ", y que entrega la información cuando lo obligan. Cada quien puede leer otra cosa con los mismos datos. Están todos acá abajo con su fuente."
         }
       ]
     ],

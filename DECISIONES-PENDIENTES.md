@@ -328,3 +328,43 @@ necesitaban cambio.** Comparan fechas guardadas contra fechas guardadas; la
 única que comparaba contra un «hoy» calculado era el `hasta` de dos funciones
 de `js/70`, y esas sí se anclaron. La nota lo daba por trabajo pendiente y no
 lo era.
+
+## 10 · Campo `archivo` en las fuentes, y la noción de fuente crítica · `pendiente`
+
+**NO EJECUTAR hasta que quien firma el módulo lo diga.** Anotado el 21 de
+octubre de 2026 como MEJORA, salido de la verificación previa a publicar la
+v1135.
+
+**El hecho, medido.** Las **1.295 fuentes** de los dos registros son enlaces a
+medios, y **ninguna tiene captura archivada**: cero `web.archive.org`, cero
+`archive.ph`, y **el esquema no tiene campo donde ponerla**. No es que falten
+algunas — es que no hay dónde.
+
+**Por qué importa acá y no en cualquier sitio.** Este módulo publica un juicio
+sobre una persona con nombre y lo sostiene en enlaces de prensa. Un medio
+reescribe un titular, mueve una nota detrás de un muro de pago o la retira, y
+la afirmación se queda **sin la prueba que la sostenía**, sin que nadie se
+entere y sin forma de reconstruirla. El riesgo no es simétrico: lo que se
+pierde es siempre la evidencia de lo que ya se publicó.
+
+**La forma, que es lo que hay que decidir:**
+
+* **`archivo` OPCIONAL en cada fuente**, con la URL de la captura y su fecha.
+  Opcional y no exigido, porque exigirlo a las 1.295 de una vez convierte un
+  registro que crece en un registro que no puede crecer — y porque la rutina
+  diaria es otra sesión y no lo conoce (v1097).
+* **La noción de FUENTE CRÍTICA, que hoy no existe en el registro.** Es la
+  parte difícil y la que decide si esto sirve: si «crítica» se define por una
+  regla del código —por ejemplo «toda fuente de una entrada que alimenta un
+  eje»— eximiría o exigiría cientos de una vez. Lo que esta casa hace en su
+  lugar es declararlo **por ítem** (v1094, v1109, v1127). Pero marcar 1.295
+  fuentes una por una tampoco es trabajo que alguien vaya a hacer.
+  **Esa tensión hay que resolverla ANTES de escribir el campo, no durante.**
+* **Y la guarda tendría que ir con `?` y no en rojo** (v970, v1097): su
+  material lo ponen los datos y empieza en cero, así que un rojo pondría la
+  salida barata en no documentar fuentes nuevas.
+
+**Lo que NO se puede hacer desde este contenedor, y conviene saberlo antes de
+planearlo:** el proxy niega todos los dominios, así que **ni se pueden pedir
+las capturas ni comprobar que existan**. La captura la hace quien corra algo
+en su computador, igual que `herramientas/verificar-enlaces.js` (v1136).
