@@ -14976,17 +14976,27 @@ console.log('\n  -- el contraste de las paletas propuestas (v1138) --');
    la página —son los doce que la C todavía arrastra—; ni del objetivo de 7:1
    para el cuerpo, que se declara aparte y se mide en el navegador. */
 (() => {
+  /* LA PALETA APLICADA VA PRIMERO, y las candidatas solo si quedan. Hasta la
+     v1138 esta guarda medía únicamente `css/paletas-propuestas/`; al elegir
+     la «Papel» esa carpeta se retiró, y una guarda que solo mira candidatas
+     se habría quedado SIN MATERIAL justo cuando empezó a haber una paleta de
+     verdad que proteger — en verde, o en rojo, sobre nada. Ahora mide la que
+     está en pie y las que estén a prueba. */
   const DIR = 'css/paletas-propuestas';
   const soloUna = (process.argv.find((x) => x.startsWith('--paleta=')) || '').split('=')[1] || '';
-  const hay = fs.existsSync(R(DIR));
-  const archivos = hay ? fs.readdirSync(R(DIR))
-    .filter((f) => /^[A-Z]\.css$/.test(f)).filter((f) => !soloUna || f === soloUna + '.css') : [];
+  const archivos = [];
+  if (!soloUna || soloUna === 'aplicada') archivos.push(['APLICADA', 'css/70-seguimiento.css']);
+  if (fs.existsSync(R(DIR))) {
+    fs.readdirSync(R(DIR)).filter((f) => /^[A-Z]\.css$/.test(f))
+      .filter((f) => !soloUna || f === soloUna + '.css')
+      .forEach((f) => archivos.push([f.replace('.css', ''), DIR + '/' + f]));
+  }
 
-  comprobar('MATERIAL · hay paletas candidatas que medir',
-    archivos.length > 0,
-    archivos.length ? archivos.length + ' paleta(s): ' + archivos.join(' · ') +
-      (soloUna ? ' (limitado con --paleta=' + soloUna + ')' : '')
-      : 'no hay ninguna en ' + DIR + ': la guarda se quedaría sin material');
+  comprobar('MATERIAL · hay una paleta aplicada que medir',
+    archivos.length > 0 && archivos.some((x) => x[0] === 'APLICADA'),
+    !archivos.length ? 'no hay ninguna paleta que medir'
+      : archivos.map((x) => x[0]).join(' · ') +
+        (soloUna ? ' (limitado con --paleta=' + soloUna + ')' : ''));
 
   const hex = (c) => {
     const m = String(c).trim().match(/^#([0-9a-fA-F]{6})$/);
@@ -15005,8 +15015,8 @@ console.log('\n  -- el contraste de las paletas propuestas (v1138) --');
   const TINTAS = ['--sp-tx', '--sp-tx2', '--sp-ac-tx'];
   const FONDOS = ['--sp-s1', '--sp-s2', '--sp-s3'];
   const malos = [], medidos = [];
-  archivos.forEach((f) => {
-    const css = leer(DIR + '/' + f);
+  archivos.forEach(([nombre, ruta]) => {
+    const css = leer(ruta);
     const tok = {};
     [...css.matchAll(/(--sp-[a-z0-9-]+)\s*:\s*(#[0-9a-fA-F]{6})\s*;/g)]
       .forEach((m) => { if (!(m[1] in tok)) tok[m[1]] = m[2]; });
@@ -15015,8 +15025,7 @@ console.log('\n  -- el contraste de las paletas propuestas (v1138) --');
       if (!t || !b2) return;
       const r = ratio(t, b2);
       medidos.push(1);
-      if (r < 4.5) malos.push(f.replace('.css', '') + ' · ' + kt + ' sobre ' + kf +
-        ' = ' + r.toFixed(2) + ':1');
+      if (r < 4.5) malos.push(nombre + ' · ' + kt + ' sobre ' + kf + ' = ' + r.toFixed(2) + ':1');
     };
     TINTAS.forEach((t) => FONDOS.forEach((b2) => par(t, b2)));
     for (let i = 1; i <= 5; i++) par('--sp-n' + i + '-tx', '--sp-n' + i);
@@ -15028,7 +15037,8 @@ console.log('\n  -- el contraste de las paletas propuestas (v1138) --');
       : medidos.length < 12 ? 'solo ' + medidos.length + ' pares medidos: una paleta dejó tokens sin declarar ' +
         'y los pares que faltan no se comprueban, que se lee igual que si pasaran'
       : malos.length ? 'por debajo del mínimo: ' + malos.join(' · ')
-      : medidos.length + ' pares de ' + archivos.length + ' paleta(s), todos en 4,5:1 o más. ' +
+      : medidos.length + ' pares de ' + archivos.length + ' paleta(s) —' +
+        archivos.map((x) => x[0]).join(', ') + '—, todos en 4,5:1 o más. ' +
         'No cubre los colores escritos a mano dentro de css/70-seguimiento.css, que solo se ven ' +
         'componiendo la página en el navegador');
 })();

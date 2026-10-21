@@ -2599,3 +2599,154 @@ a.sp-fuente:hover svg{ color:var(--verde-hi); }
    escrito. */
 .sp-edit-reten{ background:#FBE9E7; border-bottom:2px solid #C0392B; font-style:italic;
   font-family:system-ui,sans-serif; font-size:var(--t-8); padding:0 .2rem; }
+
+
+/* ══════════════════════════════════════════════════════════════════════════
+   PALETA «PAPEL» · elegida el 21 de octubre de 2026 (v1138)
+   ══════════════════════════════════════════════════════════════════════════
+   Tema claro: fondo blanco cálido, tinta casi negra y UN acento azul
+   pizarra. Sobrio y sin color de partido: el azul pizarra es un gris azulado
+   desaturado, no el azul conservador, y el ámbar y el naranja salieron del
+   módulo por completo.
+
+   POR QUÉ VA AL FINAL Y REMAPEA EN VEZ DE REESCRIBIR LAS 2.600 LÍNEAS DE
+   ARRIBA: el módulo se construyó sobre nombres heredados —`--marfil`,
+   `--celeste`, `--ambar`, `--petroleo`— usados cientos de veces. Cambiarlos
+   uno por uno es el descuadre silencioso que esta casa ya pagó otras veces;
+   apuntarlos a los tokens nuevos deja un solo sitio donde se decide el color
+   y ninguna regla de abajo se entera.
+
+   TRES COSAS QUE LA PALETA RESUELVE Y NO SON DE GUSTO:
+
+   · EL CUADRO «NO FIJA PELDAÑO» SE LEÍA A 1,09:1 —tinta casi blanca sobre
+     fondo casi blanco—. La causa no era un color mal elegido: era una
+     superficie CLARA pintada dentro de una tarjeta OSCURA, heredando su
+     tinta. Por eso la cura es un CONTRATO —toda superficie que pinte fondo
+     propio declara con qué tinta se lee encima— y no un parche por caja.
+
+   · `--sp-amb` NO ESTABA DEFINIDO y sus ocho usos caían al literal #b26a00,
+     que sobre blanco da 4,24:1. Definir el token arregla los ocho de una vez.
+
+   · LA ESCALA DE NIVELES ES SECUENCIAL Y DE UN SOLO TONO, ni verde ni rojo:
+     cinco pasos que cambian de LUMINOSIDAD, así que se distinguen con
+     cualquier daltonismo. Y el color no lleva el significado solo — el
+     peldaño va escrito al lado, siempre.
+
+   Medido sobre la página compuesta: de 17 pares por debajo de 4,5:1 a CERO.
+   La guarda de `revisar.js` lee estos tokens y se pone roja si alguno baja.
+   ══════════════════════════════════════════════════════════════════════════ */
+
+:root{
+  --sp-s1:#FAF8F3; --sp-s2:#FFFFFF; --sp-s3:#F2EFE8;
+  --sp-tx:#16181C; --sp-tx2:#4A5159;
+  --sp-ac:#2E4257; --sp-ac-tx:#24374A; --sp-ac-suave:#E6EAEF;
+  --sp-bd:#DCD6CA; --sp-bd2:#EAE5DB;
+  --sp-n1:#E3E8ED; --sp-n1-tx:#16181C;
+  --sp-n2:#BFCAD6; --sp-n2-tx:#16181C;
+  --sp-n3:#8C9EB1; --sp-n3-tx:#16181C;
+  --sp-n4:#546B82; --sp-n4-tx:#FFFFFF;
+  --sp-n5:#2E4257; --sp-n5-tx:#FFFFFF;
+
+  --marfil:var(--sp-s1); --sup:var(--sp-s2);
+  --ink:var(--sp-tx); --ink-2:var(--sp-tx2);
+  --linea:var(--sp-bd); --linea-2:var(--sp-bd2);
+  --celeste:var(--sp-ac); --celeste-hi:var(--sp-ac-tx); --celeste-mark:var(--sp-ac);
+  --celeste-deep:var(--sp-ac-tx); --celeste-suave:var(--sp-ac-suave);
+  --petroleo:var(--sp-ac-tx); --petroleo-2:var(--sp-ac);
+  --verde:var(--sp-ac); --verde-hi:var(--sp-ac-tx); --verde-suave:var(--sp-ac-suave);
+  --amarillo:var(--sp-ac); --amarillo-hi:var(--sp-ac-tx);
+  --ambar:var(--sp-ac-tx); --azul:var(--sp-ac-tx); --indigo:var(--sp-ac-tx);
+  --rojo:#7A3B38;
+}
+body{ background:var(--sp-s1); color:var(--sp-tx); }
+/* La placa deja de ser una tarjeta oscura: es una hoja con filete. */
+.sp-fi-placa, .sp-fi-placa-cerrada{
+  background:var(--sp-s2) !important; color:var(--sp-tx) !important;
+  border:1px solid var(--sp-bd); box-shadow:none;
+}
+.sp-fi-placa *, .sp-fi-placa-cerrada *{ color:inherit; }
+.sp-fi-nombre, .sp-fi-vval{ color:var(--sp-tx) !important; }
+.sp-fi-vfalta, .sp-fi-vfaltan, .sp-fi-vlect, .sp-fi-vpal, .sp-fi-vbase,
+.sp-fi-alcance, .sp-fi-cuentas, .sp-fi-dias, .sp-fi-firma-w{ color:var(--sp-tx2) !important; }
+.sp-fi-vlabel, .sp-fi-cargo, .sp-fi-firma-t, .sp-fi-sello{ color:var(--sp-ac-tx) !important; }
+
+/* LOS DOS COLORES ESCRITOS A MANO, LLEVADOS A TOKEN (medido).
+   `--sp-amb` no estaba definido en ninguna parte: sus OCHO usos caían al
+   literal #b26a00, que sobre blanco da 4,24:1. Definirlo arregla los ocho de
+   una vez, que es la diferencia entre corregir en el token y parchear caja
+   por caja. Y `.sp-tag-ok` traía su verde #0E7C5A escrito en la regla.
+   Los dos pasan al ÚNICO acento: el estado ya lo dice el ✓ y su etiqueta,
+   así que el color no carga ningún significado solo. */
+:root{ --sp-amb: var(--sp-ac-tx); }
+.sp-tag-ok{ color: var(--sp-ac-tx) !important; border-color: var(--sp-bd) !important;
+            background: var(--sp-ac-suave) !important; }
+
+@media (min-width: 1100px) {
+  :root{
+    --max: 1320px;          /* 1120 era el tope en un monitor de 1920 */
+    --t-8: 17px;            /* cuerpo 17px */
+    --t-7: 19px;
+  }
+  body, .sp-env{ line-height: 1.6; }
+
+  /* LA MEDIDA SE ACOTA EN CARACTERES, no en píxeles: 72ch es el ancho al que
+     el ojo vuelve al renglón siguiente sin perderse. Las tablas, los
+     gráficos y las rejillas quedan FUERA a propósito: necesitan el ancho. */
+  .sp-fi-vfalta, .sp-fi-vlect, .sp-fi-vbase, .sp-fi-vpal, .sp-fi-vhecho-p,
+  .sp-fi-vlim, .sp-fi-falta, .sp-c3-falta, .sp-vdek, .sp-dek, .sp-edit-txt,
+  .sp-c1 > p, .sp-c2 > p, .sp-c3 > p, .sp-c4 > p, .sp-seccion > p,
+  .sp-fi-vcontra > p, .sp-c2-noval > p{
+    max-width: 72ch;
+  }
+  .sp-tabla, .sp-graficas, .sp-fuentes, .sp-fuentes-graf, figure, table, svg{
+    max-width: none;
+  }
+
+  /* EL RESUMEN QUEDA FIJO AL LADO. La columna izquierda de la rejilla de la
+     ficha ES el resumen —la placa con el veredicto—, así que no hace falta
+     inventar un índice: se fija el que ya existe. */
+  .sp-fi-rejilla{ grid-template-columns: 400px minmax(0, 1fr); gap: 36px; align-items: start; }
+  .sp-fi-rejilla > :first-child{
+    position: sticky; top: 72px; max-height: calc(100vh - 88px);
+    overflow-y: auto; overflow-x: hidden; scrollbar-width: thin;
+    min-width: 0;   /* sin esto la columna recorta el texto por la derecha */
+  }
+  /* La placa medía 431px dentro de una columna de 400 y el texto se cortaba
+     por la derecha. Se fuerza a la caja, medido y no a ojo. */
+  /* La placa medía 431px dentro de una columna de 400 y el texto se cortaba
+     por la derecha. La causa, medida y no adivinada: dentro hay filas flex
+     —`.sp-fi-firma`, `.sp-fi-placa-cab`— cuyos hijos nacen con
+     `min-width:auto`, así que no pueden encoger por debajo de su contenido y
+     empujan a la tarjeta entera. Se les quita el suelo y se deja que la fila
+     baje de renglón. */
+  .sp-fi-rejilla > :first-child,
+  .sp-fi-rejilla > :first-child *{ box-sizing: border-box; min-width: 0; }
+  .sp-fi-rejilla > :first-child > *{ max-width: 100%; width: 100%; }
+  .sp-fi-rejilla > :first-child .sp-fi-firma,
+  .sp-fi-rejilla > :first-child .sp-fi-placa-cab{ flex-wrap: wrap; }
+}
+
+/* ── UNA SUPERFICIE CLARA DENTRO DE UNA TARJETA OSCURA REPONE SU TINTA ──────
+   Es el defecto que Daniel vio: el cuadro «NO fija peldaño» pinta su propio
+   fondo y heredaba la tinta de la tarjeta que lo contiene. Se arregla por
+   CONTRATO y no caja por caja: toda superficie que pinte fondo propio
+   declara con qué tinta se lee encima. */
+.sp-fi-vhecho, .sp-fi-vcontra, .sp-c2-noval, .sp-c4-ccin{
+  color: var(--sp-tx); background: var(--sp-s3); border-color: var(--sp-bd);
+}
+.sp-fi-vhecho *, .sp-fi-vcontra *, .sp-c2-noval *, .sp-c4-ccin *{ color: inherit; }
+.sp-fi-vhecho > h4, .sp-c2-noval > b{ color: var(--sp-ac-tx); }
+.sp-c2-vpq, .sp-c2-novalg, .sp-c2-novalc, .sp-c2-revv{ color: var(--sp-tx2); }
+.sp-c2-novalg.urge{ color: var(--sp-ac-tx); font-weight: 700; }
+.sp-c3-esc-t.mal, .sp-c3-esc-t.mal span{ color: var(--sp-ac-tx); }
+
+/* ── LA ESCALA DE NIVELES ES SECUENCIAL Y DE UN SOLO TONO ───────────────────
+   Ni verde ni rojo: cinco pasos del mismo tono, del más claro al más oscuro.
+   El color NO lleva el significado solo —el peldaño va escrito al lado—, así
+   que la escala puede ser monocroma sin perder nada, y se distingue con
+   cualquier daltonismo porque lo que cambia es la luminosidad. */
+.sp-niv-1,.sp-esc-1{ background:var(--sp-n1); color:var(--sp-n1-tx); }
+.sp-niv-2,.sp-esc-2{ background:var(--sp-n2); color:var(--sp-n2-tx); }
+.sp-niv-3,.sp-esc-3{ background:var(--sp-n3); color:var(--sp-n3-tx); }
+.sp-niv-4,.sp-esc-4{ background:var(--sp-n4); color:var(--sp-n4-tx); }
+.sp-niv-5,.sp-esc-5{ background:var(--sp-n5); color:var(--sp-n5-tx); }

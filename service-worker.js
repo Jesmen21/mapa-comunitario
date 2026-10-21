@@ -1,4 +1,4 @@
-const URBIS_CACHE = 'urbis-v1137-la-vara-penal-la-regla-de-menores-y-el-cierre-anclado';
+const URBIS_CACHE = 'urbis-v1138-la-paleta-papel';
 const URBIS_ASSETS = [
   './',
   './index.html',
