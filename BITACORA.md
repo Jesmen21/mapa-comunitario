@@ -28421,3 +28421,96 @@ casillero y no su título, que es texto y se renombra.
   que ESTÉ, no que sea cierta (v1008).
 * **No mueve ningún peldaño.** `cerrado en v1132 · medido y declinado`: el
   veredicto sigue en piso «No puede ser mejor que Poco fiable».
+
+## v1133 · ese contenido no espera, sale
+
+El usuario pidió eliminar del repositorio **todo lo referente a revisión o
+consulta de abogado** —nombró el checklist de prelanzamiento, `CLAUDE.md`, la
+bitácora y cualquier otro archivo—, con una regla al lado: *si hay un contenido
+que solo se pueda publicar con asesoría legal, no se publica: sale del módulo.*
+
+### Lo que la medición encontró: NADA que quitar, y eso también es el resultado
+
+Antes de borrar se contó, que es la regla de la casa (v916). El vocabulario del
+abogado —`abogado`, `asesoría legal`, `asesoría jurídica`, `revisión jurídica`,
+`concepto jurídico`, `aval legal`, `visto bueno jurídico`, `apoderado`— aparece
+**48 veces** en los archivos versionados, repartidas así:
+
+| Dónde | Veces | Qué es |
+|---|---|---|
+| `assets/data/seguimiento-presidencial.json` | 43 | la firma privada del presidente, el abogado de Monsalve, la abogada designada a Colpensiones, el vocero abogado, el secretario jurídico, el equipo jurídico que contesta |
+| `divulgacion/expediente.html` | 2 | los mismos hechos, contados para el papel |
+| `js/13i-vitrina.js` | 2 | el emoji «⚖️» del rubro «servicios profesionales» de la vitrina, que es otro módulo |
+| `BITACORA.md` | 1 | la narración de que esa firma es PRIVADA, que es justo la distinción que la entrada hace |
+
+**Las 48 son CONTENIDO documentado: ninguna es un requisito de proceso.** No hay
+checklist de prelanzamiento en el repositorio —se buscó por sus cinco nombres
+posibles y por la forma, no solo por la palabra—, ni un renglón en `CLAUDE.md`,
+en `BITACORA.md` o en `DECISIONES-PENDIENTES.md` que condicione publicar algo a
+que un abogado lo mire. **Menciones eliminadas: 0. Contenido retirado del
+módulo por este criterio: 0.** Borrar cualquiera de las 48 habría sido borrar un
+hecho con fuente porque la palabra incomoda, que es lo contrario de la regla.
+
+Y conviene decir qué NO quiere decir ese cero: no quiere decir que la decisión
+no cueste nada. Quiere decir que el módulo ya estaba escrito así, y lo que la
+tanda puede hacer no es borrar sino **impedir que entre**.
+
+### Lo que sí se hizo: la guarda, aparte de la del trámite
+
+La condición de asesoría legal **no es un trámite**, aunque se le parezca, y por
+eso va en su propia comprobación (v899): un trámite espera la respuesta de una
+entidad y mientras tanto el módulo publica lo que tiene; una condición de
+asesoría legal dice que hay contenido escrito que NO se publica hasta que
+alguien de afuera lo apruebe. Eso no es un pendiente, es **un veto puesto en una
+lista**, y una lista con un veto adentro parece trabajo y es una espera sin
+dueño — que es exactamente lo que la v1122 sacó de este módulo.
+
+Reutiliza la lista de superficies que la v1122 ya deriva —las reglas de los
+trámites con sus cuatro campos, sus notas, sus últimos intentos, el cuerpo de
+`controlDeCalidad` y `DECISIONES-PENDIENTES.md`: **20 superficies**— y por la
+misma razón que aquella: **el discriminante es la SUPERFICIE y no la palabra**
+(v895, v1116). Barrer el repositorio entero daría 48 excepciones y la lista que
+envejece hasta no significar nada.
+
+**Demostrada en rojo, con tres inyecciones y la tercera al revés:**
+
+| Inyección | Dónde | Resultado |
+|---|---|---|
+| 1 | `tramites.B/media-hist.porQueLimita` + «Mientras un abogado no lo revise, esto no se publica» | **ROJO**, con la superficie nombrada |
+| 2 | un literal dentro de `controlDeCalidad` con «falta el concepto jurídico de un abogado» | **ROJO** |
+| 3 | «El abogado y apoderado del denunciante radicó la queja» en el `detalle` de una entrada | **VERDE** — es contenido, y la guarda no lo persigue |
+
+La 2 se intentó primero como COMENTARIO y salió verde: `soloCodigo` lo quita, y
+eso está bien —la guarda lee el código y no los comentarios (v926)—, pero la
+inyección no era fiel, porque un pendiente de verdad vive en un literal. Se
+rehízo (v993). Y la 3 es la mitad que de verdad discrimina: sin ella, una guarda
+que se pusiera roja con cualquier «abogado» pasaría por buena midiendo el
+vocabulario del registro.
+
+### Lo que queda en su lugar, y no cuesta nada
+
+Las tres reglas que el usuario pidió conservar ya estaban en pie y se
+comprobaron una por una, no se dieron por hechas:
+
+* **El sitio afirma hecho, fecha, fuente y estado procesal** — los cinco estados
+  de `casos.lista` y sus pruebas, vigilados en los dos registros.
+* **Nunca atribuye un delito a una persona identificada** — la guarda penal de
+  la v1118 sobre las seis etiquetas, y la asimetría de la v1132: *a una
+  afirmación acusatoria no se le concede exención nunca.*
+* **El canal de rectificación no se toca** — `bloqueRectificacion` sigue entero,
+  con su botón, su plazo, su registro de correcciones y la línea que explica por
+  qué la sección se publica vacía. Es, además, lo que hace que una corrección no
+  necesite un abogado para llegar.
+
+### Lo que esta versión NO hace
+
+* **No toca ninguna pantalla.** Nada de lo que el módulo imprime cambió, así que
+  no hay papel nuevo que leer; lo que se compuso para comprobarlo fue el bloque
+  de rectificación, para verificar que siguiera entero.
+  `cerrado en v1133 · medido y declinado`
+* **No mueve ningún peldaño.** El veredicto sigue en piso «No puede ser mejor
+  que Poco fiable». `cerrado en v1133 · medido y declinado`
+* **No persigue la condición escrita con otras palabras.** Una guarda que
+  adivinara la paráfrasis daría falsos positivos (v895); comprueba el
+  vocabulario sobre las superficies de pendiente, y de eso responde.
+  `pendiente`

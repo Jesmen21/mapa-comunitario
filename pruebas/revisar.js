@@ -2658,6 +2658,47 @@ console.log('\n  -- la ficha del gobernante --');
           'campos, las notas, los intentos, los casilleros del control y DECISIONES-PENDIENTES.md— y ' +
           'ninguna pide un trámite. No cubre las entradas del registro, donde esas mismas palabras son ' +
           'el hecho documentado: medido, 26 de 30 apariciones son contenido y no pendiente');
+
+    /* Y LA TERCERA MITAD: NINGÚN PENDIENTE ESPERA UNA REVISIÓN DE ABOGADO.
+       Va aparte del deber de arriba porque pide otra ACCIÓN (v899). Un
+       trámite espera la respuesta de una entidad y mientras tanto el módulo
+       publica lo que tiene; una condición de asesoría legal dice que hay
+       contenido escrito que NO se publica hasta que alguien de afuera lo
+       apruebe — y eso no es un pendiente, es un veto puesto en una lista.
+       La decisión del usuario, el 21 de octubre de 2026, es que ese
+       contenido no espera: sale del módulo. Lo que queda en su lugar no
+       cuesta nada y ya está en pie: el sitio afirma hecho, fecha, fuente y
+       estado procesal; no le atribuye un delito a una persona identificada;
+       y la guarda penal con su asimetría de exención siguen igual.
+
+       MEDIDO ANTES DE ESCRIBIRLA: el vocabulario del abogado aparece 48
+       veces fuera de esta guarda y las 48 son CONTENIDO —la firma
+       privada del presidente, el abogado de Monsalve, la abogada designada a
+       Colpensiones, el emoji de «servicios profesionales» de otro módulo—.
+       Ninguna es un requisito de proceso, así que esta guarda nace sin nada
+       que rechazar y su verde dice eso. Por la misma razón el barrido va
+       sobre las superficies de PENDIENTE y ninguna más (v895, v1116): sobre
+       el repositorio entero serían 48 excepciones y la lista que envejece.
+
+       DE QUÉ NO RESPONDE (v945): de las entradas del registro ni del
+       documento de divulgación, donde un abogado es el hecho que se
+       documenta; y de que alguien escriba la condición con otras palabras.
+       Comprueba que las superficies de pendiente no la declaren.
+
+       VA EN ROJO Y NO CON `?` (v970): mide esquema y código sobre una lista
+       de superficies derivada, no material del registro. */
+    const ASESORIA = /abogad[oa]|asesor[ií]a (legal|jur[ií]dica)|asesor(ar|ía)se (legal|jur)|revisi[oó]n (legal|jur[ií]dica)|concepto jur[ií]dico|aval (legal|jur[ií]dico)|visto bueno (legal|jur[ií]dico)|apoderad[oa]/i;
+    const conAsesoria = supT.filter((x) => ASESORIA.test(x[1])).map((x) => x[0]);
+    comprobar('y ninguna condiciona lo que se publica a una revisión de abogado',
+      supT.length >= 10 && !!cuerpoCtrl && conAsesoria.length === 0,
+      !cuerpoCtrl ? 'no se encontró controlDeCalidad: la lista de casilleros quedaría sin barrer'
+        : supT.length < 10 ? 'solo ' + supT.length + ' superficies: la guarda se quedó sin material'
+        : conAsesoria.length ? 'condiciona la publicación a una asesoría legal: ' + conAsesoria.join(' · ') +
+          ' — ese contenido no espera a un tercero, sale del módulo'
+        : 'las mismas ' + supT.length + ' superficies, y ninguna condiciona lo publicado a un abogado. ' +
+          'No cubre las entradas del registro ni la carpeta de divulgación, donde un abogado es el hecho ' +
+          'documentado: medido, las 48 apariciones de fuera de esta guarda son contenido y ninguna es un ' +
+          'requisito de proceso');
   }
 
 

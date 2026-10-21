@@ -1208,6 +1208,24 @@ sección al final de este archivo.
   pendiente—, así que barrerlo entero sería la lista de excepciones que
   envejece. Medida sobre las superficies de pendiente y solo sobre ellas, dio
   2 aciertos de 4.
+* **Y ningún pendiente espera una REVISIÓN DE ABOGADO: ese contenido no
+  espera, sale** (v1122, v1133). Lo decidió el usuario y queda citado: *si hay
+  un contenido que solo se pueda publicar con asesoría legal, no se publica:
+  sale del módulo.* Es la regla de arriba llevada a su caso extremo y pide otra
+  acción, por eso va aparte (v899): un trámite espera la respuesta de una
+  entidad y mientras tanto el módulo publica lo que tiene; una condición de
+  asesoría legal es un veto de afuera puesto en una lista, y una lista con un
+  veto adentro parece trabajo y es una espera sin dueño. **Lo que queda en su
+  lugar no cuesta nada y ya está en pie**: el sitio afirma hecho, fecha, fuente
+  y estado procesal; no le atribuye un delito a una persona identificada; la
+  guarda penal de la v1118 y la asimetría de la exención de la v1132 siguen
+  igual; y el canal de rectificación no se toca — es lo que hace que una
+  corrección no necesite un abogado para llegar. Medido al escribirla: el
+  vocabulario del abogado aparece **48 veces** en el repositorio y **las 48 son
+  CONTENIDO** —la firma privada del presidente, el abogado de un testigo, una
+  abogada designada a Colpensiones—, así que la guarda barre las superficies de
+  PENDIENTE y ninguna más; sobre el repositorio entero serían 48 excepciones y
+  la lista que envejece (v895, v1116).
 * **Un intento que falla se FECHA, con su canal y su razón** (v1055, v1065).
   Y **cuando NO se ha intentado, eso también se escribe** (v1076): la v1065
   imprimía la línea solo si había intento, así que en los ejes sin ninguno
