@@ -13,7 +13,7 @@
 
    La versión va acá y en vision-territorial.html, idéntica, como en los
    otros siete archivos de versión del sitio: revisar.js lo comprueba. */
-const VT_CACHE = 'urbis-vt-v1131-seguimiento-presidencial-museo-julito-bustos-antiterrorista';
+const VT_CACHE = 'urbis-vt-v1132-la-exencion-por-afirmacion-y-nunca-por-palabra';
 const VT_ASSETS = [
   './vision-territorial.html',
   './css/90-vt.css',

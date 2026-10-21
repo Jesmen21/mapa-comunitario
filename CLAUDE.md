@@ -1123,6 +1123,34 @@ sección al final de este archivo.
   que no sea un `<details>` y que su letra no sea más chica **que la del
   cuerpo** —comparada contra el cuerpo y no contra un número escrito en la
   guarda, que es como una aserción envejece (v890)—.
+* **Y el DISCRIMINADOR de cuándo una palabra penal no califica, para que la
+  próxima no pida juicio** (v1118, v1127, v1128). Lo fijó el usuario y queda
+  citado:
+
+  > Una palabra de la lista penal **no** califica conducta cuando **(a)**
+  > nombra una categoría estadística o una serie oficial, **y (b)** la
+  > afirmación no tiene sujeto —ninguna persona, unidad, entidad o cargo
+  > identificable a quien se le atribuya el hecho—. Si hay sujeto, la guarda
+  > muerde y **la salida es reescribir la afirmación, nunca exceptuarla.**
+
+  **Y la asimetría, que es la parte que importa:** *una exención solo es
+  concedible a una afirmación que no atribuye conducta a nadie. A una
+  afirmación acusatoria no se le concede exención nunca, ni con razón
+  escrita; ahí el único camino es reescribirla en hecho y estado procesal.*
+  Por eso `sinSujeto` es un **campo exigido** y no un comentario: en prosa
+  suelta «tiene razón escrita» se cumple con cualquier párrafo, y en tres
+  campos declarados —`categoriaEstadistica`, `sinSujeto`, `razon`— hay que
+  decir las tres cosas que la hacen válida y cada una se discute aparte.
+  **Tres condiciones hacen que la exención sea un costo y no una salida:**
+  va por AFIRMACIÓN y nunca por palabra —una palabra exenta deja pasar todo
+  lo que venga después, una afirmación exenta solo se aplica a sí misma, y
+  hay una aserción que se pone roja si alguien convierte lo segundo en lo
+  primero—; **sin sus tres partes la afirmación NO publica**, se retiene y en
+  su lugar sale la marca que dice qué falta (callarla sería la clase C); y el
+  control **nombra cada exenta con su FRASE**, no con un número, porque un
+  contador se ignora y una frase se discute. Y el encierro: la exención **no
+  alcanza a la otra superficie** —el eje D mide con la lista entera y sin
+  exención posible—, así que por construcción no abre allá ninguna puerta.
 * **Y una PROHIBICIÓN de clase se exime por ÍTEM y con su razón, nunca por
   regla** (v1094, v1109, v1127). La guarda penal de la v1118 marcó
   «los homicidios de agosto cayeron 6 %», y era un falso positivo real: ahí

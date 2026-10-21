@@ -28325,3 +28325,99 @@ CUERPO, no contra un número escrito en la guarda.
 * **No resuelve la identidad de objeto de la contradicción del mérito.**
   `pendiente`: tiene fecha de revisión el 21 de noviembre de 2026, y la
   afirmación que se apoya en ella lo dice.
+
+## v1132 · la exención es por afirmación y nunca por palabra
+
+**El usuario confirmó el juicio de la v1127 y lo endureció.** La frase de los
+homicidios se queda —su exención no aflojó la guarda, la precisó— y añadió la
+razón que yo no había visto: **esa frase es FAVORABLE al gobierno**, y está en
+la sección que existe para probar imparcialidad. Quitarla por una guarda mal
+calibrada habría sido el módulo censurándose justo donde el dato no le convenía
+a su autor.
+
+Pero una exención sin fricción se vuelve la puerta de salida, así que van sus
+tres condiciones.
+
+### Las tres partes, declaradas y no en prosa
+
+La razón era un párrafo. **En prosa suelta «tiene razón escrita» se cumple con
+cualquier cosa**; ahora son tres campos y cada uno se discute aparte:
+`categoriaEstadistica` —la palabra nombra una serie oficial—, **`sinSujeto`**
+—la afirmación no atribuye conducta a nadie— y `razon`. El segundo es el que
+cierra la grieta, y por eso es un campo exigido y no un comentario.
+
+**Y sin las tres, la afirmación NO publica.** Se RETIENE: su texto no sale y en
+su lugar va la marca que dice cuál parte falta. Eso convierte la exención en un
+costo. Retirarla en silencio sería la clase C, así que la marca se ve.
+
+**El control la nombra con su FRASE, no con su cuenta.** El casillero imprime
+la afirmación entera y sus tres partes — un contador que diga «1 exención» se
+ignora; una frase se puede discutir, que es el punto de concederla en público.
+
+### El discriminador, para que la próxima no pida juicio
+
+Queda en `CLAUDE.md` con sus dos condiciones y su asimetría: **a una afirmación
+acusatoria no se le concede exención nunca, ni con razón escrita.** Ahí el
+único camino es reescribirla en hecho y estado procesal.
+
+### La corrección del Congreso, y lo que destapó
+
+El editorial decía «el Congreso le derrotó la objeción», que **insinúa que la
+ley de mérito ya rige — y no rige**. Corregido a la frase completa: las
+plenarias insistieron, el asunto pasó a la Corte, que no falla, así que la ley
+no rige.
+
+Y el usuario pidió buscar si otra entrada tenía el mismo defecto. **La tiene, y
+es la original de la objeción.** Su contrapunto dice que los reparos los
+resuelve la Corte «si el Congreso insiste, y **ninguna de las dos cosas ha
+pasado**»: cierto el 21 de agosto, falso desde el 24 de septiembre. El texto no
+se reescribe —es lo que esa entrada encontró en su fecha (v1115)— y lo que se
+agrega es el estado de hoy, con la mitad que sigue siendo cierta: la Corte no
+ha fallado.
+
+### Las dos mediciones que pidió
+
+**1 · ¿Se perdió algo de la v1126 en la v1127?** No, y va con el conteo:
+`git merge-base` confirma que la v1126 es ancestro de la v1127; cero archivos
+desaparecieron; y comparando entrada por entrada **con una llave estable
+—fecha + título—** no falta ninguna de las 265, ni en la v1127 ni hoy en la
+v1131. Las dos únicas que cambiaron de contenido cambiaron **solo** por la
+clave `id` que esa tanda les agregó: cero claves quitadas, cero valores
+alterados. Las dos alertas que hoy no están las retiró la v1128 por vencidas,
+que es la rutina haciendo su trabajo.
+
+**Y una corrección de mi propio método:** la primera medición dio dos
+«perdidas» que eran un falso positivo mío — había usado `id or titulo` como
+llave, y esas dos son justamente las que ganaron `id`. La llave de una
+comparación no puede ser el campo que la tanda tocó.
+
+**2 · El `?` sin material** es `MATERIAL · entradas declarantes sobre las que
+la comprobación no corre`, la guarda de rol de la v966. Le falta material
+porque **no hay ninguno que le falte**: 11 entradas declaran rol, 0 con esquema
+antiguo y 0 sin roles. Su cero es el estado BUENO, que es por lo que va con `?`
+y no en rojo (v970).
+
+### Demostrada en rojo, con cinco inyecciones fieles
+
+| Inyección | Resultado |
+|---|---|
+| la exención vuelve a ser prosa suelta, como en la v1127 | **ROJO** · nombra las tres partes que faltan |
+| la exención se queda sin `sinSujeto` | **ROJO** · la nombra |
+| **la grieta:** alguien la convierte en lista de PALABRAS exentas | **ROJO** |
+| la retenida se publica igual | **ROJO** · «el pintor no imprime el texto de una retenida» |
+| el casillero vuelve a imprimir solo la cuenta | **ROJO**, tras arreglar la aserción |
+
+771 palomitas. **La quinta salió VERDE la primera vez**: nada medía la tercera
+condición del usuario —que el control nombre la frase y no el número—, y la
+inyección se limitó a renombrar el casillero. Lo que faltaba no era la
+inyección: era lo que la aserción medía (v1029). Ahora mide el DETALLE del
+casillero y no su título, que es texto y se renombra.
+
+### Lo que esta versión NO hace
+
+* **No automatiza la detección de sujeto.** `pendiente`: decidir si una
+  afirmación atribuye conducta a alguien no se puede medir sin falsos
+  positivos (v895), así que se declara en `sinSujeto` y la guarda comprueba
+  que ESTÉ, no que sea cierta (v1008).
+* **No mueve ningún peldaño.** `cerrado en v1132 · medido y declinado`: el
+  veredicto sigue en piso «No puede ser mejor que Poco fiable».

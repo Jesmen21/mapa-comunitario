@@ -3727,9 +3727,16 @@ console.log('\n  -- la ficha del gobernante --');
            se declara una por una, se cuenta y se publica.
            Y NO ALCANZA AL EJE D: su guarda mide con la lista entera y sin
            exención posible, así que esto no abre allá ninguna puerta. */
-        const razon = String(a._noEsCalificacion || '').trim();
-        if (razon.length > 120) exentas.push(a.k + ' → ' + px);
-        else conPenal.push(a.k + ' → ' + px + (razon ? ' (razón demasiado corta)' : ''));
+        /* LAS TRES PARTES, declaradas y no en prosa suelta (v1128). En un
+           solo párrafo, «tiene razón escrita» se cumple con cualquier cosa;
+           en tres campos hay que decir las tres cosas que la hacen válida y
+           cada una se discute por separado. */
+        const ex = a._noEsCalificacion;
+        const faltan = ['categoriaEstadistica', 'sinSujeto', 'razon']
+          .filter((q) => String((ex || {})[q] || '').trim().length < 40);
+        if (ex && !faltan.length) exentas.push(a.k + ' → ' + px);
+        else conPenal.push(a.k + ' → ' + px +
+          (ex ? ' (su exención no declara ' + faltan.join(' ni ') + ')' : ' (sin exención declarada)'));
       }));
       comprobar('ninguna afirmación del editorial califica penalmente, o declara por qué no lo hace',
         PEN.length >= 6 && conPenal.length === 0,
@@ -3744,6 +3751,68 @@ console.log('\n  -- la ficha del gobernante --');
             '. Es la MISMA lista que lee el eje D, en un solo sitio (v879)');
 
       /* 3 y 4 · el cierre llega visible, y nada lo alimenta. */
+      /* LA EXENCIÓN ES POR AFIRMACIÓN, NUNCA POR PALABRA (v1128). Una palabra
+         exenta deja pasar TODO lo que venga después —cada afirmación futura
+         que la use entra gratis—; una afirmación exenta solo se aplica a sí
+         misma. Esta aserción existe para que nadie convierta lo segundo en lo
+         primero: si aparece una lista de palabras exentas, o si la exención
+         se lee de algo que no sea la propia afirmación, se pone roja.
+
+         Y LA ASIMETRÍA, que es lo que impide que sea una grieta: la exención
+         solo se le concede a una afirmación SIN SUJETO. A una acusatoria no
+         se le concede nunca, ni con razón escrita, y ahí el único camino es
+         reescribirla en hecho y estado procesal. Por eso `sinSujeto` es un
+         campo exigido y no un comentario.
+
+         Y SIN LAS TRES PARTES NO PUBLICA: la afirmación se RETIENE y en su
+         lugar sale la marca que dice qué falta. Eso convierte la exención en
+         un costo. Retirarla en silencio sería la clase C. */
+      const mitadesEx = [
+        ['la exención se lee de la propia afirmación', /var ex = a\._noEsCalificacion \|\| null;/.test(j70v)],
+        ['y exige sus TRES partes, `sinSujeto` entre ellas',
+         /PARTES_EX = \['categoriaEstadistica', 'sinSujeto', 'razon'\]/.test(j70v)],
+        ['y sin las tres la afirmación se RETIENE', /retenida: !!\(penal\.length && faltanEx\.length\)/.test(j70v)],
+        ['y el pintor no imprime el texto de una retenida', /if \(ch\.af\.retenida\) \{/.test(j70v)],
+        /* Y NINGUNA LISTA DE PALABRAS EXENTAS, por ningún nombre. Se persigue
+           la FORMA —una constante de palabras junto a la lista penal— y no un
+           nombre concreto (v874, v895). */
+        ['y no existe ninguna lista de PALABRAS exentas',
+         !/(EXENT|EXCEP|PERMITID|BLANCA|WHITELIST)[A-Z_]*\s*=\s*\[/.test(j70v)]
+      ];
+      const malEx = mitadesEx.filter((x) => !x[1]).map((x) => x[0]);
+      comprobar('la exención penal es por AFIRMACIÓN y nunca por palabra, y sin sus tres partes no publica',
+        malEx.length === 0,
+        malEx.length ? 'falla: ' + malEx.join(' · ')
+          : 'se lee de la propia afirmación, exige categoría estadística, SIN SUJETO y razón, retiene la que no ' +
+            'las traiga, y no hay ninguna lista de palabras exentas — una palabra exenta dejaría pasar todo lo ' +
+            'que venga después, una afirmación exenta solo se aplica a sí misma');
+
+      /* Y EL CONTROL NOMBRA CADA EXENTA CON SU FRASE, no con un número
+         (v1128). Un contador que diga «1 exención» se ignora; una lista que
+         diga QUÉ frase se exceptuó y POR QUÉ se puede discutir, que es el
+         punto de concederla en público. La aserción lo mide sobre el
+         CASILLERO —que su detalle se arme con `a.dice` y con las partes de
+         la exención— y no sobre su título, que es texto y se renombra.
+         Lo delató una inyección que renombró el casillero y salió VERDE: lo
+         que faltaba no era la inyección, era lo que esto mide (v1029). */
+      const cajaEx = (j70v.match(/caja\('Toda exenci[^']*',[\s\S]*?'archivo-aqui',[\s\S]*?\);/) || [''])[0];
+      const mitadesCx = [
+        ['el casillero de exenciones existe', !!cajaEx],
+        ['y su detalle imprime la FRASE de cada exenta', /\(ed\.exentas \|\| \[\]\)\.map/.test(cajaEx) &&
+         /'«' \+ a\.dice \+ '»/.test(cajaEx)],
+        ['y las tres partes de su exención', /categoriaEstadistica/.test(cajaEx) && /sinSujeto/.test(cajaEx)],
+        ['y nombra también las RETENIDAS con lo que les falta',
+         /\(ed\.retenidas \|\| \[\]\)\.map/.test(cajaEx) && /faltanEx/.test(cajaEx)],
+        ['y trae la redacción de CERO, para el día que no haya ninguna',
+         /ninguna afirmaci[oó]n del editorial nombra una categor[ií]a penal/.test(cajaEx)]
+      ];
+      const malCx = mitadesCx.filter((x) => !x[1]).map((x) => x[0]);
+      comprobar('y el control NOMBRA cada exención con su frase, no solo con su cuenta',
+        malCx.length === 0,
+        malCx.length ? 'falla: ' + malCx.join(' · ')
+          : 'el casillero imprime la frase exceptuada, sus tres partes, las retenidas con lo que les falta, y ' +
+            'la redacción de cero — un número se ignora, una frase se discute');
+
       const mitadesEd = [
         ['el cierre lo pinta la misma función que el cuerpo', /var cierre = larga \? ed\.cuerpo\.largaCierre/.test(j70v)],
         ['y va en el mismo <section>, sin plegar', /cj = el\('div', 'sp-edit-cierre'\)/.test(j70v) &&

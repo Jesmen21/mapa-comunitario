@@ -2592,3 +2592,10 @@ a.sp-fuente:hover svg{ color:var(--verde-hi); }
 .sp-edit-nota{ font-style:italic; }
 .sp-edit-regla{ font-family:system-ui,sans-serif; font-size:var(--t-8); color:var(--ink-2);
   margin:.9rem 0 0; }
+
+/* Una afirmación RETENIDA (v1128): nombra una categoría penal y su exención
+   no está completa, así que su texto no se publica y en su lugar va la marca.
+   Se ve, porque retirarla en silencio se leería como si nunca se hubiera
+   escrito. */
+.sp-edit-reten{ background:#FBE9E7; border-bottom:2px solid #C0392B; font-style:italic;
+  font-family:system-ui,sans-serif; font-size:var(--t-8); padding:0 .2rem; }

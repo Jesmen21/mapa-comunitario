@@ -4959,14 +4959,40 @@
       });
       /* UN TIPO PENAL NO SE NOMBRA, tampoco acá (v1118, v1125). Se mide sobre
          la afirmación y no sobre el texto entero, para que el detalle diga
-         CUÁL frase lo trae. */
+         CUÁL frase lo trae.
+
+         LA EXENCIÓN ES POR AFIRMACIÓN Y EN TRES PARTES DECLARADAS (v1128).
+         En prosa suelta, «tiene razón escrita» se cumple con cualquier
+         párrafo; en tres campos, quien la concede tiene que decir las tres
+         cosas que la hacen válida y cada una se puede discutir por separado.
+         Son las mismas tres de la regla:
+           · `categoriaEstadistica` — la palabra nombra una serie oficial;
+           · `sinSujeto` — la afirmación no atribuye conducta a NADIE;
+           · `razon` — por qué eso la saca de la prohibición.
+         Que sean CIERTAS no lo puede comprobar nadie (v1008); que estén, sí.
+
+         Y SIN LAS TRES, LA AFIRMACIÓN NO PUBLICA. Eso es lo que convierte la
+         exención en un costo y no en un atajo: no basta con que la razón se
+         PUEDA escribir — si falta, la frase se retiene y en su lugar sale la
+         marca que dice por qué. Falla cerrado (v880), y se ve: retirarla en
+         silencio sería la clase C. */
       var penal = ETIQUETA_PENAL.filter(function (x) {
         return new RegExp(x, 'i').test(String(a.dice || ''));
+      });
+      var ex = a._noEsCalificacion || null;
+      var PARTES_EX = ['categoriaEstadistica', 'sinSujeto', 'razon'];
+      var faltanEx = PARTES_EX.filter(function (q) {
+        return String((ex || {})[q] || '').trim().length < 40;
       });
       var o = { k: a.k, dice: String(a.dice || ''), nota: String(a.nota || ''), bases: bases,
                 sinBase: !bases.length || bases.some(function (x) { return !x.hallado; }),
                 flojas: bases.filter(function (x) { return x.flojo; }).length,
-                penal: penal };
+                penal: penal, exencion: penal.length ? (ex || null) : null,
+                faltanEx: penal.length ? faltanEx : [],
+                /* RETENIDA: nombra una categoría penal y la exención no está
+                   completa. No se pinta su texto, y la marca dice cuál de las
+                   tres partes falta. */
+                retenida: !!(penal.length && faltanEx.length) };
       porK[a.k] = o;
       return o;
     });
@@ -4998,6 +5024,11 @@
       sinBase: afirm.filter(function (a) { return a.sinBase; }).length,
       flojas: afirm.filter(function (a) { return a.flojas; }).length,
       conPenal: afirm.filter(function (a) { return a.penal.length; }).length,
+      /* Las EXENTAS viajan con su texto y no solo con su cuenta (v1128): un
+         contador que diga «1 exención» se ignora; una lista que diga qué
+         frase se exceptuó y por qué, se discute. */
+      exentas: afirm.filter(function (a) { return a.penal.length && !a.retenida; }),
+      retenidas: afirm.filter(function (a) { return a.retenida; }),
       /* Compatibilidad con el casillero del control, que cuenta huérfanos. */
       apoyos: afirm.reduce(function (ac, a) { return ac.concat(a.bases); }, []),
       huerfanos: afirm.reduce(function (ac, a) {
@@ -5160,6 +5191,44 @@
                 : 'no hay editorial, y la sección lo dice',
          'quien-firma',
          'Firmar el editorial con nombre y fecha, o retirarlo.');
+
+    /* ── CADA EXENCIÓN PENAL, CON SU TEXTO (v1128) ────────────────────────
+       Un contador que diga «1 exención» se puede ignorar; una lista que diga
+       QUÉ FRASE se exceptuó y POR QUÉ, no — y es lo que permite que el lector
+       la discuta, que es el punto. Por eso el casillero imprime la afirmación
+       entera y las tres partes de su exención, no un número.
+
+       Y las dos redacciones (v970): la de cero dice que ninguna se exceptuó,
+       que es el estado bueno, y la de N las nombra. La de cero es la que hace
+       falta el día que alguien retire la única que hay. */
+    var exN = (ed.exentas || []).length, retN = (ed.retenidas || []).length;
+    caja('Toda exención a la prohibición penal va nombrada, con su frase y sus tres partes',
+         retN ? 'falla' : 'pasa',
+         retN
+           ? cn(retN, 'afirmación nombra una categoría penal y NO publica porque su exención está incompleta',
+                'afirmaciones nombran una categoría penal y NO publican porque su exención está incompleta') +
+             ': ' + (ed.retenidas || []).map(function (a) {
+               return '«' + a.dice + '» — le falta declarar ' + a.faltanEx.join(' y ');
+             }).join(' · ')
+           : (exN
+               ? cn(exN, 'exención concedida, nombrada con su frase', 'exenciones concedidas, nombradas con su frase') +
+                 ': ' + (ed.exentas || []).map(function (a) {
+                   /* `exencion` está garantizada acá —una afirmación solo entra
+                      en `exentas` si trae sus tres partes con contenido— pero no
+                      se lee con `|| {}`: eso imprimiría «undefined» el día que
+                      la garantía cambie, y hay una guarda que lo persigue. */
+                   var x = a.exencion || null;
+                   if (!x) return '«' + a.dice + '» · su exención no se pudo leer';
+                   return '«' + a.dice + '» · nombra «' + a.penal.join('», «') + '» · ' +
+                          'categoría estadística: ' + x.categoriaEstadistica +
+                          ' · sin sujeto: ' + x.sinSujeto;
+                 }).join(' · ')
+               : 'ninguna afirmación del editorial nombra una categoría penal, así que no hay ninguna ' +
+                 'exención concedida. Es el estado bueno, y se dice en vez de desaparecer'),
+         'archivo-aqui',
+         'Completar las tres partes de la exención —categoría estadística, sin sujeto y razón— o reescribir la ' +
+         'afirmación. A una afirmación que atribuya conducta a alguien NO se le concede exención nunca: ahí el ' +
+         'único camino es reescribirla en hecho y estado procesal.');
 
     /* Los que este módulo no puede correr. Se nombran con lo que haría falta,
        en vez de darlos por buenos. */
@@ -8813,6 +8882,19 @@
           return;
         }
         if (!ch.af) { pEl.appendChild(document.createTextNode(ch.t)); return; }
+        /* RETENIDA (v1128): nombra una categoría penal sin la exención
+           completa, así que su texto NO sale. En su lugar va la marca, que
+           dice qué falta — retirarla en silencio se leería igual que si la
+           frase nunca se hubiera escrito. */
+        if (ch.af.retenida) {
+          var ret = el('span', 'sp-edit-reten',
+            '[afirmación retenida: nombra una categoría penal y su exención no declara ' +
+            ch.af.faltanEx.join(' ni ') + ']');
+          ret.title = 'Una exención se concede en tres partes —categoría estadística, sin sujeto y razón— ' +
+                      'y sin las tres la afirmación no se publica.';
+          pEl.appendChild(ret);
+          return;
+        }
         var b0 = (ch.af.bases || [])[0];
         var sp = el('span', 'sp-edit-af' + (ch.af.flojas ? ' flojo' : '') +
                             (ch.af.sinBase ? ' sinbase' : ''), ch.t);

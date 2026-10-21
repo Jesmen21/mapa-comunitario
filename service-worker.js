@@ -1,4 +1,4 @@
-const URBIS_CACHE = 'urbis-v1131-seguimiento-presidencial-museo-julito-bustos-antiterrorista';
+const URBIS_CACHE = 'urbis-v1132-la-exencion-por-afirmacion-y-nunca-por-palabra';
 const URBIS_ASSETS = [
   './',
   './index.html',

@@ -8483,6 +8483,12 @@
           "rol": "efecto",
           "u": "https://www.eltiempo.com/politica/congreso/congreso-alista-subcomisiones-para-evaluar-las-objeciones-presidenciales-a-la-ley-del-senador-hernan-cadavid-sobre-requisitos-en-altos-cargos-publicos-3580679"
         }
+      ],
+      "revisionPosterior": [
+        {
+          "que": "actualizacion",
+          "texto": "EL HECHO SIGUIÓ, y una frase de esta entrada envejeció. El contrapunto de arriba dice que «los reparos de constitucionalidad los resuelve la Corte Constitucional si el Congreso insiste, y ninguna de las dos cosas ha pasado»: eso era cierto el 21 de agosto y dejó de serlo el 24 de septiembre, cuando las plenarias de Senado y Cámara acogieron el informe que rechazó los reparos del Ejecutivo e INSISTIERON en el texto. El desenlace está en `congreso-rechaza-objecion-ley-merito`. EL TEXTO DE ARRIBA NO SE REESCRIBE —es el registro de lo que esta entrada encontró en su fecha (v1115)— y lo que no puede faltar es el estado de hoy, que es este. Y lo que SIGUE siendo cierto, que es la mitad que importa: la Corte Constitucional todavía NO ha fallado, así que la ley NO rige. Decir «el Congreso derrotó la objeción» sin esa segunda mitad insinúa que la prohibición de bajar requisitos ya está vigente, y no lo está."
+        }
       ]
     },
     {
@@ -12473,11 +12479,12 @@
       },
       {
         "k": "merito-congreso",
-        "dice": "El Congreso le derrotó la objeción.",
+        "dice": "Las plenarias del Congreso insistieron en la ley y le derrotaron la objeción, pero el asunto pasó a la Corte Constitucional, que todavía no falla: la ley no rige.",
         "base": [
-          "congreso-rechaza-objecion-ley-merito"
+          "congreso-rechaza-objecion-ley-merito",
+          "objecion-ley-merito-cargos-directivos"
         ],
-        "nota": "Las plenarias insistieron en el texto y pasó a la Corte Constitucional, que todavía no se ha pronunciado: la ley no rige."
+        "nota": "LA SEGUNDA MITAD NO ES UN MATIZ. «El Congreso le derrotó la objeción», dicho solo, insinúa que la ley de mérito ya rige — y no rige: las objeciones de inconstitucionalidad pasan a la Corte, que no se ha pronunciado. Es la misma clase de defecto que este módulo persigue en otros, cometido por el autor del editorial y corregido acá."
       },
       {
         "k": "merito-decreto",
@@ -12526,7 +12533,11 @@
           "delitos-agosto-2026-policia"
         ],
         "nota": "Con sus tres salvedades: el acumulado de enero a agosto va al alza (+2 %), agosto incluye seis días del gobierno anterior, y la extorsión está en disputa dentro del propio Estado, así que su caída no se publica.",
-        "_noEsCalificacion": "La palabra «homicidios» acá nombra la SERIE ESTADÍSTICA de la Policía Nacional —la categoría con la que esa entidad publica sus cifras— y no califica la conducta de ninguna persona ni de ningún hecho registrado. La prohibición de la v1118 es contra encadenar hecho → tipo penal → juicio público sobre alguien, que es lo que hacía la escala del eje D al hablar de «homicidio en persona protegida»: ahí había un sujeto y una imputación implícita. Acá hay un conteo agregado sin sujeto. LA EXENCIÓN VA POR AFIRMACIÓN Y CON SU RAZÓN ESCRITA, nunca como una regla del código: una regla abriría la puerta a doscientas de una vez y esta hay que pensarla una por una (v1094, v1109). Y NO alcanza al eje D: su guarda sigue midiendo con la lista entera y sin exención posible."
+        "_noEsCalificacion": {
+          "categoriaEstadistica": "«Homicidios» es el nombre de la SERIE que publica la Policía Nacional: la categoría con la que esa entidad reporta sus cifras mensuales, igual que «delitos sexuales» o «secuestro» en la misma tabla. No es una imputación: es el rótulo de una columna.",
+          "sinSujeto": "La afirmación no tiene sujeto. No nombra —ni permite identificar— a ninguna persona, unidad, entidad ni cargo a quien se le atribuya el hecho: es un conteo agregado de un mes contra el mismo mes del año anterior. No hay nadie a quien se le esté imputando nada.",
+          "razon": "La prohibición de la v1118 es contra encadenar hecho → tipo penal → juicio público SOBRE ALGUIEN, que es lo que hacía la escala del eje D al hablar de «homicidio en persona protegida»: ahí había un sujeto y una imputación implícita. Acá no lo hay. Y la asimetría que hace que esto no sea una grieta: una exención SOLO se le concede a una afirmación que no atribuye conducta a nadie — a una acusatoria no se le concede nunca, ni con razón escrita, y ahí el único camino es reescribirla en hecho y estado procesal."
+        }
       },
       {
         "k": "regional",
@@ -12774,7 +12785,7 @@
           "t": ". "
         },
         {
-          "t": "El Congreso le derrotó la objeción",
+          "t": "Las plenarias del Congreso insistieron en la ley y le derrotaron la objeción, pero el asunto pasó a la Corte Constitucional, que todavía no falla: la ley no rige",
           "a": "merito-congreso"
         },
         {
