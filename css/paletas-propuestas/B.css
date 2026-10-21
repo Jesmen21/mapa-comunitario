@@ -1,0 +1,48 @@
+/* ══ B · «PRENSA» ═════════════════════════════════════════════════════════
+   Claro, más frío y más contrastado: fondo blanco puro, tinta negra, UN
+   acento verde azulado oscuro. Líneas finas y mucho aire. El teal no es
+   color de ninguna fuerza política colombiana. */
+:root{
+  --sp-s1:#FFFFFF; --sp-s2:#FFFFFF; --sp-s3:#F4F6F6;
+  --sp-tx:#0D0F10; --sp-tx2:#434B4D;
+  --sp-ac:#115E59; --sp-ac-tx:#0E4E4A; --sp-ac-suave:#E3EFED;
+  --sp-bd:#D9DEDE; --sp-bd2:#ECEFEF;
+  --sp-n1:#E4EBEA; --sp-n1-tx:#0D0F10;
+  --sp-n2:#B9CCC9; --sp-n2-tx:#0D0F10;
+  --sp-n3:#85A7A2; --sp-n3-tx:#0D0F10;
+  --sp-n4:#43807A; --sp-n4-tx:#FFFFFF;
+  --sp-n5:#115E59; --sp-n5-tx:#FFFFFF;
+
+  --marfil:var(--sp-s1); --sup:var(--sp-s2);
+  --ink:var(--sp-tx); --ink-2:var(--sp-tx2);
+  --linea:var(--sp-bd); --linea-2:var(--sp-bd2);
+  --celeste:var(--sp-ac); --celeste-hi:var(--sp-ac-tx); --celeste-mark:var(--sp-ac);
+  --celeste-deep:var(--sp-ac-tx); --celeste-suave:var(--sp-ac-suave);
+  --petroleo:var(--sp-ac-tx); --petroleo-2:var(--sp-ac);
+  --verde:var(--sp-ac); --verde-hi:var(--sp-ac-tx); --verde-suave:var(--sp-ac-suave);
+  --amarillo:var(--sp-ac); --amarillo-hi:var(--sp-ac-tx);
+  --ambar:var(--sp-ac-tx); --azul:var(--sp-ac-tx); --indigo:var(--sp-ac-tx);
+  --rojo:#7A3B38;
+  --sombra:none; --sombra-hi:none;
+}
+body{ background:var(--sp-s1); color:var(--sp-tx); }
+.sp-fi-placa, .sp-fi-placa-cerrada{
+  background:var(--sp-s2) !important; color:var(--sp-tx) !important;
+  border:1px solid var(--sp-bd); box-shadow:none;
+}
+.sp-fi-placa *, .sp-fi-placa-cerrada *{ color:inherit; }
+.sp-fi-nombre, .sp-fi-vval{ color:var(--sp-tx) !important; }
+.sp-fi-vfalta, .sp-fi-vfaltan, .sp-fi-vlect, .sp-fi-vpal, .sp-fi-vbase,
+.sp-fi-alcance, .sp-fi-cuentas, .sp-fi-dias, .sp-fi-firma-w{ color:var(--sp-tx2) !important; }
+.sp-fi-vlabel, .sp-fi-cargo, .sp-fi-firma-t, .sp-fi-sello{ color:var(--sp-ac-tx) !important; }
+
+/* LOS DOS COLORES ESCRITOS A MANO, LLEVADOS A TOKEN (medido).
+   `--sp-amb` no estaba definido en ninguna parte: sus OCHO usos caían al
+   literal #b26a00, que sobre blanco da 4,24:1. Definirlo arregla los ocho de
+   una vez, que es la diferencia entre corregir en el token y parchear caja
+   por caja. Y `.sp-tag-ok` traía su verde #0E7C5A escrito en la regla.
+   Los dos pasan al ÚNICO acento: el estado ya lo dice el ✓ y su etiqueta,
+   así que el color no carga ningún significado solo. */
+:root{ --sp-amb: var(--sp-ac-tx); }
+.sp-tag-ok{ color: var(--sp-ac-tx) !important; border-color: var(--sp-bd) !important;
+            background: var(--sp-ac-suave) !important; }

@@ -368,3 +368,27 @@ pierde es siempre la evidencia de lo que ya se publicó.
 planearlo:** el proxy niega todos los dominios, así que **ni se pueden pedir
 las capturas ni comprobar que existan**. La captura la hace quien corra algo
 en su computador, igual que `herramientas/verificar-enlaces.js` (v1136).
+
+## 11 · Los bloques de datos en el panel de exenciones · `pendiente`
+
+**Para la tanda de la portada gráfica, no antes.** Anotado el 21 de octubre
+de 2026 por decisión del usuario: *«Panel de exenciones: no lo toque ahora».*
+
+**El hecho.** Los bloques `delitosAltoImpacto` y `subsidios` llevan su
+`_noEsCalificacion` con las tres partes —`categoriaEstadistica`, `sinSujeto`
+y `razon`—, porque nombran series oficiales (homicidio, secuestro, extorsión)
+y la regla penal pide que toda exención se declare y **se nombre en el
+panel**.
+
+**Lo que falta, y por qué no se hizo ahora.** El panel lee hoy las exenciones
+de **entradas** y de **afirmaciones del editorial**; un bloque de datos no es
+ninguna de las dos, así que su exención está declarada y **no llega a ninguna
+pantalla** — la clase C, en la superficie que existe justamente para que una
+exención no sea silenciosa. Mostrarla **toca la interfaz**, y estos bloques
+se registraron con la condición de no tocarla todavía.
+
+**Cuando se haga, dos cosas que ya se saben:** la exención es del BLOQUE y no
+de una frase, así que el panel tiene que decir sobre qué se concede —hoy
+nombra afirmaciones con su frase—; y el día que estos bloques se grafiquen,
+sus TÍTULOS y etiquetas pasan por la misma guarda penal que los títulos de
+las entradas (v1136), que ya está escrita y los alcanzaría sin tocarla.

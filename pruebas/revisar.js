@@ -14947,6 +14947,92 @@ console.log('\n  -- el marcado que vive dentro del JavaScript (v1025) --');
     }
   })();
 
+console.log('\n  -- el contraste de las paletas propuestas (v1138) --');
+/* ══ NINGÚN PAR TEXTO/FONDO DE UNA PALETA BAJA DE 4,5:1 ═════════════════════
+   Medido sobre la página compuesta antes de escribirla: la portada tenía
+   **17 pares por debajo del mínimo**, y el peor era 1,09:1 —tinta casi
+   blanca sobre un fondo casi blanco— en el cuadro «Un hecho que este módulo
+   registra y que NO fija peldaño». La causa no era un color mal elegido: era
+   una superficie CLARA pintada dentro de una tarjeta OSCURA, heredando su
+   tinta. Por eso la cura va en los tokens y no caja por caja.
+
+   QUÉ MIDE ESTA GUARDA, y qué no. Mide los PARES DECLARADOS en cada paleta
+   candidata: cada tinta contra cada superficie sobre la que esa paleta dice
+   que se lee. Es una comprobación estática y no sustituye al barrido del
+   navegador —que recorre los 140 pares REALES de la página compuesta y es el
+   que encontró el 1,09—: lo que esta impide es que una paleta se escriba o se
+   edite con un par que ya nace por debajo del mínimo.
+
+   ESTÁ PARAMETRIZADA: corre sobre las tres candidatas, y el día que se elija
+   una basta con que su archivo se quede. `--paleta A` limita la corrida a
+   una sola.
+
+   VA EN ROJO Y NO CON `?` (v970, v1026): mide archivos de estilo del
+   repositorio, no material del registro, así que no puede vaciarse por una
+   mejora de los datos. Su material es que existan las paletas.
+
+   DE QUÉ NO RESPONDE (v945): de los colores escritos a mano DENTRO de
+   `css/70-seguimiento.css`, que no son de la paleta y solo se ven componiendo
+   la página —son los doce que la C todavía arrastra—; ni del objetivo de 7:1
+   para el cuerpo, que se declara aparte y se mide en el navegador. */
+(() => {
+  const DIR = 'css/paletas-propuestas';
+  const soloUna = (process.argv.find((x) => x.startsWith('--paleta=')) || '').split('=')[1] || '';
+  const hay = fs.existsSync(R(DIR));
+  const archivos = hay ? fs.readdirSync(R(DIR))
+    .filter((f) => /^[A-Z]\.css$/.test(f)).filter((f) => !soloUna || f === soloUna + '.css') : [];
+
+  comprobar('MATERIAL · hay paletas candidatas que medir',
+    archivos.length > 0,
+    archivos.length ? archivos.length + ' paleta(s): ' + archivos.join(' · ') +
+      (soloUna ? ' (limitado con --paleta=' + soloUna + ')' : '')
+      : 'no hay ninguna en ' + DIR + ': la guarda se quedaría sin material');
+
+  const hex = (c) => {
+    const m = String(c).trim().match(/^#([0-9a-fA-F]{6})$/);
+    if (!m) return null;
+    const n = parseInt(m[1], 16);
+    return [(n >> 16) & 255, (n >> 8) & 255, n & 255];
+  };
+  const lin = (v) => { v /= 255; return v <= 0.03928 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4); };
+  const L = (c) => 0.2126 * lin(c[0]) + 0.7152 * lin(c[1]) + 0.0722 * lin(c[2]);
+  const ratio = (a2, b2) => { const x = L(a2), y = L(b2);
+    return (Math.max(x, y) + 0.05) / (Math.min(x, y) + 0.05); };
+
+  /* Qué se lee sobre qué, declarado y no adivinado: las tintas son `tx`,
+     `tx2` y el acento como texto; las superficies, las tres del tema. Los
+     cinco peldaños se miden contra SU PROPIA tinta, que cada uno declara. */
+  const TINTAS = ['--sp-tx', '--sp-tx2', '--sp-ac-tx'];
+  const FONDOS = ['--sp-s1', '--sp-s2', '--sp-s3'];
+  const malos = [], medidos = [];
+  archivos.forEach((f) => {
+    const css = leer(DIR + '/' + f);
+    const tok = {};
+    [...css.matchAll(/(--sp-[a-z0-9-]+)\s*:\s*(#[0-9a-fA-F]{6})\s*;/g)]
+      .forEach((m) => { if (!(m[1] in tok)) tok[m[1]] = m[2]; });
+    const par = (kt, kf) => {
+      const t = hex(tok[kt]), b2 = hex(tok[kf]);
+      if (!t || !b2) return;
+      const r = ratio(t, b2);
+      medidos.push(1);
+      if (r < 4.5) malos.push(f.replace('.css', '') + ' · ' + kt + ' sobre ' + kf +
+        ' = ' + r.toFixed(2) + ':1');
+    };
+    TINTAS.forEach((t) => FONDOS.forEach((b2) => par(t, b2)));
+    for (let i = 1; i <= 5; i++) par('--sp-n' + i + '-tx', '--sp-n' + i);
+  });
+
+  comprobar('ningún par declarado de una paleta baja de 4,5:1',
+    archivos.length > 0 && medidos.length >= 12 && malos.length === 0,
+    !archivos.length ? 'sin paletas que medir'
+      : medidos.length < 12 ? 'solo ' + medidos.length + ' pares medidos: una paleta dejó tokens sin declarar ' +
+        'y los pares que faltan no se comprueban, que se lee igual que si pasaran'
+      : malos.length ? 'por debajo del mínimo: ' + malos.join(' · ')
+      : medidos.length + ' pares de ' + archivos.length + ' paleta(s), todos en 4,5:1 o más. ' +
+        'No cubre los colores escritos a mano dentro de css/70-seguimiento.css, que solo se ven ' +
+        'componiendo la página en el navegador');
+})();
+
 console.log('\n  -- ningun menor identificado en el registro (v1136) --');
 /* ══ NI UN NOMBRE DE MENOR EN EL REGISTRO ═══════════════════════════════════
    Lo que la pagó: una víctima menor de edad estaba NOMBRADA con nombre
