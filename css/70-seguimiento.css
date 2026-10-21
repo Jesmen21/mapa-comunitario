@@ -1563,6 +1563,41 @@ a.sp-fuente:hover svg{ color:var(--verde-hi); }
   .sp-fi-izq{ position:sticky; top:calc(var(--bar) + 20px); }
 }
 
+/* ── LA TIRA DE LAS CINCO PESTAÑAS (v1140) ────────────────────────────────
+   Anclas y no botones: se copian, se abren en otra ventana y el lector de
+   pantalla las anuncia como enlaces, que es lo que son.
+   Se desplaza en horizontal igual que la tira de la ficha: con cinco, una
+   rejilla deja la quinta sola en la segunda fila y parece un descuido. El
+   `min-width:0` del hijo es la receta de la trampa que ya se pagó dos veces
+   —un item de rejilla con 1fr se dimensiona por su contenido máximo y estira
+   la página—, y acá la tira es flex por lo mismo. */
+.sp-pes{
+  display:flex; gap:8px; overflow-x:auto; margin:0 0 20px; padding-bottom:4px;
+  scroll-snap-type:x proximity; -webkit-overflow-scrolling:touch;
+  scrollbar-width:none; min-width:0;
+  border-bottom:1px solid var(--linea);
+}
+.sp-pes::-webkit-scrollbar{ display:none; }
+.sp-pes-t{
+  flex:0 0 auto; scroll-snap-align:start; min-width:0;
+  padding:10px 14px; text-decoration:none; white-space:nowrap;
+  font-size:var(--t-7); font-weight:700; line-height:1.2;
+  color:var(--ink-2); background:transparent;
+  border:1px solid transparent; border-bottom:3px solid transparent;
+  border-radius:var(--r-s) var(--r-s) 0 0;
+}
+.sp-pes-t:hover{ color:var(--celeste-deep); background:var(--linea-2); }
+.sp-pes-t.on{
+  color:var(--celeste-deep); background:var(--celeste-suave);
+  border-bottom-color:var(--celeste-mark);
+}
+.sp-pes-t:focus-visible{ outline:2px solid var(--verde); outline-offset:2px; }
+
+/* Cada sección mudada dentro de una pestaña. Lo único que hace es separarlas:
+   la cabecera de cada una ya trae su color de sección desde el JS. */
+.sp-bloque{ display:block; }
+.sp-bloque + .sp-bloque{ margin-top:40px; padding-top:32px; border-top:1px solid var(--linea); }
+
 /* ── Las pestañas: el gobernante, el anterior y la comparación ────────────
    Tira que se desplaza en horizontal en vez de rejilla: con tres, una rejilla
    de dos columnas deja la tercera sola en una segunda fila y parece un
