@@ -28514,3 +28514,106 @@ comprobaron una por una, no se dieron por hechas:
   adivinara la paráfrasis daría falsos positivos (v895); comprueba el
   vocabulario sobre las superficies de pendiente, y de eso responde.
   `pendiente`
+
+## v1134 · una espera decidida no es trabajo sin hacer
+
+El usuario cerró la decisión sobre `contra-merito-empleo-publico` —la
+identidad de objeto no se declara, se revisa el 21 de noviembre de 2026, y se
+adelanta solo si antes la Corte Constitucional falla sobre la ley de mérito o
+el Gobierno presenta una vía alternativa para blindar los requisitos mínimos—
+y pidió **comprobar** una cosa: que el eje A diga en pantalla por qué no
+publica nivel, y no un simple «no calculable». Con la condición escrita al
+lado: *si ya lo dice, no cambies nada.*
+
+### No lo decía, y el defecto es la distinción de la v899 otra vez
+
+Compuesta la página, el eje A imprimía esto y nada más:
+
+> **Falta para poder publicarlo:** 1 de 5 contradicciones documentadas no
+> declara si las dos frases hablan del MISMO objeto verificado. Sin eso no se
+> puede separar un incumplimiento de una tensión retórica…
+
+Es cierto, describe el hueco y hasta nombra el caso en la lista de abajo. Y
+**se lee como trabajo que nadie ha hecho**, que es exactamente lo contrario de
+lo que pasa: está DECIDIDO esperar, la prueba está escrita desde la v971 y
+tiene fecha. El encabezado empuja a esa lectura falsa —«Falta para poder
+publicarlo»— y la pantalla donde sale juzga a una persona con nombre.
+
+Es la forma de la v1093 y la v1116, un nivel más abajo: dentro de un solo
+estado, «nadie lo ha mirado» y «se midió y se decidió esperar a una fecha» se
+veían idénticos **y piden lo contrario** — el primero, ponerse; el segundo, no
+volver a mirar hasta su fecha. **La razón quedó dicha donde el lector la ve**,
+que es la mitad que faltaba: el dato ya existía en `revision` del caso desde
+que se escribió, y ninguna superficie lo alcanzaba. Clase C, en el renglón que
+explica por qué un eje no publica.
+
+### Cómo quedó, y de dónde sale cada cosa
+
+> …Y no es trabajo sin hacer: la que falta está DECIDIDA en espera, con su
+> prueba escrita de antemano y su fecha de revisión — Mérito en el empleo
+> público… — **se revisa el 21 de noviembre de 2026.** Dos señales, cualquiera
+> de las dos adelanta la revisión, y quien firma el módulo decide en ese
+> momento y no antes: (1) que el Gobierno presente una vía alternativa…;
+> (2) que la Corte Constitucional falle sobre la ley de mérito… **Declararla
+> antes sería resolver a conveniencia justo lo que esa fecha existe para
+> impedir**, así que este eje no publica nivel hasta entonces y eso es el
+> estado, no un descuido.
+
+**La fecha sale del REGISTRO y no del código** (v903). Tecleada en `js/70`
+envejecería sola y moverla no se vería en ningún dato; leída de
+`revision.fecha`, cambiarla es cambiar el registro, que es donde se discute. La
+segunda señal —el fallo de la Corte— la agregó esta tanda a `revision.que`
+porque la decidió el usuario hoy, y va con su `decidido: 2026-10-21`.
+
+**Las TRES redacciones van escritas** (v970, v1094): todas las pendientes en
+espera, **algunas**, y ninguna. La del medio es la que hará falta el día que se
+documente otra contradicción sin resolver, y es justo la que no existiría si se
+escribiera solo para el caso de hoy.
+
+### La guarda, con su inyección al revés
+
+| Inyección | Resultado |
+|---|---|
+| 1 · el estado real de la v1133: `ejeA` sin leer la espera | **ROJO** en dos comprobaciones |
+| 2 · la fecha tecleada en el código en vez de leída del registro | **ROJO** |
+| 3 · se borra la redacción de «algunas» | **ROJO** |
+| 4 · **el registro MEJORA**: se declara la identidad | **`?` sin material**, y las dos de código siguen verdes |
+
+La cuarta es la que importa y es la regla de la v970: el material de la
+primera comprobación lo ponen los DATOS y llega a cero **cuando el registro se
+arregla**, así que va con `?` y no en rojo. Un rojo ahí pondría la salida
+barata en dejar la contradicción sin declarar para que la guarda siguiera
+teniendo algo que medir.
+
+Y una corrección del detalle, encontrada al leerlo: el filtro de la guarda
+decía «1 de 3 sin declarar» donde el módulo publica «1 de 5 · 1 sin declarar»,
+porque `!c.mismoObjetoVerificado` cuenta como sin declarar a la que está
+declarada en **NO**, y no excluía las de `cuenta: false`. **Dos cuentas de un
+mismo hecho, separadas** (clase B) — en la guarda que vigila justamente eso.
+Ahora usa el mismo predicado que el módulo.
+
+### La rutina diaria, donde no cuesta nada
+
+Las dos señales entraron en el **paso 2** de `herramientas/rutina-seguimiento-presidencial.md`,
+dentro del barrido que esa rutina ya hace todos los días: no es una búsqueda
+aparte. Con lo que **no** puede hacer dicho en el mismo renglón — registrar el
+hecho con su fuente sí; tocar `mismoObjetoVerificado` o el bloque `revision`,
+no, porque esa declaración la toma quien firma el módulo.
+
+**Y hay que decir el límite**: ese archivo es la COPIA versionada del texto de
+la rutina, que vive en la web y solo la puede cambiar quien la creó. Escribirlo
+acá lo deja registrado y con historial; para que la rutina lo haga de verdad,
+el texto hay que pegarlo allá.
+
+### Lo que esta versión NO hace
+
+* **No declara la identidad de objeto, ni la adelanta.** Sigue sin declarar, con
+  su fecha. `pendiente`
+* **No toca el editorial**, por instrucción expresa.
+  `cerrado en v1134 · medido y declinado`
+* **No mueve ningún peldaño.** El veredicto sigue en piso «No puede ser mejor
+  que Poco fiable», y el eje A sigue sin publicar nivel — ahora diciendo por
+  qué. `cerrado en v1134 · medido y declinado`
+* **No comprueba que la razón escrita en `revision.que` sea cierta**, ni que la
+  fecha sea la correcta: eso no lo puede comprobar una guarda (v1008).
+  `pendiente`

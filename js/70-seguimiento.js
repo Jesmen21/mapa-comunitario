@@ -3312,18 +3312,30 @@
 
   function ejeA(dd) {
     var doc = casosDeCx(dd).filter(cuentaEnEjeA);
-    var conId = 0, sinId = 0, sinDeclarar = 0, retoricas = [], pendientes = [];
+    var conId = 0, sinId = 0, sinDeclarar = 0, retoricas = [], pendientes = [], esperas = [];
     doc.forEach(function (c) {
       var id = identidadDe(c);
       if (id.k === 'si') conId++;
       else if (id.k === 'no') { sinId++; retoricas.push(c.tema || ''); }
-      else { sinDeclarar++; pendientes.push(c.tema || ''); }
+      else {
+        sinDeclarar++; pendientes.push(c.tema || '');
+        /* UNA ESPERA DECIDIDA NO ES TRABAJO SIN HACER (v899, v1076, v1134).
+           Las dos cosas dejan el mismo hueco y piden lo contrario: la
+           primera, no volver a mirar hasta su fecha; la segunda, ponerse.
+           La fecha y lo que se vigila salen del REGISTRO y no de acá, para
+           que no haya una fecha tecleada en el código que envejezca sola
+           (v903) — y para que moverla sea una decisión visible en el dato. */
+        var rv = c.revision || null;
+        if (rv && rv.fecha && rv.que) {
+          esperas.push({ tema: c.tema || '', fecha: rv.fecha, que: rv.que });
+        }
+      }
     });
     var r = { eje: 'A', t: 'Confiabilidad', enLista: 'la confiabilidad',
               pregunta: '¿lo que dice coincide con lo que hace?',
               documentadas: doc.length, conIdentidad: conId, sinIdentidad: sinId,
               sinDeclarar: sinDeclarar, tensionRetorica: retoricas,
-              pendientes: pendientes,
+              pendientes: pendientes, esperas: esperas,
               nivel: null, publicable: false, falta: '',
               /* Su escala y su escalera, como cualquier eje (v1091): la
                  pantalla no tiene que saber que este eje es un caso
@@ -3335,6 +3347,33 @@
         'frases hablan del MISMO objeto verificado. Sin eso no se puede separar un incumplimiento de una ' +
         'tensión retórica, y el pliego prohíbe contarlas juntas: una acusación floja al lado de varias ' +
         'sólidas no suma, resta.';
+      /* Y POR QUÉ FALTA, que es otra pregunta (v1093). Dentro del único
+         estado «sin declarar», «nadie lo ha mirado» y «se midió y se decidió
+         esperar a una fecha» se leían idénticos, y el encabezado del pintor
+         —«Falta para poder publicarlo»— empuja a leer lo segundo como lo
+         primero. Las TRES redacciones van escritas (v970, v1094): todas en
+         espera, algunas, y ninguna. La del medio es la que hace falta el día
+         que alguien documente otra contradicción sin resolver. */
+      if (esperas.length && esperas.length === sinDeclarar) {
+        r.falta += ' Y no es trabajo sin hacer: ' +
+          pl(sinDeclarar, 'la que falta está DECIDIDA en espera, con su prueba escrita de antemano y su ',
+                          'las que faltan están DECIDIDAS en espera, cada una con su prueba escrita de antemano y su ') +
+          'fecha de revisión — ' + esperas.map(function (e) {
+            return e.tema + ' — se revisa el ' + fechaLarga(e.fecha) + '. ' + e.que;
+          }).join(' · ') +
+          ' Declararla antes sería resolver a conveniencia justo lo que esa fecha existe para impedir, ' +
+          'así que este eje no publica nivel hasta entonces y eso es el estado, no un descuido.';
+      } else if (esperas.length) {
+        r.falta += ' Y las que faltan no son todas lo mismo: ' +
+          cn(esperas.length, 'está DECIDIDA en espera con su fecha de revisión',
+             'están DECIDIDAS en espera con su fecha de revisión') + ' — ' +
+          esperas.map(function (e) { return e.tema + ', el ' + fechaLarga(e.fecha); }).join(' · ') +
+          ' — y ' + cn(sinDeclarar - esperas.length, 'no declara ninguna', 'no declaran ninguna') +
+          ', así que ' + pl(sinDeclarar - esperas.length, 'esa sí es trabajo', 'esas sí son trabajo') + ' pendiente.';
+      } else {
+        r.falta += ' Y ninguna de las que faltan declara una fecha de revisión, así que no hay ninguna ' +
+          'espera decidida detrás: es trabajo pendiente.';
+      }
     } else if (!doc.length) {
       r.falta = 'No hay contradicciones documentadas que contar.';
     } else {

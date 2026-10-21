@@ -10907,7 +10907,8 @@
         "matiz": "El Gobierno da una explicación de mecanismo y no de fondo: Andrés Barreto, secretario jurídico de la Presidencia, sostuvo que el Gobierno «no está en contra del mérito» y objetó por constitucionalidad —la norma volvería obligatorias unas competencias consultivas del Consejo de Estado e invadiría la facultad exclusiva del Gobierno de organizar los empleos públicos— y por inconveniencia —tres trámites previos por nombramiento, redundancia con el Decreto Ley 770 de 2005, y una barrera para jóvenes profesionales, mujeres y personas de regiones apartadas—. Esa respuesta está publicada junto al hecho, en la entrada del 21 de agosto.\n\nPOR ESO LA IDENTIDAD DE OBJETO NO ESTÁ RESUELTA, y este caso NO alimenta todavía el eje A. La prueba que la decide está escrita de antemano para que no se resuelva a conveniencia: si el Gobierno presenta una vía alternativa para blindar los requisitos, el reparo era de mecanismo y lo prometido y lo hecho no son el mismo objeto; si no la presenta, el objeto es el mismo. Revisión a los 90 días: 21 de noviembre de 2026.",
         "revision": {
           "fecha": "2026-11-21",
-          "que": "Si el Gobierno presentó o no una vía alternativa para blindar los requisitos mínimos de los cargos directivos. De eso depende declarar `mismoObjetoVerificado`."
+          "que": "Dos señales, cualquiera de las dos adelanta la revisión, y quien firma el módulo decide en ese momento y no antes: (1) que el Gobierno presente una vía alternativa para blindar los requisitos mínimos de los cargos directivos —si la presenta, la objeción era de mecanismo y las dos frases no hablan del mismo objeto—; (2) que la Corte Constitucional falle sobre la ley de mérito. De eso depende declarar `mismoObjetoVerificado`. Sin ninguna de las dos, la fecha manda.",
+          "decidido": "2026-10-21"
         },
         "fuentes": [
           {

@@ -32,6 +32,11 @@ Agregar los hechos de LAS ÚLTIMAS 24-48 HORAS y actualizar las fechas de contro
 0. **Traé lo de arriba antes de empezar**: `git fetch origin && git merge origin/main --no-edit`. Hay más de una sesión escribiendo en este repositorio y empezar sin esto termina en un empujón rechazado.
 1. Leé `assets/data/seguimiento-presidencial.json`. Mirá el campo `actualizado`: solo agregá lo posterior a esa fecha, y revisá las entradas recientes para NO DUPLICAR un hecho ya registrado.
 2. Investigá con WebSearch qué hizo el presidente desde la última actualización. Cubrí: decretos y nombramientos; relación con Israel; EE. UU. y acceso militar; corrupción y contratación; créditos y deuda; emergencias; economía; política exterior; servicios públicos y bolsillo; desinformación y discurso público.
+
+   **Y dos señales concretas que el módulo está esperando, hasta el 21 de noviembre de 2026.** Van en el mismo barrido de arriba y no cuestan una búsqueda aparte: (a) que el **Gobierno presente una vía alternativa para blindar los requisitos mínimos de los cargos directivos** del sector público; (b) que la **Corte Constitucional falle sobre la ley de mérito** (Proyecto de Ley 056 de 2024 Cámara — 345 de 2024 Senado, el que el presidente objetó el 21 de agosto de 2026).
+
+   Si aparece alguna: **registrala como una entrada más, con su fuente, y decilo en el resumen del final.** Lo que **NO** hacés es tocar `mismoObjetoVerificado` del caso `contra-merito-empleo-publico` ni su bloque `revision`: de esas dos señales depende declarar la identidad de objeto de esa contradicción, y esa declaración la toma quien firma el módulo, no esta rutina. Mientras tanto el eje A no publica nivel y eso ya sale escrito en la ficha, con su fecha.
+
 3. Agregá las entradas nuevas AL PRINCIPIO del array `entradas` (orden: más reciente primero).
 4. Si lo que encontraste es un CASO DE CORRUPCIÓN suyo o de su gobierno, o un CAMBIO DE POSTURA, va además en su sección propia (ver abajo).
 5. Actualizá `actualizado` con la fecha de hoy y `proximaActualizacion` con la de MAÑANA (formato YYYY-MM-DD).

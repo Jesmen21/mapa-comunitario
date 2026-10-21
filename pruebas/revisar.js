@@ -1691,6 +1691,90 @@ console.log('\n  -- la ficha del gobernante --');
           ? 'falta la redacción de cuando sí lo bloquea: es la que hace falta el día que entre una contradicción nueva'
           : 'las dos escritas, y la segunda dice qué sigue bloqueando el eje A');
 
+    /* ── v1134 · UNA ESPERA DECIDIDA NO ES TRABAJO SIN HACER ─────────────
+       El eje A no publica nivel porque una contradicción no declara su
+       identidad de objeto, y eso salía en la ficha bajo el encabezado
+       «Falta para poder publicarlo» con el hueco descrito y nada más. Desde
+       afuera —y esa pantalla juzga a una persona con nombre— se leía como
+       trabajo que nadie ha hecho; y es lo contrario: está DECIDIDO esperar,
+       la prueba está escrita desde la v971 y tiene fecha. Son la distinción
+       de la v899 dentro de un solo estado, otra vez (v1093, v1116): uno pide
+       no volver a mirar hasta su fecha, el otro pide ponerse.
+
+       LA FECHA SALE DEL REGISTRO y nunca del código (v903): tecleada acá
+       envejecería sola y moverla no se vería en ningún dato. Por eso la
+       guarda comprueba las dos mitades — que `ejeA` lea `revision` del caso,
+       y que no haya ninguna fecha escrita a mano en su cuerpo.
+
+       LAS TRES REDACCIONES van escritas (v970, v1094): todas las pendientes
+       en espera, ALGUNAS, y ninguna. La del medio es la que hará falta el día
+       que se documente otra contradicción sin resolver, y es justo la que no
+       existiría si se escribiera solo para el caso de hoy.
+
+       DE QUÉ NO RESPONDE (v945): de que la razón escrita en `revision.que`
+       sea cierta, que no lo puede comprobar nadie (v1008); ni de que la fecha
+       sea la correcta. Comprueba que la espera se distinga del descuido. */
+    {
+      const regEA = JSON.parse(leer('assets/data/seguimiento-presidencial.json'));
+      const casosEA = ((regEA.contradicciones || {}).casos || []);
+      /* EL MISMO PREDICADO QUE EL MÓDULO, y no uno parecido (v879, v906): una
+         declarada en NO lleva `mismoObjetoVerificado: false`, que un `!c.x`
+         cuenta como sin declarar, y las que van con `cuenta: false` no
+         entran al eje. Con el filtro flojo el detalle decía «1 de 3» donde
+         el módulo publica «1 de 5 · 1 sin declarar»: dos cuentas de un mismo
+         hecho, separadas, que es justo lo que esta guarda vigila en otros. */
+      const sinDecl = casosEA.filter((c) => c.estado === 'documentada' && c.cuenta !== false &&
+                                            c.mismoObjetoVerificado === undefined);
+      const conRev = sinDecl.filter((c) => (c.revision || {}).fecha && (c.revision || {}).que);
+
+      /* VA CON `?` Y NO EN ROJO (v970, v1097): su material lo ponen los DATOS
+         y llega a cero el día que se declare la identidad, que es el estado
+         BUENO. Un rojo ahí pondría la salida barata en dejar la contradicción
+         sin declarar para que la guarda siguiera teniendo algo que medir. */
+      if (conRev.length) {
+        comprobar('MATERIAL · alguna contradicción sin declarar trae su fecha de revisión', true,
+          conRev.length + ' de ' + sinDecl.length + ' sin declarar traen `revision` con fecha y qué se mira: ' +
+          conRev.map((c) => (c.id || c.tema || '?') + ' → ' + c.revision.fecha).join(' · '));
+      } else {
+        anotarSinMaterial('MATERIAL · alguna contradicción sin declarar trae su fecha de revisión',
+          sinDecl.length
+            ? 'hay ' + sinDecl.length + ' sin declarar y ninguna trae `revision`: no hay espera que distinguir'
+            : 'ninguna contradicción sin declarar: el eje A ya no espera nada, que es el estado BUENO. Las ' +
+              'tres redacciones se comprueban abajo contra el código y siguen mordiendo');
+      }
+
+      const leeRev = /var rv = c\.revision \|\| null;/.test(cuerpoEjeA) &&
+                     /esperas\.push\(\{ tema: c\.tema \|\| '', fecha: rv\.fecha, que: rv\.que \}\);/.test(cuerpoEjeA) &&
+                     /fechaLarga\(e\.fecha\)/.test(cuerpoEjeA);
+      /* La fecha a mano, buscada en el CÓDIGO y no en los comentarios (v926):
+         `cuerpoEjeA` sale de `j70c1`, que ya pasó por `soloCodigo`. */
+      const fechaAMano = /20\d\d-\d\d-\d\d/.test(cuerpoEjeA) ||
+                         /de (enero|febrero|marzo|abril|mayo|junio|julio|agosto|septiembre|octubre|noviembre|diciembre) de 20\d\d/.test(cuerpoEjeA);
+      comprobar('el eje A lee la fecha de revisión del REGISTRO, y ninguna va escrita en su código',
+        leeRev && !fechaAMano,
+        !leeRev ? 'ejeA no deriva la espera de `revision`: la fecha tendría que estar en otro sitio'
+          : fechaAMano ? 'hay una fecha escrita a mano en el cuerpo de ejeA: envejece sola y moverla no se ve en ningún dato (v903)'
+          : 'la espera sale de `c.revision` y se imprime con `fechaLarga`, así que la fecha vive en el registro');
+
+      const tresRed = [
+        ['todas en espera', /esperas\.length && esperas\.length === sinDeclarar/.test(cuerpoEjeA) &&
+                            /Y no es trabajo sin hacer/.test(cuerpoEjeA)],
+        ['algunas', /Y las que faltan no son todas lo mismo/.test(cuerpoEjeA) &&
+                    /esas sí son trabajo/.test(cuerpoEjeA)],
+        ['ninguna', /ninguna de las que faltan declara una fecha de revisión/.test(cuerpoEjeA)]
+      ];
+      const sinRed = tresRed.filter((x) => !x[1]).map((x) => x[0]);
+      comprobar('y están escritas las TRES redacciones: todas en espera, algunas y ninguna',
+        cuerpoEjeA.length > 0 && sinRed.length === 0 &&
+        /Declararla antes sería resolver a conveniencia/.test(cuerpoEjeA),
+        !cuerpoEjeA.length ? 'no se encontró el cuerpo de ejeA: la guarda se quedó sin material'
+          : sinRed.length ? 'falta la redacción de «' + sinRed.join('» y «') +
+            '»: con una sola, el día que cambie el registro la pantalla dice lo que no es'
+          : !/Declararla antes sería resolver a conveniencia/.test(cuerpoEjeA)
+            ? 'ya no dice por qué no se adelanta: sin esa frase, la espera se lee como una excusa'
+            : 'las tres, y la de «algunas» es la que hará falta el día que entre otra contradicción sin resolver');
+    }
+
     /* ── v1060 · la razón de cada caso llega a la pantalla ─────────────
        El campo lo vigila una guarda de registro más abajo; esta vigila la otra
        mitad, que es la que lo vuelve útil: un campo que ninguna superficie
