@@ -235,3 +235,71 @@ y lo que ya hacía.** Si usted autoriza el cambio, el orden es el de siempre:
 redactar el criterio entero con su `incluye` y su `excluye`, correrlo sobre
 TODO el registro y el de Petro sin mirar a quién favorece, y recién entonces
 ver qué mueve.
+
+## 9 · «Hoy» se calcula en UTC y el módulo se lee en Colombia · `pendiente`
+
+**NO EJECUTAR hasta que quien firma el módulo lo diga.** Queda anotado el 21
+de octubre de 2026, medido y con su alcance escrito, para que el día que se
+haga se haga entero y en UNA sola versión.
+
+**El hecho, medido.** El módulo serializa fechas con
+`toISOString().slice(0, 10)`, que es **UTC**, en cuatro sitios de
+`js/70-seguimiento.js` —líneas 2990, 3222, 5767 y 5921 al anotar esto—.
+Colombia está en UTC−5, así que **entre las 19:00 y la medianoche de Colombia
+el módulo cree que es mañana**: cinco horas al día en que una fecha que
+publica va un día adelantada para su único público.
+
+**Y los cuatro NO son el mismo defecto**, que es lo que haría fallar un
+arreglo hecho de corrido:
+
+* **2990 y 5767 calculan HOY** (`new Date()` sin argumento). Esos son el caso
+  de arriba y se arreglan anclando a Colombia.
+* **3222 (`fechaMas`) y 5921 convierten una fecha que YA existe.** `fechaMas`
+  hace `new Date(iso + 'T00:00:00')`, que el navegador parsea en hora LOCAL, y
+  la serializa en UTC: en Colombia no se corre —medianoche local es 05:00 UTC
+  del mismo día— pero **para un lector al este de Greenwich se corre un día
+  hacia atrás**. Es un defecto distinto, con otra cura —no tocar husos:
+  componer la cadena con `getFullYear/getMonth/getDate`— y vale para cualquier
+  lector, no solo el colombiano.
+
+**Y el alcance no es solo `js/70`.** El mismo idioma está en **otros cinco
+archivos servidos** —`js/25-procity-analitica.js`, `js/61-analisis-ia-datos.js`,
+`js/63-analisis-ia-informe.js`, `js/68-procity-reconocimiento.js` y
+`js/69-licencia.js`—, así que hay que decidir **antes** si la guarda es de
+módulo o de repositorio: una guarda repositorio-ancha nace roja en cinco
+archivos que esta decisión no cubre, y eso es una guarda que empuja a
+desactivarse. Lo honesto es acotarla a `js/70` y dejar los otros cinco
+anotados acá, o ampliar el alcance de la decisión a propósito.
+
+Salió al anotar `decidido: 2026-10-21` en el bloque `revision` del caso
+`contra-merito-empleo-publico`: en Cúcuta todavía era 20 de octubre. Ese campo
+**se dejó como está a propósito** —es consistente con la convención del módulo,
+y cambiarlo solo a él lo dejaría siendo la única fecha con otra vara—.
+
+**Por qué va en una sola versión y no por partes.** Son tres superficies que
+tienen que moverse juntas, y arreglar una sola deja el módulo midiendo con dos
+varas, que es peor que el defecto (v1121):
+
+* **Los cuatro sitios de `js/70`**, que es donde se calcula el corte.
+* **La rutina diaria**, que escribe `actualizado` y `proximaActualizacion` con
+  la fecha del día en que corre — y corre a las 13:00 UTC, así que hoy no le
+  cambia nada; el día que se adelante o se corra a mano de noche, sí.
+* **Las guardas que comparan contra `actualizado`**, que heredarían la
+  diferencia sin que nadie las mirara.
+
+**Y lleva su guarda, que es la parte que lo hace durable** (v878, v880): una
+comprobación que se ponga **ROJA si queda algún `toISOString().slice(0, 10)`**
+en el módulo. Va en rojo y no con `?`: mide CÓDIGO servido y no material del
+registro, así que no puede vaciarse por una mejora de los datos (v970, v1097).
+Su material es que la llamada exista; el día que no quede ninguna, la guarda
+sigue siendo la que impide que vuelva.
+
+**Dos cosas que conviene decidir antes de ejecutarla, y no durante:**
+
+* **Si el ancla es Colombia o si es UTC declarado.** Las dos son defendibles;
+  lo que no se sostiene es mezclarlas. Si se queda UTC, entonces lo que hay que
+  hacer no es este cambio sino **decirlo donde el lector ve la fecha**, y la
+  guarda es la contraria: que ninguna fecha se presente como hora local.
+* **Qué pasa con las fechas ya escritas.** No se reescriben: una fecha guardada
+  es lo que esa corrida registró, y cambiarla hacia atrás es reescribir el
+  pasado (v903, v1115). El cambio vale de aquí en adelante y eso va dicho.
