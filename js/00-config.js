@@ -83,3 +83,50 @@ window.URBIS_CONFIG = {
     apiKey: ''
   }
 };
+
+/* ══ LAS FECHAS DE CALENDARIO SE ANCLAN A COLOMBIA (v1135) ═══════════════════
+   `toISOString().slice(0, 10)` devuelve la fecha en UTC, y URBIS se lee en
+   Colombia (UTC−5, sin horario de verano desde 1993). Entre las 19:00 y la
+   medianoche de acá, eso daba MAÑANA: cinco horas al día en que una fecha
+   publicada iba un día adelantada para su único público.
+
+   Son DOS funciones y no una porque son dos problemas distintos:
+
+   · `hoyCO()` contesta «¿qué día es hoy en Colombia?». Va donde antes había
+     un `new Date()` suelto.
+   · `isoLocal(d)` contesta «¿cómo se escribe ESTA fecha que ya tengo?», y
+     compone la cadena con getFullYear/getMonth/getDate, sin pasar por ningún
+     huso. Va donde ya existía un objeto Date — y ahí el defecto era otro:
+     `new Date('2026-10-21T00:00:00')` se parsea en hora LOCAL, así que
+     serializarlo en UTC corría un día hacia atrás para un lector al este de
+     Greenwich, aunque en Colombia no se notara.
+
+   Lo que esto NO hace: no reescribe ninguna fecha ya guardada. Una fecha
+   escrita es lo que esa corrida registró, y cambiarla hacia atrás es
+   reescribir el pasado (v903, v1115). Vale de acá en adelante.
+
+   Y lo que NO se ancla, con su razón: una fecha que viaja a una API que
+   trabaja en UTC no es una fecha de calendario para un lector. Esa exención
+   va por ÍTEM, con su archivo y su línea, en la guarda de `revisar.js`. */
+window.URBIS_FECHA = {
+  ZONA: 'America/Bogota',
+  hoyCO: function () {
+    try {
+      /* `en-CA` formatea exactamente AAAA-MM-DD, que es lo que se quiere. */
+      return new Intl.DateTimeFormat('en-CA', { timeZone: 'America/Bogota' }).format(new Date());
+    } catch (e) {
+      /* Colombia no tiene horario de verano, así que restar cinco horas da la
+         misma respuesta. El respaldo existe para un navegador viejo sin
+         `timeZone` en Intl, no para corregir al de arriba. */
+      return window.URBIS_FECHA.isoLocal(new Date(Date.now() - 5 * 3600000), true);
+    }
+  },
+  isoLocal: function (d, enUTC) {
+    var f = (d instanceof Date) ? d : new Date(d);
+    if (isNaN(f.getTime())) return '';
+    var a = enUTC ? f.getUTCFullYear() : f.getFullYear();
+    var m = (enUTC ? f.getUTCMonth() : f.getMonth()) + 1;
+    var x = enUTC ? f.getUTCDate() : f.getDate();
+    return a + '-' + ('0' + m).slice(-2) + '-' + ('0' + x).slice(-2);
+  }
+};

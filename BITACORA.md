@@ -28617,3 +28617,112 @@ el texto hay que pegarlo allá.
 * **No comprueba que la razón escrita en `revision.que` sea cierta**, ni que la
   fecha sea la correcta: eso no lo puede comprobar una guarda (v1008).
   `pendiente`
+
+## v1135 · las fechas de calendario se anclan a Colombia
+
+Ejecuta la **§9 de `DECISIONES-PENDIENTES.md`**, autorizada el 21 de octubre
+de 2026 con dos ampliaciones que salieron al censar y se consultaron antes de
+tocar nada.
+
+### El defecto
+
+`toISOString().slice(0, 10)` devuelve la fecha en **UTC**, y URBIS se lee en
+Colombia (UTC−5, sin horario de verano desde 1993). **Entre las 19:00 y la
+medianoche de acá, el módulo creía que era mañana**: cinco horas al día en que
+una fecha publicada iba un día adelantada para su único público.
+
+Demostrado con un instante fijo, `2026-10-21T03:00:00Z` —las diez de la noche
+del 20 en Cúcuta—: antes publicaba `2026-10-21`, ahora publica `2026-10-20`.
+
+### Los quince sitios, por clase
+
+| Clase | Sitios | Qué se hizo |
+|---|---|---|
+| **Calculan HOY** | **10** — `js/70` 2990, 5767 · `js/68` 577, 23479, 32748, 32760 · `js/25` 51 · `js/63` 3246 · `js/20` 2356, 2428 | `hoyCO()`, con `Intl` y la zona nombrada |
+| **Convierten una fecha que ya existe** | **4** — `js/70` 3222, 5921 · `js/25` 65 · `js/69` 210 | `isoLocal(d)`, compuesta con `getFullYear/getMonth/getDate`, sin pasar por ningún huso |
+| **Eximida** | **1** — `js/61` 757 | sigue en UTC, con su razón escrita |
+
+**Y una corrección de la cuenta que di antes de medir.** Al pedir la
+autorización dije «9 sitios de hoy y 4 de conversión». Medido uno por uno son
+**10 y 4**: me faltaba uno de los de `js/68`. El reparto por clase es el de la
+tabla.
+
+**Las dos clases no son el mismo defecto**, y por eso no comparten cura. La
+segunda ni siquiera se notaba acá: `new Date('2026-10-21T00:00:00')` se parsea
+en hora LOCAL, así que serializarlo en UTC corre un día **hacia atrás para un
+lector al este de Greenwich** — en Colombia, medianoche local es 05:00 UTC del
+mismo día y no se veía. Estaba igual de roto.
+
+### Las dos ampliaciones que no estaban en la nota
+
+* **Un SÉPTIMO archivo.** `js/20-mobile-functional-app.js` tenía dos sitios:
+  la fecha por defecto del formulario de eventos comunitarios y su respaldo al
+  guardar. Un vecino que creaba un evento a las ocho de la noche lo veía
+  fechado mañana. Es el defecto de §9 en un formulario que llena gente.
+* **Un sitio donde UTC es lo CORRECTO.** En `js/61` esas dos fechas no las lee
+  nadie: viajan como `start_date` y `end_date` al archivo histórico de
+  Open-Meteo, que trabaja en UTC —el `Date.UTC(...)` de dos líneas arriba ya lo
+  daba por sentado—. Anclarlas a Colombia **habría metido un defecto donde no
+  lo había**. Es la forma que este archivo tiene escrita como guarda que empuja
+  a romper lo que está bien.
+
+**La exención va por ÍTEM**, con archivo, línea y razón, nunca por regla
+(v1094, v1109, v1127): una regla del tipo «no cuentan las que hablan con una
+API» eximiría a todas las futuras de una vez. Y va escrita en los DOS sitios —
+en el código donde vive, para que se discuta mirándolo, y **nombrada en el
+panel** de `revisar.js`, porque un contador se ignora y una razón se discute.
+
+### La copia que no se pudo evitar, y cómo quedó atada
+
+Los ayudantes viven en `js/00-config.js` como `window.URBIS_FECHA`, que
+alcanzan los seis archivos que cargan `index.html` y `analisis-ia.html`. Pero
+**`seguimiento.html` carga solo `js/70-seguimiento.js` y nada más**, así que
+ese módulo lleva su propia copia: dos codificaciones de una sola decisión, que
+es la clase B. No se pueden derivar, así que se **atan**: una comprobación
+compara los dos cuerpos normalizados y se pone roja si se separan.
+
+### Lo que NO hizo falta, medido
+
+La nota pedía tocar «las guardas que comparan contra `actualizado`». **No
+necesitaban cambio**: comparan fechas guardadas contra fechas guardadas. La
+única que comparaba contra un «hoy» calculado era el `hasta` de dos funciones
+de `js/70`, y esas dos sí se anclaron. Un pendiente de la nota que al medirlo
+no existía.
+
+### La guarda, repo-ancha y en rojo
+
+Barre los **91 archivos de `js/`**, sobre el CÓDIGO y no sobre los comentarios
+(v926) —los tres bloques que explican esta decisión citan el patrón, y un
+patrón citado en su propia explicación no es una llamada—. Va en ROJO y no con
+`?`: mide código servido, que no puede vaciarse por una mejora del registro
+(v970, v1026).
+
+Cuatro comprobaciones y cuatro inyecciones, una por cada una, sin solaparse:
+
+| Inyección | Resultado |
+|---|---|
+| un sitio vuelve a UTC (el estado real de la v1134) | **ROJO**, con archivo y línea |
+| la exención apunta a un sitio que ya no existe | **ROJO** — una excepción huérfana taparía al que entre después (v895) |
+| una de las dos copias del ancla cambia y la otra no | **ROJO** |
+| la rutina diaria vuelve a sellar en UTC | **ROJO** |
+
+La cuarta cubre la mitad que no está en el código servido: la rutina es quien
+**sella `actualizado`**, y si ella saca la fecha con `date -u` el registro
+queda un día adelante aunque el módulo lea bien. El paso 5 lleva ahora la
+orden exacta, `TZ=America/Bogota date +%F`.
+
+### Lo que esta versión NO hace
+
+* **No reescribe ninguna fecha ya guardada.** Una fecha escrita es lo que esa
+  corrida registró, y cambiarla hacia atrás es reescribir el pasado (v903,
+  v1115). El ancla vale de acá en adelante y eso va dicho en el código.
+  `cerrado en v1135 · medido y declinado`
+* **No toca `toISOString()` entero**, que es un INSTANTE y no una fecha de
+  calendario: ahí UTC es lo correcto y hay decenas en el repositorio. La
+  guarda lo dice en su «de qué no responde».
+  `cerrado en v1135 · medido y declinado`
+* **No mueve ningún peldaño.** Compuesta la página, el veredicto sigue en
+  «No puede ser mejor que "Poco fiable" · Es un PISO y no el dictamen».
+  `cerrado en v1135 · medido y declinado`
+* **No barre `pruebas/`**, donde el mismo patrón puede ser parte de un doble.
+  `pendiente`

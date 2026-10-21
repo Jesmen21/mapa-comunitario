@@ -754,6 +754,16 @@
     // El archivo va con unos días de retraso; se pide hasta hace una semana.
     const fin = new Date(hoy.getTime() - 7 * 86400000);
     const ini = new Date(Date.UTC(fin.getUTCFullYear() - CLIMA_ANIOS, 0, 1));
+    /* EXENTA DEL ANCLA A COLOMBIA (v1135), por ítem y con su razón.
+       Estas dos fechas NO las lee nadie: viajan como `start_date` y
+       `end_date` al archivo histórico de Open-Meteo, que trabaja en UTC —el
+       `Date.UTC(...)` de la línea de arriba ya lo daba por sentado—.
+       Anclarlas a Colombia correría el rango un día y podría pedirle al
+       archivo una fecha que todavía no publicó: sería meter un defecto donde
+       no lo había. La exención va NOMBRADA en `revisar.js`, con este archivo
+       y esta línea, para que se discuta una por una y no por una regla del
+       tipo «no cuentan las que hablan con una API», que eximiría a todas las
+       futuras de una vez (v1094, v1109, v1127). */
     const iso = d => d.toISOString().slice(0, 10);
     /* El `r1` del final es la VERSIÓN DE LOS CAMPOS PEDIDOS, y no está de
        adorno: la v882 le agregó la radiación a la consulta, y sin cambiar la

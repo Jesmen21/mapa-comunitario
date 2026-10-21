@@ -2353,7 +2353,7 @@
         ${isOtro ? `<input id="ev-titulo-custom" type="text" maxlength="80" placeholder="Nombre del evento *">` : `<input id="ev-titulo-custom" type="hidden" value="${esc(evType.label)}">`}
         <textarea id="ev-descripcion" maxlength="220" placeholder="Descripción del evento (opcional)"></textarea>
         <div class="u52-ev-datetime">
-          <label><span>Fecha</span><input id="ev-fecha" type="date" value="${new Date().toISOString().slice(0,10)}"></label>
+          <label><span>Fecha</span><input id="ev-fecha" type="date" value="${window.URBIS_FECHA.hoyCO()}"></label>
           <label><span>Hora inicio</span><input id="ev-hora" type="time" value="08:00"></label>
         </div>
         <label class="u52-ev-dura"><span>¿Cuánto dura?</span>
@@ -2425,7 +2425,7 @@
     const titulo = (tituloEl?.value || evType.label).trim() || evType.label;
 
     const desc = (panel?.querySelector('#ev-descripcion')?.value || '').trim();
-    const fecha = panel?.querySelector('#ev-fecha')?.value || new Date().toISOString().slice(0,10);
+    const fecha = panel?.querySelector('#ev-fecha')?.value || window.URBIS_FECHA.hoyCO();
     const hora = panel?.querySelector('#ev-hora')?.value || '';
 
     const _sess = (window.URBIS_AUTH && typeof window.URBIS_AUTH.readSession === 'function') ? window.URBIS_AUTH.readSession() : null;

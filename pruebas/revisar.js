@@ -14886,6 +14886,120 @@ console.log('\n  -- el marcado que vive dentro del JavaScript (v1025) --');
     }
   })();
 
+console.log('\n  -- las fechas de calendario se anclan a Colombia (v1135) --');
+/* ══ NINGUNA FECHA DE CALENDARIO SE SERIALIZA EN UTC ════════════════════════
+   `toISOString().slice(0, 10)` da la fecha en UTC, y URBIS se lee en Colombia
+   (UTC−5, sin horario de verano). Entre las 19:00 y la medianoche de acá eso
+   daba MAÑANA: cinco horas al día en que una fecha publicada iba un día
+   adelantada para su único público. Medido el 21 de octubre de 2026: quince
+   sitios en siete archivos servidos.
+
+   LA GUARDA ES REPO-ANCHA sobre `js/` y va en ROJO, no con `?` (v970, v1026):
+   mide CÓDIGO servido y no material del registro, así que no puede vaciarse
+   por una mejora de los datos. Su material es que haya archivos que leer.
+
+   LA EXENCIÓN VA POR ÍTEM, CON SU ARCHIVO Y SU RAZÓN, y nunca por regla
+   (v1094, v1109, v1127). Una regla del tipo «no cuentan las que hablan con
+   una API» eximiría a todas las futuras de una vez; una razón hay que
+   pensarla una por una, y por eso el panel la NOMBRA en vez de contarla.
+
+   DE QUÉ NO RESPONDE (v945): de `toISOString()` entero, que es un INSTANTE y
+   no una fecha de calendario —ahí UTC es lo correcto y hay decenas—; de las
+   suites de `pruebas/`; y de que la razón de la exención sea cierta, que no
+   lo puede comprobar nadie (v1008). */
+(() => {
+  const EXENTOS = [{
+    archivo: 'js/61-analisis-ia-datos.js',
+    linea: 'const iso = d => d.toISOString().slice(0, 10);',
+    razon: 'esas dos fechas no las lee nadie: viajan como `start_date` y `end_date` al archivo ' +
+           'histórico de Open-Meteo, que trabaja en UTC. Anclarlas a Colombia correría el rango un ' +
+           'día y podría pedirle al archivo una fecha que todavía no publicó'
+  }];
+
+  const PAT = /toISOString\(\)\s*\.slice\(\s*0\s*,\s*10\s*\)/;
+  const archivos = fs.readdirSync(R('js')).filter((f) => f.endsWith('.js')).map((f) => 'js/' + f);
+  comprobar('MATERIAL · se leen los archivos servidos de js/', archivos.length > 40,
+    archivos.length + ' archivos de js/ barridos');
+
+  const conUTC = [];
+  archivos.forEach((f) => {
+    /* Sobre el CÓDIGO y no sobre los comentarios (v926): los tres bloques que
+       explican esta decisión citan el patrón, y un patrón citado en su propia
+       explicación no es una llamada. */
+    const cod = soloCodigo(leer(f));
+    cod.split('\n').forEach((ln, i) => { if (PAT.test(ln)) conUTC.push({ archivo: f, n: i + 1, ln: ln.trim() }); });
+  });
+  const exentoDe = (x) => EXENTOS.some((e) => e.archivo === x.archivo && x.ln.indexOf(e.linea) >= 0);
+  const sobran = conUTC.filter((x) => !exentoDe(x));
+  const exentosVistos = conUTC.filter(exentoDe);
+
+  comprobar('ninguna fecha de calendario se serializa en UTC, salvo las eximidas una por una',
+    archivos.length > 40 && sobran.length === 0,
+    sobran.length
+      ? 'quedan ' + sobran.length + ' sin anclar a Colombia: ' +
+        sobran.map((x) => x.archivo + ':' + x.n).join(' · ') +
+        ' — se anclan con `URBIS_FECHA.hoyCO()` si calculan HOY, o se componen con ' +
+        '`URBIS_FECHA.isoLocal(d)` si convierten una fecha que ya existe'
+      : 'ninguna en ' + archivos.length + ' archivos de js/, y ' +
+        (exentosVistos.length
+          ? exentosVistos.length + ' eximida' + (exentosVistos.length === 1 ? '' : 's') + ' con su razón: ' +
+            exentosVistos.map((x) => {
+              const e = EXENTOS.filter((y) => y.archivo === x.archivo)[0];
+              return x.archivo + ':' + x.n + ' — ' + e.razon;
+            }).join(' · ')
+          : 'ninguna exención en pie'));
+
+  /* LA GUARDA DE LA GUARDA (v878), en dos mitades. La primera: una exención
+     escrita acá cuyo sitio ya no exista es una excepción que envejece, y
+     quedaría tapando lo que entre en su lugar (v895). */
+  const huerfanas = EXENTOS.filter((e) => !conUTC.some((x) => x.archivo === e.archivo && x.ln.indexOf(e.linea) >= 0));
+  comprobar('y ninguna exención escrita se quedó sin su sitio',
+    EXENTOS.length > 0 && huerfanas.length === 0,
+    !EXENTOS.length ? 'no hay exenciones: nada que envejecer'
+      : huerfanas.length ? 'sobra' + (huerfanas.length === 1 ? '' : 'n') + ': ' +
+        huerfanas.map((e) => e.archivo).join(' · ') + ' — el sitio ya no está y la exención taparía al que entre después'
+      : (EXENTOS.length === 1 ? 'la única exención apunta' : 'las ' + EXENTOS.length + ' exenciones apuntan') +
+        ' a un sitio que existe, y su razón va escrita también donde vive el código');
+
+  /* La segunda: `js/70-seguimiento.js` se sirve SOLO, así que no alcanza el
+     `window.URBIS_FECHA` de `js/00-config.js` y lleva su propia copia. Son dos
+     codificaciones de una decisión (clase B) y lo que impide que se separen es
+     atarlas: se comparan los dos cuerpos, normalizados. */
+  const cuerpo = (txt, nom) => {
+    const i = txt.indexOf(nom);
+    if (i < 0) return '';
+    /* El cierre va con una sangría en `js/70` —vive dentro del módulo— y sin
+       ella en `js/00-config.js`, donde es un global. Se toma el primero de
+       los dos que aparezca: buscar solo uno cortaba el objeto de config por
+       un `};` posterior y los cuerpos salían distintos sin estarlo. */
+    const a1 = txt.indexOf('\n  };', i), a2 = txt.indexOf('\n};', i);
+    const fin = a1 < 0 ? a2 : (a2 < 0 ? a1 : Math.min(a1, a2));
+    if (fin < 0) return '';
+    return soloCodigo(txt.slice(i, fin))
+      .replace(/window\.URBIS_FECHA/g, 'FECHA_CO').replace(/\s+/g, ' ').trim();
+  };
+  const cCfg = cuerpo(leer('js/00-config.js'), 'window.URBIS_FECHA = {');
+  const c70 = cuerpo(leer('js/70-seguimiento.js'), 'var FECHA_CO = {');
+  comprobar('y las dos copias del ancla —la compartida y la del módulo presidencial— dicen lo mismo',
+    !!cCfg && !!c70 && cCfg.slice(cCfg.indexOf('hoyCO')) === c70.slice(c70.indexOf('hoyCO')),
+    !cCfg || !c70 ? 'no se encontró una de las dos: ' + (cCfg ? 'falta la de js/70' : 'falta la de js/00-config')
+      : cCfg.slice(cCfg.indexOf('hoyCO')) === c70.slice(c70.indexOf('hoyCO'))
+        ? 'idénticas: `seguimiento.html` carga solo su módulo, así que la copia es inevitable y queda atada'
+        : 'se separaron: una de las dos cambió y la otra no, que es como la clase B se cobra siempre');
+
+  /* Y LA RUTINA DIARIA, que es la que SELLA `actualizado`: si ella sigue
+     sacando la fecha en UTC, el registro queda un día adelante aunque el
+     módulo lea bien. Es la mitad que no está en el código servido. */
+  const rut = fs.existsSync(R('herramientas/rutina-seguimiento-presidencial.md'))
+    ? leer('herramientas/rutina-seguimiento-presidencial.md') : '';
+  comprobar('y la rutina diaria sella `actualizado` en hora de Colombia, no en UTC',
+    !!rut && /HORA DE COLOMBIA/.test(rut) && /TZ=America\/Bogota/.test(rut),
+    !rut ? 'no está el texto de la rutina: no se puede comprobar con qué vara sella'
+      : !/TZ=America\/Bogota/.test(rut)
+        ? 'no dice cómo sacar la fecha de Colombia: corriendo de noche sellaría el día siguiente'
+        : 'lo dice en el paso 5, con la orden exacta para sacarla');
+})();
+
 /* Las dos cuentas van APARTE porque piden cosas distintas: una fallada hay
    que arreglarla, una sin material hay que mirarla —o se quedó sin él porque
    el registro mejoró, o porque la función dejó de ver lo que medía—. Sumarlas

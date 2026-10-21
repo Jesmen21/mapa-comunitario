@@ -48,7 +48,8 @@
     'geo-sin-puntos':      { etq:'Intentó geometría con menos de 2 puntos', grupo:'friccion', friccion:true }
   };
 
-  function hoyISO(){ return new Date().toISOString().slice(0, 10); }
+  /* Hora de Colombia y no UTC (v1135): de noche, acá daba mañana. */
+  function hoyISO(){ return window.URBIS_FECHA.hoyCO(); }
 
   function leer(){
     try {
@@ -62,7 +63,7 @@
 
   // Poda de días viejos: mantiene el archivo pequeño y el panel relevante.
   function podar(o){
-    const limite = new Date(Date.now() - MAX_DIAS * 86400000).toISOString().slice(0, 10);
+    const limite = window.URBIS_FECHA.isoLocal(new Date(Date.now() - MAX_DIAS * 86400000));
     Object.keys(o.dias).forEach(d => { if (d < limite) delete o.dias[d]; });
     return o;
   }

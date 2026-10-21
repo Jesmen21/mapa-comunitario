@@ -3243,7 +3243,7 @@ gruposOrdenados.map(seccion).join(''),
             const blob = new Blob([html], { type: 'text/html;charset=utf-8' });
             const url = URL.createObjectURL(blob);
             const a = document.createElement('a');
-            a.href = url; a.download = 'urbis-lamina-' + new Date().toISOString().slice(0, 10) + '.html';
+            a.href = url; a.download = 'urbis-lamina-' + window.URBIS_FECHA.hoyCO() + '.html';
             document.body.appendChild(a); a.click();
             setTimeout(() => { try { a.remove(); URL.revokeObjectURL(url); } catch(e) {} }, 1500);
           } catch(e) {}

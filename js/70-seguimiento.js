@@ -48,6 +48,34 @@
   // campo `proximaActualizacion` del JSON se conserva como dato.
   var CADENCIA_REVISION = 'se revisa cada 6 horas';
 
+  /* ══ LAS FECHAS DE CALENDARIO SE ANCLAN A COLOMBIA (v1135) ═══════════════
+     Este módulo se sirve SOLO —`seguimiento.html` carga este archivo y nada
+     más—, así que no alcanza el `window.URBIS_FECHA` de `js/00-config.js`.
+     Son dos codificaciones de una sola decisión (clase B), y la respuesta de
+     esta casa cuando no se pueden derivar es ATARLAS con una guarda: hay una
+     en `revisar.js` que compara los dos cuerpos y se pone roja si se separan.
+
+     Y lo que NO se toca: ninguna fecha ya escrita en el registro. Una fecha
+     guardada es lo que esa corrida registró (v903, v1115). */
+  var FECHA_CO = {
+    ZONA: 'America/Bogota',
+    hoyCO: function () {
+      try {
+        return new Intl.DateTimeFormat('en-CA', { timeZone: 'America/Bogota' }).format(new Date());
+      } catch (e) {
+        return FECHA_CO.isoLocal(new Date(Date.now() - 5 * 3600000), true);
+      }
+    },
+    isoLocal: function (d, enUTC) {
+      var f = (d instanceof Date) ? d : new Date(d);
+      if (isNaN(f.getTime())) return '';
+      var a = enUTC ? f.getUTCFullYear() : f.getFullYear();
+      var m = (enUTC ? f.getUTCMonth() : f.getMonth()) + 1;
+      var x = enUTC ? f.getUTCDate() : f.getDate();
+      return a + '-' + ('0' + m).slice(-2) + '-' + ('0' + x).slice(-2);
+    }
+  };
+
   function fechaLarga(iso) {
     var p = String(iso || '').split('-');
     if (p.length !== 3) return String(iso || '');
@@ -2987,7 +3015,7 @@
        lo peor de los dos: devuelve ceros con la forma de una medición. */
     dd = dd || D;
     var ent = hechosDelMandato(dd, corte);
-    var hasta = corte || (dd.entrega) || (new Date()).toISOString().slice(0, 10);
+    var hasta = corte || (dd.entrega) || FECHA_CO.hoyCO();
     var dias = Math.max(1, Math.round(
       (new Date(hasta + 'T00:00:00') - new Date((dd.posesion || hasta) + 'T00:00:00')) / 86400000));
     var por100 = function (n) { return Math.round(1000 * n / dias) / 10; };
@@ -3219,7 +3247,10 @@
   function fechaMas(iso, dias) {
     var d = new Date(iso + 'T00:00:00');
     d.setDate(d.getDate() + dias);
-    return d.toISOString().slice(0, 10);
+    /* Se compone sin husos (v1135): esa fecha se parseó en hora LOCAL, así
+       que serializarla en UTC corría un día para un lector al este de
+       Greenwich — en Colombia no se notaba y el defecto estaba igual. */
+    return FECHA_CO.isoLocal(d);
   }
 
   /* ═══ CAPA 3 DEL PLIEGO PRESIDENCIAL · LOS EJES ═══════════════════════
@@ -5764,7 +5795,7 @@
     });
     if (claridad.conTipo) claridad.pct = Math.round(100 * claridad.verificado / claridad.conTipo);
 
-    var hasta = corte || (new Date()).toISOString().slice(0, 10);
+    var hasta = corte || FECHA_CO.hoyCO();
     var dias = Math.max(1, Math.round(
       (new Date(hasta + 'T00:00:00') - new Date((dd.posesion || hasta) + 'T00:00:00')) / 86400000));
     var ritmo = { hechos: ent.length, dias: dias, porSemana: Math.round(10 * 7 * ent.length / dias) / 10 };
@@ -5918,7 +5949,7 @@
        una columna a medias. */
     for (var t = t0 + 7 * 86400000; t <= hoy + 7 * 86400000; t += 7 * 86400000) {
       var parcial = t > hoy;
-      var iso = new Date(parcial ? hoy : t).toISOString().slice(0, 10);
+      var iso = FECHA_CO.isoLocal(new Date(parcial ? hoy : t));
       var f = fichaHasta(iso);
       out.push({ corte: iso, hechos: f.ritmo.hechos, pct: f.claridad.pct,
                  nuevos: 0, parcial: parcial, veredicto: f.veredicto.id });

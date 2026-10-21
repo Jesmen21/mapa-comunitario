@@ -206,8 +206,10 @@
   function htmlEmisor() {
     var e = S.emitida;
     var hoy = new Date();
-    var dentroDeUnAnio = new Date(hoy.getFullYear() + 1, hoy.getMonth(), hoy.getDate())
-      .toISOString().slice(0, 10);
+    /* Se compone sin husos (v1135): `new Date(a, m, d)` es LOCAL y
+       serializarlo en UTC corría un día para un lector al este de Greenwich. */
+    var dentroDeUnAnio = window.URBIS_FECHA.isoLocal(
+      new Date(hoy.getFullYear() + 1, hoy.getMonth(), hoy.getDate()));
 
     return '<div class="ulic-emisor">' +
       '<p class="ulic-pista">Solo para URBIS. Su secreto <b>no se guarda</b>: se usa para esta ' +

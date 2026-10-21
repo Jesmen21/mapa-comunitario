@@ -574,7 +574,7 @@
     var sc = (res && res.stats) || {};
     var out = {
       estado: 'ok',
-      fecha: new Date().toISOString().slice(0, 10),
+      fecha: window.URBIS_FECHA.hoyCO(),
       divipola: C.divipola, nombre: C.nombre || '',
       areaM2: areaM2, radioM: radioM, poblacion: C.poblacion,
       usos: Number(sc.total) || elementos.length,
@@ -23476,7 +23476,7 @@ function donaHTML(datos, colorDe, nombreDe) {
   function construirOSM(comp) {
     var nuevos = (comp && comp.nuevos) || [];
     if (!nuevos.length) return '';
-    var hoy = new Date().toISOString().slice(0, 10);
+    var hoy = window.URBIS_FECHA.hoyCO();
     var esc2 = function (t) {
       return String(t == null ? '' : t)
         .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
@@ -32745,7 +32745,7 @@ function donaHTML(datos, colorDe, nombreDe) {
       var csv = cursoComoCSV();
       if (!csv) { S.avisoPestana = 'Todavía no hay puntos del curso para armar la planilla.'; repintar(); return true; }
       var puso = descargarArchivo('\ufeff' + csv, 'urbis-curso-' +
-        new Date().toISOString().slice(0, 10) + '.csv', 'text/csv;charset=utf-8');
+        window.URBIS_FECHA.hoyCO() + '.csv', 'text/csv;charset=utf-8');
       S.avisoPestana = puso ? 'Planilla descargada.' : 'No se pudo generar la planilla en este dispositivo.';
       repintar(); return true;
     }
@@ -32757,7 +32757,7 @@ function donaHTML(datos, colorDe, nombreDe) {
       var paqR = JSON.stringify(respaldoDeTodo(fichasR));
       var kb = Math.max(1, Math.round(paqR.length / 1024));
       var listo = descargarArchivo(paqR, 'urbis-respaldo-' +
-        new Date().toISOString().slice(0, 10) + '.json', 'application/json');
+        window.URBIS_FECHA.hoyCO() + '.json', 'application/json');
       S.avisoPestana = listo
         ? ('Se bajaron ' + fichasR.length + ' sector' + (fichasR.length === 1 ? '' : 'es') +
            ' en un archivo de ' + kb + ' KB. Guárdelo fuera del teléfono: es la copia de la ' +

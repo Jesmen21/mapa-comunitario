@@ -236,11 +236,15 @@ redactar el criterio entero con su `incluye` y su `excluye`, correrlo sobre
 TODO el registro y el de Petro sin mirar a quién favorece, y recién entonces
 ver qué mueve.
 
-## 9 · «Hoy» se calcula en UTC y el módulo se lee en Colombia · `pendiente`
+## 9 · «Hoy» se calcula en UTC y el módulo se lee en Colombia · `cerrado en v1135`
 
-**NO EJECUTAR hasta que quien firma el módulo lo diga.** Queda anotado el 21
-de octubre de 2026, medido y con su alcance escrito, para que el día que se
-haga se haga entero y en UNA sola versión.
+**EJECUTADO EN LA v1135**, autorizado el 21 de octubre de 2026. Lo que sigue
+es la nota tal como se escribió, que es lo que la decisión tuvo delante; al
+final va lo que la ejecución encontró y que la nota no decía.
+
+*(Texto original de la nota:)* Queda anotado el 21 de octubre de 2026, medido
+y con su alcance escrito, para que el día que se haga se haga entero y en UNA
+sola versión.
 
 **El hecho, medido.** El módulo serializa fechas con
 `toISOString().slice(0, 10)`, que es **UTC**, en cuatro sitios de
@@ -303,3 +307,24 @@ sigue siendo la que impide que vuelva.
 * **Qué pasa con las fechas ya escritas.** No se reescriben: una fecha guardada
   es lo que esa corrida registró, y cambiarla hacia atrás es reescribir el
   pasado (v903, v1115). El cambio vale de aquí en adelante y eso va dicho.
+
+### Lo que la ejecución encontró, y la nota no decía (v1135)
+
+Dos cosas aparecieron al censar y las dos **cambiaron el alcance**, así que se
+pararon y se consultaron antes de tocar nada:
+
+* **Había un SÉPTIMO archivo**, `js/20-mobile-functional-app.js`, con dos
+  sitios: la fecha por defecto del formulario de eventos comunitarios y su
+  respaldo al guardar. Un vecino que creaba un evento a las ocho de la noche
+  lo veía fechado **mañana**. Entró al alcance.
+* **En `js/61-analisis-ia-datos.js` el UTC era lo CORRECTO**, y la regla
+  general lo habría roto: esas dos fechas viajan como `start_date` y
+  `end_date` al archivo histórico de Open-Meteo, que trabaja en UTC. Quedó
+  **eximida por ítem**, con archivo, línea y razón escrita en los dos sitios
+  —en el código donde vive y en el panel de `revisar.js`, que la NOMBRA—.
+
+Y una tercera, medida: **las guardas que comparan contra `actualizado` no
+necesitaban cambio.** Comparan fechas guardadas contra fechas guardadas; la
+única que comparaba contra un «hoy» calculado era el `hasta` de dos funciones
+de `js/70`, y esas sí se anclaron. La nota lo daba por trabajo pendiente y no
+lo era.

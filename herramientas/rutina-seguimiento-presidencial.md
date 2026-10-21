@@ -39,7 +39,7 @@ Agregar los hechos de LAS ÚLTIMAS 24-48 HORAS y actualizar las fechas de contro
 
 3. Agregá las entradas nuevas AL PRINCIPIO del array `entradas` (orden: más reciente primero).
 4. Si lo que encontraste es un CASO DE CORRUPCIÓN suyo o de su gobierno, o un CAMBIO DE POSTURA, va además en su sección propia (ver abajo).
-5. Actualizá `actualizado` con la fecha de hoy y `proximaActualizacion` con la de MAÑANA (formato YYYY-MM-DD).
+5. Actualizá `actualizado` con la fecha de hoy y `proximaActualizacion` con la de MAÑANA (formato YYYY-MM-DD). **Son fechas en HORA DE COLOMBIA, no en UTC** (v1135): si corrés de noche, `date -u` ya dice mañana y el registro quedaría sellado un día adelante de lo que ve el lector. Sacala con `TZ=America/Bogota date +%F`. El módulo ancla todas sus fechas de calendario a Colombia desde la v1135, así que el sello tiene que ir con la misma vara.
 
 ## LOS CASOS DE CORRUPCIÓN — `casos.lista`
 Sección hermana de `contradicciones`. Es lo primero que ve el lector en la ficha, y lo único que puede tumbar el veredicto de golpe. Cada caso lleva `id`, `titulo`, `estado`, `queSeConfirmo`, `quienLoConfirmo`, `fecha`, `monto` (o null), `implicados` y `fuentes`.
