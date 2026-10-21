@@ -224,20 +224,41 @@ material porque ya no quedan entradas con esquema antiguo. Es el estado bueno.
 
 ## 9 · El texto de arranque para la sesión nueva
 
-```
-Continúo el módulo presidencial de URBIS. Lee primero
-herramientas/TRASPASO-portada-grafica.md: tiene el estado exacto del
-repositorio, mis reglas y el plan.
+**La rama es `main-r3g781`** y está en GitHub con los cinco commits. `main`
+NO los tiene: sigue en `b9a8edf` (v1137), que es lo que sirve el sitio.
 
-Haz la v1140 y solo la v1140: las cinco pestañas con enlace #, sin memoria
-de pestaña, abriendo los gráficos por defecto, y mueve a ellas todo el
-texto actual SIN CAMBIAR UNA PALABRA. La portada se queda como está; los
-gráficos son la v1141 y no los empieces.
+```
+Continúo el módulo presidencial de URBIS.
+
+ANTES DE TOCAR NADA, en este orden:
+
+1. Cambia a la rama de trabajo y tráela:
+      git fetch origin && git checkout main-r3g781 && git pull
+2. Comprueba con `git log --oneline -5` que existen estos cinco commits,
+   del más nuevo al más viejo:
+      b35b979  Nota de traspaso para la v1140
+      b4e49f3  v1139 · las guardas que se escriben antes de mover el texto
+      3f6a7e1  v1138 · la paleta «Papel»
+      f28b7b9  Guarda de contraste parametrizada y las tres paletas candidatas
+      e0d3980  Registra los bloques de delitos de alto impacto y de subsidios
+   Si alguno falta, PARA y dímelo: no sigas.
+3. Lee COMPLETO herramientas/TRASPASO-portada-grafica.md. Tiene el estado
+   del repositorio, mis reglas, las decisiones ya tomadas, los conteos
+   base y las trampas que ya se pagaron.
+
+Después haz la v1140 y SOLO la v1140: las cinco pestañas —«¿Qué ha
+pasado?», «Contradicciones», «Hoy», «Lo que yo leo» y «Fuentes y
+método»— con enlace #, sin memoria de pestaña, abriendo los gráficos por
+defecto, y mueve a ellas todo el texto actual SIN CAMBIAR UNA PALABRA.
+La portada se queda como está; los gráficos son la v1141 y no los
+empieces sin mi visto bueno.
 
 Al cerrar repórtame: los seis conteos antes y después (tienen que ser
-iguales: 17, 324, 50, 5, 15, 14), la guarda de texto inalcanzable en
-verde con su inyección, el papel leído en las cinco pestañas, verdes y ?,
-y el veredicto en el piso.
+iguales: 17 afirmaciones, 324 entradas, 50 contrargumentos, 5
+exenciones, 15 contradicciones, 14 casos), la guarda de texto
+inalcanzable en verde con su inyección, el papel leído en las cinco
+pestañas, verdes y ?, y el veredicto en el piso.
 
-No subas nada. Cuando yo diga «súbalo» se publica solo hasta 3f6a7e1.
+No subas nada a main. Puedes subir a main-r3g781. Cuando yo diga
+«súbalo» se publica solo hasta 3f6a7e1.
 ```
