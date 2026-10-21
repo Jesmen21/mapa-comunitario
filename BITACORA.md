@@ -28726,3 +28726,139 @@ orden exacta, `TZ=America/Bogota date +%F`.
   `cerrado en v1135 · medido y declinado`
 * **No barre `pruebas/`**, donde el mismo patrón puede ser parte de un doble.
   `pendiente`
+
+## v1140 · el texto, movido a cinco pestañas y ni una palabra cambiada
+
+Hecha el 21 de octubre de 2026. Es la primera de las tres que la nota
+`herramientas/TRASPASO-portada-grafica.md` planeó, y va **sola y sin un solo
+gráfico** por una razón escrita de antemano: *acá es donde se pierde texto si
+se pierde.* Los gráficos son la v1141 y no se empezaron.
+
+Lo que hace: crea **«¿Qué ha pasado?», «Contradicciones», «Hoy», «Lo que yo
+leo» y «Fuentes y método»**, cada una con su enlace `#` compartible, y mueve a
+ellas el texto que ya existía. La portada **no es una pestaña** y se queda como
+estaba, con sus gráficos primero, que es lo que abre cuando no hay hash.
+
+### El texto no se mueve: se mueve el CAMINO para llegar
+
+Las cinco pestañas se pintan desde `PESTANAS`, y las secciones que cambiaron de
+casa se traducen en **un solo sitio**, `MUDADAS`:
+
+| Sección de antes | Pestaña que la guarda ahora |
+|---|---|
+| `ficha` · `timeline` · `extranjera` · `temas` | **¿Qué ha pasado?** |
+| `balance` · `foda` | **Lo que yo leo** |
+
+Eso es lo que hace que nada se borre. Un enlace que alguien compartió en agosto
+—`#/ficha-del-gobernante`, `#/balance-foda`— **sigue abriendo su sección**: se
+abre la pestaña que la contiene y se baja hasta su bloque, con el foco en su
+encabezado para que el lector de pantalla diga dónde quedó. Y los diez botones
+de la nav de la portada no se tocaron: pasan por la misma traducción.
+
+**Sin memoria de pestaña, y es una decisión.** Si el módulo recordara la
+última, un enlace compartido abriría otra cosa de la que dice. La pestaña
+abierta SE DERIVA de la ruta y de nada más.
+
+### Lo medido, antes y después
+
+Los seis conteos son el piso que la v1139 dejó escrito para esta tanda, y
+**ninguno se movió**:
+
+| Qué | Antes | Después |
+|---|---|---|
+| Afirmaciones del editorial | 17 | **17** |
+| Entradas (los dos registros) | 324 | **324** |
+| Contrargumentos oficiales | 50 | **50** |
+| Exenciones declaradas | 5 | **5** |
+| Contradicciones | 15 | **15** |
+| Casos | 14 | **14** |
+
+`revisar.js`: **792 verdes, 0 rojos, 1 `?`** —el de la guarda de rol de fuente
+de la v966, sin material porque ya no quedan entradas con esquema antiguo, que
+es el estado bueno—. El conteo se comparó contra el de la tanda anterior
+levantando un árbol de trabajo en `0fe87e9`: **792 también**, así que el cambio
+no se llevó ninguna palomita (v1090). La nota de traspaso decía 794 y ese
+número estaba mal; se corrige acá midiendo las dos puntas y no recordando.
+
+### La guarda, demostrada en rojo
+
+La de texto inalcanzable de la v1139 se inyectó quitándole a una clave su único
+lector —`porQueNOloCIERRA`, el texto que dice por qué el borrador de supuestos
+NO cierra su casillero—, que es exactamente lo que pasa si al mudar una sección
+se queda un pintor atrás:
+
+| Inyección | Resultado |
+|---|---|
+| `borradorPorQue` deja de leer `marcoBorrador.porQueNOloCIERRA` | **ROJO**, nombrando la clave, con salida 1 |
+
+Y de paso disparó la de versión —«sigue en 1139 y hay cambios sin subir»—, que
+es la que obliga al token al cerrar. El parche imprimió su `ok parcheado` antes
+de creerle a la corrida siguiente, y el archivo se restauró con `git checkout`.
+
+### El papel, leído en las cinco
+
+Compuesto en Chromium contra el servidor de 8199, porque el código no dice si
+lo que sale se puede leer sin mentir:
+
+* Las cinco pestañas pintan, con la tira en cada una y la abierta marcada con
+  `aria-current` **y** un borde de 3 px —no solo color—, a 10,5:1 de contraste.
+* Los **seis hashes viejos** aterrizan en su pestaña y bajan a su sección:
+  `ficha` a −6 px, `timeline`, `extranjera` y `temas` a 0, `balance` a −6 y
+  `foda` a 107, con el foco en el encabezado correcto.
+* Los **diez botones** de la portada, uno por uno, caen donde deben.
+* El conmutador del FODA sobrevivió a la mudanza: **4 · 4 · 4 · 5**, que cuadra
+  con sus insignias.
+* Cero errores de página, cero `undefined`/`null`/`NaN`/`[object Object]`, cero
+  asteriscos de markdown impresos, y **ningún desborde horizontal a 390 px**.
+
+**Dos de mis hallazgos eran falsos positivos de mi propia medición**, y se
+dejan escritos porque la próxima los va a repetir:
+
+* Barrí los enlaces con `a[href^="#"]` y conté cuatro vistas «huérfanas»
+  —`lista`, `tablero`, `indicadores`, `tema`—. **La navegación de este módulo
+  va por `ir({v})` en botones, no por `href`**: las cuatro se alcanzan desde la
+  nav de la portada. Un barrido propio se comprueba contra el mecanismo real
+  (v878, v891).
+* Busqué el cuadrante activo del FODA por `.sp-fodatab.on` y salió «ninguna
+  marcada». Se marca con **`aria-selected`**, que es el patrón correcto para
+  `role="tab"`, y el CSS lo estila. Un token o un nombre se comprueba antes de
+  usarlo (v1050, v1056) — y vale igual para el nombre que una prueba busca.
+
+### Y la versión iba en NUEVE archivos, no en siete
+
+Lo cazó la guarda, no la lectura. `CLAUDE.md` decía «siete» y traía un `sed` de
+siete rutas; `revisar.js` comprueba **nueve** desde que Visión Territorial
+tiene página propia con su propio service worker. Con el `sed` del documento,
+`vision-territorial.html` y `sw-vt.js` **se quedaban en la versión anterior sin
+que nada en el texto lo dijera** — y un service worker con el token viejo es la
+mitad de la aplicación vieja conviviendo con la nueva, que es peor que no
+actualizar. Corregidos el número, la lista y el `sed` en los cinco sitios donde
+`CLAUDE.md` decía «los siete», con la causa escrita al lado: es la forma de la
+v868 —una lista honesta se vuelve vieja la primera vez que alguien implementa
+algo— cometida en la sección que toda tanda lee **antes de cerrar**.
+
+### Lo que esta versión NO hace
+
+* **No pinta un solo gráfico.** Es la v1141 y pide el visto bueno de quien
+  firma el módulo antes de empezarse.
+  `pendiente`
+* **No retira ninguno de los cuatro `_sinPintarTodavia`.** Sus 16 claves de
+  texto siguen contadas aparte, con su razón, y el día que se pinten el campo
+  se retira y su texto pasa a exigirse como el de todos.
+  `pendiente`
+* **No corrió las ~58 suites de `pruebas/correr.js`.** Falta `../urbis-motor`
+  en este contenedor, así que la tanda cierra con las guardas estáticas y sin
+  las del navegador. **No es trabajo aplazado: es una limitación de medición**,
+  y por eso queda anotada en `DECISIONES-PENDIENTES.md` como condición para
+  publicar y no como renglón de la lista.
+  `pendiente`
+* **No escribe las secciones de la v1137, la v1138 y la v1139**, que no están.
+  `BITACORA.md` saltaba de la v1135 a esta. Rellenarlas desde los mensajes de
+  commit sería inventar lo que esas tandas midieron, y una sección falsa es
+  peor que su ausencia; quedan anotadas con su hallazgo.
+  `pendiente`
+* **No cambia una palabra del texto movido**, que es el encargo entero.
+  `cerrado en v1140`
+* **No toca `main` ni la publica.** La regla de publicación sigue siendo la
+  escrita: cuando se diga «súbalo», solo hasta `3f6a7e1`.
+  `cerrado en v1140 · medido y declinado`

@@ -392,3 +392,64 @@ de una frase, así que el panel tiene que decir sobre qué se concede —hoy
 nombra afirmaciones con su frase—; y el día que estos bloques se grafiquen,
 sus TÍTULOS y etiquetas pasan por la misma guarda penal que los títulos de
 las entradas (v1136), que ya está escrita y los alcanzaría sin tocarla.
+
+## 12 · La v1140 no se publica sin las suites del navegador · `pendiente`
+
+**Anotado el 21 de octubre de 2026 por decisión del usuario, y es la
+condición literal:** *la v1140 **NO se publica** hasta correr las ~58 suites
+de `pruebas/correr.js` en una máquina que tenga `../urbis-motor`.*
+
+**El estado.** La v1140 cerró con las guardas estáticas enteras —**792
+verdes, 0 rojos, 1 `?`**—, los seis conteos en su piso (17 · 324 · 50 · 5 ·
+15 · 14), la guarda de texto inalcanzable demostrada en rojo con su inyección
+y el papel leído en las cinco pestañas con Chromium. Lo que **no** corrió es
+`pruebas/correr.js`: este contenedor no tiene el repositorio privado del
+motor al lado, así que el servidor de 8787 no existe y las suites se caen
+todas con «Cannot read properties of null», que es el síntoma que
+`CLAUDE.md` ya tiene escrito como motor caído y no como regresión.
+
+**Por qué eso limita lo que se puede publicar.** La tanda mueve catorce
+secciones de sitio y reescribe el enrutador del módulo. Las guardas estáticas
+comprueban que el texto tenga quien lo lea y que los conteos no bajen;
+**ninguna comprueba las ~58 suites del navegador de verdad**, y entre ellas
+están las que miden el pliego en milímetros de papel y las que recorren las
+superficies de Visión Territorial. Un enrutador nuevo es exactamente la clase
+de cambio que una suite de navegador caza y una estática no. Publicar con esa
+mitad sin correr sería declarar parte de la comprobación y callar la otra
+parte, que es peor que no declarar nada (v867).
+
+**No es trabajo aplazado, es una limitación de medición**, y por eso va acá y
+no como renglón de la `LISTA-QUE-SIGUE`: no depende de que alguien de acá se
+ponga a trabajar, depende de en qué máquina se corra. El encabezado no lleva
+una de las cinco formas de `ENCABEZADOS-APLAZADOS` por lo mismo que
+`NO se pudo` no cuenta.
+
+**Qué la cierra:** una corrida de `node pruebas/correr.js` en verde, con su
+conteo de suites, en una máquina con `../urbis-motor` al lado y los dos
+servidores en pie (8199 y 8787). Mientras no exista, `main` se queda en
+`b9a8edf` (v1137).
+
+## 13 · Faltan las secciones de la v1137, la v1138 y la v1139 · `pendiente`
+
+**El hecho, medido al cerrar la v1140.** `BITACORA.md` salta de la **v1135** a
+la v1140: las tres tandas intermedias —v1137 (la vara penal en los títulos),
+v1138 (la paleta «Papel») y v1139 (las dos guardas previas)— **no escribieron
+su sección**, aunque `CLAUDE.md` lo pide para toda tanda nueva.
+
+**Por qué no las rellenó la v1140.** Reconstruirlas desde los mensajes de
+commit sería **inventar lo que esas tandas midieron** —su demostración en
+rojo, su precio medido, lo que declararon pendiente—, y una sección falsa es
+peor que su ausencia: invita a no volver a mirar, que es el defecto que la
+v1008 tiene escrito sobre las marcas puestas sin medir.
+
+**Por qué eso limita.** `BITACORA.md` es donde una sesión busca el precio
+medido de una decisión y por qué una idea que parece buena ya se deshizo. Tres
+versiones sin sección son tres decisiones que la próxima tanda va a volver a
+tomar desde cero — y dos de ellas, la paleta y las guardas de conteo, son
+justamente las que la v1141 va a tocar.
+
+**Y hay un hueco de guarda detrás.** `revisar.js` comprueba que los dos
+archivos de la bitácora existan y cuenta sus secciones, pero **no comprueba
+que la versión publicada tenga la suya**. Por eso tres tandas pudieron
+saltársela sin un solo rojo. Una guarda que lo midiera es código y no datos,
+así que iría en rojo y no con `?` (v965, v970).

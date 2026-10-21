@@ -148,7 +148,7 @@ Es la segunda vez en dos semanas, así que va como regla y no como anécdota:
 
 Pasó el 7 de septiembre de 2026: las dos sesiones llamaron v788 a lo suyo.
 Ninguna hizo nada mal —cada una miró el último commit de su rama y sumó uno—
-y el choque salió al fusionar, con los siete archivos de versión en conflicto
+y el choque salió al fusionar, con los nueve archivos de versión en conflicto
 por una sola cosa: el número.
 
 Se resuelve **subiendo por encima de las dos**, nunca bajando la propia: para
@@ -156,9 +156,9 @@ la caché de un teléfono, una versión que no sube es una versión que no
 existe, y quien ya tenga la del otro no se enteraría del cambio.
 
 ```bash
-git diff <base> origin/main -- <los siete>   # comprobar que solo cambió el token
-git checkout --ours -- <los siete> && git add <los siete>
-sed -i 's/788-lo-mio/789-lo-mio/g' <los siete>
+git diff <base> origin/main -- <los nueve>   # comprobar que solo cambió el token
+git checkout --ours -- <los nueve> && git add <los nueve>
+sed -i 's/788-lo-mio/789-lo-mio/g' <los nueve>
 ```
 
 `revisar.js` lo avisa antes, comparando con la referencia de `origin/main`
@@ -172,13 +172,26 @@ antes. Razón de más para el `git fetch` del principio.
 Se desarrolla en `main-r3g781`. Al terminar, `merge --ff-only` a `main` y se
 suben las dos. Nada de trabajar directo sobre `main`.
 
-## La versión va en siete archivos
+## La versión va en NUEVE archivos
+
+**Decía «siete» y eran nueve, y lo cazó la guarda en la v1140.** Se deja
+escrito con el número y con la causa, porque el `sed` de siete rutas que
+estaba acá abajo dejaba dos archivos atrás **sin que nada en el texto lo
+dijera**: `revisar.js` comprueba los NUEVE desde que Visión Territorial tiene
+su propia página, y este párrafo se quedó con la lista de antes. Es la forma
+de la v868 —una lista honesta se vuelve vieja la primera vez que alguien
+implementa algo— cometida en la sección que toda tanda lee antes de cerrar.
+**Manda la guarda, no esta lista**; si vuelven a separarse, la guarda lo dice
+y el número de acá es el que está mal.
 
 `service-worker.js`, `index.html` (incluido `window.URBIS_APP_VERSION`),
-`css/main.css`, `analisis-ia.html`, `seguimiento.html`, y los dos de la
+`css/main.css`, `analisis-ia.html`, `seguimiento.html`, los dos de la
 entrada del APK URBIS_CO: `reportes.html` (que solo redirige a `index.html`;
 el APK la lleva grabada como dirección de arranque y no se puede quitar) y
-`sw-reportes.js` (un service worker de retiro que se da de baja solo).
+`sw-reportes.js` (un service worker de retiro que se da de baja solo), **y
+los dos de Visión Territorial**: `vision-territorial.html` y `sw-vt.js`, que
+es una página propia con su propio service worker (ámbito
+`/vision-territorial`) y por eso tiene su propia caché que romper.
 
 Tienen que llevar exactamente el mismo texto. Es lo que rompe la caché del
 navegador: con uno desactualizado, un teléfono se queda con la mitad de la
@@ -188,10 +201,10 @@ cambian de una vez:
 ```bash
 sed -i 's/682-lo-que-sea/683-lo-nuevo/g' \
   service-worker.js index.html css/main.css analisis-ia.html seguimiento.html \
-  reportes.html sw-reportes.js
+  reportes.html sw-reportes.js vision-territorial.html sw-vt.js
 ```
 
-`node pruebas/revisar.js` comprueba que los siete coincidan. Los dos últimos
+`node pruebas/revisar.js` comprueba que los nueve coincidan. Los dos últimos
 entraron en la v780, cuando todavía eran una app ligera aparte: llevaban
 desde la 597 congelados. En la v784 la app ligera se retiró —el APK abre la
 misma interfaz que la web— y quedan como entrada y como retiro.

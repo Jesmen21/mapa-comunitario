@@ -318,22 +318,85 @@
   }
 
   // ══ RUTAS ═════════════════════════════════════════════════════════════════
+
+  /* ── LAS CINCO PESTAÑAS (v1140) ─────────────────────────────────────────
+     Cinco destinos, cada uno con su enlace compartible. La tira se pinta con
+     ANCLAS de verdad —`<a href="#/...">`— y no con botones: un botón no se
+     copia, no se abre en otra ventana y no se lee como enlace. Lo que abre
+     cada una lo decide el hash, así que no hay nada que recordar.
+
+     NO HAY MEMORIA DE PESTAÑA, y es una decisión: si el módulo recordara la
+     última, un enlace compartido abriría otra cosa de la que dice. La
+     pestaña abierta SE DERIVA de la ruta y de nada más.
+
+     Y LA PORTADA NO ES UNA PESTAÑA: sigue siendo la entrada, con sus
+     gráficos primero, que es lo que abre por defecto cuando no hay hash. */
+  var PESTANAS = [
+    { v: 'pasado',          t: '¿Qué ha pasado?' },
+    { v: 'contradicciones', t: 'Contradicciones' },
+    { v: 'hoy',             t: 'Hoy' },
+    { v: 'leo',             t: 'Lo que yo leo' },
+    { v: 'fuentes',         t: 'Fuentes y método' }
+  ];
+
+  /* Las secciones que se MUDARON dentro de una pestaña, y a cuál. El texto
+     vive en un solo sitio; lo que sobrevive es el camino para llegar.
+
+     ESTO ES LO QUE HACE QUE NADA SE BORRE (v1140): los hashes de antes
+     —`#/ficha-del-gobernante`, `#/balance-foda`— siguen vivos, y también los
+     botones de la portada, que no se tocaron. Se traducen acá, en UN solo
+     sitio, a la pestaña que ahora guarda su sección más el ancla para bajar
+     hasta ella. Un enlace que alguien compartió en agosto sigue abriendo su
+     sección, solo que ahora con sus vecinas al lado. */
+  var MUDADAS = {
+    ficha: 'pasado', timeline: 'pasado', extranjera: 'pasado', temas: 'pasado',
+    balance: 'leo', foda: 'leo'
+  };
+
+  function normaliza(r) {
+    if (!r || !MUDADAS[r.v]) return r;
+    return { v: MUDADAS[r.v], ancla: r.v };
+  }
+
+  /* La tira, en la pestaña que esté abierta. Se repinta en cada navegación
+     en vez de guardarse: el estado abierto sale de la ruta, y un nodo que se
+     conserva entre vistas es un sitio donde el «on» se queda viejo. */
+  function pintarTiraPestanas(r) {
+    var host = document.querySelector('.sp-view.on .sp-pes-host');
+    if (!host) return;
+    vaciar(host);
+    var nav = el('nav', 'sp-pes');
+    nav.setAttribute('aria-label', 'Las cinco pestañas del seguimiento');
+    PESTANAS.forEach(function (p) {
+      var abierta = p.v === r.v;
+      var a = el('a', 'sp-pes-t' + (abierta ? ' on' : ''), p.t);
+      a.href = rutaAHash({ v: p.v });
+      if (abierta) a.setAttribute('aria-current', 'page');
+      nav.appendChild(a);
+    });
+    host.appendChild(nav);
+  }
+
   // Cada ruta sabe su padre: así el botón atrás sube un nivel de verdad, en vez
   // de devolver siempre al inicio (y funciona igual con un enlace profundo).
   function padreDe(r) {
     switch (r.v) {
       case 'home': return null;
-      case 'hoy': case 'balance':
-      case 'timeline': case 'contradicciones': case 'foda': case 'temas': case 'indicadores':
-      case 'extranjera': case 'ficha':
+      // Las cinco pestañas cuelgan de la portada; las secciones que se
+      // mudaron adentro ya no son destino propio y no aparecen acá.
+      case 'pasado': case 'contradicciones': case 'hoy': case 'leo': case 'fuentes':
+      case 'tablero': case 'indicadores':
         return { v: 'home' };
-      case 'lista': return { v: 'timeline' };
+      /* Los padres de los detalles se devuelven YA NORMALIZADOS: la miga y el
+         botón atrás se arman con esta cadena, y un eslabón con el nombre
+         viejo pintaría un título que ya no existe. */
+      case 'lista': return normaliza({ v: 'timeline' });
       // Desde el muro se entra a un hecho sin pasar por la lista de temas: el
       // atrás tiene que devolver al muro, no a un sitio donde nunca estuvo.
       case 'hecho':
         if (r.desde === 'hoy') return { v: 'hoy' };
-        return r.tema ? { v: 'lista', tema: r.tema } : { v: 'timeline' };
-      case 'tema': return { v: 'temas' };
+        return r.tema ? { v: 'lista', tema: r.tema } : normaliza({ v: 'timeline' });
+      case 'tema': return normaliza({ v: 'temas' });
       default: return { v: 'home' };
     }
   }
@@ -342,6 +405,12 @@
     switch (r.v) {
       case 'home': return '#/';
       case 'hoy': return '#/al-dia';
+      /* Las tres pestañas nuevas. Las otras dos —«Contradicciones» y «Hoy»—
+         se quedan con el hash que ya tenían, que es el que está compartido
+         por ahí desde agosto. */
+      case 'pasado': return '#/que-ha-pasado';
+      case 'leo': return '#/lo-que-yo-leo';
+      case 'fuentes': return '#/fuentes-y-metodo';
       case 'balance': return '#/balance';
       case 'timeline': return '#/linea-de-tiempo';
       case 'lista': return '#/linea-de-tiempo/' + encodeURIComponent(r.tema || 'todos');
@@ -369,6 +438,9 @@
     });
     switch (partes[0]) {
       case 'al-dia':         return { v: 'hoy' };
+      case 'que-ha-pasado':  return { v: 'pasado' };
+      case 'lo-que-yo-leo':  return { v: 'leo' };
+      case 'fuentes-y-metodo': return { v: 'fuentes' };
       case 'balance':        return { v: 'balance' };
       case 'linea-de-tiempo':
         return partes[1] ? { v: 'lista', tema: decodeURIComponent(partes[1]) } : { v: 'timeline' };
@@ -387,6 +459,7 @@
   }
 
   function ir(r, reemplazar) {
+    r = normaliza(r);
     var h = rutaAHash(r);
     if (location.hash !== h) {
       if (reemplazar) history.replaceState(null, '', h);
@@ -402,6 +475,11 @@
   function tituloDe(r) {
     switch (r.v) {
       case 'home': return 'Resumen';
+      /* La miga dice el nombre de la PESTAÑA, no el de la sección: es lo que
+         el lector tiene delante y lo que dice el enlace. */
+      case 'pasado': return '¿Qué ha pasado?';
+      case 'leo': return 'Lo que yo leo';
+      case 'fuentes': return 'Fuentes y método';
       case 'hoy': return 'Al día';
       case 'balance': return 'Balance del periodo';
       case 'timeline': return 'Línea de tiempo';
@@ -462,39 +540,62 @@
 
   // ══ VISTAS ════════════════════════════════════════════════════════════════
   function aplicar(r) {
+    r = normaliza(r);
     ruta = r;
     var vistas = document.querySelectorAll('.sp-view');
     Array.prototype.forEach.call(vistas, function (v) {
       v.classList.toggle('on', v.getAttribute('data-view') === r.v);
     });
 
+    /* Una pestaña pinta TODAS las secciones que guarda. Antes cada vista
+       pintaba una sola porque era una sola; ahora «¿Qué ha pasado?» lleva
+       cuatro y «Lo que yo leo» dos, y la que no se pinte sale vacía aunque su
+       texto esté en el HTML. */
+    if (r.v === 'pasado') { pintarFicha(); pintarTemas(); pintarExtranjera(); pintarTemasFondo(); }
+    if (r.v === 'leo') { pintarBalance(); pintarFoda(); }
     if (r.v === 'hoy') pintarMuro();
-    if (r.v === 'balance') pintarBalance();
-    if (r.v === 'timeline') pintarTemas();
     if (r.v === 'lista') pintarLista(r.tema);
     if (r.v === 'hecho') pintarHecho(r.i);
     if (r.v === 'contradicciones') pintarContradicciones();
-    if (r.v === 'foda') pintarFoda();
-    if (r.v === 'temas') pintarTemasFondo();
     if (r.v === 'tema') pintarTemaFondo(r.i);
     if (r.v === 'indicadores') pintarIndicadores();
-    if (r.v === 'extranjera') pintarExtranjera();
-    if (r.v === 'ficha') pintarFicha();
     if (r.v === 'tablero') pintarTablero();
 
-    // La cabecera de cada vista toma el color de su sección
-    var vh = document.querySelector('.sp-view.on .sp-vhead');
-    if (vh) pintarSeccion(vh, r.v === 'lista' || r.v === 'hecho' ? 'timeline'
-                            : (r.v === 'tema' ? 'temas' : r.v));
+    /* El color de sección va por CABECERA y no por vista: dentro de una
+       pestaña hay varias, cada una con el color de su sección, y un
+       `querySelector` a secas pintaba solo la primera y dejaba las otras
+       tres sin riel. Las que declaran `data-sec` se pintan solas; las que no
+       —los detalles— siguen heredando el de su sección padre. */
+    var cabs = document.querySelectorAll('.sp-view.on .sp-vhead[data-sec]');
+    if (cabs.length) {
+      Array.prototype.forEach.call(cabs, function (h2) {
+        pintarSeccion(h2, h2.getAttribute('data-sec'));
+      });
+    } else {
+      var vh = document.querySelector('.sp-view.on .sp-vhead');
+      if (vh) pintarSeccion(vh, r.v === 'lista' || r.v === 'hecho' ? 'timeline'
+                              : (r.v === 'tema' ? 'temas' : r.v));
+    }
 
+    pintarTiraPestanas(r);
     pintarMigas(r);
     pintarAtras(r);
-    $('sp-foot').hidden = false;
-    window.scrollTo({ top: 0, behavior: 'auto' });
+
+    /* Un enlace viejo apunta a una sección que ahora vive dentro de una
+       pestaña: se abre la pestaña y se baja hasta su bloque. Sin ancla, la
+       pestaña abre por arriba, que es lo que dice su enlace. */
+    var destino = r.ancla && document.querySelector('.sp-view.on .sp-vhead[data-sec="' + r.ancla + '"]');
+    if (destino) {
+      try { destino.scrollIntoView({ block: 'start', behavior: 'auto' }); }
+      catch (e) { window.scrollTo({ top: 0, behavior: 'auto' }); }
+    } else {
+      window.scrollTo({ top: 0, behavior: 'auto' });
+    }
 
     // Foco al encabezado de la vista, para que el lector de pantalla anuncie
     // dónde quedó tras navegar.
-    var activa = document.querySelector('.sp-view.on h1, .sp-view.on h2');
+    var activa = (destino && destino.querySelector('h2')) ||
+                 document.querySelector('.sp-view.on h1, .sp-view.on h2');
     if (activa) { activa.setAttribute('tabindex', '-1'); activa.focus({ preventScroll: true }); }
   }
 
@@ -10263,7 +10364,10 @@
       if (!p.hidden) cerrarPanel(p);
     });
   });
-  $('sp-info').addEventListener('click', function () { abrirPanel($('sp-modal')); });
+  /* El botón de información ya no abre un panel: lleva a la pestaña «Fuentes
+     y método», donde el método vive ahora con enlace propio (v1140). Un
+     panel se cierra y no se puede compartir; una pestaña sí. */
+  $('sp-info').addEventListener('click', function () { ir({ v: 'fuentes' }); });
 
   window.addEventListener('resize', function () { pintarMigas(ruta); });
 

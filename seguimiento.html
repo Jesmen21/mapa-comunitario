@@ -30,7 +30,7 @@
 <meta name="description" content="Línea de tiempo documentada de las actuaciones, decisiones y posiciones del gobierno.">
 <link rel="manifest" href="manifest.json">
 <link rel="icon" href="assets/icons/icon-192.png">
-<link rel="stylesheet" href="css/70-seguimiento.css?v=1139-las-guardas-antes-de-mover-el-texto">
+<link rel="stylesheet" href="css/70-seguimiento.css?v=1140-el-texto-en-cinco-pestanas">
 </head>
 <body>
 
@@ -90,11 +90,67 @@
     <p class="sp-nextup" id="sp-nextup"></p>
   </section>
 
+  <!-- ══ PESTAÑA · ¿QUÉ HA PASADO? ═══════════════════════════════════════
+       Los hechos y lo que se cuenta sobre ellos. La ficha entra acá —y no en
+       «Lo que yo leo»— porque su veredicto se CALCULA sobre el registro: es
+       la cuenta de lo que pasó, no una lectura de lo que significa.
+       Las secciones están MUDADAS, no copiadas: su texto vive solo acá. -->
+  <section class="sp-view" data-view="pasado" aria-labelledby="sp-fi-h">
+    <div class="sp-pes-host"></div>
+
+    <section class="sp-bloque" aria-labelledby="sp-fi-h">
+      <header class="sp-vhead" data-sec="ficha">
+        <p class="sp-vnum">00</p>
+        <h2 id="sp-fi-h">Ficha del gobernante</h2>
+        <p class="sp-vdek">
+          <span class="sp-tag sp-tag-interp">Interpretación</span>
+          Una ficha de personaje, con el registro como única fuente. Primero lo que pesa: los casos de
+          corrupción con su estado probatorio; después las contradicciones; después los rasgos, que
+          salen de cuentas con umbral. El veredicto es el peor de tres techos y lleva su regla al lado.
+          Se recalcula solo cuando entra un hecho nuevo. No mide honestidad ni acierto de gobierno —
+          mide lo que se puede contar.
+        </p>
+      </header>
+      <div class="sp-ficha" id="sp-ficha"></div>
+    </section>
+
+    <section class="sp-bloque" aria-labelledby="sp-tl-h">
+      <header class="sp-vhead" data-sec="timeline">
+        <p class="sp-vnum">03</p>
+        <h2 id="sp-tl-h">Línea de tiempo</h2>
+        <p class="sp-vdek">Hechos y decisiones documentadas, agrupados por tema. Elija uno para leerlo.</p>
+      </header>
+      <div class="sp-temas" id="sp-tl-temas"></div>
+    </section>
+
+    <section class="sp-bloque" aria-labelledby="sp-ext-h">
+      <header class="sp-vhead" data-sec="extranjera">
+        <p class="sp-vnum">05</p>
+        <h2 id="sp-ext-h">Participación extranjera</h2>
+        <p class="sp-vdek">Hechos documentados en los que interviene un actor de fuera del país:
+           gobiernos, empresas, organismos u operadores políticos. Es un recuento de lo que está
+           registrado con fuente, no una medición de influencia — ese porcentaje no existe y acá
+           no se inventa.</p>
+      </header>
+      <div class="sp-extlist" id="sp-extlist"></div>
+    </section>
+
+    <section class="sp-bloque" aria-labelledby="sp-tf-h">
+      <header class="sp-vhead" data-sec="temas">
+        <p class="sp-vnum">07</p>
+        <h2 id="sp-tf-h">Temas de fondo</h2>
+        <p class="sp-vdek">Contexto que ayuda a entender la gestión y que no pertenece a una fecha concreta.</p>
+      </header>
+      <div class="sp-tflist" id="sp-tflist"></div>
+    </section>
+  </section>
+
   <!-- ══ 1b. AL DÍA · muro cronológico ═══════════════════════════════════
        Entra por fecha de publicación, no por tema: es la vista para el que
        solo quiere saber qué pasó hoy sin tener que elegir una categoría. -->
   <section class="sp-view" data-view="hoy" aria-labelledby="sp-hoy-h">
-    <header class="sp-vhead" id="sp-hoy-head">
+    <div class="sp-pes-host"></div>
+    <header class="sp-vhead" id="sp-hoy-head" data-sec="hoy">
       <p class="sp-vnum">02</p>
       <h2 id="sp-hoy-h">Al día</h2>
       <p class="sp-vdek">Todo lo registrado, del más reciente al más antiguo.
@@ -107,25 +163,39 @@
     <div class="sp-muro" id="sp-muro"></div>
   </section>
 
-  <!-- ══ 1c. BALANCE DEL PERIODO ═════════════════════════════════════════ -->
-  <section class="sp-view" data-view="balance" aria-labelledby="sp-bal-h">
-    <header class="sp-vhead" id="sp-bal-head">
-      <p class="sp-vnum">04</p>
-      <h2 id="sp-bal-h">Balance del periodo</h2>
-      <p class="sp-vdek">Qué patrón se repite cuando se miran todos los hechos juntos.</p>
-    </header>
-    <div id="sp-balance"></div>
+  <!-- ══ PESTAÑA · LO QUE YO LEO ═════════════════════════════════════════
+       Las dos superficies marcadas «Interpretación» que no se calculan: el
+       patrón del periodo y el FODA. Juntas y rotuladas, para que no se
+       confundan con el registro. -->
+  <section class="sp-view" data-view="leo" aria-labelledby="sp-bal-h">
+    <div class="sp-pes-host"></div>
+
+    <section class="sp-bloque" aria-labelledby="sp-bal-h">
+      <header class="sp-vhead" id="sp-bal-head" data-sec="balance">
+        <p class="sp-vnum">04</p>
+        <h2 id="sp-bal-h">Balance del periodo</h2>
+        <p class="sp-vdek">Qué patrón se repite cuando se miran todos los hechos juntos.</p>
+      </header>
+      <div id="sp-balance"></div>
+    </section>
+
+    <section class="sp-bloque" aria-labelledby="sp-foda-h">
+      <header class="sp-vhead" data-sec="foda">
+        <p class="sp-vnum">08</p>
+        <h2 id="sp-foda-h">Balance FODA</h2>
+        <p class="sp-vdek">
+          <span class="sp-tag sp-tag-interp">Interpretación</span>
+          A diferencia de la línea de tiempo, esto no son hechos: cada punto se apoya en algo
+          documentado, pero la lectura es opinable.
+        </p>
+      </header>
+      <div class="sp-fodatabs" id="sp-fodatabs" role="tablist" aria-label="Cuadrantes del FODA"></div>
+      <div class="sp-fodalist" id="sp-fodalist" role="tabpanel"></div>
+    </section>
   </section>
 
-  <!-- ══ 2. LÍNEA DE TIEMPO · elegir tema ════════════════════════════════ -->
-  <section class="sp-view" data-view="timeline" aria-labelledby="sp-tl-h">
-    <header class="sp-vhead">
-      <p class="sp-vnum">03</p>
-      <h2 id="sp-tl-h">Línea de tiempo</h2>
-      <p class="sp-vdek">Hechos y decisiones documentadas, agrupados por tema. Elija uno para leerlo.</p>
-    </header>
-    <div class="sp-temas" id="sp-tl-temas"></div>
-  </section>
+  <!-- La sección «Línea de tiempo» se mudó a la pestaña «¿Qué ha pasado?»
+       (v1140). El hash #/linea-de-tiempo sigue vivo y lleva hasta allá. -->
 
   <!-- ══ 3. LÍNEA DE TIEMPO · lista de hechos ════════════════════════════ -->
   <section class="sp-view" data-view="lista" aria-labelledby="sp-lista-h">
@@ -179,7 +249,8 @@
 
   <!-- ══ 5. CONTRADICCIONES ══════════════════════════════════════════════ -->
   <section class="sp-view" data-view="contradicciones" aria-labelledby="sp-cx-h">
-    <header class="sp-vhead">
+    <div class="sp-pes-host"></div>
+    <header class="sp-vhead" data-sec="contradicciones">
       <p class="sp-vnum">01</p>
       <h2 id="sp-cx-h">Contradicciones</h2>
       <p class="sp-vdek">Cambios de postura y posiciones en tensión. Cada caso muestra lo que se dijo
@@ -189,60 +260,9 @@
     <div class="sp-cxlist" id="sp-cxlist"></div>
   </section>
 
-  <!-- ══ 7. PARTICIPACIÓN EXTRANJERA ═════════════════════════════════════ -->
-  <section class="sp-view" data-view="extranjera" aria-labelledby="sp-ext-h">
-    <header class="sp-vhead">
-      <p class="sp-vnum">05</p>
-      <h2 id="sp-ext-h">Participación extranjera</h2>
-      <p class="sp-vdek">Hechos documentados en los que interviene un actor de fuera del país:
-         gobiernos, empresas, organismos u operadores políticos. Es un recuento de lo que está
-         registrado con fuente, no una medición de influencia — ese porcentaje no existe y acá
-         no se inventa.</p>
-    </header>
-    <div class="sp-extlist" id="sp-extlist"></div>
-  </section>
-
-  <!-- ══ 6. BALANCE FODA ═════════════════════════════════════════════════ -->
-  <section class="sp-view" data-view="foda" aria-labelledby="sp-foda-h">
-    <header class="sp-vhead">
-      <p class="sp-vnum">08</p>
-      <h2 id="sp-foda-h">Balance FODA</h2>
-      <p class="sp-vdek">
-        <span class="sp-tag sp-tag-interp">Interpretación</span>
-        A diferencia de la línea de tiempo, esto no son hechos: cada punto se apoya en algo
-        documentado, pero la lectura es opinable.
-      </p>
-    </header>
-    <div class="sp-fodatabs" id="sp-fodatabs" role="tablist" aria-label="Cuadrantes del FODA"></div>
-    <div class="sp-fodalist" id="sp-fodalist" role="tabpanel"></div>
-  </section>
-
-  <!-- ══ 8. FICHA DEL GOBERNANTE ═════════════════════════════════════════ -->
-  <section class="sp-view" data-view="ficha" aria-labelledby="sp-fi-h">
-    <header class="sp-vhead">
-      <p class="sp-vnum">00</p>
-      <h2 id="sp-fi-h">Ficha del gobernante</h2>
-      <p class="sp-vdek">
-        <span class="sp-tag sp-tag-interp">Interpretación</span>
-        Una ficha de personaje, con el registro como única fuente. Primero lo que pesa: los casos de
-        corrupción con su estado probatorio; después las contradicciones; después los rasgos, que
-        salen de cuentas con umbral. El veredicto es el peor de tres techos y lleva su regla al lado.
-        Se recalcula solo cuando entra un hecho nuevo. No mide honestidad ni acierto de gobierno —
-        mide lo que se puede contar.
-      </p>
-    </header>
-    <div class="sp-ficha" id="sp-ficha"></div>
-  </section>
-
-  <!-- ══ 7. TEMAS DE FONDO ═══════════════════════════════════════════════ -->
-  <section class="sp-view" data-view="temas" aria-labelledby="sp-tf-h">
-    <header class="sp-vhead">
-      <p class="sp-vnum">07</p>
-      <h2 id="sp-tf-h">Temas de fondo</h2>
-      <p class="sp-vdek">Contexto que ayuda a entender la gestión y que no pertenece a una fecha concreta.</p>
-    </header>
-    <div class="sp-tflist" id="sp-tflist"></div>
-  </section>
+  <!-- «Participación extranjera», «Ficha del gobernante» y «Temas de fondo»
+       se mudaron a la pestaña «¿Qué ha pasado?», y «Balance FODA» a «Lo que
+       yo leo» (v1140). Sus hashes siguen vivos y llevan hasta allá. -->
 
   <!-- ══ 9. INDICADORES (gráficas) ═══════════════════════════════════════ -->
   <!-- ══ TABLERO · los hallazgos verificados del presupuesto ════════════ -->
@@ -285,14 +305,47 @@
     </article>
   </section>
 
+  <!-- ══ PESTAÑA · FUENTES Y MÉTODO ══════════════════════════════════════
+       Acá vive ahora la nota «Cómo leer este seguimiento», que hasta la v1139
+       se abría en un panel desde el botón de información, y el pie del
+       módulo. Las dos están MUDADAS: el método no es una ventanita que se
+       cierra, es una de las cinco pestañas, con su enlace compartible. El
+       botón de información lleva acá. -->
+  <section class="sp-view" data-view="fuentes" aria-labelledby="sp-fu-h">
+    <div class="sp-pes-host"></div>
+    <header class="sp-vhead" data-sec="fuentes">
+      <h2 id="sp-fu-h">Cómo leer este seguimiento</h2>
+    </header>
+    <div class="sp-prose">
+      <p>Cada entrada es un <strong>hecho público verificable</strong>, con su fecha real y el enlace a la
+         fuente. URBIS no toma partido: registra y cita para que cada quien saque sus conclusiones.</p>
+      <h3>Las etiquetas</h3>
+      <ul class="sp-leyenda">
+        <li><span class="sp-tag sp-tag-ok">Verificado</span> Confirmado por varios medios.</li>
+        <li><span class="sp-tag sp-tag-dis">Disputado</span> Hay versiones enfrentadas y ningún tercero las ha dirimido.</li>
+        <li><span class="sp-tag sp-tag-dec">Declaración</span> Lo dijo una sola parte y no está corroborado.</li>
+        <li><span class="sp-tag sp-tag-interp">Interpretación</span> Es lectura, no hecho. Solo en el FODA,
+            en el balance del periodo y en la ficha del gobernante — y ahí siempre se dice de dónde sale.</li>
+      </ul>
+      <h3>Las reglas</h3>
+      <ul>
+        <li>Sin fuente no se publica.</li>
+        <li>No se inventa precisión: si no se confirma el día exacto, se marca la fecha como aproximada.</li>
+        <li>Una denuncia no es una condena. Si algo está en investigación, se dice.</li>
+        <li>Antes de publicar un señalamiento se consulta a los verificadores. Lo desmentido se publica
+            <em>como desmentido</em>, no se omite.</li>
+      </ul>
+      <p>Seguimiento elaborado por el equipo URBIS a partir de medios de comunicación y documentos
+         oficiales. Es un registro público: si encuentra un dato equivocado o una fuente mejor, escríbanos y se corrige.</p>
+    </div>
+  </section>
+
   <div class="sp-loading" id="sp-loading" aria-live="polite">
     <span class="sp-sk"></span><span class="sp-sk"></span><span class="sp-sk"></span>
   </div>
 
-  <footer class="sp-foot" id="sp-foot" hidden>
-    <p>Seguimiento elaborado por el equipo URBIS a partir de medios de comunicación y documentos
-       oficiales. Es un registro público: si encuentra un dato equivocado o una fuente mejor, escríbanos y se corrige.</p>
-  </footer>
+  <!-- El pie se mudó a la pestaña «Fuentes y método» (v1140): decía quién
+       hace el seguimiento y cómo se corrige, que es método y no pie. -->
 
 </main>
 
@@ -323,39 +376,10 @@
   </div>
 </div>
 
-<!-- Nota metodológica -->
-<div class="sp-sheet" id="sp-modal" hidden>
-  <div class="sp-sheet-bg" data-close></div>
-  <div class="sp-sheet-card" role="dialog" aria-modal="true" aria-labelledby="sp-modal-h">
-    <header class="sp-sheet-head">
-      <h2 id="sp-modal-h">Cómo leer este seguimiento</h2>
-      <button type="button" class="sp-iconbtn" data-close aria-label="Cerrar">
-        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg>
-      </button>
-    </header>
-    <div class="sp-sheet-body sp-prose">
-      <p>Cada entrada es un <strong>hecho público verificable</strong>, con su fecha real y el enlace a la
-         fuente. URBIS no toma partido: registra y cita para que cada quien saque sus conclusiones.</p>
-      <h3>Las etiquetas</h3>
-      <ul class="sp-leyenda">
-        <li><span class="sp-tag sp-tag-ok">Verificado</span> Confirmado por varios medios.</li>
-        <li><span class="sp-tag sp-tag-dis">Disputado</span> Hay versiones enfrentadas y ningún tercero las ha dirimido.</li>
-        <li><span class="sp-tag sp-tag-dec">Declaración</span> Lo dijo una sola parte y no está corroborado.</li>
-        <li><span class="sp-tag sp-tag-interp">Interpretación</span> Es lectura, no hecho. Solo en el FODA,
-            en el balance del periodo y en la ficha del gobernante — y ahí siempre se dice de dónde sale.</li>
-      </ul>
-      <h3>Las reglas</h3>
-      <ul>
-        <li>Sin fuente no se publica.</li>
-        <li>No se inventa precisión: si no se confirma el día exacto, se marca la fecha como aproximada.</li>
-        <li>Una denuncia no es una condena. Si algo está en investigación, se dice.</li>
-        <li>Antes de publicar un señalamiento se consulta a los verificadores. Lo desmentido se publica
-            <em>como desmentido</em>, no se omite.</li>
-      </ul>
-    </div>
-  </div>
-</div>
+<!-- La nota metodológica ya no es un panel: se mudó entera a la pestaña
+     «Fuentes y método» (v1140), con enlace propio. El botón de información
+     de la barra lleva allá. -->
 
-<script src="js/70-seguimiento.js?v=1139-las-guardas-antes-de-mover-el-texto"></script>
+<script src="js/70-seguimiento.js?v=1140-el-texto-en-cinco-pestanas"></script>
 </body>
 </html>
