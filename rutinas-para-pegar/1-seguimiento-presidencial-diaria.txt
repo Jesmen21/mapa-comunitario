@@ -1,0 +1,104 @@
+Actualización DIARIA del módulo "Seguimiento Presidencial" de URBIS (app cívica colombiana). Trabajás sin contexto previo: leé esto completo.
+
+## PUNTO DE PARTIDA — CONFIRMÁ QUE TENÉS EL REPOSITORIO
+Antes que nada, comprobá dónde estás parado: `git rev-parse --show-toplevel && git remote -v`. Si eso falla o no aparece `Jesmen21/mapa-comunitario`, cloná `https://github.com/Jesmen21/mapa-comunitario` y trabajá dentro del clon.
+
+Si al final no podés empujar por falta de credenciales o de permisos, NO termines en silencio dando la tarea por hecha: decí con todas las letras en el resumen que el trabajo NO se publicó y por qué, y pegá ahí el JSON de las entradas que ibas a agregar para que no se pierda el trabajo.
+
+## QUÉ ES
+URBIS registra públicamente los actos del presidente de Colombia, Abelardo de la Espriella (posesión: 7 de agosto de 2026). Los datos viven en `assets/data/seguimiento-presidencial.json` y se renderizan en `seguimiento.html`. NO hay que tocar código: solo datos.
+
+El módulo abre en la FICHA DEL GOBERNANTE: una placa con un veredicto de fiabilidad que se calcula solo, a partir de lo que vos cargués. No la edites —no existe en el JSON—, pero entendé qué la mueve, porque es la consecuencia de tu trabajo:
+
+  · Casos de corrupción CONFIRMADOS: uno baja a «Poco fiable», dos a «Nada fiable».
+  · Casos EN INVESTIGACIÓN por una autoridad: uno baja a «Dudosa», dos a «Poco fiable».
+  · Cambios de postura contados: 1 → «Fiable», 2 → «Dudosa», 3+ → «Poco fiable».
+  · Porcentaje del registro verificado por terceros: <85 %, <70 %, <50 % bajan un peldaño cada vez.
+
+El veredicto es el PEOR de esos techos. Es decir: un solo caso mal clasificado cambia en público el juicio sobre una persona real. Por eso las reglas de abajo no son burocracia.
+
+## TU TAREA
+Agregar los hechos de LAS ÚLTIMAS 24-48 HORAS y actualizar las fechas de control.
+
+0. **Traé lo de arriba antes de empezar**: `git fetch origin && git merge origin/main --no-edit`. Hay más de una sesión escribiendo en este repositorio y empezar sin esto termina en un empujón rechazado. Encadená con `&&` y comprobá la HISTORIA, no el mensaje: con el árbol sucio la fusión ABORTA aunque su primera línea diga `Updating ...`.
+1. Leé `assets/data/seguimiento-presidencial.json`. Mirá el campo `actualizado`: solo agregá lo posterior a esa fecha, y revisá las entradas recientes para NO DUPLICAR un hecho ya registrado. Compará por HECHO y no por redacción: mismo decreto, mismo nombramiento, misma cifra, misma reunión = mismo hecho. Si el hecho ya está y aparece una fuente nueva, agregá la fuente a la entrada existente; no creés otra entrada.
+2. Investigá con WebSearch qué hizo el presidente desde la última actualización. Cubrí: decretos y nombramientos; relación con Israel; EE. UU. y acceso militar; corrupción y contratación; créditos y deuda; emergencias; economía; política exterior; servicios públicos y bolsillo; desinformación y discurso público.
+
+   **Y dos señales concretas que el módulo está esperando, hasta el 21 de noviembre de 2026.** Van en el mismo barrido y no cuestan una búsqueda aparte: (a) que el **Gobierno presente una vía alternativa para blindar los requisitos mínimos de los cargos directivos** del sector público; (b) que la **Corte Constitucional falle sobre la ley de mérito** (Proyecto de Ley 056 de 2024 Cámara — 345 de 2024 Senado, el que el presidente objetó el 21 de agosto de 2026).
+
+   Si aparece alguna: **registrala como una entrada más, con su fuente, y decilo en el resumen del final.** Lo que **NO** hacés es tocar `mismoObjetoVerificado` del caso `contra-merito-empleo-publico` ni su bloque `revision`: esa declaración la toma quien firma el módulo, no esta rutina.
+
+3. Agregá las entradas nuevas AL PRINCIPIO del array `entradas` (orden: más reciente primero). **Cada entrada nueva lleva un `id`** en minúsculas con guiones, descriptivo y único — `congreso-aprueba-presupuesto-2027`. Sin `id` la entrada no puede sostener una afirmación firmada ni ser el ancla de un punto de serie, y anclar por título se rompe en silencio cuando alguien retitula.
+4. Si lo que encontraste es un CASO DE CORRUPCIÓN suyo o de su gobierno, o un CAMBIO DE POSTURA, va además en su sección propia (ver abajo).
+5. Actualizá `actualizado` con la fecha de hoy y `proximaActualizacion` con la de MAÑANA (formato YYYY-MM-DD). **Son fechas en HORA DE COLOMBIA, no en UTC**: si corrés de noche, `date -u` ya dice mañana y el registro quedaría sellado un día adelante de lo que ve el lector. Sacala con `TZ=America/Bogota date +%F`.
+
+   **Y nunca antes de la entrada más nueva que cargaste.** Un sello por detrás de su propio contenido no es un dato viejo: es una afirmación falsa sobre hasta cuándo se miró. `revisar.js` lo comprueba. Mover el sello arrastra el encabezado de la portada, la firma de la ficha, el pie de los gráficos sin corte propio, la fila «Fecha de corte del registro» del tablero y **el aviso de rezago de cada serie** — y es correcto que los mueva.
+
+## LOS CASOS DE CORRUPCIÓN — `casos.lista`
+Sección hermana de `contradicciones`. Es lo primero que ve el lector en la ficha, y lo único que puede tumbar el veredicto de golpe. Cada caso lleva `id`, `titulo`, `estado`, `queSeConfirmo`, `quienLoConfirmo`, `fecha`, `monto` (o null), `implicados` y `fuentes`.
+
+Los cinco estados, y qué exige cada uno:
+
+  · `confirmado` — hay fallo judicial, sanción de un organismo de control, documento oficial o reconocimiento del propio implicado. Nombralo en `quienLoConfirmo`. **PESA AL MÁXIMO.** Si dudás, no es confirmado.
+  · `en-investigacion` — una autoridad (Fiscalía, Procuraduría, Contraloría, Congreso, Corte) abrió proceso. Poné la autoridad en `quienLoConfirmo` y el radicado o la fecha de apertura en `queSeConfirmo`. **PESA, menos.** Una denuncia radicada que la autoridad todavía no abrió NO es esto: es un señalamiento.
+  · `senalamiento` — lo dice un medio o un actor político y ninguna autoridad se ha pronunciado. Se muestra con su etiqueta y NO mueve el veredicto. Es el estado por defecto cuando dudes.
+  · `archivado` — una autoridad lo revisó y lo cerró sin hallazgo: orden de archivo, preclusión, resolución que cierra la actuación. Citala en `quienLoConfirmo` y contá en `queSeConfirmo` qué dijo. Etiqueta verde y NO pesa. **No es lo mismo que un señalamiento**: uno es una acusación que nadie ha revisado, el otro es una que ya se cayó. Buscá activamente estos desenlaces: la acusación siempre circula más que el archivo, y publicar solo la mitad que acusa le hace daño a una persona real.
+  · `por-documentar` — alguien lo nombró pero todavía no hay hecho ni fuente. No se pinta y no pesa.
+
+Reglas que no se negocian:
+
+  · **Un caso solo SUBE de estado con la fuente que lo sostiene.** Que un medio insista no convierte un señalamiento en investigación; que haya investigación no lo convierte en confirmado.
+  · **Las denuncias que hace el propio Gobierno contra la administración anterior NO van acá.** Eso es un hecho de la categoría `corrupcion` de la línea de tiempo, no un caso suyo. Confundirlos invierte el sentido del módulo.
+  · Si un caso que ya está avanza, **actualizá el que existe** con su fuente nueva: no agregues uno repetido.
+  · Si un caso se cae, pasalo a `archivado` con la orden de archivo como fuente y dejá dicho en `queSeConfirmo` qué pasó. No lo borres: borrar es esconder, y dejarlo en `senalamiento` es esconder el desenlace.
+
+## LAS CONTRADICCIONES — `contradicciones.casos`
+Solo si tenés LAS DOS declaraciones documentadas (`antes` y `despues`), cada una con su fuente. Estados: `documentada`, `tension`, `desmentida`. Un caso puede llevar `"cuenta": false`: queda visible pero no suma al veredicto, y se usa cuando el propio `matiz` dice que el giro no habla de su palabra. Si lo usás, explicá el motivo en `matiz`.
+
+## SI NO HAY NOVEDADES
+Corriendo a diario, lo NORMAL es que muchos días no haya nada nuevo. Eso es un resultado correcto, no un fallo.
+Si no pasó nada relevante: actualizá solo `actualizado` y `proximaActualizacion`, hacé el commit con ese cambio mínimo y decilo en el mensaje. NUNCA inventes contenido de relleno ni infles un hecho menor para que parezca que hubo movimiento. Y NUNCA subas un caso de estado para que la ficha "se mueva".
+
+## REGLAS EDITORIALES — SON OBLIGATORIAS
+Este módulo es creíble porque es riguroso. Si lo aflojás, se cae.
+
+- **Sin fuente no se publica.** Cada entrada lleva `fuentes: [{n, u, rol}]` con enlaces https. El par suelto `fuente`+`url` es el formato viejo y no se usa más.
+- **Cada fuente lleva `rol`, y solo puede ser uno de TRES:**
+  · `acto` — documenta el ACTO de la entrada: el documento oficial, o la cobertura del hecho mismo.
+  · `efecto` — documenta lo que vino DESPUÉS: una reacción, un pronunciamiento, una consecuencia.
+  · `contexto` — ni una ni la otra: antecedente, perfil o cobertura anterior que ayuda a entender. **No prueba el acto.**
+  No existe `dato`, ni `dato-de-apoyo`, ni ningún otro: un rol inventado se pinta sin etiqueta y `revisar.js` lo rechaza. Y **toda entrada necesita al menos una fuente con rol `acto`**: si ninguna documenta el acto, no se inventa — se dice.
+- **Todo enlace sale de un resultado que VISTE.** El que devolvió la búsqueda, o la página que abriste. **Nunca lo armes por patrón** a partir del titular, aunque sepas cómo construye las URL ese medio. Si no viste el enlace, la fuente se deja fuera y la entrada se publica con las que sí tenés. Un enlace inventado es peor que ninguno, porque se lee como fuente comprobable.
+- **NO inventes.** Ni fechas, ni cifras, ni números de decreto, ni ubicaciones. Si no confirmás el día exacto, poné `"precision": "aproximada"`. Si no lo confirmás en absoluto, no lo publiques.
+- **`tipoFuente` es obligatorio.** `verificado` (DOS O MÁS medios independientes: redacciones distintas con reportería propia — cinco portales replicando el mismo cable de EFE son UNA fuente), `disputado` (versiones enfrentadas), `declaracion` (lo dice una sola parte y nadie lo corroboró). Un boletín de Presidencia o de un ministerio nunca es por sí solo `verificado`. Dejarlo vacío no es neutral: es una de las cuatro cuentas del veredicto.
+- **Si escribís `categoriaProbatoria` o `tipoMedicion`, el valor tiene que ser de su lista**, o sale en rojo:
+  · `categoriaProbatoria`: `hecho-probado` | `correlacion` | `atribucion-causal` | `en-circulacion`
+  · `tipoMedicion`: `actividad` | `resultado` | `contexto-estructural`
+- **`contrapunto`**: obligatorio si `tipoFuente` es `disputado`, y siempre que el hecho sea controvertido. Tiene que decir QUIÉN objeta y QUÉ objeta, con nombre. «Hay críticas» no es un contrapunto. Y que no termine en una frase que no agrega un hecho sino una manera de leer los que ya están: eso sobra.
+- **Denuncias ≠ condenas.** Si algo está en investigación, decilo explícitamente en el contrapunto. Y a una persona capturada no se le atribuye delito: **captura no es condena**, y si no consta decisión judicial, eso se escribe.
+- **No afirmes autoría que la fuente no afirma.** Si las notas dicen que «las autoridades atribuyen» un hecho a un grupo, eso es lo que se escribe, con quién lo atribuye. Si ninguna fuente identifica a quién lo ejecutó, se dice que no lo identifican.
+- **«No se halló», nunca «no respondió».** Lo primero es un hecho sobre nuestra búsqueda; lo segundo es una afirmación sobre la conducta del Gobierno, y no la podemos hacer: pudo haber respondido en un canal que no miramos. Y si escribís que no se halló, decí **qué buscaste**: sin eso, «no se halló» no dice nada, se pudo buscar la cosa equivocada.
+- **No infieras una fecha desde fechas de publicación.** Que dos notas se publiquen el 14 dice cuándo publicaron, no cuándo ocurrió ni cuándo lo anunció nadie. Si querés decir que se publicaron el 14, escribí eso.
+- **No cambies la fecha de una entrada ya publicada** por una nota que no abriste. Si las fuentes no coinciden en una fecha, la discrepancia va al `contrapunto` —quién fecha qué, y qué documento la dirimiría— y la fecha de la entrada se queda. Cambiar el número antes de contestar «¿de qué mide cada una?» es arreglar la contradicción destruyendo la medida.
+- **Anuncio ≠ acto ejecutado.** Decilo con esas palabras: «anunció que», «firmó el», «quedó en firme el».
+- **Verificá antes de acusar.** Antes de publicar una contradicción o un señalamiento, buscá si La Silla Vacía (Detector de Mentiras), ColombiaCheck o AFP Factual lo desmintieron. Si está desmentido, va a `contradicciones.casos` con `"estado": "desmentida"`, nunca al array de entradas como si fuera cierto.
+- **No mapees ubicaciones militares deducidas.** Solo lugares oficialmente anunciados.
+- **Neutralidad**: registrá y citá. No editorialices ni uses adjetivos de valor.
+
+## DOS COSAS PRÁCTICAS QUE AHORRAN UNA VUELTA
+- **El `contrapunto` no se ve en la lista.** `#/linea-de-tiempo/todos` pinta el `detalle` y solo agrega «· con contrapunto» al pie. Para LEER un contrapunto en pantalla hay que abrir la ficha del hecho, `#/hecho/<i>`.
+- **Si no podés abrir las páginas, decilo.** Cuando el entorno no resuelve los dominios, el único canal es la BÚSQUEDA, y su estándar sostiene **que** un hecho ocurrió, no que se leyó la página. Si una cifra necesita la página abierta para dirimirse —una serie numérica, por ejemplo—, se dice que no se pudo y no se publica el número.
+
+## DESPLIEGUE
+1. Validá que el JSON parsea: `node -e "JSON.parse(require('fs').readFileSync('assets/data/seguimiento-presidencial.json','utf8'));console.log('JSON OK')"` (si no hay node, usá python3).
+2. Buscá el token de versión actual con: `grep -o "const URBIS_CACHE = '[^']*'" service-worker.js`
+3. Reemplazalo por uno con el número incrementado en LOS NUEVE ARCHIVOS, con un sed sobre los nueve:
+
+   `service-worker.js` `index.html` `css/main.css` `analisis-ia.html` `seguimiento.html` `reportes.html` `sw-reportes.js` `vision-territorial.html` `sw-vt.js`
+
+   Los dos últimos son de Visión Territorial, que es una página propia con su propio service worker y por eso tiene su propia caché que romper. En `index.html` el token aparece también en `window.URBIS_APP_VERSION`, y en `service-worker.js` lleva el prefijo `urbis-v` mientras que en el resto va como `?v=`. Si dejás uno viejo, un teléfono se queda con media aplicación vieja y media nueva, que es peor que no actualizar. **Manda `revisar.js`, no esta lista**: si se separan, la guarda lo dice y el número de acá es el que está mal.
+4. Corré `node pruebas/revisar.js`. Comprueba que los NUEVE tokens coincidan, que la versión no choque con la publicada, que ningún caso que pese vaya sin quién lo confirmó, fecha y fuentes, que ninguna fuente lleve un rol fuera de los tres, que el sello no vaya por detrás de la entrada más nueva, y unas doscientas cosas más. Si falla, **arreglá el defecto; no aflojes la guarda.**
+5. `git fetch origin && git merge origin/main --no-edit` otra vez (entre el principio y el final pueden haber entrado dos versiones más), y push a main. Nunca `--force`: si el empujón se rechaza, se fusiona. Si falla por red, reintentá hasta 4 veces esperando 2 s, 4 s, 8 s y 16 s.
+6. El mensaje de commit resume qué se agregó y con qué fuentes.
+
+Al terminar, resumí en español: qué agregaste, con cuántas fuentes independientes cada cosa, qué hechos ya estaban y solo enriqueciste con una fuente más, en qué estado quedó cada caso nuevo o actualizado, si encontraste algo desmentido por verificadores, y qué peldaño da hoy la ficha. Si no hubo novedades, decilo en una línea. Si no pudiste publicar, decilo explícitamente.
