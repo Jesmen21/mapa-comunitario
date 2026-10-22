@@ -15070,6 +15070,77 @@ console.log('\n  -- antes de mover el texto a pestanas: conteos y alcance (v1139
         '. No cubre las notas internas con guion bajo, que vigila la guarda de la v1115');
 })();
 
+console.log('\n  -- toda entrada apunta a una categoria declarada (v1141) --');
+/* ══ NINGUNA ENTRADA APUNTA A UNA CATEGORÍA QUE SU REGISTRO NO DECLARA ══════
+   `tseg` ya lo medía en el NAVEGADOR, y por eso el defecto estuvo publicado:
+   las suites de navegador no corren en este contenedor —falta el motor— así
+   que su rojo no llegaba a nadie antes de empujar. Cuatro entradas apuntaban
+   a `seguridad` y a `politica`, que no estaban entre las 13 declaradas, y se
+   publicaron en la v1137 y en la v1138 sin que ninguna comprobación estática
+   lo dijera. Esta corre SIEMPRE, sin navegador y sin motor.
+
+   LO QUE SE VE EN EL PAPEL cuando esto pasa, medido en la v1141 antes de
+   arreglarlo: la ficha del hecho lee el identificador crudo en minúscula
+   —«seguridad»— donde las demás leen «Corrupción y contratación»; los chips
+   del muro pintan «•seguridad» con el punto del respaldo; y el filtro
+   desplegable de la línea de tiempo NO las ofrece, porque se construye con
+   `Object.keys(D.categorias)` mientras los chips cuentan sobre las entradas
+   —dos codificaciones de una lista, clase B, ya separadas—, así que anunciaba
+   «Todos los temas · 278» y sus opciones sumaban 274: cuatro entradas
+   inalcanzables por esa ruta.
+
+   LOS DOS REGISTROS, porque la misma vara mide a los dos (v1118): el del
+   gobierno anterior trae sus propias categorías —Paz Total, Reformas— y su
+   lista se lee de su propio archivo, no de la del vivo.
+
+   VA EN ROJO y no con `?` (v970, v1026): su material son las ENTRADAS y la
+   lista de CATEGORÍAS DECLARADAS, y arreglar el defecto no vacía ninguna de
+   las dos. El estado bueno es cero huérfanas con el material intacto, así
+   que esta guarda no puede quedarse sin nada que rechazar por una mejora.
+
+   LA GUARDA DE LA GUARDA es el MATERIAL de arriba: la lista de válidas sale
+   del propio archivo y nunca de una constante escrita acá, así que si alguien
+   vaciara `categorias` —o la guarda dejara de leerla— el recuento se cae por
+   debajo del piso y el MATERIAL sale en rojo antes que la comprobación. */
+(function () {
+  const REGS = [
+    ['gobierno actual', 'assets/data/seguimiento-presidencial.json'],
+    ['Petro', 'assets/data/seguimiento-petro.json']
+  ];
+  const huerfanas = [];
+  let nEntradas = 0, nCats = 0;
+  REGS.forEach(([quien, ruta]) => {
+    const reg = JSON.parse(leer(ruta));
+    const cats = Object.keys(reg.categorias || {});
+    nCats += cats.length;
+    (reg.entradas || []).forEach((e) => {
+      nEntradas++;
+      const quees = e.id || String(e.titulo || '(sin título)').slice(0, 44);
+      const c = String(e.categoria || '').trim();
+      /* Las dos causas se dicen aparte porque piden acciones distintas
+         (v899): una entrada SIN categoría es un campo que falta, y una con
+         categoría no declarada es una lista que hay que ampliar o un dato
+         que hay que corregir. */
+      if (!c) huerfanas.push(quien + ' · SIN categoría · ' + quees);
+      else if (!cats.includes(c)) huerfanas.push(quien + ' · «' + c + '» no declarada · ' + quees);
+    });
+  });
+
+  comprobar('MATERIAL · los dos registros traen entradas y su propia lista de categorías declaradas',
+    nEntradas >= 50 && nCats >= 10,
+    nEntradas + ' entradas · ' + nCats + ' categorías declaradas entre los dos registros');
+
+  comprobar('ninguna entrada apunta a una categoría que su registro no declara',
+    nEntradas >= 50 && nCats >= 10 && huerfanas.length === 0,
+    huerfanas.length
+      ? huerfanas.length + ' huérfana(s) — o se declara la categoría, o se corrige la entrada: ' +
+        huerfanas.slice(0, 6).join('  |  ') + (huerfanas.length > 6 ? '  |  …' : '')
+      : 'las ' + nEntradas + ' entradas de los dos registros caen en una de las ' + nCats +
+        ' categorías que esos mismos archivos declaran. No cubre que la categoría sea la ACERTADA ' +
+        '—eso lo decide quien escribe la entrada— ni exige que toda categoría declarada se use: ' +
+        'una categoría sin entradas no es un defecto, solo no se pinta');
+})();
+
 console.log('\n  -- el contraste de las paletas propuestas (v1138) --');
 /* ══ NINGÚN PAR TEXTO/FONDO DE UNA PALETA BAJA DE 4,5:1 ═════════════════════
    Medido sobre la página compuesta antes de escribirla: la portada tenía

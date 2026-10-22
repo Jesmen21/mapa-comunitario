@@ -70,6 +70,16 @@
       "nombre": "Desinformación y discurso público",
       "icono": "📣",
       "color": "#BE185D"
+    },
+    "seguridad": {
+      "nombre": "Seguridad y orden público",
+      "icono": "🛡️",
+      "color": "#475569"
+    },
+    "politica": {
+      "nombre": "Opinión y aprobación",
+      "icono": "📊",
+      "color": "#5B21B6"
     }
   },
   "entradas": [
@@ -2270,6 +2280,7 @@
       "fecha": "2026-09-22",
       "precision": "exacta",
       "categoria": "informacion",
+      "id": "tutelas-donaciones-fundacion-primera-dama-2026-09-22",
       "titulo": "Dos juzgados ordenan a Presidencia y a la fundación de la primera dama informar cuánto recaudaron para el terremoto; tres días después el senador que entuteló dice que no le respondieron de fondo",
       "categoriaProbatoria": "hecho-probado",
       "tipoMedicion": "contexto-estructural",
@@ -8560,6 +8571,7 @@
       "fecha": "2026-08-20",
       "precision": "exacta",
       "categoria": "corrupcion",
+      "id": "fundacion-primera-dama-canales-donacion-2026-08-20",
       "titulo": "Una fundación de la primera dama, sin trayectoria y creada antes de la posesión, encabeza los canales de donación del terremoto",
       "categoriaProbatoria": "correlacion",
       "tipoMedicion": "contexto-estructural",

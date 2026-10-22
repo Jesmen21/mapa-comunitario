@@ -577,7 +577,7 @@ el pliego es volver a medir el número. Igual que la guarda de rol de la v970.
 Mientras eso no se haga, el `?` SIN MATERIAL es su estado honesto y el rojo
 no lo es.
 
-## 16 · Cuatro entradas apuntan a categorías que no existen · `pendiente`
+## 16 · Cuatro entradas apuntan a categorías que no existen · `cerrado en v1141`
 
 **Es un defecto REAL y está publicado.** Lo encontró el sexto fallo de `tseg`
 el 21 de octubre de 2026, y **no se corrigió por decisión del usuario**: *si
@@ -617,3 +617,69 @@ módulo publica, así que lo decide quien firma el módulo. **Y conviene mirar
 quién las escribe**: son entradas recientes, de las que mete la rutina diaria,
 que es otra sesión y no conoce la lista — así que sin una guarda volverán a
 aparecer.
+
+### CERRADO en la v1141, con la primera salida
+
+El usuario eligió declarar las dos, y se declararon en `categorias` con la
+misma forma que las trece —`nombre`, `icono`, `color`— y **sin tocar ninguna
+entrada ni ninguna línea de código**:
+
+| clave | nombre | icono | color |
+|---|---|---|---|
+| `seguridad` | Seguridad y orden público | 🛡️ | `#475569` |
+| `politica` | Opinión y aprobación | 📊 | `#5B21B6` |
+
+Los nombres y los iconos los fijó el usuario. **Los colores los elegí yo**
+porque la forma de las trece los pide y la instrucción no los traía: pizarra
+para seguridad —neutral a propósito, no el rojo de alarma que ya usan
+`corrupcion` y `emergencia`— y violeta profundo para opinión, los dos
+distintos de los trece en uso.
+
+**Leído en el papel, con la página compuesta:** la ficha del hecho lee ahora
+«Seguridad y orden público» y «Opinión y aprobación» en vez del identificador
+crudo; los chips del muro salen con su icono y **cero** puntos de respaldo; y
+el filtro desplegable **suma 278 = 278** y ofrece las dos nuevas, donde antes
+anunciaba 278 y sumaba 274.
+
+**Y las dos correcciones de lo que esta misma sección decía**, que se dejan
+escritas porque el error importa más que el caso: eran **dos** categorías
+inexistentes y **cuatro** entradas, no cuatro categorías; y la frase «ningún
+reparto por categoría las cuenta» era **falsa** —la escribí razonando del
+código sin componer la página—. Los chips del muro SÍ las contaban, porque se
+construyen sobre `D.entradas`; el que no las ofrecía era el desplegable, que
+recorre `Object.keys(D.categorias)`. Dos codificaciones de una lista, clase B,
+y solo el papel lo dijo.
+
+## 17 · La rutina diaria tiene que usar solo las categorías declaradas · `pendiente`
+
+**El hecho.** Las cuatro entradas con categoría inventada de la §16 son
+**recientes** —dos del 16 de octubre, una del 26 y una del 10 de septiembre— y
+las escribe **la rutina diaria**, que es otra sesión, se edita en la web y no
+conoce la lista de categorías del registro. Declarar `seguridad` y `politica`
+tapó el caso de hoy; **no impide el siguiente**: la próxima categoría
+inventada entra igual, y con ella vuelven las tres superficies torcidas que la
+§16 midió.
+
+**Por qué eso limita.** Mientras la rutina pueda escribir una categoría que el
+registro no declara, el módulo publica entradas que el filtro de la línea de
+tiempo no alcanza, y su propia cuenta deja de cuadrar en pantalla. No es un
+defecto que se arregle una vez: es una puerta abierta.
+
+**Lo que SÍ quedó cerrado en la v1141, y es la mitad que no depende de la
+rutina:** la guarda estática de `revisar.js` —«ninguna entrada apunta a una
+categoría que su registro no declara»—, que corre **sin navegador y sin
+motor**, así que a partir de ahora el defecto sale en rojo **antes** de
+publicar y no después. Eso es lo que falló esta vez: `tseg` ya lo medía, pero
+las suites de navegador no corren en este contenedor, así que su rojo no
+llegaba a nadie.
+
+**Lo que falta, y es de afuera de esta casa:** que el texto de la rutina diga
+qué categorías puede usar. El texto de la rutina **se edita en la web** y no
+siempre se puede llegar a él desde una sesión de acá —es la misma razón por la
+que las reglas del módulo presidencial viven en `CLAUDE.md` y no solo en la
+rutina—. Queda como estado y no como tarea de un tercero: el módulo publica
+igual, y la guarda lo denuncia si vuelve a pasar.
+
+**Qué lo cierra:** pegar en la rutina el párrafo que la v1141 dejó escrito en
+`BITACORA.md`, con las quince categorías y la instrucción de no inventar. Es
+una edición de una sola vez en la web, y después esta sección se cierra.

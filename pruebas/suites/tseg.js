@@ -51,9 +51,18 @@ const server = http.createServer((req, res) => {
         'dice qué se pierde de verdad, no solo lo que NO se pierde');
   }
 
-  // ── Segundo caso: la fundación de la primera dama ──────────────────────
-  const fund = d.entradas.find(e => /fundación de la primera dama/i.test(e.titulo));
-  chk(!!fund, 'la entrada de la fundación está en el JSON');
+  /* ── Segundo caso: la fundación de la primera dama ──────────────────────
+     SE ANCLA POR `id` Y NO POR TÍTULO (v1141). Con el patrón de título esta
+     búsqueda se rompió en silencio: el 22 de septiembre entró OTRA entrada
+     —«Dos juzgados ordenan a Presidencia y a la fundación de la primera dama
+     informar cuánto recaudaron»— cuyo título contiene la misma frase y que
+     va ANTES en el arreglo, así que `find` devolvía esa y las cinco
+     aserciones de abajo medían la entrada equivocada. No hizo falta ningún
+     retitulado: bastó que el registro creciera. Es la clase B, y la regla
+     está escrita en CLAUDE.md desde la v1127: el ancla es por `id` y nunca
+     por título. */
+  const fund = d.entradas.find(e => e.id === 'fundacion-primera-dama-canales-donacion-2026-08-20');
+  chk(!!fund, 'la entrada de la fundación está en el JSON, anclada por id');
   if (fund) {
     chk(fund.tipoFuente === 'disputado',
         'va marcada como disputado, no como hecho cerrado (es "' + fund.tipoFuente + '")');

@@ -1,4 +1,4 @@
-const URBIS_CACHE = 'urbis-v1140-el-texto-en-cinco-pestanas';
+const URBIS_CACHE = 'urbis-v1141-las-categorias-declaradas-y-el-ancla-por-id';
 const URBIS_ASSETS = [
   './',
   './index.html',

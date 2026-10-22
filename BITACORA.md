@@ -28862,3 +28862,191 @@ algo— cometida en la sección que toda tanda lee **antes de cerrar**.
 * **No toca `main` ni la publica.** La regla de publicación sigue siendo la
   escrita: cuando se diga «súbalo», solo hasta `3f6a7e1`.
   `cerrado en v1140 · medido y declinado`
+
+## v1141 · las categorías declaradas, y el ancla por id
+
+Hecha el 22 de octubre de 2026. **No es la portada gráfica**: esa seguía
+planeada como v1141 en `herramientas/TRASPASO-portada-grafica.md` y pasa a ser
+la **v1142**, porque los números de versión salen del orden en que se publica
+y no del orden en que se planeó. Esta tanda nace de lo que las suites del
+navegador encontraron al correrse por primera vez en la nube, y de las
+decisiones que el usuario tomó sobre ese reporte.
+
+### Lo que arregla, y lo que NO era un defecto
+
+Las suites dieron **10 rojas y 2 caídas**, y ninguna era de la v1140 —medido
+con un árbol de trabajo por versión: las 12 suites dan las mismas rojas en
+`b9a8edf`, en `3f6a7e1` y en `1942d1e`—. De los seis fallos de `tseg`, cinco
+eran **(a) una expectativa vieja** y uno **(b) un defecto real publicado**.
+Esta versión cierra los dos, por caminos distintos.
+
+### (b) · Dos categorías que el registro usaba y no declaraba
+
+Cuatro entradas apuntaban a `seguridad` y a `politica`, que no estaban entre
+las trece declaradas. Estaban así en la v1137, en la v1138 —lo publicado— y en
+la v1140. **Se declararon las dos**, con la misma forma que las trece y sin
+tocar ninguna entrada ni una línea de código:
+
+| clave | nombre | icono | color |
+|---|---|---|---|
+| `seguridad` | Seguridad y orden público | 🛡️ | `#475569` |
+| `politica` | Opinión y aprobación | 📊 | `#5B21B6` |
+
+**Lo que el papel decía antes, y por qué importaba.** La consecuencia no era
+una sola y solo se vio componiendo la página:
+
+* la **ficha del hecho** leía `seguridad` y `politica` —el identificador crudo,
+  en minúscula— donde las demás leen «Corrupción y contratación»;
+* los **chips del muro** pintaban `•seguridad 3` con el punto del respaldo,
+  entre nombres propios con su emoji;
+* y el **filtro desplegable** de la línea de tiempo **no las ofrecía**,
+  anunciando «Todos los temas · 278» mientras sus opciones sumaban **274**.
+  Cuatro entradas inalcanzables por esa ruta, y una cuenta que no cuadra en la
+  propia pantalla.
+
+La causa de esa tercera es **clase B**: las dos listas de temas se construyen
+de fuentes distintas —los chips cuentan sobre `D.entradas`, el desplegable
+recorre `Object.keys(D.categorias)`— y el día que una entrada usó una
+categoría no declarada se separaron. Y el respaldo que lo tapaba
+—`|| { nombre: id, icono: '•' }`— **se escribió a propósito para otra cosa**,
+lo dice su comentario: para pintar bien las categorías del gobierno anterior
+—Paz Total, Reformas— que no existen en el vivo. Estaba absorbiendo en
+silencio un error del registro de hoy.
+
+**Leído el papel después:** la ficha lee los nombres, los chips salen con 🛡️ y
+📊 y **cero** puntos de respaldo, y el desplegable **suma 278 = 278**.
+
+### (a) · El ancla por título que encontraba la entrada equivocada
+
+Los otros cinco fallos de `tseg` eran uno solo con cinco síntomas. La suite
+buscaba la entrada de la fundación de la primera dama así:
+
+```js
+const fund = d.entradas.find(e => /fundación de la primera dama/i.test(e.titulo));
+```
+
+Y desde el 22 de septiembre **dos** entradas casan con ese patrón. `find`
+devuelve la primera del arreglo, que es la **[56]** —«Dos juzgados ordenan a
+Presidencia y a la fundación de la primera dama informar cuánto
+recaudaron»—, correctamente `verificado` porque admitir una tutela es un hecho
+procesal documentado con siete fuentes. Las cinco aserciones medían esa, y
+estaban escritas para la **[225]**, la del video viral que acusa desvío de
+dineros, que es `disputado` y tiene que serlo.
+
+**No hizo falta ningún retitulado: bastó que el registro creciera.** Es la
+clase B, y la regla estaba escrita desde la v1127 — *el ancla es por `id` y
+nunca por título*.
+
+**La instrucción no se podía ejecutar tal como venía, y eso es el hallazgo.**
+El usuario pidió darle un `id` a la [56] y anclar la suite por `id`. Medido:
+**ninguna de las dos lo tenía** —solo 42 de 278 entradas llevan `id`—, así que
+darle uno a la [56] no habría permitido anclar a la [225]. Se le dio a **las
+dos**, con la convención del registro (slug del título + fecha) y en su sitio
+de la forma, entre `categoria` y `titulo`:
+
+* [56] → `tutelas-donaciones-fundacion-primera-dama-2026-09-22`
+* [225] → `fundacion-primera-dama-canales-donacion-2026-08-20`
+
+Sin duplicar ninguno: 44 ids, cero colisiones. **`tseg` pasa de 110/116 a
+116/116**, con las siete aserciones del bloque en verde y el `tipoFuente`
+leyendo ahora `disputado`.
+
+### La guarda que faltaba, y por qué el defecto se publicó
+
+`tseg` **ya medía** las categorías huérfanas. El defecto se publicó igual, y la
+razón es la que esta tanda deja escrita: **las suites de navegador no corren en
+este contenedor** —falta el repositorio del motor— así que su rojo no llegaba a
+nadie antes de empujar. La comprobación se sube a `revisar.js`, que corre
+siempre, sin navegador y sin motor:
+
+> `ninguna entrada apunta a una categoría que su registro no declara`
+
+Sobre **los dos registros**, porque la misma vara mide a los dos, y leyendo de
+cada archivo **su propia** lista —el del gobierno anterior trae las suyas—.
+Las dos causas se cuentan aparte porque piden acciones distintas (v899): una
+entrada SIN categoría es un campo que falta; una con categoría no declarada es
+una lista que ampliar o un dato que corregir.
+
+**Va en ROJO y no con `?`** (v970, v1026): su material son las entradas y la
+lista de categorías declaradas, y arreglar el defecto no vacía ninguna de las
+dos. El estado bueno —cero huérfanas— llega con el material intacto.
+
+**Tres inyecciones, una por rama:**
+
+| Inyección | Resultado |
+|---|---|
+| una entrada con categoría inventada (`orden-publico-inventada`) | **ROJO**, nombrando registro, categoría e `id`, salida 1 |
+| una entrada con la categoría en blanco | **ROJO**, y la cuenta aparte «SIN categoría» |
+| el registro deja de declarar su lista (`categorias` renombrada) | **ROJO en el MATERIAL** — 9 categorías, bajo el piso |
+
+La tercera es la **guarda de la guarda**: la lista de válidas sale del propio
+archivo y nunca de una constante escrita en la guarda, así que si alguien
+vaciara `categorias` el material se cae antes que la comprobación.
+
+Y la segunda inyección produjo de regalo la **inyección fiel** del estado real
+de la v1138: al restaurar el archivo con `git checkout` se fueron también las
+dos categorías recién declaradas, y la guarda denunció las tres huérfanas
+originales más la inyectada. Es exactamente lo que la v993 pide y salió sin
+buscarlo.
+
+### El párrafo para la rutina diaria
+
+Las cuatro entradas con categoría inventada las escribe la rutina, que es otra
+sesión, se edita en la web y no conoce la lista. Declarar las dos tapó el caso
+de hoy; **no impide el siguiente**. Queda escrito acá el texto exacto para
+pegar en la rutina, con las quince:
+
+> **Categorías: usa SOLO estas quince claves.** No inventes ninguna, no
+> cambies la grafía y no uses mayúsculas ni tildes en la clave. Si un hecho no
+> encaja en ninguna, usa la más cercana y dilo en el detalle — **nunca**
+> escribas una clave nueva: una categoría que el registro no declara deja la
+> entrada fuera del filtro de temas del sitio y descuadra su propia cuenta en
+> pantalla.
+>
+> `gobierno` (Gobierno y decretos) · `israel` (Relación con Israel) ·
+> `eeuu` (EE. UU. y acceso militar) · `corrupcion` (Corrupción y
+> contratación) · `creditos` (Créditos y deuda) · `emergencia` (Emergencias) ·
+> `economia` (Economía) · `exterior` (Política exterior) · `ambiente`
+> (Ambiente y páramos) · `educacion` (Educación) · `legitimidad` (Legitimidad
+> electoral) · `servicios` (Servicios públicos y bolsillo) · `informacion`
+> (Desinformación y discurso público) · `seguridad` (Seguridad y orden
+> público) · `politica` (Opinión y aprobación)
+
+### Lo medido al cerrar
+
+`revisar.js`: **797 verdes, 0 rojos, 1 `?`** —el de la guarda de rol de fuente
+de la v966, sin material, que es el estado bueno—. Cuatro verdes más que la
+v1140 (793): los dos de la guarda nueva y dos del material que ahora tiene con
+qué morder. Los seis conteos, intactos en su piso: **17 · 324 · 50 · 5 · 15 ·
+14**. `tseg`: **116/116**.
+
+Y el papel, compuesto en Chromium y leído: la ficha, los chips y el filtro,
+los tres como quedaron arriba, con cero errores de página. Se entregaron
+además **catorce capturas** de las cinco pestañas de la v1140 a 1440 y 390 px
+y del filtro corregido, porque quien firma el módulo todavía no las había
+visto.
+
+### Lo que esta versión NO hace
+
+* **No corrige la redacción de la placa del veredicto** —«De los 3 ejes que
+  miden la realidad ya publican nivel 2»—, que sigue en la §14 de
+  `DECISIONES-PENDIENTES` y se ve en las capturas que se entregaron.
+  `pendiente`
+* **No toca el texto de la rutina diaria**, que se edita en la web y no desde
+  acá. El párrafo queda escrito arriba y la §17 lo registra como estado.
+  `pendiente`
+* **No ancla por `id` las otras búsquedas de `tseg`** —`Bloque de Defensa`,
+  `nombramientos`— que siguen por título. Hoy pasan; la misma trampa les cabe
+  el día que entre una entrada con esas palabras, y sus entradas tampoco
+  tienen `id` todavía.
+  `pendiente`
+* **No le da `id` a las 234 entradas que siguen sin él.** Se dieron los dos que
+  esta tanda necesitaba; un barrido completo es otra tanda y toca la rutina.
+  `pendiente`
+* **No cierra el pendiente 12**, por instrucción expresa: las suites corrieron,
+  pero las 10 rojas y las 2 caídas siguen sin resolverse y siete de ellas hay
+  que repetirlas en una máquina con el motor del usuario.
+  `pendiente`
+* **No publica nada a `main`.** `main` se queda en `3f6a7e1` (v1138) hasta que
+  el usuario diga «súbalo», y entonces suben juntas la v1140 y esta.
+  `cerrado en v1141 · medido y declinado`
