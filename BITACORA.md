@@ -30797,7 +30797,17 @@ Daniel se aplicó.
 
 * **No retira la URL de Semana sin id**, por decisión de Daniel: él correrá
   `herramientas/verificar-enlaces.js` en su computador y se decide con ese
-  resultado. Las dos URL y su ubicación quedan reportadas. `pendiente`
+  resultado. Las dos URL y su ubicación quedan reportadas.
+
+  **Y una precisión de Daniel que cambia el diagnóstico:** las dos URL difieren
+  también en el SLUG —`…-aterrizo-en-colombia-para-brindar-ayuda-inmediata-tras-el-terremoto/202620/`
+  frente a `…-aterrizo-en-cali/`—, no solo en el id. Eso importa porque dos
+  slugs distintos pueden ser **dos notas distintas** de Semana sobre el mismo
+  hecho, y no una construida a partir de la otra: mi barrido las marcó por la
+  ausencia del id, que es un indicio de forma y no una medición. **La regla de
+  decisión, fijada por Daniel:** si el verificador marca la corta como ROTA, se
+  retira; si las dos ABREN, se dejan las dos y se anota que son notas
+  distintas. `pendiente`
 * **No arregla las tres fuentes de `eltiempo.com` cuya URL es la portada
   desnuda** (`https://www.eltiempo.com/`), por decisión de Daniel de dejarlas
   y anotarlas. Están en `entradas[149].fuentes[1]` —los dos balances oficiales
@@ -30805,10 +30815,11 @@ Daniel se aplicó.
   y en `transversales[8].fuentes[2]` —la nota sobre medir con la misma vara—.
   No son enlaces construidos: son fuentes citadas sin su artículo, y lo que
   falta es la URL del artículo de cada una. `pendiente`
-* **No exige `rol` a las fuentes que viven fuera de `entradas`.** Salió al
+* **No exige `rol` a las fuentes que viven fuera de `entradas`**, y por
+  decisión de Daniel NO se exigirá por ahora: queda anotado y nada más. Salió al
   buscar estas seis: las de `casos.lista` y `transversales` no declaran `rol`,
   y la guarda por forma de la v1158 solo rechaza un rol FUERA del vocabulario,
   no uno ausente. Si debe exigirse es una decisión de diseño y no un defecto
-  medido, así que se anota y no se cambia. `pendiente`
+  medido, así que se anota y no se cambia. `cerrado en v1161 · medido y declinado`
 * **No publica nada a `main`.** Queda en `6338029` (v1160) hasta el «súbalo».
   `pendiente`
