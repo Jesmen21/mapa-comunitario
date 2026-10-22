@@ -9242,9 +9242,56 @@
     return d;
   }
 
+  /* EL SELLO DE ESTADO SE ARMA EN UNA FUNCIÓN. Son dos superficies —la
+     tarjeta de sectores y la de composición— y cada una llamaba a su propio
+     armador; el día que el registro empezó a declarar su estado, una lo
+     habría aprendido y la otra no. Es la clase B, y acá se evita barata:
+     las dos preguntan lo mismo en el mismo sitio.
+
+     Y la regla es: manda el registro. Si el bloque declara `estadoSello`,
+     ese es el sello; si no, la frase genérica que corresponda a su
+     `estadoProcesal`. Así un trámite que avanza mueve el sello actualizando
+     el registro, que es donde una sesión trabaja, y no editando una cadena
+     dentro del código, que es lo que nadie se acuerda de hacer. */
+  function selloDeEstado(x, generico) {
+    if (x && x.estadoSello) return [x.estadoSello];
+    return generico ? [generico] : [];
+  }
+
+  /* ── EL DEFLACTOR VIEJO SE DICE DONDE SE USA EL NÚMERO (v1148) ─────────
+     La v1082 ya medía que el insumo tenía reemplazo y escribía las dos
+     redacciones… dentro de `unidades` del eje C, que ninguna pantalla
+     imprime. Es decir: medido, correcto, y sin un solo lector — la clase C
+     en el sitio donde más se nota, porque la tarjeta publica seis
+     porcentajes calculados con una cifra que ya no es la última.
+
+     Va como aviso VISIBLE y no dentro del pliegue, por lo mismo que la
+     salvedad de las barras cortas: quien lee el porcentaje tiene que saber
+     con qué se descontó antes de creérselo. Y se CALCULA —compara la fecha
+     del deflactor contra el último punto de la serie—, así que el día que
+     alguien rehaga las variaciones desaparece solo (v903). */
+  function avisosDeDeflactor(dd) {
+    var d = deflactorAlDia(dd || D);
+    if (!d || d.alDia) return [];
+    return ['El DANE ya publicó una inflación más reciente (' + miles(d.ultimaV, 2) + ' % en ' +
+            mesDe(d.ultimaF) + '); estos porcentajes siguen calculados con la de ' +
+            mesDe(d.desde)];
+  }
+
+  function metodoDelDeflactor(dd) {
+    var d = deflactorAlDia(dd || D);
+    if (!d || d.alDia) return null;
+    return 'Por qué no se cambia el número y basta: las variaciones por sector están ' +
+           'calculadas con la inflación de ' + mesDe(d.desde) + ' (' + miles(d.pct, 2) + ' %), y ' +
+           'el registro no guarda el monto del año anterior de cada sector, así que no se ' +
+           'pueden rehacer. Cambiar solo la etiqueta dejaría los porcentajes calculados con ' +
+           'una cifra y declarados con otra, que es peor que quedarse viejo. Lo que se puede ' +
+           'hacer honestamente es decirlo, y es lo que dice la línea de arriba.';
+  }
+
   /* Un trámite legislativo abierto: el número puede cambiar. */
   function avisosDeTramite(x) {
-    return enTramite(x) ? ['En trámite legislativo: NO es todavía ley'] : [];
+    return selloDeEstado(x, enTramite(x) ? 'En trámite legislativo: NO es todavía ley' : null);
   }
 
   /* Los delitos: el carácter del dato, las filas en disputa y los días del
@@ -9299,12 +9346,24 @@
     return ['Deuda ' + b.medida + ': no comparable con el ancla de la Ley 2155'];
   }
 
-  /* Un proyecto de presupuesto no es un presupuesto. */
+  /* Un proyecto de presupuesto no es un presupuesto.
+
+     Y EL SELLO LO ESCRIBE EL REGISTRO cuando el registro tiene algo que
+     decir. La frase de acá abajo sale del `estadoProcesal` y nada más, así
+     que mientras el trámite avanzaba —comisiones, plenarias, anuncio de
+     decreto— el sello siguió diciendo lo mismo: cierto, y viejo. El estado
+     completo vivía en `estadoTexto`, dentro del pliegue, que es un dato que
+     ninguna superficie visible alcanza (clase C). Ahora el bloque puede
+     declarar `estadoSello`, una línea corta, y esa es la que se pinta; sin
+     ella se queda la genérica, que es lo que tienen los bloques que no la
+     declaran. Así actualizar el registro mueve el sello, y no hace falta que
+     nadie se acuerde de tocar el código. */
   function avisosDeEstado(b) {
     if (!b || !b.estadoProcesal) return [];
-    if (b.estadoProcesal === 'proyecto-de-presupuesto') return ['Proyecto de presupuesto: NO es todavía ley'];
-    if (b.estadoProcesal === 'en-tramite-legislativo') return ['En trámite legislativo: NO es todavía ley'];
-    return [];
+    return selloDeEstado(b,
+      b.estadoProcesal === 'proyecto-de-presupuesto' ? 'Proyecto de presupuesto: NO es todavía ley'
+        : (b.estadoProcesal === 'en-tramite-legislativo' ? 'En trámite legislativo: NO es todavía ley'
+          : null));
   }
 
   /* Una comparación por fuente: si alguna medida declara su calidad como
@@ -10580,7 +10639,8 @@
           ', ya descontada la inflación del ' + r0(p.deflactorPct) + ' %.',
         titulo: cn(lista.length, 'sector', 'sectores') + ', con su variación real',
         columnas: ['Sector', 'Variación real'],
-        avisos: avisosDeTramite(p),
+        avisos: avisosDeTramite(p).concat(avisosDeDeflactor()),
+        metodo: metodoDelDeflactor(),
         filas: lista.map(function (x) {
           return [x.t, (x.realPct > 0 ? '+' : '') + un(x.realPct) + ' %'];
         }) });

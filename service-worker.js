@@ -1,4 +1,4 @@
-const URBIS_CACHE = 'urbis-v1147-el-parche-en-un-solo-sitio';
+const URBIS_CACHE = 'urbis-v1148-la-carga-parcial-de-la-sonda';
 const URBIS_ASSETS = [
   './',
   './index.html',

@@ -85,6 +85,79 @@
   },
   "entradas": [
     {
+      "fecha": "2026-10-20",
+      "precision": "exacta",
+      "categoria": "economia",
+      "titulo": "El Congreso aprueba el Presupuesto General de la Nación de 2027 por 634,9 billones de pesos, y al día siguiente el Gobierno anuncia que lo expedirá por decreto por un error de trámite",
+      "id": "congreso-aprueba-presupuesto-2027",
+      "nivelGobierno": "nacional",
+      "categoriaProbatoria": "hecho-probado",
+      "tipoMedicion": "actividad",
+      "indicadores": [],
+      "_porQueListaVacia": "Corrida la vara de los cinco criterios escritos sobre esta entrada el 22 de octubre de 2026, no cae en ninguna vía. I-04 cuenta decretos expedidos AL AMPARO de una emergencia declarada: acá el Gobierno anuncia que expedirá el presupuesto por decreto invocando el artículo 59 del Estatuto Orgánico del Presupuesto, que es una facultad ordinaria y no un poder excepcional, y además el decreto todavía no consta expedido. I-05 pide que un órgano autónomo DECLARE que un acto del Ejecutivo afecta su autonomía, y ninguna fuente consultada recoge esa declaración del Congreso ni de la Corte: lo que hay son reparos políticos. No hay información negada tras tutela (I-07), no hay instrucción sobre el contenido de información técnica (I-13) y no hay muerte en una operación (I-14). Si el decreto llega a expedirse y el Congreso o la Corte declaran que invade su competencia, esta entrada volvería a mirarse por I-05.",
+      "estadoProcesal": "en-tramite-legislativo",
+      "tipoEvidencia": "reporte-periodistico",
+      "detalle": "En la madrugada del 20 de octubre de 2026 la Cámara aprobó el Presupuesto General de la Nación para 2027 por 634,9 billones de pesos, con 112 votos a favor; el Senado lo había avalado por 57 votos contra uno. Los ajustes redujeron en 8,36 billones los recursos de amortización de deuda y dejaron la inversión en 94,6 billones. El 21 de octubre el Gobierno anunció que lo expedirá por DECRETO tras detectar un error de trámite legislativo: diferencias entre los textos del Senado y la Cámara que no se conciliaron, en dos parágrafos sobre mecanismos de cobertura de riesgos del Ministerio de Hacienda. El vicepresidente José Manuel Restrepo sostuvo que regirá el proyecto del Ejecutivo con las modificaciones de la primera discusión, invocando el artículo 59 del Estatuto Orgánico del Presupuesto.",
+      "tipoFuente": "verificado",
+      "contrapunto": "El texto fue aprobado por ambas cámaras, pero NO consta que esté sancionado como ley. La vía del decreto puede ser impugnada y ninguna fuente consultada reporta un fallo sobre ella. Las notas del 20 de octubre no mencionan el error de trámite: aparece el 21. Conviene confirmar el estado en el Diario Oficial antes de afirmar que el presupuesto rige.",
+      "fuentes": [
+        {
+          "n": "Infobae · Congreso aprobó el Presupuesto General de la Nación para 2027 por $634,9 billones: queda pendiente la sanción presidencial",
+          "u": "https://www.infobae.com/colombia/2026/10/20/congreso-dio-luz-verde-al-presupuesto-general-de-la-nacion-para-2027-por-6349-billones-queda-pendiente-la-sancion-presidencial/",
+          "rol": "acto"
+        },
+        {
+          "n": "Infobae / EFE · Presupuesto de Colombia para 2027 se hará por decreto tras error en su trámite legislativo",
+          "u": "https://www.infobae.com/america/agencias/2026/10/21/presupuesto-de-colombia-para-2027-se-hara-por-decreto-tras-error-en-su-tramite-legislativo/",
+          "rol": "acto"
+        },
+        {
+          "n": "El Universal · Congreso aprobó el Presupuesto General de la Nación de 2027 por $635 billones",
+          "u": "https://www.eluniversal.com.co/colombia/2026/10/20/congreso-aprobo-el-presupuesto-general-de-la-nacion-de-2027-por-635-billones/",
+          "rol": "acto"
+        },
+        {
+          "n": "El Colombiano · Presupuesto para 2027 fue aprobado por el Congreso en la madrugada de este martes",
+          "u": "https://www.elcolombiano.com/negocios/presupuesto-general-de-la-nacion-2027-HF42476166",
+          "rol": "acto"
+        }
+      ]
+    },
+    {
+      "fecha": "2026-10-17",
+      "precision": "exacta",
+      "categoria": "emergencia",
+      "titulo": "La fundación que dirige la primera dama rinde cuentas de 54.589 millones de pesos en donaciones privadas para la reconstrucción, y un senador radica una solicitud formal de información",
+      "id": "fundacion-primera-dama-rinde-cuentas-54589-millones",
+      "nivelGobierno": "nacional",
+      "categoriaProbatoria": "hecho-probado",
+      "tipoMedicion": "actividad",
+      "indicadores": [],
+      "_porQueListaVacia": "Corrida la vara de los cinco criterios escritos sobre esta entrada el 22 de octubre de 2026, no cae en ninguna vía, y por una razón anterior a los cinco: los cinco miden actos del EJECUTIVO, y esta entrada registra la rendición de cuentas de una fundación privada y la solicitud de información de un senador. No es un decreto (I-04), el senador no es un órgano autónomo declarando afectada su autonomía (I-05), la solicitud fue radicada y no consta negada ni tutelada (I-07), no hay instrucción sobre información técnica (I-13) y no hay muerte en una operación (I-14). El día que una autoridad niegue la información pedida y eso se tutele, I-07 sí la alcanzaría.",
+      "estadoProcesal": "rendicion-de-cuentas-propia-con-solicitud-de-informacion-radicada",
+      "tipoEvidencia": "reporte-periodistico",
+      "detalle": "El 17 de octubre de 2026 la Fundación Colombia Luz y Sonrisas, que dirige la primera dama Ana Lucía Pineda, rindió cuentas de la campaña «Colombia, un solo corazón»: 54.589 millones de pesos, declarados como aportes enteramente del sector privado y sin recursos públicos. Según su rendición, un solo donante —el Grupo Gilinski— representa el 81 % del total. La fundación reportó la movilización de 5.652,2 toneladas de ayuda humanitaria para más de 48.000 personas en 80 municipios. La campaña se declara SEPARADA del Fondo Milagro, el mecanismo del Gobierno administrado por Fiducoldex.",
+      "tipoFuente": "disputado",
+      "contrapunto": "El senador Alejandro Ocampo radicó una solicitud formal de información sobre lo recaudado, lo gastado y lo pendiente, y declaró que su objetivo es la trazabilidad y NO una acusación penal. Ninguna fuente consultada reporta una denuncia ante organismo de control por apropiación indebida de esos recursos, ni un hallazgo fiscal. Las cifras provienen de la propia rendición de la fundación y no constan auditadas por un tercero independiente: por eso esta entrada va como `disputado` y no como verificado.",
+      "fuentes": [
+        {
+          "n": "Publimetro · Fundación de la Primera Dama, Ana Lucía Pineda revela qué pasó con los $54.589 millones donados tras el terremoto",
+          "u": "https://www.publimetro.co/noticias/2026/10/17/fundacion-de-la-primera-dama-ana-lucia-pineda-revela-que-paso-con-los-54589-millones-donados-tras-el-terremoto/",
+          "rol": "acto"
+        },
+        {
+          "n": "El Colombiano · Fundación de la primera dama reportó más de $54.000 millones en aportes privados tras el terremoto",
+          "u": "https://www.elcolombiano.com/colombia/fundacion-primera-dama-reporta-mas-de-54000-millones-aportes-privados-terremoto-PA42353396",
+          "rol": "acto"
+        },
+        {
+          "n": "La FM · Primera dama rindió cuentas: su fundación recaudó más de $54.000 millones para la reconstrucción tras el terremoto",
+          "u": "https://www.lafm.com.co/politica/primera-dama-cuentas-fundacion-terremoto-reconstruccion-colombia-414216",
+          "rol": "acto"
+        }
+      ]
+    },
+    {
       "fecha": "2026-10-16",
       "precision": "exacta",
       "categoria": "gobierno",
@@ -2577,6 +2650,40 @@
       ],
       "actosQueAgrupa": 1,
       "contrargumentoOficial": "El ministro de Defensa, general (r) Jorge Eduardo Mora, confirmó que Medicina Legal identificó a tres menores entre los diez muertos —de 15, 15 y 16 años— y sostuvo que se encontraban en «función continua de combate». El Gobierno defendió la legitimidad de la operación con dos argumentos: que el ataque respetó los estándares constitucionales y del Derecho Internacional Humanitario, y que la responsabilidad de la violación recae en los grupos armados que reclutan menores, conducta que el propio ministro calificó de crimen de guerra. Añadió que un menor reclutado no pierde automáticamente la condición de persona protegida y que su situación concreta debe analizarse caso a caso. NO responde las dos preguntas que la moción de censura le hizo: qué inteligencia previa había sobre la presencia de menores en el objetivo, y si se analizaron alternativas menos lesivas antes de atacar."
+    },
+    {
+      "fecha": "2026-08-20",
+      "precision": "exacta",
+      "categoria": "emergencia",
+      "titulo": "La UNGRD destina 100.000 millones de pesos a subsidios de arriendo para damnificados del terremoto, condicionados a la caracterización que hagan las gobernaciones",
+      "id": "ungrd-100000-millones-subsidio-arriendo",
+      "nivelGobierno": "nacional",
+      "categoriaProbatoria": "hecho-probado",
+      "tipoMedicion": "actividad",
+      "indicadores": [],
+      "_porQueListaVacia": "Corrida la vara de los cinco criterios escritos sobre esta entrada el 22 de octubre de 2026, no cae en ninguna vía. Ocurre DENTRO de la emergencia declarada por el Decreto 1261, pero I-04 cuenta DECRETOS y esto es una asignación administrativa de la UNGRD anunciada en rueda de prensa, no un decreto con fuerza de ley: contarla inflaría el indicador con actos que no son los que mide. No hay órgano autónomo pronunciándose (I-05), no hay información negada tras tutela (I-07), no hay instrucción sobre información técnica (I-13) y no hay muerte en una operación (I-14).",
+      "estadoProcesal": "anunciado-sin-acto",
+      "tipoEvidencia": "reporte-periodistico",
+      "detalle": "El 20 de agosto de 2026 la UNGRD anunció 100.000 millones de pesos para subsidios de arrendamiento a los afectados por el terremoto. La entrega depende de la caracterización de las familias que realizan las gobernaciones. Según el Ministerio de Vivienda, el apoyo cubriría inicialmente entre tres y seis meses.",
+      "tipoFuente": "verificado",
+      "contrapunto": "Lo que NO se pudo establecer es cuántos subsidios se han entregado realmente frente a los prometidos, ni cuántas personas siguen en albergues o sin techo: ninguna fuente consultada publica ese balance. Las cifras de afectación tampoco coinciden entre fuentes —331 fallecidos, 4.439 heridos, 31.540 viviendas destruidas y 178.555 averiadas en un reporte del 25 de agosto; «más de 120.000 familias damnificadas» en otro—, así que la brecha entre lo prometido y lo entregado queda SIN MEDIR.",
+      "fuentes": [
+        {
+          "n": "El Tiempo · UNGRD destinará $100.000 millones a subsidios de arriendo para los damnificados por el terremoto en Colombia",
+          "u": "https://www.eltiempo.com/economia/sectores/ungrd-destinara-100-000-millones-a-subsidios-de-arriendo-para-los-damnificados-por-el-terremoto-en-colombia-3579497",
+          "rol": "acto"
+        },
+        {
+          "n": "El Heraldo · Así funcionará el subsidio de arrendamiento para los afectados por terremoto",
+          "u": "https://www.elheraldo.co/colombia/2026/08/20/asi-funcionara-el-subsidio-de-arrendamiento-para-los-afectados-por-terremoto-ungrd-destino-100000-millones/",
+          "rol": "acto"
+        },
+        {
+          "n": "Infobae · Terremoto en Colombia ya deja 331 personas fallecidas y 4.439 personas heridas, según confirmó la Ungrd",
+          "u": "https://www.infobae.com/colombia/2026/08/25/terremoto-en-colombia-ya-deja-331-personas-fallecidas-y-4439-personas-heridas-segun-confirmo-la-ungrd/",
+          "rol": "contexto"
+        }
+      ]
     },
     {
       "fecha": "2026-08-11",
@@ -5623,8 +5730,8 @@
       "tipoMedicion": "actividad",
       "indicadores": [],
       "nivelGobierno": "nacional",
-      "detalle": "El secretario de Estado de EE. UU., Marco Rubio, llegó el 8 de septiembre a Barranquilla para reunirse con el presidente De la Espriella en la sede alterna de la Presidencia en el Batallón Paraíso, en su primera visita de alto nivel desde la posesión del 7 de agosto. A las 3:25 p. m. ambos gobiernos firmaron memorandos de entendimiento sobre cooperación estratégica en energía nuclear civil y en minerales críticos, con la participación del canciller Omar Bula Escobar. La agenda incluyó también la cooperación contra el narcotráfico —un mes después de que el secretario de Guerra de EE. UU., Pete Hegseth, afirmara que De la Espriella autorizó operaciones militares conjuntas contra el narcotráfico en territorio colombiano y que Colombia se sumó a la Coalición Contra los Cárteles de las Américas (A3C)—, la reconstrucción tras el terremoto del 10 de agosto y el pedido colombiano de suspender temporalmente el arancel del 12,5 % que EE. UU. impone a algunos productos del país. Al término del encuentro hubo una rueda de prensa conjunta.",
-      "contrapunto": "El senador Iván Cepeda cuestionó los acuerdos y afirmó que cualquier compromiso que genere obligaciones para el país debe pasar por el Congreso y, en su caso, por la Corte Constitucional; acusó además a Rubio y a Trump de haber intervenido «directa y abiertamente» a favor de De la Espriella durante la campaña, y advirtió que los pactos podrían comprometer la riqueza minera y energética del país. Hasta la fecha no se ha publicado el texto completo de los memorandos ni el trámite que seguirán ante el Congreso. Y un matiz que cambia lo que significa la noticia: un memorando de entendimiento NO ES VINCULANTE. No concede derechos de explotación, no garantiza inversión y debe pasar por las legislaturas de los dos países. Es una señal de dirección política, no un contrato ejecutado, y así se registra acá.",
+      "detalle": "El secretario de Estado de EE. UU., Marco Rubio, llegó el 8 de septiembre a Barranquilla para reunirse con el presidente De la Espriella en la sede alterna de la Presidencia en el Batallón Paraíso, en su primera visita de alto nivel desde la posesión del 7 de agosto. A las 3:25 p. m. ambos gobiernos firmaron memorandos de entendimiento sobre cooperación estratégica en energía nuclear civil y en minerales críticos, con la participación del canciller Omar Bula Escobar. La agenda incluyó también la cooperación contra el narcotráfico —un mes después de que el secretario de Guerra de EE. UU., Pete Hegseth, afirmara que De la Espriella autorizó operaciones militares conjuntas contra el narcotráfico en territorio colombiano y que Colombia se sumó a la Coalición Contra los Cárteles de las Américas (A3C)—, la reconstrucción tras el terremoto del 10 de agosto y el pedido colombiano de suspender temporalmente el arancel del 12,5 % que EE. UU. impone a algunos productos del país. Al término del encuentro hubo una rueda de prensa conjunta. Lo que los memorandos cubren, verificado contra los comunicados de la Cancillería y del Departamento de Estado: el de minerales críticos nombra las 17 tierras raras, el litio, el cobre y el tungsteno, y prevé mapeo geológico, procesamiento, reciclaje y la movilización de apoyo público y privado —garantías, préstamos, capital, acuerdos de compra y seguros— para identificar y financiar proyectos conjuntos en un plazo de seis meses desde la firma, es decir hacia marzo de 2027. El de cooperación nuclear civil es un NCMOU: por la propia clasificación del Departamento de Estado sirve de base para una relación más amplia y NO autoriza transferir material ni tecnología nuclear, lo que exigiría un tratado bilateral distinto, el llamado Acuerdo 123.",
+      "contrapunto": "El senador Iván Cepeda cuestionó los acuerdos y afirmó que cualquier compromiso que genere obligaciones para el país debe pasar por el Congreso y, en su caso, por la Corte Constitucional; acusó además a Rubio y a Trump de haber intervenido «directa y abiertamente» a favor de De la Espriella durante la campaña, y advirtió que los pactos podrían comprometer la riqueza minera y energética del país. Hasta la fecha no se ha publicado el texto completo de los memorandos ni el trámite que seguirán ante el Congreso. Y un matiz que cambia lo que significa la noticia: un memorando de entendimiento NO ES VINCULANTE. No concede derechos de explotación, no garantiza inversión y debe pasar por las legislaturas de los dos países. Es una señal de dirección política, no un contrato ejecutado, y así se registra acá. Es un MARCO DE COOPERACIÓN NO VINCULANTE y así lo declara la propia Cancillería: no entrega áreas, no asigna contratos, no compromete montos, no elimina la licencia ambiental ni la consulta previa. Lo que la oposición y varios analistas advierten son RIESGOS, no hechos consumados. Y el texto del acuerdo NO está en nuestro poder: no se localizó publicado por Cancillería ni por MinEnergía, así que lo que sostiene esta entrada es lo que los dos comunicados oficiales describen, no la letra menuda.",
       "tipoFuente": "verificado",
       "fuentes": [
         {
@@ -5647,7 +5754,8 @@
           "u": "https://www.infobae.com/colombia/2026/09/08/ivan-cepeda-cuestiono-posibles-acuerdos-entre-marco-rubio-y-abelardo-de-la-espriella-debera-ser-aprobado-por-el-congreso/",
           "rol": "efecto"
         }
-      ]
+      ],
+      "id": "memorandos-eeuu-minerales-criticos-nuclear-2026-09-08"
     },
     {
       "fecha": "2026-09-07",
@@ -10107,7 +10215,7 @@
       "categoriaProbatoria": "hecho-probado",
       "tipoMedicion": "actividad",
       "detalle": "El Decreto 1261 del 19 de agosto de 2026 declaró el estado de emergencia económica, social y ecológica por treinta días calendario en quince departamentos —Antioquia, Caldas, Cauca, Chocó, Quindío, Cundinamarca, Risaralda, Huila, Valle del Cauca, Tolima, Putumayo, Norte de Santander, Bolívar, Nariño y Sucre—, con fundamento en el artículo 215 de la Constitución y en la Ley 137 de 1994, por el terremoto de magnitud 7,4 del 10 de agosto con epicentro en San José del Palmar (Chocó), a 103,4 km de profundidad. El propio decreto cifra el impacto en al menos 30 billones de pesos, el 1,5 % del PIB, y argumenta que el endeudamiento bruto de la Nación supera el 60 % del PIB y que el Presupuesto de 2026 quedó desfinanciado al no aprobarse la Ley de Financiamiento. Es un decreto MARCO: no reparte ayudas, habilita al Gobierno para expedir decretos legislativos con fuerza de ley durante esos treinta días, cada uno con control automático de la Corte Constitucional. De él salen los paquetes de 11 y de 15 decretos que este registro ya tiene, y el aplazamiento de los concursos de mérito. Fue modificado por el Decreto 1348 del 31 de agosto de 2026.",
-      "contrapunto": "Declarar una emergencia por un terremoto de 7,4 con 314 muertos y 30.664 viviendas destruidas es el uso previsto del artículo 215, no un abuso: la Constitución lo escribió para esto. Lo que esta entrada registra es que el régimen ordinario de gasto y de contratación quedó de lado durante treinta días, con el control de la Corte todavía pendiente de conocerse en este registro.",
+      "contrapunto": "Declarar una emergencia por un terremoto de 7,4 con 314 muertos y 30.664 viviendas destruidas es el uso previsto del artículo 215, no un abuso: la Constitución lo escribió para esto. Lo que esta entrada registra es que el régimen ordinario de gasto y de contratación quedó de lado durante treinta días, con el control de la Corte todavía pendiente de conocerse en este registro. Y una precisión sobre las cifras del propio decreto: el balance de víctimas que cita es PRELIMINAR y del corte del 19 de agosto —314 fallecidos, 4.437 heridos y 262 desaparecidos—. La UNGRD reportó el 25 de agosto 331 fallecidos y 4.439 heridos, así que la cifra se movió en los seis días siguientes. Un número tomado del texto de un decreto es el del día en que se firmó, no el de hoy.",
       "tipoFuente": "verificado",
       "fuentes": [
         {
@@ -11978,7 +12086,8 @@
     "anio": 2027,
     "corte": "2026-09-14",
     "estadoProcesal": "en-tramite-legislativo",
-    "estadoTexto": "Monto aprobado por las comisiones económicas el 14 de septiembre de 2026. NO es todavía ley: sigue su trámite en las plenarias de las dos cámaras, así que estas cifras pueden cambiar.",
+    "estadoTexto": "Monto aprobado por las comisiones económicas el 14 de septiembre de 2026, y aprobado por las plenarias de las dos cámaras el 20 de octubre. NO consta sancionado como ley: el 21 de octubre el Gobierno anunció que lo expedirá por DECRETO tras detectar un error de trámite legislativo. Estas cifras son las del trámite, y pueden cambiar.",
+    "estadoSello": "Aprobado por las dos cámaras el 20 oct · NO consta sancionado como ley",
     "base": "pgn-2027-monto-aprobado-comisiones",
     "totalBn": 634.9,
     "deflactorPct": 6.24,
@@ -12128,7 +12237,9 @@
       ],
       "_clasificacionSocial": "Cada sector declara si es gasto público social en el sentido del ARTÍCULO 366 de la Constitución, que nombra sus áreas: salud, educación, saneamiento ambiental y agua potable. La clasificación vive acá y no en el código para que se pueda discutir mirando el registro, y lleva su referencia al lado.\n\nY se ajusta a ESA lista y no a una idea más amplia de «gasto social», porque ensanchar la lista es ensanchar el criterio — que es la manera silenciosa de hacer que entren más sectores y el eje baje más fácil. Las dos decisiones discutibles, dichas: TRABAJO queda como NO social aunque su gasto lo sea en sentido amplio, porque el artículo 366 no lo nombra; y DEPORTE tampoco, por lo mismo, aun con su caída real del 43,5 %, que es la mayor de los siete. Si alguna de las dos se cambiara, el nivel del eje C podría moverse: por eso están escritas y no supuestas.\n\nNota de método: POLICÍA no trae variación real, así que no entra en ninguna de las dos ramas del cálculo — ni a favor ni en contra.",
       "tono": "neutro",
-      "porQueEseTono": "Una variación de presupuesto por sector no tiene tono declarado por ninguna fuente."
+      "porQueEseTono": "Una variación de presupuesto por sector no tiene tono declarado por ninguna fuente.",
+      "estadoTexto": "Cifras del proyecto de presupuesto radicado, con el reparto por sector del trámite en comisiones. El monto fue aprobado por las dos cámaras el 20 de octubre y NO consta sancionado como ley: el Gobierno anunció el 21 de octubre que lo expedirá por decreto. El reparto por sector de la versión final no está publicado, así que estas cifras siguen siendo las del trámite.",
+      "estadoSello": "Aprobado por las dos cámaras el 20 oct · NO consta sancionado como ley"
     },
     "agregacion": {
       "titulo": "La misma plata, dos agregaciones: dónde queda Defensa según qué se sume",

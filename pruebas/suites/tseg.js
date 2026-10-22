@@ -795,6 +795,48 @@ const server = http.createServer((req, res) => {
       'y desde ahí se entra al hecho completo con sus fuentes (' + abrio.vista + ')');
   await pg.evaluate(() => { location.hash = ''; });
   await pg.waitForTimeout(400);
+  /* ── v1148 · EL ESTADO Y EL DEFLACTOR LLEGAN A LA LÍNEA VISIBLE ────────
+     Las dos cosas estaban MEDIDAS y sin lector, que es la clase C: el estado
+     completo del presupuesto vivía en `estadoTexto`, dentro del pliegue, y
+     la declaración de que el deflactor tiene reemplazo —que la v1082 calcula
+     desde hace sesenta y seis versiones— no aparecía en NINGUNA de las seis
+     vistas. Se midió recorriéndolas una por una antes de escribir esto.
+
+     Se mide sobre la línea VISIBLE y no sobre el texto de la tarjeta: lo
+     plegado cuenta como alcanzable para el lector que abre, pero una cifra
+     publicada con un insumo viejo tiene que avisar ANTES de que alguien la
+     crea. Y el contenido no se compara contra una frase escrita acá —eso es
+     como envejece una aserción (v890)—: se comprueba que nombre la cifra
+     nueva que el propio registro trae. */
+  await pg.evaluate(() => { location.hash = ''; });
+  await pg.waitForTimeout(900);
+  const sello = await pg.evaluate(() => {
+    const card = [...document.querySelectorAll('.sp-graf')]
+      .find((x) => (x.textContent || '').includes('Variación real por sector'));
+    if (!card) return { hay: false };
+    const sal = card.querySelector('.sp-graf-sal');
+    return { hay: true, visible: sal ? sal.textContent : '',
+             plegado: !!(sal && sal.closest('details')) };
+  });
+  const reg148 = JSON.parse(require('fs').readFileSync(
+    '/home/user/mapa-comunitario/assets/data/seguimiento-presidencial.json', 'utf8'));
+  const serie148 = ((reg148.indicadores || {}).inflacion || {}).puntos || [];
+  const ultIpc = serie148.length ? String(serie148[serie148.length - 1].v).replace('.', ',') : null;
+  const selloReg = (reg148.presupuesto || {}).estadoSello || '';
+  chk(sello.hay && !!sello.visible && !sello.plegado,
+      'MATERIAL · la tarjeta del presupuesto trae una línea de salvedad VISIBLE, fuera del pliegue (' +
+      (sello.hay ? (sello.plegado ? 'está plegada' : sello.visible.slice(0, 60) + '…') : 'no está la tarjeta') + ')');
+  chk(!!selloReg && sello.visible.includes(selloReg),
+      'y el sello de estado lo escribe el REGISTRO, no una cadena del código (' +
+      (selloReg ? (sello.visible.includes(selloReg) ? '«' + selloReg.slice(0, 54) + '…»'
+                                                    : 'el registro declara uno y la pantalla pinta otro')
+                : 'el registro no declara `estadoSello`') + ')');
+  chk(!!ultIpc && sello.visible.includes(ultIpc),
+      'y cuando el deflactor tiene reemplazo, la pantalla NOMBRA la cifra nueva del registro (' +
+      (ultIpc ? (sello.visible.includes(ultIpc) ? 'la serie va en ' + ultIpc + ' % y la línea lo dice'
+                                                : 'la serie va en ' + ultIpc + ' % y la línea no lo nombra')
+              : 'la serie de inflación no trae puntos: nada que comparar') + ')');
+
   chk(errores.length === 0, 'sin errores de página' + (errores.length ? ': ' + errores[0] : ''));
 
   await pg.screenshot({ path: '/tmp/seguimiento.png', fullPage: false });
