@@ -1,5 +1,5 @@
 {
-  "_queEsEsto": "BORRADOR DE CARGA de la sonda de verificación del 22 de octubre de 2026, actualizado esa misma tarde con el «cárguelas» parcial de Daniel. NO es el registro: vive fuera de assets/data a propósito, en una rama que no se fusiona a main, y ninguna pantalla lo lee. Lo que Daniel autorizó cargar ya está cargado y se movió a `_yaCargadas`. Lo que queda en `entradas` espera un nuevo «cárguelas».",
+  "_queEsEsto": "BORRADOR DE CARGA de la sonda de verificación del 22 de octubre de 2026, actualizado esa misma tarde con el «cárguelas» parcial de Daniel. NO es el registro: vive fuera de assets/data a propósito, en una rama que no se fusiona a main, y ninguna pantalla lo lee. Lo que Daniel autorizó cargar ya está cargado y se movió a `_yaCargadas`. Lo que queda en `entradas` espera un nuevo «cárguelas». Actualizado otra vez el 22 de octubre con las cuatro correcciones de Daniel sobre la v1148: `_propuestasQueNoSeCargan` trae la entrada aparte del informe de Transparencia por Colombia, y la nota chilena de Pauta queda verificada y explicada en el ítem 18.",
   "_reglasAplicadas": [
     "Solo entra lo CONFIRMADO. Lo DENUNCIADO entra con esa etiqueta explícita en el título y en el estado procesal; lo NO CONFIRMADO no entra y queda listado aparte, con su razón.",
     "Ningún texto atribuye una causa al Gobierno si la fuente no la atribuye. Dos entradas llevan por eso una salvedad de periodo: los hechos anteriores al 7 de agosto de 2026 no son actos de este Gobierno.",
@@ -345,7 +345,20 @@
         "porQueNoEntra": "ES EL MISMO ACTO, el mismo día, y ya está bien registrado: la firma, Panamá, el miembro número 19, Jorge Mora, la A3C, Medellín como sede regional, y la contradicción entre Hegseth y el comunicado del Gobierno. Agregar una tercera entrada sería contar el hecho dos veces.",
         "comoSeEncontro": "NO lo encontró la guarda del hecho repetido, y eso importa más que el caso. Su umbral —doce palabras largas compartidas— lo elegí con los dos duplicados que ya tenía delante, así que medía el NÚMERO que esos dos daban y no la propiedad. Estas dos entradas tienen títulos cortos: ocho y nueve palabras en común, por debajo del umbral, y pasaron en verde. Lo encontré buscando «Escudo de las Américas» en el registro a mano, al escribir la entrada. La cura no es bajar el umbral —sería elegir otro número a ojo—: es la guarda 10, que exige declarar por escrito que se revisaron las entradas de la MISMA FECHA.",
         "queAgregaria": "Siete cosas que las entradas existentes no dicen, y todas verificadas el 22 de octubre: (1) la cita del ministro Mora a NTN24, «No estamos vendiendo ni la soberanía, ni aquí van a pasar tropas»; (2) la del presidente del Senado y del Congreso, Honorio Henríquez, que fija la regla sin decir si se cumplió: «Si es con tropa, se requiere la autorización del Senado de la República, así lo establece la Constitución Política»; (3) la redacción exacta con la que el Ministerio de Defensa niega la autorización —que la Declaración Conjunta de Seguridad del 12 de agosto «no contiene una decisión mediante la cual el Gobierno nacional haya autorizado operaciones militares conjuntas de combate»—; (4) la posición del canciller Omar Bula, que enfoca lo suscrito en cooperación económica y crimen transnacional; (5) que las fuentes ni siquiera coinciden en el INSTRUMENTO —memorando de entendimiento, acuerdo bilateral de cooperación, Declaración Conjunta de Seguridad—, que es parte de por qué la disputa no se puede dirimir desde acá; (6) que el TEXTO no está en nuestro poder y no se localizó publicado; y (7) que el arancel estadounidense del 12,5 % que suele citarse en esta discusión rige desde el 24 de julio de 2026, ANTES de la posesión, así que no es un acto de este Gobierno. Las tres entradas, además, no tienen id y se lo ganan al actualizarlas (v1127).",
-        "loQueNoSeHalló": "La pieza de Pauta del 7 de octubre de 2026 que Daniel nombró: no se halló, ni ninguna cobertura de octubre que dirima la contradicción entre Hegseth y el Ministerio de Defensa. Y la página de NTN24 no se pudo abrir —el proxy de este contenedor niega todos los dominios—, así que la cita de Mora se sostiene en su titular, recogido por la búsqueda."
+        "loQueNoSeHalló": "La pieza de Pauta del 7 de octubre de 2026 que Daniel nombró: no se halló, ni ninguna cobertura de octubre que dirima la contradicción entre Hegseth y el Ministerio de Defensa. Y la página de NTN24 no se pudo abrir —el proxy de este contenedor niega todos los dominios—, así que la cita de Mora se sostiene en su titular, recogido por la búsqueda.",
+        "laNotaDePauta": "VERIFICADA, y NO entra como fuente de la entrada colombiana. La nota es de Pauta, un medio CHILENO, y el canciller que habla es Francisco Pérez Mackenna, canciller de CHILE, ante el Senado chileno el 7 de octubre de 2026. No es el canciller colombiano Omar Bula. Sostiene que la adhesión de Chile es una declaración política sin obligaciones jurídicas, que no es un tratado y no requiere ratificación del Congreso, y que el texto no incluye fuerzas conjuntas, bases militares extranjeras, despliegue de tropas ni compromisos presupuestales. Ponerla como fuente de la entrada colombiana le atribuiría a Colombia lo que dijo el gobierno de otro país sobre su propia adhesión, que es exactamente el error de categoría que este registro evita en otros sitios (v1093). LO QUE SÍ PODRÍA HACER, y es decisión de Daniel: entrar como CONTEXTO COMPARADO, rotulado como tal — otro miembro de la misma coalición describiendo el mismo instrumento como una declaración política no vinculante y sin tropas. Y no estaría solo: el canciller del Perú dijo lo mismo, que el Escudo «no autoriza el ingreso de fuerzas extranjeras». Eso es relevante porque refuerza la versión del Ministerio de Defensa colombiano frente a la de Hegseth, pero es un argumento por analogía y no un hecho sobre Colombia, así que si entra tiene que entrar diciéndolo.",
+        "fuentesComparadasSiDanielQuiere": [
+          {
+            "n": "Pauta (Chile) · Pérez Mackenna defiende Escudo de las Américas y descarta cesión de soberanía",
+            "u": "https://www.pauta.cl/actualidad/2026/10/07/canciller-defiende-el-escudo-de-las-americas-y-descarta-despliegue-de-tropas-y-cesion-de-soberania.html",
+            "rol": "contexto"
+          },
+          {
+            "n": "Cooperativa (Chile) · Canciller afirmó ante el Senado que el Escudo de las Américas es una declaración política",
+            "u": "https://www.cooperativa.cl/noticias/pais/relaciones-exteriores/ee-uu/canciller-afirmo-ante-el-senado-que-el-escudo-de-las-americas-es-una/2026-10-07/205639.html",
+            "rol": "contexto"
+          }
+        ]
       }
     }
   ],
@@ -374,14 +387,18 @@
       "fecha": "2026-10-20",
       "precision": "exacta",
       "categoria": "economia",
-      "id": "congreso-aprueba-presupuesto-2027",
       "titulo": "El Congreso aprueba el Presupuesto General de la Nación de 2027 por 634,9 billones de pesos, y al día siguiente el Gobierno anuncia que lo expedirá por decreto por un error de trámite",
-      "detalle": "En la madrugada del 20 de octubre de 2026 la Cámara aprobó el Presupuesto General de la Nación para 2027 por 634,9 billones de pesos, con 112 votos a favor; el Senado lo había avalado por 57 votos contra uno. Los ajustes redujeron en 8,36 billones los recursos de amortización de deuda y dejaron la inversión en 94,6 billones. El 21 de octubre el Gobierno anunció que lo expedirá por DECRETO tras detectar un error de trámite legislativo: diferencias entre los textos del Senado y la Cámara que no se conciliaron, en dos parágrafos sobre mecanismos de cobertura de riesgos del Ministerio de Hacienda. El vicepresidente José Manuel Restrepo sostuvo que regirá el proyecto del Ejecutivo con las modificaciones de la primera discusión, invocando el artículo 59 del Estatuto Orgánico del Presupuesto.",
-      "contrapunto": "El texto fue aprobado por ambas cámaras, pero NO consta que esté sancionado como ley. La vía del decreto puede ser impugnada y ninguna fuente consultada reporta un fallo sobre ella. Las notas del 20 de octubre no mencionan el error de trámite: aparece el 21. Conviene confirmar el estado en el Diario Oficial antes de afirmar que el presupuesto rige.",
-      "tipoFuente": "verificado",
+      "id": "congreso-aprueba-presupuesto-2027",
       "nivelGobierno": "nacional",
-      "estadoProcesal": "aprobado-en-congreso-sin-sancion-y-con-anuncio-de-decreto",
-      "tipoEvidencia": "cobertura-de-prensa-convergente",
+      "categoriaProbatoria": "hecho-probado",
+      "tipoMedicion": "actividad",
+      "indicadores": [],
+      "_porQueListaVacia": "Corrida la vara de los cinco criterios escritos sobre esta entrada el 22 de octubre de 2026, no cae en ninguna vía. I-04 cuenta decretos expedidos AL AMPARO de una emergencia declarada: acá el Gobierno anuncia que expedirá el presupuesto por decreto invocando el artículo 59 del Estatuto Orgánico del Presupuesto, que es una facultad ordinaria y no un poder excepcional, y además el decreto todavía no consta expedido. I-05 pide que un órgano autónomo DECLARE que un acto del Ejecutivo afecta su autonomía, y ninguna fuente consultada recoge esa declaración del Congreso ni de la Corte: lo que hay son reparos políticos. No hay información negada tras tutela (I-07), no hay instrucción sobre el contenido de información técnica (I-13) y no hay muerte en una operación (I-14). Si el decreto llega a expedirse y el Congreso o la Corte declaran que invade su competencia, esta entrada volvería a mirarse por I-05.",
+      "estadoProcesal": "en-tramite-legislativo",
+      "tipoEvidencia": "reporte-periodistico",
+      "detalle": "En la madrugada del 20 de octubre de 2026 la Cámara aprobó el Presupuesto General de la Nación para 2027 por 634,9 billones de pesos, con 112 votos a favor; el Senado lo había avalado por 57 votos contra uno. Los ajustes redujeron en 8,36 billones los recursos de amortización de deuda y dejaron la inversión en 94,6 billones. El 21 de octubre el Gobierno anunció que lo expedirá por DECRETO tras detectar un error de trámite legislativo: diferencias entre los textos del Senado y la Cámara que no se conciliaron, en dos parágrafos sobre mecanismos de cobertura de riesgos del Ministerio de Hacienda. El vicepresidente José Manuel Restrepo sostuvo que regirá el proyecto del Ejecutivo con las modificaciones de la primera discusión, invocando el artículo 59 del Estatuto Orgánico del Presupuesto.",
+      "tipoFuente": "verificado",
+      "contrapunto": "El texto fue aprobado por ambas cámaras, pero NO consta que esté sancionado como ley. La vía del decreto puede ser impugnada y ninguna fuente consultada reporta un fallo sobre ella. Las notas del 20 de octubre no mencionan el error de trámite: aparece el 21. Conviene confirmar el estado en el Diario Oficial antes de afirmar que el presupuesto rige.",
       "fuentes": [
         {
           "n": "Infobae · Congreso aprobó el Presupuesto General de la Nación para 2027 por $634,9 billones: queda pendiente la sanción presidencial",
@@ -396,31 +413,29 @@
         {
           "n": "El Universal · Congreso aprobó el Presupuesto General de la Nación de 2027 por $635 billones",
           "u": "https://www.eluniversal.com.co/colombia/2026/10/20/congreso-aprobo-el-presupuesto-general-de-la-nacion-de-2027-por-635-billones/",
-          "rol": "dato"
+          "rol": "acto"
         },
         {
           "n": "El Colombiano · Presupuesto para 2027 fue aprobado por el Congreso en la madrugada de este martes",
           "u": "https://www.elcolombiano.com/negocios/presupuesto-general-de-la-nacion-2027-HF42476166",
-          "rol": "dato"
+          "rol": "acto"
         }
       ],
-      "_verificadoEn": "2026-10-22",
-      "_estadoSonda": "CONFIRMADO",
-      "_tocaUnaTarjetaViva": "Esta entrada DESACTUALIZA la tarjeta «Proyecto de presupuesto: NO es todavía ley» del bloque `presupuesto`. Ver el informe: la tarjeta sigue siendo cierta en que no es ley, pero ya no es cierto que sea solo un proyecto en trámite.",
-      "_cargadaEn": "v1148, el 22 de octubre de 2026, por el «cárguelas» parcial de Daniel. Ya está en `assets/data/seguimiento-presidencial.json`."
+      "_cargadaEn": "v1148, el 22 de octubre de 2026, por el «cárguelas» parcial de Daniel. Ya está en `assets/data/seguimiento-presidencial.json`.",
+      "_estaCopiaEs": "La entrada TAL COMO QUEDÓ EN EL REGISTRO, releída de `assets/data/seguimiento-presidencial.json` el 22 de octubre de 2026. Antes esta sección guardaba la entrada como se REDACTÓ, no como se cargó, y eso hizo que Daniel leyera acá la alerta de Transparencia por Colombia que la carga sí había retirado. Un archivo que dice «esto ya está en el registro» y muestra otra cosa es peor que no tenerlo."
     },
     {
       "fecha": "2026-10-17",
       "precision": "exacta",
       "categoria": "emergencia",
-      "id": "fundacion-primera-dama-rinde-cuentas-54589-millones",
       "titulo": "La fundación que dirige la primera dama rinde cuentas de 54.589 millones de pesos en donaciones privadas para la reconstrucción, y un senador radica una solicitud formal de información",
+      "id": "fundacion-primera-dama-rinde-cuentas-54589-millones",
+      "categoriaProbatoria": "hecho-probado",
+      "tipoMedicion": "contexto-estructural",
+      "tipoEvidencia": "reporte-periodistico",
       "detalle": "El 17 de octubre de 2026 la Fundación Colombia Luz y Sonrisas, que dirige la primera dama Ana Lucía Pineda, rindió cuentas de la campaña «Colombia, un solo corazón»: 54.589 millones de pesos, declarados como aportes enteramente del sector privado y sin recursos públicos. Según su rendición, un solo donante —el Grupo Gilinski— representa el 81 % del total. La fundación reportó la movilización de 5.652,2 toneladas de ayuda humanitaria para más de 48.000 personas en 80 municipios. La campaña se declara SEPARADA del Fondo Milagro, el mecanismo del Gobierno administrado por Fiducoldex.",
-      "contrapunto": "El senador Alejandro Ocampo radicó una solicitud formal de información sobre lo recaudado, lo gastado y lo pendiente, y declaró que su objetivo es la trazabilidad y NO una acusación penal. Ninguna fuente consultada reporta una denuncia ante organismo de control por apropiación indebida de esos recursos, ni un hallazgo fiscal. Las cifras provienen de la propia rendición de la fundación y no constan auditadas por un tercero independiente. Aparte, Transparencia por Colombia identificó riesgos de corrupción en 768 contratos por unos 201.800 millones de pesos relacionados con la respuesta y la recuperación: eso es una alerta de RIESGO sobre contratación pública, no un hallazgo sobre esta fundación.",
       "tipoFuente": "disputado",
-      "nivelGobierno": "nacional",
-      "estadoProcesal": "rendicion-de-cuentas-propia-con-solicitud-de-informacion-radicada",
-      "tipoEvidencia": "cobertura-de-prensa-convergente",
+      "contrapunto": "El senador Alejandro Ocampo radicó una solicitud formal de información sobre lo recaudado, lo gastado y lo pendiente, y declaró que su objetivo es la trazabilidad y NO una acusación penal. Ninguna fuente consultada reporta una denuncia ante organismo de control por apropiación indebida de esos recursos, ni un hallazgo fiscal. Las cifras provienen de la propia rendición de la fundación y no constan auditadas por un tercero independiente: por eso esta entrada va como `disputado` y no como verificado.",
       "fuentes": [
         {
           "n": "Publimetro · Fundación de la Primera Dama, Ana Lucía Pineda revela qué pasó con los $54.589 millones donados tras el terremoto",
@@ -430,36 +445,33 @@
         {
           "n": "El Colombiano · Fundación de la primera dama reportó más de $54.000 millones en aportes privados tras el terremoto",
           "u": "https://www.elcolombiano.com/colombia/fundacion-primera-dama-reporta-mas-de-54000-millones-aportes-privados-terremoto-PA42353396",
-          "rol": "dato"
+          "rol": "acto"
         },
         {
           "n": "La FM · Primera dama rindió cuentas: su fundación recaudó más de $54.000 millones para la reconstrucción tras el terremoto",
           "u": "https://www.lafm.com.co/politica/primera-dama-cuentas-fundacion-terremoto-reconstruccion-colombia-414216",
-          "rol": "dato"
-        },
-        {
-          "n": "El País · Fondo Milagro y reconstrucción luego del terremoto: Transparencia por Colombia identificó riesgos en contratos",
-          "u": "https://www.elpais.com.co/colombia/fondo-milagro-y-reconstruccion-luego-del-terremoto-transparencia-por-colombia-identifico-riesgos-en-contratos-1502.html",
-          "rol": "contexto"
+          "rol": "acto"
         }
       ],
-      "_verificadoEn": "2026-10-22",
-      "_estadoSonda": "CONFIRMADO en las cifras rendidas · DENUNCIADO en la trazabilidad",
-      "_soloDatosPublicos": "La entrada se limita a la rendición pública de la fundación y a la solicitud de información radicada por un senador. No nombra a personas privadas ni atribuye conducta a nadie.",
-      "_cargadaEn": "v1148, el 22 de octubre de 2026, por el «cárguelas» parcial de Daniel. Ya está en `assets/data/seguimiento-presidencial.json`."
+      "_cargadaEn": "v1148, el 22 de octubre de 2026, por el «cárguelas» parcial de Daniel. Ya está en `assets/data/seguimiento-presidencial.json`.",
+      "_estaCopiaEs": "La entrada TAL COMO QUEDÓ EN EL REGISTRO, releída de `assets/data/seguimiento-presidencial.json` el 22 de octubre de 2026. Antes esta sección guardaba la entrada como se REDACTÓ, no como se cargó, y eso hizo que Daniel leyera acá la alerta de Transparencia por Colombia que la carga sí había retirado. Un archivo que dice «esto ya está en el registro» y muestra otra cosa es peor que no tenerlo."
     },
     {
       "fecha": "2026-08-20",
       "precision": "exacta",
       "categoria": "emergencia",
-      "id": "ungrd-100000-millones-subsidio-arriendo",
       "titulo": "La UNGRD destina 100.000 millones de pesos a subsidios de arriendo para damnificados del terremoto, condicionados a la caracterización que hagan las gobernaciones",
-      "detalle": "El 20 de agosto de 2026 la UNGRD anunció 100.000 millones de pesos para subsidios de arrendamiento a los afectados por el terremoto. La entrega depende de la caracterización de las familias que realizan las gobernaciones. Según el Ministerio de Vivienda, el apoyo cubriría inicialmente entre tres y seis meses.",
-      "contrapunto": "Lo que NO se pudo establecer es cuántos subsidios se han entregado realmente frente a los prometidos, ni cuántas personas siguen en albergues o sin techo: ninguna fuente consultada publica ese balance. Las cifras de afectación tampoco coinciden entre fuentes —331 fallecidos, 4.439 heridos, 31.540 viviendas destruidas y 178.555 averiadas en un reporte del 25 de agosto; «más de 120.000 familias damnificadas» en otro—, así que la brecha entre lo prometido y lo entregado queda SIN MEDIR.",
-      "tipoFuente": "verificado",
+      "id": "ungrd-100000-millones-subsidio-arriendo",
       "nivelGobierno": "nacional",
-      "estadoProcesal": "recursos-anunciados-con-entrega-condicionada",
-      "tipoEvidencia": "cobertura-de-prensa-convergente",
+      "categoriaProbatoria": "hecho-probado",
+      "tipoMedicion": "actividad",
+      "indicadores": [],
+      "_porQueListaVacia": "Corrida la vara de los cinco criterios escritos sobre esta entrada el 22 de octubre de 2026, no cae en ninguna vía. Ocurre DENTRO de la emergencia declarada por el Decreto 1261, pero I-04 cuenta DECRETOS y esto es una asignación administrativa de la UNGRD anunciada en rueda de prensa, no un decreto con fuerza de ley: contarla inflaría el indicador con actos que no son los que mide. No hay órgano autónomo pronunciándose (I-05), no hay información negada tras tutela (I-07), no hay instrucción sobre información técnica (I-13) y no hay muerte en una operación (I-14).",
+      "estadoProcesal": "anunciado-sin-acto",
+      "tipoEvidencia": "reporte-periodistico",
+      "detalle": "El 20 de agosto de 2026 la UNGRD anunció 100.000 millones de pesos para subsidios de arrendamiento a los afectados por el terremoto. La entrega depende de la caracterización de las familias que realizan las gobernaciones. Según el Ministerio de Vivienda, el apoyo cubriría inicialmente entre tres y seis meses.",
+      "tipoFuente": "verificado",
+      "contrapunto": "Lo que NO se pudo establecer es cuántos subsidios se han entregado realmente frente a los prometidos, ni cuántas personas siguen en albergues o sin techo: ninguna fuente consultada publica ese balance. Las cifras de afectación tampoco coinciden entre fuentes —331 fallecidos, 4.439 heridos, 31.540 viviendas destruidas y 178.555 averiadas en un reporte del 25 de agosto; «más de 120.000 familias damnificadas» en otro—, así que la brecha entre lo prometido y lo entregado queda SIN MEDIR.",
       "fuentes": [
         {
           "n": "El Tiempo · UNGRD destinará $100.000 millones a subsidios de arriendo para los damnificados por el terremoto en Colombia",
@@ -469,17 +481,56 @@
         {
           "n": "El Heraldo · Así funcionará el subsidio de arrendamiento para los afectados por terremoto",
           "u": "https://www.elheraldo.co/colombia/2026/08/20/asi-funcionara-el-subsidio-de-arrendamiento-para-los-afectados-por-terremoto-ungrd-destino-100000-millones/",
-          "rol": "dato"
+          "rol": "acto"
         },
         {
           "n": "Infobae · Terremoto en Colombia ya deja 331 personas fallecidas y 4.439 personas heridas, según confirmó la Ungrd",
           "u": "https://www.infobae.com/colombia/2026/08/25/terremoto-en-colombia-ya-deja-331-personas-fallecidas-y-4439-personas-heridas-segun-confirmo-la-ungrd/",
-          "rol": "dato"
+          "rol": "contexto"
         }
       ],
-      "_verificadoEn": "2026-10-22",
-      "_estadoSonda": "CONFIRMADO el anuncio · SIN MEDIR la ejecución",
-      "_cargadaEn": "v1148, el 22 de octubre de 2026, por el «cárguelas» parcial de Daniel. Ya está en `assets/data/seguimiento-presidencial.json`."
+      "_cargadaEn": "v1148, el 22 de octubre de 2026, por el «cárguelas» parcial de Daniel. Ya está en `assets/data/seguimiento-presidencial.json`.",
+      "_estaCopiaEs": "La entrada TAL COMO QUEDÓ EN EL REGISTRO, releída de `assets/data/seguimiento-presidencial.json` el 22 de octubre de 2026. Antes esta sección guardaba la entrada como se REDACTÓ, no como se cargó, y eso hizo que Daniel leyera acá la alerta de Transparencia por Colombia que la carga sí había retirado. Un archivo que dice «esto ya está en el registro» y muestra otra cosa es peor que no tenerlo."
+    }
+  ],
+  "_propuestasQueNoSeCargan": [
+    {
+      "id": "transparencia-768-contratos-reconstruccion-2026-10-14",
+      "porQueSeProponeAparte": "Daniel pidió sacar la alerta de Transparencia por Colombia del contrapunto de la entrada de la fundación de la primera dama, y con razón: es una alerta sobre CONTRATACIÓN PÚBLICA de 153 entidades, y ponerla junto a una fundación privada que no aparece en ella invita a leerla como si la señalara. Es un hecho propio y merece su entrada.",
+      "fecha": "2026-10-14",
+      "precision": "exacta",
+      "categoria": "corrupcion",
+      "titulo": "Transparencia por Colombia advierte que el 82 % de los 768 contratos de la reconstrucción se adjudicaron por contratación directa, y pide criterios públicos de priorización a un año del ciclo electoral territorial",
+      "categoriaProbatoria": "hecho-probado",
+      "tipoMedicion": "contexto-estructural",
+      "tipoEvidencia": "documento-primario",
+      "tipoFuente": "verificado",
+      "detalle": "Transparencia por Colombia publicó a mediados de octubre de 2026 un seguimiento a la contratación de la atención, la recuperación y la reconstrucción tras el terremoto del 10 de agosto. Entre el 11 de agosto y el 12 de octubre identificó 768 contratos por unos 201.800 millones de pesos, celebrados por 153 entidades y registrados en SECOP I y SECOP II. El 82 % —630 contratos— se adjudicó por contratación directa, y esa modalidad concentra el 83,5 % del valor, cerca de 170.000 millones de pesos. La contratación es sobre todo territorial: solo cinco contratos son del orden nacional, entre ellos el de fiducia del Fondo Patria Milagro entre el Ministerio de Hacienda y Fiducoldex, publicado el 5 de octubre. La organización pide publicar en SECOP todos los contratos derivados del Fondo con sus contratistas, consorcios y beneficiarios finales, y advierte sobre la ausencia de criterios públicos y verificables de priorización de proyectos y beneficiarios en un contexto de alta disponibilidad de recursos y cercanía al ciclo electoral territorial de 2027.",
+      "contrapunto": "ES UNA ALERTA DE RIESGO, NO UN HALLAZGO. Transparencia por Colombia no afirma que haya corrupción en ninguno de los 768 contratos, ni señala a ninguna persona: documenta una modalidad de contratación y una falta de criterios publicados. La contratación directa por urgencia manifiesta es legal en una emergencia declarada, y el Gobierno ha sostenido que el Fondo Patria Milagro sigue el modelo del Forec de 1999 y tendrá una junta de empresarios diseñada para prevenir la injerencia política. Y CONVIENE NO CONTARLO DOS VECES: este registro ya cita, en la entrada del Decreto 1420, un informe ANTERIOR de la misma organización con 402 contratos por $88.400 millones entre el 11 de agosto y el 12 de septiembre. No son dos hallazgos independientes: es el mismo seguimiento con la ventana ampliada un mes, así que al cargar esta entrada hay que decirlo en la otra.",
+      "fuentes": [
+        {
+          "n": "Transparencia por Colombia · Se necesitan más garantías de transparencia en la reconstrucción",
+          "u": "https://transparenciacolombia.org.co/se-necesitan-mas-garantias-de-transparencia-en-la-reconstruccion/",
+          "rol": "acto"
+        },
+        {
+          "n": "El Tiempo · Reconstrucción por el terremoto: 82 % de 768 contratos se adjudicaron por contratación directa, la mayoría desde el orden territorial",
+          "u": "https://www.eltiempo.com/politica/partidos-politicos/reconstruccion-por-el-terremoto-82-de-768-contratos-se-adjudicaron-por-contratacion-directa-la-mayoria-desde-el-orden-territorial-3593729",
+          "rol": "acto"
+        },
+        {
+          "n": "Blu Radio · Transparencia por Colombia pide reforzar controles de 768 contratos dispuestos a atender el terremoto",
+          "u": "https://www.bluradio.com/nacion/transparencia-por-colombia-pide-reforzar-controles-de-768-contratos-dispuestos-a-atender-terremoto-rg10",
+          "rol": "acto"
+        },
+        {
+          "n": "El País (Cali) · Fondo Milagro y reconstrucción luego del terremoto: Transparencia por Colombia identificó riesgos en contratos",
+          "u": "https://www.elpais.com.co/colombia/fondo-milagro-y-reconstruccion-luego-del-terremoto-transparencia-por-colombia-identifico-riesgos-en-contratos-1502.html",
+          "rol": "contexto"
+        }
+      ],
+      "_mismaFechaRevisada": "Pendiente de revisar contra las entradas del registro con fecha 14 de octubre de 2026, cuando Daniel decida cargarla: la fecha exacta de publicación tampoco está firme —una nota la sitúa el 14 de octubre y otras hablan de «mediados de octubre»—, así que antes de cargar hay que fijarla.",
+      "_loQueNoSePuedeAfirmar": "Que haya corrupción, desvío o irregularidad en alguno de esos contratos. El informe no lo dice y este registro tampoco puede decirlo."
     }
   ]
 }
