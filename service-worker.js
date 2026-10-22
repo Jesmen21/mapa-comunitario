@@ -1,4 +1,4 @@
-const URBIS_CACHE = 'urbis-v1150-el-sello-no-va-por-detras';
+const URBIS_CACHE = 'urbis-v1151-la-papa-con-su-medida';
 const URBIS_ASSETS = [
   './',
   './index.html',

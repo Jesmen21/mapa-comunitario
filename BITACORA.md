@@ -30371,3 +30371,84 @@ el rezago lo calcula `lineaDeCorte` leyendo el sello. La inyección no era fiel.
 * **No carga la actualización de la entrada del Decreto 1420** con las cifras
   nuevas de Transparencia por Colombia. El texto está propuesto y espera el
   «cárguelas». `pendiente`
+
+---
+
+## v1151 · La papa con su medida, y el contrapunto del 1420 con la respuesta completa
+
+### El «cárguelas» del Decreto 1420, con los tres ajustes de Daniel
+
+Cargado en la entrada que ya existía —`decretos-emergencia-terremoto-18sep`—,
+no como entrada nueva: el informe de los 768 contratos es **la misma ventana**
+del de 402 ampliada un mes, y contarlo aparte sería contar el hecho dos veces.
+
+Los tres ajustes, y por qué cada uno importa:
+
+1. **«No hay» → «No se halló».** Lo primero es una afirmación sobre el mundo y
+   no la podemos hacer; lo segundo es sobre nuestra búsqueda, que es lo único
+   que sostenemos. Es la regla de la v961 y la v1123 aplicada a una frase que
+   llevaba meses escrita del otro modo.
+2. **«cerca de $170.000 millones» → «unos $168.500 millones», declarado
+   aproximado.** El número redondo no salía de ninguna parte: el 83,5 % de
+   $201.800 millones da $168.503. Y va dicho de dónde sale —de aplicar el
+   porcentaje al total, no de una suma contrato por contrato—, porque una
+   cifra sin su procedencia es la que después nadie puede defender.
+3. **La frase del Gobierno tenía que traer fuente, y al buscarla apareció más
+   de lo que se buscaba.** La afirmación del modelo Forec no se pudo fechar,
+   así que se retiró tal como estaba y se reemplazó por lo que **sí** está
+   fechado y es más sustancial: el Decreto 1379 del 9 de septiembre creó el
+   Fondo como patrimonio autónomo con contratación de derecho privado y
+   vigilancia de la Contraloría, y el 7 de octubre se anunció su junta.
+
+   Y lo que la búsqueda trajo sin pedirlo: **esos miembros son representantes
+   del presidente**, junto a delegados de Planeación, Hacienda y la UNGRD, y
+   la gerencia la designó él directamente. Dejar solo la primera mitad habría
+   sido publicar la respuesta del Gobierno como si cerrara la pregunta. Van
+   las dos: *que el diseño declare querer mantener a los políticos lejos del
+   fondo y que sus órganos los nombre el presidente son dos hechos a la vez.*
+
+### La papa: no eran tres cifras en disputa, eran tres medidas
+
+El registro publicaba **78,24 % anual** para la papa, tomado de prensa. El
+boletín técnico del DANE le registra **7,29 % mensual** y **67,70 % en lo
+corrido del año**, y el 78,24 % no aparece ahí.
+
+**No se contradecían.** Nadie había dicho de qué era cada una, que es
+exactamente el defecto que la v1085 midió sobre la serie de deuda y la v1093
+dejó escrito como regla: *una cifra lleva su medida*. El texto propuesto —que
+espera el «cárguelas»— publica las dos verificables con su medida al lado,
+dice que la tercera circuló y no se verifica, y conserva frutas y carne
+diciendo que vienen de prensa. **Retirarlas por simetría habría empobrecido el
+registro; dejarlas sin procedencia era el defecto.**
+
+### El dólar: el muro, medido y no supuesto
+
+Pedido: la TRM diaria de octubre de fuente primaria. **Medido con `curl`: el
+contenedor no resuelve banrep.gov.co, totoro.banrep.gov.co,
+superfinanciera.gov.co, datos.gov.co ni dane.gov.co** — código 000, sin
+respuesta. No es que la página esté caída.
+
+La búsqueda **sí** devuelve valores de octubre, y aun así no se cargan. El
+estándar escrito desde la v1003 es que la búsqueda sostiene *que* un hecho
+ocurrió, no que se leyó la página, y la v1065 midió por qué una serie numérica
+cae del otro lado de esa raya. El síntoma apareció en la primera consulta: para
+el 22 de octubre un sitio publica $3.191,47 y ninguna fuente de peso lo
+confirma.
+
+Los cinco valores que la búsqueda devolvió quedan anotados **para verificar**,
+no para cargar, con la vía escrita. Y el gráfico ya dice solo lo que le falta:
+«Datos hasta el 30 de septiembre. El registro se cerró el 22 de octubre, 22
+días después». **El vacío ya estaba declarado y se mantiene.**
+
+### Lo que esta versión NO hace
+
+* **No carga la actualización del IPC.** El texto está propuesto y espera el
+  «cárguelas». `pendiente`
+* **No extiende la serie del dólar.** El canal primario no se alcanza desde
+  este contenedor, y la búsqueda no sostiene una serie numérica.
+  `cerrado en v1151 · medido y declinado`
+* **No cierra los ítems 7 y 10 de la sonda.** Los dos dependen de páginas que
+  este contenedor no resuelve —CREG y Superservicios para la tarifa, UNGRD
+  para el balance de albergues—. `pendiente`
+* **No publica nada a `main`.** Queda en `c3da1d4` (v1150) hasta el «súbalo».
+  `pendiente`

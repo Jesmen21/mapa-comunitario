@@ -3900,7 +3900,7 @@
         }
       },
       "detalle": "Al cumplirse el plazo de 30 días de la emergencia económica, social y ecológica declarada por el Decreto 1261 del 19 de agosto de 2026 —modificado por el Decreto 1348 del 31 de agosto— por el terremoto de magnitud 7,4 del 10 de agosto con epicentro en San José del Palmar (Chocó), el Gobierno expidió un paquete adicional de 15 decretos, conocido el 18 de septiembre y descrito por la prensa como emitido «un día antes del fin de la emergencia». Es adicional a los 11 decretos del 9 de septiembre —entre ellos el que creó el Fondo Patria Milagro, ya registrado— y no los reemplaza. De los 15, se identificaron con su número al menos diez: el Decreto 1412 (adición presupuestal de $624.656 millones al Presupuesto General de 2026, con cargo a un crédito externo de US$200 millones), el 1413 (incentivos tributarios temporales para atraer inversión en turismo, agroindustria, construcción, manufactura y servicios en las zonas afectadas), el 1414 (autoriza a departamentos y municipios afectados a usar recursos del Sistema General de Regalías para la emergencia), el 1415 (elimina copagos y cuotas moderadoras en salud por 12 meses para damnificados registrados), el 1416 (créditos y leasing sin hipoteca y apertura temporal de sucursales para financiar reparación de vivienda), el 1417 (apoyo a nómina, cesantías y personas que perdieron su empleo por la emergencia), el 1418 (permite usar recursos de las Cámaras de Comercio para reactivar mipymes afectadas), el 1419 (alivios tributarios adicionales, entre ellos reducción de sanciones), el 1420 (declara probada la urgencia manifiesta para que las entidades estatales contraten de forma directa bienes, obras y servicios con conexión directa, territorial y temporal al sismo, sin necesidad de un acto administrativo separado, mientras dure la situación de desastre del Decreto 1171 y sus prórrogas) y el 1424 (facultades especiales a la ANI, Invías y la Aerocivil para acelerar la reconstrucción de corredores viales y aeroportuarios estratégicos). No se pudo confirmar con las fuentes consultadas la numeración completa de los cinco decretos restantes del paquete, ni una prórroga formal del Decreto 1261 en sí mismo, distinta de la situación de desastre del Decreto 1171.",
-      "contrapunto": "El Decreto 1420 se suma a un mecanismo —la contratación directa por urgencia manifiesta— que Transparencia por Colombia había señalado como un riesgo de opacidad días antes: en un informe divulgado a mediados de septiembre, la organización documentó 402 contratos por $88.400 millones entre el 11 de agosto y el 12 de septiembre dentro de la reconstrucción, el 81 % por contratación directa y el 51,5 % por urgencia manifiesta, y advirtió sobre la ausencia de registros públicos de priorización en un año próximo al ciclo electoral territorial de 2027. El Gobierno ha respondido que el Fondo Patria Milagro sigue el modelo del Forec de 1999 y tendrá una junta de empresarios reconocidos diseñada para prevenir la injerencia política. No hay, a la fecha de esta actualización, una denuncia formal ni una investigación abierta sobre los contratos de este paquete específico de decretos.",
+      "contrapunto": "El Decreto 1420 se suma a un mecanismo —la contratación directa por urgencia manifiesta— que Transparencia por Colombia había señalado como un riesgo de opacidad días antes: en un informe divulgado a mediados de septiembre, la organización documentó 402 contratos por $88.400 millones entre el 11 de agosto y el 12 de septiembre dentro de la reconstrucción, el 81 % por contratación directa y el 51,5 % por urgencia manifiesta, y advirtió sobre la ausencia de registros públicos de priorización en un año próximo al ciclo electoral territorial de 2027. EN OCTUBRE LA MISMA ORGANIZACIÓN AMPLIÓ LA VENTANA UN MES Y LAS CIFRAS SUBIERON: hasta el 12 de octubre contabilizó 768 contratos por unos $201.800 millones, celebrados por 153 entidades y registrados en SECOP I y SECOP II, de los cuales 630 —el 82 %— se adjudicaron por contratación directa, concentrando el 83,5 % del valor, es decir unos $168.500 millones, cifra aproximada porque sale de aplicar ese porcentaje al total y no de una suma publicada contrato por contrato. No son dos hallazgos independientes: es el mismo seguimiento con un mes más, así que las dos cifras no se suman. La contratación es sobre todo territorial —solo cinco contratos son del orden nacional, entre ellos el de fiducia del Fondo Patria Milagro entre el Ministerio de Hacienda y Fiducoldex, publicado el 5 de octubre— y la organización pide publicar en SECOP todos los contratos derivados del Fondo con sus contratistas, consorcios y beneficiarios finales. LO QUE NO DICE ESE INFORME, Y NO SE PUEDE AFIRMAR: no hay un hallazgo de corrupción en ninguno de esos contratos, ni una persona señalada. Documenta una modalidad de contratación y una falta de criterios publicados de priorización, y la contratación directa por urgencia manifiesta es legal en una emergencia declarada. LA RESPUESTA DEL GOBIERNO ES EL DISEÑO DEL FONDO, y conviene leerla completa: el Decreto 1379 del 9 de septiembre creó el Fondo Patria Milagro como patrimonio autónomo, con contratación regida por el derecho privado bajo principios de transparencia y publicidad y con vigilancia de la Contraloría General, y el 7 de octubre el Gobierno anunció una junta directiva de empresarios —Liliana Restrepo, Germán Bahamón, César Caicedo y Arturo Calle—, en la que también está Carlos Ríos, secretario general de la Presidencia. Lo que el propio decreto establece, y que matiza esa respuesta: esos miembros son representantes DEL PRESIDENTE, junto a delegados de Planeación, Hacienda y la UNGRD, y la gerencia, en Jaime Andrés Uribe, la designó él directamente. Que el diseño declare querer mantener a los políticos lejos del fondo y que sus órganos los nombre el presidente son dos hechos a la vez, y los dos están aquí. No se halló, a la fecha de esta actualización, una denuncia formal ni una investigación abierta sobre los contratos de este paquete específico de decretos.",
       "tipoFuente": "verificado",
       "fuentes": [
         {
@@ -3936,6 +3936,36 @@
         {
           "n": "Pulzo · Fondo Milagro: la contratación para la reconstrucción tras el terremoto del 10 de agosto y el control anticorrupción",
           "u": "https://www.pulzo.com/nacion/fondo-milagro-colombia-reconstruccion-tras-terremoto-del-10-de-agosto-y-control-anticorrupcion-PP5285874A",
+          "rol": "efecto"
+        },
+        {
+          "n": "Transparencia por Colombia · Se necesitan más garantías de transparencia en la reconstrucción",
+          "u": "https://transparenciacolombia.org.co/se-necesitan-mas-garantias-de-transparencia-en-la-reconstruccion/",
+          "rol": "efecto"
+        },
+        {
+          "n": "El Tiempo · Reconstrucción por el terremoto: 82 % de 768 contratos se adjudicaron por contratación directa, la mayoría desde el orden territorial",
+          "u": "https://www.eltiempo.com/politica/partidos-politicos/reconstruccion-por-el-terremoto-82-de-768-contratos-se-adjudicaron-por-contratacion-directa-la-mayoria-desde-el-orden-territorial-3593729",
+          "rol": "efecto"
+        },
+        {
+          "n": "Blu Radio · Transparencia por Colombia pide reforzar controles de 768 contratos dispuestos a atender el terremoto",
+          "u": "https://www.bluradio.com/nacion/transparencia-por-colombia-pide-reforzar-controles-de-768-contratos-dispuestos-a-atender-terremoto-rg10",
+          "rol": "efecto"
+        },
+        {
+          "n": "Presidencia de la República · Gobierno crea el Fondo Milagro para atender y reconstruir territorios afectados por el terremoto (10 de septiembre de 2026)",
+          "u": "https://www.presidencia.gov.co/prensa/Paginas/Gobierno-crea-el-Fondo-Milagro-para-atender-y-reconstruir-territorios-260910.aspx",
+          "rol": "efecto"
+        },
+        {
+          "n": "Forbes Colombia · Estos son los empresarios que conformarán la junta directiva del Fondo Milagro (7 de octubre de 2026)",
+          "u": "https://forbes.co/2026/10/07/economia-y-finanzas/estos-son-los-empresarios-que-conformaran-la-junta-directiva-del-fondo-milagro/",
+          "rol": "efecto"
+        },
+        {
+          "n": "La República · Estos son los empresarios que conformarán la junta directiva del Fondo Milagro (7 de octubre de 2026)",
+          "u": "https://www.larepublica.co/economia/estos-son-los-empresarios-que-conformaran-la-junta-directiva-del-fondo-milagro-4498926",
           "rol": "efecto"
         }
       ],
