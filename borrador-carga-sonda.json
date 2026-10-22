@@ -90,7 +90,7 @@
     },
     {
       "item": "3 · Santa Marta",
-      "estado": "DOS HECHOS DISTINTOS · (a) marcha pacífica · (b) hecho de seguridad YA REGISTRADO",
+      "estado": "DOS HECHOS DISTINTOS · (a) marcha pacífica · (b) hecho de seguridad CARGADO en la v1158",
       "porQueSeReabrio": "Daniel recordó que «hubo mucha violencia» en Santa Marta. Tenía razón, y la etiqueta anterior —«DESMENTIDO en su forma circulante»— era un error de alcance: desmentía la versión de disturbios EN LA MARCHA del 14 de octubre, que es cierto que no los hubo, y al hacerlo dejaba fuera de la vista una jornada de violencia real del 22 y 23 de septiembre. Un desmentido que tapa un hecho ocurrido no es un desmentido: es un recorte.",
       "hechoA": {
         "que": "Marcha del 14 de octubre de 2026 en Santa Marta",
@@ -106,10 +106,11 @@
         "yaEstaEnElRegistro": true,
         "dondeEsta": "Entrada del 2026-09-21 («De la Espriella confirma la muerte de alias 'Cholo'…»), que ya trae la operación de Guachaca, los siete muertos, los tres capturados, la incautación, el consejo de seguridad convocado y el paro armado de 48 horas con bloqueos y quema de vehículos. Y la entrada del 2026-09-28 (cancelación del crucero Freewinds), que ya trae «una semana de hechos… que las autoridades atribuyeron a las ACSN: intimidaciones a comerciantes, quema de vehículos, afectaciones al transporte y restricciones en corredores viales».",
         "porQueNOentradaNueva": "Escribir una entrada nueva para el 22 de septiembre sería la clase B: dos codificaciones del mismo hecho, que coincidirían hoy y se separarían la primera vez que alguien corrija una de las dos. Va como ACTUALIZACIÓN de la entrada del 21, que es la que ya narra la operación y la reacción.",
-        "verificadoContra": "Búsqueda del 22 de octubre de 2026. Convergen en los hechos y en las nueve capturas: El Heraldo, Publimetro, Vanguardia y Al Día. En el despliegue de más de 1.100 uniformados: El Universal, El Callejero y HSB Noticias. En la secuencia de los tres decretos distritales de motos: RCN Radio, Seguimiento.co, Semana y Diario La Libertad. Contexto: El Tiempo, France 24, Infobae, Radio Nacional."
+        "verificadoContra": "Búsqueda del 22 de octubre de 2026. Convergen en los hechos y en las nueve capturas: El Heraldo, Publimetro, Vanguardia y Al Día. En el despliegue de más de 1.100 uniformados: El Universal, El Callejero y HSB Noticias. En la secuencia de los tres decretos distritales de motos: RCN Radio, Seguimiento.co, Semana y Diario La Libertad. Contexto: El Tiempo, France 24, Infobae, Radio Nacional.",
+        "cargadoEn": "v1158, el 22 de octubre de 2026, por el «cárguelas» de Daniel. Ya está en assets/data/seguimiento-presidencial.json."
       },
       "razon": "Los dos hechos son ciertos y son distintos. La etiqueta de una sola palabra no podía con los dos.",
-      "queFaltaria": "La actualización de la entrada del 21 de septiembre, redactada y a la espera del «cárguelas» de Daniel. Nada más: el hecho está establecido."
+      "queFaltaria": "Nada. El ítem queda cerrado."
     },
     {
       "item": "9 · marchas atacadas",
@@ -397,7 +398,7 @@
         "Las tres capturas del 21 y las nueve del 22 se dicen como hechos distintos, para que nadie 'corrija' una cifra con la otra (v1085)."
       ],
       "correccionALoQueDeciaUNAsolaFuente": "Vanguardia sola dejaba entender que la restricción de motos corría hasta la medianoche del 24. La secuencia convergente es de TRES decretos y el 433 levantó la prohibición total el 23, antes de la fecha anunciada. Escribir solo «hasta el 24» habría sido falso sobre lo que de verdad pasó.",
-      "estado": "REDACTADO · espera el «cárguelas» de Daniel"
+      "estado": "CARGADO en la v1158, con las dos correcciones de Daniel aplicadas y verificadas"
     },
     {
       "deQueSonda": "ítem 2 · ayudas del terremoto (crédito del Banco Mundial)",
@@ -409,19 +410,29 @@
       ],
       "cambio1_detalle": {
         "comoSeAplica": "Se apende al `detalle` actual, sin tocar lo ya verificado.",
-        "textoQueSeAgrega": "El 24 de septiembre de 2026 el Grupo Banco Mundial aprobó 200 millones de dólares adicionales para la respuesta al terremoto del 10 de agosto. Es una aprobación posterior y distinta del desembolso de agosto, por el mismo monto. Se suma a un préstamo de Políticas de Desarrollo para la Gestión del Riesgo de Desastres con Opción de Desembolso Diferido ante Catástrofes (Cat DDO), aprobado en febrero de 2025 y ya desembolsado."
+        "textoQueSeAgrega": "El 24 de septiembre de 2026 el Grupo Banco Mundial aprobó un financiamiento adicional de 200 millones de dólares para la respuesta y la recuperación tras el terremoto del 10 de agosto. Es un acto posterior y distinto del desembolso de agosto, por el mismo monto: según la prensa consultada, los dos movimientos llevan el respaldo a 400 millones de dólares en total. El crédito al que se suma es un préstamo de Políticas de Desarrollo para la Gestión del Riesgo de Desastres con Opción de Desembolso Diferido ante Catástrofes (Cat DDO), aprobado en febrero de 2025 y ya desembolsado. Es financiamiento crediticio y no una donación."
       },
       "cambio2_contrapunto": {
         "comoSeAplica": "Se apende al `contrapunto` actual, que ya dice que el techo no está dirimido.",
-        "textoQueSeAgrega": "Las cifras que circulan no son comparables entre sí y no se suman: el ministro de Hacienda habló en agosto de un crédito de hasta 450 millones de dólares, otra nota reportó una solicitud de ampliación por 250 millones, el BID ofreció 300 millones en financiamiento contingente del que no consta desembolso, y el 24 de septiembre el Banco Mundial aprobó 200 millones adicionales. Son momentos distintos del mismo proceso —ofrecido, solicitado, aprobado y desembolsado— y las fuentes consultadas no aclaran cuáles se acumulan."
+        "textoQueSeAgrega": "Conviene separar qué cifras se suman y cuáles no. Los 200 millones desembolsados el 13 de agosto y los 200 aprobados el 24 de septiembre SÍ se acumulan, y la prensa consultada los presenta como 400 millones en total. Las otras cifras que circularon no son parte de ese total: el ministro de Hacienda habló en agosto de ampliar el crédito hasta 450 millones de dólares y otra nota reportó una solicitud por 250 millones, pero lo aprobado fueron 200; y los 300 millones de financiamiento contingente que ofreció el BID son de otra entidad y no consta su desembolso. Eran intenciones y solicitudes, no aprobaciones."
       },
       "cambio3_fuentes": {
-        "comoSeAplica": "Se agregan a las cinco que ya tiene. La primera es de PRIMER NIVEL —el propio Banco Mundial—, que la entrada no tenía: sus cinco fuentes son de prensa.",
+        "comoSeAplica": "Se agregan a las cinco que ya tiene. TODAS son de prensa: la fuente primaria no se alcanzó.",
         "nuevas": [
           {
-            "n": "Banco Mundial · El Grupo Banco Mundial amplía su apoyo a Colombia para fortalecer la respuesta ante el terremoto",
-            "u": "https://www.bancomundial.org/es/news/press-release/2026/09/24/world-bank-group-provides-additional-support-to-colombia-earthquake-response",
+            "n": "Publimetro · Banco Mundial amplía financiamiento para Colombia tras terremoto: serán US$400 millones en total",
+            "u": "https://www.publimetro.co/noticias/2026/09/27/banco-mundial-amplia-financiamiento-para-colombia-tras-terremoto-seran-us400-millones-en-total/",
             "rol": "acto"
+          },
+          {
+            "n": "El Tiempo · Banco Mundial amplía apoyo a Colombia tras terremoto: aprueba otros US$200 millones para atender emergencia",
+            "u": "https://www.eltiempo.com/amp/economia/sectores/banco-mundial-amplia-apoyo-a-colombia-tras-terremoto-aprueba-otros-us-200-millones-para-atender-emergencia-3588718",
+            "rol": "acto"
+          },
+          {
+            "n": "Pulzo · Banco Mundial aprueba otros 200 millones de dólares en ayudas para Colombia tras el terremoto",
+            "u": "https://www.pulzo.com/economia/banco-mundial-aprueba-otros-200-millones-dolares-ayudas-colombia-PP5312918",
+            "rol": "contexto"
           },
           {
             "n": "El Nuevo Siglo · Banco Mundial aprueba US$200 millones a Colombia tras el terremoto",
@@ -432,7 +443,9 @@
       },
       "elCanalSeDECLARA": "El comunicado del Banco Mundial se halló POR BÚSQUEDA y su página NO se abrió: el proxy de este contenedor niega todos los dominios. Sostiene QUE la aprobación ocurrió —el estándar de la v1003—, no que se leyera el comunicado. Va dicho porque un enlace de primer nivel presentado como leído es peor que ninguno.",
       "laTensionQueNOresuelvoYO": "Meter un acto del 24 de septiembre dentro de una entrada fechada el 13 de agosto deja una entrada con DOS actos de fechas distintas, y la convención del registro es una entrada por hecho. Daniel decidió que ninguna retenida entra como entrada nueva, así que va como actualización — y la tensión queda escrita en vez de resuelta por mi cuenta.",
-      "estado": "REDACTADO · espera el «cárguelas» de Daniel"
+      "estado": "REDACTADO · espera el «cárguelas» de Daniel",
+      "laFuentePRIMARIAnoSeAlcanzo": "Daniel pidió abrir el comunicado del Banco Mundial. Se intentó por los DOS canales que este contenedor tiene —`curl` y la obtención de página— el 22 de octubre de 2026, y los dos fallan: `bancomundial.org` y `worldbank.org` devuelven código 000 con `curl` y ENOTFOUND al obtener la página. No es que el comunicado esté caído: el contenedor no resuelve el dominio. Así que la actualización se apoya SOLO en prensa y el comunicado NO se cita como fuente, porque citarlo sin haberlo abierto es presentar como leído un enlace que no se leyó.",
+      "unErrorMIOqueLaBUSQUEDAcorrigio": "Dos, y los dos de mi borrador anterior. (1) El enlace del comunicado que había escrito estaba CONSTRUIDO, no observado: terminaba en `...provides-additional-support-to-colombia-earthquake-response` y el que devuelve la búsqueda es `...provides-additional-financing-to-support-colombia-earthquake`. Un enlace inventado que parece plausible es peor que ninguno. (2) Mi contrapunto decía que las cifras «no se suman», y eso era falso para DOS de ellas: los 200 de agosto y los 200 de septiembre sí se acumulan en 400. Lo que no entra en ese total son el 450 y el 250 —intenciones y solicitudes— y los 300 del BID, que es otra entidad. Decir «ninguna se suma» habría sido destruir la medida por evitar la contradicción, que es el error de la v1085."
     },
     {
       "deQueSonda": "ítem 18 · Soberanía / Escudo de las Américas",
