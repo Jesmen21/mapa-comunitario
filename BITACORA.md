@@ -30571,3 +30571,88 @@ vigiladas. Es el mismo denominador estrecho de la v1149, en otro sitio.
   `cerrado en v1153 · medido y declinado`
 * **No publica nada a `main`.** Queda en `a608103` (v1152) hasta el «súbalo».
   `pendiente`
+
+---
+
+## v1154 · El tramo sin medir, y un azul que decía lo que nadie declaró
+
+### El punteado
+
+Entre dos puntos la línea es una **interpolación**: afirma que el valor fue
+pasando por ahí, y eso no se midió. Mientras los huecos fueron de días sueltos
+daba igual; con el eje por fecha de la v1153, el tramo del **1 al 29 de
+septiembre —28 días sin una sola lectura—** se dibujaba como una subida limpia
+y sostenida que nadie observó.
+
+Los tramos de más de **siete días** van punteados. El umbral va declarado en el
+método **porque es una decisión y no un hecho**: por encima de una semana cabe
+un movimiento completo —una subida y su vuelta— sin que ninguno de los dos
+extremos lo note.
+
+Tres detalles que costaron pensarlos:
+
+* **se dibuja segmento a segmento** y no como un trazo con guiones: un
+  `stroke-dasharray` sobre la línea entera habría punteado también lo medido;
+* **el área de debajo se deja continua** a propósito. Es el relleno de la
+  forma, no una afirmación sobre valores intermedios, y partirla dejaría
+  huecos que se leerían como ceros;
+* y **la nota se calcula**, no se escribe en el registro: el día que la serie
+  se llene de lecturas el punteado desaparece y la nota con él, sin que nadie
+  se acuerde de quitarla (v903). El umbral vive en **una** constante de la que
+  beben el dibujo y el texto — con dos, el día que uno cambie el otro miente.
+
+En la serie del dólar: **3 tramos punteados de 28**.
+
+### El azul de la aprobación
+
+Daniel preguntó por qué la barra de CB Global Data salía en azul saturado. La
+respuesta honesta es que **no había razón: era un resto**.
+
+```js
+barra.style.background = gi === 0 ? (d.color || '#0B6E9B') : '#8FA6B2';
+```
+
+Un literal y un `d.color` que podía ganarle. Los dos **sobrevivieron a la
+v1145**, que cerró exactamente esa puerta en `grafSerie` y no miró este
+gráfico: dos codificaciones de «cómo elige su color un gráfico», y solo una se
+arregló. (El `d.color` era además código muerto: las ocho series declaran
+`tono` y **ninguna** declara `color`.)
+
+Importa porque **el azul significa algo** desde la v1145: es el tono
+**favorable**. La aprobación está declarada **neutra** en el registro —una
+cifra de aprobación no es buena ni mala por sí misma, y pintarla de azul sería
+que el módulo tome partido sobre el vigilado—, así que ese azul decía con el
+color lo que el registro no declara.
+
+Ahora los dos grupos se distinguen con los **dos neutros que el módulo ya
+tiene declarados**: el oscuro para la medición de gestión, el claro para las
+encuestas preelectorales que sirven de referencia. La guarda compara contra el
+token `--sp-tono-fav` **leído del navegador**, no contra un literal escrito en
+la aserción (v890).
+
+### Y una guarda que medía la implementación, no la propiedad
+
+La del eje temporal (v1153) leía **el primer `path`** del dibujo. Al partir la
+línea en segmentos pasó a medir dos puntos de veintinueve y salió roja sin que
+nada estuviera mal. Se reconstruyen las x de **todos** los segmentos. Es la
+lección de siempre con el signo cambiado: una guarda atada a cómo está escrito
+hoy el dibujo se rompe cuando el dibujo cambia por una razón buena.
+
+### Lo medido
+
+| | v1153 | v1154 |
+|---|---|---|
+| Tramos punteados en la serie del dólar | 0 de 28 | **3 de 28** |
+| Barras de aprobación con el tono favorable | 1 | **0** |
+| `tseg` | 151/151 | **155/155** |
+| Inyecciones | 3 | **3 en rojo, las dos direcciones, + control en verde** |
+
+### Lo que esta versión NO hace
+
+* **No carga la medición de AtlasIntel.** Está propuesta en el borrador y
+  espera el «cárguelas». `pendiente`
+* **No carga la de CB Global Data de octubre**: su ficha dice trabajo de campo
+  del 5 al 8 de JUNIO para un resultado presentado como de octubre.
+  `cerrado en v1154 · medido y declinado`
+* **No publica nada a `main`.** Queda en `c009c7e` (v1153) hasta el «súbalo».
+  `pendiente`

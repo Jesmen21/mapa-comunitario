@@ -1279,7 +1279,12 @@ a.sp-fuente:hover svg{ color:var(--verde-hi); }
 .sp-fg-riel{
   height:9px; background:var(--linea-2); border-radius:99px; overflow:hidden;
 }
-.sp-fg-riel i{ display:block; height:100%; border-radius:99px; }
+/* La barra toma su color de la clase de tono —`sp-g-neu` o `sp-g-neu2`—, y
+   esas clases pintan `fill` y `color`: `fill` es para SVG y acá el riel es
+   un div, así que el fondo se toma de `color`, que es lo que la clase sí
+   establece. Con `background` escrito aparte volverían a ser dos sitios. */
+.sp-fg-riel i{ display:block; height:100%; border-radius:99px;
+               background:currentColor; }
 .sp-fg-fila small{
   display:block; margin-top:5px; font-size:var(--t-9); color:var(--ink-2);
 }

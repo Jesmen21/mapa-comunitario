@@ -8564,7 +8564,24 @@
         var riel = el('div', 'sp-fg-riel');
         var barra = el('i');
         barra.style.width = (m.v / tope * 100).toFixed(1) + '%';
-        barra.style.background = gi === 0 ? (d.color || '#0B6E9B') : '#8FA6B2';
+        /* EL COLOR SALE DEL TONO, COMO EN LAS SERIES (v1154). Acá quedaba un
+           azul saturado escrito a mano, `#0B6E9B`, y un `d.color` que podía
+           ganarle: los dos sobrevivieron a la v1145, que cerró esa misma
+           puerta en `grafSerie` y no miró este gráfico. Dos codificaciones de
+           «cómo elige su color un gráfico», y solo una se arregló.
+
+           Importa porque el azul SIGNIFICA algo desde la v1145: es el tono
+           FAVORABLE. La aprobación está declarada NEUTRA en el registro —una
+           cifra de aprobación no es buena ni mala por sí misma, y pintarla de
+           azul sería que el módulo tome partido sobre el vigilado—, así que
+           ese azul decía con el color lo que el registro no declara.
+
+           Los dos grupos se siguen distinguiendo, y con los dos neutros que
+           el módulo ya tiene declarados: el oscuro para la medición de
+           gestión, que es la cifra del gráfico, y el claro para las encuestas
+           preelectorales, que son la referencia contra la que se contrasta.
+           La clase lleva el color, no un literal. */
+        barra.className = gi === 0 ? 'sp-g-neu2' : 'sp-g-neu';
         // La barra de una fuente cuestionada va rayada: se ve distinta aunque
         // no se lea la etiqueta, y sin depender solo del color.
         if (m.calidad === 'cuestionada') fila.classList.add('dudosa');
@@ -8705,8 +8722,35 @@
     defs.appendChild(lg); svg.appendChild(defs);
 
     svg.appendChild(svgEl('path', { d: dArea, fill: 'url(#' + gid + ')' }));
-    svg.appendChild(svgEl('path', { d: dLine, fill: 'none', stroke: col, 'stroke-width': 2,
-      'stroke-linejoin': 'round', 'stroke-linecap': 'round' }));
+    /* ── UN TRAMO SIN MEDICIONES NO SE DIBUJA COMO SI LAS TUVIERA (v1154) ──
+       Entre dos puntos la línea es una interpolación: afirma que el valor fue
+       pasando por ahí, y eso NO se midió. Mientras los huecos fueron de días
+       sueltos daba igual; con el eje por fecha de la v1153, el tramo del 1 al
+       29 de septiembre —28 días sin una sola lectura— se dibuja como una
+       subida limpia y sostenida que nadie observó.
+
+       El tramo largo va PUNTEADO. El umbral son SIETE días, y va declarado en
+       el método porque es una decisión y no un hecho: por encima de una
+       semana cabe un movimiento completo —una subida y su vuelta— sin que
+       ninguno de los dos extremos lo note. Por debajo, la interpolación se
+       parece lo bastante a lo que pasó.
+
+       Se dibuja segmento a segmento y no como un solo trazo con guiones: un
+       `stroke-dasharray` sobre la línea entera puntearía también los tramos
+       medidos. El área de debajo se deja continua a propósito: es el relleno
+       de la forma, no una afirmación sobre valores intermedios, y partirla
+       dejaría huecos que se leerían como ceros. */
+    var tramosPunteados = 0;
+    for (var si = 1; si < pts.length; si++) {
+      var dias = tOk ? Math.round((ts[si] - ts[si - 1]) / 86400000) : 1;
+      var hueco = dias > DIAS_SIN_MEDIR;
+      if (hueco) tramosPunteados++;
+      var at = { d: 'M' + X(si - 1) + ' ' + Y(pts[si - 1].v) + ' L' + X(si) + ' ' + Y(pts[si].v),
+                 fill: 'none', stroke: col, 'stroke-width': 2,
+                 'stroke-linejoin': 'round', 'stroke-linecap': 'round' };
+      if (hueco) at['stroke-dasharray'] = '5 4';
+      svg.appendChild(svgEl('path', at));
+    }
 
     /* Las etiquetas del eje se deciden ANTES del bucle, porque la decisión
        de cada una depende de sus vecinas: dentro del bucle solo se puede
@@ -9101,6 +9145,21 @@
      y la que no pase por ninguna sale con su marca y la guarda la cuenta. */
 
   /* Una serie de `puntos`: fecha y valor. */
+  /* El MISMO umbral que usa el dibujo, leído del mismo sitio: si la nota y la
+     línea decidieran por separado, el día que uno cambie el otro mentiría
+     (clase B). Por eso la constante vive acá y `grafSerie` la toma de acá. */
+  var DIAS_SIN_MEDIR = 7;
+  function tramosSinMedir(d) {
+    var pts = ((d && d.puntos) || []).filter(function (p) { return p && p.v != null; });
+    var n = 0;
+    for (var i = 1; i < pts.length; i++) {
+      var a = Date.parse(String(pts[i - 1].f) + 'T12:00:00Z');
+      var b = Date.parse(String(pts[i].f) + 'T12:00:00Z');
+      if (!isNaN(a) && !isNaN(b) && Math.round((b - a) / 86400000) > DIAS_SIN_MEDIR) n++;
+    }
+    return n;
+  }
+
   function datosDeSerie(d) {
     var pts = (d && d.puntos) || [];
     if (!pts.length) return null;
@@ -9118,9 +9177,29 @@
        serie, así que una serie nueva que lo declare lo hereda sin que su autor
        se acuerde (v867). La línea corta va visible; el detalle, al pliegue. */
     var avisos = d.avisoProcedencia ? [d.avisoProcedencia] : [];
+    /* La nota del punteado se CALCULA de los puntos y no se escribe en el
+       registro: el día que la serie se llene de lecturas, el punteado
+       desaparece y la nota con él, sin que nadie se acuerde de quitarla
+       (v903). Y no se pone si no hay ningún tramo punteado, que sería una
+       nota sobre algo que no está en el dibujo. */
+    if (tramosSinMedir(d) > 0) {
+      avisos.push('Línea punteada: tramo sin mediciones');
+    }
     return {
       avisos: avisos,
-      metodo: d.metodoProcedencia || '',
+      /* EL UMBRAL DEL PUNTEADO SE DECLARA DONDE SE EXPLICA EL MÉTODO, y se
+         imprime de la CONSTANTE y no escrito a mano: un número tecleado
+         dentro de un texto envejece solo el día que alguien cambie el otro
+         (v903). Va detrás de lo que el registro declare, si declara algo. */
+      metodo: [d.metodoProcedencia || '',
+        tramosSinMedir(d) > 0
+          ? 'LA LÍNEA PUNTEADA son los tramos entre dos lecturas separadas por más de ' +
+            cn(DIAS_SIN_MEDIR, 'día', 'días') + ': ahí la línea es una interpolación y no una ' +
+            'medición, así que se dibuja distinta. El umbral es una decisión y no un hecho — por ' +
+            'encima de una semana cabe un movimiento completo, una subida y su vuelta, sin que ' +
+            'ninguno de los dos extremos lo note—. ' +
+            cn(tramosSinMedir(d), 'tramo de esta serie va punteado', 'tramos de esta serie van punteados') + '.'
+          : ''].filter(Boolean).join(' '),
       porQueEseTono: d.porQueEseTono,
       desc: cn(pts.length, 'punto', 'puntos') + ' entre el ' + fechaCorta(a.f) + ' y el ' +
         fechaCorta(z.f) + ': de ' + valorSerie(a.v, d) + ' a ' + valorSerie(z.v, d) + ', ' + rumbo +

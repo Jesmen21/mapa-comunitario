@@ -933,12 +933,22 @@ const server = http.createServer((req, res) => {
       .find((x) => (x.querySelector('.sp-graf-h') || {}).textContent === 'El dólar desde la posesión');
     if (!c) return null;
     const svg = c.querySelector('svg.sp-lienzo');
-    const d = svg && svg.querySelector('path[fill="none"]');
+    /* La línea dejó de ser UN trazo: desde la v1154 va segmento a segmento,
+       para poder puntear los tramos sin mediciones. Esta guarda leía el
+       primer `path` y con eso medía dos puntos de veintinueve. Se reconstruye
+       de todos los segmentos — el inicio de cada uno, más el final del
+       último—, que es lo que de verdad dibuja el eje. */
+    const segs = svg ? [...svg.querySelectorAll('path[fill="none"]')]
+      .map((p) => p.getAttribute('d') || '') : [];
     const sal = c.querySelector('.sp-graf-sal');
-    return { d: d ? d.getAttribute('d') : '',
-             visible: sal ? sal.textContent : '', plegada: !!(sal && sal.closest('details')) };
+    return { segs, visible: sal ? sal.textContent : '', plegada: !!(sal && sal.closest('details')) };
   });
-  const xs = ejeD ? [...ejeD.d.matchAll(/[ML]\s*([\d.]+)\s/g)].map((m) => +m[1]) : [];
+  const xs = [];
+  (ejeD ? ejeD.segs : []).forEach((d, i) => {
+    const m = [...d.matchAll(/[ML]\s*([\d.]+)\s/g)].map((x) => +x[1]);
+    if (i === 0 && m.length) xs.push(m[0]);
+    if (m.length > 1) xs.push(m[m.length - 1]);
+  });
   const fechas = (serieDolar.puntos || []).map((p) => Date.parse(p.f + 'T12:00:00Z'));
   chk(!!ejeD && xs.length === fechas.length && fechas.length >= 10,
       'MATERIAL · la serie del dólar se dibuja y tiene puntos suficientes para medir su eje (' +
@@ -962,6 +972,69 @@ const server = http.createServer((req, res) => {
       (avReg ? ((ejeD || {}).visible.includes(avReg) ? avReg.slice(0, 58) + '…'
                                                      : 'el registro la declara y la tarjeta no la pinta')
              : 'la serie no declara `avisoProcedencia`') + ')');
+
+  /* ── v1154 · EL PUNTEADO Y EL COLOR DE LA APROBACIÓN ───────────────────
+     Dos cosas que se rompen por separado y las dos dicen algo con el DIBUJO.
+
+     El punteado se mide contra las FECHAS DEL REGISTRO y en las dos
+     direcciones: que todo tramo de más de siete días vaya punteado, y que
+     ninguno de siete o menos lo vaya. Solo la primera mitad dejaría pasar un
+     gráfico punteado entero, que no distingue nada. */
+  await pg.evaluate(() => { location.hash = ''; });
+  await pg.waitForTimeout(800);
+  const trazos = await pg.evaluate(() => {
+    const c = [...document.querySelectorAll('.sp-graf')]
+      .find((x) => (x.querySelector('.sp-graf-h') || {}).textContent === 'El dólar desde la posesión');
+    if (!c) return null;
+    return [...c.querySelectorAll('svg path[fill="none"]')]
+      .map((p) => !!p.getAttribute('stroke-dasharray'));
+  });
+  const ptsD = ((reg148.indicadores || {}).dolar || {}).puntos || [];
+  const UMBRAL = 7;
+  const esperados = [];
+  for (let i = 1; i < ptsD.length; i++) {
+    esperados.push(Math.round((Date.parse(ptsD[i].f) - Date.parse(ptsD[i - 1].f)) / 86400000) > UMBRAL);
+  }
+  const malPunteado = [];
+  (trazos || []).forEach((puntea, i) => {
+    if (i < esperados.length && puntea !== esperados[i]) {
+      malPunteado.push(ptsD[i].f + '→' + ptsD[i + 1].f + (puntea ? ' puntea y no debía' : ' no puntea y debía'));
+    }
+  });
+  chk(!!trazos && trazos.length === esperados.length && esperados.some(Boolean) && esperados.some((x) => !x),
+      'MATERIAL · la serie del dólar tiene tramos de los dos tipos, con hueco y sin él (' +
+      (trazos ? esperados.filter(Boolean).length + ' con hueco · ' +
+        esperados.filter((x) => !x).length + ' seguidos' : 'no se encontró el trazo') + ')');
+  chk(malPunteado.length === 0,
+      'y cada tramo se puntea si y solo si pasa de ' + UMBRAL + ' días sin lectura (' +
+      (malPunteado.length ? malPunteado.slice(0, 3).join(' · ')
+                          : 'los ' + esperados.length + ' coinciden con las fechas del registro') + ')');
+
+  /* Y EL COLOR DE LA APROBACIÓN. El azul SIGNIFICA favorable desde la v1145, y
+     la aprobación está declarada NEUTRA: ninguna de sus barras puede pintarse
+     con el tono favorable. Se compara contra el token, leído del navegador, y
+     no contra un literal escrito acá (v890). */
+  const apro = await pg.evaluate(() => {
+    const c = [...document.querySelectorAll('.sp-graf')]
+      .find((x) => (x.querySelector('.sp-graf-h') || {}).textContent === 'Aprobación del presidente');
+    if (!c) return null;
+    const fav = getComputedStyle(document.documentElement).getPropertyValue('--sp-tono-fav').trim();
+    const tmp = document.createElement('span');
+    tmp.style.color = fav; document.body.appendChild(tmp);
+    const favRGB = getComputedStyle(tmp).color; tmp.remove();
+    return { favRGB, barras: [...c.querySelectorAll('.sp-fg-riel i')]
+      .map((b) => getComputedStyle(b).backgroundColor) };
+  });
+  const tonoApro = String(((reg148.indicadores || {}).aprobacion || {}).tono || '');
+  chk(!!apro && apro.barras.length >= 2,
+      'MATERIAL · la tarjeta de aprobación dibuja barras que medir (' +
+      (apro ? apro.barras.length : 0) + ')');
+  chk(tonoApro === 'neutro' && !!apro && apro.barras.every((c) => c !== apro.favRGB),
+      'y ninguna barra de aprobación usa el tono FAVORABLE, que es lo que el azul significa (' +
+      (tonoApro !== 'neutro' ? 'el registro la declara «' + tonoApro + '», no neutro'
+        : (apro && apro.barras.some((c) => c === apro.favRGB)
+            ? 'una barra pinta ' + apro.favRGB + ', que es el favorable'
+            : 'las ' + ((apro || {}).barras || []).length + ' son neutras · favorable ' + ((apro || {}).favRGB || '?'))) + ')');
 
   chk(errores.length === 0, 'sin errores de página' + (errores.length ? ': ' + errores[0] : ''));
 
