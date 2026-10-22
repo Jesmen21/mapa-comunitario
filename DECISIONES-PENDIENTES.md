@@ -917,3 +917,50 @@ Las 21, tal como salen:
 veredicto, el contrargumento, los criterios— y para cada una declare «vieja,
 se reescribe» o «defecto, se arregla», con la pantalla compuesta delante y no
 leyendo el código.
+
+## 21 · Dos arreglos para la v1147, pedidos por Daniel · `pendiente`
+
+Aprobados el 22 de octubre de 2026 al revisar la v1146, y declarados **no
+urgentes**: van con lo que siga.
+
+**a) El cero atraviesa el rótulo «Hacienda y Crédito Público».** En el
+gráfico de variación real por sector, la línea vertical del cero cruza el
+texto del rótulo del primer sector. Es el MISMO defecto que el del dólar y
+pide la misma cura —apartar en X, o fondo del color del papel por debajo con
+el ancho medido— y la misma prueba: **medir los cruces**, no mirar la
+captura a 1×, que fue lo que dejó pasar el del dólar dos versiones seguidas.
+
+**b) La salvedad de delitos, en lenguaje llano.** Hoy la línea visible dice
+«las barras de menos de 135 casos van al mínimo de 2 px y ahí el largo deja
+de ser proporcional». Daniel pide: *«las barras muy cortas se dibujan con un
+mínimo visible; su largo no es proporcional»* — **sin «135 casos» ni «2 px»
+en el texto visible**. El cálculo no se retira: baja al método, dentro del
+pliegue, donde quien quiera comprobarlo lo encuentra.
+
+**Por qué limita.** La primera es un rótulo ilegible en la superficie que
+publica cifras de presupuesto. La segunda no limita lo que el módulo puede
+publicar: limita a quién le llega. Una salvedad que solo entiende quien sabe
+qué es un píxel no es una salvedad para el lector del tablero — y la
+salvedad existe justamente para que nadie lea esas dos barras como una
+medida.
+
+**Qué las cierra.** La primera, el mismo patrón del dólar más su medición de
+cruces. La segunda, mover la cifra al pliegue y dejar arriba la frase de
+Daniel; la guarda tiene que seguir comprobando que el umbral se CALCULE
+—sigue siendo una cifra que envejece sola si se teclea— aunque ya no se
+imprima arriba.
+
+## 22 · Tres decisiones de Daniel que quedan firmes · `cerrado en v1146`
+
+Tomadas el 22 de octubre de 2026 y escritas acá para que ninguna tanda las
+vuelva a abrir por su cuenta:
+
+* **Las variaciones por sector del presupuesto se quedan en los dos
+  neutros.** El presupuesto está declarado neutro: el color no dice que un
+  recorte sea malo.
+* **Delitos conserva la ESCALA COMÚN con eje desde cero.** NO se le da escala
+  propia a cada delito, aunque eso haga más legibles las barras cortas:
+  cambiar la escala cambiaría lo que el gráfico compara.
+* **El suelo de las barras se queda en 2 px y el límite se declara.** No se
+  sube: medido, un suelo de 4 px dibujaría once casos con el largo de
+  noventa y cinco.
