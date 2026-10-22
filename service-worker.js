@@ -1,4 +1,4 @@
-const URBIS_CACHE = 'urbis-v1141-las-categorias-declaradas-y-el-ancla-por-id';
+const URBIS_CACHE = 'urbis-v1142-la-placa-el-anillo-la-raya-y-la-tira';
 const URBIS_ASSETS = [
   './',
   './index.html',

@@ -4908,11 +4908,19 @@
            lleva sus dos redacciones igual que el numerador (v874). Con tres
            ejes hoy no se alcanza, y es justo la que hará falta el día que
            alguien agregue o quite uno. */
+        /* EL SUJETO VA ANTES DEL VERBO (v1142). Hasta acá la cuenta se
+           pegaba DESPUÉS del verbo —«De los 3 ejes que miden la realidad ya
+           publican nivel 2»— y la frase decía otra cosa de la que quiere
+           decir: se lee como si los TRES publicaran el nivel «2». El número
+           sale del dato, `peor.usados.length`, y lo único que cambió es
+           dónde cae. Es pariente de la trampa de la v1086 —un ayudante de
+           prosa que antepone el número no se anida— y como aquella, no se
+           ve leyendo el código: se vio componiendo la placa y leyéndola. */
         porque: 'Es un PISO y no el dictamen. ' +
-          deLosQueMiden(real.length) +
+          deLosQueMiden(real.length) + ', ' +
           pl(peor.usados.length,
-             ' ya publica nivel uno, y es «' + ESCALERA[peor.i].t + '»',
-             ' ya publican nivel ' + peor.usados.length + ', y el peor de ellos es «' +
+             'uno ya publica nivel, y es «' + ESCALERA[peor.i].t + '»',
+             peor.usados.length + ' ya publican nivel, y el peor de ellos es «' +
                ESCALERA[peor.i].t + '»') +
           '. ' + pl(sin.length, 'El otro todavía no publica', 'Los otros ' + sin.length +
                                 ' todavía no publican') +

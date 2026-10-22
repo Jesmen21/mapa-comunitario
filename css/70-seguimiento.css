@@ -91,6 +91,21 @@ svg{ width:20px; height:20px; fill:none; stroke:currentColor; stroke-width:1.9; 
 
 :focus-visible{ outline:2px solid var(--verde); outline-offset:2px; border-radius:4px; }
 
+/* ── EL TÍTULO DE UNA VISTA NO LLEVA ANILLO (v1142) ────────────────────────
+   Al navegar, `js/70` hace `focus()` sobre el h1/h2 de la vista para que el
+   lector de pantalla anuncie dónde quedó, y le pone `tabindex="-1"`. Ese
+   `-1` es el discriminante: NADIE puede llegar a ese título con Tab, así
+   que el anillo no guía ninguna navegación de teclado — solo aparece al
+   abrir un enlace profundo en frío, donde el navegador aún no sabe si quien
+   llega usa teclado, y se lee como un cuadro oscuro alrededor del título.
+   Medido antes de tocarlo: con un CLIC de mouse NO aparece (`:focus-visible`
+   da false), así que esto no le quita nada a quien usa el ratón ni al que
+   usa el teclado. Se retira SOLO de los títulos con `tabindex="-1"`; todo lo
+   que sí es interactivo —las pestañas, los botones, los enlaces de fuente—
+   conserva su anillo, y hay una comprobación que lo mide. */
+.sp-view h1[tabindex="-1"]:focus-visible,
+.sp-view h2[tabindex="-1"]:focus-visible{ outline:none; }
+
 .sp-skip{
   position:absolute; left:-9999px; top:8px; z-index:200;
   background:var(--petroleo); color:#fff; padding:10px 16px; border-radius:8px; font-weight:600;
@@ -631,6 +646,18 @@ a.sp-fuente:hover svg{ color:var(--verde-hi); }
   /* En dos columnas la linea vertical no conecta: se pasa a horizontal */
   .sp-cx-mom::before{ left:5px; top:6px; bottom:auto; width:2px; height:calc(100% - 6px); }
   .sp-cx-antes::before{ left:26px; top:12px; height:2px; width:calc(100% - 20px); }
+  /* …y ese conector arranca en left:26px, que es DONDE EMPIEZA EL TEXTO, a
+     la altura de su renglón: cruzaba la palabra «ANTES» como si fuera una
+     tachadura. Estaba así desde la v1137 (v1142). La etiqueta se enmascara
+     con el fondo de la tarjeta —la misma receta que el propio punto de la
+     cronología usa dos reglas más arriba para tapar la línea vertical— así
+     que la raya pasa por DETRÁS y reaparece después de la palabra, que es
+     lo que el conector quería decir. `position:relative` es lo que la pone
+     por encima del pseudo-elemento; sin eso, el fondo no tapa nada. */
+  .sp-cx-antes b{
+    position:relative; display:inline-block;
+    background:var(--sup); padding-right:12px;
+  }
   .sp-cx-desp::before{ display:none; }
   .sp-sheet-card{
     margin:auto; max-width:540px; border-radius:18px;
@@ -1576,6 +1603,28 @@ a.sp-fuente:hover svg{ color:var(--verde-hi); }
   scroll-snap-type:x proximity; -webkit-overflow-scrolling:touch;
   scrollbar-width:none; min-width:0;
   border-bottom:1px solid var(--linea);
+  /* PISTA DE QUE LA TIRA SE DESPLAZA (v1142). A 390 px las cinco pestañas
+     miden 664 px en 350 de hueco, así que «Hoy» queda cortada y desde
+     afuera no se distingue de que no hubiera más. La barra de desplazamiento
+     está oculta a propósito —`scrollbar-width:none`, dos líneas arriba—, así
+     que la pista tiene que ser otra.
+
+     SE MIDE SOLA, y por eso no lleva consulta de medios: las dos capas de
+     ENCIMA son del color del fondo y van con `background-attachment: local`,
+     de modo que se desplazan CON el contenido y destapan la sombra solo del
+     lado por el que queda algo cortado; las dos sombras van con `scroll`, y
+     quedan quietas. Cuando la tira cabe entera —a 1440 mide 1264 en 1264—
+     las tapas no se han movido y no se ve ni una sombra. Una pista escrita
+     con una consulta de medios diría «hay más» también cuando no lo hay. */
+  background-image:
+    linear-gradient(to right, var(--marfil) 55%, transparent),
+    linear-gradient(to left,  var(--marfil) 55%, transparent),
+    linear-gradient(to right, rgba(22,24,28,.30), transparent),
+    linear-gradient(to left,  rgba(22,24,28,.30), transparent);
+  background-position: left center, right center, left center, right center;
+  background-repeat: no-repeat;
+  background-size: 22px 100%, 22px 100%, 22px 100%, 22px 100%;
+  background-attachment: local, local, scroll, scroll;
 }
 .sp-pes::-webkit-scrollbar{ display:none; }
 .sp-pes-t{

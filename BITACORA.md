@@ -29050,3 +29050,126 @@ visto.
 * **No publica nada a `main`.** `main` se queda en `3f6a7e1` (v1138) hasta que
   el usuario diga «súbalo», y entonces suben juntas la v1140 y esta.
   `cerrado en v1141 · medido y declinado`
+
+## v1142 · la placa, el anillo, la raya y la tira
+
+Hecha el 22 de octubre de 2026, sobre la v1141 aprobada. Cuatro arreglos que
+el usuario pidió al leer las capturas, **todos de lo que se imprime**: uno de
+prosa y tres de CSS. Ninguno toca datos ni cambia una cifra.
+
+Y una nota de numeración: la portada gráfica, que la nota de traspaso llamaba
+v1141 y la v1141 corrió a v1142, pasa ahora a la **v1143**.
+
+### 1 · El sujeto va antes del verbo
+
+La placa componía «De los 3 ejes que miden la realidad **ya publican nivel
+2**»: el número caía después del verbo, así que la frase se lee como si los
+TRES publicaran el nivel «2». Es la superficie más cara del módulo —el juicio
+público sobre una persona con nombre— y la frase existe justamente para que
+un lector no confunda un piso con el dictamen.
+
+**El dato se verificó primero, contra la página compuesta**, no se dio por
+supuesto: `real.length` = 3, `peor.usados.length` = 2, el peor «Poco fiable»,
+`sin.length` = 1. Lo único que cambió es **dónde cae el número**, que sigue
+saliendo de `peor.usados.length`:
+
+```
+antes    De los 3 ejes que miden la realidad ya publican nivel 2, y el peor…
+después  De los 3 ejes que miden la realidad, 2 ya publican nivel, y el peor…
+```
+
+Las dos redacciones siguen escritas —la singular pasa a «uno ya publica
+nivel, y es «X»»— y el resto de la placa no cambió una palabra. Es pariente
+de la trampa de la v1086: un ayudante de prosa que antepone el número no se
+anida, y ninguna de las dos se ve leyendo el código.
+
+### 2 · Un anillo de foco sobre un título que nadie puede tabular
+
+El título de cada vista salía dentro de un cuadro oscuro que parecía el
+anillo del teclado. **Lo era**: `js/70` hace `focus()` sobre el h1/h2 al
+navegar para que el lector de pantalla anuncie dónde quedó, y la regla global
+`:focus-visible` lo dibuja con `--verde`, que la paleta «Papel» remapeó a
+`#2E4257`.
+
+**Se midió antes de tocarlo**, que era la pregunta del usuario:
+
+| Cómo se llega | `:focus-visible` | Anillo |
+|---|---|---|
+| carga en frío de un enlace con `#` | **true** | sí, `2px solid #2E4257` |
+| **clic de mouse de verdad** | **false** | **ninguno** |
+
+Es decir: con un clic no aparecía ya. Aparecía al abrir un enlace profundo en
+frío —lo que hizo la captura **y también lo que ve quien abre un enlace
+compartido**—. **El discriminante es el `tabindex="-1"`**: nadie puede llegar
+a ese título con Tab, así que el anillo no guía ninguna navegación de teclado;
+solo decora. Se retira **solo** de los títulos con `tabindex="-1"`, y se
+comprobó que lo interactivo conserva el suyo: una pestaña enfocada sigue
+saliendo con `solid 2px rgb(46, 66, 87)`.
+
+### 3 · Una raya que tachaba la palabra «ANTES»
+
+En dos columnas el conector de la cronología se vuelve horizontal:
+
+```css
+.sp-cx-antes::before{ left:26px; top:12px; height:2px; width:calc(100% - 20px); }
+```
+
+`left:26px` es **donde empieza el texto** —el `padding-left` del momento— y
+`top:12px` cae dentro de su renglón, así que la raya cruzaba «ANTES» como una
+tachadura. **Estaba así desde la v1137 y se publicó en la v1138**, idéntica en
+`b9a8edf` y en `3f6a7e1`.
+
+La cura es la receta que el propio archivo ya usaba dos reglas más arriba: el
+punto de la cronología tapa la línea vertical con `background:var(--sup)`. La
+etiqueta hace lo mismo —`inline-block`, fondo de la tarjeta, 12 px de aire a
+la derecha y `position:relative` para quedar por encima del pseudo-elemento—,
+así que la raya pasa por detrás y **reaparece después de la palabra**, que es
+lo que el conector quería decir. A 390 px la contradicción va en una columna y
+esa regla no aplica: ahí el defecto nunca existió, y las capturas de celular
+salen idénticas byte a byte.
+
+### 4 · Una tira que se cortaba sin decirlo
+
+A 390 px las cinco pestañas miden **664 px en 350 de hueco**, así que «Hoy»
+queda cortada; y la barra de desplazamiento está oculta a propósito
+(`scrollbar-width:none`), de modo que desde afuera no se distingue de que no
+hubiera más.
+
+La pista **se mide sola y por eso no lleva consulta de medios**: dos capas del
+color del fondo con `background-attachment: local` se desplazan CON el
+contenido y destapan la sombra solo del lado por el que queda algo cortado;
+las dos sombras van con `scroll` y quedan quietas. Una pista escrita con una
+consulta de medios diría «hay más» también cuando no lo hay.
+
+**Medido en píxeles y no a ojo**, que es como se vio que la primera versión no
+servía: con `.17` sobre 13 px el fondo del borde bajaba de 247 a ~185 solo en
+los últimos cinco píxeles y no se leía como pista. Con `.30` sobre 22 px baja
+a ~171 en doce píxeles y sí. Y a 1440, donde la tira mide 1264 en 1264, el
+borde queda en **248 igual que antes**: ni una sombra.
+
+### Lo medido al cerrar
+
+`revisar.js`: **797 verdes, 0 rojos, 1 `?`** —el mismo de siempre—. Los seis
+conteos intactos: **17 · 324 · 50 · 5 · 15 · 14**. `tseg`: **116/116**.
+Compuesta la página y leída en las cuatro superficies, con cero errores.
+Entregadas **16 capturas** en ocho pares de antes y después, a 1440 y 390 px.
+
+### Lo que esta versión NO hace
+
+* **No toca ninguna cifra, ningún dato y ninguna entrada.** Los cuatro
+  arreglos son de prosa y de hoja de estilo.
+  `cerrado en v1142`
+* **No ancla por `id` las otras búsquedas de `tseg`** ni le da `id` a las 234
+  entradas que siguen sin él, que la v1141 dejó anotado.
+  `pendiente`
+* **No cierra el pendiente 12.** Las suites corrieron, pero las 10 rojas y las
+  2 caídas siguen sin resolverse y siete hay que repetirlas con el motor del
+  usuario.
+  `pendiente`
+* **No escribe una guarda para el anillo ni para la raya.** Las dos son de
+  composición y solo se ven leyendo el papel; perseguirlas con un patrón de
+  CSS daría la lista de excepciones que envejece (v895). Quedan dichas acá.
+  `cerrado en v1142 · medido y declinado`
+* **No publica nada a `main`.** Sigue en `3f6a7e1` (v1138) hasta el «súbalo»,
+  y entonces suben juntas la v1140, la v1141 y esta.
+  `cerrado en v1142 · medido y declinado`
