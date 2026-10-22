@@ -1,0 +1,414 @@
+{
+  "_queEsEsto": "BORRADOR DE CARGA de la sonda de verificación del 22 de octubre de 2026. NO es el registro: vive fuera de assets/data a propósito y ninguna pantalla lo lee. Cada entrada está escrita con la forma real de `entradas[]` para que la carga de mañana sea un solo paso. NO se carga nada hasta que Daniel diga «cárguelas».",
+  "_reglasAplicadas": [
+    "Solo entra lo CONFIRMADO. Lo DENUNCIADO entra con esa etiqueta explícita en el título y en el estado procesal; lo NO CONFIRMADO no entra y queda listado aparte, con su razón.",
+    "Ningún texto atribuye una causa al Gobierno si la fuente no la atribuye. Dos entradas llevan por eso una salvedad de periodo: los hechos anteriores al 7 de agosto de 2026 no son actos de este Gobierno.",
+    "TikTok y trinos no son fuente. Donde la única pista era una red social, la entrada no se escribió.",
+    "Nada sobre personas privadas. De la primera dama, solo datos públicos: la cifra que ella misma rindió en cuentas y la solicitud formal de información de un senador.",
+    "El caso 4.22 `contra-merito-empleo-publico` NO se declara: queda como señal hasta el 21 de noviembre de 2026."
+  ],
+  "_comoSeCarga": "Mover cada objeto de `entradas` al arreglo `entradas` del registro, en orden de fecha, y RETIRAR antes todos los campos con guion bajo. Las de `_actualizanUnaEntradaExistente` NO se agregan: su contenido va al contrapunto o al detalle de la entrada que ya existe. Las de `_solapesPorDecidir` esperan la decisión de Daniel. Después correr `node pruebas/revisar.js`, `node pruebas/suites/tseg.js` y las guardas en seco, que ahora incluyen la del hecho repetido.",
+  "entradas": [
+    {
+      "fecha": "2026-10-09",
+      "precision": "aproximada",
+      "categoria": "informacion",
+      "id": "cancilleria-declara-reserva-acuerdos-eeuu",
+      "titulo": "La Cancillería declara bajo reserva los detalles de los memorandos firmados con Estados Unidos y niega el acceso público a los documentos",
+      "detalle": "En octubre de 2026 la Cancillería informó que los detalles técnicos y los compromisos operativos de los memorandos sobre minerales críticos y energía nuclear civil no se divulgarán al público, y que los documentos tienen carácter reservado. El Gobierno justifica la reserva en compromisos internacionales de seguridad y en normas colombianas sobre asuntos sensibles, y señala que se trata de instrumentos no vinculantes.",
+      "contrapunto": "La decisión abrió una discusión sobre acceso a la información pública. La fecha exacta del acto administrativo de reserva no se precisa en las notas de prensa consultadas, por eso la precisión es APROXIMADA. No se pudo localizar el texto de la resolución o del oficio que declara la reserva: lo que consta es la cobertura de prensa que la reporta.",
+      "tipoFuente": "disputado",
+      "nivelGobierno": "nacional",
+      "estadoProcesal": "decision-administrativa-reportada-por-prensa",
+      "tipoEvidencia": "cobertura-de-prensa-convergente",
+      "fuentes": [
+        {
+          "n": "Chicanoticias · Acuerdos entre Colombia y Estados Unidos quedarán bajo reserva",
+          "u": "https://www.chicanoticias.com/2026/10/09/colombia-acuerdos-reserva/",
+          "rol": "acto"
+        },
+        {
+          "n": "Notipregonar · Colombia mantendrá bajo reserva acuerdos con Estados Unidos",
+          "u": "https://notipregonar.com/colombia-mantendra-bajo-reserva-acuerdos-con-estados-unidos/",
+          "rol": "dato"
+        },
+        {
+          "n": "La Silla Vacía · Con los minerales críticos, Colombia ensilla el caballo antes de comprarlo",
+          "u": "https://www.lasillavacia.com/silla-amazonia/con-los-minerales-criticos-colombia-ensilla-el-caballo-antes-de-comprarlo/",
+          "rol": "contexto"
+        }
+      ],
+      "_verificadoEn": "2026-10-22",
+      "_estadoSonda": "CONFIRMADO POR PRENSA, SIN DOCUMENTO",
+      "_loQueNoSePuedeAfirmar": "Que existan «contratos mineros confidenciales». Lo que está bajo reserva son los MEMORANDOS, que por su propia naturaleza no asignan contratos. Confundir las dos cosas sería afirmar un hecho que ninguna fuente sostiene."
+    },
+    {
+      "fecha": "2026-09-24",
+      "precision": "exacta",
+      "categoria": "creditos",
+      "id": "banco-mundial-200-millones-adicionales-terremoto",
+      "titulo": "El Banco Mundial aprueba un financiamiento adicional de 200 millones de dólares para la respuesta al terremoto, sobre un préstamo Cat DDO ya desembolsado",
+      "detalle": "El 24 de septiembre de 2026 el Grupo Banco Mundial aprobó 200 millones de dólares adicionales para apoyar la respuesta de Colombia al terremoto del 10 de agosto. El monto se suma a un préstamo de Políticas de Desarrollo para la Gestión del Riesgo de Desastres con Opción de Desembolso Diferido ante Catástrofes (Cat DDO), aprobado en febrero de 2025 y ya desembolsado.",
+      "contrapunto": "Las cifras que circulan NO son comparables entre sí y conviene no sumarlas: en agosto el ministro de Hacienda habló de un crédito de hasta 450 millones de dólares, otra nota reportó una solicitud de ampliación por 250 millones, y el BID ofreció 300 millones en financiamiento contingente del que no consta desembolso. Son momentos distintos del mismo proceso —ofrecido, solicitado, aprobado y desembolsado— y las fuentes no aclaran cuáles se acumulan.",
+      "tipoFuente": "verificado",
+      "nivelGobierno": "nacional",
+      "estadoProcesal": "aprobado-por-el-organismo",
+      "tipoEvidencia": "comunicado-oficial-del-organismo",
+      "fuentes": [
+        {
+          "n": "Banco Mundial · El Grupo Banco Mundial amplía su apoyo a Colombia para fortalecer la respuesta ante el terremoto",
+          "u": "https://www.bancomundial.org/es/news/press-release/2026/09/24/world-bank-group-provides-additional-financing-to-support-colombia-earthquake",
+          "rol": "acto"
+        },
+        {
+          "n": "El Nuevo Siglo · Banco Mundial aprueba US$200 millones a Colombia tras el terremoto",
+          "u": "https://www.elnuevosiglo.com.co/nacion/banco-mundial-aprueba-us200-millones-colombia-tras-el-terremoto",
+          "rol": "dato"
+        }
+      ],
+      "_verificadoEn": "2026-10-22",
+      "_estadoSonda": "CONFIRMADO"
+    },
+    {
+      "fecha": "2026-10-20",
+      "precision": "exacta",
+      "categoria": "economia",
+      "id": "congreso-aprueba-presupuesto-2027",
+      "titulo": "El Congreso aprueba el Presupuesto General de la Nación de 2027 por 634,9 billones de pesos, y al día siguiente el Gobierno anuncia que lo expedirá por decreto por un error de trámite",
+      "detalle": "En la madrugada del 20 de octubre de 2026 la Cámara aprobó el Presupuesto General de la Nación para 2027 por 634,9 billones de pesos, con 112 votos a favor; el Senado lo había avalado por 57 votos contra uno. Los ajustes redujeron en 8,36 billones los recursos de amortización de deuda y dejaron la inversión en 94,6 billones. El 21 de octubre el Gobierno anunció que lo expedirá por DECRETO tras detectar un error de trámite legislativo: diferencias entre los textos del Senado y la Cámara que no se conciliaron, en dos parágrafos sobre mecanismos de cobertura de riesgos del Ministerio de Hacienda. El vicepresidente José Manuel Restrepo sostuvo que regirá el proyecto del Ejecutivo con las modificaciones de la primera discusión, invocando el artículo 59 del Estatuto Orgánico del Presupuesto.",
+      "contrapunto": "El texto fue aprobado por ambas cámaras, pero NO consta que esté sancionado como ley. La vía del decreto puede ser impugnada y ninguna fuente consultada reporta un fallo sobre ella. Las notas del 20 de octubre no mencionan el error de trámite: aparece el 21. Conviene confirmar el estado en el Diario Oficial antes de afirmar que el presupuesto rige.",
+      "tipoFuente": "verificado",
+      "nivelGobierno": "nacional",
+      "estadoProcesal": "aprobado-en-congreso-sin-sancion-y-con-anuncio-de-decreto",
+      "tipoEvidencia": "cobertura-de-prensa-convergente",
+      "fuentes": [
+        {
+          "n": "Infobae · Congreso aprobó el Presupuesto General de la Nación para 2027 por $634,9 billones: queda pendiente la sanción presidencial",
+          "u": "https://www.infobae.com/colombia/2026/10/20/congreso-dio-luz-verde-al-presupuesto-general-de-la-nacion-para-2027-por-6349-billones-queda-pendiente-la-sancion-presidencial/",
+          "rol": "acto"
+        },
+        {
+          "n": "Infobae / EFE · Presupuesto de Colombia para 2027 se hará por decreto tras error en su trámite legislativo",
+          "u": "https://www.infobae.com/america/agencias/2026/10/21/presupuesto-de-colombia-para-2027-se-hara-por-decreto-tras-error-en-su-tramite-legislativo/",
+          "rol": "acto"
+        },
+        {
+          "n": "El Universal · Congreso aprobó el Presupuesto General de la Nación de 2027 por $635 billones",
+          "u": "https://www.eluniversal.com.co/colombia/2026/10/20/congreso-aprobo-el-presupuesto-general-de-la-nacion-de-2027-por-635-billones/",
+          "rol": "dato"
+        },
+        {
+          "n": "El Colombiano · Presupuesto para 2027 fue aprobado por el Congreso en la madrugada de este martes",
+          "u": "https://www.elcolombiano.com/negocios/presupuesto-general-de-la-nacion-2027-HF42476166",
+          "rol": "dato"
+        }
+      ],
+      "_verificadoEn": "2026-10-22",
+      "_estadoSonda": "CONFIRMADO",
+      "_tocaUnaTarjetaViva": "Esta entrada DESACTUALIZA la tarjeta «Proyecto de presupuesto: NO es todavía ley» del bloque `presupuesto`. Ver el informe: la tarjeta sigue siendo cierta en que no es ley, pero ya no es cierto que sea solo un proyecto en trámite."
+    },
+    {
+      "fecha": "2026-10-17",
+      "precision": "exacta",
+      "categoria": "emergencia",
+      "id": "fundacion-primera-dama-rinde-cuentas-54589-millones",
+      "titulo": "La fundación que dirige la primera dama rinde cuentas de 54.589 millones de pesos en donaciones privadas para la reconstrucción, y un senador radica una solicitud formal de información",
+      "detalle": "El 17 de octubre de 2026 la Fundación Colombia Luz y Sonrisas, que dirige la primera dama Ana Lucía Pineda, rindió cuentas de la campaña «Colombia, un solo corazón»: 54.589 millones de pesos, declarados como aportes enteramente del sector privado y sin recursos públicos. Según su rendición, un solo donante —el Grupo Gilinski— representa el 81 % del total. La fundación reportó la movilización de 5.652,2 toneladas de ayuda humanitaria para más de 48.000 personas en 80 municipios. La campaña se declara SEPARADA del Fondo Milagro, el mecanismo del Gobierno administrado por Fiducoldex.",
+      "contrapunto": "El senador Alejandro Ocampo radicó una solicitud formal de información sobre lo recaudado, lo gastado y lo pendiente, y declaró que su objetivo es la trazabilidad y NO una acusación penal. Ninguna fuente consultada reporta una denuncia ante organismo de control por apropiación indebida de esos recursos, ni un hallazgo fiscal. Las cifras provienen de la propia rendición de la fundación y no constan auditadas por un tercero independiente. Aparte, Transparencia por Colombia identificó riesgos de corrupción en 768 contratos por unos 201.800 millones de pesos relacionados con la respuesta y la recuperación: eso es una alerta de RIESGO sobre contratación pública, no un hallazgo sobre esta fundación.",
+      "tipoFuente": "disputado",
+      "nivelGobierno": "nacional",
+      "estadoProcesal": "rendicion-de-cuentas-propia-con-solicitud-de-informacion-radicada",
+      "tipoEvidencia": "cobertura-de-prensa-convergente",
+      "fuentes": [
+        {
+          "n": "Publimetro · Fundación de la Primera Dama, Ana Lucía Pineda revela qué pasó con los $54.589 millones donados tras el terremoto",
+          "u": "https://www.publimetro.co/noticias/2026/10/17/fundacion-de-la-primera-dama-ana-lucia-pineda-revela-que-paso-con-los-54589-millones-donados-tras-el-terremoto/",
+          "rol": "acto"
+        },
+        {
+          "n": "El Colombiano · Fundación de la primera dama reportó más de $54.000 millones en aportes privados tras el terremoto",
+          "u": "https://www.elcolombiano.com/colombia/fundacion-primera-dama-reporta-mas-de-54000-millones-aportes-privados-terremoto-PA42353396",
+          "rol": "dato"
+        },
+        {
+          "n": "La FM · Primera dama rindió cuentas: su fundación recaudó más de $54.000 millones para la reconstrucción tras el terremoto",
+          "u": "https://www.lafm.com.co/politica/primera-dama-cuentas-fundacion-terremoto-reconstruccion-colombia-414216",
+          "rol": "dato"
+        },
+        {
+          "n": "El País · Fondo Milagro y reconstrucción luego del terremoto: Transparencia por Colombia identificó riesgos en contratos",
+          "u": "https://www.elpais.com.co/colombia/fondo-milagro-y-reconstruccion-luego-del-terremoto-transparencia-por-colombia-identifico-riesgos-en-contratos-1502.html",
+          "rol": "contexto"
+        }
+      ],
+      "_verificadoEn": "2026-10-22",
+      "_estadoSonda": "CONFIRMADO en las cifras rendidas · DENUNCIADO en la trazabilidad",
+      "_soloDatosPublicos": "La entrada se limita a la rendición pública de la fundación y a la solicitud de información radicada por un senador. No nombra a personas privadas ni atribuye conducta a nadie."
+    },
+    {
+      "fecha": "2026-08-13",
+      "precision": "exacta",
+      "categoria": "emergencia",
+      "id": "nicky-jam-grupo-argos-adopta-un-hogar",
+      "titulo": "Grupo Argos y Nicky Jam anuncian 13.000 millones de pesos para reconstruir viviendas tras el terremoto, con meta de 26.000 millones; la primera vivienda se entrega el 15 de octubre en Circasia",
+      "detalle": "El 13 de agosto de 2026 Grupo Argos y el artista Nicky Jam anunciaron la campaña «Adopta un Hogar», con un aporte inicial de 13.000 millones de pesos para reparación y reconstrucción de viviendas en Chocó, el Eje Cafetero y Valle del Cauca, que se igualaría con aportes de ciudadanos y empresas hasta una meta de 26.000 millones. El proyecto busca entregar 1.000 soluciones habitacionales. La primera vivienda se entregó el 15 de octubre de 2026 en Circasia, Quindío. El artista también envió ayuda humanitaria en avión privado a Quibdó y otras ciudades.",
+      "contrapunto": "Es una donación PRIVADA y no un acto de Gobierno: entra al registro como contexto de la emergencia, no como gestión del Ejecutivo. Hay una discrepancia entre fuentes sobre el destino de los fondos —una nota los vincula al Fondo Milagro y las demás los presentan como financiación directa de la reconstrucción— y no se pudo dirimir. Ninguna fuente consultada reporta que el presidente o el Gobierno se hayan atribuido esta ayuda.",
+      "tipoFuente": "verificado",
+      "nivelGobierno": "no-aplica-actor-privado",
+      "estadoProcesal": "donacion-privada-anunciada-y-con-primera-entrega",
+      "tipoEvidencia": "cobertura-de-prensa-convergente",
+      "fuentes": [
+        {
+          "n": "El Colombiano · Grupo Argos y Nicky Jam donarán $13.000 millones para reconstruir viviendas",
+          "u": "https://www.elcolombiano.com/negocios/grupo-argos-nicky-jam-donaran-13000-millones-viviendas-terremoto-IB39927780",
+          "rol": "acto"
+        },
+        {
+          "n": "Diario de Colombia · Nicky Jam y Grupo Argos entregan la primera de las mil viviendas para damnificados colombianos",
+          "u": "https://www.diariodecolombia.com/nicky-jam-y-grupo-argos-entregan-la-primera-de-las-mil-viviendas-para-damnificados-colombianos/",
+          "rol": "dato"
+        },
+        {
+          "n": "El Nacional · Nicky Jam llevó ayuda humanitaria en su avión privado a damnificados por terremoto en Colombia",
+          "u": "https://www.elnacional.com/2026/08/nicky-jam-llevo-ayuda-humanitaria-en-su-avion-privado-a-damnificados-por-terremoto-en-colombia/",
+          "rol": "dato"
+        }
+      ],
+      "_verificadoEn": "2026-10-22",
+      "_estadoSonda": "CONFIRMADO"
+    },
+    {
+      "fecha": "2026-08-20",
+      "precision": "exacta",
+      "categoria": "emergencia",
+      "id": "ungrd-100000-millones-subsidio-arriendo",
+      "titulo": "La UNGRD destina 100.000 millones de pesos a subsidios de arriendo para damnificados del terremoto, condicionados a la caracterización que hagan las gobernaciones",
+      "detalle": "El 20 de agosto de 2026 la UNGRD anunció 100.000 millones de pesos para subsidios de arrendamiento a los afectados por el terremoto. La entrega depende de la caracterización de las familias que realizan las gobernaciones. Según el Ministerio de Vivienda, el apoyo cubriría inicialmente entre tres y seis meses.",
+      "contrapunto": "Lo que NO se pudo establecer es cuántos subsidios se han entregado realmente frente a los prometidos, ni cuántas personas siguen en albergues o sin techo: ninguna fuente consultada publica ese balance. Las cifras de afectación tampoco coinciden entre fuentes —331 fallecidos, 4.439 heridos, 31.540 viviendas destruidas y 178.555 averiadas en un reporte del 25 de agosto; «más de 120.000 familias damnificadas» en otro—, así que la brecha entre lo prometido y lo entregado queda SIN MEDIR.",
+      "tipoFuente": "verificado",
+      "nivelGobierno": "nacional",
+      "estadoProcesal": "recursos-anunciados-con-entrega-condicionada",
+      "tipoEvidencia": "cobertura-de-prensa-convergente",
+      "fuentes": [
+        {
+          "n": "El Tiempo · UNGRD destinará $100.000 millones a subsidios de arriendo para los damnificados por el terremoto en Colombia",
+          "u": "https://www.eltiempo.com/economia/sectores/ungrd-destinara-100-000-millones-a-subsidios-de-arriendo-para-los-damnificados-por-el-terremoto-en-colombia-3579497",
+          "rol": "acto"
+        },
+        {
+          "n": "El Heraldo · Así funcionará el subsidio de arrendamiento para los afectados por terremoto",
+          "u": "https://www.elheraldo.co/colombia/2026/08/20/asi-funcionara-el-subsidio-de-arrendamiento-para-los-afectados-por-terremoto-ungrd-destino-100000-millones/",
+          "rol": "dato"
+        },
+        {
+          "n": "Infobae · Terremoto en Colombia ya deja 331 personas fallecidas y 4.439 personas heridas, según confirmó la Ungrd",
+          "u": "https://www.infobae.com/colombia/2026/08/25/terremoto-en-colombia-ya-deja-331-personas-fallecidas-y-4439-personas-heridas-segun-confirmo-la-ungrd/",
+          "rol": "dato"
+        }
+      ],
+      "_verificadoEn": "2026-10-22",
+      "_estadoSonda": "CONFIRMADO el anuncio · SIN MEDIR la ejecución"
+    }
+  ],
+  "_noEntran": [
+    {
+      "item": "7 · alza del gas",
+      "estado": "NO CONFIRMADO",
+      "razon": "No se halló ninguna fuente colombiana con un porcentaje oficial de alza de la tarifa residencial de gas para 2026. Existen los boletines tarifarios trimestrales de la Superservicios y las resoluciones de la CREG, pero ninguno de los fragmentos consultados publica la variación porcentual. El «400 %» que circuló no tiene fuente colombiana localizable.",
+      "queFaltaria": "Abrir el boletín tarifario del segundo trimestre de 2026 de superservicios.gov.co y compararlo con el del año anterior. Desde este contenedor el proxy no deja descargar ese PDF."
+    },
+    {
+      "item": "12 · contratos mineros «confidenciales»",
+      "estado": "NO CONFIRMADO",
+      "razon": "No existe ninguna fuente sobre contratos mineros confidenciales. Lo que SÍ existe es la reserva de los MEMORANDOS (ítem 19), que es otra cosa: un memorando no vinculante no asigna contratos. Llamar «contratos» a lo que está bajo reserva sería afirmar un hecho que ninguna fuente sostiene.",
+      "queFaltaria": "Un contrato identificable, con entidad, número y cláusula de reserva citada."
+    },
+    {
+      "item": "13 · incendios y minería",
+      "estado": "DENUNCIADO, no confirmado",
+      "razon": "El ministro del Interior Rodrigo Lara declaró que personas «presuntamente ligadas a la gran minería ilegal o a grupos de disidencias» podrían estar provocando los incendios en el Tolima, y el Gobierno adelanta operativos. Es una declaración con carácter de presunción, no una conclusión de investigación. Otros reportes atribuyen la reactivación de frentes a altas temperaturas y vientos.",
+      "queFaltaria": "Un informe técnico de la UNGRD, la Fiscalía o el Ministerio de Ambiente que establezca la causa."
+    },
+    {
+      "item": "14 · investigaciones de EE. UU. sobre el presidente",
+      "estado": "DENUNCIADO, no confirmado",
+      "razon": "Consta una carta de once congresistas demócratas de junio de 2026 —antes de la posesión— pidiendo a Rubio, Bessent y Blanche investigar presuntos vínculos con Alex Saab y las AUC. Un reportaje del New York Times citado por Univisión describe una investigación previa relacionada con transferencias de Saab. La misma cobertura indica que NO afronta cargos criminales en Estados Unidos, y su oficina lo niega. No hay inclusión en la lista OFAC.",
+      "queFaltaria": "Un acto oficial del DOJ, del Tesoro o del Congreso de EE. UU. posterior a la posesión. Lo que hay es una petición de congresistas y un reportaje, no una actuación."
+    },
+    {
+      "item": "15 · impuesto al patrimonio",
+      "estado": "ANUNCIADO, NO RADICADO",
+      "razon": "El presidente dijo el 7 de agosto que «el impuesto al patrimonio será eliminado». Ninguna fuente consultada confirma un proyecto de ley radicado ni un decreto que lo elimine. El proyecto de reforma tributaria RADICADO el 20 de julio de 2026 es del gobierno ANTERIOR y va en dirección contraria: baja el umbral del patrimonio de 72.000 a 40.000 UVT.",
+      "queFaltaria": "Número de radicado en Cámara o Senado de un proyecto de este Gobierno."
+    },
+    {
+      "item": "16 · reforma tributaria de este Gobierno",
+      "estado": "NO CONFIRMADO que esté radicada",
+      "razon": "El ministro de Hacienda anunció que vendría en septiembre. Las fuentes de finales de agosto y principios de septiembre dicen que no se ha radicado y que no hay texto legislativo concreto. NO se puede afirmar «suben impuestos a los pobres» sin texto normativo: no hay articulado que leer.",
+      "queFaltaria": "El articulado radicado. Sin él, cualquier afirmación sobre quién paga es especulación."
+    },
+    {
+      "item": "17 · dependencia alimentaria",
+      "estado": "CONFIRMADO el hecho, pero NO es de este Gobierno",
+      "razon": "Las cifras disponibles son de 2025 y de comienzos de 2026: 13,2 millones de toneladas de granos importados en 2025 (+10,6 %), más del 99 % del maíz desde Estados Unidos, soya en grano +34,2 %. Todo anterior al 7 de agosto de 2026. No se halló una medición de lo que haya cambiado DESDE la posesión.",
+      "queFaltaria": "Una serie mensual de importaciones posterior a agosto de 2026, del DANE o del Ministerio de Agricultura."
+    },
+    {
+      "item": "3 · Santa Marta",
+      "estado": "DESMENTIDO en su forma circulante",
+      "razon": "La marcha del 14 de octubre en Santa Marta terminó PACÍFICAMENTE, con acompañamiento de la fuerza pública y unas 3.000 personas. Lo que sí ocurrió en esos días en la ciudad fue otra cosa: un motín el 12 de octubre en el Centro de Reclusión Transitorio, con fuga de 41 personas, y un bloqueo de la Troncal del Caribe el 11 de octubre por desabastecimiento de agua en Tasajera. Son hechos distintos y no deben mezclarse.",
+      "queFaltaria": "Nada: el hecho está establecido. Lo que no se sostiene es la versión de disturbios en la marcha."
+    },
+    {
+      "item": "9 · marchas atacadas",
+      "estado": "NO CONFIRMADO como ataque",
+      "razon": "Las marchas del 14 de octubre fueron convocadas por Fecode, la CUT y la oposición. Los reportes del día indican que hasta la tarde no se registraban enfrentamientos; en Cali no hubo alteraciones; en Medellín consta al menos una persona detenida y presencia antidisturbios; en Bogotá hubo disturbios en el parque de los Periodistas con un grupo de encapuchados y bloqueos. El Gobierno reportó 62.000 manifestantes y calificó la protesta de ordenada. NO se hallaron comunicados de la Defensoría, la Fiscalía ni la Procuraduría, ni un conteo consolidado de heridos, ni video verificado.",
+      "queFaltaria": "Un balance consolidado de la Policía o un comunicado de la Defensoría del Pueblo. Sin eso no se puede afirmar que hubo un ataque a manifestantes pacíficos."
+    },
+    {
+      "item": "5 · FMI",
+      "estado": "CONFIRMADO, pero del gobierno ANTERIOR",
+      "razon": "La Línea de Crédito Flexible se canceló anticipadamente a finales de septiembre de 2025, tras la suspensión del acceso por el FMI desde el 26 de abril de 2025 y sus alertas sobre el marco fiscal. Es un hecho del gobierno anterior, no de este. No se halló seguimiento del FMI posterior a la posesión.",
+      "queFaltaria": "El informe del Artículo IV más reciente. Sobre el 60 % contra 60,5 %: ver el informe, son medidas distintas de deuda."
+    },
+    {
+      "item": "4 · nombramientos",
+      "estado": "CONFIRMADO y YA REGISTRADO",
+      "razon": "Los 18 ministros se posesionaron el 7 de agosto de 2026 por el Decreto 1136, en acto privado en el Batallón Pichincha de Cali. El Decreto 1136 YA está en el registro desde la v967. No se hallaron nombramientos nuevos posteriores a agosto.",
+      "queFaltaria": "Nada que cargar. El caso 4.22 `contra-merito-empleo-publico` NO se declara: sigue como señal hasta el 21 de noviembre de 2026."
+    },
+    {
+      "item": "8 · ambulancias",
+      "estado": "NO CONFIRMADO como hecho de este Gobierno",
+      "razon": "Lo que consta en 2026 son hechos dispersos y de distinto nivel: una ambulancia sin habilitación REPS transportando pasajeros en El Dorado (denuncia ciudadana, septiembre, nivel distrital); la entrega de 9 ambulancias en Chocó adjudicadas en 2025 por la Gobernación con recursos del PGN anterior —y la única fuente de eso es un trino, que no es fuente—; y una licitación de 11 ambulancias fluviales en Leticia. Ninguno es un acto del Ejecutivo nacional actual.",
+      "queFaltaria": "Precisar de cuál hecho se trata. Tal como está, el ítem no identifica un hecho único."
+    },
+    {
+      "item": "10 · personas aún en la calle",
+      "estado": "SIN MEDIR",
+      "razon": "No se halló ninguna cifra de albergues ni de personas sin techo, ni un balance de subsidios entregados contra prometidos. La entrada del subsidio sí entra, con esa carencia declarada en su contrapunto.",
+      "queFaltaria": "Boletines recientes de la UNGRD o de las gobernaciones afectadas."
+    },
+    {
+      "item": "18 · Escudo de las Américas",
+      "estado": "CONFIRMADO parcialmente · ENTRADA NO ESCRITA",
+      "razon": "Consta la firma de la adhesión el 12 de agosto de 2026 por el ministro de Defensa Jorge Eduardo Mora, y el debate sobre si requiere aval del Congreso. El secretario de Guerra de EE. UU., Pete Hegseth, afirmó que el presidente autorizó «operaciones militares conjuntas»; el canciller Omar Bula sostiene que la alianza no implica que tropas estadounidenses operen en el país. NO se halló el texto del acuerdo, ni la cita textual del ministro Mora que el prompt atribuye a NTN24 del 18 de septiembre, ni ninguna declaración de Honorio Henríquez. El arancel de 12,5 % SÍ está confirmado —rige desde el 24 de julio de 2026, bajo la Sección 301, por investigaciones de trabajo forzoso— pero es ANTERIOR a la posesión.",
+      "queFaltaria": "El texto del acuerdo y las dos citas que el prompt da por buenas. No se escribe la entrada hasta tenerlas: media entrada sobre soberanía es peor que ninguna."
+    },
+    {
+      "item": "1 · IPC y canasta",
+      "estado": "CONFIRMADO con UNA cifra en disputa · ENTRADA NO ESCRITA",
+      "razon": "El IPC anual de septiembre de 2026 es 6,29 % (DANE), contra 5,18 % en septiembre de 2025; variación mensual 0,37 %; acumulado enero-septiembre 5,74 %. Alimentos y bebidas no alcohólicas: 6,74 % anual, 0,78 % mensual, 8,00 % en el acumulado. PERO la cifra de la papa NO es consistente entre fuentes: 78,24 % anual en El Colombiano, 67,70 % en INCP sin precisar si es anual o acumulado, y 7,29 % mensual en el boletín técnico. Son medidas distintas y mezclarlas publicaría un número sin decir de qué es.",
+      "queFaltaria": "Abrir el boletín del DANE y leer la papa en la MISMA medida que las demás. Desde este contenedor el proxy no deja descargar el PDF. Sobre las causas: Fedepapa atribuye el alza al efecto base de la sobreoferta de 2025 —unas 146.000 toneladas— y a menor abastecimiento desde mayo; el DANE citó lluvias que dificultaron la recolección. NINGUNA fuente atribuye la causa al Gobierno, y el módulo tampoco lo hará."
+    }
+  ],
+  "_actualizanUnaEntradaExistente": [
+    {
+      "fecha": "2026-08-19",
+      "precision": "exacta",
+      "categoria": "emergencia",
+      "id": "decreto-1261-emergencia-economica-terremoto",
+      "titulo": "El Gobierno declara el Estado de Emergencia Económica, Social y Ecológica por el terremoto del 10 de agosto mediante el Decreto 1261, por 30 días y en 15 departamentos",
+      "detalle": "El Decreto 1261 de 2026, firmado el 19 de agosto, declara el Estado de Emergencia Económica, Social y Ecológica por grave calamidad pública tras el sismo de magnitud 7,4 con epicentro en San José del Palmar, Chocó. La declaratoria rige 30 días calendario y cubre Antioquia, Caldas, Cauca, Chocó, Quindío, Cundinamarca, Risaralda, Huila, Valle del Cauca, Tolima, Putumayo, Norte de Santander, Bolívar, Nariño y Sucre. El decreto estima pérdidas por al menos 30 billones de pesos y habilita decretos con fuerza de ley en materia presupuestal, tributaria, crediticia y de gasto. Pasa a revisión automática de la Corte Constitucional.",
+      "contrapunto": "El balance de víctimas citado en el decreto es PRELIMINAR y del corte del 19 de agosto: 314 fallecidos, 4.437 heridos y 262 desaparecidos. La UNGRD reportó el 25 de agosto 331 fallecidos y 4.439 heridos, así que la cifra se movió. El control de la Corte Constitucional sobre esta declaratoria no aparece fallado en las fuentes consultadas.",
+      "tipoFuente": "verificado",
+      "nivelGobierno": "nacional",
+      "estadoProcesal": "decreto-expedido-con-control-automatico-pendiente",
+      "tipoEvidencia": "decreto-con-numero-y-fecha",
+      "fuentes": [
+        {
+          "n": "El Espectador · Gobierno decreta estado de emergencia económica para atender crisis por terremoto",
+          "u": "https://www.elespectador.com/economia/macroeconomia/gobierno-decreta-estado-de-emergencia-economica-para-atender-crisis-por-terremoto-noticias-colombia/",
+          "rol": "acto"
+        },
+        {
+          "n": "Actualícese · El Gobierno declara la emergencia económica en 15 departamentos por el terremoto mediante el Decreto 1261",
+          "u": "https://actualicese.com/el-gobierno-declara-la-emergencia-economica-en-15-departamentos-por-el-terremoto-mediante-el-decreto-1261/",
+          "rol": "acto"
+        },
+        {
+          "n": "Noticias RCN · Estado de Emergencia en Colombia: medidas del Decreto 1261",
+          "u": "https://www.noticiasrcn.com/colombia/estado-de-emergencia-en-colombia-medidas-del-decreto-1261-1055982",
+          "rol": "dato"
+        }
+      ],
+      "_verificadoEn": "2026-10-22",
+      "_estadoSonda": "CONFIRMADO",
+      "_actualizaEnVezDeEntrar": {
+        "entradaExistente": "decreto-1261-emergencia-terremoto",
+        "fechaExistente": "2026-08-19",
+        "porQueNoEntra": "ES EL MISMO ACTO. El Decreto 1261 ya está en el registro con su fecha, sus quince departamentos y su control automático pendiente. Agregar esta entrada sería contar dos veces un hecho: la clase B, dos codificaciones de una sola cosa. Un caso que avanza se ACTUALIZA, no se duplica.",
+        "queAgregaria": "Dos datos que la entrada existente no trae: el balance de víctimas con el que el decreto se firmó (314 fallecidos, 4.437 heridos, 262 desaparecidos, corte del 19 de agosto) y la observación de que la UNGRD lo movió el 25 de agosto a 331 y 4.439 — es decir, que la cifra del decreto es PRELIMINAR. Eso va al contrapunto de la entrada existente, no a una entrada nueva."
+      }
+    },
+    {
+      "fecha": "2026-09-08",
+      "precision": "exacta",
+      "categoria": "eeuu",
+      "id": "memorandos-eeuu-minerales-criticos-nuclear",
+      "titulo": "Colombia y Estados Unidos firman en Barranquilla dos memorandos de entendimiento no vinculantes, sobre minerales críticos y sobre cooperación nuclear civil",
+      "detalle": "El 8 de septiembre de 2026, durante la visita del secretario de Estado Marco Rubio a Barranquilla, el canciller Omar Bula firmó dos memorandos de entendimiento. El de minerales críticos cubre las 17 tierras raras, el litio, el cobre y el tungsteno, y prevé mapeo geológico, procesamiento, reciclaje y la movilización de apoyo público y privado —garantías, préstamos, capital, acuerdos de compra y seguros— para identificar y financiar proyectos conjuntos en un plazo de seis meses desde la firma, es decir hacia marzo de 2027. El de cooperación nuclear civil es un NCMOU: según la propia clasificación del Departamento de Estado, sirve de base para una relación más amplia y NO autoriza transferir material ni tecnología nuclear, lo que exigiría un tratado bilateral distinto, el llamado Acuerdo 123.",
+      "contrapunto": "Es un MARCO DE COOPERACIÓN NO VINCULANTE y así lo declara la propia Cancillería: no entrega áreas, no asigna contratos, no compromete montos, no elimina la licencia ambiental ni la consulta previa. Lo que la oposición y varios analistas advierten son RIESGOS, no hechos consumados. Congresistas cuestionaron en octubre el anuncio del vicepresidente sobre proyectos mineros en el Tolima, y el senador Alejandro Ocampo afirmó que el Gobierno entregaría los minerales «por unos centavos»; son valoraciones políticas. La Silla Vacía señala que la letra menuda del memorando todavía no se conoce.",
+      "tipoFuente": "verificado",
+      "nivelGobierno": "nacional",
+      "estadoProcesal": "memorando-firmado-no-vinculante",
+      "tipoEvidencia": "comunicado-oficial-de-ambas-cancillerias",
+      "fuentes": [
+        {
+          "n": "Cancillería de Colombia · Colombia profundiza cooperación con Estados Unidos en minerales estratégicos y energía nuclear",
+          "u": "https://www.cancilleria.gov.co/sala-de-prensa/noticias/colombia-profundiza-cooperacion-con-estados-unidos-en-minerales-estrategicos-y-energia-nuclear-para-fortalecer-su-seguridad-energetica",
+          "rol": "acto"
+        },
+        {
+          "n": "Departamento de Estado de EE. UU. · El secretario Rubio y el ministro colombiano Bula firman acuerdos sobre minerales críticos y cooperación nuclear civil",
+          "u": "https://www.state.gov/translations/spanish/el-secretario-rubio-y-el-ministro-colombiano-de-relaciones-exteriores-bula-firman-acuerdos-sobre-minerales-criticos-y-cooperacion-nuclear-civil",
+          "rol": "acto"
+        },
+        {
+          "n": "El Colombiano · Estos son los detalles del acuerdo entre Colombia y EE. UU. por minerales críticos y energía nuclear",
+          "u": "https://www.elcolombiano.com/negocios/colombia-eeuu-memorando-minerales-criticos-inversion-energia-nuclear-DO40823617",
+          "rol": "dato"
+        },
+        {
+          "n": "Infobae · Gobiernos de Colombia y Estados Unidos firmaron memorandos de cooperación en minerales críticos y energía nuclear: qué acordaron",
+          "u": "https://www.infobae.com/colombia/2026/09/09/gobiernos-de-colombia-y-estados-unidos-firmaron-memorandos-de-cooperacion-en-minerales-criticos-y-energia-nuclear-que-acordaron/",
+          "rol": "dato"
+        },
+        {
+          "n": "Semana · Colombia y el Acuerdo 123: de la simbología a la generación real de energía nuclear",
+          "u": "https://www.semana.com/opinion/articulo/colombia-y-el-acuerdo-123-de-la-simbologia-a-la-generacion-real-de-energia-nuclear/202600/",
+          "rol": "contexto"
+        }
+      ],
+      "_verificadoEn": "2026-10-22",
+      "_estadoSonda": "CONFIRMADO",
+      "_loQueNoSePuedeAfirmar": "Que entregue recursos, que asigne contratos o que sea confidencial POR SÍ MISMO. La reserva es un acto posterior y va en su propia entrada. Tampoco se puede afirmar que ya haya proyectos seleccionados: el plazo de seis meses vence hacia marzo de 2027 y ninguna fuente consultada reporta selección.",
+      "_actualizaEnVezDeEntrar": {
+        "entradaExistente": "(sin id) · «Marco Rubio se reúne con De la Espriella en Barranquilla y firman memorandos sobre energía nuclear civil y minerales críticos»",
+        "fechaExistente": "2026-09-08",
+        "porQueNoEntra": "ES EL MISMO ACTO, el mismo día. La firma ya está registrada. Lo que la sonda consiguió es DETALLE sobre ella, no un hecho nuevo.",
+        "queAgregaria": "Lo que la entrada existente no dice y la sonda verificó: los minerales exactos (las 17 tierras raras, litio, cobre y tungsteno); que el plazo para identificar y financiar proyectos es de seis meses desde la firma, hacia marzo de 2027; que el memorando nuclear es un NCMOU que NO autoriza transferir material ni tecnología —eso exigiría un Acuerdo 123, un tratado distinto—; y el contrapunto que acota los riesgos como advertencias y no como hechos. Además la entrada existente NO TIENE ID, y sin id no puede sostener una afirmación firmada (regla de la v1127): al actualizarla se le pone uno."
+      }
+    }
+  ],
+  "_solapesPorDecidir": [
+    {
+      "id": "banco-mundial-200-millones-adicionales-terremoto",
+      "conQue": "credito-banco-mundial-200-terremoto (2026-08-13), «El Banco Mundial desembolsa USD 200 millones para la emergencia»",
+      "queHayQueDirimir": "La MISMA cifra —200 millones de dólares— aparece dos veces: como primer giro de una línea contingente de hasta 450 millones el 13 de agosto, y como financiamiento ADICIONAL aprobado el 24 de septiembre sobre un Cat DDO ya desembolsado. Las dos lecturas son coherentes con las fuentes y no se pueden sumar sin saber si son el mismo dinero. La pregunta no es cuál está mal: es de qué mide cada una.",
+      "queLoCerraria": "El comunicado del Banco Mundial del 24 de septiembre dice «financiamiento adicional»; si el Cat DDO ya desembolsado es el de febrero de 2025, son dineros distintos y la entrada entra. Leer el documento del proyecto en el sitio del Banco Mundial lo dirime. No se cargó sin eso."
+    },
+    {
+      "id": "ungrd-100000-millones-subsidio-arriendo",
+      "conQue": "dos entradas del 28 de agosto que ya registran el subsidio de arriendo de $1.050.000 mensuales por tres meses prorrogables y que empieza a girarse el 31 de agosto",
+      "queHayQueDirimir": "El PROGRAMA ya está registrado. Lo que esta entrada agrega es la BOLSA —100.000 millones de pesos de la UNGRD— y la condición de que la entrega depende de la caracterización que hagan las gobernaciones. Es información nueva sobre un hecho ya registrado, así que cabe como entrada propia o como actualización de las dos existentes.",
+      "queLoCerraria": "Decisión de Daniel: entrada propia (la bolsa es un acto de la UNGRD con fecha propia, el 20 de agosto, anterior a las dos registradas) o actualización. Yo propongo entrada propia, porque la fecha y el actor son otros."
+    },
+    {
+      "id": "nicky-jam-grupo-argos-adopta-un-hogar",
+      "conQue": "la entrada del 13 de septiembre, que ya registra «la donación de 1.000 viviendas por parte de la Fundación Argos» dentro del balance presidencial del Valle del Cauca",
+      "queHayQueDirimir": "Son probablemente las MISMAS 1.000 viviendas. La entrada existente las registra como un dato dentro de un balance del Gobierno, sin fecha de anuncio, sin monto y sin nombrar la campaña ni al artista. La de la sonda las registra como lo que son: una donación privada del 13 de agosto, con monto, meta y primera entrega.",
+      "queLoCerraria": "Decisión de Daniel. Yo propongo que entre, porque el hecho que registra es distinto —el ANUNCIO privado, no el balance oficial que lo cita— y porque su contrapunto dice lo que el balance no dice: que es donación privada y no gestión del Ejecutivo, y que ninguna fuente reporta que el Gobierno se la haya atribuido. Si entra, la entrada del 13 de septiembre debería remitir a ella."
+    }
+  ]
+}
