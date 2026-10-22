@@ -10989,12 +10989,27 @@
     /* LA LEYENDA, acá sí: el color dice «bajó» o «subió» y el número solo no
        lo dice —hay que compararlo con la barra de arriba—. Donde el rótulo ya
        lo dice, como en subsidios, no se pone. */
+    /* LA LEYENDA SOLO NOMBRA LOS COLORES QUE DE VERDAD ESTÁN. Lo vio el
+       papel: al pasar el acumulado a neutro no quedó ninguna barra roja, y la
+       leyenda seguía anunciando «subió» en rojo — un lector buscaría en el
+       gráfico algo que no está, o peor, creería haberlo visto. Se calcula de
+       los tonos que el dibujo usó, igual que todo lo demás. */
+    var usados = {};
+    grupos.forEach(function (g) {
+      g.barras.forEach(function (x) { usados[x.tono || 'neutro'] = true; });
+      if (g.barras.length && g.barras[0].cls === 'sp-g-neu2') usados._ref = true;
+    });
+    var hayDisputa = grupos.some(function (g) { return g.disputa; });
     var ley = leyendaDeTonos([
-      ['favorable', 'bajó frente al mismo mes del año anterior'],
-      ['adverso', 'subió'],
-      ['neu2', 'el año anterior, que es la referencia'],
-      ['neu', 'en disputa entre dos fuentes oficiales: el color calla']
-    ]);
+      usados.favorable ? ['favorable', 'bajó frente al mismo mes del año anterior'] : null,
+      usados.adverso ? ['adverso', 'subió'] : null,
+      usados._ref ? ['neu2', 'el año anterior, que es la referencia'] : null,
+      hayDisputa ? ['neu', 'en disputa entre dos fuentes oficiales: el color calla'] : null,
+      /* El acumulado va neutro por PERIODO y no por disputa: son dos razones
+         distintas para el mismo gris y piden acciones distintas (v899). */
+      (b.acumulado && b.acumulado.tono === 'neutro')
+        ? ['neu', 'el acumulado del año, sin color porque casi todo es del gobierno anterior'] : null
+    ].filter(Boolean));
     return tarjetaGrafica(b.titulo, b.unidad + '. Eje desde cero. ' +
       'Carácter del dato: ' + b.caracter + '.', svg, null, b.fuentes, ley, null,
       { porQueEseTono: b.porQueEseTono,
