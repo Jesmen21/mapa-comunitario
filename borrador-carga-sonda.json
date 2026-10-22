@@ -10,6 +10,40 @@
   "_comoSeCarga": "Mover cada objeto de `entradas` al arreglo `entradas` del registro, en orden de fecha, y RETIRAR antes todos los campos con guion bajo. Las de `_actualizanUnaEntradaExistente` NO se agregan: su contenido va al contrapunto o al detalle de la entrada que ya existe. Las de `_solapesPorDecidir` esperan la decisión de Daniel. Después correr `node pruebas/revisar.js`, `node pruebas/suites/tseg.js` y las guardas en seco, que ahora incluyen la del hecho repetido.",
   "entradas": [
     {
+      "id": "ipc-papa-septiembre-2026-medidas",
+      "fecha": "2026-10-07",
+      "precision": "exacta",
+      "categoria": "economia",
+      "titulo": "La papa encabeza el alza de alimentos del año: 67,70 % en lo corrido de 2026 y 7,29 % en septiembre, según el boletín técnico del DANE",
+      "categoriaProbatoria": "hecho-probado",
+      "tipoMedicion": "resultado",
+      "tipoEvidencia": "documento-primario",
+      "tipoFuente": "verificado",
+      "detalle": "El boletín técnico del IPC de septiembre de 2026, publicado por el DANE el 7 de octubre, ubica a la papa entre las subclases que más aportaron al alza de alimentos: 7,29 % de variación MENSUAL en septiembre y 67,70 % en lo corrido del año. En el mes, los mayores incrementos de la división de alimentos y bebidas no alcohólicas fueron el tomate (10,47 %), las hortalizas y legumbres frescas (9,10 %) y las papas. La división completa subió 0,78 % en el mes. La inflación total fue de 6,29 % anual y 0,37 % mensual.",
+      "contrapunto": "LAS TRES CIFRAS DE LA PAPA QUE CIRCULAN NO SE CONTRADICEN: son tres medidas distintas, y ese era el problema. 7,29 % es la variación MENSUAL de septiembre; 67,70 % es la de LO CORRIDO DEL AÑO, enero a septiembre; y el 78,24 % que publicó El Colombiano se presenta como ANUAL —doce meses— y NO se pudo verificar en el boletín técnico, así que no se publica. Mezclarlas sería publicar un número sin decir de qué es. Y esta entrada va como CONTEXTO y no como resultado de este Gobierno: la curva de alimentos viene de antes del 7 de agosto, el DANE no atribuye la causa, y dos meses de gestión no explican una variación anual. Las causas que suelen citarse —clima, costos de insumos, ciclo de siembra— no están en el boletín y no se afirman acá.",
+      "fuentes": [
+        {
+          "n": "DANE · Boletín técnico Índice de Precios al Consumidor, septiembre de 2026",
+          "u": "https://www.dane.gov.co/files/operaciones/IPC/sep2026/bol-IPC-sep2026.pdf",
+          "rol": "acto"
+        },
+        {
+          "n": "DANE · Principales resultados IPC septiembre 2026",
+          "u": "https://www.dane.gov.co/files/operaciones/IPC/sep2026/press-IPC-sep2026.pdf",
+          "rol": "acto"
+        },
+        {
+          "n": "Semana · Qué alimentos subieron y bajaron de precio en Colombia en septiembre de 2026",
+          "u": "https://www.semana.com/economia/macroeconomia/articulo/dane-revela-que-alimentos-subieron-y-bajaron-de-precio-en-colombia-en-septiembre-de-2026/202626/",
+          "rol": "contexto"
+        }
+      ],
+      "_estadoSonda": "CONFIRMADO · la «disputa» era un error de categoría, no un desacuerdo",
+      "_verificadoEn": "2026-10-22, canal BÚSQUEDA. El boletín técnico no se pudo abrir —el proxy de este contenedor niega todos los dominios—, así que las dos cifras se sostienen en lo que la búsqueda devuelve del boletín, citado como tal.",
+      "_loQueNoSePuedeAfirmar": "El 78,24 % anual: ninguna fuente que se pueda contrastar lo ubica en el boletín. Y ninguna causa: el DANE publica la variación, no por qué.",
+      "_mismaFechaRevisada": "Comparte fecha con `ipc-septiembre-2026`, que ya registra la inflación total de septiembre. NO es el mismo hecho: aquella registra el IPC general y esta el desglose de la papa con sus tres medidas, que es lo que el ítem 1 de la sonda pedía dirimir. Si Daniel prefiere, el contenido cabe como ampliación del detalle de aquella en vez de como entrada propia — y siendo del mismo día y de la misma publicación, esa es probablemente la forma correcta."
+    },
+    {
       "fecha": "2026-10-09",
       "precision": "aproximada",
       "categoria": "informacion",
@@ -495,42 +529,30 @@
   ],
   "_propuestasQueNoSeCargan": [
     {
-      "id": "transparencia-768-contratos-reconstruccion-2026-10-14",
-      "porQueSeProponeAparte": "Daniel pidió sacar la alerta de Transparencia por Colombia del contrapunto de la entrada de la fundación de la primera dama, y con razón: es una alerta sobre CONTRATACIÓN PÚBLICA de 153 entidades, y ponerla junto a una fundación privada que no aparece en ella invita a leerla como si la señalara. Es un hecho propio y merece su entrada.",
-      "fecha": "2026-10-14",
-      "precision": "exacta",
-      "categoria": "corrupcion",
-      "titulo": "Transparencia por Colombia advierte que el 82 % de los 768 contratos de la reconstrucción se adjudicaron por contratación directa, y pide criterios públicos de priorización a un año del ciclo electoral territorial",
-      "categoriaProbatoria": "hecho-probado",
-      "tipoMedicion": "contexto-estructural",
-      "tipoEvidencia": "documento-primario",
-      "tipoFuente": "verificado",
-      "detalle": "Transparencia por Colombia publicó a mediados de octubre de 2026 un seguimiento a la contratación de la atención, la recuperación y la reconstrucción tras el terremoto del 10 de agosto. Entre el 11 de agosto y el 12 de octubre identificó 768 contratos por unos 201.800 millones de pesos, celebrados por 153 entidades y registrados en SECOP I y SECOP II. El 82 % —630 contratos— se adjudicó por contratación directa, y esa modalidad concentra el 83,5 % del valor, cerca de 170.000 millones de pesos. La contratación es sobre todo territorial: solo cinco contratos son del orden nacional, entre ellos el de fiducia del Fondo Patria Milagro entre el Ministerio de Hacienda y Fiducoldex, publicado el 5 de octubre. La organización pide publicar en SECOP todos los contratos derivados del Fondo con sus contratistas, consorcios y beneficiarios finales, y advierte sobre la ausencia de criterios públicos y verificables de priorización de proyectos y beneficiarios en un contexto de alta disponibilidad de recursos y cercanía al ciclo electoral territorial de 2027.",
-      "contrapunto": "ES UNA ALERTA DE RIESGO, NO UN HALLAZGO. Transparencia por Colombia no afirma que haya corrupción en ninguno de los 768 contratos, ni señala a ninguna persona: documenta una modalidad de contratación y una falta de criterios publicados. La contratación directa por urgencia manifiesta es legal en una emergencia declarada, y el Gobierno ha sostenido que el Fondo Patria Milagro sigue el modelo del Forec de 1999 y tendrá una junta de empresarios diseñada para prevenir la injerencia política. Y CONVIENE NO CONTARLO DOS VECES: este registro ya cita, en la entrada del Decreto 1420, un informe ANTERIOR de la misma organización con 402 contratos por $88.400 millones entre el 11 de agosto y el 12 de septiembre. No son dos hallazgos independientes: es el mismo seguimiento con la ventana ampliada un mes, así que al cargar esta entrada hay que decirlo en la otra.",
-      "fuentes": [
+      "queEs": "UNA ACTUALIZACIÓN, no una entrada nueva. Daniel decidió que el informe de los 768 contratos NO lleva entrada propia: es la misma ventana del informe de 402 que ya cita la entrada del Decreto 1420, ampliada un mes. Esto reemplaza su `contrapunto`.",
+      "entradaQueSeActualiza": "decretos-emergencia-terremoto-18sep",
+      "campo": "contrapunto",
+      "textoPropuesto": "El Decreto 1420 se suma a un mecanismo —la contratación directa por urgencia manifiesta— que Transparencia por Colombia había señalado como un riesgo de opacidad días antes: en un informe divulgado a mediados de septiembre, la organización documentó 402 contratos por $88.400 millones entre el 11 de agosto y el 12 de septiembre dentro de la reconstrucción, el 81 % por contratación directa y el 51,5 % por urgencia manifiesta, y advirtió sobre la ausencia de registros públicos de priorización en un año próximo al ciclo electoral territorial de 2027. EN OCTUBRE LA MISMA ORGANIZACIÓN AMPLIÓ LA VENTANA UN MES Y LAS CIFRAS SUBIERON: hasta el 12 de octubre contabilizó 768 contratos por unos $201.800 millones, celebrados por 153 entidades y registrados en SECOP I y SECOP II, de los cuales 630 —el 82 %— se adjudicaron por contratación directa, concentrando el 83,5 % del valor, cerca de $170.000 millones. No son dos hallazgos independientes: es el mismo seguimiento con un mes más, así que las dos cifras no se suman. La contratación es sobre todo territorial —solo cinco contratos son del orden nacional, entre ellos el de fiducia del Fondo Patria Milagro entre el Ministerio de Hacienda y Fiducoldex, publicado el 5 de octubre— y la organización pide publicar en SECOP todos los contratos derivados del Fondo con sus contratistas, consorcios y beneficiarios finales. LO QUE NO DICE ESE INFORME, Y NO SE PUEDE AFIRMAR: no hay un hallazgo de corrupción en ninguno de esos contratos, ni una persona señalada. Documenta una modalidad de contratación y una falta de criterios publicados de priorización, y la contratación directa por urgencia manifiesta es legal en una emergencia declarada. El Gobierno ha respondido que el Fondo Patria Milagro sigue el modelo del Forec de 1999 y tendrá una junta de empresarios reconocidos diseñada para prevenir la injerencia política. No hay, a la fecha de esta actualización, una denuncia formal ni una investigación abierta sobre los contratos de este paquete específico de decretos.",
+      "queCambiaFrenteAlActual": "Se conserva ÍNTEGRO el texto que ya estaba —las cifras de septiembre, la respuesta del Gobierno sobre el Forec y la frase de que no hay denuncia ni investigación sobre este paquete— y se añaden tres cosas: las cifras de octubre con su ventana; la advertencia explícita de que no son dos hallazgos independientes y no se suman; y el párrafo de lo que el informe NO dice, que antes no estaba y es lo que impide leer una alerta de riesgo como un hallazgo de corrupción.",
+      "fuentesQueSeAgregan": [
         {
           "n": "Transparencia por Colombia · Se necesitan más garantías de transparencia en la reconstrucción",
           "u": "https://transparenciacolombia.org.co/se-necesitan-mas-garantias-de-transparencia-en-la-reconstruccion/",
-          "rol": "acto"
+          "rol": "efecto"
         },
         {
           "n": "El Tiempo · Reconstrucción por el terremoto: 82 % de 768 contratos se adjudicaron por contratación directa, la mayoría desde el orden territorial",
           "u": "https://www.eltiempo.com/politica/partidos-politicos/reconstruccion-por-el-terremoto-82-de-768-contratos-se-adjudicaron-por-contratacion-directa-la-mayoria-desde-el-orden-territorial-3593729",
-          "rol": "acto"
+          "rol": "efecto"
         },
         {
           "n": "Blu Radio · Transparencia por Colombia pide reforzar controles de 768 contratos dispuestos a atender el terremoto",
           "u": "https://www.bluradio.com/nacion/transparencia-por-colombia-pide-reforzar-controles-de-768-contratos-dispuestos-a-atender-terremoto-rg10",
-          "rol": "acto"
-        },
-        {
-          "n": "El País (Cali) · Fondo Milagro y reconstrucción luego del terremoto: Transparencia por Colombia identificó riesgos en contratos",
-          "u": "https://www.elpais.com.co/colombia/fondo-milagro-y-reconstruccion-luego-del-terremoto-transparencia-por-colombia-identifico-riesgos-en-contratos-1502.html",
-          "rol": "contexto"
+          "rol": "efecto"
         }
       ],
-      "_mismaFechaRevisada": "Pendiente de revisar contra las entradas del registro con fecha 14 de octubre de 2026, cuando Daniel decida cargarla: la fecha exacta de publicación tampoco está firme —una nota la sitúa el 14 de octubre y otras hablan de «mediados de octubre»—, así que antes de cargar hay que fijarla.",
-      "_loQueNoSePuedeAfirmar": "Que haya corrupción, desvío o irregularidad en alguno de esos contratos. El informe no lo dice y este registro tampoco puede decirlo."
+      "laFechaDelInforme": "NO ESTÁ FIRME y por eso el texto dice «en octubre» y no una fecha exacta. Una nota lo sitúa el 14 de octubre y otras hablan de «mediados de octubre»; la ventana que el propio informe declara —hasta el 12 de octubre— sí es exacta y es la que va escrita. Si Daniel quiere la fecha puntual en el texto, hay que fijarla antes contra la publicación de la organización.",
+      "loQueNoSeToca": "La entrada sigue siendo la del paquete de 15 decretos del 18 de septiembre. No cambia su título, su fecha, su `estadoProcesal` ni sus indicadores: lo único que se reemplaza es el contrapunto, y se le suman tres fuentes con rol `efecto` —documentan lo que vino DESPUÉS del acto, que es exactamente lo que ese rol significa—."
     }
   ]
 }
