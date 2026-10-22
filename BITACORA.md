@@ -30287,3 +30287,87 @@ nombré yo, no él.**
   hallazgos independientes. `pendiente`
 * **No agrega la nota chilena a la entrada colombiana.** Queda propuesta como
   contexto comparado. `pendiente`
+
+---
+
+## v1150 · El sello no puede ir por detrás de su propio contenido
+
+Lo vio Daniel en el encabezado: **«17 oct 2026»** con hechos del 20 y del 21 de
+octubre ya cargados, y el aviso del dólar diciendo «el registro se cerró el 17
+de octubre».
+
+### Cómo se calcula, que era la pregunta
+
+**No se calcula: se escribe a mano, y con razón.** `actualizado` es la fecha
+hasta la que el registro está *revisado*, y una tanda puede revisarlo un día en
+el que no haya ningún hecho nuevo — ese día el registro avanzó. Derivarlo del
+máximo de las entradas diría otra cosa: diría cuándo pasó el último hecho, no
+hasta cuándo se miró.
+
+Lo que **no** puede es quedarse atrás. La v1148 cargó una entrada del 20 y dejó
+el sello en el 17, así que la portada firmaba con una fecha **anterior a un
+hecho que ya estaba dentro**. Eso no es un dato viejo: es una afirmación falsa
+sobre hasta cuándo se miró.
+
+Movido al **22 de octubre de 2026**, la fecha del último dato verificado.
+
+### Qué arrastra, medido y no supuesto
+
+El sello lo leen ocho sitios. Se recorrieron **las siete vistas** y no quedó ni
+una mención del 17 de octubre que no sea el hecho legítimo de ese día —la
+rendición de cuentas de la fundación—. Todo lo demás **se recalculó solo**:
+
+| Serie | Antes | Ahora |
+|---|---|---|
+| El dólar | 17 días después | **22** |
+| Deuda comprometida | 65 | **70** |
+| Cocaína incautada al año | 655 | **660** |
+| Bombardeos · Aprobación | 67 | **72** |
+
+### Dos guardas, porque son dos mitades
+
+* **`revisar.js`** ata el sello al registro: en los dos registros,
+  `actualizado` no puede ser anterior a la entrada más nueva. Puede ir por
+  delante —una revisión sin hechos nuevos también es trabajo—, nunca por
+  detrás. Y dice de qué **no** responde: no comprueba que sea la fecha de hoy,
+  que una comprobación estática no puede saber sin salir a la red.
+* **`tseg`** ata la pantalla al sello: el encabezado pinta la fecha que el
+  registro declara, y las seis líneas de rezago restan contra esa y no contra
+  otra. Sin esta mitad, el registro podría estar bien y el encabezado pintar
+  cualquier cosa — que es la clase C.
+
+La regla de cómo se mueve el sello quedó en `CLAUDE.md` y no en el registro:
+puesta como clave con guion bajo, la guarda de la v1115 la denunció **en el
+acto** por no tener ningún lector en el código. Tenía razón.
+
+### Y la octava vez que una aserción imprime el verde estando en rojo
+
+La de los rezagos decía «6 series, todas contra el 22» **con las seis restando
+contra otra fecha**: el texto contaba las series y daba por hecho el resto. **Lo
+cazó la inyección, no la lectura.** Ahora el rojo dice cuántas fallan y cuál es
+la primera.
+
+Y una inyección que salió verde **y no era culpa de la aserción**: parcheé
+`conCorte(cont, D.actualizado)`, que fija el corte propio de un gráfico, cuando
+el rezago lo calcula `lineaDeCorte` leyendo el sello. La inyección no era fiel.
+
+### Lo medido
+
+| | v1149 | v1150 |
+|---|---|---|
+| Sello del registro | 2026-10-17 | **2026-10-22** |
+| Entradas posteriores al sello | 1 | **0** |
+| Menciones del 17 de octubre en las siete vistas | 7 | **0** (queda el hecho de ese día) |
+| `tseg` | 146/146 | **148/148** |
+| Inyecciones contra las guardas nuevas | — | **3 en rojo + control en verde** |
+
+### Lo que esta versión NO hace
+
+* **No calcula `actualizado`.** Es deliberado y está escrito arriba: una
+  revisión sin hechos nuevos también mueve el registro.
+  `cerrado en v1150 · medido y declinado`
+* **No comprueba que el sello sea el de HOY.** Una comprobación estática no
+  puede saberlo sin salir a la red. `cerrado en v1150 · medido y declinado`
+* **No carga la actualización de la entrada del Decreto 1420** con las cifras
+  nuevas de Transparencia por Colombia. El texto está propuesto y espera el
+  «cárguelas». `pendiente`

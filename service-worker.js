@@ -1,4 +1,4 @@
-const URBIS_CACHE = 'urbis-v1149-de-que-cifra-habla-cada-tarjeta';
+const URBIS_CACHE = 'urbis-v1150-el-sello-no-va-por-detras';
 const URBIS_ASSETS = [
   './',
   './index.html',

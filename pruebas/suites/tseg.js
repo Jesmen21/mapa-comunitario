@@ -877,6 +877,44 @@ const server = http.createServer((req, res) => {
                                                 : 'la serie va en ' + ultIpc + ' % y la línea no lo nombra')
               : 'la serie de inflación no trae puntos: nada que comparar') + ')');
 
+  /* ── v1150 · EL SELLO DEL ENCABEZADO ES EL DEL REGISTRO ────────────────
+     `revisar.js` ata el sello a la entrada más nueva; esto ata la PANTALLA al
+     sello. Son las dos mitades y hacen falta las dos: con la primera sola, el
+     registro podría estar bien y el encabezado pintar otra fecha —que es la
+     clase C— y nadie se enteraría. Se compara contra lo que el registro trae,
+     no contra una fecha escrita acá, que es como una aserción envejece
+     (v890). */
+  await pg.evaluate(() => { location.hash = ''; });
+  await pg.waitForTimeout(700);
+  const sellos = await pg.evaluate(() => {
+    const cab = document.getElementById('sp-upd-txt');
+    const t = document.body.innerText;
+    /* Sin `Set`: las cuatro series escriben la MISMA frase de cierre, así que
+       deduplicar dejaba el detalle diciendo «1 series» con cuatro delante.
+       Una aserción que cuenta mal lo que mide se lee como una que mide poco. */
+    return { cabecera: cab ? cab.textContent.trim() : '',
+             rezagos: (t.match(/El registro se cerró el [^,]{0,40},/g) || []) };
+  });
+  const selloAct = String(reg148.actualizado || '');
+  const dia = selloAct.slice(8).replace(/^0/, '');
+  const mes = ['', 'ene', 'feb', 'mar', 'abr', 'may', 'jun', 'jul', 'ago', 'sep', 'oct', 'nov', 'dic'][+selloAct.slice(5, 7)];
+  const esperado = dia + ' ' + mes + ' ' + selloAct.slice(0, 4);
+  chk(!!selloAct && sellos.cabecera === esperado,
+      'el encabezado sella la fecha que el registro declara en `actualizado` (' +
+      (sellos.cabecera === esperado ? sellos.cabecera + ' = ' + selloAct
+                                    : 'pinta «' + sellos.cabecera + '» y el registro dice ' + selloAct) + ')');
+  /* EL DETALLE DICE QUÉ MITAD FALLÓ (v973, v1051). La primera versión
+     imprimía «6 series, todas contra el 22» ESTANDO EN ROJO, porque el texto
+     no miraba la condición: contaba las series y daba por hecho el resto.
+     Lo cazó la inyección, no la lectura. */
+  const fuera = sellos.rezagos.filter((x) => !x.includes(dia + ' de '));
+  chk(sellos.rezagos.length >= 1 && fuera.length === 0,
+      'y el rezago de cada serie se calcula contra ESE sello, no contra otra fecha (' +
+      (!sellos.rezagos.length ? 'ninguna serie publica su rezago'
+        : (fuera.length ? fuera.length + ' de ' + sellos.rezagos.length +
+             ' restan contra otra fecha: ' + fuera[0].trim()
+           : sellos.rezagos.length + ' series, todas contra el ' + dia)) + ')');
+
   chk(errores.length === 0, 'sin errores de página' + (errores.length ? ': ' + errores[0] : ''));
 
   await pg.screenshot({ path: '/tmp/seguimiento.png', fullPage: false });

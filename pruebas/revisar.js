@@ -15943,6 +15943,48 @@ console.log('\n  -- las fechas de calendario se anclan a Colombia (v1135) --');
         : 'lo dice en el paso 5, con la orden exacta para sacarla');
 })();
 
+/* ══ `actualizado` NO PUEDE IR POR DETRÁS DEL ÚLTIMO HECHO (v1150) ════════
+   `actualizado` es la fecha hasta la que el registro está revisado, y es el
+   único sello de este módulo que se escribe A MANO con razón: una tanda puede
+   revisar el registro un día sin hechos nuevos, y ese día el registro avanzó.
+   Calcularlo de las entradas diría otra cosa.
+
+   Lo que no puede es quedarse ATRÁS. La v1148 cargó una entrada del 20 de
+   octubre y dejó el sello en el 17, así que la portada decía «17 oct 2026»
+   con un hecho del 20 adentro, la ficha lo firmaba con esa fecha, y el aviso
+   de rezago del dólar restaba contra ella y publicaba «17 días después»
+   cuando eran 22. Un sello que va por detrás de su propio contenido no es un
+   dato viejo: es una afirmación falsa sobre hasta cuándo se miró.
+
+   Va en ROJO y no con `?`: su material son las entradas de los dos registros,
+   que no pueden llegar a cero por una mejora (v965, v970). Y de qué NO
+   responde, al lado (v945): no comprueba que la fecha sea la de HOY —eso no
+   lo puede saber una comprobación estática sin salir a la red, y un registro
+   revisado ayer es legítimo—, solo que no mienta hacia atrás. */
+(function () {
+  const REGS = ['assets/data/seguimiento-presidencial.json', 'assets/data/seguimiento-petro.json'];
+  const atrasados = [], medidos = [];
+  REGS.forEach((ruta) => {
+    const d = JSON.parse(leer(ruta));
+    const quien = ruta.split('-').pop().replace('.json', '');
+    const sello = String(d.actualizado || '').trim();
+    const fechas = (d.entradas || []).map((e) => String(e.fecha || '')).filter(Boolean).sort();
+    if (!sello || !fechas.length) return;
+    const ult = fechas[fechas.length - 1];
+    medidos.push(quien + ' sello ' + sello + ' · última entrada ' + ult);
+    if (sello < ult) atrasados.push(quien + ': sello ' + sello + ' con una entrada del ' + ult);
+  });
+  comprobar('MATERIAL · los dos registros traen su sello `actualizado` y entradas fechadas',
+    medidos.length === 2, medidos.join(' · '));
+  comprobar('y ningún sello `actualizado` va por detrás de la entrada más nueva de su registro',
+    atrasados.length === 0,
+    atrasados.length
+      ? atrasados.join(' · ') + ' — la portada, la firma de la ficha y el rezago de cada serie ' +
+        'salen de ese sello, así que publican una fecha anterior a un hecho que ya está dentro'
+      : medidos.join(' · ') + '; el sello puede ir por delante —una revisión sin hechos nuevos ' +
+        'también es trabajo— pero nunca por detrás');
+})();
+
 /* ══ EL PARCHE DE FONDO SE PINTA EN UN SOLO SITIO (v1147) ═════════════════
    Un rótulo cruzado por una línea se tapa con un rectángulo del color del
    papel. Eso estaba escrito DOS veces: en `textoConFondo` y a mano en la

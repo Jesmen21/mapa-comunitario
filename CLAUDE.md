@@ -746,6 +746,34 @@ en un registro sería la manera silenciosa de inclinar la comparación. Y un
 archivado también exige papel: una exoneración sin fuente es tan falsa como
 una acusación sin fuente.
 
+### El sello `actualizado`: qué es, cómo se mueve y qué arrastra
+
+Es **la fecha hasta la que el registro está revisado**, y es el único sello de
+este módulo que se escribe **a mano con razón**: una tanda puede revisar el
+registro un día en el que no haya ningún hecho nuevo, y ese día el registro
+**sí** avanzó. Calcularlo de las entradas diría otra cosa.
+
+Lo que no puede es ir **por detrás** del último hecho cargado. Pasó en la
+v1148: se cargó una entrada del 20 de octubre y el sello se quedó en el 17, así
+que la portada decía «17 oct 2026» con un hecho del 20 adentro, la ficha lo
+firmaba con esa fecha, y el aviso de rezago del dólar restaba contra ella y
+publicaba «17 días después» cuando eran 22. **Un sello que va por detrás de su
+propio contenido no es un dato viejo: es una afirmación falsa sobre hasta
+cuándo se miró.**
+
+* **Cómo se mueve:** al cerrar una tanda que toca el registro, a la fecha de
+  hoy en hora de Colombia (`TZ=America/Bogota date +%F`), y nunca antes de la
+  entrada más nueva.
+* **Qué arrastra**, y conviene saberlo antes de moverlo: el encabezado de la
+  portada, la firma de la ficha, el pie de los gráficos que no traen corte
+  propio, la fila «Fecha de corte del registro» del tablero, y **el aviso de
+  rezago de cada serie** —que resta este sello menos su último punto, así que
+  moverlo cambia ese número, y es correcto que lo cambie—.
+* **La guarda** (v1150): `revisar.js` comprueba en los dos registros que
+  `actualizado` no sea anterior a la entrada más nueva. No comprueba que sea
+  la de hoy —una comprobación estática no puede saberlo sin salir a la red, y
+  un registro revisado ayer es legítimo—, solo que no mienta hacia atrás.
+
 ## Visión Territorial: la cuarta puerta, aparte
 
 El sexto módulo (v844): déficits de equipamientos, prioridades y propuestas
