@@ -380,8 +380,17 @@ const server = http.createServer((req, res) => {
       escTope: esc ? esc.querySelectorAll('.sp-vesc-tope').length : 0,
       escCap: esc ? (esc.querySelector('.sp-vesc-cap') || {}).textContent || '' : '',
       grafTarjetas: graf ? graf.querySelectorAll('.sp-graf').length : 0,
+      /* El RECUENTO de los sellados es la una excepción, y va NOMBRADA por
+         su clase y contada aparte: es el resumen del bloque entero y no un
+         párrafo entre tarjeta y tarjeta —la v977 lo exige a la vista y sin
+         abrir nada—. Nombrarla es lo que mantiene la aserción capaz de
+         fallar: cualquier otro párrafo suelto sigue rompiéndola, y que el
+         recuento FALTE rompe la de abajo. */
       grafSueltos: graf ? Array.from(graf.children)
-        .filter(n => !/sp-graficas|sp-heroe/.test(n.className)).length : 0
+        .filter(n => !/sp-graficas|sp-heroe|sp-graf-falta-t/.test(n.className)).length : 0,
+      grafRecuento: graf ? graf.querySelectorAll(':scope > .sp-graf-falta-t').length : 0,
+      grafSellos: graf ? graf.querySelectorAll('.sp-graf .sp-sello').length : 0,
+      grafRecuentoTxt: graf ? ((graf.querySelector(':scope > .sp-graf-falta-t') || {}).textContent || '') : ''
     };
   });
   console.log('\n── La portada (v1143) ───────────────────────────');
@@ -408,6 +417,16 @@ const server = http.createServer((req, res) => {
   chk(port.grafSueltos === 0,
       'y son solo gráficos: ningún párrafo suelto entre tarjeta y tarjeta (' +
       port.grafSueltos + ' sueltos)');
+  /* Los sellados van EN SU SITIO y su recuento a la vista: las dos mitades,
+     porque un sello sin recuento no dice cuántos faltan y un recuento sin
+     sellos dice un número de gráficos que nadie ve. Y el recuento tiene que
+     EMPEZAR por la cifra, que es lo que se lee sin abrir nada. */
+  chk(port.grafSellos >= 1 && port.grafRecuento === 1,
+      'los que no se pueden dibujar llevan su sello en su sitio, y UN recuento a la vista (' +
+      port.grafSellos + ' sellos · ' + port.grafRecuento + ' recuento)');
+  chk(/^\s*\d+ gráficos? lleva/.test(port.grafRecuentoTxt),
+      'y el recuento abre con la cifra, no con la explicación (' +
+      port.grafRecuentoTxt.slice(0, 48) + '…)');
 
   /* ── LO ÚLTIMO PUBLICADO, AHORA EN «HOY» ─────────────────────────────
      La capacidad es la misma que medía la portada hasta la v1142:

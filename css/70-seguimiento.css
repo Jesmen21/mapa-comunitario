@@ -2327,21 +2327,73 @@ a.sp-fuente:hover svg{ color:var(--verde-hi); }
 .sp-falta-caja b{ display:block; color:#8A5D12; font-size:var(--t-7); }
 .sp-falta-caja p{ margin:8px 0 0; font-size:var(--t-7); line-height:1.5; color:var(--ink); }
 
-/* El pliegue que los recoge. En GRIS y no en ámbar, aunque las tarjetas de
-   adentro sigan siendo ámbar: el resumen es deuda NUESTRA —el registro no
-   tiene el dato— y la v971 dejó la deuda interna en gris; el ámbar de
-   adentro es el vacío declarado de cada gráfico. Dos cosas distintas con el
-   mismo color se leen como una sola (v880). */
+/* EL SELLO, que es lo que la v1143 puso en lugar del pliegue. Va arriba de
+   la caja y pegado al título, donde el lector mira antes de buscar la cifra:
+   es la única pieza que tiene que leerse sin leer nada más.
+
+   Sobre #FEF9F0 el ámbar puro (#D99A32) da 2,3:1 y no alcanza para texto, así
+   que el sello invierte —tinta clara sobre el ámbar oscurecido de la caja,
+   #8A5D12, que sobre blanco da 6,4:1 y lleva el texto en blanco encima a
+   6,6:1—. Es la regla de siempre: el contraste se mide, no se elige. */
+.sp-sello{ margin:10px 0 0; }
+.sp-sello-m{
+  display:inline-block; padding:4px 10px; border-radius:999px;
+  background:#8A5D12; color:#FFFFFF;
+  font-size:var(--t-9); font-weight:700; text-transform:uppercase; letter-spacing:.07em;
+}
+
+/* El recuento de los sellados. En GRIS y no en ámbar, aunque las tarjetas
+   sigan siendo ámbar: el recuento es deuda NUESTRA —el registro no tiene el
+   dato— y la v971 dejó la deuda interna en gris; el ámbar de cada tarjeta es
+   su vacío declarado. Dos cosas distintas con el mismo color se leen como una
+   sola (v880). Hereda `.sp-graf-falta-t`, que ya era la clase del resumen. */
+.sp-graf-falta-t{
+  margin:18px 0 6px; padding:12px 16px; background:var(--marfil);
+  border:1px solid var(--linea); border-radius:var(--r);
+  font-size:var(--t-8); line-height:1.55; color:var(--ink-2); max-width:none;
+}
+
+/* ── Lo que un bloque trae ESCRITO y ninguna pantalla alcanzaba ───────────
+   Las declaraciones de la v1143: la medida de una cifra, contra qué no se
+   puede comparar, las salvedades de un dato preliminar, el faltante
+   calculado. Van VISIBLES y no plegadas, porque son lo que el lector
+   necesita para no leer mal el número de al lado —la línea que la v972 dejó
+   puesta para lo que no se pliega—. */
+.sp-graf-decl{
+  margin:10px 0 0; padding:12px 14px; background:var(--marfil);
+  border:1px solid var(--linea); border-left:3px solid var(--azul);
+  border-radius:var(--r-s);
+}
+.sp-graf-decl p{
+  margin:0 0 8px; font-size:var(--t-8); line-height:1.55; color:var(--ink); max-width:70ch;
+}
+.sp-graf-decl p:last-child{ margin-bottom:0; }
+.sp-graf-decl b{ color:var(--ink); font-weight:700; }
+
+/* Las cifras que el módulo se vetó a sí mismo: un renglón por cifra, con su
+   defecto debajo. No lleva barras —cuatro barras de altura uno no dicen nada
+   que la lista no diga— y por eso tampoco lleva lienzo. */
+.sp-vetadas{ margin:10px 0 0; display:grid; gap:10px; }
+.sp-vetada{
+  padding:10px 12px; background:var(--sup); border:1px solid var(--linea);
+  border-left:3px solid var(--rojo); border-radius:var(--r-s);
+}
+.sp-vetada b{ display:block; font-size:var(--t-7); color:var(--ink); }
+.sp-vetada p{ margin:4px 0 0; font-size:var(--t-8); line-height:1.5; color:var(--ink-2); }
+
+/* El pliegue que los recogía hasta la v1142. Se conserva porque `revisar.js`
+   comprueba que ninguna clase impresa quede sin regla y al revés; si alguna
+   tanda vuelve a plegar un vacío, la regla está. */
 .sp-graf-falta-w{
   margin:18px 0 6px; padding:2px 16px; background:var(--marfil);
   border:1px solid var(--linea); border-radius:var(--r);
 }
-.sp-graf-falta-t{
-  cursor:pointer; padding:12px 0; list-style:none;
+.sp-graf-falta-w .sp-graf-falta-t{
+  cursor:pointer; margin:0; padding:12px 0; list-style:none; border:0; background:none;
   font-size:var(--t-7); font-weight:650; color:var(--ink-2);
 }
-.sp-graf-falta-t::-webkit-details-marker{ display:none; }
-.sp-graf-falta-t::before{ content:'\25B8  '; }
+.sp-graf-falta-w .sp-graf-falta-t::-webkit-details-marker{ display:none; }
+.sp-graf-falta-w .sp-graf-falta-t::before{ content:'\25B8  '; }
 .sp-graf-falta-w[open] .sp-graf-falta-t::before{ content:'\25BE  '; }
 .sp-graf-falta-d{
   margin:0 0 12px; font-size:var(--t-8); line-height:1.55; color:var(--ink-2); max-width:62ch;
@@ -2834,3 +2886,66 @@ body{ background:var(--sp-s1); color:var(--sp-tx); }
 .sp-niv-3,.sp-esc-3{ background:var(--sp-n3); color:var(--sp-n3-tx); }
 .sp-niv-4,.sp-esc-4{ background:var(--sp-n4); color:var(--sp-n4-tx); }
 .sp-niv-5,.sp-esc-5{ background:var(--sp-n5); color:var(--sp-n5-tx); }
+
+/* ══ LA ESCALA DEL VEREDICTO Y LAS TABLAS DE LOS GRÁFICOS (v1143) ═══════════
+   La escala es un TERMÓMETRO en escritorio y una lista en celular, con la
+   MISMA marca: el HTML no se duplica, solo cambia la rejilla. Vertical a
+   390 px porque cinco columnas de 70 px no caben sin partir las palabras;
+   horizontal desde 768, donde la escala se lee de un vistazo y es lo que
+   una escala de gravedad quiere decir.
+
+   Y NO LLEVA NUMERACIÓN: es un `<ul>`, porque los peldaños no son pasos que
+   se recorran en orden sino una escala, y el «1. 2. 3.» del navegador decía
+   lo contrario. */
+.sp-vesc{ margin:0 0 26px; }
+.sp-vesc-cap{ font-size:var(--t-7); font-weight:700; color:var(--ink); margin:0 0 10px; }
+.sp-vesc-esc{ list-style:none; margin:0 0 10px; padding:0; display:grid; gap:5px; }
+.sp-vesc-p{
+  display:flex; align-items:baseline; justify-content:space-between; gap:10px;
+  padding:9px 13px; border-radius:var(--r-s); border:1px solid var(--linea);
+}
+/* El fondo va en los DOS estados que no son el tope, y no en `.sp-vesc-p`:
+   el tope se pinta con la escala secuencial `sp-niv-N`, que se declara antes
+   en este archivo, y un fondo genérico más abajo se la comería. */
+.sp-vesc-fuera, .sp-vesc-posible{ background:var(--linea-2); }
+.sp-vesc-n{ font-size:var(--t-8); font-weight:600; }
+.sp-vesc-e{ font-size:var(--t-9); text-transform:uppercase; letter-spacing:.08em; color:var(--ink-2); }
+.sp-vesc-fuera{ opacity:.6; }
+.sp-vesc-fuera .sp-vesc-n{ text-decoration:line-through; }
+.sp-vesc-tope{ border:2px solid var(--ink); }
+.sp-vesc-tope .sp-vesc-n{ font-weight:700; }
+.sp-vesc-tope .sp-vesc-e{ color:inherit; font-weight:700; opacity:.9; }
+.sp-vesc-sin{ font-size:var(--t-8); color:var(--ink-2); }
+
+@media (min-width: 768px){
+  .sp-vesc-esc{ grid-template-columns:repeat(5, minmax(0,1fr)); gap:6px; align-items:stretch; }
+  .sp-vesc-p{ flex-direction:column; align-items:flex-start; gap:5px; min-height:78px; }
+  .sp-vesc-n{ overflow-wrap:anywhere; }
+}
+
+/* La descripción corta va SIEMPRE visible —es lo que un gráfico le dice a
+   quien no lo ve— y la tabla va plegada, para no devolverle a la portada el
+   texto que la v1143 le quitó. El resumen dice QUÉ trae la tabla, no «ver
+   datos»: un resumen que no dice qué hay dentro obliga a abrirlo para
+   saberlo. */
+.sp-graf-desc{ font-size:var(--t-8); line-height:1.5; color:var(--ink-2); margin:4px 0 12px; }
+.sp-graf-desc-falta{
+  color:var(--sp-ac-tx); font-weight:600;
+  border-left:3px solid var(--sp-ac); padding-left:10px;
+}
+.sp-graf-tabla{ margin-top:12px; }
+.sp-graf-tabla-t{
+  cursor:pointer; font-size:var(--t-9); color:var(--ink-2);
+  letter-spacing:.02em; padding:4px 0;
+}
+.sp-graf-tabla-t:focus-visible{ outline:2px solid var(--verde); outline-offset:2px; }
+.sp-graf-tabla table{ width:100%; border-collapse:collapse; margin-top:8px; font-size:var(--t-9); }
+.sp-graf-tabla th, .sp-graf-tabla td{
+  padding:6px 9px; border-bottom:1px solid var(--linea); text-align:left; vertical-align:top;
+}
+.sp-graf-tabla thead th{
+  font-weight:700; color:var(--ink); border-bottom:2px solid var(--linea);
+  text-transform:uppercase; letter-spacing:.06em; font-size:var(--t-9);
+}
+.sp-graf-tabla tbody th{ font-weight:600; color:var(--ink); }
+.sp-graf-tabla tbody td{ color:var(--ink-2); }

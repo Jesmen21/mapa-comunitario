@@ -503,7 +503,7 @@ que la versión publicada tenga la suya**. Por eso tres tandas pudieron
 saltársela sin un solo rojo. Una guarda que lo midiera es código y no datos,
 así que iría en rojo y no con `?` (v965, v970).
 
-## 14 · La placa dice «De los 3 ejes … ya publican nivel 2» · `pendiente`
+## 14 · La placa dice «De los 3 ejes … ya publican nivel 2» · `cerrado en v1142`
 
 **Hallado al leer el papel de la v1140, y NO es de esa tanda:** la frase está
 idéntica en `0fe87e9` y el diff de la v1140 no toca ni una línea que la
@@ -538,6 +538,14 @@ cambiar texto publicado sobre una persona real, y eso lo decide quien firma el
 módulo, no la tanda que pasaba por ahí. **Y hay un canje que decir:** la
 frase se arma por concatenación en un solo sitio, así que el arreglo es de una
 línea; lo que no es de una línea es la decisión de tocarla.
+
+### CERRADO en la v1142
+
+Lo decidió el usuario el 22 de octubre de 2026, con el encargo de que **la
+frase saliera del dato y no escrita a mano**. Queda armada en `deLosQueMiden`
+con su rama de singular, y el sujeto delante del verbo: *«2 de los 3 ejes que
+miden la realidad ya publican nivel, y el peor de ellos es "Poco fiable"»*. El
+resto de la placa no cambió una palabra.
 
 ## 15 · `tpliegogrande` se quedó sin material · `pendiente`
 
@@ -806,3 +814,106 @@ tecleada a mano que envejece sola (v903). Nada de acá puede comprobar que se
 haya quitado el 21 de noviembre; lo único que se puede hacer es que la fecha
 esté escrita en los dos sitios —en el registro, donde la guarda la ve, y en
 la rutina, donde manda— y que esta sección lo recuerde.
+
+## 19 · El control de calidad cita versiones del repositorio en su prosa · `pendiente`
+
+**Hallado al leer el papel de la v1143**, y no es de esa tanda: la portada
+llevaba cuatro campos del registro con citas de versión —«la v1082 usó», «la
+v1092 lo leyó como una contradicción»—, nombres de campo entre comillas
+inversas y la palabra «tanda». Esos cuatro se reescribieron allí, con todos los
+hechos intactos; **la medición es que no eran los únicos.**
+
+**El hecho, medido.** Nueve cadenas de `js/70-seguimiento.js` que SÍ se
+imprimen —no comentarios— citan una versión del repositorio o un nombre de
+guarda. Están todas en el control de calidad y en los paneles de método.
+
+**Por qué NO es el mismo defecto que el de la portada.** En esas cuatro
+pantallas el lector es explícitamente quien audita el módulo: la versión que
+tomó una decisión es parte de lo que está auditando, y borrarla le quitaría el
+hilo para comprobarla. En la portada el lector es un ciudadano y la cita es
+ruido que no puede seguir.
+
+**Por qué limita lo que el módulo publica.** Porque hoy no está decidido cuál
+de las dos lecturas vale, así que las nueve están publicadas sin que nadie haya
+dicho que deban estarlo: ni retiradas ni declaradas. Mientras tanto, cualquier
+tanda que lea una de esas pantallas tiene que volver a hacerse la pregunta.
+
+**Qué lo cerraría, y por qué no se cierra acá.** Leer las cuatro pantallas
+enteras —compuestas, no en el código— y decidir por superficie, no por cadena:
+una regla que barra las nueve de una vez es la lista de excepciones que
+envejece (v895), y una por una pide tener delante la pantalla donde cae. Es
+media tanda de leer papel y no cabía en esta.
+
+## 20 · `tficha` llevaba quince versiones sin medir nada · `pendiente`
+
+**Hallado en la v1143 al correr las suites vecinas**, y es la trampa que este
+proyecto tiene escrita arriba de todo: **una salida vacía no es una salida
+buena.**
+
+**El hecho.** El fixture del editorial de `tficha` usaba `registros` con los
+TÍTULOS de las entradas — el esquema anterior a la v1127, que lo cambió a
+`afirmaciones` con su `base` por `id`. Con el esquema viejo, `api.editorial`
+devuelve la forma de «no hay editorial»: tres claves y ninguna `apoyos`. La
+suite leía `edSi.apoyos.length`, eso tiraba un `TypeError` **dentro del
+`page.evaluate`**, y el error MATABA LA CORRIDA ENTERA antes de la primera
+aserción.
+
+**Lo que costaba.** `tficha` tiene 218 comprobaciones sobre la ficha del
+gobernante —la superficie más cara del módulo, el juicio público sobre una
+persona con nombre— y **ninguna se estaba ejecutando desde la v1127**. El
+arnés lo marcaba `?` NO CONCLUYENTE, que es exactamente la señal que la v963
+puso para esto; lo que faltó fue que alguien la leyera.
+
+**Lo que la v1143 SÍ hizo**, porque era suyo y era barato:
+
+* arregló el fixture al esquema de la v1127, con ids en las entradas;
+* lo dejó leyendo **a la defensiva** (`(edSi.apoyos || []).length`), para que
+  el próximo cambio de forma falle con su número y no mate la corrida;
+* y mudó las cuatro comprobaciones de la placa a la pestaña donde la placa
+  vive desde la v1143, con la misma regla del muro de `tseg`: lo que se mudó
+  se mide donde está, y se comprueba además que **la portada ya no la lleve**,
+  porque «se mudó» y «se duplicó» se leen igual.
+
+La suite pasó de **NO CONCLUYENTE (0 medidas)** a **197/218**.
+
+**Lo que queda, y por qué no se cierra acá.** Las **21** que siguen en rojo son
+expectativas que el módulo dejó atrás mientras la suite estaba muerta —cuatro
+ejes donde decía tres, un piso publicado donde decía «Sin nivel», I-06 vuelto
+tasa en la v1124—. Cada una pide la misma pregunta por separado: *¿es una
+expectativa vieja, o un defecto de verdad que se publicó mientras nadie
+miraba?* Eso es triaje uno por uno con la pantalla delante, como el que la
+v1141 hizo con los seis de `tseg`, y **lo decide quien firma el módulo**: hay
+al menos cuatro que hablan de lo que la ficha publica sobre una persona real.
+
+**Por qué limita.** Mientras no se haga, cada una de esas 21 es una
+comprobación que no protege nada y que además **enseña a ignorar la salida**
+(v895): una corrida con 21 rojos conocidos es una corrida que nadie lee.
+
+Las 21, tal como salen:
+
+* el contrargumento tiene TRES estados: respondió, no respondió, y nadie lo ha revisado (4 · 0 · 30)
+* y sale marcado como NO validado, con los gobiernos anteriores probados en cero ({"v":false,"p":1})
+* y la razon distingue «no dispara» de «no hay material» (Se corrió contra 1 gobierno anterior sobre 21 entradas revisadas y no disparó: d)
+* un criterio del pliego también sale sin validar, pero con la gravedad menor ({"cat":"juridica-preexistente","urge":false,"validado":true})
+* y las cuatro marcas estan en el papel, junto a su cifra, no en una nota (5)
+* y no dicen lo mismo: una nombra la categoria construida y tres la preexistente (1 · 4)
+* y NO se cuenta como choque con un órgano autónomo: el DANE no lo es (I-05 1)
+* un «ausente» con dónde se buscó y cuándo es un dato y pesa
+* y uno sin constancia se ve como tal y NO pesa: afirmar un silencio sin respaldo es un señalamiento
+* I-06 no se publica como cero mientras haya hechos sin revisar, y dice por qué (0 posiciones oficiales buscadas y no halladas de 0 revisadas)
+* MATERIAL · son TRES ejes y salen en orden A, B, C (4 · ABCD)
+* EJE B · trae sus cuatro indicadores y NO publica nivel sin la media histórica (I-04,I-05,I-07)
+* con la identidad SIN declarar no se publica peldaño: el techo es un intervalo (inquebrantable · 0–1)
+* y dice entre qué dos peldaños queda y qué falta para decidirlo
+* la ficha publicada NO enseña peldaño de fiabilidad: dice «Sin nivel» y ningún paso marcado (No puede ser mejor que «Poco fiable» · Poco fiable)
+* y la PLACA —que circula recortada— dice qué falta para calcularlo
+* y la ficha dice cómo se consigue, no solo que falta
+* el techo indeterminado se dibuja como intervalo y no como «como mucho X» (Cambios de postura contados 5 documentadas · 3 con identidad de objeto · 1 sin declarar → como mucho «Poco fia)
+* MATERIAL · el marco declara tres cosas que mide y tres que no (4 · 3)
+* entre las fallas están el eje B sin media histórica y el contrargumento sin revisar (Cada registro tiene contrargumento · El veredicto de la página se publi · Cada eje que mide la realidad publ · Los cinco peldaños de cada eje lle · Todo criterio escrito se contrastó · Todo eje que necesita un documento · Quien opera el módulo declaró sus )
+* las tres comparaciones fiscales salen del bloque `fiscal` y del héroe, no de números tecleados
+
+**Qué lo cerraría.** Una tanda que las tome por grupos —los ejes, el
+veredicto, el contrargumento, los criterios— y para cada una declare «vieja,
+se reescribe» o «defecto, se arregla», con la pantalla compuesta delante y no
+leyendo el código.

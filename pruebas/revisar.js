@@ -1807,34 +1807,70 @@ console.log('\n  -- la ficha del gobernante --');
               : 'declarada después de la general y con un punto más de especificidad');
     }
 
-    /* ── v977 · lo que no se dibuja se pliega, PERO se cuenta a la vista ───
-       Plegar un vacío está bien mientras el recuento se lea sin abrir nada: si
+    /* ── v977, REHECHA EN LA v1143 · el sello va EN SU SITIO y se cuenta ───
+       La v977 pedía que lo que no se dibuja fuera PLEGADO al final, con su
+       recuento a la vista. La mitad del recuento sigue valiendo entera —si
        tres gráficos desaparecen y nada lo dice, la exención se lee igual que
-       un aprobado, que es lo que este proyecto lleva siete tandas evitando.
-       Y el recuento se CALCULA de la lista, nunca tecleado (v903). */
+       un aprobado—; la del pliegue se cambió, y conviene decir por qué el
+       cambio no es aflojar: plegado, un hueco obliga a ABRIR algo para
+       enterarse de que falta, así que desde la rejilla se ve exactamente
+       igual que un gráfico que nunca se pensó. En su sitio y con el sello
+       impreso, la carencia se lee donde el dato tendría que estar. Lo que se
+       pierde es espacio; lo que se gana es que no haya que acordarse.
+
+       Así que esta guarda mide ahora TRES cosas, y las tres se pueden
+       romper: que haya UNA sola puerta —ninguno suelto por `poner`—, que esa
+       puerta lo cuelgue en la rejilla Y lo cuente, y que el recuento salga
+       del contador y no de un número tecleado, con las dos redacciones
+       escritas (v970). */
     const cuerpoBg = (j70c1.match(/function bloqueDeGraficos\(cont\) \{[\s\S]*?\n  \}/) || [''])[0];
-    const cuerpoPl = (j70c1.match(/function pliegueSinDato\(lista\) \{[\s\S]*?\n  \}/) || [''])[0];
+    const cuerpoRc = (j70c1.match(/function recuentoSinDato\(n\) \{[\s\S]*?\n  \}/) || [''])[0];
+    const cuerpoSd = (j70c1.match(/function grafSinDato\(titulo, queMide, queFalta\) \{[\s\S]*?\n  \}/) || [''])[0];
     const sueltos = (cuerpoBg.match(/poner\(grafSinDato\(/g) || []).length;
     const recogidos = (cuerpoBg.match(/guardar\(grafSinDato\(/g) || []).length;
+    /* La puerta: `guardar` tiene que CONTAR y COLGAR en la rejilla. Las dos
+       mitades, porque si solo cuenta el sello no sale y si solo cuelga el
+       recuento se queda en cero mintiendo. */
+    const puerta = (cuerpoBg.match(/var guardar = function \(n\) \{[^\n]*\n?[^\n]*/) || [''])[0];
+    const puertaCuenta = /nSinDato\+\+/.test(puerta);
+    const puertaCuelga = /g\.appendChild\(n\)/.test(puerta);
 
     comprobar('MATERIAL · hay gráficos que el registro no puede dibujar',
       recogidos + sueltos >= 2,
       (recogidos + sueltos) + ' llamadas a grafSinDato · ' + recogidos + ' recogidas · ' + sueltos + ' sueltas');
 
-    comprobar('todo gráfico sin dato entra al pliegue, y ninguno queda suelto entre los que sí se dibujan',
-      cuerpoBg.length > 0 && sueltos === 0 && recogidos >= 2 &&
-      /poner\(pliegueSinDato\(sinDato\)\)/.test(cuerpoBg),
-      sueltos ? sueltos + ' quedaron sueltos con poner(): dos maneras para una sola cosa (v940, v951)'
-        : !/poner\(pliegueSinDato\(sinDato\)\)/.test(cuerpoBg)
-          ? 'se recogen en `sinDato` y el pliegue no se pone: salen sueltos igual, o no salen'
-          : 'las ' + recogidos + ' entran por guardar() y salen por el pliegue');
+    comprobar('todo gráfico sin dato pasa por UNA puerta, que lo cuelga en su sitio y lo cuenta',
+      cuerpoBg.length > 0 && sueltos === 0 && recogidos >= 2 && puertaCuenta && puertaCuelga,
+      !cuerpoBg.length ? 'NO PUDO CORRER: no se encontró bloqueDeGraficos'
+        : sueltos ? sueltos + ' quedaron sueltos con poner(): dos maneras para una sola cosa (v940, v951)'
+        : !puertaCuelga
+          ? 'la puerta los cuenta y NO los cuelga en la rejilla: el recuento diría un número de gráficos que nadie ve'
+          : !puertaCuenta
+            ? 'la puerta los cuelga y NO los cuenta: el recuento se quedaría en cero con sellos a la vista'
+            : 'las ' + recogidos + ' entran por guardar(), que las cuelga en la rejilla y las cuenta');
 
-    comprobar('y el pliegue dice CUÁNTOS son sin abrirlo, contando su propia lista',
-      cuerpoPl.length > 0 && /lista\.length/.test(cuerpoPl) &&
-      /el\('summary'/.test(cuerpoPl) && /if \(!lista\.length\) return null;/.test(cuerpoPl) &&
-      /\.sp-graf-falta-t\{/.test(c70niv),
-      !cuerpoPl.length ? 'no se encontró pliegueSinDato: la comprobación no vale'
-        : 'el resumen cuenta lista.length, y con cero no hay pliegue');
+    /* El SELLO, que es lo que hace visible la carencia en su sitio: su marca
+       impresa y su regla en la hoja —una clase que ninguna regla pinta es
+       HTML válido y no lo dice nadie (v895)—. */
+    comprobar('y cada uno lleva el sello de «falta evidencia» impreso, con su regla en la hoja',
+      cuerpoSd.length > 0 && /'sp-sello'/.test(cuerpoSd) && /Falta evidencia/.test(cuerpoSd) &&
+      /\.sp-sello-m\{/.test(c70niv),
+      !cuerpoSd.length ? 'NO PUDO CORRER: no se encontró grafSinDato'
+        : !/Falta evidencia/.test(cuerpoSd)
+          ? 'el gráfico sin dato no imprime el sello: en la rejilla se lee como uno más'
+          : !/\.sp-sello-m\{/.test(c70niv)
+            ? 'el sello se imprime y ninguna regla lo pinta (v895)'
+            : 'imprime «Falta evidencia» y la hoja tiene su regla');
+
+    comprobar('y el recuento dice CUÁNTOS son, del contador y con las dos redacciones',
+      cuerpoRc.length > 0 && /if \(!n\) return null;/.test(cuerpoRc) && /\bcn\(n,/.test(cuerpoRc) &&
+      /\.sp-graf-falta-t\{/.test(c70niv) && /recuentoSinDato\(nSinDato\)/.test(cuerpoBg),
+      !cuerpoRc.length ? 'no se encontró recuentoSinDato: la comprobación no vale'
+        : !/recuentoSinDato\(nSinDato\)/.test(cuerpoBg)
+          ? 'el recuento no se pone: los sellos saldrían sin que nada diga cuántos son'
+          : !/\bcn\(n,/.test(cuerpoRc)
+            ? 'el recuento no ramifica su cifra: con uno imprimiría «1 gráficos»'
+            : 'sale de `cn(n, …)` sobre el contador, y con cero no se pinta');
   }
 
   /* ═══ CAPA 2 DEL PLIEGO · LOS INDICADORES ══════════════════════════════

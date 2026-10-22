@@ -123,16 +123,36 @@ const server = http.createServer((req, res) => {
     return route.fulfill({ status: 200, body: '' });
   });
 
-  /* Primero la PORTADA: el módulo abre en el perfil. La placa con el
-     veredicto es lo primero que se ve, antes de lo último publicado y del
-     título; el botón viejo de acceso ya no existe. */
-  await pg.goto(base + '/seguimiento.html', { waitUntil: 'load' });
+  /* LA PLACA SE MUDÓ, Y POR ESO SE MIDE DONDE VIVE AHORA (v1143). Hasta la
+     v1142 abría la portada; la v1143 dejó la portada en cuatro piezas y
+     SOLO GRÁFICOS, así que la placa entera —veredicto, cuentas, firma— pasó
+     a la pestaña «¿Qué ha pasado?», que es donde está la ficha.
+
+     Lo que NO se hace es borrar estas comprobaciones: la capacidad que
+     medían —que el veredicto salga con sus cuentas, que el botón viejo no
+     esté, que el veredicto sea el texto más grande de la placa— sigue
+     existiendo entera y solo cambió de sitio. Borrarlas habría dejado de
+     vigilar algo que sigue ahí, que es como una suite deja de proteger. Es
+     la misma regla que `tseg` aplicó al muro en esta misma tanda.
+
+     Lo que SÍ se retira es lo que dejó de ser cierto porque la portada
+     cambió de contrato, no porque la capacidad se perdiera: la posición de
+     la placa dentro de la portada y el orden de las cuatro piezas. Ese
+     contrato lo mide `tseg`, que es su dueño. */
+  await pg.goto(base + '/seguimiento.html#/ficha-del-gobernante', { waitUntil: 'load' });
   await pg.waitForTimeout(1100);
   const portada = await pg.evaluate(() => {
-    const home = document.querySelector('[data-view="home"]');
-    const hijos = Array.from(home.children);
-    const hero = document.getElementById('sp-hero-ficha');
-    const placa = hero && hero.querySelector('.sp-fi-placa');
+    const home = document.querySelector('.sp-view.on') || document.querySelector('[data-view="home"]');
+    /* La placa se busca por su CLASE dentro de la ficha y no por el id
+       `sp-hero-ficha`, que era el hueco de la PORTADA y la v1143 lo quitó.
+       Buscarla por ese id la dejaba sin encontrar, y «no está» se lee igual
+       que «no existe la capacidad» (v878). */
+    const placa = document.querySelector('#sp-ficha .sp-fi-placa');
+    const hero = placa;
+    /* Los hermanos de la placa, dentro del contenedor donde de verdad
+       cuelga: con `.sp-view.on` a secas, la placa va anidada y su índice
+       sería −1 siempre, que es un verde por no encontrar nada (v878). */
+    const hijos = placa && placa.parentElement ? Array.from(placa.parentElement.children) : [];
     if (!placa) return { hay: false };
     const r = placa.getBoundingClientRect();
     const vval = placa.querySelector('.sp-fi-vval');
@@ -141,20 +161,18 @@ const server = http.createServer((req, res) => {
       .filter(x => x.children.length === 0 && x.textContent.trim()).map(tam));
     return { hay: true,
              posicion: hijos.indexOf(hero),
+             /* La portada de la v1143 no tiene `sp-hero-ficha`: la placa se
+                cuelga del de la ficha. Se mide sobre la vista `home` del DOM,
+                que existe siempre aunque esté apagada. */
+             fueraDeLaPortada: !document.querySelector('[data-view="home"] #sp-hero-ficha') &&
+                               !document.querySelector('[data-view="home"] .sp-fi-placa'),
              botonViejo: !!document.getElementById('sp-acceso-ficha'),
-             /* SE DIO VUELTA en la v972: entre la placa y el muro entraron el
-                bloque de gráficos y el enlace a la ficha completa. Se mide el
-                ORDEN y no la distancia —«justo debajo» era una constante de la
-                maquetación metida en la aserción—. */
-             ordenPortada: ['sp-hero-ficha', 'sp-portada-graf', 'sp-ir-ficha', 'sp-acceso-muro']
-               .map(id => hijos.indexOf(document.getElementById(id))),
              /* El héroe es el texto más grande de la página desde la v971 —lo
                 primero que se lee es un hecho con fuente, no un veredicto
                 calculado—, así que el veredicto es el mayor DE LA PLACA. */
              tamHeroe: (() => { const n = document.querySelector('.sp-heroe-n'); return n ? tam(n) : 0; })(),
              masGrandePlaca: Math.max(...Array.from(placa.querySelectorAll('*'))
                .filter(x => x.children.length === 0 && x.textContent.trim()).map(tam)),
-             arribaDelTitulo: r.top < home.querySelector('.sp-lede').getBoundingClientRect().top,
              anchoPct: Math.round(100 * r.width / home.getBoundingClientRect().width),
              veredicto: vval ? vval.textContent : '',
              tamVeredicto: vval ? tam(vval) : 0, masGrande: masGrande,
@@ -162,18 +180,19 @@ const server = http.createServer((req, res) => {
              secs: Array.from(document.querySelectorAll('#sp-secciones .sp-sec')).map(x =>
                (x.querySelector('.sp-sec-n') || {}).textContent + ' ' + (x.querySelector('.sp-sec-t') || {}).textContent) };
   });
-  chk(portada.hay, 'la portada del módulo abre con la placa del gobernante');
+  chk(portada.hay, 'la pestaña de la ficha abre con la placa del gobernante');
   if (portada.hay) {
     console.log('\n── La portada ──────────────────────────────────────');
     console.log('  ' + portada.veredicto + ' · ' + portada.cuentas);
     console.log('  ' + portada.secs.join(' · '));
-    chk(portada.posicion === 0, 'y la placa es lo PRIMERO (va ' + (portada.posicion + 1) + 'º)');
-    var o = portada.ordenPortada || [];
-    chk(o.length === 4 && o.every((v, i) => v >= 0 && (!i || v > o[i - 1])) && portada.arribaDelTitulo,
-        'y después van, en este orden, el bloque de gráficos, el enlace a la ficha y el muro (' +
-        o.join(' · ') + ')');
+    chk(portada.posicion === 0,
+        'y la placa es lo PRIMERO de su pestaña (va ' + (portada.posicion + 1) + 'º)');
     chk(!portada.botonViejo, 'el botón viejo de acceso a la ficha ya no está');
     chk(portada.anchoPct >= 95, 'ocupa el ancho de la columna (' + portada.anchoPct + '%)');
+    /* Y LA PORTADA NO LA LLEVA: es la otra mitad de la mudanza, y sin ella
+       «se mudó» y «se duplicó» se leerían igual. */
+    chk(portada.fueraDeLaPortada,
+        'y la portada ya NO la lleva: se mudó, no se duplicó');
     chk(/casos? confirmados?/.test(portada.cuentas) && /en investigación/.test(portada.cuentas) &&
         /cambios? de postura/.test(portada.cuentas) && /% verificado|sin verificación/.test(portada.cuentas),
         'enseña las cuentas que producen el veredicto, con los casos en investigación');
@@ -197,14 +216,37 @@ const server = http.createServer((req, res) => {
         portada.secs.every((t, i) => t.slice(0, 2) === String(i).padStart(2, '0')),
         'la rejilla va por polémica y numerada sin saltos, con el tablero abriendo (' +
         portada.secs.slice(0, 3).join(' · ') + ')');
-    await pg.evaluate(() => document.querySelector('#sp-hero-ficha button').click());
-    await pg.waitForTimeout(500);
-    const fue = await pg.evaluate(() => (document.querySelector('.sp-view.on') || {}).getAttribute
-      ? document.querySelector('.sp-view.on').getAttribute('data-view') : '');
-    chk(fue === 'ficha', 'y al tocar la placa se abre la ficha (' + fue + ')');
+    /* «Tocar la placa abre la ficha» medía el camino de la PORTADA a la
+       ficha, y ese botón lo quitó la v1143 junto con la placa. La capacidad
+       que no puede perderse no es el botón: es que desde la portada SE LLEGUE
+       a la ficha. Hoy se llega por la tira de pestañas, así que se mide eso
+       —abrir la portada, tocar la pestaña y comprobar que la ficha quede
+       pintada—, que es la misma capacidad por el camino de hoy. `tseg`
+       comprueba que la tira ESTÉ; nadie comprobaba que LLEVE. */
+    await pg.goto(base + '/seguimiento.html', { waitUntil: 'load' });
+    await pg.waitForTimeout(900);
+    const llega = await pg.evaluate(async () => {
+      const t = Array.from(document.querySelectorAll('.sp-pes-t'))
+        .find(x => /pasado/i.test(x.getAttribute('href') || '') || /ha pasado/i.test(x.textContent));
+      if (!t) return { toco: false, placa: false };
+      t.click();
+      await new Promise(r => setTimeout(r, 600));
+      return { toco: true, placa: !!document.querySelector('#sp-ficha .sp-fi-placa') };
+    });
+    chk(llega.toco && llega.placa,
+        'y desde la portada se llega a la ficha por la tira de pestañas (' +
+        (llega.toco ? 'pestaña tocada' : 'NO se encontró la pestaña') +
+        ' · placa ' + (llega.placa ? 'pintada' : 'AUSENTE') + ')');
   }
 
-  // Enlace profundo: la ficha tiene que abrir sola, no solo si se navega.
+  /* Enlace profundo: la ficha tiene que abrir sola, no solo si se navega.
+     La VISTA que abre es «¿Qué ha pasado?» y no una llamada «ficha»: las
+     pestañas se juntaron y la ficha es una sección de esa, no una vista
+     propia. La aserción pedía el nombre de la vista, que es un detalle de
+     maquetación; lo que tiene que seguir siendo cierto —y es lo que ahora
+     mide— es que al llegar por el enlace la ficha esté PINTADA, con su
+     placa. Medir el nombre dejaba de proteger la capacidad el día que el
+     módulo reagrupó sus pestañas, que es justo lo que pasó. */
   await pg.goto(base + '/seguimiento.html#/ficha-del-gobernante', { waitUntil: 'load' });
   await pg.waitForTimeout(1100);
 
@@ -218,6 +260,10 @@ const server = http.createServer((req, res) => {
 
     o.vista = (document.querySelector('.sp-view.on') || {}).getAttribute
       ? document.querySelector('.sp-view.on').getAttribute('data-view') : '';
+    /* Lo que la aserción protege: no el NOMBRE de la vista —las pestañas se
+       reagrupan— sino que la ficha haya quedado pintada al llegar por el
+       enlace, con su placa dentro. */
+    o.fichaPintada = !!(document.querySelector('#sp-ficha .sp-fi-placa'));
     /* El DENOMINADOR de la claridad, leído de la placa (v842). Este módulo
        le reprocha a otras cifras andar sin denominador —el 62 % de firmas
        anuladas dice lo contrario de lo que pasó hasta que uno se entera de
@@ -798,13 +844,30 @@ const server = http.createServer((req, res) => {
        atribución causal, y con uno SIN firmar. Las tres ramas en la misma
        corrida, porque «no hay opinión» y «hay una opinión sin firma» son
        estados distintos y el segundo es el que hay que poder ver. */
+    /* LAS ENTRADAS LLEVAN `id`, y el editorial se apoya en ESOS ids y no en
+       los títulos. Es el esquema que la v1127 dejó puesto —el ancla es por
+       `id` y nunca por título, porque un retitulado la rompe en silencio— y
+       este fixture se había quedado con el anterior: `registros` con los
+       TÍTULOS, que `api.editorial` ya no reconoce.
+
+       Lo que costaba: con el esquema viejo la función devolvía la forma de
+       «no hay editorial» —tres claves y ninguna `apoyos`—, así que leer
+       `edSi.apoyos.length` tiraba un TypeError que MATABA LA CORRIDA ENTERA,
+       y la suite salía «NO CONCLUYENTE» sin una sola aserción. Es decir: las
+       doscientas comprobaciones de la ficha —la superficie más cara del
+       módulo— llevaban desde la v1127 sin medir nada, y desde afuera se leía
+       igual que una suite en verde. Es la trampa que este proyecto tiene
+       escrita como «una salida vacía no es una salida buena», entrando por
+       un fixture viejo en vez de por un grep. */
     const regEd = (ed, marco) => Object.assign({
       posesion: '2026-08-07', categorias: { gobierno: {} },
       entradas: [
-        { fecha: '2026-08-10', categoria: 'gobierno', titulo: 'Un hecho con documento',
+        { id: 'ed-hecho-con-documento',
+          fecha: '2026-08-10', categoria: 'gobierno', titulo: 'Un hecho con documento',
           tipoFuente: 'verificado', categoriaProbatoria: 'hecho-probado', tipoMedicion: 'actividad',
           fuentes: [{ n: 'x', u: 'https://x' }] },
-        { fecha: '2026-08-11', categoria: 'gobierno', titulo: 'Alguien atribuye una causa',
+        { id: 'ed-atribucion-causal',
+          fecha: '2026-08-11', categoria: 'gobierno', titulo: 'Alguien atribuye una causa',
           tipoFuente: 'declaracion', categoriaProbatoria: 'atribucion-causal', tipoMedicion: 'contexto-estructural',
           fuentes: [{ n: 'y', u: 'https://y' }] }
       ],
@@ -813,16 +876,27 @@ const server = http.createServer((req, res) => {
 
     const edNo = api.editorial(regEd(null));
     const edSi = api.editorial(regEd({ autor: 'Fulano, editor', fecha: '2026-09-18',
-      texto: 'Una postura.', registros: ['Alguien atribuye una causa', 'Un hecho con documento'] }));
-    const edSinFirma = api.editorial(regEd({ texto: 'Una postura sin firma.', registros: [] }));
+      afirmaciones: [
+        { clave: 'a1', texto: 'Una postura sobre el hecho documentado.',
+          base: ['ed-hecho-con-documento'] },
+        { clave: 'a2', texto: 'Y una que se apoya en una atribución causal.',
+          base: ['ed-atribucion-causal'] }
+      ] }));
+    const edSinFirma = api.editorial(regEd({
+      afirmaciones: [{ clave: 'a1', texto: 'Una postura sin firma.',
+                       base: ['ed-hecho-con-documento'] }] }));
     const marSin = api.marco(regEd(null));
     const marCon = api.marco(regEd(null, { autor: 'Fulano', fecha: '2026-09-18',
       supuestos: ['considero que la inversión social es prioritaria'] }));
     o.capa4 = {
       edNo: { hay: edNo.hay, d: (edNo.d || '').slice(0, 400) },
-      edSi: { hay: edSi.hay, firmado: edSi.firmado, apoyos: edSi.apoyos.length,
+      /* Se lee A LA DEFENSIVA, con el mismo criterio que el resto de este
+         bloque: si la forma vuelve a cambiar, la aserción falla con su
+         número y no mata la corrida. Una suite que revienta no dice cuál de
+         sus comprobaciones falló. */
+      edSi: { hay: edSi.hay, firmado: edSi.firmado, apoyos: (edSi.apoyos || []).length,
               flojos: edSi.flojos, huerfanos: edSi.huerfanos,
-              clases: edSi.apoyos.map(a => (a.clase || {}).id).join(',') },
+              clases: (edSi.apoyos || []).map(a => (a.clase || {}).id).join(',') },
       edSinFirma: { hay: edSinFirma.hay, firmado: edSinFirma.firmado },
       marSin: { completo: marSin.completo, mide: marSin.mide.length, noMide: marSin.noMide.length,
                 falta: (marSin.falta || '').slice(0, 400) },
@@ -864,7 +938,9 @@ const server = http.createServer((req, res) => {
   });
 
   chk(r.hayApi, 'la ficha publica su cálculo para poder comprobarlo');
-  chk(r.vista === 'ficha', 'el enlace profundo #/ficha-del-gobernante abre la ficha (' + r.vista + ')');
+  chk(r.fichaPintada && !!r.vista,
+      'el enlace profundo #/ficha-del-gobernante deja la ficha PINTADA, con su placa (vista «' +
+      r.vista + '»)');
 
   const f = r.f || {};
   console.log('\n── Lo que muestra la ficha ─────────────────────────');

@@ -29297,3 +29297,172 @@ Entregadas **16 capturas** en ocho pares de antes y después, a 1440 y 390 px.
 * **No publica nada a `main`.** Sigue en `3f6a7e1` (v1138) hasta el «súbalo»,
   y entonces suben juntas la v1140, la v1141 y esta.
   `cerrado en v1142 · medido y declinado`
+
+## v1143 · la portada gráfica, y los cuatro bloques que ninguna pantalla alcanzaba
+
+Pedida así: «Cero texto en la portada. Solo gráficos: inversión, deuda, dólar y
+delincuencia, más subsidios. Usa los 14 conjuntos de datos y los bloques
+`delitosAltoImpacto` y `subsidios`. Pinta deuda bruta y las vetadas por defecto
+propio. Pon un sello de "falta evidencia" donde no haya dato. Cada gráfico lleva
+descripción corta y tabla accesible.»
+
+### Lo que la tanda midió
+
+| | Antes (v1142) | Ahora |
+|---|---|---|
+| Tarjetas en la portada | 17 | **21** |
+| Tarjetas con descripción corta y tabla accesible | **0 de 17** | **18 de 18** |
+| Marcas «sin descripción corta» / «sin tabla» | — | **0** |
+| Bloques del registro que ninguna pantalla pintaba | 4 | **0** |
+| Alto de la portada a 1440 px | 13.949 px | 13.906 px |
+| Caracteres de la portada | 24.022 | 22.401 |
+| `tseg` | 112/112 | **114/114** |
+| `tficha` | `?` NO CONCLUYENTE · **0 medidas** | **197/218**, con 21 declaradas en la §20 |
+| Contraste del bloque nuevo | — | **363 medidos, 0 por debajo de 4,5:1, mínimo 5,52:1** |
+| Cifras en prosa sin su plural en `js/70` | 28 | **27** (el trinquete solo baja) |
+
+**Una precisión sobre la primera fila, porque el número engaña si no se dice:**
+en la v1142 no había **ninguna** marca de «sin descripción corta», y no porque
+las tarjetas la tuvieran — es que el contrato no existía: `tarjetaGrafica`
+tenía siete parámetros y ninguno era la descripción. Las 28 marcas que esta
+tanda vio a mitad de camino las produjo ella misma, al poner la puerta a
+fallar cerrado antes de llenar los trece sitios de llamada. El «antes» honesto
+no es «28 defectos heredados»: es **cero de diecisiete tarjetas descritas**.
+
+### La descripción y la tabla SALEN DEL DATO, y por eso son cuatro y no trece
+
+Una descripción escrita a mano es una cifra tecleada dentro de un texto fijo, y
+eso envejece solo (v903). Peor acá que en otros sitios: quien lee con lector de
+pantalla recibe **solo** esa frase, así que una descripción vieja no es un
+detalle de redacción — es el único dato que ese lector tiene, y es falso.
+
+Así que no hay trece descripciones: hay **cuatro formas** —`datosDeSerie`,
+`datosPorFuente`, `datosDeReparto`, `datosDeBarras`, más las dos específicas
+`datosDeCredito` y `datosDeContradicciones`— y cada una recorre los mismos
+puntos que el dibujo. Una tarjeta nueva elige la suya y hereda las dos cosas
+**sin que su autor se acuerde** (v867); la que no pase por ninguna sale con su
+marca y la guarda la cuenta (v880).
+
+### Los cuatro bloques de la clase C, pintados
+
+Los encontró la guarda de texto inalcanzable en su primera corrida (v1139) y
+cada uno llevaba su `_sinPintarTodavia` declarado. Los cuatro —`deudaBruta`,
+`delitosAltoImpacto`, `subsidios`, `vetadasPorDefectoPropio`— se pintan ahora, y
+**el campo se retiró de los cuatro**: no era una excusa permanente, era un
+plazo, y desde esta tanda la guarda exige que su texto llegue a una superficie.
+
+Dos decisiones que importan más que el dibujo:
+
+* **La deuda bruta NO lleva las anclas de la Ley 2155 dibujadas.** Esos umbrales
+  están definidos sobre deuda neta y esta cifra es bruta, así que una línea de
+  referencia al lado sería exactamente el error de categoría que la v1093
+  escribió para prohibir — y dibujado se vuelve irrefutable, porque dos barras
+  juntas se leen como comparables. El eje es el PIB, de cero a cien.
+* **La extorsión lleva TRES barras y ningún porcentaje.** Dos entidades del
+  mismo Gobierno publican cifras distintas para el mismo mes; las dos van
+  dibujadas, porque elegir una sería decidir por el lector cuál vale.
+
+### El sello va EN SU SITIO, y el pliegue de la v977 se deshace
+
+La v977 pedía que lo que no se dibuja fuera plegado al final, con su recuento a
+la vista. **La mitad del recuento sigue valiendo entera**; la del pliegue se
+cambió, y el cambio no es aflojar: plegado, un hueco obliga a ABRIR algo para
+enterarse de que falta, así que desde la rejilla se ve exactamente igual que un
+gráfico que nunca se pensó — que es la clase C otra vez. En su sitio y con el
+sello impreso, la carencia se lee donde el dato tendría que estar.
+
+La guarda se rehízo sobre tres cosas que se pueden romper por separado: **una
+sola puerta** (ninguno suelto por `poner`), que esa puerta **cuelgue en la
+rejilla Y cuente** —si solo cuenta, el sello no sale; si solo cuelga, el
+recuento miente en cero—, y que el recuento salga del contador con las **dos
+redacciones** (v970). **Siete inyecciones, siete rojos**, incluida la que
+reproduce fielmente el pliegue de la v1142.
+
+### Lo que encontró MIRAR EL PAPEL, y no se veía en el código
+
+Seis defectos, y **ninguno se veía leyendo el código**:
+
+1. **La caja de declaraciones se perdía entera.** Pasé `caja` como NOVENO
+   argumento a una función de ocho: JavaScript lo descarta sin un solo error, así
+   que el acumulado, las tres salvedades y la razón de la disputa **no salían** —
+   el texto inalcanzable que esta tanda vino a arreglar, vuelto a perder en la
+   llamada. Es la gemela de la clave duplicada de la v1092.
+2. **«CIFRAS PRELIMINARS»** — un `+ 's'` sobre un adjetivo terminado en
+   consonante. Ahora dice el carácter en singular, que es como el registro lo
+   escribe.
+3. **«los $719.000 millones del sena»** — un `.toLowerCase()` sobre los títulos
+   se comió el acrónimo de una entidad.
+4. **El rótulo de la última barra se salía del lienzo**: la reserva era un `70`
+   fijo y «3.253 · agosto de 2025» mide bastante más. Sale del rótulo que de
+   verdad hay (v935: por contenido, no por distancia).
+5. **El rótulo del mes imprimía un día.** `mesCorto` recortaba `'^\d+ de '` sobre
+   la salida de `fechaCorta`, que devuelve «1 ago 2026» y no «1 de agosto de
+   2026», así que **no quitaba nada y nadie se enteraba**: el bloque compara
+   agosto contra agosto y la etiqueta afirmaba una fecha que el dato no tiene.
+6. **Jerga del repositorio impresa a un lector.** Cuatro campos del registro y
+   una frase mía llevaban citas de versión («la v1082 usó», «la v1092 lo leyó»),
+   nombres de campo entre comillas inversas y la palabra «tanda». Son notas para
+   quien trabaja acá, no para quien lee el tablero. Se reescribieron **con todos
+   los hechos intactos**; la historia del error se queda en este archivo, que es
+   donde va.
+
+### Una corrección sobre mi propia lectura
+
+`\b` no es el problema esta vez: el recorte de `mesCorto` **nunca casó**, así que
+la etiqueta llevaba meses saliendo con un día. Lo escribo porque la forma del
+defecto es la que este archivo ya tiene nombrada y la volví a cometer: un
+`replace` que no encuentra su patrón **devuelve la cadena entera sin avisar**, y
+eso se lee igual que un recorte que funcionó. Un `replace` por patrón es de la
+familia del parche por anclas: o se comprueba que casó, o el verde no dice nada.
+
+### Y una suite que llevaba quince versiones sin medir nada
+
+Al correr las siete suites vecinas, `tficha` salió **`?` NO CONCLUYENTE**. No
+era de esta tanda: su fixture del editorial usaba `registros` con los TÍTULOS
+—el esquema anterior a la v1127—, así que `api.editorial` devolvía la forma de
+«no hay editorial», `edSi.apoyos.length` tiraba un `TypeError` dentro del
+`page.evaluate` y **eso mataba la corrida entera antes de la primera
+aserción**. Las **218 comprobaciones sobre la ficha del gobernante** —la
+superficie más cara del módulo— llevaban desde la v1127 sin ejecutarse.
+
+El arnés lo marcaba, que es para lo que la v963 puso el `?`. Lo que faltó fue
+leerlo. De **0 medidas** pasó a **197/218**; las 21 que quedan son expectativas
+que el módulo dejó atrás mientras la suite estaba muerta y piden triaje una por
+una, que es la §20.
+
+Tres arreglos, y el tercero es el que importa:
+
+* el fixture, al esquema de la v1127, con `id` en las entradas;
+* la lectura **a la defensiva** —`(edSi.apoyos || []).length`—, para que el
+  próximo cambio de forma falle con su número en vez de matar la corrida;
+* y las cuatro comprobaciones de la placa, **mudadas a la pestaña donde la
+  placa vive**, con la regla del muro: se mide donde está, y se comprueba
+  además que **la portada ya no la lleve**, porque «se mudó» y «se duplicó» se
+  leen igual. Lo mismo con «tocar la placa abre la ficha»: el botón lo quitó
+  esta versión, así que la aserción pasó a medir la capacidad que sí tiene que
+  seguir existiendo —que desde la portada SE LLEGUE a la ficha—, por la tira de
+  pestañas. `tseg` comprueba que la tira esté; nadie comprobaba que lleve.
+
+### Lo que esta versión NO hace
+
+* **El control de calidad y los paneles de método siguen citando versiones del
+  repositorio en su prosa** —nueve cadenas medidas, del tipo «como la v1094 lo
+  estrechó»—. Ahí el lector es explícitamente quien audita el módulo, así que no
+  es el mismo defecto que el de la portada; pero tampoco está decidido, y
+  decidirlo pide leer esas cuatro pantallas enteras.
+  `pendiente`
+* **Los tres sellados siguen sin descripción corta ni tabla, y es correcto**: no
+  tienen ningún dato que describir. Lo que llevan —el sello y la caja de «qué
+  falta y de dónde saldría»— ES la descripción, y es texto plano que un lector de
+  pantalla lee entero. Se deja dicho para que la próxima tanda no lo lea como un
+  hueco.
+  `cerrado en v1143 · medido y declinado`
+* **Las 21 comprobaciones de `tficha` que siguen en rojo.** Son expectativas
+  que el módulo dejó atrás mientras la suite estaba muerta, y cada una pide la
+  misma pregunta por separado: ¿vieja, o defecto que se publicó mientras nadie
+  miraba? Hay al menos cuatro que hablan de lo que la ficha publica sobre una
+  persona real, así que lo decide quien firma el módulo. Quedan listadas una
+  por una en la §20.
+  `pendiente`
+* **No publica nada a `main`.** Sigue en `29f33ce` (v1142) hasta el «súbalo».
+  `pendiente`

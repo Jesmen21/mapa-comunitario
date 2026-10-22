@@ -12145,9 +12145,9 @@
       "fecha": "2026-06-30",
       "fuenteCorta": "Ministerio de Hacienda y Crédito Público",
       "canal": "búsqueda",
-      "convergencia": "Cuatro medios publican la misma cifra para el mismo mes y la misma fuente: El Espectador, Occidente, HSB Noticias y Visión Davivienda. Es el estándar que la v1082 usó para escribir la inflación de septiembre: convergencia entre medios sobre una cifra oficial fechada.",
+      "convergencia": "Cuatro medios publican la misma cifra para el mismo mes y la misma fuente: El Espectador, Occidente, HSB Noticias y Visión Davivienda. Es el estándar con el que este módulo acepta una cifra oficial que no pudo leer en la página de la entidad: convergencia entre medios sobre una cifra oficial fechada.",
       "noComparableCon": "El ancla y el límite de la Ley 2155 —55 % y 71 % del PIB—, porque esos umbrales están definidos sobre deuda NETA: la bruta menos los activos financieros, con la metodología que define el Confis. Comparar una bruta contra un umbral de neta es un error de categoría. Esta cifra se publica por lo que es y no se usa para poner ningún peldaño.",
-      "porQueLasOtrasCifrasDIFIEREN": "Y conviene decirlo porque la v1092 lo leyó como una contradicción y no lo era: las cifras que circulan difieren por el DENOMINADOR y por la MEDIDA, no porque alguna esté mal. 65,1 % a marzo y 64,5 % a enero usan otra base de PIB —Hacienda alterna el dato del DANE de 2025 con su proyección de 2026—; 66 % es la proyección de un crítico, declarada como tal; y 64 % es el cierre del cuatrienio de Petro, que es otro gobierno. Es la regla de la v1085: la pregunta no es cuál está mal, es de qué mide cada una.",
+      "porQueLasOtrasCifrasDIFIEREN": "Las cifras de deuda que circulan difieren por el DENOMINADOR y por la MEDIDA, no porque alguna esté mal. El 65,1 % a marzo y el 64,5 % a enero usan otra base de PIB —Hacienda alterna el dato del DANE de 2025 con su proyección de 2026—; el 66 % es la proyección de un crítico, declarada como tal; y el 64 % es el cierre del cuatrienio de Petro, que es otro gobierno. Ante dos cifras que no cuadran, la pregunta no es cuál está mal: es de qué mide cada una.",
       "fuentes": [
         {
           "n": "El Espectador · la deuda bruta llegó al 60,5 % del PIB proyectado para 2026",
@@ -12164,8 +12164,7 @@
           "u": "https://occidente.co/empresario/deuda-bruta-del-gobierno-nacional-central-equivale-al-60-5-del-pib/",
           "rol": "acto"
         }
-      ],
-      "_sinPintarTodavia": "HALLAZGO de la guarda de texto inalcanzable, en su primera corrida (v1139). Este bloque lleva escrito justo lo que la v1093 exige —la MEDIDA de la cifra, contra qué NO se puede comparar y por qué otras cifras del mismo nombre difieren— y NINGUNA pantalla lo alcanza: el módulo publica «60,5 %» y se queda sin las cuatro frases que impiden confundir una deuda bruta con una neta. Es la clase C en el sitio que esa regla existe para proteger. Pintarlo toca una pantalla, así que va a la v1141 y aquí queda el estado declarado, contado y con su nombre, no callado."
+      ]
     }
   },
   "fuerza": {
@@ -12392,8 +12391,7 @@
           "pista": "719.000 millones",
           "defecto": "La cifra no se sostuvo al contrastarla con el acto que la soportaría."
         }
-      ],
-      "_sinPintarTodavia": "HALLAZGO de la misma corrida (v1139). Las cuatro cifras que el módulo se vetó a sí mismo traen escrito POR QUÉ no se sostuvieron, y ese texto no llega a ningún lector: desde afuera, una cifra retirada por defecto propio se ve igual que una que nunca existió. Pintarlo toca una pantalla y va a la v1141."
+      ]
     }
   },
   "rectificaciones": {
@@ -13012,7 +13010,7 @@
             }
           ],
           "diferenciaCasos": 218,
-          "noPublicarPct": "El −62 % sale de la cifra de MinDefensa y la entrada `delitos-agosto-2026-policia` ya decidió NO publicarlo: con dos cifras oficiales sin reconciliar, el porcentaje no es verificable. `reportadoPct` guarda lo que la fuente publicó para poder contrastarlo, NO para graficarlo como resultado. Con la cifra de la Policía la caída sería del 44,8 %, y esa distancia es justo lo que el gráfico tiene que mostrar.",
+          "noPublicarPct": "Por eso esta fila no lleva porcentaje: con dos cifras oficiales sin reconciliar, el porcentaje no es verificable. Con la cifra de MinDefensa la caída sería del 62 % y con la de la Policía Nacional del 44,8 %, y esa distancia es justo lo que el gráfico muestra en vez de resolverla.",
           "pctSegunPolicia": -44.8
         }
       },
@@ -13043,7 +13041,7 @@
         "2026": 9434
       },
       "reportadoPct": 2,
-      "porQueVaAlLado": "El mes baja y el acumulado del año SUBE. Publicar solo el mes deja una lectura que el propio dato desmiente, así que el acumulado va en el mismo bloque y no en otra pantalla (v1064)."
+      "porQueVaAlLado": "El mes baja y el acumulado del año SUBE. Publicar solo el mes deja una lectura que el propio dato desmiente, así que el acumulado va en el mismo gráfico y no en otra pantalla."
     },
     "salvedades": [
       "Son cifras PRELIMINARES de la Policía Nacional: pueden cambiar con la consolidación.",
@@ -13067,8 +13065,7 @@
         "u": "https://www.eltiempo.com/politica/partidos-politicos/revelan-informe-que-valida-la-caida-en-secuestro-extorsion-y-homicidios-presentadas-por-el-gobierno-de-la-espriella-tras-revision-con-mindefensa-3590075"
       }
     ],
-    "_relacionConLaEntrada": "La entrada `delitos-agosto-2026-policia` publica estas mismas cifras en prosa y NO se toca: es lo que esa corrida escribió, con su fecha. Comprobado al registrar el bloque: coinciden homicidios (1.169 contra 1.244), delitos sexuales (2.040 contra 3.253), secuestro (−79 %), el acumulado (9.434 contra 9.256, +2 %), los seis días del gobierno anterior y la disputa de extorsión (499 contra 717, 218 de diferencia). El bloque AGREGA dos filas que la entrada no trae —secuestro extorsivo y víctimas de masacre— y eso no la contradice: la amplía.",
-    "_sinPintarTodavia": "Este bloque se registró en la v1138 y NINGUNA pantalla lo pinta: se grafica en la v1141. Mientras tanto su texto —`salvedades` y las razones de la disputa— es inalcanzable para un lector, y eso es un ESTADO declarado y no un descuido: la guarda de texto inalcanzable lo cuenta aparte y lo nombra. El día que el bloque se pinte, este campo se retira y la guarda exige que su texto llegue a una superficie."
+    "_relacionConLaEntrada": "La entrada `delitos-agosto-2026-policia` publica estas mismas cifras en prosa y NO se toca: es lo que esa corrida escribió, con su fecha. Comprobado al registrar el bloque: coinciden homicidios (1.169 contra 1.244), delitos sexuales (2.040 contra 3.253), secuestro (−79 %), el acumulado (9.434 contra 9.256, +2 %), los seis días del gobierno anterior y la disputa de extorsión (499 contra 717, 218 de diferencia). El bloque AGREGA dos filas que la entrada no trae —secuestro extorsivo y víctimas de masacre— y eso no la contradice: la amplía."
   },
   "subsidios": {
     "_nota": "CIFRAS ESTRUCTURADAS de los subsidios de energía y gas para estratos 1 y 2 en el presupuesto de 2027. El faltante se CALCULA de necesario menos asignado (v903) y no se teclea. Este bloque NO cambia ninguna pantalla todavía.",
@@ -13108,7 +13105,6 @@
         "rol": "dato",
         "u": "https://www.elcolombiano.com/negocios/economia/presupuesto-2027-subsidios-energia-gas-estratos-1-y-2"
       }
-    ],
-    "_sinPintarTodavia": "Este bloque se registró en la v1138 y NINGUNA pantalla lo pinta: se grafica en la v1141. Mientras tanto su texto —`salvedades` y las razones de la disputa— es inalcanzable para un lector, y eso es un ESTADO declarado y no un descuido: la guarda de texto inalcanzable lo cuenta aparte y lo nombra. El día que el bloque se pinte, este campo se retira y la guarda exige que su texto llegue a una superficie."
+    ]
   }
 }
