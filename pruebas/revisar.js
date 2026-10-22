@@ -16069,6 +16069,47 @@ console.log('\n  -- las fechas de calendario se anclan a Colombia (v1135) --');
     'la tarjeta y el parche leen la misma variable, así que no pueden separarse (v879)');
 })();
 
+console.log('\n  -- la resta del desplazamiento mide la barra ENTERA (v1157) --');
+(() => {
+  /* DOS CODIFICACIONES DE «CUANTO MIDE LA BARRA», y tienen que ser la misma
+     (v879). La barra es sticky y opaca, y su alto es
+     `calc(var(--bar) + env(safe-area-inset-top,0px))`; `scroll-padding-top`
+     resta lo que el navegador deja libre al traer un elemento al tope. Si la
+     resta no lleva el MISMO `env()`, en un telefono con muesca la barra es mas
+     alta que lo restado y vuelve a tapar — que es el defecto de la v1156.
+
+     La guarda lee el CSS y no el navegador a proposito: el caso de la muesca es
+     NO MEDIBLE EN ESTE CONTENEDOR —`env(safe-area-inset-top)` vale 0 en Chromium
+     de escritorio— asi que ninguna medida de aqui distingue la version buena de
+     la mala. Lo que si se puede comprobar es que las dos expresiones compartan
+     el termino, que es lo que hace que se muevan juntas con cualquier inset. */
+  const c = leer('css/70-seguimiento.css');
+  const mBar = c.match(/\.sp-bar\{[\s\S]{0,400}?height:\s*(calc\([^;]+\));/);
+  const mPad = c.match(/scroll-padding-top:\s*(calc\([^;]+\));/);
+  const limpia = (x) => String(x || '').replace(/\s+/g, '');
+  const eBar = limpia(mBar && mBar[1]);
+  const ePad = limpia(mPad && mPad[1]);
+
+  comprobar('MATERIAL · el CSS declara el alto de la barra y la resta del desplazamiento',
+    !!eBar && !!ePad,
+    eBar && ePad ? 'alto ' + eBar + ' · resta ' + ePad
+      : 'no se hallaron las dos expresiones: ' + (eBar ? 'falta la resta' : 'falta el alto de la barra') +
+        ', y sin las dos la de abajo no vigilaria nada');
+
+  /* El alto es `calc(A)` y la resta `calc(A + 8px)`: se compara el INTERIOR,
+     para no depender de donde caiga el parentesis. */
+  const dentro = (x) => x.replace(/^calc\(/, '').replace(/\)$/, '');
+  const dBar = dentro(eBar), dPad = dentro(ePad);
+  const ok = !!dBar && dPad.indexOf(dBar) === 0 && /^\+\d+px$/.test(dPad.slice(dBar.length));
+  comprobar('la resta del desplazamiento es el alto de la barra mas un margen, y nada mas',
+    ok,
+    ok ? 'resta = ' + dBar + ' + ' + dPad.slice(dBar.length + 1) + ', asi que las dos se mueven ' +
+         'juntas con cualquier safe-area. NO comprueba el caso de la muesca: eso es no medible en ' +
+         'este navegador, donde env(safe-area-inset-top) vale 0'
+      : 'el alto de la barra es «' + dBar + '» y la resta «' + dPad + '»: no comparten el termino, ' +
+        'asi que en un telefono con muesca la barra tapa lo que la resta no descuenta');
+})();
+
 /* Las dos cuentas van APARTE porque piden cosas distintas: una fallada hay
    que arreglarla, una sin material hay que mirarla —o se quedó sin él porque
    el registro mejoró, o porque la función dejó de ver lo que medía—. Sumarlas

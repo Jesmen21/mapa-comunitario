@@ -127,12 +127,22 @@ svg{ width:20px; height:20px; fill:none; stroke:currentColor; stroke-width:1.9; 
    vive en `:root` y es el documento el que desplaza; comprobado antes de
    escribirla que ningún JS resta la barra a mano, para no compensar dos veces.
 
-   DE QUÉ NO RESPONDE: la barra mide `calc(var(--bar) + env(safe-area-inset-top))`,
-   así que en un teléfono con muesca es más alta que `--bar` y quedarían
-   tapados los píxeles de la muesca. Esta línea no los cubre. Va dicho porque
-   un arreglo que se presenta como completo y no lo es vuelve a esconder el
-   defecto. */
-html{ scroll-padding-top:calc(var(--bar) + 8px); }
+   LA MUESCA (v1157). La barra mide `calc(var(--bar) + env(safe-area-inset-top))`,
+   así que en un teléfono con muesca es MÁS ALTA que `--bar`. La v1156 restaba
+   solo `--bar` y en esos teléfonos seguía tapando los píxeles de la muesca.
+   Ahora la resta lleva el mismo `env()` que la altura de la barra, de modo que
+   las dos expresiones se mueven juntas: son dos codificaciones de «cuánto mide
+   la barra» y por eso tienen que ser la MISMA (v879).
+
+   LO QUE NO SE PUEDE MEDIR ACÁ, dicho y no supuesto: este contenedor no tiene
+   ningún navegador con muesca, y `env(safe-area-inset-top)` vale 0 en Chromium
+   de escritorio, así que el caso de la muesca es NO MEDIBLE EN ESTE NAVEGADOR.
+   Lo que sí se mide, y es la propiedad que importa, es el INVARIANTE: que la
+   resta sea igual a la altura REAL de la barra más 8 px, comparada contra lo
+   que el navegador reporta y no contra un número escrito en la prueba (v890).
+   Si el invariante se cumple con inset 0, se cumple con cualquier inset,
+   porque las dos expresiones comparten el término. */
+html{ scroll-padding-top:calc(var(--bar) + env(safe-area-inset-top,0px) + 8px); }
 
 /* ── Barra superior ─────────────────────────────────────────────────────── */
 .sp-bar{
