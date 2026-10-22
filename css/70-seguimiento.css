@@ -763,10 +763,21 @@ a.sp-fuente:hover svg{ color:var(--verde-hi); }
    (el ámbar queda en 2.44:1 sobre blanco, así que la etiqueta no es adorno:
    es el canal de alivio que exige la norma de contraste). */
 .sp-graficas{ display:grid; gap:14px; }
+/* `--graf-fondo` es el fondo de la tarjeta Y el del parche que va debajo de
+   un rótulo cruzado por una línea. Se declara UNA vez y el fondo del parche
+   se deriva de él: un parche que no coincide con su tarjeta se ve como un
+   recuadro de color, y eso es exactamente lo que pasó cuando el parche
+   llevaba `--marfil` escrito a mano y la tarjeta era blanca. Derivar es lo
+   correcto acá porque no existe un cambio razonable que deba mover uno y no
+   el otro (v879): un parche SIEMPRE tiene que ser del color de su fondo. */
 .sp-graf{
-  background:var(--sup); border:1px solid var(--linea); border-radius:var(--r);
-  padding:18px 18px 16px;
+  --graf-fondo:var(--sup);
+  background:var(--graf-fondo); border:1px solid var(--linea);
+  border-radius:var(--r); padding:18px 18px 16px;
 }
+/* El respaldo es `--sup` y no un color literal: si un gráfico termina fuera
+   de una `.sp-graf`, hereda el fondo de superficie del módulo, no un crema. */
+.sp-g-fondo{ fill:var(--graf-fondo, var(--sup)); }
 /* El título de un gráfico tiene que separarse de su cuerpo. Medido a 390 px
    iba en --t-6 (16 px) sobre un cuerpo de 13,4: una relación de 1,19:1, o
    sea un título que se lee como un párrafo en negrita. Con --t-5 sube a

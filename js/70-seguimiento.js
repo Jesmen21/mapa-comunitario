@@ -10034,26 +10034,82 @@
      con una caja a ojo: una caja fija tapa de más cuando el texto es corto y
      de menos cuando es largo. */
   function textoConFondo(svg, attrs, texto, ancla) {
-    /* EL ANCHO VA CON HOLGURA porque `anchoRotulo` ESTIMA: son 7,4 px por
-       carácter, y medido contra el navegador se queda corto —«7 ago» da 37 y
-       mide 44, un 16 % menos—. Un fondo que se queda corto deja asomar la
-       línea por los bordes, que es el defecto que viene a tapar. La
-       estimación no se cambia: la usan los repartos de barras, donde quedarse
-       corto es lo prudente; acá lo prudente es lo contrario. */
-    var w = anchoRotulo(texto) * 1.25 + 6;
-    var x = +attrs.x || 0, y = +attrs.y || 0;
-    var bx = ancla === 'start' ? x - 2 : (ancla === 'end' ? x - w - 2 : x - w / 2 - 2);
-    /* EL ALTO SALE DE LA CAJA REAL DEL TEXTO, no de un número a ojo: la
-       primera versión puso 14 px y la caja del glifo mide 16 —con sus
-       ascendentes y descendentes—, así que el fondo tapaba la línea por el
-       medio y la dejaba asomar arriba y abajo. Se ve a 4× y lo midió la
-       comprobación de cruces, que para eso está. */
-    svg.appendChild(svgEl('rect', { x: bx, y: y - 13, width: w + 4, height: 18,
-                                    fill: 'var(--marfil)', rx: 2 }));
+    /* SE MIDE EL GLIFO, NO SE ESTIMA. La primera versión sacaba el ancho de
+       `anchoRotulo` con un 25 % de holgura, y una holgura PROPORCIONAL sobra
+       cada vez más cuanto más largo es el texto: «Hacienda y Crédito Público»
+       se tapaba con un parche 23 px más ancho que su propia letra, que a 4×
+       se ve como un recuadro de color alrededor del rótulo. La caja de verdad
+       la da el navegador con `getBBox`, así que el texto se pinta PRIMERO,
+       se mide, y el fondo se inserta DELANTE de él —en SVG manda el orden del
+       documento, así que estar antes es estar debajo—.
+
+       La estimación se queda solo como respaldo para cuando el dibujo todavía
+       no está en el documento y `getBBox` no puede medir: ahí vuelve la
+       holgura, porque un fondo corto deja asomar la línea, que es el defecto
+       que esto viene a tapar. */
     var t = svgEl('text', attrs);
     t.textContent = texto;
     svg.appendChild(t);
+    var caja = null;
+    try { var b = t.getBBox(); if (b && b.width > 0) caja = b; } catch (e) { caja = null; }
+    var x = +attrs.x || 0, y = +attrs.y || 0;
+    var bx, by, bw, bh;
+    if (caja) {
+      bx = caja.x - 2; by = caja.y - 1; bw = caja.width + 4; bh = caja.height + 2;
+    } else {
+      bw = anchoRotulo(texto) * 1.25 + 6;
+      bx = ancla === 'start' ? x - 2 : (ancla === 'end' ? x - bw - 2 : x - bw / 2 - 2);
+      by = y - 13; bh = 18;
+    }
+    /* EL COLOR NO SE ESCRIBE ACÁ. Iba `var(--marfil)` fijo y la tarjeta es
+       BLANCA: el fondo se veía como un parche crema. Y poner `var(--sup)` en
+       su lugar sería el mismo defecto con otro valor —dos codificaciones de
+       un hecho, clase B—: el día que una tarjeta cambie de fondo, el parche
+       se queda con el viejo y nada lo dice. Así que el fondo se PINTA POR
+       CLASE y su color SALE del de la tarjeta, por la variable que la propia
+       tarjeta declara (`--graf-fondo` en el CSS). Un gráfico sobre otra
+       superficie lo hereda sin que su autor se acuerde. */
+    var r = svgEl('rect', { x: bx, y: by, width: bw, height: bh, rx: 2,
+                            class: 'sp-g-fondo' });
+    svg.insertBefore(r, t);
+    /* UN DIBUJO SE CONSTRUYE SUELTO Y SE CUELGA DESPUÉS, así que en la
+       primera pasada `getBBox` no puede medir casi nunca: devuelve 0 y entra
+       el respaldo. Por eso el parche se APUNTA y se vuelve a medir en el
+       siguiente cuadro, cuando ya está en el documento. Así la medida de
+       verdad no depende de que el autor de un gráfico nuevo se acuerde de
+       pedirla — se pide sola desde acá, que es el único sitio que sabe que
+       hace falta. Si el dibujo nunca se cuelga, el respaldo se queda: es
+       ancho de más, no de menos, y de menos es lo que deja asomar la línea. */
+    if (!caja) apuntarParche(r, t);
     return t;
+  }
+
+  /* El reajuste va en UNA pasada por cuadro y no una por parche: trece
+     gráficos con sus rótulos son decenas de llamadas, y cada `getBBox`
+     fuerza al navegador a recomponer. Y no puede tumbar la vista: si
+     revienta, se traga el error, que es la regla de la barra de espera
+     (v870). */
+  var _parches = [], _parchesRaf = null;
+  function apuntarParche(r, t) {
+    _parches.push({ r: r, t: t });
+    if (_parchesRaf) return;
+    var pedir = window.requestAnimationFrame || function (f) { return setTimeout(f, 16); };
+    _parchesRaf = pedir(ajustarParches);
+  }
+  function ajustarParches() {
+    _parchesRaf = null;
+    var lista = _parches; _parches = [];
+    lista.forEach(function (p) {
+      try {
+        if (!p.t.isConnected) return;
+        var b = p.t.getBBox();
+        if (!b || !(b.width > 0)) return;
+        p.r.setAttribute('x', b.x - 2);
+        p.r.setAttribute('y', b.y - 1);
+        p.r.setAttribute('width', b.width + 4);
+        p.r.setAttribute('height', b.height + 2);
+      } catch (e) { /* un ajuste de dibujo no puede costar la vista */ }
+    });
   }
 
   /* ══ EL TONO DE UNA FIGURA (v1145) ═══════════════════════════════════════

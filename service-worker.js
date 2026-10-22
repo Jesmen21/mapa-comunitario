@@ -1,4 +1,4 @@
-const URBIS_CACHE = 'urbis-v1147-nada-atravesado';
+const URBIS_CACHE = 'urbis-v1147-nada-atravesado-y-sin-parches';
 const URBIS_ASSETS = [
   './',
   './index.html',

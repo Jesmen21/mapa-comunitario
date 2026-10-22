@@ -514,9 +514,16 @@ const server = http.createServer((req, res) => {
     await pg.evaluate(() => window.dispatchEvent(new Event('resize')));
     await pg.waitForTimeout(1200);
     return pg.evaluate(() => {
-      const malos = []; let tapados = 0, lineas = 0, textos = 0;
+      const malos = []; let tapados = 0, lineas = 0, textos = 0, parches = 0;
+      /* Dos defectos del PARCHE, que un cruce en cero no ve: que no sea del
+         color de su tarjeta —se lee como un recuadro crema— y que no sea más
+         ancho que la letra que tapa. Los dos los vio Daniel a 4× sobre una
+         corrida que decía «0 cruces», así que se miden aparte y con el
+         mismo barrido. */
+      const deColor = [], deAncho = [];
       document.querySelectorAll('.sp-view.on .sp-graf').forEach(sec => {
         const tit = ((sec.querySelector('.sp-graf-h') || {}).textContent || '').slice(0, 24);
+        const fondoTarjeta = getComputedStyle(sec).backgroundColor;
         sec.querySelectorAll('svg').forEach(svg => {
           const orden = [...svg.querySelectorAll('*')];
           const ix = n => orden.indexOf(n);
@@ -525,9 +532,33 @@ const server = http.createServer((req, res) => {
             .map(l => ({ n: l, r: l.getBoundingClientRect() }));
           if (!vs.length) return;
           lineas += vs.length;
-          const fondos = [...svg.querySelectorAll('rect')]
-            .filter(x => /marfil/i.test(x.getAttribute('fill') || ''))
+          /* El parche se busca POR CLASE y no por su atributo `fill`: el
+             color ya no se escribe en el dibujo, lo hereda de la tarjeta, así
+             que un filtro por `fill` dejaría de encontrar ninguno y la guarda
+             se quedaría verde sin material (v1116). */
+          const fondos = [...svg.querySelectorAll('rect.sp-g-fondo')]
             .map(x => ({ n: x, r: x.getBoundingClientRect() }));
+          /* Los dos defectos del parche se miden sobre TODOS los parches y no
+             solo sobre los que cruzan una línea: un parche crema o demasiado
+             ancho se ve igual de mal donde no haya ninguna línea, y contar
+             solo los cruzados dejaba la comprobación sin material a 1440 px
+             —cero parches cruzando, verde sin nada que rechazar (v878)—. El
+             texto de cada parche es el hermano siguiente, porque el parche se
+             inserta DELANTE de su texto para quedar debajo. */
+          fondos.forEach(f => {
+            parches++;
+            const c = getComputedStyle(f.n).fill;
+            if (c !== fondoTarjeta) deColor.push(tit + ' → parche ' + c + ' sobre tarjeta ' + fondoTarjeta);
+            const sig = f.n.nextElementSibling;
+            if (!sig || sig.tagName.toLowerCase() !== 'text') {
+              deAncho.push(tit + ' → un parche sin su texto detrás'); return;
+            }
+            const tr0 = sig.getBoundingClientRect();
+            if (!tr0.width) return;
+            const sobra = (tr0.left - f.r.left) + (f.r.right - tr0.right);
+            if (sobra > 10) deAncho.push(tit + ' → «' + sig.textContent.slice(0, 20) +
+              '» sobra ' + Math.round(sobra) + ' px');
+          });
           [...svg.querySelectorAll('text')].forEach(t => {
             const tr = t.getBoundingClientRect();
             if (!tr.width) return;
@@ -535,16 +566,26 @@ const server = http.createServer((req, res) => {
             vs.forEach(l => {
               if (!(tr.left < l.r.right && tr.right > l.r.left &&
                     tr.top < l.r.bottom && tr.bottom > l.r.top)) return;
+              /* El parche tapa de verdad solo si va DESPUÉS de la línea y
+                 ANTES de su texto. Las dos mitades hacen falta y la segunda
+                 la enseñó una inyección: pintar el parche al final deja el
+                 cruce en cero —el parche sigue estando por encima de la
+                 línea— y lo que hace es BORRAR el rótulo. Un texto tapado por
+                 su propio fondo no es un texto legible, así que cuenta como
+                 cruzado (v1029: si la inyección no pone nada en rojo, lo que
+                 falta es lo que la aserción mide). */
               const tapa = fondos.find(f =>
                 f.r.left <= tr.left + 1 && f.r.right >= tr.right - 1 &&
-                f.r.top <= tr.top + 1 && f.r.bottom >= tr.bottom - 1 && ix(f.n) > ix(l.n));
+                f.r.top <= tr.top + 1 && f.r.bottom >= tr.bottom - 1 &&
+                ix(f.n) > ix(l.n) && ix(f.n) < ix(t));
               if (tapa) tapados++;
               else malos.push(tit + ' → «' + t.textContent.slice(0, 24) + '»');
             });
           });
         });
       });
-      return { malos: [...new Set(malos)], tapados, lineas, textos };
+      return { malos: [...new Set(malos)], tapados, lineas, textos, parches,
+               deColor: [...new Set(deColor)], deAncho: [...new Set(deAncho)] };
     });
   };
   const vpPrevio = pg.viewportSize();
@@ -557,6 +598,16 @@ const server = http.createServer((req, res) => {
         'y a ' + ancho + ' px ningún texto queda atravesado por una línea (' +
         (c.malos.length ? c.malos.slice(0, 3).join(' · ')
                         : c.tapados + ' resueltos con fondo, 0 sin tapar') + ')');
+    chk(c.parches >= 1,
+        'MATERIAL · a ' + ancho + ' px hay parches de fondo que medir (' + c.parches + ')');
+    chk(c.deColor.length === 0,
+        'y a ' + ancho + ' px cada parche es del color de SU tarjeta, medido y no escrito (' +
+        (c.deColor.length ? c.deColor.slice(0, 3).join(' · ')
+                          : 'los ' + c.parches + ' resuelven al color de fondo de su tarjeta') + ')');
+    chk(c.deAncho.length === 0,
+        'y a ' + ancho + ' px ningún parche es más ancho que la letra que tapa (' +
+        (c.deAncho.length ? c.deAncho.slice(0, 3).join(' · ')
+                          : 'los ' + c.parches + ' dentro de los 10 px de borde') + ')');
   }
   await pg.setViewportSize(vpPrevio);
   await pg.waitForTimeout(600);
