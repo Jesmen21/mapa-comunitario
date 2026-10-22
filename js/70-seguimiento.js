@@ -8759,13 +8759,13 @@
           else if (X(i) + 7 + aw2 <= W - mR) { vx = X(i) + 7; anc = 'start'; }
           else { vx = X(i) - 7; anc = 'end'; }
         }
-        var awV = anchoRotulo(txtV);
-        var bx2 = anc === 'start' ? vx - 2 : (anc === 'end' ? vx - awV - 2 : vx - awV / 2 - 2);
-        svg.appendChild(svgEl('rect', { x: bx2, y: vy - 13, width: awV + 4, height: 18,
-                                        fill: 'var(--marfil)', rx: 2 }));
-        var v = svgEl('text', { x: vx, y: vy, 'text-anchor': anc, class: 'sp-g-val' });
-        v.textContent = txtV;
-        svg.appendChild(v);
+        /* LA SEGUNDA COPIA DEL PARCHE, que es la que Daniel vio en el dólar.
+           Este sitio se escribió antes que `textoConFondo` y hacía lo mismo
+           a mano: crema fijo y ancho estimado. Dos codificaciones de «un
+           rótulo necesita fondo» (clase B), y por eso el arreglo de la otra
+           no llegaba acá. Se retira la copia; queda la función. */
+        textoConFondo(svg, { x: vx, y: vy, 'text-anchor': anc, class: 'sp-g-val' },
+                      txtV, anc);
       }
     });
     return conCorte(svg, pts[pts.length - 1].f);

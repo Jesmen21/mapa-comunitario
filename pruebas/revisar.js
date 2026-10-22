@@ -15913,6 +15913,61 @@ console.log('\n  -- las fechas de calendario se anclan a Colombia (v1135) --');
         : 'lo dice en el paso 5, con la orden exacta para sacarla');
 })();
 
+/* ══ EL PARCHE DE FONDO SE PINTA EN UN SOLO SITIO (v1147) ═════════════════
+   Un rótulo cruzado por una línea se tapa con un rectángulo del color del
+   papel. Eso estaba escrito DOS veces: en `textoConFondo` y a mano en la
+   serie del dólar, cada una con su color fijo y su ancho estimado — dos
+   codificaciones de un hecho (clase B). Se vio porque el arreglo de una no
+   llegó a la otra: Daniel seguía viendo parches crema en el dólar después de
+   que la guarda del navegador dijera que estaban todos bien.
+
+   Lo que esta guarda persigue es la CLASE y no el caso: cualquier rectángulo
+   del módulo con un color de fondo ESCRITO en el dibujo. El color de un
+   parche tiene que salir de la tarjeta, por CSS, y el ancho de `getBBox`; un
+   `fill` literal en el código es la copia volviendo.
+
+   Va en ROJO y no con `?`: lee CÓDIGO SERVIDO, que no puede vaciarse por una
+   mejora del registro (v965, v970). Y lee el código y no los comentarios
+   —`soloCodigo`—, porque el párrafo que explica el defecto lo nombra (v926).
+
+   De qué NO responde, y va dicho al lado (v945): no comprueba que el parche
+   tape bien ni que sea del ancho de su letra. Eso se mide en el navegador,
+   donde hay un glifo de verdad, y lo hace `tseg` a 390 y a 1440 px. */
+(function () {
+  const j70f = soloCodigo(leer('js/70-seguimiento.js'));
+  /* SE BUSCA EL TOKEN, NO LA LLAMADA. El primer intento recortaba cada
+     `svgEl('rect', …)` con una cota `[^;]*?\)` y la cota se comía su propio
+     paréntesis: el trozo terminaba en `fill: 'var(--marfil` y el patrón, que
+     pedía la comilla de cierre, no casaba NUNCA. La inyección salió verde con
+     la copia puesta delante. Es la cota sobre código con paréntesis que este
+     repositorio ya tiene escrita dos veces (v1000, v1053), y la quinta vez en
+     cinco tandas que lo que falla es CÓMO BUSCA la guarda y no lo que mide.
+     Sin recorte no hay paréntesis que perder. */
+  const fondosEscritos = j70f.match(/fill:\s*'var\(--(marfil|sup|graf-fondo)\)'/g) || [];
+  const rects = j70f.match(/svgEl\('rect'/g) || [];
+  comprobar('MATERIAL · el módulo dibuja rectángulos de SVG que podrían llevar fondo escrito',
+    rects.length >= 3, rects.length + ' rectángulos en el código del módulo');
+  comprobar('ningún parche de fondo lleva su color escrito en el dibujo',
+    fondosEscritos.length === 0,
+    fondosEscritos.length
+      ? fondosEscritos.length + ' lo llevan (' + fondosEscritos.join(' · ') +
+        ') — el color sale de la tarjeta por `--graf-fondo`, no del código'
+      : 'los ' + rects.length + ' sacan su color del CSS; el parche se pinta en un solo sitio, `textoConFondo`');
+  comprobar('y el parche se pinta por clase y ANTES de su texto, para quedar debajo',
+    /class: 'sp-g-fondo'/.test(j70f) && /svg\.insertBefore\(r, t\)/.test(j70f),
+    !/class: 'sp-g-fondo'/.test(j70f)
+      ? 'el parche perdió su clase: el CSS ya no lo alcanza y vuelve a quedar sin color'
+      : (!/svg\.insertBefore\(r, t\)/.test(j70f)
+        ? 'el parche ya no se inserta delante de su texto: pintado después lo BORRA en vez de taparlo'
+        : '`sp-g-fondo` insertado delante del texto, que en SVG es quedar debajo'));
+  comprobar('y `--graf-fondo` se declara una vez y de ahí salen la tarjeta y el parche',
+    (() => { const c = leer('css/70-seguimiento.css');
+      return /--graf-fondo:\s*var\(--sup\)/.test(c) &&
+             /background:\s*var\(--graf-fondo\)/.test(c) &&
+             /\.sp-g-fondo\s*\{\s*fill:\s*var\(--graf-fondo/.test(c); })(),
+    'la tarjeta y el parche leen la misma variable, así que no pueden separarse (v879)');
+})();
+
 /* Las dos cuentas van APARTE porque piden cosas distintas: una fallada hay
    que arreglarla, una sin material hay que mirarla —o se quedó sin él porque
    el registro mejoró, o porque la función dejó de ver lo que medía—. Sumarlas
