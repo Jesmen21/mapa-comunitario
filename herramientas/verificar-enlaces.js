@@ -61,18 +61,40 @@ function csv(v) {
 }
 
 function recolectar() {
+  /* SE RECOGE POR FORMA Y NO POR NOMBRE DE CLAVE (v1160, la regla de la v1158).
+
+     Hasta acá este recolector nombraba `entradas`, `casos.lista` y
+     `contradicciones.casos`, así que no veía las fuentes de `indicadores`, de
+     `delitosAltoImpacto`, de `subsidios`, de `presupuesto.*` ni de `fiscal.*`:
+     1.433 enlaces de los 1.529 que el registro tiene. Noventa y seis sin
+     comprobar, y en la herramienta que existe justamente para comprobarlos.
+     Es el mismo denominador estrecho de la v1149, la v1153 y la v1158, por
+     sexta vez.
+
+     Ahora recorre el objeto entero y recoge todo lo que TIENE LA FORMA de una
+     fuente —un objeto con `n` y `u`—, de modo que un bloque nuevo entra sin
+     que su autor se acuerde. El título y el id se arrastran del ancestro más
+     cercano que los tenga, para que el CSV siga diciendo de dónde salió cada
+     enlace. */
   const out = [];
   for (const [clave, rel] of Object.entries(REGISTROS)) {
     if (SOLO && SOLO !== clave) continue;
     const abs = path.join(RAIZ, rel);
     if (!fs.existsSync(abs)) { console.error('no está ' + rel + ', se salta'); continue; }
     const d = JSON.parse(fs.readFileSync(abs, 'utf8'));
-    const mete = (titulo, id, fuentes) => (fuentes || []).forEach((f) => {
-      if (f && f.u) out.push({ archivo: clave, id: id || '', titulo: titulo || '', nombre: f.n || '', url: f.u });
-    });
-    (d.entradas || []).forEach((e) => mete(e.titulo, e.id, e.fuentes));
-    (((d.casos || {}).lista) || []).forEach((c) => mete(c.titulo, c.id, c.fuentes));
-    (d.contradicciones && d.contradicciones.casos || []).forEach((c) => mete(c.tema, c.id, c.fuentes));
+    const anda = (o, id, titulo, ruta) => {
+      if (o === null || typeof o !== 'object') return;
+      if (Array.isArray(o)) { o.forEach((x, i) => anda(x, id, titulo, ruta + '[' + i + ']')); return; }
+      if (typeof o.n === 'string' && typeof o.u === 'string') {
+        out.push({ archivo: clave, id: id || ruta, titulo: titulo || ruta, nombre: o.n, url: o.u });
+        return;
+      }
+      const id2 = typeof o.id === 'string' ? o.id : id;
+      const t2 = typeof o.titulo === 'string' ? o.titulo
+               : (typeof o.tema === 'string' ? o.tema : titulo);
+      Object.keys(o).forEach((k) => anda(o[k], id2, t2, ruta ? ruta + '.' + k : k));
+    };
+    anda(d, '', '', '');
   }
   return out;
 }

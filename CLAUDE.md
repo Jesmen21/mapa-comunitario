@@ -1045,6 +1045,13 @@ versión: el caso que la pagó está en `BITACORA.md`.
   envejece: se corta por el `<h2>`, por la función, por el punto y coma.
 * **Se busca DENTRO del trozo** (v854). Un patrón suelto encuentra el de la
   caja de al lado, y un extractor que casa por prefijo lee la figura vecina.
+* **Todo enlace escrito en el registro debe salir de un resultado observado
+  —búsqueda o página abierta—. Un enlace construido por patrón no se escribe;
+  si no se vio, la fuente se deja fuera** (v1160). Lo fijó el usuario después de
+  que dos tandas seguidas escribieran dos enlaces inventados que parecían
+  plausibles: el comunicado del Banco Mundial y una nota de El Nuevo Siglo, las
+  dos armadas slugificando el titular. Un enlace inventado es peor que ninguno,
+  porque se lee como fuente comprobable.
 * **Se recoge POR FORMA, nunca por nombre de clave** (v1149, v1153, v1158). Una
   guarda que nombra las claves que existían el día que se escribió deja fuera
   la que se añada mañana: se recorre el objeto y se recoge por lo que la cosa
