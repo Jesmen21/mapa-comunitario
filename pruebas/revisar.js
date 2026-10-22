@@ -1862,6 +1862,93 @@ console.log('\n  -- la ficha del gobernante --');
             ? 'el sello se imprime y ninguna regla lo pinta (v895)'
             : 'imprime «Falta evidencia» y la hoja tiene su regla');
 
+    /* ── v1143b · LA LÍNEA VISIBLE DE SALVEDAD ────────────────────────
+       La tarjeta pliega la descripción larga, la nota, la caja, la tabla y
+       las fuentes, y deja visible UNA línea. Plegar está bien —`details` es
+       nativo, alcanzable por teclado y por lector de pantalla, y nada se
+       borra— MIENTRAS la salvedad que cambia la lectura del gráfico se
+       quede arriba. Si se pliega también, el lector se lleva una conclusión
+       que el propio registro no sostiene y hay que desplegar algo para no
+       equivocarse, que es ponerle precio a no equivocarse.
+
+       Se vigilan las CUATRO que el lector nombró, cada una por el CAMPO del
+       que sale y no por su frase —una frase se reescribe y la guarda se
+       queda verde sobre nada (v935)—: el carácter del dato, la fila en
+       disputa, los días del mes que son del gobierno anterior y la medida de
+       la deuda. */
+    const cuerpoTj = (j70c1.match(/function tarjetaGrafica\([^)]*\) \{[\s\S]*?\n  \}/) || [''])[0];
+    const AVISOS = [
+      ['el carácter del dato (preliminar)', /b\.caracter/, 'avisosDeDelitos'],
+      ['la fila en disputa entre fuentes oficiales', /f\.disputa/, 'avisosDeDelitos'],
+      ['los días del mes que son del gobierno anterior', /\.posesion/, 'avisosDeDelitos'],
+      ['la medida de la deuda contra un ancla de otra medida', /b\.noComparableCon/, 'avisosDeDeudaBruta']
+    ];
+    /* El cuerpo se recorta por ÍNDICE y no con una expresión armada por
+       concatenación: la primera versión escapaba mal los paréntesis y daba
+       cuatro de cuatro «no lee su campo» sobre código que sí los lee — un
+       rojo sobre código correcto, que es lo que enseña a ignorar la salida
+       (v895). Lo delató saber que las cuatro estaban escritas. */
+    const cuerpoDe = (n) => {
+      const i = j70c1.indexOf('function ' + n + '(');
+      if (i < 0) return '';
+      const j = j70c1.indexOf('\n  }', i);
+      return j < 0 ? '' : j70c1.slice(i, j);
+    };
+    const sinSalida = AVISOS.filter((x) => !x[1].test(cuerpoDe(x[2])));
+
+    comprobar('MATERIAL · hay salvedades que cambian la lectura de un gráfico',
+      AVISOS.length >= 4,
+      AVISOS.length + ' vigiladas, cada una por el campo del registro del que sale');
+
+    comprobar('las cuatro salvedades que cambian la lectura salen de su CAMPO, no de una frase',
+      sinSalida.length === 0,
+      sinSalida.length
+        ? sinSalida.length + ' ya no lee su campo: ' + sinSalida.map((x) => x[0]).join(' · ')
+        : 'las cuatro se calculan del registro, así que se caen solas el día que el campo cambie');
+
+    /* Y QUE LLEGUEN A LA PANTALLA, que es la guarda de la guarda (v878):
+       sin esto, los cuatro constructores pueden estar perfectos y la tarjeta
+       no pintar la línea, que es exactamente la clase C. */
+    comprobar('y la línea VISIBLE se pinta fuera del pliegue, con su regla en la hoja',
+      cuerpoTj.length > 0 &&
+      /datos\.avisos/.test(cuerpoTj) && /'sp-graf-sal'/.test(cuerpoTj) &&
+      cuerpoTj.indexOf("'sp-graf-sal'") < cuerpoTj.indexOf("el('details', 'sp-graf-mas')") &&
+      /\.sp-graf-sal\{/.test(c70niv),
+      !cuerpoTj.length ? 'NO PUDO CORRER: no se encontró tarjetaGrafica'
+        : !/datos\.avisos/.test(cuerpoTj) ? 'la tarjeta no lee los avisos: la línea no se pintaría nunca'
+        : !/'sp-graf-sal'/.test(cuerpoTj) ? 'los avisos se leen y no se pintan'
+        : cuerpoTj.indexOf("'sp-graf-sal'") > cuerpoTj.indexOf("el('details', 'sp-graf-mas')")
+          ? 'la línea se pinta DENTRO del pliegue: habría que desplegar para enterarse de la salvedad'
+          : !/\.sp-graf-sal\{/.test(c70niv) ? 'la línea se pinta y ninguna regla la pinta (v895)'
+          : 'se pinta antes del pliegue y la hoja tiene su regla');
+
+    /* Y QUE NADA SE HAYA BORRADO AL PLEGAR. «Se plegó» y «se borró» se leen
+       igual desde la portada, y la diferencia es todo: lo plegado sigue en
+       el DOM y sale al tabular. Se comprueba que las cinco piezas sigan
+       colgando de la tarjeta, y que el dibujo conserve su `aria-label` —que
+       es lo que hace que quien no ve el gráfico reciba la descripción SIN
+       abrir nada—. */
+    const PIEZAS = [
+      ['la descripción larga', /mas\.appendChild\(el\('p', 'sp-graf-desc', dsc\)\)/],
+      ['la nota', /mas\.appendChild\(el\('p', 'sp-graf-nota', nota\)\)/],
+      ['la caja de declaraciones', /mas\.appendChild\(declara\)/],
+      ['la tabla accesible', /mas\.appendChild\(tb\)/],
+      ['las fuentes con sus enlaces', /mas\.appendChild\(f\)/]
+    ];
+    const perdidas = PIEZAS.filter((x) => !x[1].test(cuerpoTj));
+    comprobar('y al plegar no se borró nada: las cinco piezas siguen colgando, y el dibujo conserva su aria-label',
+      cuerpoTj.length > 0 && perdidas.length === 0 &&
+      /setAttribute\('aria-label', dsc\)/.test(cuerpoTj) &&
+      /el\('details', 'sp-graf-mas'\)/.test(cuerpoTj),
+      !cuerpoTj.length ? 'NO PUDO CORRER: no se encontró tarjetaGrafica'
+        : perdidas.length ? perdidas.length + ' dejaron de colgar de la tarjeta: ' +
+            perdidas.map((x) => x[0]).join(' · ') + ' — plegar es esconder solo si además se borra'
+        : !/setAttribute\('aria-label', dsc\)/.test(cuerpoTj)
+          ? 'el dibujo perdió su aria-label: quien no lo ve tendría que desplegar para saber qué dice'
+          : !/el\('details', 'sp-graf-mas'\)/.test(cuerpoTj)
+            ? 'el pliegue no es un `details`: un acordeón de divs no sale al tabular'
+            : 'las cinco cuelgan del `details` nativo y el dibujo mantiene su descripción en el aria-label');
+
     comprobar('y el recuento dice CUÁNTOS son, del contador y con las dos redacciones',
       cuerpoRc.length > 0 && /if \(!n\) return null;/.test(cuerpoRc) && /\bcn\(n,/.test(cuerpoRc) &&
       /\.sp-graf-falta-t\{/.test(c70niv) && /recuentoSinDato\(nSinDato\)/.test(cuerpoBg),
@@ -3212,14 +3299,26 @@ console.log('\n  -- la ficha del gobernante --');
        deuda en dos más. Contar solo `anclajeDeSerie(d, D)` dejaba los dos
        del bloque de deuda sin vigilar, y es justo el bloque del hallazgo. */
     const sitios = (j70a.match(/anclajeDeSerie\((?:d|ind\.deuda), D\)/g) || []).length;
+    /* DÓNDE lo pinta la tarjeta cambió en la v1143: el anclaje pasó al
+       `<details>` de «Salvedades y método», con el resto del método. PLEGADO
+       CUENTA COMO ALCANZABLE —`details` es nativo, sale al tabular y un
+       lector de pantalla lo anuncia y lo abre— y lo que la guarda sigue
+       exigiendo es lo mismo de antes: que la tarjeta lo CUELGUE. Si se cae,
+       vuelve a ser un dato que ninguna pantalla alcanza.
+
+       Lo que NO se afloja: el patrón sigue pidiendo un `appendChild` sobre
+       el anclaje, así que quitarlo pone la guarda en rojo igual que antes.
+       Lo único que cambió es el nodo del que cuelga. */
+    const pintaAncla = /if \(anclaje\) mas\.appendChild\(anclaje\);/.test(j70a) ||
+                       /if \(anclaje\) c\.appendChild\(anclaje\);/.test(j70a);
     comprobar('y el anclaje LLEGA a la pantalla, en los cinco sitios donde se pinta una cifra de `indicadores`',
-      sitios >= 5 && /if \(anclaje\) c\.appendChild\(anclaje\);/.test(j70a) &&
+      sitios >= 5 && pintaAncla &&
       /\.sp-graf-ancla\{/.test(cssA) && /\.sp-graf-ancla-mal\{/.test(cssA),
       sitios < 5 ? 'solo ' + sitios + ' de los 5 sitios lo pasan: en los otros la serie se publicaría sin decir dónde está escrita'
-        : !/if \(anclaje\) c\.appendChild\(anclaje\);/.test(j70a) ? 'la tarjeta recibe el anclaje y no lo pinta'
+        : !pintaAncla ? 'la tarjeta recibe el anclaje y no lo pinta'
         : !/\.sp-graf-ancla\{/.test(cssA) ? 'la clase `.sp-graf-ancla` no tiene regla en el css: se pintaría sin forma'
         : !/\.sp-graf-ancla-mal\{/.test(cssA) ? 'la clase del punto sin declarar no tiene regla: el aviso se pintaría como texto normal'
-        : 'los 5 sitios lo pasan, la tarjeta lo pinta y las dos clases tienen regla en el css');
+        : 'los 5 sitios lo pasan, la tarjeta lo cuelga —hoy dentro del pliegue, que es alcanzable— y las dos clases tienen regla');
 
     /* Y DE QUÉ NO RESPONDE, escrito donde el lector lo ve y no en un
        comentario (v926, v945, v952): el registro lo dice en su propia nota. */

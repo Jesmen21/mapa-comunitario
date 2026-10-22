@@ -9065,6 +9065,144 @@
       cn(pares.length, 'estado', 'estados') + ', con cuántos casos hay en cada uno');
   }
 
+  /* ══ LOS AVISOS: CADA UNO SALE DE SU PROPIO CAMPO ═══════════════════════
+     Lo que va en la línea visible de una tarjeta no es «lo importante» —eso
+     lo decidiría quien escribe y envejecería con él—: es la salvedad que
+     CAMBIA LA LECTURA del dibujo, y cada una se lee de un campo del
+     registro, de modo que el día que ese campo cambie el aviso se caiga
+     solo. Cuatro están nombradas por el lector y van comprobadas: cifras
+     preliminares, una fila en disputa, un mes que incluye días del gobierno
+     anterior, y una deuda bruta que no se puede comparar con un ancla de
+     deuda neta.
+
+     Lo que NO se hace es escribir la frase a mano en el sitio de llamada:
+     sería la cifra tecleada dentro de un texto fijo (v903), con el agravante
+     de que una salvedad vieja es peor que ninguna — invita a confiar. */
+
+  /* Pega los avisos a un `datos` ya armado. Va por una función y no por un
+     `Object.assign` en cada sitio: así un `datos` que llegue nulo —porque su
+     constructor no encontró material— no pierde sus avisos en silencio, que
+     es como una salvedad desaparece sin que nadie lo note. */
+  function conAvisos(datos, avisos) {
+    if (!avisos || !avisos.length) return datos;
+    var d = datos || {};
+    d.avisos = (d.avisos || []).concat(avisos);
+    return d;
+  }
+
+  /* Un trámite legislativo abierto: el número puede cambiar. */
+  function avisosDeTramite(x) {
+    return enTramite(x) ? ['En trámite legislativo: NO es todavía ley'] : [];
+  }
+
+  /* Los delitos: el carácter del dato, las filas en disputa y los días del
+     mes que son del gobierno anterior —estos últimos se CUENTAN contra la
+     fecha de posesión del propio registro, que es la única manera de que el
+     aviso siga siendo cierto el día que el mes cambie—. */
+  function avisosDeDelitos(b, dd) {
+    var a = [];
+    if (b.caracter) a.push('Cifras de carácter ' + b.caracter);
+    var disp = (b.filas || []).filter(function (f) { return f.disputa; });
+    if (disp.length) {
+      a.push(disp.map(function (f) { return f.t.toLowerCase(); }).join(' y ') +
+             (disp.length === 1 ? ' en disputa entre dos fuentes oficiales'
+                                : ' en disputa entre fuentes oficiales'));
+    }
+    var pos = ((dd || D).posesion) || '';
+    var mes = (b.meses || [])[(b.meses || []).length - 1] || '';
+    if (pos && mes && pos.slice(0, 7) === mes) {
+      var dias = parseInt(pos.slice(8, 10), 10) - 1;
+      if (dias > 0) {
+        a.push(mesDe(mes + '-01') + ' incluye ' +
+               cn(dias, 'día del gobierno anterior', 'días del gobierno anterior'));
+      }
+    }
+    return a;
+  }
+
+  /* La deuda bruta: la MEDIDA, que es lo único que impide leerla contra un
+     umbral que no es de su medida. Sale de que el bloque declare contra qué
+     no se puede comparar; sin esa declaración no hay aviso que dar. */
+  function avisosDeDeudaBruta(b) {
+    if (!b || !b.noComparableCon) return [];
+    return ['Deuda ' + b.medida + ': no comparable con el ancla de la Ley 2155'];
+  }
+
+  /* Un proyecto de presupuesto no es un presupuesto. */
+  function avisosDeEstado(b) {
+    if (!b || !b.estadoProcesal) return [];
+    if (b.estadoProcesal === 'proyecto-de-presupuesto') return ['Proyecto de presupuesto: NO es todavía ley'];
+    if (b.estadoProcesal === 'en-tramite-legislativo') return ['En trámite legislativo: NO es todavía ley'];
+    return [];
+  }
+
+  /* Una comparación por fuente: si alguna medida declara su calidad como
+     CUESTIONADA, eso cambia la lectura del gráfico entero —no es lo mismo
+     una franja de encuestadoras contrastables que una con una empresa cuya
+     metodología los propios medios le reparan— y por eso no se pliega. Sale
+     del campo `calidad`, así que el aviso se cae solo el día que ninguna lo
+     declare. */
+  function avisosPorFuente(d) {
+    var ms = [];
+    ((d && d.grupos) || []).forEach(function (g) {
+      (g.medidas || []).forEach(function (m) { ms.push(m); });
+    });
+    if (!ms.length) return [];
+    var q = ms.filter(function (m) { return m.calidad === 'cuestionada'; }).length;
+    if (!q) return [];
+    return [q + ' de ' + cn(ms.length, 'medición', 'mediciones') + ' ' +
+            pl(q, 'viene de una casa con metodología cuestionada',
+                  'vienen de casas con metodología cuestionada')];
+  }
+
+  /* Las contradicciones: una DESMENTIDA se publica para señalar que circula
+     y es falsa, y leer la barra sin saberlo invierte lo que dice. El aviso
+     sale de contar los casos por estado, igual que el dibujo. */
+  function avisosDeContradicciones() {
+    var casos = ((D.contradicciones || {}).casos) || [];
+    var des = casos.filter(function (x) { return x.estado === 'desmentida'; }).length;
+    if (!des) return [];
+    return [cn(des, 'desmentida se publica', 'desmentidas se publican') +
+            ' para señalar que circulan y son falsas, no para repetirlas'];
+  }
+
+  /* Los créditos: dos columnas que son DOS MEDIDAS, que es el defecto que la
+     v1085 midió. Si el bloque solo trajera una, el aviso no se da. */
+  function avisosDeCredito(d) {
+    var ls = (d && d.lineas) || [];
+    if (!ls.length) return [];
+    var a = [];
+    var hayDos = ls.some(function (x) { return x.comprometido != null; }) &&
+                 ls.some(function (x) { return x.desembolsado != null; });
+    if (hayDos) a.push('Comprometido y desembolsado son dos medidas: no se suman entre sí');
+    var sin = ls.filter(function (x) { return x.desembolsado == null; }).length;
+    if (sin) a.push(pl(sin, 'una línea no informa su desembolso',
+                        cn(sin, 'línea no informa su desembolso', 'líneas no informan su desembolso')));
+    return a;
+  }
+
+  /* ══ LA TARJETA DE LA PORTADA: UNA LÍNEA VISIBLE, EL RESTO PLEGADO ═══════
+     La v1143 dejó la portada MÁS LARGA que la v1142 —14.709 px contra
+     13.765— con el encargo de que fuera una portada sin texto. El bulto no
+     estaba en los gráficos: estaba en la descripción larga de cada uno y en
+     la caja de declaraciones, las dos visibles debajo del dibujo.
+
+     Así que la tarjeta se parte en dos y queda VISIBLE lo que no se puede
+     plegar sin mentir: el título, el dibujo, el sello si lo lleva, y **una
+     línea corta de salvedad**. Lo demás —la descripción larga, la nota, la
+     caja entera, la tabla y las fuentes— va en un `<details>` por tarjeta.
+
+     **Nada se borra, y eso no es un detalle:** lo plegado sigue en el DOM,
+     sigue siendo alcanzable por teclado y por lector de pantalla —`details`
+     es nativo, no un acordeón de `div` con `display:none`—, y la descripción
+     larga SIGUE ADEMÁS en el `aria-label` del dibujo, así que quien no ve el
+     gráfico la recibe sin abrir nada. Plegar cambia lo que ocupa, no lo que
+     está.
+
+     **Y la línea visible se CALCULA del dato** (v903). Escrita a mano sería
+     una cifra dentro de un texto fijo, y la salvedad de un gráfico es justo
+     lo que cambia cuando el registro cambia: el día que la extorsión deje de
+     estar en disputa, la línea tiene que dejar de decirlo sola. */
   function tarjetaGrafica(titulo, unidad, cuerpo, nota, fuentes, extra, anclaje, datos, declara) {
     var c = el('section', 'sp-graf');
     c.appendChild(el('h3', 'sp-graf-h', titulo));
@@ -9075,57 +9213,56 @@
        cuenta. El coste de la marca es un renglón; el de callarla es un
        gráfico que para un lector de pantalla no dice nada. */
     var dsc = datos && datos.desc ? String(datos.desc).trim() : '';
-    if (dsc) {
-      var pd = el('p', 'sp-graf-desc', dsc);
-      c.appendChild(pd);
-      if (cuerpo && cuerpo.setAttribute) {
-        cuerpo.setAttribute('role', 'img');
-        cuerpo.setAttribute('aria-label', dsc);
-      }
-    } else {
-      c.appendChild(el('p', 'sp-graf-desc sp-graf-desc-falta',
-        'Sin descripción corta todavía: este gráfico no dice nada a quien no lo ve.'));
+    if (dsc && cuerpo && cuerpo.setAttribute) {
+      cuerpo.setAttribute('role', 'img');
+      cuerpo.setAttribute('aria-label', dsc);
     }
     if (extra) c.appendChild(extra);
     if (cuerpo) c.appendChild(cuerpo);
-    /* Debajo del dibujo y antes de la nota: es la procedencia de lo que se
-       acaba de mirar, y la nota es la leyenda. */
+    /* Debajo del dibujo: es la procedencia de lo que se acaba de mirar. */
     if (cuerpo) { var lc = lineaDeCorte(cuerpo); if (lc) c.appendChild(lc); }
-    if (nota) c.appendChild(el('p', 'sp-graf-nota', nota));
-    /* LO QUE EL BLOQUE TRAE ESCRITO —la medida de una cifra, sus salvedades,
-       el acumulado que contradice al mes— va DESPUÉS de la nota y ANTES de la
-       tabla, y visible: es lo que el lector necesita para no leer mal el
-       número de arriba, que es la línea de lo que no se pliega (v972). */
-    if (declara) c.appendChild(declara);
-    if (anclaje) c.appendChild(anclaje);
+
+    /* ── LA LÍNEA VISIBLE ──────────────────────────────────────────────
+       Las salvedades que CAMBIAN LA LECTURA del gráfico no se pliegan: un
+       lector que mira la caída de la extorsión y no ve que hay dos cifras
+       oficiales en disputa se lleva una conclusión que el propio registro
+       no sostiene, y pedirle que despliegue algo para enterarse es ponerle
+       un precio a no equivocarse. Es la línea que la v972 dejó trazada para
+       las fuentes, dicha para la salvedad.
+
+       `avisos` es una LISTA y no una frase: cada aviso sale de su propio
+       campo del registro y se puede quitar solo cuando ese campo cambie. */
+    var avs = (datos && datos.avisos) || [];
+    if (avs.length) c.appendChild(el('p', 'sp-graf-sal', avs.join(' · ')));
+
+    /* ── LO PLEGADO ───────────────────────────────────────────────────── */
+    var mas = el('details', 'sp-graf-mas');
+    mas.appendChild(el('summary', 'sp-graf-mas-t', 'Salvedades y método'));
+    if (dsc) mas.appendChild(el('p', 'sp-graf-desc', dsc));
+    else mas.appendChild(el('p', 'sp-graf-desc sp-graf-desc-falta',
+      'Sin descripción corta todavía: este gráfico no dice nada a quien no lo ve.'));
+    if (nota) mas.appendChild(el('p', 'sp-graf-nota', nota));
+    if (declara) mas.appendChild(declara);
+    if (anclaje) mas.appendChild(anclaje);
     var tb = datos ? tablaAccesible(datos.titulo, datos.columnas, datos.filas) : null;
-    if (tb) c.appendChild(tb);
-    else c.appendChild(el('p', 'sp-graf-desc sp-graf-desc-falta',
+    if (tb) mas.appendChild(tb);
+    else mas.appendChild(el('p', 'sp-graf-desc sp-graf-desc-falta',
       'Sin tabla de datos todavía: la cifra solo está dibujada.'));
     if (fuentes && fuentes.length) {
-      /* LAS TARJETAS DE FUENTE VAN PLEGADAS, y esto resuelve dos instrucciones
-         del mismo lector que chocan: «sin texto entre gráfico y gráfico más
-         allá del título y el pie» contra «todo lo publicado lleva visible su
-         fuente con enlace».
-
-         Medido en el bloque de la portada: los enlaces ocupan 2.265 px de
-         10.899 —el 21 %— y los gráficos mismos 1.719. Con diecisiete tarjetas,
-         la misma lista de tres o cuatro medios se repite hasta seis veces.
-
-         Plegarlas no esconde nada: los NOMBRES de las fuentes y la fecha de
-         corte siguen impresos DENTRO del SVG desde la v971 —que es lo que
-         viaja en una captura— y el enlace queda a un toque. Lo que SÍ se
-         queda visible es la nota, porque ahí va el estado procesal —«NO es
-         todavía ley»— y eso no puede depender de que alguien despliegue. */
-      var w = el('details', 'sp-graf-src');
-      var sm = el('summary', 'sp-graf-src-t',
-        fuentes.length === 1 ? 'La fuente, con su enlace' : 'Las ' + fuentes.length + ' fuentes, con sus enlaces');
-      w.appendChild(sm);
+      /* Las fuentes ya NO llevan su propio `details`: estaban plegadas por su
+         cuenta desde la v972 y ahora el pliegue es uno solo para la tarjeta
+         entera. Dos pliegues anidados para lo mismo son dos puertas a un solo
+         cuarto, y la de adentro solo añade un toque más. Los NOMBRES de las
+         fuentes y la fecha de corte siguen impresos DENTRO del SVG desde la
+         v971, que es lo que viaja en una captura. */
+      mas.appendChild(el('p', 'sp-graf-src-t',
+        fuentes.length === 1 ? 'La fuente, con su enlace'
+                             : cn(fuentes.length, 'fuente, con su enlace', 'fuentes, con sus enlaces')));
       var f = el('div', 'sp-fuentes');
       pintarFuentes(f, fuentes);
-      w.appendChild(f);
-      c.appendChild(w);
+      mas.appendChild(f);
     }
+    c.appendChild(mas);
     return c;
   }
 
@@ -9945,11 +10082,11 @@
     svg.appendChild(tot);
     pieDentro(svg, w, hh - pieH - 8, pieF, pieC);
     return tarjetaGrafica(c.titulo, 'Porcentaje del presupuesto total', svg, p.estadoTexto, c.fuentes,
-      null, null, datosDeReparto(
+      null, null, conAvisos(datosDeReparto(
         c.partes.map(function (x) { return { t: x.t, n: x.pct }; }),
         ['punto porcentual del presupuesto', 'puntos porcentuales del presupuesto'],
         cn(c.partes.length, 'parte del presupuesto', 'partes del presupuesto') +
-          ', con su porcentaje sobre un total de ' + bllns(p.totalBn)));
+          ', con su porcentaje sobre un total de ' + bllns(p.totalBn)), avisosDeTramite(p)));
   }
 
   // ── Barras divergentes: variación real por sector, cero al centro ─────────
@@ -10028,6 +10165,7 @@
           ', ya descontada la inflación del ' + r0(p.deflactorPct) + ' %.',
         titulo: cn(lista.length, 'sector', 'sectores') + ', con su variación real',
         columnas: ['Sector', 'Variación real'],
+        avisos: avisosDeTramite(p),
         filas: lista.map(function (x) {
           return [x.t, (x.realPct > 0 ? '+' : '') + un(x.realPct) + ' %'];
         }) });
@@ -10076,10 +10214,10 @@
     pieDentro(svg, w, arriba + filas.length * fila + 8, pieF, pieC);
     return tarjetaGrafica(p.agregacion.titulo, 'Billones de pesos. Eje desde cero.',
       svg, p.agregacion.nota, p.agregacion.fuentes, null, null,
-      datosDeBarras(filas, function (v) { return bllns(v, un); },
+      conAvisos(datosDeBarras(filas, function (v) { return bllns(v, un); },
         'Billones de pesos',
         cn(filas.length, 'barra', 'barras') + ', con su monto en billones',
-        'de sector, más la agregación que el bloque declara'));
+        'de sector, más la agregación que el bloque declara'), avisosDeTramite(p)));
   }
 
   /* ── Barras horizontales, genéricas ─────────────────────────────────
@@ -10137,8 +10275,9 @@
     });
     pieDentro(svg, w, arriba + filas.length * fila + 8, pieF, cfg.corte);
     return tarjetaGrafica(cfg.titulo, cfg.unidad, svg, cfg.nota, cfg.fuentes, cfg.extra, cfg.anclaje,
-      cfg.datos || datosDeBarras(filas, fmt, cfg.unidad,
+      conAvisos(cfg.datos || datosDeBarras(filas, fmt, cfg.unidad,
         cn(filas.length, 'barra', 'barras') + ', con su valor', cfg.queSon || 'comparadas'),
+        cfg.avisos),
       cfg.declara);
   }
 
@@ -10164,7 +10303,7 @@
     return grafBarras({
       titulo: d.titulo, unidad: d.unidad, barras: d.barras,
       fmt: function (v) { return un(v) + ' %'; },
-      trama: false, corte: corteDe(d), fuentes: d.fuentes, etq: 260,
+      trama: false, corte: corteDe(d), fuentes: d.fuentes, etq: 260, avisos: avisosDeEstado(d),
       nota: d.estadoTexto + ' ' + d.nota
     });
   }
@@ -10182,7 +10321,7 @@
       barras: c.barras.concat([{ t: 'Los dos juntos', v: suma, k2: true }]),
       fmt: function (v) { return '$' + dos(v); },
       trama: c.estadoProcesal === 'en-tramite-legislativo',
-      corte: corteDe(c), fuentes: c.fuentes, etq: 220,
+      corte: corteDe(c), fuentes: c.fuentes, etq: 220, avisos: avisosDeEstado(c),
       nota: c.estadoTexto + ' ' + c.nota +
         (pct == null ? '' : ' Hoy esa suma es el ' + un(pct) + ' % de los $' + bn(c.totalPgnBn) +
           ' billones del presupuesto.')
@@ -10271,9 +10410,14 @@
     return tarjetaGrafica('Qué entra al score presidencial y qué no',
       'Hechos del registro, clasificados por el nivel de gobierno que declaran.', svg, nota, null,
       null, null,
-      datosDeReparto(filas.map(function (x) { return { t: x.t, n: x.n }; }),
+      conAvisos(datosDeReparto(filas.map(function (x) { return { t: x.t, n: x.n }; }),
         ['hecho del registro', 'hechos del registro'],
-        cn(filas.length, 'clase', 'clases') + ' de hecho, con cuántos hay en cada una'));
+        cn(filas.length, 'clase', 'clases') + ' de hecho, con cuántos hay en cada una'),
+        /* Un filtro que no rechaza nada se ve igual que uno que funciona, así
+           que el cero va ARRIBA y no dentro del pliegue (v1064). */
+        z.entradas.otro === 0
+          ? ['El filtro no rechaza hoy ninguna entrada: ninguna declara otro nivel']
+          : [cn(z.entradas.otro, 'entrada rechazada', 'entradas rechazadas') + ' por ser de otro nivel']));
   }
 
   /* ══ LOS CUATRO BLOQUES QUE NINGUNA PANTALLA ALCANZABA ════════════════════
@@ -10342,7 +10486,8 @@
       'La deuda ' + b.medida + ', y contra qué no se puede comparar',
       'Porcentaje del PIB. Eje de cero a cien. Deuda ' + b.medida + ', no neta.',
       svg, b.convergencia, b.fuentes, null, null,
-      { desc: 'Una barra sobre el PIB entero: la deuda ' + b.medida + ' del ' + b.de +
+      { avisos: avisosDeDeudaBruta(b),
+        desc: 'Una barra sobre el PIB entero: la deuda ' + b.medida + ' del ' + b.de +
           ' equivale al ' + un(b.pct) + ' % del PIB al ' + fechaCorta(b.fecha) +
           '. No hay ninguna línea de referencia dibujada, y es a propósito: los umbrales de la ' +
           'Ley 2155 están definidos sobre deuda neta.',
@@ -10475,7 +10620,8 @@
 
     return tarjetaGrafica(b.titulo, b.unidad + '. Eje desde cero. ' +
       'Carácter del dato: ' + b.caracter + '.', svg, null, b.fuentes, null, null,
-      { desc: cn(grupos.length, 'delito', 'delitos') + ' con sus casos en ' + mesCorto(m0) +
+      { avisos: avisosDeDelitos(b, dd),
+        desc: cn(grupos.length, 'delito', 'delitos') + ' con sus casos en ' + mesCorto(m0) +
           ' y en ' + mesCorto(m1) + '. ' +
           (enDisputa
             ? pl(enDisputa, 'Uno lleva dos cifras oficiales sin reconciliar, las dos dibujadas y sin porcentaje publicado',
@@ -10524,7 +10670,7 @@
     return grafBarras({
       titulo: b.titulo, unidad: b.unidad + ', año ' + b.anio + '. Eje desde cero.',
       barras: filas, fmt: fmt, trama: b.estadoProcesal === 'proyecto-de-presupuesto',
-      corte: corteDe(b), fuentes: b.fuentes, declara: caja,
+      corte: corteDe(b), fuentes: b.fuentes, declara: caja, avisos: avisosDeEstado(b),
       nota: 'NO es todavía ley.',
       datos: { desc: 'Dos barras: se necesitan ' + bllns(b.necesarioBn, dos) + ' y quedaron asignados ' +
           bllns(b.asignadoBn, dos) + ', así que faltan ' + bllns(falta, dos) +
@@ -10650,12 +10796,15 @@
       } else if (!(d.puntos || []).length) return;
       poner(tarjetaGrafica(d.titulo, d.unidad, grafSerie(d, false), d.leyenda, d.fuentes,
         null, anclajeDeSerie(d, D),
-        d.vista === 'porFuente' ? datosPorFuente(d) : datosDeSerie(d)));
+        d.vista === 'porFuente'
+          ? conAvisos(datosPorFuente(d), avisosPorFuente(d))
+          : datosDeSerie(d)));
     });
     if (ind.deuda) {
       poner(tarjetaGrafica(ind.deuda.titulo, ind.deuda.unidad,
         grafDeuda(ind.deuda), ind.deuda.leyenda, ind.deuda.fuentes,
-        null, anclajeDeSerie(ind.deuda, D), datosDeCredito(ind.deuda)));
+        null, anclajeDeSerie(ind.deuda, D),
+        conAvisos(datosDeCredito(ind.deuda), avisosDeCredito(ind.deuda))));
     }
 
     // 3 · Lo que sale de contar el propio registro.
@@ -10665,7 +10814,7 @@
         cn(((D.contradicciones || {}).casos || []).length, 'caso registrado', 'casos registrados'), gc,
         'Una contradicción documentada no es lo mismo que una acusación: las desmentidas se publican ' +
         'precisamente para señalar que circulan y son falsas.', null, null, null,
-        datosDeContradicciones()));
+        conAvisos(datosDeContradicciones(), avisosDeContradicciones())));
     }
     poner(grafDelitos(D));
     poner(grafVetadas(D));
@@ -10855,7 +11004,7 @@
         if (!(d.grupos || []).length) return;
         cont.appendChild(tarjetaGrafica(d.titulo, d.unidad,
           grafSerie(d, false), d.leyenda, d.fuentes, null, anclajeDeSerie(d, D),
-          datosPorFuente(d)));
+          conAvisos(datosPorFuente(d), avisosPorFuente(d))));
         return;
       }
       if (!(d.puntos || []).length) return;
@@ -10885,7 +11034,8 @@
     if (ind.deuda) {
       cont.appendChild(tarjetaGrafica(ind.deuda.titulo, ind.deuda.unidad,
         grafDeuda(ind.deuda), ind.deuda.leyenda, ind.deuda.fuentes,
-        null, anclajeDeSerie(ind.deuda, D), datosDeCredito(ind.deuda)));
+        null, anclajeDeSerie(ind.deuda, D),
+        conAvisos(datosDeCredito(ind.deuda), avisosDeCredito(ind.deuda))));
     }
 
     // 2b · Consulta propia, justo después de las encuestadoras para que se lea
@@ -10898,7 +11048,8 @@
       cont.appendChild(tarjetaGrafica('Cómo se reparten las contradicciones',
         cn(((D.contradicciones || {}).casos || []).length, 'caso registrado', 'casos registrados'), g,
         'Una contradicción documentada no es lo mismo que una acusación: las desmentidas se publican precisamente para señalar que circulan y son falsas.',
-        null, null, null, datosDeContradicciones()));
+        null, null, null,
+        conAvisos(datosDeContradicciones(), avisosDeContradicciones())));
     }
   }
 

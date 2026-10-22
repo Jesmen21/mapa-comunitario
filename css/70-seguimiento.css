@@ -821,6 +821,37 @@ a.sp-fuente:hover svg{ color:var(--verde-hi); }
 }
 .sp-graf-corte-atras,
 .sp-graf-corte-falta{ color:var(--amarillo-hi); font-weight:600; }
+/* ── LA LÍNEA VISIBLE DE SALVEDAD, y el pliegue de la tarjeta (v1143) ─────
+   La línea va DEBAJO del dibujo y ARRIBA del pliegue, que es el único sitio
+   donde se lee después de mirar el gráfico y antes de decidir que ya se
+   entendió. En ámbar, el color que este módulo usa para «ojo con esto», y
+   con su propia raya a la izquierda para que no se confunda con el pie de
+   fuente, que va justo encima y en gris.
+
+   El ámbar puro no alcanza para texto (2,3:1 sobre marfil), así que la letra
+   va en el ámbar oscurecido —#8A5D12, 6,4:1 sobre blanco— y el ámbar claro
+   se queda en la raya, que es decoración y no texto. */
+.sp-graf-sal{
+  margin:10px 0 0; padding:8px 0 8px 12px;
+  border-left:3px solid var(--ambar);
+  font-size:var(--t-8); line-height:1.45; font-weight:600; color:#8A5D12;
+}
+
+/* El pliegue de la tarjeta. Gris y discreto: lo que guarda no es una
+   advertencia —esa quedó arriba— sino el método, la tabla y las fuentes. */
+.sp-graf-mas{ margin-top:12px; border-top:1px solid var(--linea-2); }
+.sp-graf-mas-t{
+  cursor:pointer; padding:10px 0 2px; list-style:none;
+  font-size:var(--t-8); font-weight:600; color:var(--ink-2);
+}
+.sp-graf-mas-t::-webkit-details-marker{ display:none; }
+.sp-graf-mas-t::before{ content:'▸  '; }
+.sp-graf-mas[open] .sp-graf-mas-t::before{ content:'▾  '; }
+/* El foco se ve: es la única manera de que el pliegue se pueda abrir con
+   teclado sin adivinar dónde se está. */
+.sp-graf-mas-t:focus-visible{ outline:2px solid var(--verde-hi); outline-offset:2px; border-radius:4px; }
+.sp-graf-mas > :last-child{ margin-bottom:10px; }
+
 .sp-graf-src{ margin-top:12px; }
 
 /* Cifra destacada dentro de una gráfica */
@@ -1162,12 +1193,8 @@ a.sp-fuente:hover svg{ color:var(--verde-hi); }
    gráficos van enteros arriba, así que una tarjetita que repetía la misma
    serie en pequeño y mandaba a otra sección ya no tenía para qué. */
 .sp-graf-src-t{
-  cursor:pointer; font-size:var(--t-8); font-weight:600; color:var(--petroleo);
-  padding:6px 0; list-style:none;
+  margin:14px 0 6px; font-size:var(--t-8); font-weight:600; color:var(--petroleo);
 }
-.sp-graf-src-t::-webkit-details-marker{ display:none; }
-.sp-graf-src-t::before{ content:'▸ '; }
-.sp-graf-src[open] .sp-graf-src-t::before{ content:'▾ '; }
 
 .sp-irficha{
   display:flex; align-items:center; justify-content:space-between; gap:14px;

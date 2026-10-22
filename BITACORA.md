@@ -29314,11 +29314,13 @@ descripción corta y tabla accesible.»
 | Tarjetas con descripción corta y tabla accesible | **0 de 17** | **18 de 18** |
 | Marcas «sin descripción corta» / «sin tabla» | — | **0** |
 | Bloques del registro que ninguna pantalla pintaba | 4 | **0** |
-| Alto de la portada a 1440 px | 13.949 px | 13.906 px |
-| Caracteres de la portada | 24.022 | 22.401 |
+| Alto de la portada a 1440 px | 13.765 px | **10.465 px** |
+| Alto de la portada a 390 px | 20.314 px | **12.880 px** |
+| Caracteres visibles de la portada | 24.022 | **10.485** |
+| Tarjetas con línea visible de salvedad | 0 | **11** |
 | `tseg` | 112/112 | **114/114** |
 | `tficha` | `?` NO CONCLUYENTE · **0 medidas** | **197/218**, con 21 declaradas en la §20 |
-| Contraste del bloque nuevo | — | **363 medidos, 0 por debajo de 4,5:1, mínimo 5,52:1** |
+| Contraste del bloque nuevo | — | **407 medidos, 0 por debajo de 4,5:1, mínimo 5,52:1** |
 | Cifras en prosa sin su plural en `js/70` | 28 | **27** (el trinquete solo baja) |
 
 **Una precisión sobre la primera fila, porque el número engaña si no se dice:**
@@ -29442,6 +29444,63 @@ Tres arreglos, y el tercero es el que importa:
   esta versión, así que la aserción pasó a medir la capacidad que sí tiene que
   seguir existiendo —que desde la portada SE LLEGUE a la ficha—, por la tira de
   pestañas. `tseg` comprueba que la tira esté; nadie comprobaba que lleve.
+
+### El ajuste del cierre: una línea visible, el resto plegado
+
+**El encargo era una portada sin texto y la primera v1143 la dejó MÁS LARGA
+que la v1142** —14.709 px contra 13.765—. El bulto no estaba en los gráficos:
+estaba en la descripción larga de cada uno y en la caja de declaraciones, las
+dos visibles debajo del dibujo. Veintiún gráficos por dos párrafos cada uno es
+una portada de texto con dibujos en medio.
+
+La tarjeta se parte en dos. Queda VISIBLE lo que no se puede plegar sin
+mentir: título, dibujo, sello si lo lleva, el pie de fuente y **una línea
+corta de salvedad**. Lo demás —descripción larga, nota, caja entera, tabla y
+fuentes— va en un `<details>` por tarjeta, «Salvedades y método».
+
+| | v1142 | v1143 (primera) | v1143 (cierre) |
+|---|---|---|---|
+| Alto de la portada a 1440 px | 13.765 | 14.709 | **10.465** |
+| Alto a 390 px | 20.314 | 20.406 | **12.880** |
+| Caracteres visibles | 24.022 | 22.401 | **10.485** |
+
+**−29 % de alto a 1440, −37 % a 390 y −56 % de texto** contra la v1142, que es
+el punto de partida honesto.
+
+**La línea se CALCULA, y por eso la guarda no mira su frase sino su CAMPO.**
+Escrita a mano sería una cifra dentro de un texto fijo (v903), con el
+agravante de que una salvedad vieja es peor que ninguna: invita a confiar. Las
+cuatro que el lector nombró salen cada una de su campo —`caracter`,
+`disputa`, `posesion` contra el mes, `noComparableCon`—, así que **se caen
+solas el día que el campo cambie**. Los seis días del gobierno anterior no
+están escritos en ninguna parte: se cuentan contra la fecha de posesión del
+propio registro.
+
+**Nada se borra, y la guarda lo comprueba pieza por pieza.** «Se plegó» y «se
+borró» se leen igual desde la portada, y la diferencia es todo. Lo plegado
+sigue en el DOM, sale al tabular —`details` nativo, no un acordeón de `div`—,
+abre con Enter, y **la descripción larga sigue además en el `aria-label` del
+dibujo**, así que quien no ve el gráfico la recibe sin abrir nada. Medido con
+el pliegue cerrado: 18 descripciones, 18 notas, 3 cajas, 18 tablas, 16 listas
+de fuentes y 7 anclajes, todos presentes.
+
+**Ocho inyecciones, ocho rojos**, entre ellas la que pinta la línea DENTRO del
+pliegue, la que borra la caja de declaraciones, la que le quita el
+`aria-label` al dibujo y la que convierte el `details` en un `div`.
+
+Y la guarda del anclaje se ajustó sin aflojarse: sigue exigiendo que la
+tarjeta lo CUELGUE —quitarlo la pone en rojo igual que antes—, y lo único que
+cambió es el nodo del que cuelga, porque **plegado cuenta como alcanzable**.
+
+#### Una captura que mentía, y no por lo que parecía
+
+Fotografié una tarjeta mientras el guion de inyecciones restauraba el árbol, y
+la imagen salió sin uno de los tres avisos — justo el que la inyección número
+3 estaba borrando en ese segundo. Estuve a punto de reportarlo como defecto.
+Lo delató comparar la hora del archivo con la del `.js`: la captura era 29
+segundos ANTERIOR a la restauración. Es la familia de arriba —una señal que no
+dice lo que parece— con una forma que este archivo no tenía escrita:
+**no se mide contra un árbol que otro proceso está moviendo.**
 
 ### Lo que esta versión NO hace
 
