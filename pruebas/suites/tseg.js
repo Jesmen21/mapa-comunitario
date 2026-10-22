@@ -490,6 +490,77 @@ const server = http.createServer((req, res) => {
       'y el nombre llega a la pestaña del navegador y a la tarjeta del enlace (' +
       tit.doc.slice(0, 40) + '…)');
 
+  /* ── v1147 · NINGÚN TEXTO QUEDA ATRAVESADO POR UNA LÍNEA ──────────────
+     Pasó TRES veces: el rótulo de valor del dólar sobre la guía del hito, el
+     del eje a 1440, y el del sector sobre la línea del cero. Dos trazos que
+     se tocan se leen como uno, y en un gráfico eso no es fealdad: es un
+     dígito que cambia de forma.
+
+     SE MIDE LEGIBILIDAD, NO SOLAPE DE CAJAS, y esa distinción costó una
+     vuelta: la cura de este módulo es un fondo opaco del color del papel
+     pintado DESPUÉS de la línea, así que un texto puede compartir caja con
+     ella y leerse perfectamente. Un cruce cuenta solo cuando NO hay fondo
+     que tape, con doble condición —que el rectángulo cubra la caja del texto
+     y que venga después de la línea en el orden de pintado, porque en SVG
+     pinta el último—.
+
+     Y SE MIDE A LOS DOS ANCHOS: el del eje del dólar no existía a 390 px
+     —ahí la regla de ajuste omite ese rótulo— y sí a 1440. La v1146 midió un
+     solo ancho y solo los rótulos que esa tanda había tocado; por eso se le
+     escapó. */
+  const crucesDe = async (ancho) => {
+    await pg.setViewportSize({ width: ancho, height: 1200 });
+    await pg.waitForTimeout(900);
+    await pg.evaluate(() => window.dispatchEvent(new Event('resize')));
+    await pg.waitForTimeout(1200);
+    return pg.evaluate(() => {
+      const malos = []; let tapados = 0, lineas = 0, textos = 0;
+      document.querySelectorAll('.sp-view.on .sp-graf').forEach(sec => {
+        const tit = ((sec.querySelector('.sp-graf-h') || {}).textContent || '').slice(0, 24);
+        sec.querySelectorAll('svg').forEach(svg => {
+          const orden = [...svg.querySelectorAll('*')];
+          const ix = n => orden.indexOf(n);
+          const vs = [...svg.querySelectorAll('line')]
+            .filter(l => Math.abs(+l.getAttribute('x1') - +l.getAttribute('x2')) < 0.5)
+            .map(l => ({ n: l, r: l.getBoundingClientRect() }));
+          if (!vs.length) return;
+          lineas += vs.length;
+          const fondos = [...svg.querySelectorAll('rect')]
+            .filter(x => /marfil/i.test(x.getAttribute('fill') || ''))
+            .map(x => ({ n: x, r: x.getBoundingClientRect() }));
+          [...svg.querySelectorAll('text')].forEach(t => {
+            const tr = t.getBoundingClientRect();
+            if (!tr.width) return;
+            textos++;
+            vs.forEach(l => {
+              if (!(tr.left < l.r.right && tr.right > l.r.left &&
+                    tr.top < l.r.bottom && tr.bottom > l.r.top)) return;
+              const tapa = fondos.find(f =>
+                f.r.left <= tr.left + 1 && f.r.right >= tr.right - 1 &&
+                f.r.top <= tr.top + 1 && f.r.bottom >= tr.bottom - 1 && ix(f.n) > ix(l.n));
+              if (tapa) tapados++;
+              else malos.push(tit + ' → «' + t.textContent.slice(0, 24) + '»');
+            });
+          });
+        });
+      });
+      return { malos: [...new Set(malos)], tapados, lineas, textos };
+    });
+  };
+  const vpPrevio = pg.viewportSize();
+  for (const ancho of [390, 1440]) {
+    const c = await crucesDe(ancho);
+    chk(c.lineas >= 2 && c.textos >= 10,
+        'MATERIAL · a ' + ancho + ' px hay líneas verticales y textos que podrían cruzarse (' +
+        c.lineas + ' líneas · ' + c.textos + ' textos)');
+    chk(c.malos.length === 0,
+        'y a ' + ancho + ' px ningún texto queda atravesado por una línea (' +
+        (c.malos.length ? c.malos.slice(0, 3).join(' · ')
+                        : c.tapados + ' resueltos con fondo, 0 sin tapar') + ')');
+  }
+  await pg.setViewportSize(vpPrevio);
+  await pg.waitForTimeout(600);
+
   /* ── v1144 · EL COLOR Y EL LATIDO DE LA ESCALA ────────────────────────
      Tres cosas que se pueden romper por separado, y la tercera es la que de
      verdad importa: que LATA SOLO EL TOPE. El módulo publica un PISO —el

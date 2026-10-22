@@ -8702,7 +8702,12 @@
       // La posesión se marca con una guía vertical: es el punto de referencia
       // de todo el módulo.
       if (p.hito) {
-        svg.appendChild(svgEl('line', { x1: X(i), x2: X(i), y1: mT - 4, y2: H - mB,
+        /* La guía termina 4 px ANTES del eje y no sobre él: los rótulos del
+           eje empiezan justo debajo, y la caja de un glifo sube por encima de
+           su línea base, así que tocaban por un píxel. Visualmente no se
+           pierde nada —la guía sigue llegando al borde del dibujo— y deja de
+           haber solape que tapar. */
+        svg.appendChild(svgEl('line', { x1: X(i), x2: X(i), y1: mT - 4, y2: H - mB - 4,
           stroke: '#946A00', 'stroke-width': 1, 'stroke-dasharray': '3 3' }));
       }
       var ultimo = i === pts.length - 1;
@@ -8714,10 +8719,16 @@
          gráficos y no de un número escrito acá: dos tamaños para el texto de
          un gráfico se separan a la tanda siguiente. */
       if (verRotulo[i]) {
-        var t = svgEl('text', { x: X(i), y: H - mB + 15, 'text-anchor': anclaDe(i),
-          class: 'sp-g-pie-t', 'font-weight': '600' });
-        t.textContent = rotuloDe(p);
-        svg.appendChild(t);
+        /* CON FONDO SI EL PUNTO ES UN HITO: su guía vertical baja hasta el
+           eje, así que a anchos grandes —donde el rótulo del hito sí se
+           dibuja— el texto le queda encima. A 390 px no se veía porque la
+           regla de ajuste omite ese rótulo, que es cómo se escapó de la
+           medición de la v1146: se midió el rótulo de VALOR, que era el que
+           esa tanda había tocado, y no el del EJE. */
+        var at = { x: X(i), y: H - mB + 15, 'text-anchor': anclaDe(i),
+                   class: 'sp-g-pie-t', 'font-weight': '600' };
+        if (p.hito) textoConFondo(svg, at, rotuloDe(p), anclaDe(i));
+        else { var t = svgEl('text', at); t.textContent = rotuloDe(p); svg.appendChild(t); }
       }
 
       if (i === 0 || ultimo || p.hito) {
@@ -8750,7 +8761,7 @@
         }
         var awV = anchoRotulo(txtV);
         var bx2 = anc === 'start' ? vx - 2 : (anc === 'end' ? vx - awV - 2 : vx - awV / 2 - 2);
-        svg.appendChild(svgEl('rect', { x: bx2, y: vy - 11, width: awV + 4, height: 14,
+        svg.appendChild(svgEl('rect', { x: bx2, y: vy - 13, width: awV + 4, height: 18,
                                         fill: 'var(--marfil)', rx: 2 }));
         var v = svgEl('text', { x: vx, y: vy, 'text-anchor': anc, class: 'sp-g-val' });
         v.textContent = txtV;
@@ -9253,9 +9264,14 @@
       a.push('el acumulado es casi todo del gobierno anterior');
     }
     if (b._umbralSuelo) {
-      a.push('las barras de menos de ' +
-             cn(b._umbralSuelo, 'caso van al mínimo', 'casos van al mínimo') +
-             ' de 2 px y ahí el largo deja de ser proporcional');
+      /* EN LENGUAJE LLANO, y la cifra baja al método. Decisión de Daniel: la
+         línea visible decía «las barras de menos de 135 casos van al mínimo
+         de 2 px», y una salvedad que solo entiende quien sabe qué es un píxel
+         no es una salvedad para quien lee el tablero. Lo que la salvedad
+         tiene que lograr —que nadie lea esas dos barras como una medida— se
+         logra sin el número; el número sigue, calculado, dentro del pliegue,
+         para quien quiera comprobarlo. */
+      a.push('las barras muy cortas se dibujan con un mínimo visible; su largo no es proporcional');
     }
     var disp = (b.filas || []).filter(function (f) { return f.disputa; });
     if (disp.length) {
@@ -9401,6 +9417,16 @@
        (v926). Un gráfico neutro es una DECISIÓN —«el dólar no es bueno ni
        malo»— y sin su razón escrita se lee igual que un gráfico al que nadie
        le puso color. Va dentro del pliegue, con el resto del método. */
+    /* EL MÉTODO, dentro del pliegue y antes de la razón del color: es lo que
+       permite comprobar una salvedad que arriba se dice en llano. Sin esto la
+       cifra existiría calculada y ninguna pantalla la alcanzaría, que es la
+       clase C en el sitio donde la frase llana acaba de reemplazarla. */
+    if (datos && datos.metodo) {
+      var pm = el('p', 'sp-graf-nota');
+      pm.appendChild(el('b', null, 'Cómo se dibujan las barras cortas: '));
+      pm.appendChild(document.createTextNode(String(datos.metodo)));
+      mas.appendChild(pm);
+    }
     if (datos && datos.porQueEseTono) {
       var pt = el('p', 'sp-graf-nota');
       pt.appendChild(el('b', null, 'Por qué ese color: '));
@@ -9997,6 +10023,39 @@
   function bllns(v, fmt) { return '$' + (fmt || bn)(v) + ' ' + pl(v, 'billón', 'billones'); }
   function anchoRotulo(t) { return String(t).length * 7.4; }
 
+  /* ── UN TEXTO QUE PUEDE CRUZARSE CON UNA LÍNEA VA CON FONDO ─────────────
+     Dos trazos que se tocan se leen como uno, y en un gráfico eso no es
+     fealdad: es un dígito que cambia de forma. Pasó tres veces —el rótulo
+     del dólar sobre la guía del hito, el del eje a 1440, y el del sector
+     sobre la línea del cero— y las tres veces el arreglo fue el mismo, así
+     que va en UNA función y no en tres sitios.
+
+     El fondo se dibuja ANTES del texto y con el ancho MEDIDO del rótulo, no
+     con una caja a ojo: una caja fija tapa de más cuando el texto es corto y
+     de menos cuando es largo. */
+  function textoConFondo(svg, attrs, texto, ancla) {
+    /* EL ANCHO VA CON HOLGURA porque `anchoRotulo` ESTIMA: son 7,4 px por
+       carácter, y medido contra el navegador se queda corto —«7 ago» da 37 y
+       mide 44, un 16 % menos—. Un fondo que se queda corto deja asomar la
+       línea por los bordes, que es el defecto que viene a tapar. La
+       estimación no se cambia: la usan los repartos de barras, donde quedarse
+       corto es lo prudente; acá lo prudente es lo contrario. */
+    var w = anchoRotulo(texto) * 1.25 + 6;
+    var x = +attrs.x || 0, y = +attrs.y || 0;
+    var bx = ancla === 'start' ? x - 2 : (ancla === 'end' ? x - w - 2 : x - w / 2 - 2);
+    /* EL ALTO SALE DE LA CAJA REAL DEL TEXTO, no de un número a ojo: la
+       primera versión puso 14 px y la caja del glifo mide 16 —con sus
+       ascendentes y descendentes—, así que el fondo tapaba la línea por el
+       medio y la dejaba asomar arriba y abajo. Se ve a 4× y lo midió la
+       comprobación de cruces, que para eso está. */
+    svg.appendChild(svgEl('rect', { x: bx, y: y - 13, width: w + 4, height: 18,
+                                    fill: 'var(--marfil)', rx: 2 }));
+    var t = svgEl('text', attrs);
+    t.textContent = texto;
+    svg.appendChild(t);
+    return t;
+  }
+
   /* ══ EL TONO DE UNA FIGURA (v1145) ═══════════════════════════════════════
      Tres papeles de color: azul lo favorable, rojo lo adverso, gris azulado
      lo neutro y la referencia. La dirección NO se decide acá gráfico por
@@ -10426,11 +10485,15 @@
                                       class: clsDiv + ' sp-g-barra' }));
       if (enTramite(p)) svg.appendChild(svgEl('rect', { x: bx, y: y, width: largo, height: alto,
                                                         class: clsDiv + ' sp-g-trama' }));
-      var t = rep.apilado
-        ? svgEl('text', { x: 0, y: y - 5, class: 'sp-g-et' })
-        : svgEl('text', { x: etq - 10, y: y + 13, class: 'sp-g-et', 'text-anchor': 'end' });
-      t.textContent = x.t;
-      svg.appendChild(t);
+      /* EL RÓTULO DEL SECTOR VA CON FONDO cuando se apila: apilado arranca
+         en x=0 y se extiende hacia la derecha, así que la línea del CERO
+         —que cae en medio del lienzo— lo atraviesa. Se vio a 390 px, en
+         «Hacienda y Crédito Público». No se mueve el rótulo: correrlo lo
+         sacaría del borde o lo pegaría a su propia barra. */
+      var at2 = rep.apilado
+        ? { x: 0, y: y - 5, class: 'sp-g-et' }
+        : { x: etq - 10, y: y + 13, class: 'sp-g-et', 'text-anchor': 'end' };
+      textoConFondo(svg, at2, x.t, rep.apilado ? 'start' : 'end');
       /* El rótulo de valor va afuera de la barra mientras quepa, y DENTRO
          cuando no. La barra la dibuja el dato, así que ninguna canal fija de
          etiquetas alcanza siempre: la de Deporte, −43,5 %, se comía el
@@ -11013,6 +11076,16 @@
     return tarjetaGrafica(b.titulo, b.unidad + '. Eje desde cero. ' +
       'Carácter del dato: ' + b.caracter + '.', svg, null, b.fuentes, ley, null,
       { porQueEseTono: b.porQueEseTono,
+        /* El umbral exacto vive acá, en el método: se calcula de la escala de
+           cada corrida —cambia con el ancho del lienzo y con el máximo de los
+           datos—, así que escribirlo a mano sería una cifra vieja esperando
+           (v903). Arriba va la frase llana; acá, el número comprobable. */
+        metodo: b._umbralSuelo
+          ? 'El mínimo visible de una barra es de 2 píxeles. Con la escala de esta pantalla, ' +
+            'eso afecta a las barras por debajo de ' +
+            cn(b._umbralSuelo, 'caso', 'casos') + ': de ahí para abajo el largo deja de ser ' +
+            'proporcional y solo el número dice cuánto es. El eje sigue partiendo de cero.'
+          : '',
         avisos: avisosDeDelitos(b, dd),
         desc: cn(grupos.length, 'delito', 'delitos') + ' con sus casos en ' + mesCorto(m0) +
           ' y en ' + mesCorto(m1) + '. ' +

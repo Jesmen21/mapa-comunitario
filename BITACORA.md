@@ -29942,3 +29942,82 @@ tanda contra SUS guardas nuevas**, que es lo único que ese número significa.
   `pendiente`
 * **No publica nada a `main`.** Sigue en `8053f23` (v1144) hasta el «súbalo».
   `pendiente`
+
+## v1147 · ningún texto queda atravesado por una línea, y la salvedad en llano
+
+Los dos arreglos que Daniel aprobó como no urgentes al revisar la v1146.
+
+### El cero atravesaba el rótulo, y el dólar seguía roto a 1440
+
+Al medir salieron **DOS** cruces, no uno. El que Daniel vio —la línea del cero
+sobre «Hacienda y Crédito Público»— y otro que **yo no había visto**: a 1440
+px, el rótulo de EJE del dólar («7 ago») cruza la guía punteada del hito.
+
+Ese segundo importa más que el primero, porque dice algo sobre cómo medí la
+v1146: ahí se comprobó el cruce de los rótulos de VALOR —los que esa tanda
+había tocado— y a UN solo ancho. **Se midió lo arreglado, no lo que podía
+estar roto.** A 390 px el rótulo del eje ni siquiera se dibuja —la regla de
+ajuste lo omite—, así que el defecto solo existe en el ancho que no se miró.
+
+La cura es una función, `textoConFondo`, y no tres parches: el texto lleva un
+fondo del color del papel con su ancho medido, pintado antes del texto y
+después de la línea. Más dos ajustes que salieron de medir:
+
+* **el fondo tenía 14 px de alto y la caja del glifo mide 16**, así que
+  tapaba por el medio y dejaba asomar la línea arriba y abajo;
+* **`anchoRotulo` estima por lo bajo** —7,4 px por carácter: «7 ago» da 37 y
+  mide 44, un 16 % menos—, así que el fondo se quedaba corto de ancho. La
+  estimación no se cambia, porque los repartos de barras la usan y ahí
+  quedarse corto es lo prudente; acá se le suma holgura.
+* y la guía del hito termina **4 px antes del eje**, porque la caja de un
+  glifo sube por encima de su línea base y tocaban por un píxel.
+
+### La guarda mide LEGIBILIDAD, no solape de cajas
+
+Y esa distinción costó una vuelta. La primera versión contaba cruces por
+intersección de cajas, y seguía dando rojo con el arreglo puesto: **un texto
+puede compartir caja con una línea y leerse perfectamente** si lleva un fondo
+opaco encima de ella. Un cruce cuenta solo cuando NO hay fondo que tape, y la
+condición es doble —que el rectángulo cubra la caja del texto y que venga
+DESPUÉS de la línea en el orden de pintado, porque en SVG pinta el último—.
+
+Corre a los **dos anchos**, que es la lección del defecto que se escapó.
+
+### La salvedad, en llano
+
+Decisión de Daniel: la línea visible decía «las barras de menos de 135 casos
+van al mínimo de 2 px y ahí el largo deja de ser proporcional». Ahora dice
+**«las barras muy cortas se dibujan con un mínimo visible; su largo no es
+proporcional»**.
+
+Una salvedad que solo entiende quien sabe qué es un píxel no es una salvedad
+para quien lee el tablero. **Y la cifra no se retira**: baja al método, dentro
+del pliegue, calculada igual que antes —135 casos a 390 px, 42 a 1440—, para
+quien quiera comprobarla. Si se hubiera borrado sería la clase C.
+
+### Y una tercera vez que el arnés falló, no el código
+
+Las cuatro inyecciones salieron **AUSENTE** en la primera corrida: el guion
+pasaba el patrón con comillas literales adentro, así que el `grep` no casaba
+nunca. **El arnés de tres estados —ROJO, VERDE, AUSENTE— hizo exactamente
+para lo que se escribió**: con dos estados habría dicho VERDE cuatro veces.
+
+Van tres fallos de arnés en cuatro tandas —el nombre de la aserción (v1144),
+el alcance del patrón (v1145) y ahora las comillas— y ninguno de código. Lo
+que tienen en común es que **todos están en cómo la guarda busca**, no en lo
+que mide.
+
+### Lo medido
+
+| | v1146 | v1147 |
+|---|---|---|
+| Cruces texto/línea a 390 px | 1 | **0** (1 resuelto con fondo) |
+| Cruces texto/línea a 1440 px | 1 | **0** |
+| Cifras en la salvedad visible de delitos | 2 («135 casos», «2 px») | **0**, las dos en el método |
+| `tseg` | 128/128 | **132/132** |
+| Inyecciones de esta tanda contra sus guardas nuevas | — | **3 en rojo + 1 control en verde** |
+
+### Lo que esta versión NO hace
+
+* **No publica nada a `main`.** Sigue en `f7e99a2` (v1146) hasta el «súbalo».
+  `pendiente`
