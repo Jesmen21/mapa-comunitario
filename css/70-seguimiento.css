@@ -112,6 +112,28 @@ svg{ width:20px; height:20px; fill:none; stroke:currentColor; stroke-width:1.9; 
 }
 .sp-skip:focus{ left:12px; }
 
+/* LA BARRA TAPA LO QUE EL NAVEGADOR TRAE AL TOPE (v1156).
+
+   `.sp-bar` es sticky, opaca y mide `--bar`. Todo desplazamiento que lleva un
+   elemento al tope del viewport —`scrollIntoView({block:'start'})`, y por lo
+   tanto un enlace viejo `#/balance-foda` y un clic en una pestaña de la ficha—
+   lo dejaba DEBAJO de ella: medido en el navegador, 66 px del encabezado de
+   sección y 60 px del contenedor de la ficha, a 390 y a 1440.
+
+   Va acá y no en los dos sitios que desplazan, que es la razón de que exista:
+   el navegador la aplica a CUALQUIER desplazamiento al tope, así que un
+   enlace profundo nuevo o un tercer `scrollIntoView` la heredan sin que su
+   autor se acuerde — la forma de la v867. Y va sobre `html` porque `--bar`
+   vive en `:root` y es el documento el que desplaza; comprobado antes de
+   escribirla que ningún JS resta la barra a mano, para no compensar dos veces.
+
+   DE QUÉ NO RESPONDE: la barra mide `calc(var(--bar) + env(safe-area-inset-top))`,
+   así que en un teléfono con muesca es más alta que `--bar` y quedarían
+   tapados los píxeles de la muesca. Esta línea no los cubre. Va dicho porque
+   un arreglo que se presenta como completo y no lo es vuelve a esconder el
+   defecto. */
+html{ scroll-padding-top:calc(var(--bar) + 8px); }
+
 /* ── Barra superior ─────────────────────────────────────────────────────── */
 .sp-bar{
   position:sticky; top:0; z-index:60;

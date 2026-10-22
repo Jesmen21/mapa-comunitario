@@ -1,4 +1,4 @@
-const URBIS_CACHE = 'urbis-v1155-tres-mediciones-de-gestion';
+const URBIS_CACHE = 'urbis-v1156-la-barra-ya-no-tapa-el-destino';
 const URBIS_ASSETS = [
   './',
   './index.html',
