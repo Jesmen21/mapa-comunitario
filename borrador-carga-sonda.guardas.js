@@ -5,6 +5,16 @@ const R = '/home/user/mapa-comunitario/';
 const reg = JSON.parse(fs.readFileSync(R + 'assets/data/seguimiento-presidencial.json', 'utf8'));
 const bor = JSON.parse(fs.readFileSync(R + 'borrador-carga-sonda.json', 'utf8'));
 const nuevas = bor.entradas;
+/* EL DENOMINADOR. Las actualizaciones a entradas ya registradas publican texto y
+   fuentes igual que una entrada nueva, y hasta la v1156 el barrido solo recorria
+   `entradas`: mismo denominador estrecho de la v1149 y la v1153, en un tercer sitio.
+   Se arman aqui para que las guardas 3 y 5 las vean sin que su autor se acuerde. */
+const actus = bor._actualizanUnaEntradaExistente || [];
+const textoActus = actus.map(a => [a.entradaQueSeActualiza,
+  a.cambio2_detalle && a.cambio2_detalle.textoQueSeAgrega].filter(Boolean).join(' '));
+const fuentesActus = [];
+actus.forEach((a, i) => ((a.cambio3_fuentes && a.cambio3_fuentes.nuevas) || [])
+  .forEach((f, j) => fuentesActus.push({ f: f, d: 'actualizacion[' + i + '].fuente[' + j + ']' })));
 let fallos = 0;
 const ok = (n, c, d) => { console.log((c ? '  ✓ ' : '  ✗ ') + n + '  — ' + d); if (!c) fallos++; };
 
@@ -28,9 +38,18 @@ const sinRol = [];
 nuevas.forEach(e => (e.fuentes || []).forEach((f, i) => {
   if (!f.n || !f.u || !f.rol) sinRol.push(e.id + '[' + i + ']');
 }));
-const nF = nuevas.reduce((a, e) => a + (e.fuentes || []).length, 0);
-ok('toda fuente declara nombre, enlace y rol', !sinRol.length,
-   sinRol.length ? sinRol.join(' · ') : nF + ' fuentes, todas con n/u/rol');
+fuentesActus.forEach(x => { if (!x.f.n || !x.f.u || !x.f.rol) sinRol.push(x.d); });
+const ROLES = new Set(['acto', 'efecto', 'contexto']);
+const rolRaro = [];
+nuevas.forEach(e => (e.fuentes || []).forEach((f, i) => {
+  if (f.rol && !ROLES.has(f.rol)) rolRaro.push(e.id + '[' + i + ']→' + f.rol); }));
+fuentesActus.forEach(x => { if (x.f.rol && !ROLES.has(x.f.rol)) rolRaro.push(x.d + '→' + x.f.rol); });
+const nF = nuevas.reduce((a, e) => a + (e.fuentes || []).length, 0) + fuentesActus.length;
+ok('toda fuente declara nombre, enlace y rol, y el rol es de los tres declarados',
+   !sinRol.length && !rolRaro.length,
+   sinRol.length ? 'sin n/u/rol: ' + sinRol.join(' · ')
+     : rolRaro.length ? 'rol fuera del vocabulario: ' + rolRaro.join(' · ')
+     : nF + ' fuentes (' + fuentesActus.length + ' de actualizaciones), todas con n/u/rol de los tres');
 
 // 4 · toda entrada lleva fecha, precisión, título, detalle y contrapunto
 const incompletas = nuevas.filter(e =>
@@ -41,8 +60,12 @@ ok('toda entrada trae fecha, precisión, título, detalle y contrapunto', !incom
 // 5 · la vara penal: ninguna etiqueta penal sobre persona identificable
 const PENAL = /\b(homicidio|peculado|concierto para delinquir|lavado de activos|cohecho|enriquecimiento il[ií]cito)\b/i;
 const penales = nuevas.filter(e => PENAL.test(e.titulo + ' ' + e.detalle)).map(e => e.id);
-ok('ningún título ni detalle califica penalmente a nadie', !penales.length,
-   penales.length ? 'revisar: ' + penales.join(' · ') : 'ninguna de las seis etiquetas vigiladas aparece');
+textoActus.forEach((t, i) => { if (PENAL.test(t)) penales.push('actualizacion[' + i + ']'); });
+ok('ningún título ni detalle califica penalmente a nadie, tampoco en las actualizaciones',
+   !penales.length,
+   penales.length ? 'revisar: ' + penales.join(' · ')
+     : 'ninguna de las seis etiquetas vigiladas aparece, en ' + nuevas.length +
+       ' entradas y ' + textoActus.length + ' actualizaciones');
 
 // 6 · ninguna atribuye causa al Gobierno en un periodo anterior a la posesión
 const pos = reg.posesion;

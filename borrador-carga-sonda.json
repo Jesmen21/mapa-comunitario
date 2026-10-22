@@ -30,7 +30,7 @@
         {
           "n": "Notipregonar · Colombia mantendrá bajo reserva acuerdos con Estados Unidos",
           "u": "https://notipregonar.com/colombia-mantendra-bajo-reserva-acuerdos-con-estados-unidos/",
-          "rol": "dato"
+          "rol": "contexto"
         },
         {
           "n": "La Silla Vacía · Con los minerales críticos, Colombia ensilla el caballo antes de comprarlo",
@@ -64,7 +64,7 @@
         {
           "n": "El Nuevo Siglo · Banco Mundial aprueba US$200 millones a Colombia tras el terremoto",
           "u": "https://www.elnuevosiglo.com.co/nacion/banco-mundial-aprueba-us200-millones-colombia-tras-el-terremoto",
-          "rol": "dato"
+          "rol": "contexto"
         }
       ],
       "_verificadoEn": "2026-10-22",
@@ -92,12 +92,12 @@
         {
           "n": "Diario de Colombia · Nicky Jam y Grupo Argos entregan la primera de las mil viviendas para damnificados colombianos",
           "u": "https://www.diariodecolombia.com/nicky-jam-y-grupo-argos-entregan-la-primera-de-las-mil-viviendas-para-damnificados-colombianos/",
-          "rol": "dato"
+          "rol": "contexto"
         },
         {
           "n": "El Nacional · Nicky Jam llevó ayuda humanitaria en su avión privado a damnificados por terremoto en Colombia",
           "u": "https://www.elnacional.com/2026/08/nicky-jam-llevo-ayuda-humanitaria-en-su-avion-privado-a-damnificados-por-terremoto-en-colombia/",
-          "rol": "dato"
+          "rol": "contexto"
         }
       ],
       "_verificadoEn": "2026-10-22",
@@ -150,9 +150,26 @@
     },
     {
       "item": "3 · Santa Marta",
-      "estado": "DESMENTIDO en su forma circulante",
-      "razon": "La marcha del 14 de octubre en Santa Marta terminó PACÍFICAMENTE, con acompañamiento de la fuerza pública y unas 3.000 personas. Lo que sí ocurrió en esos días en la ciudad fue otra cosa: un motín el 12 de octubre en el Centro de Reclusión Transitorio, con fuga de 41 personas, y un bloqueo de la Troncal del Caribe el 11 de octubre por desabastecimiento de agua en Tasajera. Son hechos distintos y no deben mezclarse.",
-      "queFaltaria": "Nada: el hecho está establecido. Lo que no se sostiene es la versión de disturbios en la marcha."
+      "estado": "DOS HECHOS DISTINTOS · (a) marcha pacífica · (b) hecho de seguridad YA REGISTRADO",
+      "porQueSeReabrio": "Daniel recordó que «hubo mucha violencia» en Santa Marta. Tenía razón, y la etiqueta anterior —«DESMENTIDO en su forma circulante»— era un error de alcance: desmentía la versión de disturbios EN LA MARCHA del 14 de octubre, que es cierto que no los hubo, y al hacerlo dejaba fuera de la vista una jornada de violencia real del 22 y 23 de septiembre. Un desmentido que tapa un hecho ocurrido no es un desmentido: es un recorte.",
+      "hechoA": {
+        "que": "Marcha del 14 de octubre de 2026 en Santa Marta",
+        "estado": "PACÍFICA, según las fuentes consultadas",
+        "detalle": "Terminó sin disturbios, con acompañamiento de la fuerza pública y unas 3.000 personas. No se sostiene la versión de disturbios en la marcha.",
+        "otrosHechosDeEsosDias": "Un motín el 12 de octubre en el Centro de Reclusión Transitorio, con fuga de 41 personas (ya registrado, entrada del 12 de octubre), y un bloqueo de la Troncal del Caribe el 11 de octubre por desabastecimiento de agua en Tasajera. Son hechos distintos de la marcha."
+      },
+      "hechoB": {
+        "que": "Jornada de violencia del 22 y 23 de septiembre de 2026 en Santa Marta y el corredor hacia La Guajira",
+        "estado": "CONFIRMADO el hecho · reacción de un grupo armado a una operación del Estado",
+        "quienAtribuyeQue": "Las AUTORIDADES atribuyeron los hechos a las Autodefensas Conquistadoras de la Sierra Nevada (ACSN). Las propias ACSN anunciaron un paro armado de 48 horas —eso ya está en el registro— y los medios consultados reportaron la circulación de un panfleto del grupo ordenando cerrar el comercio por 48 horas. Ninguna de las fuentes consultadas identifica a quién ejecutó cada ataque: no se afirma autoría individual.",
+        "loQueNOes": "No es violencia del Gobierno contra manifestantes. Ninguna fuente lo sostiene, y la secuencia que las fuentes describen es la contraria: operación de la Fuerza Pública el 21 de septiembre, represalia del grupo armado el 22, refuerzo del Estado el 22 y 23.",
+        "yaEstaEnElRegistro": true,
+        "dondeEsta": "Entrada del 2026-09-21 («De la Espriella confirma la muerte de alias 'Cholo'…»), que ya trae la operación de Guachaca, los siete muertos, los tres capturados, la incautación, el consejo de seguridad convocado y el paro armado de 48 horas con bloqueos y quema de vehículos. Y la entrada del 2026-09-28 (cancelación del crucero Freewinds), que ya trae «una semana de hechos… que las autoridades atribuyeron a las ACSN: intimidaciones a comerciantes, quema de vehículos, afectaciones al transporte y restricciones en corredores viales».",
+        "porQueNOentradaNueva": "Escribir una entrada nueva para el 22 de septiembre sería la clase B: dos codificaciones del mismo hecho, que coincidirían hoy y se separarían la primera vez que alguien corrija una de las dos. Va como ACTUALIZACIÓN de la entrada del 21, que es la que ya narra la operación y la reacción.",
+        "verificadoContra": "Búsqueda del 22 de octubre de 2026. Convergen en los hechos y en las nueve capturas: El Heraldo, Publimetro, Vanguardia y Al Día. En el despliegue de más de 1.100 uniformados: El Universal, El Callejero y HSB Noticias. En la secuencia de los tres decretos distritales de motos: RCN Radio, Seguimiento.co, Semana y Diario La Libertad. Contexto: El Tiempo, France 24, Infobae, Radio Nacional."
+      },
+      "razon": "Los dos hechos son ciertos y son distintos. La etiqueta de una sola palabra no podía con los dos.",
+      "queFaltaria": "La actualización de la entrada del 21 de septiembre, redactada y a la espera del «cárguelas» de Daniel. Nada más: el hecho está establecido."
     },
     {
       "item": "9 · marchas atacadas",
@@ -360,6 +377,80 @@
           }
         ]
       }
+    },
+    {
+      "deQueSonda": "ítem 3 · Santa Marta, hecho (b)",
+      "entradaQueSeActualiza": "2026-09-21 · «De la Espriella confirma la muerte de alias 'Cholo', segundo cabecilla de las Autodefensas Conquistadoras de la Sierra Nevada, y advierte a alias 'Pinocho'»",
+      "porQueActualizaYNoEntradaNueva": "La entrada ya narra la operación del 21 y el paro armado que la siguió. Una entrada nueva para el 22 sería la clase B: dos codificaciones del mismo hecho. Lo que falta son la respuesta del Estado, las nueve capturas y los decretos distritales.",
+      "cambio1_id": {
+        "porQue": "La entrada no tiene `id`, y sin id no puede sostener ninguna afirmación firmada (v1127) ni ser citada por otra entrada.",
+        "valor": "operativo-cholo-acsn-paro-armado-santa-marta-2026-09-21"
+      },
+      "cambio2_detalle": {
+        "comoSeAplica": "Se APENDE al final del `detalle` actual, sin tocar una palabra de lo ya verificado.",
+        "textoQueSeAgrega": "El 22 de septiembre, en la ciudad y en el corredor que la comunica con La Guajira, se registraron intimidaciones a comerciantes, disparos contra establecimientos, cierre del comercio y quema de vehículos —entre los casos reportados, una tractomula en la Troncal del Caribe y un taxi—, con afectaciones a la movilidad. Las autoridades atribuyeron esos hechos a las ACSN, y los medios consultados reportaron la circulación de un panfleto del grupo que ordenaba cerrar el comercio durante 48 horas; las fuentes consultadas no identifican a quién ejecutó cada ataque. Ese mismo día el presidente encabezó en Santa Marta un consejo de seguridad —en el Batallón Córdova, según Vanguardia, con la gobernadora del Magdalena, Margarita Guerra, y el alcalde Carlos Pinedo Cuello—, tras el cual se anunció el despliegue de unos 600 policías y más de 500 militares en Santa Marta, la Troncal del Caribe y Ciénaga, que los medios consultados reportaron como más de 1.100 uniformados. El 23 de septiembre el Gobierno confirmó nueve personas capturadas por esos hechos; no consta en las fuentes consultadas decisión judicial sobre su responsabilidad. Las tres capturas ya citadas corresponden al operativo del 21 en Guachaca y las nueve a los ataques del 22 en la ciudad. En paralelo, la Alcaldía de Santa Marta dictó tres decretos distritales: el 431 del 21 de septiembre, que prohibió el parrillero por 24 horas; el 432 del 22, que prohibió la circulación de motocicletas y vehículos similares en todo el Distrito y se anunció hasta el jueves 24; y el 433 del 23, que según las fuentes consultadas levantó esa prohibición total ese mismo día y mantuvo la del parrillero hombre. El 23 de septiembre el alcalde pidió al comercio reabrir y declaró que «todo va llegando a la normalidad»."
+      },
+      "cambio3_fuentes": {
+        "comoSeAplica": "Se agregan a las cinco que ya tiene.",
+        "nuevas": [
+          {
+            "n": "El Heraldo · Nueve personas capturadas tras quema de vehículos y ataques a comercios en Santa Marta",
+            "u": "https://www.elheraldo.co/colombia/2026/09/23/nueve-personas-capturadas-tras-quema-de-vehiculos-y-ataques-a-comercios-en-santa-marta/",
+            "rol": "efecto"
+          },
+          {
+            "n": "Publimetro · Santa Marta: nueve capturados tras quema de vehículos y ataques a comercios",
+            "u": "https://www.publimetro.co/noticias/2026/09/23/santa-marta-en-alerta-quemaron-vehiculos-atacaron-comercios-y-ya-hay-nueve-capturados/",
+            "rol": "efecto"
+          },
+          {
+            "n": "Vanguardia · Alcalde de Santa Marta anuncia refuerzo de seguridad tras jornada de violencia: «todo va llegando a la normalidad»",
+            "u": "https://www.vanguardia.com/colombia/2026/09/23/alcalde-de-santa-marta-anuncia-refuerzo-de-seguridad-tras-jornada-de-violencia-todo-va-llegando-a-la-normalidad/",
+            "rol": "efecto"
+          },
+          {
+            "n": "El Universal · Más de mil uniformados refuerzan la seguridad en Santa Marta",
+            "u": "https://www.eluniversal.com.co/colombia/2026/09/23/mas-de-mil-uniformados-refuerzan-la-seguridad-en-santa-marta/",
+            "rol": "acto"
+          },
+          {
+            "n": "El Tiempo · Santa Marta busca recuperar la normalidad tras dos días de tensión: alcalde defiende refuerzo militar y pide al comercio reabrir sus puertas",
+            "u": "https://www.eltiempo.com/amp/colombia/barranquilla/santa-marta-busca-recuperar-la-normalidad-tras-dos-dias-de-tension-alcalde-defiende-refuerzo-militar-y-pide-al-comercio-reabrir-sus-puertas-3588438",
+            "rol": "contexto"
+          },
+          {
+            "n": "RCN Radio · Santa Marta restringe circulación de motos durante tres días: esto se sabe",
+            "u": "https://newsroom.rcnradio.com/colombia/santa-marta-restringe-circulacion-de-motos-durante-tres-dias-esto-se-sabe",
+            "rol": "acto"
+          },
+          {
+            "n": "Seguimiento.co · Alcaldía prohíbe totalmente la circulación de motos en Santa Marta hasta el jueves",
+            "u": "https://seguimiento.co/la-samaria/alcaldia-prohibe-totalmente-la-circulacion-de-motos-en-santa-marta-hasta-el-jueves-89416",
+            "rol": "acto"
+          },
+          {
+            "n": "France 24 · Colombia: la turística Santa Marta es militarizada ante la arremetida de un grupo narcoparamilitar",
+            "u": "https://www.france24.com/es/am%C3%A9rica-latina/20260924-colombia-la-tur%C3%ADstica-santa-marta-es-militarizada-ante-la-arremetida-de-un-grupo-narcoparamilitar",
+            "rol": "contexto"
+          },
+          {
+            "n": "Infobae · Calles desoladas y turistas atrapados: así está Santa Marta este miércoles 23 de septiembre luego del anuncio de Los Pachenca de un paro armado",
+            "u": "https://www.infobae.com/colombia/2026/09/23/calles-desoladas-y-turistas-atrapados-asi-esta-santa-marta-este-miercoles-23-de-septiembre-luego-del-anuncio-de-los-pachenca-de-un-paro-armado/",
+            "rol": "efecto"
+          }
+        ]
+      },
+      "loQueNOcambia": "`categoria` gobierno · `tipoFuente` verificado · `nivelGobierno` nacional · `indicadores` [] · `categoriaProbatoria` hecho-probado · `tipoMedicion` actividad. No se agrega `contrapunto` (no hay contraparte que disputar: el Gobierno no es el señalado) ni `estadoProcesal` (no consta decisión judicial y el vocabulario no tiene un valor para «capturado sin decisión»).",
+      "disciplinaAplicada": [
+        "Autoría: no se afirma. Se dice quién atribuye (las autoridades) y que las fuentes no identifican ejecutores.",
+        "No se nombra a ninguna de las nueve personas capturadas ni se les atribuye delito: captura no es condena.",
+        "Funcionarios nombrados solo en ejercicio del cargo (alcalde, gobernadora, presidente). Ninguna persona privada.",
+        "Sin juicio: no hay frase que diga al lector qué concluir (v1152).",
+        "No se presenta como violencia del Gobierno contra manifestantes. La secuencia de las fuentes es operación del Estado → represalia del grupo armado → refuerzo del Estado.",
+        "Las tres capturas del 21 y las nueve del 22 se dicen como hechos distintos, para que nadie 'corrija' una cifra con la otra (v1085)."
+      ],
+      "correccionALoQueDeciaUNAsolaFuente": "Vanguardia sola dejaba entender que la restricción de motos corría hasta la medianoche del 24. La secuencia convergente es de TRES decretos y el 433 levantó la prohibición total el 23, antes de la fecha anunciada. Escribir solo «hasta el 24» habría sido falso sobre lo que de verdad pasó.",
+      "estado": "REDACTADO · espera el «cárguelas» de Daniel"
     }
   ],
   "_solapesPorDecidir": [
