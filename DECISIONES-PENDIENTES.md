@@ -773,13 +773,36 @@ la escriba.
 > `seguridad` — Seguridad y orden público
 > `politica` — Opinión y aprobación
 
-**Falta la segunda mitad y no la escribí.** El encargo pedía este párrafo
-«junto con el de 4.22», y **no pude identificar a qué se refiere «4.22»**: no
-hay una sección, un paso ni un bloque con ese número en `CLAUDE.md`, en este
-archivo ni en `BITACORA.md`. Antes que pegar algo inventado en la rutina
-—que es precisamente lo que esta sección existe para impedir— queda pedido.
-Dos lecturas posibles, por si alguna es la buena: el sello de `actualizado`
-en hora de Colombia, que la v1135 dejó escrito con su orden exacta
-(`TZ=America/Bogota date +%F`) y que vive en el paso 5 de la rutina; o la
-lista de los cinco estados de `casos.lista`, que es la otra cosa que la
-rutina escribe y puede equivocar.
+**La segunda mitad: el caso 4.22.** El usuario lo precisó el 22 de octubre de
+2026 —no era una sección ni un paso, es el **caso 4.22 del eje A**,
+`contra-merito-empleo-publico`—, y va en el MISMO bloque, pegado debajo del
+de las categorías:
+
+> **CASO 4.22 · `contra-merito-empleo-publico` · NO LO TOQUES.**
+>
+> Ese caso está **sin declarar a propósito** hasta el **21 de noviembre de
+> 2026**. No declares ni cambies su estado antes de esa fecha —ni
+> `identidad`, ni `mismoObjetoVerificado`, ni nada— **salvo que aparezca una
+> señal nueva y verificable con fuente**.
+>
+> Y si aparece esa señal, **no la apliques: repórtala** para que la decida
+> quien firma el módulo. Las dos que cuentan son: que el Gobierno presente
+> una vía alternativa para blindar los requisitos mínimos de los cargos
+> directivos, o que la Corte Constitucional falle sobre la ley de mérito.
+>
+> **Este párrafo caduca el 21 de noviembre de 2026** y hay que quitarlo de la
+> rutina ese día.
+
+**Por qué está así, para que nadie lo «arregle» de buena fe:** declararlo
+antes sería resolver a conveniencia justo lo que ese párrafo existe para
+impedir. La prueba está escrita de antemano desde la v971, el caso lleva su
+`revision.fecha` en el propio registro, y `CLAUDE.md` lo tiene como el único
+renglón vivo de la `LISTA-QUE-SIGUE`. Una rutina que lo declarara por su
+cuenta movería el peldaño del eje A sin que nadie lo hubiera decidido.
+
+**Y la caducidad es la parte frágil**, así que conviene decirla: un párrafo
+con fecha dentro de un texto que se edita en la web es exactamente la cifra
+tecleada a mano que envejece sola (v903). Nada de acá puede comprobar que se
+haya quitado el 21 de noviembre; lo único que se puede hacer es que la fecha
+esté escrita en los dos sitios —en el registro, donde la guarda la ve, y en
+la rutina, donde manda— y que esta sección lo recuerde.

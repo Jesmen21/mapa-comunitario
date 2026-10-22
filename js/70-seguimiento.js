@@ -601,8 +601,16 @@
 
   // ── Portada ───────────────────────────────────────────────────────────────
   function pintarHome() {
-    $('sp-presi').textContent = D.presidente || '—';
-    $('sp-periodo').textContent = '· Periodo ' + (D.periodo || '') + ' · posesión el ' + fechaLarga(D.posesion);
+    /* LA PORTADA PERDIÓ CASI TODOS SUS DESTINOS EN LA v1143 —se quedó solo
+       con gráficos— y esta función se llama UNA vez al arrancar, antes de
+       aplicar la ruta, así que sigue pintando lo que quedó y lo que se mudó
+       a una pestaña. Cada acceso va guardado: un `$()` a un id que ya no
+       existe tira y se lleva por delante TODO lo que venga después, que es
+       la portada entera. Falla cerrado al revés de lo normal: lo que no
+       está, no se pinta, y lo que sí está se pinta igual. */
+    var _t = function (id, v) { var n = $(id); if (n) n.textContent = v; };
+    _t('sp-presi', D.presidente || '—');
+    _t('sp-periodo', '· Periodo ' + (D.periodo || '') + ' · posesión el ' + fechaLarga(D.posesion));
 
     var nHechos = (D.entradas || []).length;
     var nTemas = (D.transversales || []).length;
@@ -629,7 +637,7 @@
       { n: nFoda, t: 'Puntos del FODA', i: ICO_STAT.foda },
       { n: Object.keys(dominios).length, t: 'Medios citados', i: ICO_STAT.medios }
     ];
-    var cont = vaciar($('sp-stats'));
+    var cont = $('sp-stats') ? vaciar($('sp-stats')) : el('div');
     stats.forEach(function (s) {
       var d = el('div', 'sp-stat');
       var ic = el('span', 'sp-stat-ico');
@@ -644,6 +652,7 @@
     });
 
     pintarPlacaPortada();
+    pintarEscalaVeredicto();
     bloqueDeGraficos(vaciar($('sp-portada-graf')));
     pintarIrFicha();
     pintarAccesoMuro();
@@ -670,9 +679,8 @@
       nav.appendChild(b);
     });
 
-    $('sp-nextup').textContent =
-      'Actualizado el ' + fechaLarga(D.actualizado) + ' · ' + CADENCIA_REVISION +
-      ' · ' + cn(diasDesde(D.posesion), 'día', 'días') + ' de gobierno.';
+    _t('sp-nextup', 'Actualizado el ' + fechaLarga(D.actualizado) + ' · ' + CADENCIA_REVISION +
+      ' · ' + cn(diasDesde(D.posesion), 'día', 'días') + ' de gobierno.');
 
     $('sp-upd-txt').textContent = fechaCorta(D.actualizado);
     $('sp-upd').title = 'Actualizado el ' + fechaLarga(D.actualizado) +
@@ -745,6 +753,7 @@
   // Acceso destacado al muro desde la portada: enseña de una lo más reciente,
   // que es lo que la mayoría viene a ver, sin obligar a elegir categoría.
   function pintarAccesoMuro() {
+    if (!$('sp-acceso-muro')) return;   // fuera de la portada desde la v1143
     var cont = vaciar($('sp-acceso-muro'));
     // Con índice, para poder abrir el hecho completo desde aquí.
     var recientes = (D.entradas || []).map(function (e, i) { return { e: e, i: i }; })
@@ -6639,6 +6648,89 @@
     return 'Fiabilidad de la palabra: ' + f.veredicto.t + '.';
   }
 
+  /* ══ LA ESCALA DEL VEREDICTO · un GRÁFICO, no un párrafo (v1143) ═════════
+     La portada se quedó sin texto por decisión de quien firma el módulo, y
+     el veredicto no podía irse con él: es lo que el módulo afirma. Así que
+     se queda DIBUJADO —el peldaño alcanzado y su tope— y el párrafo que lo
+     explica vive entero en «¿Qué ha pasado?», dentro de la ficha.
+
+     LO QUE LA ESCALA TIENE QUE DECIR SIN MENTIR, y es la parte delicada:
+     un PISO no es un dictamen. «No puede ser mejor que Poco fiable» deja
+     descartados los peldaños MEJORES y deja abiertos el alcanzado y los
+     PEORES. Pintarlo como una barra llena diría «es Poco fiable», que es
+     justo la lectura que la v1086 prohibió al inventar el estado `piso`.
+     Por eso cada peldaño sale con uno de tres estados —descartado, el tope,
+     todavía posible— y la franja de lo posible va marcada.
+
+     Y SALE DEL DATO: el peldaño es `f.general.nivel.id` y la escalera se
+     recorre entera desde `ESCALERA`, no desde una lista propia, así que un
+     peldaño nuevo aparece solo (v1091). Si el veredicto no publica nivel,
+     la escala lo dice en vez de desaparecer: ausente se lee igual que si
+     nunca hubiera existido (v1064). */
+  function pintarEscalaVeredicto() {
+    var host = $('sp-veredicto-escala'); if (!host) return;
+    vaciar(host);
+    var f = fichaHasta(null);
+    var vg = f && f.general;
+    /* EL ÍNDICE SE LEE DE DOS CAMPOS Y NO DE UNO, porque `veredictoGeneral`
+       devuelve dos formas distintas y eso NO es un descuido: un PISO y un
+       DICTAMEN dicen cosas distintas a quien lee (v876), así que el piso
+       expone `pisoI` y el dictamen `nivelI`. Leer solo uno deja la escala en
+       su rama de cero sobre un veredicto que sí publica — que es lo que pasó
+       al escribirla, y lo vio el papel. */
+    var i = -1;
+    if (vg && typeof vg.pisoI === 'number') i = vg.pisoI;
+    else if (vg && typeof vg.nivelI === 'number') i = vg.nivelI;
+    if (i < 0 || i >= ESCALERA.length) i = -1;
+
+    var fig = el('figure', 'sp-vesc');
+    var cap = el('figcaption', 'sp-vesc-cap');
+
+    if (i < 0) {
+      /* LAS DOS REDACCIONES, y esta es la de cero (v970): el día que el
+         veredicto no publique nivel, la escala lo DICE. */
+      cap.appendChild(el('b', null, 'El veredicto no publica peldaño todavía'));
+      fig.appendChild(cap);
+      fig.appendChild(el('p', 'sp-vesc-sin',
+        'La escala se dibuja cuando alguno de los ejes de realidad publica nivel.'));
+      host.appendChild(fig);
+      return;
+    }
+
+    var esPiso = !hayDictamen(vg);
+    var nom = ESCALERA[i].t;
+    cap.appendChild(el('b', null, esPiso ? 'No puede ser mejor que «' + nom + '»' : 'Dictamen: «' + nom + '»'));
+    fig.appendChild(cap);
+
+    var esc = el('ol', 'sp-vesc-esc');
+    esc.setAttribute('role', 'list');
+    ESCALERA.forEach(function (p, k) {
+      var est = k < i ? 'fuera' : (k === i ? 'tope' : 'posible');
+      var li = el('li', 'sp-vesc-p sp-vesc-' + est + (k === i ? ' sp-niv-' + (k + 1) : ''));
+      li.appendChild(el('span', 'sp-vesc-n', p.t));
+      li.appendChild(el('span', 'sp-vesc-e',
+        est === 'fuera' ? 'descartado' : est === 'tope' ? 'el tope' : 'posible'));
+      esc.appendChild(li);
+    });
+    fig.appendChild(esc);
+
+    /* La descripción corta y la tabla, como TODO gráfico de esta portada. */
+    var desc = esPiso
+      ? 'Escala de cinco peldaños, del mejor al peor. ' + cn(i, 'peldaño', 'peldaños') +
+        ' por encima quedan descartados; «' + nom + '» es el tope, y los ' +
+        (ESCALERA.length - i - 1) + ' de abajo siguen posibles.'
+      : 'Escala de cinco peldaños, del mejor al peor. El dictamen es «' + nom + '».';
+    fig.appendChild(el('p', 'sp-graf-desc', desc));
+    esc.setAttribute('aria-label', desc);
+
+    var filas = ESCALERA.map(function (p, k) {
+      return [p.t, k < i ? 'Descartado' : k === i ? 'El tope' : 'Todavía posible'];
+    });
+    fig.appendChild(tablaAccesible('El veredicto, peldaño por peldaño',
+      ['Peldaño', 'Estado'], filas));
+    host.appendChild(fig);
+  }
+
   // La portada abre en el perfil: la placa es lo primero, dentro de un botón.
   function pintarPlacaPortada() {
     var host = $('sp-hero-ficha'); if (!host) return;
@@ -8771,10 +8863,57 @@
     return c;
   }
 
-  function tarjetaGrafica(titulo, unidad, cuerpo, nota, fuentes, extra, anclaje) {
+  /* ══ LA TABLA ACCESIBLE DE UN GRÁFICO (v1143) ═══════════════════════════
+     Un SVG es una imagen: quien no lo ve no tiene de dónde sacar la cifra.
+     Va plegada —no esconde nada, la descripción corta queda siempre
+     visible— y es la MISMA función para todos, así que un gráfico nuevo la
+     hereda sin que su autor se acuerde, que es lo único que impide que esto
+     vuelva a faltar (v867). */
+  function tablaAccesible(titulo, columnas, filas) {
+    if (!filas || !filas.length) return null;
+    var w = el('details', 'sp-graf-tabla');
+    w.appendChild(el('summary', 'sp-graf-tabla-t', titulo || 'Los datos, en tabla'));
+    var t = el('table');
+    if (columnas && columnas.length) {
+      var th = el('thead'), tr = el('tr');
+      columnas.forEach(function (x) { var c = el('th', null, String(x)); c.scope = 'col'; tr.appendChild(c); });
+      th.appendChild(tr); t.appendChild(th);
+    }
+    var tb = el('tbody');
+    filas.forEach(function (f) {
+      var tr2 = el('tr');
+      (f || []).forEach(function (v, j) {
+        var cel = el(j === 0 ? 'th' : 'td', null, v === null || v === undefined ? '—' : String(v));
+        if (j === 0) cel.scope = 'row';
+        tr2.appendChild(cel);
+      });
+      tb.appendChild(tr2);
+    });
+    t.appendChild(tb); w.appendChild(t);
+    return w;
+  }
+
+  function tarjetaGrafica(titulo, unidad, cuerpo, nota, fuentes, extra, anclaje, datos) {
     var c = el('section', 'sp-graf');
     c.appendChild(el('h3', 'sp-graf-h', titulo));
     if (unidad) c.appendChild(el('p', 'sp-graf-u', unidad));
+    /* DESCRIPCIÓN CORTA Y TABLA, exigidas a TODA tarjeta desde la v1143, y
+       FALLA CERRADO (v880): la que no las trae no se cuela en silencio —se
+       lee igual que una que sí las tiene—, sale con su marca y una guarda la
+       cuenta. El coste de la marca es un renglón; el de callarla es un
+       gráfico que para un lector de pantalla no dice nada. */
+    var dsc = datos && datos.desc ? String(datos.desc).trim() : '';
+    if (dsc) {
+      var pd = el('p', 'sp-graf-desc', dsc);
+      c.appendChild(pd);
+      if (cuerpo && cuerpo.setAttribute) {
+        cuerpo.setAttribute('role', 'img');
+        cuerpo.setAttribute('aria-label', dsc);
+      }
+    } else {
+      c.appendChild(el('p', 'sp-graf-desc sp-graf-desc-falta',
+        'Sin descripción corta todavía: este gráfico no dice nada a quien no lo ve.'));
+    }
     if (extra) c.appendChild(extra);
     if (cuerpo) c.appendChild(cuerpo);
     /* Debajo del dibujo y antes de la nota: es la procedencia de lo que se
@@ -8782,6 +8921,10 @@
     if (cuerpo) { var lc = lineaDeCorte(cuerpo); if (lc) c.appendChild(lc); }
     if (nota) c.appendChild(el('p', 'sp-graf-nota', nota));
     if (anclaje) c.appendChild(anclaje);
+    var tb = datos ? tablaAccesible(datos.titulo, datos.columnas, datos.filas) : null;
+    if (tb) c.appendChild(tb);
+    else c.appendChild(el('p', 'sp-graf-desc sp-graf-desc-falta',
+      'Sin tabla de datos todavía: la cifra solo está dibujada.'));
     if (fuentes && fuentes.length) {
       /* LAS TARJETAS DE FUENTE VAN PLEGADAS, y esto resuelve dos instrucciones
          del mismo lector que chocan: «sin texto entre gráfico y gráfico más

@@ -30,7 +30,7 @@
 <meta name="description" content="Línea de tiempo documentada de las actuaciones, decisiones y posiciones del gobierno.">
 <link rel="manifest" href="manifest.json">
 <link rel="icon" href="assets/icons/icon-192.png">
-<link rel="stylesheet" href="css/70-seguimiento.css?v=1142-la-placa-el-anillo-la-raya-y-la-tira">
+<link rel="stylesheet" href="css/70-seguimiento.css?v=1143-la-portada-grafica">
 </head>
 <body>
 
@@ -57,37 +57,33 @@
 
   <!-- ══ 1. PORTADA ══════════════════════════════════════════════════════ -->
   <section class="sp-view" data-view="home" aria-labelledby="sp-h1">
-    <!-- EL ORDEN DE ESTA PANTALLA, y cada pieza está donde está por una razón:
+    <!-- LA PORTADA ES SOLO GRÁFICOS (v1143). Lo decidió quien firma el
+         módulo: ni placa con párrafo, ni cifras, ni línea de actualización,
+         ni enlace a la ficha, ni acceso al muro. Lo que se mira se mira
+         dibujado, y lo que se lee está en las cinco pestañas.
 
-         1. La ficha del gobernante. Quien entra pregunta «¿quién gobierna y
-            qué tal va?», y esa es la respuesta corta.
-         2. EL BLOQUE DE GRÁFICOS, todo seguido y solo gráficos: es lo que la
-            gente viene a mirar y se lee sin entrar a ninguna sección. Hasta
-            la v971 vivía en la sección 00 y el muro arrancaba de una, así que
-            los gráficos no los veía nadie que no entrara a buscarlos.
-         3. El enlace a la ficha completa, DESPUÉS de los gráficos: es donde
-            uno ya tiene motivos para querer abrirla.
-         4. El muro de lo último publicado.
+         TRES PIEZAS QUE NO SON «TEXTO» Y SE QUEDAN, cada una con su razón:
 
-         Y solo después el título del módulo, que ya se sabe de qué trata. -->
-    <div id="sp-hero-ficha"></div>
+         1. LA TIRA DE PESTAÑAS, sin ninguna marcada —la portada no es una
+            pestaña—. Es navegación, no contenido: la tira se pinta dentro de
+            la vista activa, así que sin ella quien abre el sitio ve gráficos
+            y NO TIENE SALIDA a ninguna pestaña. Medido antes de quitarla.
+         2. EL <h1>. Una página sin encabezado es un defecto de accesibilidad
+            de verdad, y este módulo enfoca encabezados justamente para los
+            lectores de pantalla. Es el título del documento.
+         3. LA ESCALA DEL VEREDICTO, que es un GRÁFICO y no un párrafo: el
+            peldaño alcanzado y su tope, de un vistazo. El párrafo que lo
+            explica vive entero en «¿Qué ha pasado?», dentro de la ficha.
+
+         Y LA NAV DE LAS DIEZ SECCIONES SE MUDÓ a «¿Qué ha pasado?», no se
+         borró: era la ÚNICA vía a `tablero` y a `indicadores`, que no cuelgan
+         de ninguna pestaña. Quitarla sin mudarla los dejaba huérfanos. -->
+    <div class="sp-pes-host"></div>
+
+    <h1 id="sp-h1" class="sp-h1-portada">Seguimiento Presidencial</h1>
+
+    <div id="sp-veredicto-escala"></div>
     <div id="sp-portada-graf"></div>
-    <div id="sp-ir-ficha"></div>
-    <div id="sp-acceso-muro"></div>
-
-    <div class="sp-lede">
-      <p class="sp-eyebrow">URBIS · Rendición de cuentas</p>
-      <h1 id="sp-h1">Seguimiento Presidencial</h1>
-      <p class="sp-dek">Una línea de tiempo documentada de las principales actuaciones, decisiones y
-         posiciones del gobierno. Cada hecho lleva su fecha real y el enlace a la fuente.</p>
-      <p class="sp-who"><span id="sp-presi">—</span> <em id="sp-periodo"></em></p>
-    </div>
-
-    <dl class="sp-stats" id="sp-stats"></dl>
-
-    <nav class="sp-secciones" id="sp-secciones" aria-label="Secciones del seguimiento"></nav>
-
-    <p class="sp-nextup" id="sp-nextup"></p>
   </section>
 
   <!-- ══ PESTAÑA · ¿QUÉ HA PASADO? ═══════════════════════════════════════
@@ -97,6 +93,13 @@
        Las secciones están MUDADAS, no copiadas: su texto vive solo acá. -->
   <section class="sp-view" data-view="pasado" aria-labelledby="sp-fi-h">
     <div class="sp-pes-host"></div>
+
+    <!-- MUDADA DESDE LA PORTADA en la v1143, no copiada. Es la única vía a
+         `tablero` y a `indicadores`, que no cuelgan de ninguna pestaña; si se
+         hubiera borrado con el resto del texto de la portada, esas dos vistas
+         quedaban sin forma de llegar. Se pinta en `pintarHome`, que corre una
+         vez al arrancar, así que estar acá no le cuesta nada. -->
+    <nav class="sp-secciones" id="sp-secciones" aria-label="Secciones del seguimiento"></nav>
 
     <section class="sp-bloque" aria-labelledby="sp-fi-h">
       <header class="sp-vhead" data-sec="ficha">
@@ -380,6 +383,6 @@
      «Fuentes y método» (v1140), con enlace propio. El botón de información
      de la barra lleva allá. -->
 
-<script src="js/70-seguimiento.js?v=1142-la-placa-el-anillo-la-raya-y-la-tira"></script>
+<script src="js/70-seguimiento.js?v=1143-la-portada-grafica"></script>
 </body>
 </html>

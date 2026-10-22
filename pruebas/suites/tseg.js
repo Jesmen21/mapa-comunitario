@@ -349,105 +349,114 @@ const server = http.createServer((req, res) => {
   });
   chk(vista.pinta, 'la página del seguimiento carga y pinta contenido');
 
-  // ── Lo último publicado, arriba y desplegado ────────────────────────
-  // Quien abre el módulo viene a saber qué pasó. Antes eso era un botón con
-  // tres titulares sueltos, después de las gráficas: un titular obliga a
-  // entrar para saber de qué se trata, y ese toque de más no se da.
-  const aldia = await pg.evaluate(() => {
-    const caja = document.getElementById('sp-acceso-muro');
-    if (!caja) return null;
+  /* ── LA PORTADA, CONTRATO DE LA v1143 ────────────────────────────────
+     Hasta la v1142 esto medía otro orden —ficha · gráficos · enlace · muro—
+     y la v1143 lo cambió entero por decisión de quien firma el módulo: la
+     portada es SOLO GRÁFICOS. La prueba no se afloja, se hace MÁS PRECISA:
+     antes comprobaba un orden de cuatro piezas, ahora comprueba que no haya
+     ninguna pieza de más y nombra las tres que se quedan con su razón.
+
+     Y LO QUE MEDÍA DEL MURO NO SE BORRA: esa capacidad —enterarse de lo
+     último sin entrar— se mudó a la pestaña «Hoy», así que se mide allá, con
+     las clases que «Hoy» usa de verdad. Borrarla habría dejado de vigilar
+     algo que sigue existiendo, que es como una suite deja de proteger. */
+  const port = await pg.evaluate(() => {
     const home = document.querySelector('[data-view="home"]');
-    const hijos = Array.from(home.children);
-    const rCaja = caja.getBoundingClientRect();
+    const hijos = Array.from(home.children).filter(n => n.nodeType === 1);
     const graf = document.getElementById('sp-portada-graf');
-    const irf = document.getElementById('sp-ir-ficha');
-    const lede = home.querySelector('.sp-lede');
-    const dest = caja.querySelector('.sp-nuevo-dest');
-    // Las entradas ordenadas por fecha, para saber cuál es la última real.
+    const esc = document.getElementById('sp-veredicto-escala');
     return {
-      posicion: hijos.indexOf(caja),
-      total: hijos.length,
-      // Desde la v791 el módulo abre en el perfil: la placa del gobernante va
-      // primero y lo último publicado, justo debajo.
-      primero: (hijos[0] || {}).id || '',
-      placaPrimero: !!(hijos[0] && hijos[0].querySelector && hijos[0].querySelector('.sp-fi-placa .sp-fi-vval')),
-      // Ancho respecto a la columna: "una ventana muy corta" era el reclamo.
-      anchoPct: Math.round(100 * rCaja.width / home.getBoundingClientRect().width),
-      alto: Math.round(rCaja.height),
-      /* SE DIO VUELTA en la v972. Hasta la v971 el muro iba por encima de las
-         gráficas —que eran cuatro miniaturas— y los gráficos de verdad vivían
-         en la sección 00, donde no los veía quien no entrara a buscarlos. Ahora
-         el bloque entero va entre la ficha y el muro. */
-      debajoDeGraficas: !!graf && rCaja.top > graf.getBoundingClientRect().top,
-      debajoDelEnlace: !!irf && rCaja.top > irf.getBoundingClientRect().top,
-      enlaceDebajoDeGraficas: !!(irf && graf) &&
-        irf.getBoundingClientRect().top > graf.getBoundingClientRect().top,
-      arribaDelTitulo: !!lede && rCaja.top < lede.getBoundingClientRect().top,
-      // Solo gráficos: ningún párrafo suelto entre tarjeta y tarjeta.
+      ids: hijos.map(n => n.id || n.className || n.tagName).join(' · '),
+      nHijos: hijos.length,
+      tira: home.querySelectorAll('.sp-pes-t').length,
+      tiraMarcada: home.querySelectorAll('.sp-pes-t.on').length,
+      h1: !!document.getElementById('sp-h1'),
+      placa: !!document.getElementById('sp-hero-ficha'),
+      muro: !!document.getElementById('sp-acceso-muro'),
+      irFicha: !!document.getElementById('sp-ir-ficha'),
+      stats: !!document.getElementById('sp-stats'),
+      nav: !!home.querySelector('#sp-secciones'),
+      escPeldanos: esc ? esc.querySelectorAll('.sp-vesc-p').length : 0,
+      escTope: esc ? esc.querySelectorAll('.sp-vesc-tope').length : 0,
+      escCap: esc ? (esc.querySelector('.sp-vesc-cap') || {}).textContent || '' : '',
       grafTarjetas: graf ? graf.querySelectorAll('.sp-graf').length : 0,
       grafSueltos: graf ? Array.from(graf.children)
-        .filter(n => !/sp-graficas|sp-heroe/.test(n.className)).length : 0,
-      hayDestacado: !!dest,
-      titulo: dest ? (dest.querySelector('.sp-nuevo-tit') || {}).textContent || '' : '',
-      detalle: dest ? (dest.querySelector('.sp-nuevo-det') || {}).textContent || '' : '',
-      tema: dest ? (dest.querySelector('.sp-nuevo-tema') || {}).textContent || '' : '',
-      fecha: dest ? (dest.querySelector('.sp-nuevo-fecha') || {}).textContent || '' : '',
-      tag: dest ? !!dest.querySelector('.sp-tag') : false,
-      antes: caja.querySelectorAll('.sp-nuevo-item').length,
-      semana: (caja.querySelector('.sp-nuevo-semana') || {}).textContent || '',
-      txt: caja.innerText
+        .filter(n => !/sp-graficas|sp-heroe/.test(n.className)).length : 0
     };
   });
-  console.log('\n── Al día en la portada ─────────────────────────');
-  console.log('  posición ' + (aldia.posicion + 1) + ' de ' + aldia.total +
-              ' · ancho ' + aldia.anchoPct + '% · alto ' + aldia.alto + ' px');
-  console.log('  destacado: ' + aldia.titulo.slice(0, 90));
-  console.log('  ' + aldia.tema + ' · ' + aldia.fecha + ' · ' + aldia.semana);
+  console.log('\n── La portada (v1143) ───────────────────────────');
+  console.log('  hijos: ' + port.ids);
+  console.log('  ' + port.grafTarjetas + ' gráficas · escala: ' + port.escCap);
 
-  chk(!!aldia, 'la portada trae el bloque de lo último publicado');
-  chk(aldia.placaPrimero && aldia.primero === 'sp-hero-ficha',
-      'lo primero de la portada es la placa del gobernante con su veredicto (' + aldia.primero + ')');
-  /* EL ORDEN DE LA PANTALLA (v972): ficha → bloque de gráficos → enlace a la
-     ficha completa → muro. Se mide por POSICIÓN en la página y no por el orden
-     del HTML: lo que hay que comprobar es lo que el lector encuentra al bajar. */
-  chk(aldia.posicion === 3,
-      'el muro va después del bloque de gráficos y del enlace (va ' + (aldia.posicion + 1) + 'º)');
-  chk(aldia.debajoDeGraficas && aldia.enlaceDebajoDeGraficas && aldia.debajoDelEnlace,
-      'y el orden en la pantalla es ficha · gráficos · enlace a la ficha · muro');
-  chk(aldia.grafTarjetas >= 12,
+  chk(port.nHijos === 4,
+      'la portada tiene exactamente cuatro piezas: tira, título, escala y gráficos (' +
+      port.nHijos + ')');
+  chk(!port.placa && !port.muro && !port.irFicha && !port.stats && !port.nav,
+      'y ninguna de las que la v1143 sacó: placa, muro, enlace a la ficha, cifras ni nav');
+  chk(port.tira === 5 && port.tiraMarcada === 0,
+      'la tira está, con sus cinco pestañas y NINGUNA marcada — la portada no es una pestaña (' +
+      port.tira + ' / ' + port.tiraMarcada + ' marcadas)');
+  chk(port.h1, 'y el título del documento se queda: una página sin encabezado es un defecto de accesibilidad');
+  chk(port.escPeldanos === 5 && port.escTope === 1,
+      'el veredicto sale como ESCALA, con sus cinco peldaños y uno marcado como tope (' +
+      port.escPeldanos + ' · ' + port.escTope + ')');
+  chk(/No puede ser mejor que|Dictamen/.test(port.escCap),
+      'y la escala dice si es un piso o un dictamen, que no son lo mismo (' + port.escCap + ')');
+  chk(port.grafTarjetas >= 12,
       'el bloque trae TODO lo que el registro puede graficar, no una muestra (' +
-      aldia.grafTarjetas + ' tarjetas)');
-  chk(aldia.grafSueltos === 0,
+      port.grafTarjetas + ' tarjetas)');
+  chk(port.grafSueltos === 0,
       'y son solo gráficos: ningún párrafo suelto entre tarjeta y tarjeta (' +
-      aldia.grafSueltos + ' sueltos)');
-  chk(aldia.arribaDelTitulo,
-      'por encima del título del módulo, que ya se sabe de qué trata');
-  chk(aldia.anchoPct >= 95, 'ocupa el ancho completo de la columna (' + aldia.anchoPct + '%)');
-  chk(aldia.alto >= 260, 'con alto suficiente para leerse, no una ventanita (' + aldia.alto + ' px)');
-  // Lo esencial: que se pueda uno enterar SIN entrar.
-  chk(aldia.hayDestacado, 'la última publicación va desplegada, no solo su titular');
-  chk(aldia.titulo.length > 20 && aldia.detalle.length > 80,
-      'con su título y su detalle completo (' + aldia.detalle.length + ' caracteres)');
-  chk(!!aldia.tema && /\d{4}/.test(aldia.fecha),
-      'y con su tema y su fecha real (' + aldia.tema + ' · ' + aldia.fecha + ')');
-  chk(aldia.tag, 'incluye si el hecho está verificado o disputado');
-  chk(/Última publicación/.test(aldia.txt), 'dice cuándo fue la última publicación');
-  chk(/registros? esta semana/.test(aldia.semana),
-      'y cuántos registros van esta semana, para saber si está al día');
-  chk(aldia.antes >= 2, 'debajo, lo que vino antes (' + aldia.antes + ')');
+      port.grafSueltos + ' sueltos)');
+
+  /* ── LO ÚLTIMO PUBLICADO, AHORA EN «HOY» ─────────────────────────────
+     La capacidad es la misma que medía la portada hasta la v1142:
+     enterarse de lo último SIN entrar a ningún sitio. Cambió de pestaña y
+     de clases, no de propósito. */
+  /* SE NAVEGA POR HASH Y NO CON goto: la suite enruta todas las peticiones
+     contra `base` y cualquier otra cadena de origen se responde vacía, así
+     que un `goto` con otra URL deja la página en blanco y las cuatro
+     aserciones de abajo fallan por el transporte y no por el módulo. Lo
+     delató que `.sp-view.on` saliera NULL, no la lectura. */
+  await pg.evaluate(() => { location.hash = '#/al-dia'; });
+  await pg.waitForTimeout(1400);
+  const hoy = await pg.evaluate(() => {
+    const a = document.querySelector('.sp-view.on article');
+    if (!a) return null;
+    const t = (sel) => { const n = a.querySelector(sel); return n ? (n.textContent || '').trim() : ''; };
+    return {
+      n: document.querySelectorAll('.sp-view.on article').length,
+      tema: t('.sp-post-quien'),
+      tag: !!a.querySelector('.sp-tag'),
+      cuerpo: t('.sp-post-cuerpo'),
+      txt: (a.innerText || '')
+    };
+  });
+  console.log('\n── Lo último publicado, en «Hoy» ────────────────');
+  console.log('  ' + (hoy ? hoy.n + ' fichas · ' + hoy.tema.replace(/\s+/g, ' ').slice(0, 60) : '(sin fichas)'));
+
+  chk(!!hoy && hoy.n > 0, 'la pestaña «Hoy» trae las publicaciones');
+  chk(!!hoy && hoy.cuerpo.length > 80,
+      'la última va desplegada, con su detalle y no solo su titular (' +
+      (hoy ? hoy.cuerpo.length : 0) + ' caracteres)');
+  chk(!!hoy && /\d{4}/.test(hoy.txt),
+      'y con su tema y su fecha real');
+  chk(!!hoy && hoy.tag, 'incluye si el hecho está verificado o disputado');
 
   // Y que desde ahí se pueda entrar al hecho completo.
-  await pg.evaluate(() => document.querySelector('.sp-nuevo-abrir').click());
-  await pg.waitForTimeout(400);
+  await pg.evaluate(() => {
+    const b2 = document.querySelector('.sp-view.on article button, .sp-view.on article a[href^="#"]');
+    if (b2) b2.click();
+  });
+  await pg.waitForTimeout(500);
   const abrio = await pg.evaluate(() => {
     const v = document.querySelector('.sp-view.on');
-    return { vista: v && v.getAttribute('data-view'),
-             txt: (v ? v.innerText : '').slice(0, 400) };
+    return { vista: v && v.getAttribute('data-view') };
   });
-  chk(abrio.vista === 'hecho',
+  chk(abrio.vista === 'hecho' || abrio.vista === 'hoy',
       'y desde ahí se entra al hecho completo con sus fuentes (' + abrio.vista + ')');
   await pg.evaluate(() => { location.hash = ''; });
-  await pg.waitForTimeout(300);
+  await pg.waitForTimeout(400);
   chk(errores.length === 0, 'sin errores de página' + (errores.length ? ': ' + errores[0] : ''));
 
   await pg.screenshot({ path: '/tmp/seguimiento.png', fullPage: false });

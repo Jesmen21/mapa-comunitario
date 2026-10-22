@@ -13,7 +13,7 @@
 
    La versión va acá y en vision-territorial.html, idéntica, como en los
    otros siete archivos de versión del sitio: revisar.js lo comprueba. */
-const VT_CACHE = 'urbis-vt-v1142-la-placa-el-anillo-la-raya-y-la-tira';
+const VT_CACHE = 'urbis-vt-v1143-la-portada-grafica';
 const VT_ASSETS = [
   './vision-territorial.html',
   './css/90-vt.css',
