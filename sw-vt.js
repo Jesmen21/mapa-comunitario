@@ -13,7 +13,7 @@
 
    La versión va acá y en vision-territorial.html, idéntica, como en los
    otros siete archivos de versión del sitio: revisar.js lo comprueba. */
-const VT_CACHE = 'urbis-vt-v1158-santa-marta-y-las-fuentes-que-nadie-miraba';
+const VT_CACHE = 'urbis-vt-v1159-el-banco-mundial-sin-primaria-y-el-escudo-con-sus-dos-citas';
 const VT_ASSETS = [
   './vision-territorial.html',
   './css/90-vt.css',

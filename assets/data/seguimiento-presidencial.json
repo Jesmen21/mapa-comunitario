@@ -9419,7 +9419,7 @@
       "titulo": "El Banco Mundial desembolsa USD 200 millones para la emergencia",
       "categoriaProbatoria": "hecho-probado",
       "tipoMedicion": "contexto-estructural",
-      "detalle": "Primer giro de una línea contingente de hasta USD 450 millones. Incluye además asistencia técnica para la respuesta al terremoto.",
+      "detalle": "Primer giro de una línea contingente de hasta USD 450 millones. Incluye además asistencia técnica para la respuesta al terremoto. El 24 de septiembre de 2026 el Grupo Banco Mundial aprobó un financiamiento adicional de 200 millones de dólares para la respuesta y la recuperación tras el terremoto del 10 de agosto. Es un acto posterior y distinto del desembolso de agosto, por el mismo monto: según la prensa consultada, los dos movimientos llevan el respaldo a 400 millones de dólares en total. El crédito al que se suma es un préstamo de Políticas de Desarrollo para la Gestión del Riesgo de Desastres con Opción de Desembolso Diferido ante Catástrofes (Cat DDO), aprobado en febrero de 2025 y ya desembolsado.",
       "fuentes": [
         {
           "n": "El Tiempo",
@@ -9445,10 +9445,25 @@
           "n": "Infobae · El Gobierno solicitará ampliar el crédito con el Banco Mundial: ya desembolsó US$200 millones",
           "u": "https://www.infobae.com/colombia/2026/08/19/gobierno-solicitara-ampliar-credito-con-el-banco-mundial-para-atender-a-los-damnificados-por-el-terremoto-ya-desembolso-200-millones-de-dolares/",
           "rol": "efecto"
+        },
+        {
+          "n": "Publimetro · Banco Mundial amplía financiamiento para Colombia tras terremoto: serán US$400 millones en total",
+          "u": "https://www.publimetro.co/noticias/2026/09/27/banco-mundial-amplia-financiamiento-para-colombia-tras-terremoto-seran-us400-millones-en-total/",
+          "rol": "acto"
+        },
+        {
+          "n": "El Tiempo · Banco Mundial amplía apoyo a Colombia tras terremoto: aprueba otros US$200 millones para atender emergencia",
+          "u": "https://www.eltiempo.com/amp/economia/sectores/banco-mundial-amplia-apoyo-a-colombia-tras-terremoto-aprueba-otros-us-200-millones-para-atender-emergencia-3588718",
+          "rol": "acto"
+        },
+        {
+          "n": "Pulzo · Banco Mundial aprueba otros 200 millones de dólares en ayudas para Colombia tras el terremoto",
+          "u": "https://www.pulzo.com/economia/banco-mundial-aprueba-otros-200-millones-dolares-ayudas-colombia-PP5312918",
+          "rol": "contexto"
         }
       ],
       "tipoFuente": "verificado",
-      "contrapunto": "El techo de la línea contingente no es una sola cifra en las fuentes: esta entrada dice «hasta USD 450 millones» y el ministro de Hacienda habló de un cupo posible de hasta USD 420 millones. Las dos circulan y ninguna autoridad ha publicado el contrato, así que la cifra del techo queda sin dirimir; el desembolso de los USD 200 millones sí está corroborado.",
+      "contrapunto": "El techo de la línea contingente no es una sola cifra en las fuentes: esta entrada dice «hasta USD 450 millones» y el ministro de Hacienda habló de un cupo posible de hasta USD 420 millones. Las dos circulan y ninguna autoridad ha publicado el contrato, así que la cifra del techo queda sin dirimir; el desembolso de los USD 200 millones sí está corroborado. Conviene separar qué cifras se suman y cuáles no. Los 200 millones desembolsados el 13 de agosto y los 200 aprobados el 24 de septiembre SÍ se acumulan, y la prensa consultada los presenta como 400 millones en total. Las otras cifras que circularon no son parte de ese total: el ministro de Hacienda habló en agosto de ampliar el crédito hasta 450 millones de dólares y otra nota reportó una solicitud por 250 millones, pero lo aprobado fueron 200; y los 300 millones de financiamiento contingente que ofreció el BID son de otra entidad y no consta su desembolso. Eran intenciones y solicitudes, no aprobaciones.",
       "id": "credito-banco-mundial-200-terremoto"
     },
     {
@@ -9576,7 +9591,7 @@
       "categoriaProbatoria": "en-circulacion",
       "tipoMedicion": "contexto-estructural",
       "detalle": "El secretario de Defensa de EE. UU. afirmó que el Gobierno de De la Espriella solicitó acciones militares conjuntas contra el narcoterrorismo. El anuncio se hizo en Ciudad de Panamá, en la cumbre donde Colombia se sumó a la coalición antidrogas impulsada por Trump.",
-      "contrapunto": "Una cooperación a gran escala que implique tropas estadounidenses en suelo colombiano debe pasar por el Congreso, según jurisprudencia constitucional previa. Además, no se han hecho públicas las zonas, bases ni el número de efectivos. — Las dos versiones están enfrentadas y ningún tercero las ha dirimido: el secretario de Defensa de EE. UU. afirma que el presidente «ya solicitó» autorizar operaciones militares conjuntas, y el Gobierno colombiano publicó después un comunicado sosteniendo que no existe ningún acuerdo que autorice operaciones militares extranjeras en territorio nacional. Por eso la naturaleza de la fuente es DISPUTADA y no verificada: lo que consta es lo que cada parte dijo, no cuál de las dos describe el acuerdo.",
+      "contrapunto": "Una cooperación a gran escala que implique tropas estadounidenses en suelo colombiano debe pasar por el Congreso, según jurisprudencia constitucional previa. Además, no se han hecho públicas las zonas, bases ni el número de efectivos. — Las dos versiones están enfrentadas y ningún tercero las ha dirimido: el secretario de Defensa de EE. UU. afirma que el presidente «ya solicitó» autorizar operaciones militares conjuntas, y el Gobierno colombiano publicó después un comunicado sosteniendo que no existe ningún acuerdo que autorice operaciones militares extranjeras en territorio nacional. Por eso la naturaleza de la fuente es DISPUTADA y no verificada: lo que consta es lo que cada parte dijo, no cuál de las dos describe el acuerdo. La contradicción es entre DOS DECLARACIONES, cada una con su fuente, y no entre un hecho y una versión: Pete Hegseth dijo el 12 de agosto en Ciudad de Panamá que Colombia solicitó operaciones militares conjuntas (CNN en Español y El Tiempo, 12 de agosto de 2026); el ministro de Defensa, Jorge Eduardo Mora, dijo el 18 de septiembre que «no estamos vendiendo ni la soberanía ni aquí van a pasar tropas» (NTN24, 18 de septiembre de 2026). El 13 de agosto el presidente del Congreso, Honorio Henríquez, respaldó la cooperación y advirtió que el ingreso de tropas extranjeras requiere autorización del Senado, «así lo establece la Constitución», y dijo no tener el detalle de si la cooperación incluye tropas (Infobae, 13 de agosto de 2026). El texto del acuerdo no se halló, así que no consta cuál de las dos declaraciones describe lo firmado.",
       "fuentes": [
         {
           "n": "Semana",
@@ -9597,10 +9612,21 @@
           "n": "El Colombiano · ¿El Gobierno autorizó sin permiso operaciones conjuntas con Estados Unidos? Congresistas reclaman",
           "u": "https://www.elcolombiano.com/colombia/politica/gobierno-autorizo-operaciones-militares-conjuntas-estados-unidos-congresistas-reclaman-LA39938553",
           "rol": "efecto"
+        },
+        {
+          "n": "NTN24 · Ministro de Defensa de Colombia aclaró la posible llegada de tropas de Estados Unidos con la adhesión al Escudo de las Américas",
+          "u": "https://www.ntn24.com/noticias-actualidad/ministro-de-defensa-de-colombia-aclaro-la-posible-llegada-de-tropas-de-estados-unidos-con-la-adhesion-al-escudo-de-las-americas-no-estamos-vendiendo-ni-la-soberania-ni-aqui-van-a-pasar-tropas-651478",
+          "rol": "contexto"
+        },
+        {
+          "n": "Infobae · Presidente del Senado apoyó oferta de Estados Unidos contra el crimen en Colombia, pero advirtió sobre el ingreso de tropas extranjeras: «Así lo establece la Constitución»",
+          "u": "https://www.infobae.com/colombia/2026/08/13/presidente-del-senado-apoyo-oferta-de-estados-unidos-contra-el-crimen-en-colombia-pero-advirtio-sobre-el-ingreso-de-tropas-extranjeras-asi-lo-establece-la-constitucion/",
+          "rol": "contexto"
         }
       ],
       "tipoFuente": "disputado",
-      "contrargumentoOficial": "El Gobierno de Colombia publicó un comunicado afirmando que «no existe ningún acuerdo que autorice operaciones militares extranjeras por ningún país en territorio nacional», desmintiendo la lectura del secretario de Defensa estadounidense. No precisa qué fue entonces lo que se solicitó al Departamento de Defensa ni en qué consiste la cooperación anunciada en la cumbre de Panamá."
+      "contrargumentoOficial": "El Gobierno de Colombia publicó un comunicado afirmando que «no existe ningún acuerdo que autorice operaciones militares extranjeras por ningún país en territorio nacional», desmintiendo la lectura del secretario de Defensa estadounidense. No precisa qué fue entonces lo que se solicitó al Departamento de Defensa ni en qué consiste la cooperación anunciada en la cumbre de Panamá.",
+      "id": "hegseth-operaciones-conjuntas-panama-2026-08-12"
     },
     {
       "fecha": "2026-08-12",
@@ -9611,7 +9637,7 @@
       "tipoMedicion": "actividad",
       "indicadores": [],
       "nivelGobierno": "nacional",
-      "detalle": "En la cumbre “Escudo de las Américas” en Ciudad de Panamá, Colombia se suma a la coalición de 18 países impulsada por Trump. Medellín queda designada como sede regional del programa — la única ubicación concreta anunciada hasta ahora.",
+      "detalle": "En la cumbre “Escudo de las Américas” en Ciudad de Panamá, Colombia se suma a la coalición de 18 países impulsada por Trump. Medellín queda designada como sede regional del programa — la única ubicación concreta anunciada hasta ahora. La adhesión se firmó el 12 de agosto de 2026. El texto del acuerdo no se halló: no está publicado en ninguna de las fuentes consultadas y este contenedor no alcanza los dominios oficiales, así que no consta qué obligaciones establece. El 18 de septiembre el ministro de Defensa, Jorge Eduardo Mora, declaró sobre la adhesión: «no estamos vendiendo ni la soberanía ni aquí van a pasar tropas» (NTN24, 18 de septiembre de 2026).",
       "fuentes": [
         {
           "n": "Cambio",
@@ -9632,10 +9658,16 @@
           "n": "CNN en Español · Hegseth anuncia operaciones conjuntas de EE. UU. con Colombia contra el narcoterrorismo: así es el panorama en América Latina",
           "u": "https://cnnespanol.cnn.com/2026/08/13/colombia/paises-permiten-presencia-militar-eeuu-orix",
           "rol": "acto"
+        },
+        {
+          "n": "NTN24 · Ministro de Defensa de Colombia aclaró la posible llegada de tropas de Estados Unidos con la adhesión al Escudo de las Américas: «no estamos vendiendo ni la soberanía ni aquí van a pasar tropas»",
+          "u": "https://www.ntn24.com/noticias-actualidad/ministro-de-defensa-de-colombia-aclaro-la-posible-llegada-de-tropas-de-estados-unidos-con-la-adhesion-al-escudo-de-las-americas-no-estamos-vendiendo-ni-la-soberania-ni-aqui-van-a-pasar-tropas-651478",
+          "rol": "acto"
         }
       ],
       "tipoFuente": "verificado",
-      "contrapunto": "Quien formalizó la adhesión fue el ministro de Defensa, Jorge Mora, y Colombia entró como miembro número 19 de la Coalición de las Américas Contra los Carteles (A3C), derivada del Escudo de las Américas. La sede regional en Medellín sigue siendo la única ubicación concreta anunciada, sin acto administrativo que la establezca."
+      "contrapunto": "Quien formalizó la adhesión fue el ministro de Defensa, Jorge Mora, y Colombia entró como miembro número 19 de la Coalición de las Américas Contra los Carteles (A3C), derivada del Escudo de las Américas. La sede regional en Medellín sigue siendo la única ubicación concreta anunciada, sin acto administrativo que la establezca.",
+      "id": "adhesion-escudo-de-las-americas-2026-08-12"
     },
     {
       "fecha": "2026-08-11",
