@@ -393,7 +393,7 @@ nombra afirmaciones con su frase—; y el día que estos bloques se grafiquen,
 sus TÍTULOS y etiquetas pasan por la misma guarda penal que los títulos de
 las entradas (v1136), que ya está escrita y los alcanzaría sin tocarla.
 
-## 12 · La v1140 no se publica sin las suites del navegador · `pendiente`
+## 12 · La v1140 no se publica sin las suites del navegador · `cerrado en v1143`
 
 **Anotado el 21 de octubre de 2026 por decisión del usuario, y es la
 condición literal:** *la v1140 **NO se publica** hasta correr las ~58 suites
@@ -478,7 +478,7 @@ registro, `tcorregir` y `tpdf` miden composición.
 `tseg` —cuatro entradas apuntan a las categorías `seguridad` y `politica`, que
 no están entre las 13 declaradas—. Tiene su sección propia, la 16.
 
-## 13 · Faltan las secciones de la v1137, la v1138 y la v1139 · `pendiente`
+## 13 · Faltan las secciones de la v1137, la v1138 y la v1139 · `cerrado en v1143`
 
 **El hecho, medido al cerrar la v1140.** `BITACORA.md` salta de la **v1135** a
 la v1140: las tres tandas intermedias —v1137 (la vara penal en los títulos),
@@ -683,3 +683,103 @@ igual, y la guarda lo denuncia si vuelve a pasar.
 **Qué lo cierra:** pegar en la rutina el párrafo que la v1141 dejó escrito en
 `BITACORA.md`, con las quince categorías y la instrucción de no inventar. Es
 una edición de una sola vez en la web, y después esta sección se cierra.
+
+---
+
+## Cierre de la §12 (v1143)
+
+**Lo decidió el usuario el 22 de octubre de 2026, con la v1142 ya publicada**,
+y queda citado: *ciérralo para v1140, v1141 y v1142. Las 10 suites rojas y las
+2 caídas del módulo educativo son idénticas en las tres versiones, así que no
+las causamos.*
+
+**Lo que lo cierra, y está medido:** las 120 suites corrieron —todas menos
+`tvision`, que pide Postgres— y la comparación se hizo con **un árbol de
+trabajo por versión**, con el 8199 reatado a cada uno y comprobando su token
+antes de correr nada. Las 12 suites examinadas dan **exactamente las mismas
+rojas** en `b9a8edf` (v1137), en `3f6a7e1` (v1138) y en `1942d1e` (v1140):
+cero suites cambian. Y el diff de la v1140 no toca ni una línea de `js/61` ni
+de `js/68`, que es el módulo que nueve de las diez miden.
+
+De los seis fallos de `tseg`, cinco eran una expectativa vieja —el ancla por
+título— y uno un defecto real: las categorías no declaradas. **Los dos se
+cerraron en la v1141.** `tseg` pasa de 110/116 a **116/116**.
+
+**La deuda que queda NO es de estas tres versiones** y se registra aparte, en
+la §18.
+
+## 18 · Diez suites rojas y dos caídas del módulo educativo · `pendiente`
+
+**Deuda heredada, no causada por la v1140, la v1141 ni la v1142.** Sale del
+cierre de la §12: las mismas rojas en las tres versiones comparadas.
+
+```
+rojas:   tseg(6→0 en v1141) tcorregir(5) tpdf(3) tpliegogrande(3) tamenaza(2)
+         tdoslaminas(1) tlaminaedu(1) tmasanalisis(1) tplantas(1) tpisos(1)
+caidas:  tconfig · tficha
+```
+
+**SIETE pueden depender del motor viejo.** La corrida se hizo con la copia de
+GitHub del motor, **`7fd9a11`, del 15 de septiembre de 2026**, que es lo último
+empujado a ese repositorio. El motor es quien devuelve los usos, la malla de
+flujo y las cifras que esas suites miden en milímetros de papel, así que si en
+el computador del usuario hay trabajo del motor **sin empujar** —reglas
+editadas y `construir.js` corrido en local— pueden dar otro resultado:
+
+| Repetir con el motor al día | No dependen del motor |
+|---|---|
+| `tamenaza` · `tdoslaminas` · `tlaminaedu` · `tmasanalisis` · `tplantas` · `tpisos` · `tpliegogrande` | `tcorregir` y `tpdf` miden composición; `tconfig` y `tficha` se caen por otra causa |
+
+**Dos ya tienen causa conocida y no son del código:** `tconfig` pide
+`urbis-pruebas/docs-privado/apps-script-urbis-auth.gs`, un archivo privado que
+el contenedor no tiene —en el computador del usuario probablemente existe, y es
+la primera que hay que volver a intentar—; y `tpliegogrande` **se quedó sin
+material**, que tiene su propia sección (§15) y no se arregla doblando el
+pliego.
+
+**Por qué limita.** Diez suites en rojo enseñan a leer su rojo como ruido, que
+es cómo una suite deja de proteger. **Qué lo cierra:** repetirlas en una
+máquina con `../urbis-motor` al día, y después tratar una por una las que
+sigan rojas.
+
+## Bloque listo para pegar en el PASO 2 de la rutina web (§17)
+
+**Queda escrito acá, entero y en un solo bloque**, para que pegarlo sea copiar
+y nada más. Mientras no esté pegado, la §17 sigue abierta: la guarda estática
+de la v1141 **denuncia** una categoría inventada, pero no impide que la rutina
+la escriba.
+
+> **CATEGORÍAS · usa SOLO estas quince claves.**
+>
+> No inventes ninguna, no cambies la grafía, y escribe la clave en minúscula
+> y sin tildes. Si un hecho no encaja en ninguna, usa la más cercana y dilo
+> en el `detalle`. **Nunca escribas una clave nueva:** una categoría que el
+> registro no declara deja la entrada fuera del filtro de temas del sitio y
+> descuadra su propia cuenta en pantalla.
+>
+> `gobierno` — Gobierno y decretos
+> `israel` — Relación con Israel
+> `eeuu` — EE. UU. y acceso militar
+> `corrupcion` — Corrupción y contratación
+> `creditos` — Créditos y deuda
+> `emergencia` — Emergencias
+> `economia` — Economía
+> `exterior` — Política exterior
+> `ambiente` — Ambiente y páramos
+> `educacion` — Educación
+> `legitimidad` — Legitimidad electoral
+> `servicios` — Servicios públicos y bolsillo
+> `informacion` — Desinformación y discurso público
+> `seguridad` — Seguridad y orden público
+> `politica` — Opinión y aprobación
+
+**Falta la segunda mitad y no la escribí.** El encargo pedía este párrafo
+«junto con el de 4.22», y **no pude identificar a qué se refiere «4.22»**: no
+hay una sección, un paso ni un bloque con ese número en `CLAUDE.md`, en este
+archivo ni en `BITACORA.md`. Antes que pegar algo inventado en la rutina
+—que es precisamente lo que esta sección existe para impedir— queda pedido.
+Dos lecturas posibles, por si alguna es la buena: el sello de `actualizado`
+en hora de Colombia, que la v1135 dejó escrito con su orden exacta
+(`TZ=America/Bogota date +%F`) y que vive en el paso 5 de la rutina; o la
+lista de los cinco estados de `casos.lista`, que es la otra cosa que la
+rutina escribe y puede equivocar.

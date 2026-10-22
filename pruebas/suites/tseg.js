@@ -25,7 +25,7 @@ const server = http.createServer((req, res) => {
 
   // ── Revisión del dato, antes de mirar la pantalla ────────────────────
   const d = JSON.parse(fs.readFileSync(REPO + '/assets/data/seguimiento-presidencial.json', 'utf8'));
-  const nueva = d.entradas.find(e => /Deroga 11 circulares/.test(e.titulo));
+  const nueva = d.entradas.find(e => e.id === "deroga-11-circulares-laborales-gobierno-2026-08-20");
   chk(!!nueva, 'la entrada de las circulares está en el JSON');
   if (nueva) {
     chk(nueva.fecha === '2026-08-20', 'lleva la fecha de la resolución, no la del rebote en prensa');
@@ -81,7 +81,7 @@ const server = http.createServer((req, res) => {
   }
 
   // ── Tercer caso: el Bloque de Defensa para la Seguridad Urbana ────────
-  const bloq = d.entradas.find(e => /Bloque de Defensa/i.test(e.titulo));
+  const bloq = d.entradas.find(e => e.id === "anuncia-bloque-defensa-seguridad-urbana-2026-07-05");
   chk(!!bloq, 'la entrada del Bloque de Seguridad Urbana está en el JSON');
   if (bloq) {
     chk(bloq.tipoFuente === 'disputado',
@@ -109,7 +109,7 @@ const server = http.createServer((req, res) => {
   // Es el asunto donde más fácil se resbala un módulo así: el titular viral
   // dice "firmas falsas" y la Registraduría dijo otra cosa. La entrada tiene
   // que sostener las dos mitades o no sirve.
-  const firmas = d.entradas.find(e => /Registraduría invalidó/.test(e.titulo));
+  const firmas = d.entradas.find(e => e.id === "registraduria-invalido-61-5-08-2026-02-11");
   chk(!!firmas, 'la entrada de las firmas está en el JSON');
   if (firmas) {
     chk(firmas.tipoFuente === 'disputado',
@@ -132,7 +132,7 @@ const server = http.createServer((req, res) => {
   }
 
   // ── Las demandas contra la elección ──────────────────────────────────
-  const nulidad = d.entradas.find(e => /demanda de nulidad contra su elección/.test(e.titulo));
+  const nulidad = d.entradas.find(e => e.id === "consejo-estado-admite-demanda-nulidad-2026-08-04");
   chk(!!nulidad, 'la entrada de las demandas de nulidad está en el JSON');
   if (nulidad) {
     chk(nulidad.tipoFuente === 'disputado', 'también va marcada como disputada');
@@ -185,7 +185,7 @@ const server = http.createServer((req, res) => {
       (huerfanas.length ? ': ' + huerfanas.join(', ') : ''));
 
   // No confundir las dos cosas de "11" que pasaron la misma semana.
-  const nombram = d.entradas.find(e => /nombramientos/.test(e.titulo));
+  const nombram = d.entradas.find(e => e.id === "firma-11-decretos-nombramientos-dnp-2026-08-21");
   chk(!!nombram && nombram.titulo !== (nueva && nueva.titulo),
       'no se confunde con los 11 decretos de nombramientos del 21 de agosto');
 
@@ -195,7 +195,7 @@ const server = http.createServer((req, res) => {
   // pasas de tu meta» no son lo mismo, y el registro no puede dejar que se
   // confundan — sería publicar el bulo con el sello de URBIS encima.
   chk(!!(d.categorias || {}).servicios, 'existe la categoría de servicios públicos y bolsillo');
-  const luz = d.entradas.find(e => /programa de ahorro de la CREG/i.test(e.titulo));
+  const luz = d.entradas.find(e => e.id === "arranca-programa-ahorro-creg-este-2026-09-01");
   chk(!!luz, 'está la entrada del recargo en el recibo de la luz');
   if (luz) {
     chk(luz.categoria === 'servicios', 'va en servicios públicos (' + luz.categoria + ')');
@@ -213,7 +213,7 @@ const server = http.createServer((req, res) => {
     chk((luz.fuentes || []).some(f => /creg\.gov\.co/.test(f.u)),
         'cita el texto oficial de la resolución, no solo la prensa');
   }
-  const gas = d.entradas.find(e => /congela el precio de la gasolina/i.test(e.titulo));
+  const gas = d.entradas.find(e => e.id === "gobierno-congela-precio-gasolina-acpm-2026-08-29");
   chk(!!gas, 'está la entrada del congelamiento de la gasolina');
   if (gas) {
     chk(/Congelar no es bajar/i.test(gas.contrapunto || ''),
@@ -229,7 +229,7 @@ const server = http.createServer((req, res) => {
   // acusación se publica COMO acusación, con lo que la sostiene y con lo que
   // la contradice.
   chk(!!(d.categorias || {}).informacion, 'existe la categoría de desinformación y discurso público');
-  const bots = d.entradas.find(e => /red de bots/i.test(e.titulo));
+  const bots = d.entradas.find(e => e.id === "petro-pide-investigar-penalmente-red-2026-08-27");
   chk(!!bots, 'está la denuncia de la red de bots');
   if (bots) {
     chk(bots.tipoFuente === 'declaracion',
@@ -243,7 +243,7 @@ const server = http.createServer((req, res) => {
     chk(/según él|sostiene que|afirma que/i.test(bots.detalle + bots.titulo),
         'y atribuye la afirmación a quien la hace');
   }
-  const moe = d.entradas.find(e => /misión electoral de la Unión Europea/i.test(e.titulo));
+  const moe = d.entradas.find(e => e.id === "mision-electoral-union-europea-avala-2026-09-03");
   chk(!!moe, 'está el informe de la misión electoral europea');
   if (moe) {
     // Media verdad en las dos direcciones: el informe sirve para dos cosas
@@ -254,7 +254,7 @@ const server = http.createServer((req, res) => {
     chk(/Ninguna de las dos mitades cancela a la otra/i.test(moe.contrapunto || ''),
         'y avisa de que no se puede citar solo la mitad que conviene');
   }
-  const destripar = d.entradas.find(e => /destripar/i.test(e.titulo));
+  const destripar = d.entradas.find(e => e.id === "destripar-izquierda-explica-frase-hizo-2026-02-11");
   chk(!!destripar, 'está la frase de campaña sobre «destripar»');
   if (destripar) {
     // Publicar la frase sin su aclaración sería descontextualizar a propósito.
@@ -271,7 +271,7 @@ const server = http.createServer((req, res) => {
   // la línea de base que convienen. Acá se comprueba que estén los tres
   // reparos, porque sin ellos el registro estaría amplificando una cuenta
   // que no se sostiene — venga de quien venga.
-  const coca = d.entradas.find(e => /incautación de cocaína/i.test(e.titulo));
+  const coca = d.entradas.find(e => e.id === "petro-dice-desplomo-incautacion-cocaina-2026-09-01");
   chk(!!coca, 'está la comparación de incautaciones de cocaína');
   if (coca) {
     chk(coca.tipoFuente === 'disputado',

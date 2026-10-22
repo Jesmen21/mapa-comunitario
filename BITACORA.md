@@ -28727,6 +28727,123 @@ orden exacta, `TZ=America/Bogota date +%F`.
 * **No barre `pruebas/`**, donde el mismo patrón puede ser parte de un doble.
   `pendiente`
 
+> **Las tres secciones que siguen —v1137, v1138 y v1139— se escribieron en la
+> v1143, no el día de su tanda.** Esas tres saltaron el paso y `BITACORA.md`
+> iba de la v1135 a la v1140; la §13 de `DECISIONES-PENDIENTES` lo registró y
+> el usuario pidió completarlas. **Están reconstruidas desde el mensaje de
+> commit de cada una y desde su diff**, que es todo lo que quedó: lo que cada
+> tanda midió está donde su autor lo escribió, y lo que no escribió ahí no se
+> inventa acá. Por eso son más cortas que una sección escrita en caliente, y
+> no traen el precio medido de las decisiones que no dejaron dicho.
+
+## v1137 · la vara penal en los títulos, la regla de menores, y el cierre anclado
+
+Las siete verificaciones previas a publicar, y las correcciones que el usuario
+pidió sobre ellas. 18 archivos, +826/−185.
+
+**Títulos.** Cuatro nombraban un tipo penal sobre una persona identificable y
+**ninguno pasaba por guarda alguna**: la guarda penal de la v1118 cubría el eje
+D y el editorial, no los títulos de las entradas. Los cuatro se reescribieron
+al HECHO PROCESAL, con el tipo penal movido a `detalle` y su fuente. La guarda
+se extiende a los títulos de los dos registros con la misma lista de seis
+etiquetas y la exención por ÍTEM con sus tres partes: **tres títulos la llevan,
+los tres estadísticos y sin sujeto**.
+
+**Una menor identificada.** Una víctima menor de edad estaba nombrada con
+nombre completo en el `detalle` y en el título de una fuente. Sale de los dos;
+la cita queda **abreviada y marcada** con «[nombre omitido]», el enlace
+intacto, y una `_notaMenores` declara por qué se abrevió.
+
+**El cribado, con su medición.** Sin exigir edad: **51 coincidencias brutas, 14
+tras descontar instituciones, lugares y alias, 2 reales** del mismo caso. La
+guarda corre sobre 215 oraciones con seis clases de descarte declaradas y falla
+cerrado: un nombre nuevo sale en rojo hasta que alguien lo lea y lo clasifique.
+
+**El cierre del editorial se ancló.** «Que prometió una cosa y está haciendo
+otra» pasó a «que prometió mérito para los cargos públicos y el 21 de agosto
+objetó la ley de mérito aprobada por el Congreso». Al volverse afirmación con
+hecho y fecha deja de ser prosa suelta y **cada mitad cita la afirmación que ya
+existía** —`merito-promesa` y `merito-objecion`—, de modo que el enlace cae
+sobre la frase (v1127).
+
+**Secretos fuera:** el correo personal de `js/00-config.js`, el valor del
+`URBIS_SECRETO` de pruebas y la ruta del repositorio del motor en `CLAUDE.md`.
+**Y la tarjeta del enlace:** las cinco páginas tenían **0** etiquetas Open
+Graph; ahora llevan las cinco con URL absolutas y una imagen de 1200×630.
+
+**789 verdes, 1 sin material.** El veredicto siguió en piso «No puede ser mejor
+que Poco fiable».
+
+## v1138 · la paleta «Papel»
+
+16 archivos, +335/−441 — una de las pocas tandas que **quita** más de lo que
+pone. Elegida la paleta A de las tres candidatas; sus tokens pasan a
+`css/70-seguimiento.css` y la carpeta `css/paletas-propuestas` se retira.
+
+**La decisión de implementación que la salva.** Va al final del archivo y
+**REMAPEA los nombres heredados** —`--marfil`, `--celeste`, `--ambar`,
+`--petroleo`— en vez de reescribir las 2.600 líneas de arriba. Cambiarlos uno
+por uno es el descuadre silencioso que esta casa ya pagó otras veces;
+apuntarlos a los tokens nuevos deja **un solo sitio donde se decide el color**.
+Esa decisión es la que la v1142 encontró del otro lado: el `--verde` del anillo
+de foco apunta hoy a un azul pizarra, y por eso el anillo se leía como un
+cuadro oscuro.
+
+**Medido sobre la página COMPUESTA, sin inyectar nada: de 17 pares por debajo
+de 4,5:1 a CERO**, con 141 pares distintos. El cuadro «NO fija peldaño» pasa de
+**1,09:1** —tinta casi blanca sobre fondo casi blanco— a legible, y la causa
+quedó arreglada por contrato: toda superficie que pinte fondo propio declara
+con qué tinta se lee encima.
+
+**Y la guarda cambió de material con la elección**, que es la parte que
+conviene no perder: hasta ahí medía solo `css/paletas-propuestas/`, así que al
+retirar esa carpeta **se habría quedado SIN MATERIAL justo cuando empezó a
+haber una paleta de verdad que proteger**. Ahora mide la APLICADA, y las
+candidatas solo si quedan.
+
+**Escritorio:** la columna de texto acotada en `ch`, cuerpo a 17 px,
+interlineado 1,6, el tope de página de 1120 a **1320** y la placa del veredicto
+fija al lado. Celular sin cambios de disposición. **791 verdes, 1 sin
+material.**
+
+## v1139 · las guardas que se escriben antes de mover el texto
+
+No toca ninguna pantalla: **solo mide y declara**. Son las dos guardas que la
+v1140 necesitaba puestas ANTES, porque **una guarda escrita después mide el
+mundo ya movido y da por bueno lo que se haya perdido**. Y son dos y no una
+porque piden cosas distintas (v899): una cuenta cuánto hay, la otra si lo que
+hay LLEGA a alguien.
+
+**1 · Los seis conteos no bajan**, con el piso medido ese día, antes de las
+pestañas: afirmaciones 17, entradas 324, contrargumentos 50, exenciones 5,
+contradicciones 15, casos 14. Trinquete absoluto, **legítimo acá** (v965)
+porque no es un pendiente que crezca solo: es cuánto material publica el
+módulo, y solo baja si alguien lo quita. Si baja legítimamente, el rojo obliga
+a que esa decisión sea visible.
+
+**2 · Ningún texto publicado queda sin superficie.** Mide las claves del
+registro con texto largo y pregunta si alguna línea de `js/70` las nombra. **El
+discriminante salió medido**: de 77 claves, 15 sin lector, y la mayoría son
+notas internas con guion bajo que la v1115 ya vigila —perseguirlas acá sería
+contarlas dos veces—, así que mira las claves SIN guion bajo.
+
+**Y encontró cuatro bloques en su primera corrida, ninguno de esa tanda.** El
+más serio: `presupuesto.deudaBruta` lleva escrito justo lo que la v1093 exige
+—la medida de la cifra, contra qué NO se compara y por qué otras cifras del
+mismo nombre difieren— y **ninguna pantalla lo alcanzaba**, así que el módulo
+publicaba «60,5 %» sin las cuatro frases que impiden confundir una bruta con
+una neta. También `publicacion.vetadasPorDefectoPropio`, donde el porqué de
+cada cifra que el módulo se vetó a sí mismo no llegaba a ningún lector.
+Quedaron declarados por ítem con su razón, contados y nombrados, no callados —
+y **los pinta la v1143**.
+
+**Cuatro inyecciones**, cada una mordiendo en su guarda y no en la otra: perder
+una afirmación, rojo; perder dos entradas, rojo; quitar la declaración de un
+bloque sin pintar, rojo; y un texto nuevo que nadie lee —lo que deja una
+migración a pestañas a medias—, rojo.
+
+**794 verdes, 1 sin material.**
+
 ## v1140 · el texto, movido a cinco pestañas y ni una palabra cambiada
 
 Hecha el 21 de octubre de 2026. Es la primera de las tres que la nota
@@ -29039,10 +29156,17 @@ visto.
   `nombramientos`— que siguen por título. Hoy pasan; la misma trampa les cabe
   el día que entre una entrada con esas palabras, y sus entradas tampoco
   tienen `id` todavía.
-  `pendiente`
+  `cerrado en v1143` — y eran ONCE, no dos: la v1143 las midió todas, les dio
+  `id` a las once entradas y reancló los once `find()`. Cero anclas por título
+  quedan en la suite.
 * **No le da `id` a las 234 entradas que siguen sin él.** Se dieron los dos que
   esta tanda necesitaba; un barrido completo es otra tanda y toca la rutina.
-  `pendiente`
+  `cerrado en v1143 · medido y declinado` — el barrido **decae el mismo día**:
+  la rutina diaria escribe entradas nuevas sin `id`, así que «todas tienen id»
+  dura hasta la próxima corrida, y una guarda que lo exigiera nacería peleando
+  con la rutina, que es la guarda que empuja a desactivarse. Se cierra dando
+  `id` a las que lo NECESITAN —las que algo ancla— y dejando el resto; el
+  barrido completo pide primero la §17, que es su precondición.
 * **No cierra el pendiente 12**, por instrucción expresa: las suites corrieron,
   pero las 10 rojas y las 2 caídas siguen sin resolverse y siete de ellas hay
   que repetirlas en una máquina con el motor del usuario.
