@@ -30021,3 +30021,177 @@ que mide.
 
 * **No publica nada a `main`.** Sigue en `f7e99a2` (v1146) hasta el «súbalo».
   `pendiente`
+
+---
+
+## v1147b · El parche de fondo: del color de su tarjeta, del ancho de su letra, y en UN solo sitio
+
+Daniel revisó la v1147 **a 4×** y encontró lo que la corrida en verde no veía:
+parches **crema** detrás de los rótulos, sobre una tarjeta **blanca**, y el de
+«Hacienda y Crédito Público» extendiéndose **71 px más que su propio texto**.
+La comprobación de cruces decía «0» y tenía razón: medía si la línea asomaba,
+y ninguno de los dos defectos es eso.
+
+### Dos defectos, dos causas distintas
+
+**El color** iba `var(--marfil)` escrito dentro del dibujo. Cambiarlo por
+`var(--sup)` habría sido el mismo defecto con otro valor —dos codificaciones
+de un hecho, **clase B**—: el día que una tarjeta cambie de fondo, el parche
+se queda con el viejo y nada lo dice. Así que el color se declara **una vez**,
+`--graf-fondo` en `.sp-graf`, y de ahí salen el fondo de la tarjeta **y** el
+del parche, que se pinta por clase. Derivar es lo correcto porque no existe un
+cambio razonable que deba mover uno y no el otro (v879).
+
+**El ancho** salía de `anchoRotulo` con un 25 % de holgura, y **una holgura
+proporcional sobra cada vez más cuanto más largo es el texto**. Ahora la caja
+la da `getBBox`. Y como un dibujo se construye suelto y se cuelga después, en
+la primera pasada no hay nada que medir: el parche **se apunta y se vuelve a
+medir en el cuadro siguiente**, una sola pasada para todos, pedida desde
+`textoConFondo`, así que un gráfico nuevo lo hereda sin que su autor se
+acuerde. El respaldo estimado se queda para el dibujo que nunca se cuelga:
+ancho de más, nunca de menos, que es lo que deja asomar la línea.
+
+### Y había DOS copias del parche
+
+El arreglo no llegaba al dólar por una razón que no se veía leyendo: la serie
+del dólar tenía **su propio parche escrito a mano**, con su crema fijo y su
+ancho estimado. Dos codificaciones de «un rótulo necesita fondo». Se retira la
+copia y queda la función, y **se ve en el número**: los parches que la guarda
+mide pasaron de **10 a 19** a 390 px.
+
+### Lo que la guarda aprendió
+
+* las dos aserciones nuevas —color y ancho— corren sobre **todos** los
+  parches, no solo sobre los que cruzan una línea: a 1440 px no cruzaba
+  ninguno, así que medirlos por el cruce las dejaba **sin material**, verde
+  sin nada que rechazar (v878);
+* el color se **compara contra el fondo medido de su tarjeta**, no contra un
+  token escrito en la guarda (v890);
+* y la de cruces ganó la mitad que le faltaba, **y la enseñó una inyección**:
+  pintar el parche al final deja el cruce en cero —sigue estando por encima de
+  la línea— y lo que hace es **borrar el rótulo**. Ahora el parche tapa solo
+  si va DESPUÉS de la línea y ANTES de su texto (v1029);
+* y una guarda estática: ningún `fill` del dibujo puede nombrar un token de
+  fondo.
+
+### Y dos fallos más del arnés, que ya van cinco
+
+Ninguno de código. **El cuarto**: un patrón sin tilde y una alternancia que
+rompía el prefijo `^❌` dieron un VERDE y dos ROJOS falsos; lo delató el
+conteo, porque 136/138 no es un verde. **El quinto**: la primera versión de la
+guarda estática recortaba cada `svgEl('rect', …)` con una cota `[^;]*?\)` y
+**la cota se comió su propio paréntesis** —el trozo terminaba en
+`fill: 'var(--marfil` y el patrón, que pedía la comilla de cierre, no casaba
+nunca—. La inyección salió **VERDE con la copia puesta delante**. Es la cota
+sobre código con paréntesis que este repositorio ya tiene escrita dos veces
+(v1000, v1053).
+
+Y uno peor, que es el de siempre: un `comprobarMaterial` que no existe tiró un
+`ReferenceError` que **mató `revisar.js` antes del resumen**, y mi `| grep`
+encontró palomitas y lo leí como verde. **Lo delató el código de salida**, no
+la lectura. Es la trampa que este proyecto tiene escrita como «una salida
+vacía no es una salida buena», cometida por quien la cita.
+
+### Lo medido
+
+| | v1147 | v1147b |
+|---|---|---|
+| Parches medidos a 390 px | 10 | **19** |
+| Parches con color distinto al de su tarjeta | 6 | **0** |
+| Parche más ancho que su letra | 71 px de sobra | **0** |
+| `tseg` | 132/132 | **138/138** |
+| Inyecciones contra las guardas nuevas | 3 | **4 en rojo + control en verde** |
+
+### Lo que esta versión NO hace
+
+* **No publica nada a `main`.** Sigue en `f7e99a2` (v1146) hasta el «súbalo».
+  `pendiente`
+* **No toca el `#FFFFFF` de los puntos de la serie.** Es el relleno de un
+  marcador, no un parche de fondo, y meterlo en la guarda daría un falso
+  positivo. `cerrado en v1147b · medido y declinado`
+
+---
+
+## v1148 · La carga parcial de la sonda, y dos datos medidos que ninguna pantalla alcanzaba
+
+Daniel autorizó cargar **parte** de la sonda. Se cargó eso y nada más: tres
+entradas nuevas —el Congreso aprueba el presupuesto de 2027, la bolsa de
+$100.000 millones de la UNGRD, y la rendición de cuentas de la fundación de la
+primera dama **sin** la alerta de Transparencia por Colombia, que queda
+propuesta aparte—, el contrapunto del Decreto 1261 ampliado, y la entrada de
+los memorandos con Estados Unidos ampliada y **con un id**, que no tenía.
+
+Retenidas por decisión suya: la reserva de la Cancillería —hasta fuente de
+primer nivel—, el Banco Mundial —hasta dirimir si los 200 millones de
+septiembre son los mismos de agosto— y Nicky Jam / Argos, que es donación
+privada.
+
+### Lo que la carga enseñó
+
+* el borrador escribía `rol: "dato"` en seis fuentes y la lista declarada del
+  módulo tiene **tres** —acto, efecto, contexto—. Las guardas en seco
+  comprobaban que el rol **estuviera**, no que fuera uno de los conocidos;
+* y las tres entradas tuvieron que **correr la vara de los cinco criterios**.
+  Ninguna cae en ninguna vía, y cada una lo dice con su razón escrita: una
+  lista vacía sin razón es gratis (v1094).
+
+### Dos datos medidos y sin un solo lector · clase C
+
+**El estado del presupuesto.** La tarjeta sellaba «En trámite legislativo: NO
+es todavía ley» desde una cadena del **código**, armada solo con
+`estadoProcesal`, así que el trámite avanzó tres veces y el sello dijo lo
+mismo: cierto, y viejo. El estado completo vivía en `estadoTexto`, **dentro
+del pliegue**. Ahora el bloque declara `estadoSello` y el sello sale del
+REGISTRO; sin él, la frase genérica de antes. Y las dos superficies lo
+preguntan en **una** función, que es lo que impide que una lo aprenda y la
+otra no.
+
+**La vejez del deflactor.** La v1082 la calcula desde hace sesenta y seis
+versiones y la escribía dentro de `unidades` del eje C, que no se imprime: se
+recorrieron las **seis vistas** y no aparecía en ninguna. Ahora va como línea
+**visible** en la tarjeta que publica los seis porcentajes, con la cifra nueva
+nombrada, y el porqué no se cambia el número en el pliegue. Se calcula, así
+que el día que alguien rehaga las variaciones **desaparece solo** (v903).
+
+El deflactor **no se tocó**: sigue en 6,24 %. Rehacerlo pide el monto de 2026
+por sector, que el registro no guarda.
+
+### Un umbral que medía el número y no la propiedad
+
+La guarda del hecho repetido, escrita esa misma mañana, **dejó pasar** la
+adhesión al Escudo de las Américas: ya estaba registrada en **dos** entradas
+del 12 de agosto, con títulos cortos —ocho y nueve palabras en común, por
+debajo del umbral de doce—. El umbral lo elegí con los dos duplicados que ya
+tenía delante, así que medía **el número que esos dos daban** y no la
+propiedad. Lo encontré a mano.
+
+La cura no es bajar el umbral, que sería elegir otro número a ojo. **La
+propiedad que discrimina no es cuánto se parecen: es que nadie miró.** Una
+entrada nueva cuya fecha coincide con alguna del registro tiene que
+**declarar por escrito cuáles revisó y por qué su hecho es otro**. Falla
+cerrado y no se cumple por accidente. Salió roja sobre las cuatro entradas que
+el borrador tenía entonces.
+
+### Lo medido
+
+| | v1147b | v1148 |
+|---|---|---|
+| Entradas del registro | 324 | **327** (+3) |
+| Seis conteos | 17·324·50·5·15·14 | **17·327·50·5·15·14** |
+| Vistas donde se lee la vejez del deflactor | 0 de 6 | **la tarjeta que usa el número** |
+| `tseg` | 138/138 | **141/141** |
+| Inyecciones contra las guardas nuevas | 4 | **2 en rojo + control en verde** |
+
+### Lo que esta versión NO hace
+
+* **No publica nada a `main`.** Sigue en `f7e99a2` (v1146) hasta el «súbalo».
+  `pendiente`
+* **No carga la reserva de la Cancillería, el Banco Mundial ni Nicky Jam.**
+  Decisión de Daniel, y las tres quedan en el borrador con su razón.
+  `cerrado en v1148 · medido y declinado`
+* **No actualiza las tres entradas del Escudo de las Américas** con las siete
+  precisiones que la sonda consiguió. Están escritas en el borrador y esperan
+  el próximo «cárguelas». `pendiente`
+* **No rehace las variaciones por sector con el deflactor de septiembre.**
+  Pide el monto de 2026 de cada sector, que el registro no guarda.
+  `pendiente`
