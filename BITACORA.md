@@ -29314,9 +29314,9 @@ descripción corta y tabla accesible.»
 | Tarjetas con descripción corta y tabla accesible | **0 de 17** | **18 de 18** |
 | Marcas «sin descripción corta» / «sin tabla» | — | **0** |
 | Bloques del registro que ninguna pantalla pintaba | 4 | **0** |
-| Alto de la portada a 1440 px | 13.765 px | **10.465 px** |
-| Alto de la portada a 390 px | 20.314 px | **12.880 px** |
-| Caracteres visibles de la portada | 24.022 | **10.485** |
+| Alto de la PÁGINA a 1440 px | 13.949 px | **11.019 px** |
+| Alto de la PÁGINA a 390 px | 20.472 px | **13.604 px** |
+| Caracteres visibles de la portada | 24.022 | **11.073** |
 | Tarjetas con línea visible de salvedad | 0 | **11** |
 | `tseg` | 112/112 | **114/114** |
 | `tficha` | `?` NO CONCLUYENTE · **0 medidas** | **197/218**, con 21 declaradas en la §20 |
@@ -29458,14 +29458,38 @@ mentir: título, dibujo, sello si lo lleva, el pie de fuente y **una línea
 corta de salvedad**. Lo demás —descripción larga, nota, caja entera, tabla y
 fuentes— va en un `<details>` por tarjeta, «Salvedades y método».
 
-| | v1142 | v1143 (primera) | v1143 (cierre) |
-|---|---|---|---|
-| Alto de la portada a 1440 px | 13.765 | 14.709 | **10.465** |
-| Alto a 390 px | 20.314 | 20.406 | **12.880** |
-| Caracteres visibles | 24.022 | 22.401 | **10.485** |
+**Y las tres cifras, medidas sobre LO MISMO.** La primera redacción de esta
+sección comparaba el alto de `[data-view="home"]` de una versión contra el de
+`#sp-portada-graf` de otra y presentaba la resta como si fuera una sola cosa:
+es exactamente lo que la v1085 dejó escrito —**un número publicado sin decir
+de qué es**— cometido por quien lo estaba citando. Lo denunció el lector
+midiendo el alto real del JPEG, que no coincidía con ninguna de las dos.
 
-**−29 % de alto a 1440, −37 % a 390 y −56 % de texto** contra la v1142, que es
-el punto de partida honesto.
+Las tres superficies, en UNA corrida contra las tres revisiones servidas a la
+vez en tres puertos:
+
+| A 1440 px | v1142 `29f33ce` | v1143 `d2db792` | v1143b `cf7201f` |
+|---|---|---|---|
+| Página completa (= alto del JPEG) | 13.949 | 15.263 | **11.019** |
+| Portada `[data-view="home"]` | 13.765 | 15.073 | **10.829** |
+| Bloque de gráficos solo | 9.183 | 14.709 | **10.465** |
+| Caracteres visibles de la portada | 24.022 | 24.981 | **11.073** |
+
+| A 390 px | v1142 | v1143 | v1143b |
+|---|---|---|---|
+| Página completa | 20.472 | 21.130 | **13.604** |
+| Portada | 20.314 | 20.966 | **13.440** |
+| Bloque de gráficos solo | 12.613 | 20.406 | **12.880** |
+
+Contra la v1142: **−21,0 % de página a 1440, −33,5 % a 390 y −53,9 % de texto
+visible.** Contra la primera v1143: −27,8 % y −35,6 %.
+
+**Y la salvedad que el número bonito escondía:** el BLOQUE DE GRÁFICOS solo
+sigue siendo más alto que el de la v1142 —10.465 contra 9.183 a 1440, un
+**+14 %**— y tiene que serlo: lleva cuatro gráficos más. Lo que encogió la
+portada entera fue en buena parte la v1143 anterior, al sacar la placa, el
+muro y la rejilla de diez secciones; lo que aportó el plegado es la caída del
+bloque de 14.709 a 10.465, que es su mérito y no más.
 
 **La línea se CALCULA, y por eso la guarda no mira su frase sino su CAMPO.**
 Escrita a mano sería una cifra dentro de un texto fijo (v903), con el
