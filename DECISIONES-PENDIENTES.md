@@ -426,8 +426,57 @@ una de las cinco formas de `ENCABEZADOS-APLAZADOS` por lo mismo que
 
 **Qué la cierra:** una corrida de `node pruebas/correr.js` en verde, con su
 conteo de suites, en una máquina con `../urbis-motor` al lado y los dos
-servidores en pie (8199 y 8787). Mientras no exista, `main` se queda en
-`b9a8edf` (v1137).
+servidores en pie (8199 y 8787).
+
+### Lo corrido el 21-22 de octubre de 2026 en la nube, y lo que NO zanja
+
+Se corrieron **120 suites** —todas menos `tvision`, que pide Postgres— con
+`../urbis-motor` adjuntado desde GitHub y Chromium del propio contenedor:
+
+```
+108 verdes · 10 rojas · 2 NO CONCLUYENTES
+rojas:  tseg(6) tcorregir(5) tpdf(3) tpliegogrande(3) tamenaza(2)
+        tdoslaminas(1) tlaminaedu(1) tmasanalisis(1) tplantas(1) tpisos(1)
+caidas: tconfig · tficha
+```
+
+**Ninguna es de la v1140**, y está medido contra las dos versiones anteriores
+con un árbol de trabajo por cada una: las 12 suites dan **exactamente las
+mismas rojas** en `b9a8edf` (v1137), en `3f6a7e1` (v1138, lo publicado) y en
+`1942d1e` (v1140). Cero suites cambian. La v1140 además no toca ni una línea
+de `js/61` ni de `js/68`, que es el módulo que nueve de las diez miden.
+
+**EL MOTOR USADO ES LA COPIA DE GITHUB, y eso es la limitación de esta
+corrida:** `7fd9a11`, del **15 de septiembre de 2026** —«v926 · la hoja de
+déficit se compone en el servidor»—, que es lo último empujado a ese
+repositorio. **Las rojas de lámina, pliego y plantas pueden depender de la
+versión del motor**: el motor es quien devuelve los usos, la malla de flujo y
+las cifras que esas suites miden en milímetros de papel, y si en el computador
+de Daniel hay trabajo del motor **sin empujar** —reglas editadas y
+`construir.js` corrido en local— las siete de ese grupo pueden dar otro
+resultado. Por eso **se repiten allá antes de concluir nada sobre ellas**:
+`tamenaza`, `tdoslaminas`, `tlaminaedu`, `tmasanalisis`, `tplantas`, `tpisos`
+y `tpliegogrande`. Las otras tres no dependen del motor: `tseg` mide el
+registro, `tcorregir` y `tpdf` miden composición.
+
+**Y dos cosas que esta corrida SÍ zanjó, para no repetirlas:**
+
+* Los cinco fallos de `tseg` sobre la fundación de la primera dama son una
+  **expectativa vieja de la suite, no un defecto del dato**: la suite ancla
+  con `find(/fundación de la primera dama/i)` y hoy casan DOS entradas, así
+  que toma la [56] —«dos juzgados ordenan…», correctamente `verificado`— en
+  vez de la [225], la del video viral. Pasadas las siete aserciones del bloque
+  sobre la [225], **las siete pasan**. Es el ancla por título en vez de por
+  `id`, y no hizo falta un retitulado: bastó que entrara una entrada nueva con
+  la misma frase (clase B). La [56] además lleva `id: undefined`.
+* `tconfig` **no es un fallo del código**: pide
+  `urbis-pruebas/docs-privado/apps-script-urbis-auth.gs`, un archivo privado
+  que el contenedor no tiene. En el computador de Daniel probablemente existe,
+  y es la primera que hay que volver a intentar allá.
+
+**Y una que NO zanjó y es un defecto real publicado:** el sexto fallo de
+`tseg` —cuatro entradas apuntan a las categorías `seguridad` y `politica`, que
+no están entre las 13 declaradas—. Tiene su sección propia, la 16.
 
 ## 13 · Faltan las secciones de la v1137, la v1138 y la v1139 · `pendiente`
 
@@ -489,3 +538,82 @@ cambiar texto publicado sobre una persona real, y eso lo decide quien firma el
 módulo, no la tanda que pasaba por ahí. **Y hay un canje que decir:** la
 frase se arma por concatenación en un solo sitio, así que el arreglo es de una
 línea; lo que no es de una línea es la decisión de tocarla.
+
+## 15 · `tpliegogrande` se quedó sin material · `pendiente`
+
+**No se toca el pliego para darle material. Decisión del usuario, 22 de
+octubre de 2026, y queda citada:** *no dobles el pliego para darle material a
+la guarda. Déjalo como está.*
+
+**El hecho.** La primera roja de `tpliegogrande` dice, con sus palabras:
+
+> `✗ el recuento ve las cajas que pisan dos renglones, no solo su ancho —`
+> `NINGUNA banda a dos renglones con mapa: la guarda se quedó sin material`
+
+La comprobación no encontró un defecto: **no encontró nada que medir.** Con la
+composición de hoy ninguna banda queda a dos renglones con mapa, así que la
+rama que esa aserción vigila no se ejecuta, y la guarda se pone roja por
+quedarse vacía.
+
+**Por qué esto es la clase que `CLAUDE.md` tiene escrita arriba**, y no un
+defecto del pliego: es «una guarda que se pone roja cuando los datos MEJORAN»,
+con su síntoma clásico —**arreglar la composición rompe la suite**—. Y lo que
+la hace cara es la presión que ejerce: *la salida barata de una guarda mal
+puesta es dejar el pliego torcido para que siga teniendo algo que rechazar.*
+Doblar la composición para que alguna banda vuelva a pisar dos renglones sería
+exactamente eso, y por eso no se hace.
+
+**Por qué limita.** Mientras siga así, `tpliegogrande` sale roja en toda
+corrida y **enseña a leer su rojo como ruido**, que es cómo una suite deja de
+proteger. Y en el camino se lleva otras dos aserciones de la misma suite (son
+3 rojas en total).
+
+**Qué la cierra, y en qué orden:** rehacerla sobre **lo que sobrevive al
+cero** (v970, v1022) — la pregunta no es «¿hay una banda a dos renglones?»
+sino «¿qué tiene que seguir siendo cierto cuando no haya ninguna?». Dos
+redacciones escritas, la de cero y la de N, y **la rama con material medida
+contra un caso FABRICADO y no contra el pliego real**, porque medirla contra
+el pliego es volver a medir el número. Igual que la guarda de rol de la v970.
+Mientras eso no se haga, el `?` SIN MATERIAL es su estado honesto y el rojo
+no lo es.
+
+## 16 · Cuatro entradas apuntan a categorías que no existen · `pendiente`
+
+**Es un defecto REAL y está publicado.** Lo encontró el sexto fallo de `tseg`
+el 21 de octubre de 2026, y **no se corrigió por decisión del usuario**: *si
+es (b), no lo corrijas: dímelo.*
+
+**El hecho, medido.** El registro declara **13** categorías —`gobierno`,
+`israel`, `eeuu`, `corrupcion`, `creditos`, `emergencia`, `economia`,
+`exterior`, `ambiente`, `educacion`, `legitimidad`, `servicios`,
+`informacion`— y cuatro entradas usan otras dos que no están:
+
+| Entrada | `categoria` |
+|---|---|
+| captura de alias «Julito» | `seguridad` |
+| «Operación Blindaje 360» en Barranquilla | `seguridad` |
+| AtlasIntel mide la aprobación en 51,8 % | `politica` |
+| caída de homicidios en agosto, cifras de la Policía | `seguridad` |
+
+**No es de la v1140 y está en lo publicado:** las mismas cuatro en `b9a8edf`
+(v1137), en `3f6a7e1` (v1138, lo que sirve el sitio ahora) y en `1942d1e`.
+
+**La consecuencia, leída en el código y no supuesta.** `js/70` resuelve la
+categoría con respaldo —`|| { nombre: id, icono: '•' }`—, así que las cuatro
+**se pintan**, pero con el identificador crudo en minúscula («seguridad») y un
+punto genérico en vez de su nombre y su icono. No revienta nada.
+
+**Por qué limita de todos modos.** Quedan **fuera de la taxonomía**: no
+agrupan con ninguna categoría, y cualquier reparto o conteo por categoría no
+las cuenta. Tres de las cuatro son del mismo tema —seguridad—, así que lo que
+se pierde no es un caso aislado sino un tema entero del registro que no
+aparece como tal.
+
+**Las dos salidas, y cuál parece correcta.** Declarar `seguridad` y `politica`
+entre las categorías, o remapear esas cuatro a categorías existentes. **La
+primera parece la honesta**: con tres entradas de seguridad, es un tema del
+registro y no un error de tecleo. Pero declarar una categoría toca lo que el
+módulo publica, así que lo decide quien firma el módulo. **Y conviene mirar
+quién las escribe**: son entradas recientes, de las que mete la rutina diaria,
+que es otra sesión y no conoce la lista — así que sin una guarda volverán a
+aparecer.
