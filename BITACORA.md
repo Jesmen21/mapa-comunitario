@@ -30747,3 +30747,68 @@ Dos estilos en la misma tarjeta, en tres renglones seguidos.
   de la propia medición. `pendiente`
 * **No publica nada a `main`.** Queda en `72ac5d2` (v1154) hasta el «súbalo».
   `pendiente`
+
+---
+
+## v1161 · la fecha del desembolso no la dirime ninguna nota
+
+«Cárguelas» de Daniel para el contrapunto del crédito del Banco Mundial, con
+**su** redacción y no la mía — y el recorte importa más que la carga.
+
+### Lo que Daniel quitó de mi texto, y por qué tenía razón
+
+Yo había escrito que «el anuncio del Banco Mundial fue el viernes 14» y que
+por eso las cuatro notas «son compatibles». Las dos frases sobran y la primera
+es un error de método: **inferí una fecha de anuncio a partir de fechas de
+PUBLICACIÓN.** Que eldiario.ec y El Universal publicaran el 14 dice cuándo
+publicaron, no cuándo anunció el Banco Mundial. Es la clase A —una cifra que
+sale mecánicamente bien y no significa lo que parece— cometida sobre una fecha,
+y además una inferencia presentada como hecho en una superficie publicada.
+
+Lo que queda dice solo lo que consta: que las fuentes no coinciden, quién
+fecha qué, que otras dos **se publicaron** el 14, y que no se halló el
+comunicado que fijaría la fecha.
+
+### El canal, declarado
+
+Daniel pidió verificar en dos fuentes más **abiertas**. No se pudo abrir
+ninguna: medido el 22 de octubre de 2026, `eltiempo.com`, `elespectador.com`,
+`portafolio.co`, `larepublica.co`, `semana.com` y `publimetro.co` devuelven
+código 000 con `curl`, y la obtención de página da `ENOTFOUND`. Lo reportado
+sale de la BÚSQUEDA, cuyo estándar (v1003) sostiene **que** un hecho ocurrió y
+no que se leyó la página.
+
+### Lo medido
+
+| | v1159 | v1161 |
+|---|---|---|
+| `revisar.js` | sin rojos | **sin rojos** (1 sin material, exit 0) |
+| `tseg` | 158/158 | **158/158** |
+| Seis conteos | 17 · 327 · 50 · 5 · 15 · 14 | **sin mover** |
+| Papel en `#/hecho/248` | — | **18/18 a 390 y a 1440** |
+| Fecha de la entrada | 2026-08-13 | **2026-08-13, sin tocar** |
+
+El papel se leyó con sus **prohibiciones** junto a sus afirmaciones: que no
+aparezca «el anuncio del Banco Mundial fue el viernes», ni «es compatible con
+todas», ni «viernes 14». Sin esas tres, el verde no diría que el recorte de
+Daniel se aplicó.
+
+### Lo que esta versión NO hace
+
+* **No retira la URL de Semana sin id**, por decisión de Daniel: él correrá
+  `herramientas/verificar-enlaces.js` en su computador y se decide con ese
+  resultado. Las dos URL y su ubicación quedan reportadas. `pendiente`
+* **No arregla las tres fuentes de `eltiempo.com` cuya URL es la portada
+  desnuda** (`https://www.eltiempo.com/`), por decisión de Daniel de dejarlas
+  y anotarlas. Están en `entradas[149].fuentes[1]` —los dos balances oficiales
+  del primer mes—, en `casos.lista[6].fuentes[1]` —`firmas-anuladas-candidatura`—
+  y en `transversales[8].fuentes[2]` —la nota sobre medir con la misma vara—.
+  No son enlaces construidos: son fuentes citadas sin su artículo, y lo que
+  falta es la URL del artículo de cada una. `pendiente`
+* **No exige `rol` a las fuentes que viven fuera de `entradas`.** Salió al
+  buscar estas seis: las de `casos.lista` y `transversales` no declaran `rol`,
+  y la guarda por forma de la v1158 solo rechaza un rol FUERA del vocabulario,
+  no uno ausente. Si debe exigirse es una decisión de diseño y no un defecto
+  medido, así que se anota y no se cambia. `pendiente`
+* **No publica nada a `main`.** Queda en `6338029` (v1160) hasta el «súbalo».
+  `pendiente`
