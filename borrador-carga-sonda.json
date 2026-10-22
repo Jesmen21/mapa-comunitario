@@ -725,5 +725,51 @@
       "porQueSeDeja": "Se deja escrita y no se borra. Borrar la haría indistinguible de un hecho que nadie buscó, que es justo lo que la sonda existe para evitar.",
       "estado": "DESCARTADA · no se carga ni como entrada ni como actualización"
     }
+  ],
+  "_propuestasQueEsperanCarguelas": [
+    {
+      "que": "La fecha del desembolso de los primeros US$200 millones del Banco Mundial · 13 vs 14 de agosto de 2026",
+      "entradaAfectada": "`credito-banco-mundial-200-terremoto` (2026-08-13)",
+      "elCanalSeDECLARA": "Daniel pidió verificar en al menos dos fuentes más ABIERTAS. NO SE PUDO ABRIR NINGUNA: medido el 22 de octubre de 2026, eltiempo.com, elespectador.com, portafolio.co, larepublica.co, semana.com y publimetro.co devuelven código 000 con `curl`, y la obtención de página da ENOTFOUND. El único canal es la BÚSQUEDA, cuyo estándar (v1003) sostiene QUE un hecho ocurrió y no que se leyó la página. Lo que sigue es lo que cada fuente dice SEGÚN los resultados de búsqueda, no según su página abierta.",
+      "queSostieneCadaFuente": [
+        {
+          "fuente": "Publimetro (nota del 27 de septiembre)",
+          "dice": "13 de agosto",
+          "queEsLaFecha": "la fecha del DESEMBOLSO"
+        },
+        {
+          "fuente": "El Espectador",
+          "dice": "14 de agosto",
+          "queEsLaFecha": "la fecha del desembolso, y cita además un mensaje del Banco Mundial de Latinoamérica"
+        },
+        {
+          "fuente": "eldiario.ec",
+          "dice": "14 de agosto",
+          "queEsLaFecha": "el ANUNCIO, el viernes 14; su propia URL lleva `14082026`, que es fecha de publicación"
+        },
+        {
+          "fuente": "El Universal (Cartagena)",
+          "dice": "14 de agosto",
+          "queEsLaFecha": "el ANUNCIO; su URL va en `/2026/08/14/`, que es fecha de publicación"
+        }
+      ],
+      "laDISTINCIONqueImporta": "Las fuentes no están midiendo lo mismo, y eso explica la discrepancia sin que nadie se equivoque: el ANUNCIO del Banco Mundial fue el viernes 14 de agosto, y eso es lo que fechan eldiario.ec y El Universal —en los dos casos es su fecha de PUBLICACIÓN, no la del hecho—. La fecha del DESEMBOLSO es la que difiere: Publimetro dice 13, El Espectador dice 14. Un desembolso el 13 anunciado el 14 es perfectamente compatible con las cuatro notas. Es el defecto de la v1085: la pregunta no es cuál está mal, es de qué mide cada una.",
+      "porQueNOseCambiaLaFecha": "Ninguna de las dos se puede dirimir sin la fuente primaria —el comunicado del Banco Mundial de agosto o su base de proyectos—, que este contenedor no alcanza. Cambiar la fecha de una entrada publicada por una nota que no se abrió sería exactamente lo que la regla del enlace observado acaba de prohibir.",
+      "textoPROPUESTO": {
+        "comoSeAplica": "Se apende al `contrapunto` de la entrada. La fecha de la entrada NO se toca.",
+        "texto": "Las fuentes consultadas no coinciden en la fecha del desembolso: Publimetro lo fecha el 13 de agosto de 2026 y El Espectador el 14. El anuncio del Banco Mundial fue el viernes 14, que es la fecha que llevan las notas de eldiario.ec y de El Universal —en los dos casos su fecha de publicación—, así que un desembolso el 13 anunciado el 14 es compatible con todas. No se halló el comunicado del Banco Mundial de agosto, que es lo que dirimiría la fecha exacta de la transferencia."
+      },
+      "estado": "REDACTADO · espera el «cárguelas» de Daniel"
+    },
+    {
+      "que": "Un enlace de Semana que tiene la forma de un enlace construido",
+      "comoSeHallo": "Barrido estático de la v1160 sobre los 1.529 enlaces del registro, sin red: por dominio con cinco enlaces o más, se marcan los que no llevan el id numérico que la mayoría lleva. De 1.529 salieron cuatro atípicos y este es el único que no se explica.",
+      "elCaso": "El registro trae DOS URL de Semana para el mismo artículo —la delegación del Comando de Defensa Civil de Israel—: una con su id, `/articulo/delegacion-…-tras-el-terremoto/202620/`, que aparece dos veces; y otra más corta y SIN id, `/articulo/delegacion-…-israel-aterrizo-en-cali/`. De los 129 enlaces de semana.com del registro, 128 llevan id. El que no lo lleva es el único, y su slug es más corto que el del mismo artículo.",
+      "porQueImporta": "Es la forma exacta de los dos enlaces que yo inventé: slug plausible, sin el id que el dominio usa siempre.",
+      "loQueNOseAfirma": "Que esté roto. Desde este contenedor no se puede comprobar ninguna URL, así que «construido» es una SOSPECHA por su forma y no una medición.",
+      "propuesta": "Retirar la URL sin id y dejar la que sí lo lleva, que documenta el mismo hecho y ya está en la entrada. Si Daniel prefiere, la comprobación real la da correr `herramientas/verificar-enlaces.js` en su computador.",
+      "otrosTresAtipicos": "Tres fuentes de `eltiempo.com` cuya URL es la portada desnuda (`https://www.eltiempo.com/`), en entradas viejas. No son enlaces construidos: son fuentes citadas sin su artículo. Se reportan y no se tocan.",
+      "estado": "REDACTADO · espera la decisión de Daniel"
+    }
   ]
 }
