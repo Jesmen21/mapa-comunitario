@@ -495,36 +495,44 @@
   ],
   "_propuestasQueNoSeCargan": [
     {
-      "queEs": "UNA ACTUALIZACIÓN, no una entrada nueva. Daniel decidió que la papa no lleva entrada propia: va en la entrada del IPC que ya existe. Reemplaza su TERCER PÁRRAFO.",
-      "entradaQueSeActualiza": "ipc-septiembre-2026",
-      "campo": "detalle · tercer párrafo",
-      "textoQueSale": "Dentro de la canasta, el reparto no es parejo y es lo que se siente en la compra. En los doce meses a septiembre la papa subió 78,24 %, las frutas frescas 16,64 % y la carne de res y sus derivados 14,22 %: tres productos de uso diario muy por encima del 6,29 % general, que es un promedio de toda la canasta y no lo que paga nadie en particular. El DANE y la prensa económica atribuyen el alza de la papa al aplazamiento de siembras ante la incertidumbre del fenómeno de El Niño, que es una causa climática y de ciclo agrícola, no de política de precios.",
-      "textoPropuesto": "Dentro de la canasta, el reparto no es parejo y es lo que se siente en la compra. La papa es el caso que más circuló, y lo que faltaba era decir CON QUÉ MEDIDA. Según la cobertura que cita el boletín técnico del DANE, la papa registró 7,29 % de variación MENSUAL en septiembre —junto al tomate con 10,47 % y las hortalizas y legumbres frescas con 9,10 %, las tres subclases que más aportaron en el mes— y 67,70 % EN LO CORRIDO DEL AÑO, de enero a septiembre. Circuló además una cifra ANUAL, a doce meses, que NO se publica acá: no se pudo verificar, y ni siquiera es una sola —unas notas la dan en 78,24 % y otras en 78,28 %—. No son cifras que se contradigan: son medidas distintas de lo mismo, y publicar una sin decir cuál es exactamente lo que hace que parezcan incompatibles. SOBRE LA CAUSA, LAS FUENTES DAN EXPLICACIONES DISTINTAS, y por eso van las tres con su nombre. Fedepapa la atribuye a la recuperación frente a la SOBREOFERTA DE 2025 y a un menor abastecimiento desde mayo: en agosto el abastecimiento nacional cayó cerca de 14 % frente al mismo mes de 2025, y agosto de 2025 había dejado precios excepcionalmente bajos —$516 por kilogramo en variedades blancas—, que es lo que infla el porcentaje cuando se compara contra esa base. Otra parte de la cobertura habla de MENORES SIEMBRAS Y EFECTOS DEL CLIMA. Y el DANE ha citado LLUVIAS que dificultaron la recolección. Las tres explicaciones son compatibles entre sí y ninguna está medida contra las otras en una fuente que las compare, así que se dicen las tres y no se elige. Fedepapa añade un dato que suele perderse: el mayor precio de venta no significa más rentabilidad para el productor, porque los costos de producción también subieron. Las frutas frescas (16,64 %) y la carne de res y sus derivados (14,22 %) vienen de la cobertura de prensa como variación a doce meses y se conservan con esa procedencia dicha. Todas quedan muy por encima del 6,29 % general, que es un promedio de toda la canasta y no lo que paga nadie en particular. NINGUNA FUENTE CONSULTADA ATRIBUYE EL ALZA AL GOBIERNO.",
-      "queCambia": "Frente a la versión que le mostré a Daniel, tres correcciones suyas, las tres aplicadas. UNO · LA PROCEDENCIA: el texto decía «el boletín técnico del DANE le registra», y dane.gov.co NO responde desde este contenedor —medido con `curl`, código 000—, así que esas cifras vienen de la COBERTURA QUE CITA el boletín y no de haberlo leído. Ahora lo dice, y el PDF sale de las fuentes: en su lugar van los medios que lo citan. Es el estándar de la v1065 aplicado a una cifra que yo mismo estaba a punto de presentar como leída. DOS · LAS CAUSAS: el texto viejo decía «aplazamiento de siembras ante la incertidumbre del fenómeno de El Niño» como si fuera la explicación, y las fuentes dan tres distintas. Van las tres con su nombre, sin elegir. TRES · el cierre pasa de «no de política de precios» —que es una conclusión— a «ninguna fuente consultada atribuye el alza al Gobierno», que es un hecho sobre lo que leímos. Y de paso: la cifra anual no verificada ni siquiera es una sola, 78,24 % en unas notas y 78,28 % en otras, lo que refuerza no publicarla.",
-      "fuentesQueSeAgregan": [
+      "queEs": "UNA MEDIDA NUEVA para `indicadores.aprobacion`, grupo «Aprobación de su gestión». No es una entrada: la aprobación vive como serie por fuente.",
+      "entradaQueSeActualiza": "indicadores.aprobacion",
+      "campo": "grupos[0].medidas · se AGREGA una medida; la de CB Global Data se queda",
+      "medidaPropuesta": {
+        "n": "AtlasIntel · Latam Pulse",
+        "f": "2026-10-07",
+        "v": 48.7,
+        "e": "44,6 % desaprueba · 6,7 % no sabe o no responde",
+        "calidad": "contrastable",
+        "quien": "Encuestadora brasileña con panel propio, que publica el Latam Pulse en alianza con Bloomberg Línea. Mide varios países de la región con la misma metodología y publica ficha por país, a diferencia de la otra medición de este bloque.",
+        "como": "Trabajo de campo del 2 al 7 de octubre de 2026 sobre 2.893 personas. La propia cobertura reporta el desglose regional: 60,5 % de respaldo en Amazonía y Orinoquía y 63,6 % de desaprobación en la región Pacífica.",
+        "reparos": "La ficha técnica completa —método de reclutamiento del panel, margen de error y ponderación— no se pudo leer en la fuente primaria: atlasintel.org no se alcanza desde este contenedor. Y hay una cifra que no cuadra entre medios: una nota la da en 47,7 % y las demás en 48,7 %. Se propone la que coincide en más fuentes, con esta salvedad escrita.",
+        "u": "https://www.infobae.com/colombia/2026/10/16/aprobacion-de-abelardo-de-la-espriella-cae-a-menos-del-50-en-encuesta-de-atlasintel-y-crece-la-preocupacion-por-la-corrupcion/"
+      },
+      "porQueEsAPROBACIONYNOINTENCIONDEVOTO": "Mide aprobación de la GESTIÓN de un presidente en ejercicio —aprueba/desaprueba— y no a quién votaría la gente. Por eso va al grupo 0 y no al de «Con cuánto llegó», que es intención de voto preelectoral y mide otra cosa. La distinción la pidió Daniel y es la que el propio bloque ya tiene escrita en la nota de cada grupo.",
+      "loQueOBLIGAACAMBIAR": "LA LEYENDA DEL BLOQUE QUEDA FALSA. Hoy dice «Hoy existe UNA sola medición de aprobación de su gestión, y la hace una consultora con metodología cuestionada». Con esta medida son DOS, y la segunda es contrastable, así que la frase hay que reescribirla: pasa a haber dos mediciones, una cuestionada y una contrastable, y la de agosto queda como el punto de partida. También cambia el rezago: la serie dejaría de tener 72 días sin dato nuevo.",
+      "loQueNOSePropone": {
+        "cbGlobalDataDeOctubre": "CB Global Data publicó en octubre una imagen positiva de 49,7 % y negativa de 47,0 %, frente a 53,6 % en septiembre. NO se propone cargarla, y la razón es concreta: la propia cobertura señala que, aunque los resultados se presentan como de octubre de 2026, el periodo de trabajo de campo consignado es del 5 al 8 de JUNIO del mismo año. Una medición cuya ficha se contradice con su propia fecha no se carga; si se aclara, entra.",
+        "invamerGuarumoCNC": "No se halló ninguna medición de aprobación de gestión de Invamer, Guarumo ni el CNC posterior a la posesión. Una nota señala que la caída se lee en un contexto de ESCASEZ de encuestas nacionales, así que no es que no se hayan buscado: es que no aparecen.",
+        "elRankingRegional": "Las notas de «ranking de presidentes de Latinoamérica» no se proponen como medición: son una posición relativa entre países, no un porcentaje de aprobación del gestionado acá."
+      },
+      "fuentesDeContraste": [
         {
-          "n": "Semana · Qué alimentos subieron y bajaron de precio en Colombia en septiembre de 2026 (cita el boletín técnico del DANE: papa 7,29 %, tomate 10,47 %, hortalizas 9,10 %)",
-          "u": "https://www.semana.com/economia/macroeconomia/articulo/dane-revela-que-alimentos-subieron-y-bajaron-de-precio-en-colombia-en-septiembre-de-2026/202626/",
-          "rol": "acto"
-        },
-        {
-          "n": "Diario del Huila · La papa acumula un alza del 67,7 % durante 2026",
-          "u": "https://diariodelhuila.com/la-papa-acumula-un-alza-del-677-durante-2026/",
-          "rol": "acto"
-        },
-        {
-          "n": "PotatoPro · Colombia: menor oferta de papa impulsa fuertes subas tras la sobreoferta de 2025 (recoge a Fedepapa)",
-          "u": "https://www.potatopro.com/es/news/2026/colombia-menor-oferta-de-papa-impulsa-fuertes-subas-tras-la-sobreoferta-de-2025",
+          "n": "El Colombiano · Aprobación de De la Espriella baja al 49 %, según encuesta Atlas Intel",
+          "u": "https://www.elcolombiano.com/colombia/aprobacion-de-de-la-espriella-baja-49-porciento-encuesta-atlas-intel-asi-le-va-a-otros-lideres-del-pais-OG42339106",
           "rol": "contexto"
         },
         {
-          "n": "Contexto Ganadero · Precio de la papa se disparó en 2026: estas son las razones detrás del alza",
-          "u": "https://www.contextoganadero.com/agricultura/precio-de-la-papa-se-disparo-en-2026-estas-son-las-razones-detras-del-alza",
+          "n": "Diario del Sur · La aprobación de Abelardo de la Espriella cae al 48,7 % en su primera encuesta nacional",
+          "u": "http://diariodelsur.com.co/noticias/la-aprobacion-de-abelardo-de-la-espriella-cae-al-48-7-en-su-primera-encuesta-nacional",
+          "rol": "contexto"
+        },
+        {
+          "n": "360 Radio · Aprobación de Abelardo de la Espriella se ubica en 47,7 % de acuerdo con AtlasIntel (la cifra que NO coincide)",
+          "u": "https://360radio.com.co/aprobacion-de-abelardo-de-la-espriella-se-ubica-en-477-de-acuerdo-con-atlasintel/235095/",
           "rol": "contexto"
         }
-      ],
-      "loQueNoSeToca": "Ni el título, ni la fecha, ni los otros tres párrafos —la cifra general, la comprobación de coherencia del acumulado y el dato por nivel de ingreso—.",
-      "loQueNOSeHace": "No se pone el PDF del boletín del DANE como fuente: no se leyó. Si una sesión con red abierta lo abre, entra como `acto` y las notas de prensa bajan a `contexto` — y ahí sí se podrá escribir «el boletín registra» en vez de «según la cobertura que lo cita»."
+      ]
     }
   ],
   "_serieDelDolar": {
