@@ -8721,15 +8721,39 @@
       }
 
       if (i === 0 || ultimo || p.hito) {
-        /* SEPARADO DE LA PUNTEADA DEL HITO. Con 11 px el número quedaba
-           rozando la guía vertical que marca la posesión —se ve a 390 px en
-           «3.157» y en «3.341»— y dos trazos que se tocan se leen como uno.
-           Los hitos llevan guía, así que su rótulo sube un poco más; los
-           demás se quedan donde estaban. */
-        var sep = p.hito ? 17 : 11;
-        var v = svgEl('text', { x: X(i), y: Math.max(11, Y(p.v) - sep), 'text-anchor':
-          i === 0 ? 'start' : (ultimo ? 'end' : 'middle'), class: 'sp-g-val' });
-        v.textContent = valorSerie(p.v, d);
+        /* ── EL RÓTULO Y LA PUNTEADA DEL HITO ──────────────────────────
+           La v1144 lo subió 6 px y NO SIRVIÓ, y la razón es de geometría: la
+           guía del hito es una línea VERTICAL que va de arriba abajo del
+           lienzo, así que mover el número hacia arriba lo deja exactamente
+           igual de atravesado. Lo que hay que hacer es apartarlo en X, o
+           taparla por detrás.
+
+           Se hacen LAS DOS, porque ninguna basta sola: el rótulo de un hito
+           se corre a un lado de su línea —hacia dentro del lienzo, para no
+           salirse— y además lleva un fondo del color del papel por debajo,
+           que es lo que lo salva cuando dos puntos quedan tan juntos que
+           correrlo no alcanza.
+
+           El fondo se dibuja ANTES que el texto y con su mismo ancho medido,
+           no con una caja a ojo. */
+        var txtV = valorSerie(p.v, d);
+        var anc = i === 0 ? 'start' : (ultimo ? 'end' : 'middle');
+        var vx = X(i), vy = Math.max(13, Y(p.v) - 11);
+        if (p.hito) {
+          /* A un lado de la guía: a la derecha si hay sitio, y si no a la
+             izquierda. El último punto ya ancla a la izquierda, así que se
+             separa en esa misma dirección. */
+          var aw2 = anchoRotulo(txtV);
+          if (ultimo) { vx = X(i) - 7; anc = 'end'; }
+          else if (X(i) + 7 + aw2 <= W - mR) { vx = X(i) + 7; anc = 'start'; }
+          else { vx = X(i) - 7; anc = 'end'; }
+        }
+        var awV = anchoRotulo(txtV);
+        var bx2 = anc === 'start' ? vx - 2 : (anc === 'end' ? vx - awV - 2 : vx - awV / 2 - 2);
+        svg.appendChild(svgEl('rect', { x: bx2, y: vy - 11, width: awV + 4, height: 14,
+                                        fill: 'var(--marfil)', rx: 2 }));
+        var v = svgEl('text', { x: vx, y: vy, 'text-anchor': anc, class: 'sp-g-val' });
+        v.textContent = txtV;
         svg.appendChild(v);
       }
     });
@@ -9219,6 +9243,20 @@
   function avisosDeDelitos(b, dd) {
     var a = [];
     if (b.caracter) a.push('Cifras de carácter ' + b.caracter);
+    /* LA SALVEDAD DE PERIODO, visible y no plegada: sin ella, un lector que
+       ve la barra del acumulado en gris no sabe por qué está en gris, y uno
+       que solo mira el +1,9 % se lleva una variación que es casi toda del
+       gobierno anterior. */
+    var ac2 = b.acumulado;
+    if (ac2 && ac2.periodoDesde && (dd || D).posesion &&
+        ac2.periodoDesde < (dd || D).posesion) {
+      a.push('el acumulado es casi todo del gobierno anterior');
+    }
+    if (b._umbralSuelo) {
+      a.push('las barras de menos de ' +
+             cn(b._umbralSuelo, 'caso van al mínimo', 'casos van al mínimo') +
+             ' de 2 px y ahí el largo deja de ser proporcional');
+    }
     var disp = (b.filas || []).filter(function (f) { return f.disputa; });
     if (disp.length) {
       a.push(disp.map(function (f) { return f.t.toLowerCase(); }).join(' y ') +
@@ -10834,7 +10872,11 @@
     if (acu && acu.casos) {
       var kAcu = Object.keys(acu.casos);
       var vA = acu.casos[kAcu[0]], vZ = acu.casos[kAcu[kAcu.length - 1]];
-      var tAcu = tonoPorMovimiento(b, null, vA, vZ);
+      /* EL TONO DECLARADO MANDA sobre el cálculo, y acá el declarado es
+         `neutro` por PERIODO: el acumulado va de enero a agosto y a este
+         Gobierno le corresponden unos seis días de ese tramo. El cálculo lo
+         daría adverso —la cifra sube— y el color le atribuiría lo anterior. */
+      var tAcu = tonoPorMovimiento(b, acu.tono, vA, vZ);
       grupos.push({
         t: acu.titulo || 'Acumulado del año', tono: tAcu, disputa: null,
         pct: vA ? Math.round(((vZ - vA) / vA) * 1000) / 10 : null,
@@ -10854,6 +10896,23 @@
        salía del lienzo y la cifra quedaba cortada. Lo vio el papel. */
     var reserva = Math.min(w * 0.55,
       Math.max.apply(null, rots.map(function (t) { return anchoRotulo(t); })) + 14);
+
+    /* ── EL SUELO DE 2 PX, DECLARADO COMO LÍMITE ────────────────────────
+       Las barras de secuestro —86 y 18 casos contra un máximo de 3.253— se
+       dibujan como líneas finísimas y el color casi no se ve. Lo que NO se
+       hace es subir el suelo: medido a 390 px, 1 caso son 0,042 px, así que
+       un suelo de 4 px dibujaría 11 casos con el largo de 95 y 18 con el de
+       95 también — una barra que miente por ocho veces no es una barra
+       visible, es otra cifra. El eje sigue partiendo de cero y el largo sigue
+       siendo proporcional POR ENCIMA del umbral; lo que se declara es dónde
+       deja de serlo, para que nadie lea esas dos barras como una medida.
+
+       El umbral se CALCULA de la escala de cada corrida (v903): cambia con el
+       ancho del lienzo y con el máximo de los datos, así que escribirlo a
+       mano sería una cifra vieja esperando. */
+    var SUELO_PX = 2;
+    var casosPorPx = max / Math.max(1, (w - reserva));
+    var umbralSuelo = Math.ceil(SUELO_PX * casosPorPx);
     var pieF = fuenteCorta(b.fuentes), pieC = corteDe(b);
     var hh = 6;
     grupos.forEach(function (g) { hh += cab + g.barras.length * (alto + hueco) + aire; });
@@ -10878,6 +10937,9 @@
       y += aire;
     });
     pieDentro(svg, w, pieY, pieF, pieC);
+    /* El umbral se le cuelga al bloque para que la línea de salvedades lo
+       diga: se calcula al dibujar, así que no puede escribirse antes. */
+    b._umbralSuelo = umbralSuelo;
 
     /* El acumulado y las salvedades, visibles. Una salvedad que hay que
        desplegar para ver no es una salvedad: es lo que el lector necesita

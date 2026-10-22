@@ -1,4 +1,4 @@
-const URBIS_CACHE = 'urbis-v1145-tres-papeles-de-color';
+const URBIS_CACHE = 'urbis-v1146-el-acumulado-en-gris';
 const URBIS_ASSETS = [
   './',
   './index.html',

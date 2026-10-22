@@ -1935,6 +1935,58 @@ console.log('\n  -- la ficha del gobernante --');
               : 'un tono que no esté en la tabla cae en neutro, y NINGÚN sitio escribe el rojo a mano: ' +
                 'solo sale de `claseDeTono`, que lo da cuando el registro declara adverso');
 
+      /* ── v1146 · NINGÚN ADVERSO SOBRE UN PERIODO QUE CRUZA LA POSESIÓN ──
+         Decisión de Daniel, 22 de octubre de 2026. El acumulado de delitos
+         iba de enero a agosto y el cálculo lo daba ADVERSO porque la cifra
+         sube — pero de esos ocho meses a este Gobierno le corresponden unos
+         seis días. Pintarlo rojo le atribuía lo ocurrido bajo el anterior,
+         que es lo mismo que este módulo prohíbe en prosa y estaba haciendo
+         con el color.
+
+         LA REGLA, dicha para que una cuente: si una cifra declara un periodo
+         que EMPIEZA antes de la posesión, su tono no puede ser adverso. Y el
+         dato no se retira: lo que se quita es el color, no el hecho. */
+      {
+        const pos = String(regT.posesion || '');
+        const conPeriodo = [];
+        const caminaP = (o, ruta) => {
+          if (!o || typeof o !== 'object') return;
+          if (Array.isArray(o)) { o.forEach((x, i) => caminaP(x, ruta + '[' + i + ']')); return; }
+          if (o.periodoDesde) conPeriodo.push({ ruta, desde: String(o.periodoDesde), tono: o.tono || '(calculado)' });
+          Object.keys(o).forEach((k) => caminaP(o[k], ruta + '.' + k));
+        };
+        caminaP(regT, '');
+        const cruzan = conPeriodo.filter((x) => pos && x.desde < pos);
+        const malos2 = cruzan.filter((x) => x.tono === 'adverso');
+
+        comprobar('MATERIAL · hay cifras cuyo periodo empieza antes de la posesión',
+          cruzan.length >= 1,
+          cruzan.length ? cruzan.length + ' cifra(s) de periodo cruzan el ' + pos + ': ' +
+            cruzan.map((x) => x.ruta).join(' · ')
+          : 'ninguna cifra declara un periodo anterior a la posesión: la comprobación no tiene qué mirar');
+
+        comprobar('y ninguna de ellas se pinta ADVERSA: el color no atribuye lo del gobierno anterior',
+          cruzan.length >= 1 && malos2.length === 0,
+          !cruzan.length ? 'NO PUDO CORRER: no hay cifras de periodo que crucen la posesión'
+            : malos2.length
+              ? malos2.length + ' va(n) en rojo sobre un periodo que empieza antes de la posesión: ' +
+                malos2.map((x) => x.ruta + ' desde ' + x.desde).join(' · ')
+              : cruzan.length + ' cifra(s) cruzan la posesión y ninguna va en rojo. La regla está ' +
+                'escrita en `delitosAltoImpacto._notaPeriodo`');
+
+        /* Y LA SALVEDAD SE IMPRIME. Sin esto el gris no se explica: un lector
+           no sabría por qué esa barra no tiene color, y el +1,9 % se leería
+           como una variación de este Gobierno. */
+        comprobar('y la salvedad de periodo se imprime en la línea visible',
+          /el acumulado es casi todo del gobierno anterior/.test(j70t) &&
+          /periodoDesde/.test(j70t),
+          !/periodoDesde/.test(j70t)
+            ? 'el código no lee `periodoDesde`: la salvedad no podría salir del dato'
+            : !/el acumulado es casi todo del gobierno anterior/.test(j70t)
+              ? 'el gris quedaría sin explicar: nadie sabría por qué esa barra no tiene color'
+              : 'la línea visible dice que el acumulado es casi todo del gobierno anterior');
+      }
+
       /* LO QUE DECLARA TONO, LO DECLARA DE LA TABLA. Un `tono: "adversa"` mal
          escrito caería en neutro sin decirlo, y eso se lee igual que una
          decisión. */

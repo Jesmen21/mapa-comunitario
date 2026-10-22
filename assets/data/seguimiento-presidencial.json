@@ -13071,7 +13071,10 @@
         "2026": 9434
       },
       "reportadoPct": 2,
-      "porQueVaAlLado": "El mes baja y el acumulado del año SUBE. Publicar solo el mes deja una lectura que el propio dato desmiente, así que el acumulado va en el mismo gráfico y no en otra pantalla."
+      "porQueVaAlLado": "El mes baja y el acumulado del año SUBE. Publicar solo el mes deja una lectura que el propio dato desmiente, así que el acumulado va en el mismo gráfico y no en otra pantalla.",
+      "tono": "neutro",
+      "porQueEseTono": "NEUTRO POR PERIODO, y es un override declarado que manda sobre el cálculo. El acumulado va de enero a agosto —ocho meses— y este Gobierno se posesionó el 7 de agosto de 2026: de ese periodo le corresponden unos seis días. El cálculo lo daría ADVERSO porque la cifra sube, y pintarlo rojo sería atribuirle a este Gobierno lo que ocurrió bajo el anterior, que es exactamente lo que este módulo tiene prohibido. El dato se publica igual, con su número y su variación: lo que se retira es el color, no el hecho.",
+      "periodoDesde": "2026-01-01"
     },
     "salvedades": [
       "Son cifras PRELIMINARES de la Policía Nacional: pueden cambiar con la consolidación.",
@@ -13097,7 +13100,8 @@
     ],
     "_relacionConLaEntrada": "La entrada `delitos-agosto-2026-policia` publica estas mismas cifras en prosa y NO se toca: es lo que esa corrida escribió, con su fecha. Comprobado al registrar el bloque: coinciden homicidios (1.169 contra 1.244), delitos sexuales (2.040 contra 3.253), secuestro (−79 %), el acumulado (9.434 contra 9.256, +2 %), los seis días del gobierno anterior y la disputa de extorsión (499 contra 717, 218 de diferencia). El bloque AGREGA dos filas que la entrada no trae —secuestro extorsivo y víctimas de masacre— y eso no la contradice: la amplía.",
     "bajarEsFavorable": true,
-    "porQueEseTono": "El tono de cada fila se CALCULA del movimiento real contra el mismo mes del año anterior: si baja es favorable y si sube es adverso, porque `bajarEsFavorable` es cierto para todos estos delitos. No se teclea fila por fila —una cifra tecleada dentro de un texto fijo envejece sola— y por eso el acumulado del año sale ADVERSO sin que nadie lo declare: sube de 9.256 a 9.434. La única fila con tono DECLARADO es la extorsión, y es un override para callar, no para afirmar."
+    "porQueEseTono": "El tono de cada fila se CALCULA del movimiento real contra el mismo mes del año anterior: si baja es favorable y si sube es adverso, porque `bajarEsFavorable` es cierto para todos estos delitos. No se teclea fila por fila —una cifra tecleada dentro de un texto fijo envejece sola— y por eso el acumulado del año sale ADVERSO sin que nadie lo declare: sube de 9.256 a 9.434. La única fila con tono DECLARADO es la extorsión, y es un override para callar, no para afirmar.",
+    "_notaPeriodo": "REGLA DE PERIODO (v1146, decisión de Daniel, 22 de octubre de 2026): ninguna cifra ACUMULADA o de periodo que empiece antes del 7 de agosto de 2026 puede pintarse ADVERSA, porque el color le atribuiría a este Gobierno lo ocurrido bajo el anterior. Si el periodo cruza la posesión, o el tono es neutro o la cifra lleva su salvedad de periodo visible. Lo mide `revisar.js`."
   },
   "subsidios": {
     "_nota": "CIFRAS ESTRUCTURADAS de los subsidios de energía y gas para estratos 1 y 2 en el presupuesto de 2027. El faltante se CALCULA de necesario menos asignado (v903) y no se teclea. Este bloque NO cambia ninguna pantalla todavía.",

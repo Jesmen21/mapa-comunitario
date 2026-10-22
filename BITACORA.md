@@ -29825,3 +29825,120 @@ el nombre de la aserción, otra por el alcance del patrón.
   `cerrado en v1145 · medido y declinado`
 * **No publica nada a `main`.** Sigue en `8053f23` (v1144) hasta el «súbalo».
   `pendiente`
+
+## v1146 · el acumulado deja de ser rojo, y el rótulo que la v1144 no arregló
+
+Ronda de revisión sobre la v1145, decisiones de Daniel del 22 de octubre de
+2026.
+
+### El acumulado del año pasa a NEUTRO
+
+**Lo decidió Daniel y la razón es suya**, citada: *el acumulado cubre 8 meses
+y el Gobierno se posesionó el 7 de agosto; solo unos 6 días son suyos.
+Pintarlo adverso le atribuye lo anterior, y eso contradice la regla de no
+atribuir causas.*
+
+Tiene razón, y es un defecto que esta casa venía evitando en PROSA y estaba
+cometiendo con el COLOR. La v1145 presentó el acumulado en rojo como la
+prueba de que su cálculo mandaba sobre la impresión —el mes baja y el año
+sube—; lo que no miró es sobre QUÉ PERIODO manda ese cálculo.
+
+El tono declarado manda sobre el cálculo, y acá declara `neutro` con su razón.
+**El dato se publica igual**, con su número y su +1,9 %: lo que se retira es
+el color, no el hecho. Y la línea visible gana su salvedad: *«el acumulado es
+casi todo del gobierno anterior»*.
+
+**La regla, generalizada y con guarda:** ninguna cifra acumulada o de periodo
+que empiece antes del 7 de agosto de 2026 puede pintarse adversa. Se barrió el
+registro entero: la única que cruza la posesión es ese acumulado. Las series
+que empiezan antes —`cocaina` (2023–2024), `dolar` (5 ago), `inflacion` (31
+jul)— ya estaban neutras. Quedan adversos **únicamente** subsidios
+(asignado/faltante) y las contradicciones desmentidas, y ninguno de los dos
+cubre un periodo anterior a la posesión.
+
+### El rótulo del dólar: la v1144 lo «arregló» y no lo arregló
+
+Daniel lo vio en la captura ampliada: la punteada **atraviesa el «1» de
+3.157** y roza el borde de 3.341. La v1144 había subido el rótulo 6 px, y eso
+no podía servir **por geometría**: la guía del hito es una línea VERTICAL que
+va de arriba abajo del lienzo, así que mover el número hacia arriba lo deja
+exactamente igual de atravesado.
+
+Es un arreglo que se escribió sin mirar qué forma tenía el obstáculo, y la
+medición de entonces no lo desmintió porque nadie midió el cruce: se miró la
+captura a 1×, donde 2 px de solape no se ven.
+
+La cura son dos cosas y ninguna basta sola: el rótulo de un hito **se corre en
+X** a un lado de su guía, y además lleva **un fondo del color del papel** por
+debajo, con su ancho medido. Ahora se mide: **0 cruces** entre rótulos de
+valor y guías punteadas, y se demuestra con captura a 4×.
+
+### Las barras finísimas: se declara el límite, no se sube el suelo
+
+Daniel: *«las barras de 86/18 y 37/11 son líneas finísimas y el azul casi no
+se ve. Proponga un ancho mínimo visible, o déjelo declarado como límite si
+falsea la escala.»*
+
+**Falsea.** Medido a 390 px, un caso son 0,042 px, así que:
+
+| casos | proporcional | suelo 2 px | suelo 4 px | suelo 6 px |
+|---|---|---|---|---|
+| 86 | 3,64 px | 3,6 (×1,0) | 4,0 (×1,1) | 6,0 (×1,6) |
+| 37 | 1,57 px | 2,0 (×1,3) | 4,0 (×2,6) | 6,0 (×3,8) |
+| 18 | 0,76 px | 2,0 (×2,6) | 4,0 (×5,2) | 6,0 (×7,9) |
+| 11 | 0,47 px | 2,0 (×4,3) | 4,0 (×8,6) | 6,0 (×12,9) |
+
+Con suelo de 4 px, once casos se dibujarían con el largo de noventa y cinco.
+**Una barra que miente por ocho veces no es una barra visible: es otra cifra.**
+Así que se toma la otra rama que Daniel dejó abierta y el límite se DECLARA,
+en la línea visible y calculado de la escala de cada corrida: *«las barras de
+menos de N casos van al mínimo de 2 px y ahí el largo deja de ser
+proporcional»* — N es 135 a 390 px y 42 a 1440, porque el umbral depende del
+ancho del lienzo y del máximo de los datos.
+
+**Y queda una alternativa sobre la mesa, sin implementar:** dar a cada delito
+su propia escala. Las dos barras de cada fila quedarían exactas entre sí —que
+es lo que el gráfico compara, «agosto 2026 frente a agosto 2025»— y todas
+serían legibles, a cambio de que las filas dejen de compararse entre sí. No se
+hace sin que Daniel lo decida: cambia lo que el gráfico significa.
+
+### Por qué «inyecciones en rojo» bajó de 11 a 8 · y un número mío mal contado
+
+Daniel pidió la razón escrita, y la primera parte de la respuesta es que
+**uno de los dos números estaba mal: la v1144 fueron 10, no 11.** Recontado
+sobre las salidas guardadas: `iny1144.sh` dio 8 rojos —su inyección 9 salió
+verde y se rehízo—, y `iny9.sh` dio 2. Total 10. El 11 fue un error de
+recuento al redactar el mensaje de commit.
+
+Y la segunda parte importa más: **ese número NO es una métrica de cobertura.**
+Es cuántas inyecciones corrió CADA tanda contra SUS guardas nuevas, y las
+inyecciones no se guardan como suite —viven en guiones de trabajo—. La v1145
+escribió menos guardas nuevas que la v1144, así que corrió menos inyecciones:
+6 + 2 rehechas = 8.
+
+**No se perdió cobertura, y se comprobó:** las guardas de la v1144 siguen en
+`revisar.js` y en `tseg`, y las tres que podrían haber quedado sin objeto
+—porque la v1145 retiró `d.color`— no existían: ninguna inyección de la v1144
+medía ese campo.
+
+Lo que esto enseña es que un número así no debería publicarse como si midiera
+algo acumulado. Desde esta tanda se dice **cuántas inyecciones corrió ESTA
+tanda contra SUS guardas nuevas**, que es lo único que ese número significa.
+
+### Lo medido
+
+| | v1145 | v1146 |
+|---|---|---|
+| Figuras adversas en delitos | 1 (el acumulado) | **0** |
+| Cruces rótulo/punteada en el dólar | 2 | **0**, medido a 4× |
+| Cifras de periodo que cruzan la posesión | 1, en rojo | **1, en gris y declarada** |
+| Seis conteos | 17·324·50·5·15·14 | **sin cambio** |
+| `tseg` · `revisar.js` | 128/128 · sin rojos | **128/128 · sin rojos** |
+
+### Lo que esta versión NO hace
+
+* **No da a cada delito su propia escala.** Es la alternativa de arriba y
+  cambia lo que el gráfico compara; la decide Daniel.
+  `pendiente`
+* **No publica nada a `main`.** Sigue en `8053f23` (v1144) hasta el «súbalo».
+  `pendiente`
