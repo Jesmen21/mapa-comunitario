@@ -1,4 +1,4 @@
-const URBIS_CACHE = 'urbis-v1152-el-contrapunto-sin-juicio';
+const URBIS_CACHE = 'urbis-v1153-el-dolar-con-su-procedencia';
 const URBIS_ASSETS = [
   './',
   './index.html',

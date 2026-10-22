@@ -5163,6 +5163,35 @@ console.log('\n  -- la ficha del gobernante --');
       });
     });
 
+    /* Y LAS SERIES TAMBIÉN DECLARAN ROL, y nadie las miraba. `indicadores`
+       lleva sus propias `fuentes` con `rol` —la del dólar trae ocho—, y el
+       barrido de arriba solo recorre `entradas`: un rol inventado en una
+       serie pasaba sin que nada lo dijera, igual que pasó con
+       `estadoProcesal` en la v1149. Es el mismo denominador estrecho, en otro
+       sitio, y se arregla igual: se mide donde el campo se escribe. */
+    const malRolSerie = [];
+    let conRolSerie = 0;
+    REGISTROS.forEach((ruta) => {
+      const d = JSON.parse(leer(ruta));
+      const quien = ruta.split('-').pop().replace('.json', '');
+      Object.keys(d.indicadores || {}).forEach((k) => {
+        const fs = ((d.indicadores[k] || {}).fuentes) || [];
+        fs.forEach((f) => {
+          const r = String(f.rol || '').trim();
+          if (!r) return;
+          conRolSerie++;
+          if (ROLES_FUENTE.indexOf(r) < 0) malRolSerie.push(quien + '/' + k + ' rol «' + r + '»');
+        });
+      });
+    });
+    comprobar('MATERIAL · las series de indicadores declaran el rol de sus fuentes',
+      conRolSerie > 0, conRolSerie + ' fuentes de serie con rol declarado');
+    comprobar('y ningún rol de una fuente de SERIE sale de la lista conocida',
+      malRolSerie.length === 0,
+      malRolSerie.length ? malRolSerie.join(' · ') + ' — el vocabulario es el mismo para una ' +
+        'entrada y para una serie, y un rol inventado se pinta sin etiqueta'
+        : 'las ' + conRolSerie + ' caen en ' + ROLES_FUENTE.join(' | '));
+
     comprobar('MATERIAL · hay entradas que declaran el rol de sus fuentes',
       conRol > 0, conRol + ' entradas con rol declarado en sus fuentes');
 

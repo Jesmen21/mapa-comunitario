@@ -8660,7 +8660,26 @@
     var min = Math.min.apply(null, vs), max = Math.max.apply(null, vs);
     var pad = (max - min) * 0.25 || 1;
     min -= pad; max += pad;
-    var X = function (i) { return mL + (W - mL - mR) * (i / (pts.length - 1)); };
+    /* ── EL EJE X VA POR FECHA, NO POR POSICIÓN EN LA LISTA (v1153) ───────
+       Iba por índice: el punto 3 de 7 caía siempre a la mitad, midiera lo que
+       midiera el hueco de tiempo. Mientras las series fueron esqueletos de
+       hitos con huecos parecidos, nadie lo notó; el día que la del dólar
+       recibió 22 valores DIARIOS de octubre, el dibujo se partió en dos — 56
+       días de agosto y septiembre ocupando el cuarto izquierdo y 21 días de
+       octubre ocupando el resto—. No es que el dato nuevo rompiera el
+       gráfico: es que el dato nuevo hizo VISIBLE una deformación que ya
+       estaba, y que falseaba igual el tramo del 29 al 30 de septiembre, que
+       se dibujaba tan ancho como once días de agosto.
+
+       Con fechas parseables la escala es temporal; si alguna no lo es, o si
+       todos los puntos caen el mismo día, se vuelve al reparto por índice,
+       que al menos dibuja algo. */
+    var ts = pts.map(function (p) { return Date.parse(String(p.f) + 'T12:00:00Z'); });
+    var tOk = ts.every(function (t) { return !isNaN(t); }) &&
+              ts[ts.length - 1] > ts[0];
+    var X = tOk
+      ? function (i) { return mL + (W - mL - mR) * ((ts[i] - ts[0]) / (ts[ts.length - 1] - ts[0])); }
+      : function (i) { return mL + (W - mL - mR) * (i / (pts.length - 1)); };
     var Y = function (v) { return mT + (H - mT - mB) * (1 - (v - min) / (max - min)); };
 
     // La clase es necesaria: el CSS no puede estirar "cualquier svg dentro de
@@ -8698,21 +8717,38 @@
       return cajaDeRotulo(X(i), rotuloDe(p), anclaDe(i));
     }));
 
+    /* LAS GUÍAS DE HITO VAN PRIMERO, TODAS. Se dibujaban dentro del mismo
+       bucle que los puntos, así que la guía de un hito tardío se pintaba
+       ENCIMA del rótulo de un punto anterior y su fondo ya no la tapaba: con
+       el eje por fecha, el rótulo del 5 de agosto quedó a dos días de la guía
+       de la posesión y la línea le cruzó el número. Una guía es fondo de
+       referencia y pertenece al fondo; el rótulo y su parche van después y
+       por eso ganan. Lo cazó la guarda de cruces de la v1147, no la lectura.
+
+       La guía termina 4 px ANTES del eje y no sobre él: los rótulos del eje
+       empiezan justo debajo, y la caja de un glifo sube por encima de su línea
+       base, así que tocaban por un píxel. */
     pts.forEach(function (p, i) {
-      // La posesión se marca con una guía vertical: es el punto de referencia
-      // de todo el módulo.
-      if (p.hito) {
-        /* La guía termina 4 px ANTES del eje y no sobre él: los rótulos del
-           eje empiezan justo debajo, y la caja de un glifo sube por encima de
-           su línea base, así que tocaban por un píxel. Visualmente no se
-           pierde nada —la guía sigue llegando al borde del dibujo— y deja de
-           haber solape que tapar. */
-        svg.appendChild(svgEl('line', { x1: X(i), x2: X(i), y1: mT - 4, y2: H - mB - 4,
-          stroke: '#946A00', 'stroke-width': 1, 'stroke-dasharray': '3 3' }));
-      }
+      if (!p.hito) return;
+      svg.appendChild(svgEl('line', { x1: X(i), x2: X(i), y1: mT - 4, y2: H - mB - 4,
+        stroke: '#946A00', 'stroke-width': 1, 'stroke-dasharray': '3 3' }));
+    });
+    pts.forEach(function (p, i) {
       var ultimo = i === pts.length - 1;
-      svg.appendChild(svgEl('circle', { cx: X(i), cy: Y(p.v), r: ultimo ? 5 : 3.5,
-        fill: ultimo ? col : '#FFFFFF', stroke: col, 'stroke-width': 2 }));
+      /* UN PUNTO SE DIBUJA SI CABE. Con el eje por fecha, una serie diaria
+         junta sus marcas hasta pisarse: 22 valores en tres semanas quedan a
+         ocho píxeles, y dos círculos de radio 3,5 con borde de 2 se tocan. Un
+         rosario de marcas pegadas no añade información y ensucia la línea,
+         que es la que lleva la forma. Se conservan SIEMPRE el primero, el
+         último y los hitos —son los que el lector busca—, y de los demás se
+         dibuja el que tenga sitio. El umbral es el diámetro de la marca con
+         su borde, 11 px, y no un número a ojo. */
+      var cabe = ultimo || i === 0 || p.hito ||
+                 (X(i) - X(i - 1) >= 11 && (i === pts.length - 1 || X(i + 1) - X(i) >= 11));
+      if (cabe) {
+        svg.appendChild(svgEl('circle', { cx: X(i), cy: Y(p.v), r: ultimo ? 5 : 3.5,
+          fill: ultimo ? col : '#FFFFFF', stroke: col, 'stroke-width': 2 }));
+      }
 
       if (compacta) return;
       /* El tamaño sale de la misma escala tipográfica que el resto de los
@@ -9074,7 +9110,17 @@
       ? 'termina donde empezó'
       : (dif > 0 ? 'sube ' : 'baja ') + valorSerie(Math.abs(dif), d);
     var hitos = pts.filter(function (x) { return x.hito; }).length;
+    /* LA PROCEDENCIA DE UNA SERIE VIAJA CON ELLA (v1153). Una serie puede
+       venir de una fuente que no es la oficial —leída de un agregador que ni
+       siquiera declara de dónde saca sus números—, y eso tiene que decirse
+       DONDE SE VE la cifra, no en un comentario del registro. Se declara en el
+       bloque y se recoge acá, en la única función que arma los datos de toda
+       serie, así que una serie nueva que lo declare lo hereda sin que su autor
+       se acuerde (v867). La línea corta va visible; el detalle, al pliegue. */
+    var avisos = d.avisoProcedencia ? [d.avisoProcedencia] : [];
     return {
+      avisos: avisos,
+      metodo: d.metodoProcedencia || '',
       porQueEseTono: d.porQueEseTono,
       desc: cn(pts.length, 'punto', 'puntos') + ' entre el ' + fechaCorta(a.f) + ' y el ' +
         fechaCorta(z.f) + ': de ' + valorSerie(a.v, d) + ' a ' + valorSerie(z.v, d) + ', ' + rumbo +
@@ -10095,6 +10141,15 @@
      a la tanda siguiente (v879). */
   function bllns(v, fmt) { return '$' + (fmt || bn)(v) + ' ' + pl(v, 'billón', 'billones'); }
   function anchoRotulo(t) { return String(t).length * 7.4; }
+  /* LO QUE DE VERDAD OCUPA UN RÓTULO. `anchoRotulo` ESTIMA por conteo de
+     caracteres y se queda corta —medido contra el navegador, «7 ago» da 37
+     y mide 44, un 16 %—. Para REPARTIR barras quedarse corto es lo
+     prudente y por eso la estimación no se toca; para decidir si dos
+     rótulos chocan, o para tapar uno con un fondo, lo prudente es lo
+     contrario. Va en una función para que las dos decisiones usen la
+     misma holgura: la primera vez estaban en dos sitios con dos números y
+     el eje del dólar salió con dos etiquetas montadas por 1 px. */
+  function anchoReal(t) { return anchoRotulo(t) * 1.25; }
 
   /* ── UN TEXTO QUE PUEDE CRUZARSE CON UNA LÍNEA VA CON FONDO ─────────────
      Dos trazos que se tocan se leen como uno, y en un gráfico eso no es
@@ -10130,7 +10185,7 @@
     if (caja) {
       bx = caja.x - 2; by = caja.y - 1; bw = caja.width + 4; bh = caja.height + 2;
     } else {
-      bw = anchoRotulo(texto) * 1.25 + 6;
+      bw = anchoReal(texto) + 6;
       bx = ancla === 'start' ? x - 2 : (ancla === 'end' ? x - bw - 2 : x - bw / 2 - 2);
       by = y - 13; bh = 18;
     }
@@ -10279,7 +10334,7 @@
      distancias entre centros, el primero y el último parecerían caber
      siempre. */
   function cajaDeRotulo(x, texto, ancla) {
-    var w = anchoRotulo(texto);
+    var w = anchoReal(texto);
     if (ancla === 'start') return { a: x, z: x + w };
     if (ancla === 'end') return { a: x - w, z: x };
     return { a: x - w / 2, z: x + w / 2 };

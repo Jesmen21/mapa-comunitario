@@ -915,6 +915,54 @@ const server = http.createServer((req, res) => {
              ' restan contra otra fecha: ' + fuera[0].trim()
            : sellos.rezagos.length + ' series, todas contra el ' + dia)) + ')');
 
+  /* ── v1153 · EL EJE DEL TIEMPO ES PROPORCIONAL, Y LA PROCEDENCIA SE VE ──
+     Dos cosas que se rompen por separado. El eje iba por POSICIÓN en la lista
+     y no por fecha, así que un tramo de un día se dibujaba tan ancho como uno
+     de once; se vio cuando la serie del dólar recibió valores diarios, pero
+     la deformación estaba desde antes. Y la procedencia de una serie que no
+     viene de la fuente oficial tiene que leerse DONDE SE VE la cifra.
+
+     El eje se mide sobre el dibujo: se toman las x de los puntos y se
+     comprueba que la razón entre dos tramos siga a la razón entre sus días.
+     No contra un número escrito acá (v890): contra las fechas del registro. */
+  await pg.evaluate(() => { location.hash = ''; });
+  await pg.waitForTimeout(800);
+  const serieDolar = (reg148.indicadores || {}).dolar || {};
+  const ejeD = await pg.evaluate(() => {
+    const c = [...document.querySelectorAll('.sp-graf')]
+      .find((x) => (x.querySelector('.sp-graf-h') || {}).textContent === 'El dólar desde la posesión');
+    if (!c) return null;
+    const svg = c.querySelector('svg.sp-lienzo');
+    const d = svg && svg.querySelector('path[fill="none"]');
+    const sal = c.querySelector('.sp-graf-sal');
+    return { d: d ? d.getAttribute('d') : '',
+             visible: sal ? sal.textContent : '', plegada: !!(sal && sal.closest('details')) };
+  });
+  const xs = ejeD ? [...ejeD.d.matchAll(/[ML]\s*([\d.]+)\s/g)].map((m) => +m[1]) : [];
+  const fechas = (serieDolar.puntos || []).map((p) => Date.parse(p.f + 'T12:00:00Z'));
+  chk(!!ejeD && xs.length === fechas.length && fechas.length >= 10,
+      'MATERIAL · la serie del dólar se dibuja y tiene puntos suficientes para medir su eje (' +
+      xs.length + ' en el trazo · ' + fechas.length + ' en el registro)');
+  let maxErr = 0, peor = '';
+  if (xs.length === fechas.length && xs.length > 2) {
+    const totX = xs[xs.length - 1] - xs[0], totT = fechas[fechas.length - 1] - fechas[0];
+    for (let i = 1; i < xs.length; i++) {
+      const propX = (xs[i] - xs[0]) / totX, propT = (fechas[i] - fechas[0]) / totT;
+      const e = Math.abs(propX - propT);
+      if (e > maxErr) { maxErr = e; peor = (serieDolar.puntos[i] || {}).f || '?'; }
+    }
+  }
+  chk(xs.length > 2 && maxErr < 0.01,
+      'y el eje del tiempo es PROPORCIONAL a las fechas, no al orden de la lista (' +
+      (xs.length > 2 ? 'desvío máximo ' + (maxErr * 100).toFixed(2) + ' % del ancho' +
+        (maxErr >= 0.01 ? ', en el punto del ' + peor : '') : 'no se pudo medir el trazo') + ')');
+  const avReg = String(serieDolar.avisoProcedencia || '');
+  chk(!!avReg && (ejeD || {}).visible.includes(avReg) && !(ejeD || {}).plegada,
+      'y la procedencia de la serie se lee VISIBLE, desde el registro (' +
+      (avReg ? ((ejeD || {}).visible.includes(avReg) ? avReg.slice(0, 58) + '…'
+                                                     : 'el registro la declara y la tarjeta no la pinta')
+             : 'la serie no declara `avisoProcedencia`') + ')');
+
   chk(errores.length === 0, 'sin errores de página' + (errores.length ? ': ' + errores[0] : ''));
 
   await pg.screenshot({ path: '/tmp/seguimiento.png', fullPage: false });

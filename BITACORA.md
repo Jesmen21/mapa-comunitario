@@ -30487,3 +30487,87 @@ viven, no en el contrapunto de una entrada.
   `pendiente`
 * **No carga la actualización del IPC.** El texto corregido está propuesto y
   espera el «cárguelas». `pendiente`
+
+---
+
+## v1153 · El dólar de octubre, y el eje del tiempo que nunca lo fue
+
+Daniel consiguió la serie de octubre y la pasó con su procedencia dicha: 22
+valores diarios leídos el 22 de octubre en `dolar-colombia.com/mes/2026-10`,
+un agregador **que no declara su fuente**, contrastados en cuatro fechas.
+
+### Lo que la carga enseñó, y es más que la carga
+
+Al dibujar los 22 puntos el gráfico **se partió en dos**: 56 días de agosto y
+septiembre ocupando el cuarto izquierdo y 21 días de octubre ocupando el
+resto. La causa no era el dato nuevo:
+
+> **El eje X iba por POSICIÓN en la lista, no por fecha.** El punto 3 de 7
+> caía siempre a la mitad, midiera lo que midiera el hueco de tiempo.
+
+Es decir, la deformación **ya estaba**: el tramo del 29 al 30 de septiembre se
+dibujaba tan ancho como once días de agosto, y nadie lo notó porque todas las
+series eran esqueletos de hitos con huecos parecidos. **El dato diario no rompió
+el gráfico: hizo visible lo que el gráfico llevaba haciendo desde siempre.**
+Es la clase A en su forma más pura — una cifra mecánicamente correcta, `i / (n-1)`,
+que no significa lo que parece.
+
+El eje pasa a ser temporal, con respaldo al reparto por índice si alguna fecha
+no se puede leer. Medido sobre el trazo: **desvío máximo 0,00 % del ancho**.
+
+### Y rompió dos cosas que otras guardas cazaron
+
+Ninguna la vi leyendo; las dos salieron rojas solas:
+
+* **El rótulo «3.205» quedó atravesado por la guía de la posesión.** Con el eje
+  por fecha, el 5 y el 7 de agosto quedan a dos días, y las guías de hito se
+  pintaban DENTRO del bucle de puntos: la guía de un hito tardío se dibujaba
+  encima del rótulo de un punto anterior, y su parche ya no la tapaba. **Una
+  guía es fondo de referencia y pertenece al fondo**: ahora van todas primero.
+  Lo cazó la guarda de cruces de la v1147.
+* **«29 sep» y «4 oct» se montaron por 1 px.** El ajuste de etiquetas decidía
+  con `anchoRotulo`, que estima por conteo de caracteres y se queda corta un
+  16 %. El parche de fondo ya corregía ese 16 % por su cuenta, con su propio
+  número: **dos decisiones sobre lo mismo, en dos sitios, con dos números.**
+  Ahora las dos usan `anchoReal`, y la estimación cruda se queda donde quedarse
+  corto es lo prudente — repartir barras.
+
+### Un punto se dibuja si cabe
+
+22 valores en tres semanas quedan a ocho píxeles y dos marcas de radio 3,5 con
+borde de 2 se tocan. Se conservan siempre el primero, el último y los hitos; de
+los demás se dibuja el que tenga sitio. **El umbral es el diámetro de la marca
+con su borde, 11 px, y no un número a ojo.**
+
+### La procedencia viaja con la serie
+
+`avisoProcedencia` y `metodoProcedencia` se declaran en el bloque y los recoge
+`datosDeSerie`, la única función que arma los datos de toda serie: una serie
+nueva que los declare los hereda sin que su autor se acuerde. La línea visible
+dice de dónde viene octubre y que **no es la serie certificada**; el método dice
+qué se contrastó, qué no es, y **que la granularidad cambia el 1 de octubre** —
+octubre parece más movido en parte porque está más medido—.
+
+Y una guarda que faltaba: las `fuentes` de una SERIE también llevan `rol`, y el
+barrido del vocabulario solo recorría `entradas`. Nueve fuentes de serie, ahora
+vigiladas. Es el mismo denominador estrecho de la v1149, en otro sitio.
+
+### Lo medido
+
+| | v1152 | v1153 |
+|---|---|---|
+| Puntos de la serie del dólar | 7 | **29** |
+| Desvío del eje frente a las fechas | hasta 52,66 % del ancho | **0,00 %** |
+| Cruces texto/línea a 390 y 1440 | 0 · 0 | **0 · 0** |
+| `tseg` | 148/148 | **151/151** |
+| Inyecciones | — | **3 en rojo + control en verde** |
+
+### Lo que esta versión NO hace
+
+* **No carga la serie certificada.** Este contenedor no alcanza ninguna fuente
+  primaria y la que se cargó lo dice en pantalla. Se reemplaza cuando se lea la
+  oficial. `pendiente`
+* **No toca los valores del 28 al 30 de septiembre.** Esa fuente no los trae.
+  `cerrado en v1153 · medido y declinado`
+* **No publica nada a `main`.** Queda en `a608103` (v1152) hasta el «súbalo».
+  `pendiente`
