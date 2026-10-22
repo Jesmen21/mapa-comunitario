@@ -1,4 +1,4 @@
-const URBIS_CACHE = 'urbis-v1154-el-tramo-sin-medir-y-el-azul';
+const URBIS_CACHE = 'urbis-v1155-tres-mediciones-de-gestion';
 const URBIS_ASSETS = [
   './',
   './index.html',

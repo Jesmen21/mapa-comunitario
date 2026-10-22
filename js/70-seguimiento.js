@@ -8537,6 +8537,16 @@
       var bloque = el('section', 'sp-fg-grupo');
       bloque.appendChild(el('h4', null, g.titulo || ''));
       if (g.nota && !compacta) bloque.appendChild(el('p', 'sp-fg-nota', g.nota));
+      /* LA VARIACIÓN ENTRE DOS MEDICIONES DE LA MISMA CASA SE CALCULA (v1155).
+         Es la única comparación legítima de este bloque: dos encuestadoras
+         distintas preguntan distinto y por eso no se promedian ni se restan
+         —está escrito arriba—, pero la misma casa contra sí misma sí se puede
+         leer. El número NO se teclea en el registro: una cifra escrita dentro
+         de una frase envejece el día que alguien corrija una medición (v903).
+         Lo que sí pone el registro es la salvedad, que es un juicio sobre el
+         margen y no un dato. */
+      var varG = variacionMismaCasa(g);
+      if (varG && !compacta) bloque.appendChild(el('p', 'sp-fg-var', varG));
 
       // La escala es común a todo el gráfico para que las barras se puedan
       // comparar entre grupos, no solo dentro de cada uno.
@@ -9497,6 +9507,37 @@
      metodología los propios medios le reparan— y por eso no se pliega. Sale
      del campo `calidad`, así que el aviso se cae solo el día que ninguna lo
      declare. */
+  /* Dos mediciones de la MISMA casa, las dos más recientes, y la diferencia
+     entre ellas. Devuelve null si no hay dos de la misma, que es el caso
+     normal de este bloque — una comparación entre casas distintas no se
+     escribe ni aunque las dos midan lo mismo. */
+  function variacionMismaCasa(g) {
+    var ms = ((g && g.medidas) || []).filter(function (m) { return m && m.f && m.v != null; });
+    var porCasa = {};
+    ms.forEach(function (m) { (porCasa[m.n] = porCasa[m.n] || []).push(m); });
+    var mejor = null;
+    Object.keys(porCasa).forEach(function (n) {
+      var l = porCasa[n].slice().sort(function (a, b) { return a.f < b.f ? -1 : 1; });
+      if (l.length < 2) return;
+      var a = l[l.length - 2], z = l[l.length - 1];
+      if (!mejor || z.f > mejor.z.f) mejor = { n: n, a: a, z: z };
+    });
+    if (!mejor) return '';
+    var dif = Math.round((mejor.z.v - mejor.a.v) * 10) / 10;
+    if (dif === 0) {
+      return mejor.n + ' midió lo mismo el ' + fechaCorta(mejor.a.f) + ' y el ' +
+             fechaCorta(mejor.z.f) + '.';
+    }
+    return mejor.n + (dif < 0 ? ' bajó ' : ' subió ') +
+      /* `pl` y no un ' puntos' escrito: una diferencia de exactamente 1 punto
+         imprimiría «1 puntos». El número ya va delante, así que acá va `pl` y
+         no `cn`, que lo antepondría otra vez. Lo cazó la guarda del plural. */
+      String(Math.abs(dif)).replace('.', ',') + ' ' + pl(Math.abs(dif), 'punto', 'puntos') +
+      ' entre una medición y otra, del ' +
+      fechaCorta(mejor.a.f) + ' al ' + fechaCorta(mejor.z.f) +
+      (g.salvedadVariacion ? ' ' + g.salvedadVariacion : '.');
+  }
+
   function avisosPorFuente(d) {
     var ms = [];
     ((d && d.grupos) || []).forEach(function (g) {

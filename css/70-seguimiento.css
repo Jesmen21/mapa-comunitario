@@ -1266,6 +1266,13 @@ a.sp-fuente:hover svg{ color:var(--verde-hi); }
 .sp-fg-nota{
   margin-bottom:12px; font-size:var(--t-8); color:var(--ink-2); line-height:1.45;
 }
+/* La variación entre dos mediciones de la misma casa: se lee con la nota del
+   grupo, así que comparte su tamaño, y va en la tinta del cuerpo porque es un
+   dato y no una acotación. */
+.sp-fg-var{
+  margin:-6px 0 12px; font-size:var(--t-8); color:var(--ink); line-height:1.45;
+  font-weight:600;
+}
 .sp-fg-fila{ margin-bottom:12px; }
 .sp-fg-cab{
   display:flex; align-items:baseline; justify-content:space-between; gap:10px;

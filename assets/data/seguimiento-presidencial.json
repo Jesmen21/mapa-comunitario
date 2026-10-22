@@ -10885,11 +10885,11 @@
       "formato": "pct",
       "sentido": "sube-bueno",
       "vista": "porFuente",
-      "leyenda": "Hoy existe UNA sola medición de aprobación de su gestión, y la hace una consultora con metodología cuestionada: por eso se muestra con su ficha y no como una verdad. Abajo, las encuestas de la segunda vuelta lo daban entre 50 y 54, y terminó ganando con 49,66 — todas lo sobreestimaron. Esa es la mejor razón para leer la cifra de arriba con prudencia.",
+      "leyenda": "Tres mediciones de aprobación de su gestión. Dos las hace AtlasIntel con la misma metodología de panel, lo que permite compararlas entre sí; la tercera, de agosto, la hace una consultora con metodología cuestionada y por eso se muestra con su ficha y no como una verdad. Las tres van con su fecha de campo y su tamaño de muestra, y NO se promedian: cada casa pregunta distinto. Abajo, las encuestas de la segunda vuelta lo daban entre 50 y 54, y terminó ganando con 49,66 — todas lo sobreestimaron. Esa es la mejor razón para leer las cifras de arriba con prudencia.",
       "grupos": [
         {
           "titulo": "Aprobación de su gestión",
-          "nota": "Ya como presidente. Es lo único comparable con la gestión, y por ahora solo lo mide una consultora.",
+          "nota": "Ya como presidente. Son TRES mediciones de gestión y no se promedian: cada casa pregunta distinto. Dos son de la misma encuestadora, y esas sí se pueden leer una contra otra.",
           "medidas": [
             {
               "n": "CB Global Data",
@@ -10901,8 +10901,31 @@
               "como": "Encuestas por internet en 18 países a la vez, con cuotas por población. Declara unos 40.000 casos en total para los 18 países y un margen de 1,9% a 2,2%.",
               "reparos": "Medios de la región le señalan que no publica la metodología país por país: no aclara si el sondeo es telefónico o presencial, cuántas personas responde cada país, ni si tiene equipo propio en el terreno. Una encuesta suya sobre Uruguay fue señalada por errores de metodología.",
               "u": "https://www.semana.com/mundo/articulo/abelardo-de-la-espriella-esta-en-los-primeros-lugares-del-ranking-de-favorabilidad-de-presidentes-asi-le-fue-al-nuevo-mandatario/202657/"
+            },
+            {
+              "n": "AtlasIntel · Latam Pulse",
+              "f": "2026-09-03",
+              "v": 51.8,
+              "e": "43,2% desaprueba",
+              "calidad": "contrastable",
+              "quien": "Encuestadora brasileña con panel propio, que publica el Latam Pulse para varios países de la región con la misma metodología y ficha por país.",
+              "como": "Trabajo de campo del 30 de agosto al 3 de septiembre de 2026 sobre 1.904 personas, por RDR, con margen de ±2 puntos y 95 % de confianza.",
+              "reparos": "La cobertura de esta medición titula con un 54 %, y ese 54 % NO es la aprobación: es la IMAGEN positiva, que mide otra cosa. Lo que esta entrada carga es el 51,8 % de aprobación del desempeño, que es lo que dice el cuerpo de la nota. Confundir las dos cifras es lo que hace que una misma encuesta circule con dos números.",
+              "u": "https://www.elpais.com.co/politica/gobierno-de-la-espriella-tiene-una-aprobacion-del-54-de-los-colombianos-revela-encuesta-de-atlasintel-1058.html"
+            },
+            {
+              "n": "AtlasIntel · Latam Pulse",
+              "f": "2026-10-07",
+              "v": 48.7,
+              "e": "44,6% desaprueba",
+              "calidad": "contrastable",
+              "quien": "La misma casa que la medición anterior, con la misma metodología de panel, lo que permite compararla consigo misma.",
+              "como": "Trabajo de campo del 2 al 7 de octubre de 2026 sobre 2.893 personas. La ficha técnica completa —reclutamiento del panel, margen y ponderación— NO se pudo leer en la fuente primaria: atlasintel.org no se alcanza desde el contenedor donde se mantiene este registro.",
+              "reparos": "Una nota publica 47,7 % donde las demás publican 48,7 %. Se carga la que coincide en más fuentes y el reparo queda escrito: no es una cifra firme al decimal.",
+              "u": "https://www.valoraanalitik.com/?p=617694"
             }
-          ]
+          ],
+          "salvedadVariacion": "— y los márgenes de error son del orden de esa diferencia, así que la dirección se sostiene mejor que el tamaño."
         },
         {
           "titulo": "Con cuánto llegó",
@@ -10964,6 +10987,16 @@
         {
           "n": "Wikipedia · elecciones presidenciales de Colombia de 2026",
           "u": "https://es.wikipedia.org/wiki/Elecciones_presidenciales_de_Colombia_de_2026"
+        },
+        {
+          "n": "El País (Cali) · Gobierno De la Espriella tiene una aprobación del 54 % de los colombianos, revela encuesta de AtlasIntel (10 de septiembre de 2026; el cuerpo da 51,8 % de aprobación del desempeño)",
+          "u": "https://www.elpais.com.co/politica/gobierno-de-la-espriella-tiene-una-aprobacion-del-54-de-los-colombianos-revela-encuesta-de-atlasintel-1058.html",
+          "rol": "acto"
+        },
+        {
+          "n": "Valora Analitik · AtlasIntel: la aprobación de De la Espriella baja a 48,7 % en octubre (15 de octubre de 2026; compara con la medición de septiembre)",
+          "u": "https://www.valoraanalitik.com/?p=617694",
+          "rol": "acto"
         }
       ],
       "sinBase": "Cada medida es una encuesta de una consultora, no un acto de este gobierno: el registro de actos no la documenta ni debe. La procedencia de cada una va en su propio campo `quien`, con la calidad de la medición, que es más de lo que un enlace a una entrada diría.",

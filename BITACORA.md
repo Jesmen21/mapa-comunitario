@@ -30656,3 +30656,94 @@ hoy el dibujo se rompe cuando el dibujo cambia por una razón buena.
   `cerrado en v1154 · medido y declinado`
 * **No publica nada a `main`.** Queda en `c009c7e` (v1153) hasta el «súbalo».
   `pendiente`
+
+---
+
+## v1155 · Tres mediciones de gestión, y una resta que solo vale contra uno mismo
+
+Daniel verificó **dos** mediciones de AtlasIntel, no una, y las cargó las dos.
+Lo que parecía una carga de datos abrió una pregunta de método.
+
+### La resta solo vale contra la misma casa
+
+Este bloque tiene escrito desde siempre que las encuestadoras **no se
+promedian**, porque cada una pregunta distinto. Entonces **restar una casa de
+otra es lo mismo por la puerta de atrás**: «bajó 3,1 puntos» entre dos casas
+distintas no mide una caída, mide dos preguntas.
+
+Con dos mediciones de la **misma** casa y la misma metodología, la resta sí se
+puede leer. Así que la línea de variación:
+
+* la **calcula el código**, no la escribe el registro — una cifra dentro de
+  una frase envejece el día que alguien corrija una medición (v903);
+* y **solo nombra una casa**, la que tiene dos mediciones. Si alguna vez
+  comparara dos distintas, la guarda se pone roja.
+
+Lo que sí pone el registro es la salvedad, porque es un juicio y no un dato:
+*«y los márgenes de error son del orden de esa diferencia, así que la
+dirección se sostiene mejor que el tamaño»*. Con ±2 en septiembre, la
+diferencia de dos mediciones tiene un margen del orden de ±2,8 contra una
+caída de 3,1: **la dirección se sostiene, el tamaño apenas**.
+
+### Dos cifras de la misma encuesta, y solo una es aprobación
+
+La cobertura de septiembre tituló con **54 %** y el cuerpo decía **51,8 %**.
+No es un error de nadie: **54 % es IMAGEN POSITIVA y 51,8 % es APROBACIÓN DEL
+DESEMPEÑO**, que miden cosas distintas. Se carga el 51,8 % y la salvedad va
+dentro de la medición, porque es exactamente lo que hace que una misma
+encuesta circule con dos números.
+
+La misma confusión descalifica la de CB Global Data de octubre —que publica
+imagen positiva— y por eso **esa no se carga**; tampoco por su ficha, que
+consigna trabajo de campo del **5 al 8 de junio** para un resultado
+presentado como de octubre. Queda como señal en el borrador.
+
+### Lo que se recalculó solo, y era la prueba de que estaba bien hecho
+
+Nada de esto hubo que tocarlo:
+
+| | Antes | Ahora |
+|---|---|---|
+| «N de M mediciones cuestionadas» | 1 de 4 | **1 de 6** |
+| Rezago de la serie | 72 días | **15** |
+| Corte declarado | 11 ago 2026 | **7 oct 2026** |
+
+Los tres salen de las medidas. **Si alguno hubiera estado escrito a mano, esta
+carga lo habría dejado mintiendo** — que es la forma exacta del defecto que
+esta bitácora lleva veinte tandas registrando.
+
+### Y dos defectos que cazaron las guardas, no la lectura
+
+* **«1 puntos».** La línea de variación llevaba `' puntos'` escrito, y una
+  diferencia de exactamente un punto lo habría impreso. La guarda del plural
+  lo marcó antes de que existiera el caso.
+* **La novena vez que una aserción imprime el verde estando en rojo.** La de
+  la casa única tiene dos condiciones —que nombre la casa esperada y que no
+  nombre otra— y el texto solo miraba la segunda, así que al inyectar
+  «compara todas las casas» salió en rojo diciendo «solo nombra AtlasIntel».
+  Lo cazó la inyección.
+
+Y uno que cazó **leer el papel**: las dos mediciones nuevas escribían
+«43,2 % desaprueba» con espacio y la que ya estaba «42,2% desaprueba» sin él.
+Dos estilos en la misma tarjeta, en tres renglones seguidos.
+
+### Lo medido
+
+| | v1154 | v1155 |
+|---|---|---|
+| Mediciones de aprobación de gestión | 1 | **3** |
+| Casas que las miden | 1 | **2** |
+| `tseg` | 155/155 | **158/158** |
+| Inyecciones | 3 | **3 en rojo + control en verde** |
+
+### Lo que esta versión NO hace
+
+* **No carga la medición de CB Global Data de octubre.** Ficha con campo del
+  5 al 8 de junio para un resultado «de octubre», y además publica imagen y
+  no aprobación. Queda como señal en el borrador.
+  `cerrado en v1155 · medido y declinado`
+* **No lee la ficha técnica completa de la medición de octubre.**
+  `atlasintel.org` no se alcanza desde este contenedor, y eso va dicho dentro
+  de la propia medición. `pendiente`
+* **No publica nada a `main`.** Queda en `72ac5d2` (v1154) hasta el «súbalo».
+  `pendiente`

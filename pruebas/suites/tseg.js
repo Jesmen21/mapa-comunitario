@@ -1036,6 +1036,63 @@ const server = http.createServer((req, res) => {
             ? 'una barra pinta ' + apro.favRGB + ', que es el favorable'
             : 'las ' + ((apro || {}).barras || []).length + ' son neutras · favorable ' + ((apro || {}).favRGB || '?'))) + ')');
 
+  /* ── v1155 · LA VARIACIÓN SE CALCULA, Y SOLO ENTRE LA MISMA CASA ───────
+     Dos cosas. La primera: el número de la variación no puede estar tecleado
+     en el registro, porque una cifra dentro de una frase envejece el día que
+     alguien corrija una medición (v903). Se comprueba recalculándolo de las
+     medidas del registro y buscando ESE número en la pantalla.
+
+     La segunda es la que de verdad importa y es metodológica: este bloque
+     tiene escrito que las encuestadoras NO se promedian porque cada una
+     pregunta distinto. Restar una casa de otra sería lo mismo por la puerta
+     de atrás, así que la línea solo puede nombrar UNA casa. */
+  await pg.evaluate(() => { location.hash = ''; });
+  await pg.waitForTimeout(800);
+  const vr = await pg.evaluate(() => {
+    const c = [...document.querySelectorAll('.sp-graf')]
+      .find((x) => (x.querySelector('.sp-graf-h') || {}).textContent === 'Aprobación del presidente');
+    if (!c) return null;
+    const v = c.querySelector('.sp-fg-var');
+    const nombres = [...c.querySelectorAll('.sp-fg-grupo')][0];
+    return { linea: v ? v.textContent : '',
+             casas: nombres ? [...new Set([...nombres.querySelectorAll('.sp-fg-cab b')]
+               .map((b) => b.childNodes[0].textContent.trim()))] : [] };
+  });
+  const gA = (((reg148.indicadores || {}).aprobacion || {}).grupos || [])[0] || {};
+  const porCasa = {};
+  (gA.medidas || []).forEach((m) => { (porCasa[m.n] = porCasa[m.n] || []).push(m); });
+  let difCasa = null, casaVar = '';
+  Object.keys(porCasa).forEach((k) => {
+    const l = porCasa[k].slice().sort((x, y) => (x.f < y.f ? -1 : 1));
+    if (l.length < 2) return;
+    difCasa = Math.round((l[l.length - 1].v - l[l.length - 2].v) * 10) / 10;
+    casaVar = k;
+  });
+  chk(!!vr && difCasa !== null && (gA.medidas || []).length >= 3,
+      'MATERIAL · el grupo de gestión trae varias mediciones y dos de la misma casa (' +
+      ((gA.medidas || []).length) + ' mediciones · ' + (casaVar || 'ninguna repetida') + ')');
+  const txtEsp = String(Math.abs(difCasa)).replace('.', ',');
+  chk(!!vr && vr.linea.includes(txtEsp),
+      'y la variación publicada es la CALCULADA de las medidas del registro (' +
+      (vr && vr.linea.includes(txtEsp) ? 'dice ' + txtEsp + ', que es ' +
+        (porCasa[casaVar] || []).map((m) => m.v).join(' → ')
+        : 'el registro da ' + txtEsp + ' y la pantalla dice «' + ((vr || {}).linea || '').slice(0, 60) + '»') + ')');
+  const otras = (vr ? vr.casas : []).filter((n) => n !== casaVar && vr.linea.includes(n));
+  /* EL DETALLE DICE QUÉ MITAD FALLÓ (v973, v1051). La primera versión
+     imprimía «solo nombra AtlasIntel» estando en rojo: la aserción tiene dos
+     condiciones —que nombre la casa esperada y que no nombre otra— y el texto
+     solo miraba la segunda. Lo cazó la inyección, no la lectura. Van las dos
+     por separado, que es la novena vez que este repositorio lo corrige. */
+  const nombraSuCasa = !!vr && vr.linea.includes(casaVar);
+  chk(nombraSuCasa && otras.length === 0,
+      'y compara UNA sola casa consigo misma, nunca dos distintas (' +
+      (!nombraSuCasa
+        ? 'la línea no nombra «' + casaVar + '», que es la casa con dos mediciones: dice «' +
+          ((vr || {}).linea || '').slice(0, 50) + '»'
+        : (otras.length ? 'la línea nombra además ' + otras.join(', ')
+                        : 'solo nombra ' + casaVar + ', y hay ' + ((vr || {}).casas || []).length +
+                          ' casas en el grupo')) + ')');
+
   chk(errores.length === 0, 'sin errores de página' + (errores.length ? ': ' + errores[0] : ''));
 
   await pg.screenshot({ path: '/tmp/seguimiento.png', fullPage: false });
