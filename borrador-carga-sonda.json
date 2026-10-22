@@ -499,21 +499,32 @@
       "entradaQueSeActualiza": "ipc-septiembre-2026",
       "campo": "detalle · tercer párrafo",
       "textoQueSale": "Dentro de la canasta, el reparto no es parejo y es lo que se siente en la compra. En los doce meses a septiembre la papa subió 78,24 %, las frutas frescas 16,64 % y la carne de res y sus derivados 14,22 %: tres productos de uso diario muy por encima del 6,29 % general, que es un promedio de toda la canasta y no lo que paga nadie en particular. El DANE y la prensa económica atribuyen el alza de la papa al aplazamiento de siembras ante la incertidumbre del fenómeno de El Niño, que es una causa climática y de ciclo agrícola, no de política de precios.",
-      "textoPropuesto": "Dentro de la canasta, el reparto no es parejo y es lo que se siente en la compra. La papa es el caso que más circuló, y lo que faltaba era decir CON QUÉ MEDIDA: el boletín técnico del DANE le registra 7,29 % de variación MENSUAL en septiembre y 67,70 % EN LO CORRIDO DEL AÑO, de enero a septiembre. Circuló además una cifra de 78,24 % ANUAL, a doce meses, que NO se publica acá porque no se pudo verificar en el boletín. No son tres cifras que se contradigan: son tres medidas distintas de lo mismo, y publicar una sin decir cuál es exactamente lo que hace que parezcan incompatibles. Las frutas frescas (16,64 %) y la carne de res y sus derivados (14,22 %) vienen de la cobertura de prensa como variación a doce meses y se conservan con esa procedencia dicha. Las tres quedan muy por encima del 6,29 % general, que es un promedio de toda la canasta y no lo que paga nadie en particular. El DANE y la prensa económica atribuyen el alza de la papa al aplazamiento de siembras ante la incertidumbre del fenómeno de El Niño, que es una causa climática y de ciclo agrícola, no de política de precios.",
-      "queCambia": "Sale el 78,24 % como cifra publicada y entra dicho como lo que es: una cifra que circuló, a doce meses, no verificada en el boletín. Entran las dos que sí están en el boletín, cada una con su medida al lado. Se conserva la atribución al ciclo de siembras y a El Niño, que ya estaba y está bien sostenida. Y las de frutas y carne se quedan, ahora diciendo que vienen de prensa y no del boletín: retirarlas sin medirlas sería empobrecer el registro por simetría, y dejarlas sin procedencia sería lo que esta corrección viene a arreglar.",
+      "textoPropuesto": "Dentro de la canasta, el reparto no es parejo y es lo que se siente en la compra. La papa es el caso que más circuló, y lo que faltaba era decir CON QUÉ MEDIDA. Según la cobertura que cita el boletín técnico del DANE, la papa registró 7,29 % de variación MENSUAL en septiembre —junto al tomate con 10,47 % y las hortalizas y legumbres frescas con 9,10 %, las tres subclases que más aportaron en el mes— y 67,70 % EN LO CORRIDO DEL AÑO, de enero a septiembre. Circuló además una cifra ANUAL, a doce meses, que NO se publica acá: no se pudo verificar, y ni siquiera es una sola —unas notas la dan en 78,24 % y otras en 78,28 %—. No son cifras que se contradigan: son medidas distintas de lo mismo, y publicar una sin decir cuál es exactamente lo que hace que parezcan incompatibles. SOBRE LA CAUSA, LAS FUENTES DAN EXPLICACIONES DISTINTAS, y por eso van las tres con su nombre. Fedepapa la atribuye a la recuperación frente a la SOBREOFERTA DE 2025 y a un menor abastecimiento desde mayo: en agosto el abastecimiento nacional cayó cerca de 14 % frente al mismo mes de 2025, y agosto de 2025 había dejado precios excepcionalmente bajos —$516 por kilogramo en variedades blancas—, que es lo que infla el porcentaje cuando se compara contra esa base. Otra parte de la cobertura habla de MENORES SIEMBRAS Y EFECTOS DEL CLIMA. Y el DANE ha citado LLUVIAS que dificultaron la recolección. Las tres explicaciones son compatibles entre sí y ninguna está medida contra las otras en una fuente que las compare, así que se dicen las tres y no se elige. Fedepapa añade un dato que suele perderse: el mayor precio de venta no significa más rentabilidad para el productor, porque los costos de producción también subieron. Las frutas frescas (16,64 %) y la carne de res y sus derivados (14,22 %) vienen de la cobertura de prensa como variación a doce meses y se conservan con esa procedencia dicha. Todas quedan muy por encima del 6,29 % general, que es un promedio de toda la canasta y no lo que paga nadie en particular. NINGUNA FUENTE CONSULTADA ATRIBUYE EL ALZA AL GOBIERNO.",
+      "queCambia": "Frente a la versión que le mostré a Daniel, tres correcciones suyas, las tres aplicadas. UNO · LA PROCEDENCIA: el texto decía «el boletín técnico del DANE le registra», y dane.gov.co NO responde desde este contenedor —medido con `curl`, código 000—, así que esas cifras vienen de la COBERTURA QUE CITA el boletín y no de haberlo leído. Ahora lo dice, y el PDF sale de las fuentes: en su lugar van los medios que lo citan. Es el estándar de la v1065 aplicado a una cifra que yo mismo estaba a punto de presentar como leída. DOS · LAS CAUSAS: el texto viejo decía «aplazamiento de siembras ante la incertidumbre del fenómeno de El Niño» como si fuera la explicación, y las fuentes dan tres distintas. Van las tres con su nombre, sin elegir. TRES · el cierre pasa de «no de política de precios» —que es una conclusión— a «ninguna fuente consultada atribuye el alza al Gobierno», que es un hecho sobre lo que leímos. Y de paso: la cifra anual no verificada ni siquiera es una sola, 78,24 % en unas notas y 78,28 % en otras, lo que refuerza no publicarla.",
       "fuentesQueSeAgregan": [
         {
-          "n": "DANE · Boletín técnico Índice de Precios al Consumidor, septiembre de 2026",
-          "u": "https://www.dane.gov.co/files/operaciones/IPC/sep2026/bol-IPC-sep2026.pdf",
+          "n": "Semana · Qué alimentos subieron y bajaron de precio en Colombia en septiembre de 2026 (cita el boletín técnico del DANE: papa 7,29 %, tomate 10,47 %, hortalizas 9,10 %)",
+          "u": "https://www.semana.com/economia/macroeconomia/articulo/dane-revela-que-alimentos-subieron-y-bajaron-de-precio-en-colombia-en-septiembre-de-2026/202626/",
           "rol": "acto"
         },
         {
-          "n": "DANE · Principales resultados IPC, septiembre de 2026",
-          "u": "https://www.dane.gov.co/files/operaciones/IPC/sep2026/press-IPC-sep2026.pdf",
+          "n": "Diario del Huila · La papa acumula un alza del 67,7 % durante 2026",
+          "u": "https://diariodelhuila.com/la-papa-acumula-un-alza-del-677-durante-2026/",
           "rol": "acto"
+        },
+        {
+          "n": "PotatoPro · Colombia: menor oferta de papa impulsa fuertes subas tras la sobreoferta de 2025 (recoge a Fedepapa)",
+          "u": "https://www.potatopro.com/es/news/2026/colombia-menor-oferta-de-papa-impulsa-fuertes-subas-tras-la-sobreoferta-de-2025",
+          "rol": "contexto"
+        },
+        {
+          "n": "Contexto Ganadero · Precio de la papa se disparó en 2026: estas son las razones detrás del alza",
+          "u": "https://www.contextoganadero.com/agricultura/precio-de-la-papa-se-disparo-en-2026-estas-son-las-razones-detras-del-alza",
+          "rol": "contexto"
         }
       ],
-      "loQueNoSeToca": "Ni el título, ni la fecha, ni los otros tres párrafos —la cifra general, la comprobación de coherencia del acumulado y el dato por nivel de ingreso—."
+      "loQueNoSeToca": "Ni el título, ni la fecha, ni los otros tres párrafos —la cifra general, la comprobación de coherencia del acumulado y el dato por nivel de ingreso—.",
+      "loQueNOSeHace": "No se pone el PDF del boletín del DANE como fuente: no se leyó. Si una sesión con red abierta lo abre, entra como `acto` y las notas de prensa bajan a `contexto` — y ahí sí se podrá escribir «el boletín registra» en vez de «según la cobertura que lo cita»."
     }
   ],
   "_serieDelDolar": {
@@ -549,5 +560,27 @@
     ],
     "laVia": "Tres caminos, en orden de preferencia. UNO: una sesión con red abierta descarga la serie de TRM del Banco de la República —totoro.banrep.gov.co publica la serie histórica diaria— y la carga con su enlace y su fecha de consulta; es lo correcto y cierra el pendiente de una vez. DOS: el dato de la Superfinanciera, que es quien certifica la TRM, por la misma vía. TRES: si ninguna de las dos se puede abrir nunca desde acá, la serie se queda donde está y el gráfico ya lo dice solo —«Datos hasta el 30 de septiembre de 2026. El registro se cerró el 22 de octubre, 22 días después: en ese tramo esta serie no recibió un dato nuevo»—, que es exactamente la redacción que la v1056 escribió para este caso. No hay que inventar nada: el vacío ya está declarado y se mantiene.",
     "loQueNOSeHace": "Promediar, interpolar o tomar el valor de un agregador como si fuera la TRM certificada. Y tampoco cambiar el último punto del 30 de septiembre: la búsqueda devolvió $3.349,63 como máximo reciente, fechado el 29 de septiembre, y el registro tiene 3.341 en el 30 — son dos días distintos y no hay contradicción que arreglar."
+  },
+  "_noAlcanzableDesdeEsteContenedor": {
+    "queEs": "Un estado, no una tarea de un tercero (v1122). Dice QUÉ FALTA y POR QUÉ ESO LIMITA lo que el módulo puede publicar, y no a quién pedírselo ni por cuál vía: nadie de acá controla ese plazo. La diferencia con «nadie lo ha buscado» es la que la v1076 vino a marcar, y la medición es la que la sostiene.",
+    "laMedicion": "El 22 de octubre de 2026, con `curl` y 12 segundos de espera, estos dominios devuelven código 000 y ninguna respuesta: banrep.gov.co, totoro.banrep.gov.co, superfinanciera.gov.co, datos.gov.co y dane.gov.co. No es que la página esté caída: el contenedor no resuelve el dominio. El único canal que este contenedor tiene es la BÚSQUEDA, y su estándar está escrito desde la v1003: sostiene QUE un hecho ocurrió, no que se leyó la página.",
+    "items": [
+      {
+        "item": 7,
+        "que": "El alza de la tarifa residencial de gas en 2026",
+        "queFalta": "El porcentaje oficial de variación de la tarifa regulada, por estrato y con su fecha de vigencia.",
+        "porQueLimita": "Sin él, el módulo no puede publicar ninguna cifra de alza de la tarifa. Lo que SÍ puede publicar, y publica, es lo que no es la tarifa: el alza MAYORISTA de Ecopetrol (34 % para 2026, con cerca del 30 % de los contratos que vencían renovados) y el escenario de Fedesarrollo (hasta 45,8 % en cinco ciudades si la mitad de la oferta llegara a ser importada). Confundir cualquiera de los dos con la tarifa sería el error de categoría de la v1093.",
+        "queLoCerraria": "El boletín tarifario trimestral de la Superservicios (superservicios.gov.co) o la resolución de la CREG (creg.gov.co) que fije el ajuste, leídos directamente. Los dos dominios están del otro lado del mismo muro.",
+        "loQueNoEs": "El «400 %» que circuló no tiene fuente colombiana localizable, y eso no cambia con el acceso: se buscó y no aparece."
+      },
+      {
+        "item": 10,
+        "que": "Cuántas personas siguen sin vivienda tras el terremoto",
+        "queFalta": "El balance de albergues abiertos y de personas alojadas, y el conteo de subsidios de arriendo GIRADOS frente a los prometidos.",
+        "porQueLimita": "Sin él, la entrada del subsidio publica el anuncio y la bolsa —$100.000 millones— y declara que la ejecución está sin medir, que es lo que hace hoy. El módulo no puede decir ni que se cumplió ni que no se cumplió. Lo que sí quedó documentado es el DISEÑO, que no es lo mismo: tres pagos del 60 % de un salario mínimo según la categoría del municipio, tope de $3.151.629 por hogar, con inscripción en el Registro Único de Damnificados.",
+        "queLoCerraria": "Un boletín o informe de la UNGRD (ungrd.gov.co) con el balance. Mismo muro."
+      }
+    ],
+    "elItem18": "NO entra acá, y conviene decir por qué: el ítem 18 no está bloqueado por el muro de red sino porque su hecho YA ESTÁ REGISTRADO. Lo que la sonda consiguió son siete precisiones y los ids que faltan, y van como ACTUALIZACIÓN de las entradas existentes, sin cifras nuevas. La tercera vuelta del 22 de octubre no halló ningún hecho de octubre que lo mueva."
   }
 }
