@@ -90,5 +90,32 @@ ok('ninguna entrada del borrador repite un hecho ya registrado', !sospechosas.le
      : 'las ' + nuevas.length + ' se midieron contra las ' + (reg.entradas || []).length +
        ' del registro por contenido, no por id');
 
+/* 10 · Y LA DE ARRIBA NO ALCANZA, que es lo que enseñó el ítem 18. Su umbral
+   —doce palabras largas compartidas— lo elegí con los dos duplicados que ya
+   tenía delante, así que mide el NÚMERO que esos dos casos daban y no la
+   propiedad. La adhesión al Escudo de las Américas estaba registrada en DOS
+   entradas del mismo día, con títulos cortos: ocho y nueve palabras en común,
+   por debajo del umbral, y la guarda la dejó pasar en verde.
+
+   Bajar el umbral sería elegir otro número a ojo. La propiedad que de verdad
+   discrimina no es cuánto se parecen: es que NADIE MIRÓ. Así que una entrada
+   nueva cuya fecha coincide con alguna del registro tiene que declarar que
+   las revisó, nombrándolas, y por qué su hecho es otro. Falla cerrado: lo que
+   no se declara sale en rojo, y la declaración no se cumple por accidente
+   —hay que escribir qué se miró—. */
+const sinRevisar = [];
+nuevas.forEach((b) => {
+  const mismoDia = (reg.entradas || []).filter((e) => e.fecha === b.fecha);
+  if (!mismoDia.length) return;
+  const d = String(b._mismaFechaRevisada || '').trim();
+  if (d.length < 40) {
+    sinRevisar.push(b.id + ' comparte fecha con ' + mismoDia.length +
+      ' del registro y no declara `_mismaFechaRevisada`');
+  }
+});
+ok('toda entrada que comparte FECHA con el registro declara que la revisó', !sinRevisar.length,
+   sinRevisar.length ? sinRevisar.join(' · ') + ' — hay que mirarlas y escribir por qué el hecho es otro'
+     : 'ninguna comparte fecha, o las que la comparten dicen cuáles miraron y por qué no son lo mismo');
+
 console.log('\n  ' + (fallos ? fallos + ' en rojo' : 'todas en verde') + ' · ' + nuevas.length + ' entradas listas');
 process.exit(fallos ? 1 : 0);
