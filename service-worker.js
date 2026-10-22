@@ -1,4 +1,4 @@
-const URBIS_CACHE = 'urbis-v1151-la-papa-con-su-medida';
+const URBIS_CACHE = 'urbis-v1152-el-contrapunto-sin-juicio';
 const URBIS_ASSETS = [
   './',
   './index.html',

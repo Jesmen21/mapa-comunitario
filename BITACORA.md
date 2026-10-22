@@ -30452,3 +30452,38 @@ días después». **El vacío ya estaba declarado y se mantiene.**
   para el balance de albergues—. `pendiente`
 * **No publica nada a `main`.** Queda en `c3da1d4` (v1150) hasta el «súbalo».
   `pendiente`
+
+---
+
+## v1152 · El contrapunto del 1420, sin juicio
+
+Decisión de Daniel: el párrafo del Fondo Milagro **se queda**, los hechos con
+su fuente, y **sale la frase valorativa** que lo cerraba —«*que el diseño
+declare querer mantener a los políticos lejos del fondo y que sus órganos los
+nombre el presidente son dos hechos a la vez*»—.
+
+Tenía razón y conviene dejar escrito por qué, porque la frase me pareció
+buena al escribirla: **no añadía ningún hecho**. Los dos hechos ya estaban
+dichos, uno detrás del otro, con su fuente cada uno. Lo único que agregaba era
+**una instrucción de lectura**: decirle al lector qué debía concluir de
+ponerlos juntos. Un registro que publica el acto y la respuesta del Gobierno
+no necesita rematar con la moraleja; si los dos hechos se tocan, se tocan solos.
+
+Y al releer salió una segunda, más pequeña y del mismo tipo: «LA RESPUESTA DEL
+GOBIERNO ES EL DISEÑO DEL FONDO, **y conviene leerla completa**». Ese «conviene
+leerla completa» es un empujón, no un dato. También sale. Lo que queda es el
+Decreto 1379 con lo que establece, quiénes integran la junta, que son
+representantes del presidente según el propio decreto, y quién designó la
+gerencia.
+
+**La regla, para la próxima:** cuando un contrapunto termine con una frase que
+no agrega un hecho sino una manera de leer los que ya están, esa frase sobra.
+El sitio tiene un cierre firmado para las opiniones (v1127) y es ahí donde
+viven, no en el contrapunto de una entrada.
+
+### Lo que esta versión NO hace
+
+* **No publica nada a `main`.** Queda en `c3da1d4` (v1150) hasta el «súbalo».
+  `pendiente`
+* **No carga la actualización del IPC.** El texto corregido está propuesto y
+  espera el «cárguelas». `pendiente`
