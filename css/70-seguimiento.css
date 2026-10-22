@@ -2337,8 +2337,35 @@ a.sp-fuente:hover svg{ color:var(--verde-hi); }
    tenia desde antes, y que esta clase no heredaba por ser otra. */
 .sp-g{ display:block; width:100%; max-width:760px; height:auto; margin:16px auto 4px; overflow:visible; font-family:var(--f); fill:currentColor; stroke:none; }
 .sp-g-barra{ stroke:none; }
+/* ── LAS CLASES DE TONO (v1145) ───────────────────────────────────────────
+   Una figura con tono se pinta por acá y no por la familia vieja `sp-g-c1` /
+   `sp-g-rojo`, que sigue en pie para lo que no declara tono. */
+.sp-g-fav{ fill:var(--sp-tono-fav); color:var(--sp-tono-fav); }
+.sp-g-adv{ fill:var(--sp-tono-adv); color:var(--sp-tono-adv); }
+.sp-g-neu{ fill:var(--sp-tono-neu); color:var(--sp-tono-neu); }
+.sp-g-neu2{ fill:var(--sp-tono-neu2); color:var(--sp-tono-neu2); }
+/* El rótulo DENTRO de una barra: cada tono declara con qué tinta se lee
+   encima, que es el contrato de la v1138 dicho para las figuras. Sin esto, el
+   blanco de `sp-g-et-in` caería sobre el azul vivo a 3,68:1. */
+.sp-g-fav + .sp-g-et-in, text.sp-g-et-in.en-fav{ fill:var(--sp-tono-fav-tx); }
+.sp-g-adv + .sp-g-et-in, text.sp-g-et-in.en-adv{ fill:var(--sp-tono-adv-tx); }
+.sp-g-neu + .sp-g-et-in, text.sp-g-et-in.en-neu{ fill:var(--sp-tono-neu-tx); }
+text.sp-g-et-in.en-neu2{ fill:var(--sp-tono-neu2-tx); }
+
+/* La leyenda corta de tono, donde el rótulo de la barra no alcanza. */
+.sp-graf-leyt{ display:flex; flex-wrap:wrap; gap:10px 16px; margin:8px 0 0; }
+.sp-graf-leyt span{ display:inline-flex; align-items:center; gap:6px;
+  font-size:var(--t-9); color:var(--ink-2); }
+.sp-graf-leyt i{ width:12px; height:12px; border-radius:3px; flex:none; }
+
 .sp-g-rojo{ fill:var(--rojo); color:var(--rojo); }
-.sp-g-gris{ fill:#9AA7AE; color:#9AA7AE; }
+/* El gris de las figuras de referencia apunta al token del neutro desde la
+   v1145. Estaba en #9AA7AE, que da 2,47:1 contra marfil y NO cruza el umbral
+   de figura que esta tanda puso: una barra que no se separa del papel no es
+   una barra tenue, es una barra que no se ve. No es un color nuevo —es el
+   mismo neutro que ya usan las figuras sin tono—, así que deja de haber dos
+   grises que significan lo mismo. */
+.sp-g-gris{ fill:var(--sp-tono-neu); color:var(--sp-tono-neu); }
 .sp-g-c1{ fill:var(--celeste-mark); color:var(--celeste-mark); }
 .sp-g-c3{ fill:var(--celeste); color:var(--celeste); }
 .sp-g-agr{ fill:var(--indigo); color:var(--indigo); }
@@ -2833,6 +2860,42 @@ a.sp-fuente:hover svg{ color:var(--verde-hi); }
   --sp-fi4:#8E2F2A; --sp-fi4-tx:#FFFFFF; --sp-fi4-te:#F3E6E5;
   --sp-fi5:#A62B22; --sp-fi5-tx:#FFFFFF; --sp-fi5-te:#F6E4E2;
   --sp-fi-te-tx:#152229;
+
+  /* ── EL TONO DE UNA FIGURA (v1145) ──────────────────────────────────────
+     Tres papeles de color y no dos: azul lo favorable, rojo lo adverso, gris
+     azulado lo neutro y la referencia. El neutro no es «sin decidir»: es la
+     decisión de que una cifra no es buena ni mala por sí misma —el dólar, la
+     deuda, el presupuesto—, y es el tono por defecto.
+
+     LOS UMBRALES SON DOS, y por eso los tokens van en pares: una FIGURA
+     —barra, línea, punto— solo tiene que separarse del fondo (≥3:1), pero en
+     cuanto lleva un rótulo DENTRO, ese texto pide 4,5:1 contra la figura.
+     Cuatro sitios de `js/70` meten el rótulo dentro cuando no cabe fuera.
+
+     EL AZUL VA CON TINTA CASI NEGRA, y es lo que decidió el lector viendo las
+     dos opciones medidas: #1E88E5 es el azul vivo que pidió, y sobre él la
+     tinta normal del sitio (#152229) da 4,42:1 —por debajo del umbral—,
+     mientras que #0B1116 da 5,16:1. Esa tinta NO se usa en ninguna otra parte
+     del sitio: es solo el rótulo dentro de una barra azul.
+
+     EL ROJO NO ES EL COLOR POR DEFECTO DE NINGÚN GRÁFICO. Se reserva para lo
+     adverso y para el latido del tope de la escala del veredicto: un rojo que
+     aparece en todas partes deja de señalar, y el latido perdería su fuerza. */
+  --sp-tono-fav:#1E88E5; --sp-tono-fav-tx:#0B1116;
+  --sp-tono-adv:#BE1230; --sp-tono-adv-tx:#FFFFFF;
+  /* El neutro va UN PASO más oscuro que el #6B7C8C aprobado, y la razón es
+     medida y no de gusto: #6B7C8C es un tono MEDIO y no puede llevar rótulo
+     dentro con ninguna tinta —4,30:1 con blanco y 4,42:1 con la casi negra,
+     las dos bajo el umbral—. #66767F da 4,71:1 con blanco y se separa del
+     marfil 4,43:1. A simple vista es el mismo gris azulado; lo que cambia es
+     que ahora puede llevar su número dentro. */
+  --sp-tono-neu:#66767F; --sp-tono-neu-tx:#FFFFFF;
+  /* El segundo neutro, para una figura que necesita separar dos lados SIN
+     decir que uno es mejor —las variaciones por sector del presupuesto—. Va
+     más OSCURO que el primero y no más claro: la primera versión lo puso en
+     #A9B6C1, que da 1,95:1 contra marfil y no cruza el umbral de figura. Un
+     neutro que no se separa del papel no distingue nada. */
+  --sp-tono-neu2:#3F4E5C; --sp-tono-neu2-tx:#FFFFFF;
 
   --marfil:var(--sp-s1); --sup:var(--sp-s2);
   --ink:var(--sp-tx); --ink-2:var(--sp-tx2);

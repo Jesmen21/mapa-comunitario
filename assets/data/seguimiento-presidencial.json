@@ -10502,7 +10502,6 @@
       "unidad": "pesos por dólar (TRM)",
       "formato": "miles",
       "sentido": "neutro",
-      "color": "#0E86BC",
       "leyenda": "Bajó hasta un mínimo de siete años el 19 de agosto y desde ahí subió: el cierre de septiembre queda 242,44 pesos por encima de ese mínimo (+7,8 %) y 136,72 por encima de los 3.204,51 de dos días antes de la posesión. La TRM la mueven muchos factores a la vez —tasas de la Reserva Federal, precio del petróleo, riesgo global—, así que este movimiento acompaña a la gestión pero no se puede atribuir solo a ella: ni la bajada ni la subida.",
       "puntos": [
         {
@@ -10582,12 +10581,13 @@
           "u": "https://dolar.wilkinsonpc.com.co/2026-08-19"
         }
       ],
-      "sinBase": "La TRM es una lectura diaria del mercado y no un acto de nadie: ninguna entrada del registro la documenta, ni debe, porque una entrada por día de cotización sería ruido. Esta serie es su propio registro y por eso lleva ocho fuentes, una por punto."
+      "sinBase": "La TRM es una lectura diaria del mercado y no un acto de nadie: ninguna entrada del registro la documenta, ni debe, porque una entrada por día de cotización sería ruido. Esta serie es su propio registro y por eso lleva ocho fuentes, una por punto.",
+      "tono": "neutro",
+      "porQueEseTono": "Una tasa de cambio no es buena ni mala por sí misma."
     },
     "deudaSerie": {
       "titulo": "Deuda comprometida, acumulada",
       "unidad": "millones de dólares",
-      "color": "#C0392B",
       "formato": "miles",
       "sentido": "sube-malo",
       "leyenda": "Suma de lo COMPROMETIDO —la línea de crédito abierta y disponible—, que es lo que el título de esta serie dice y lo que el bloque `deuda` de este mismo registro mide en su columna `comprometido`: Banco Mundial 450 y BID 300 el 13 de agosto de 2026.\n\nLo GIRADO es menos y es otra cifra: del Banco Mundial están desembolsados 200 —el primer giro de una línea contingente— y el desembolso del BID no está informado, así que lo girado no se puede sumar. Las dos cosas no se mezclan en la misma línea, y hasta la v1084 la leyenda de esta serie decía «activados» mientras el punto sumaba techos: el título decía una medida y la leyenda otra, con los dos números correctos a dos claves de distancia en el mismo bloque del registro. El número no estaba mal; estaba sin decir de qué era.\n\nEl paquete de seguridad de Estados Unidos no se cuenta: es cooperación, no deuda que el país deba devolver.",
@@ -10618,12 +10618,13 @@
           "n": "Moncloa · línea de 450 y 300 del BID",
           "u": "https://www.moncloa.com/2026/08/13/reconstruccion-colombia-empresas-espanolas-3414876/"
         }
-      ]
+      ],
+      "tono": "neutro",
+      "porQueEseTono": "La deuda no es buena ni mala por sí misma."
     },
     "aprobacion": {
       "titulo": "Aprobación del presidente",
       "unidad": "% que aprueba su gestión",
-      "color": "#0B6E9B",
       "formato": "pct",
       "sentido": "sube-bueno",
       "vista": "porFuente",
@@ -10708,12 +10709,13 @@
           "u": "https://es.wikipedia.org/wiki/Elecciones_presidenciales_de_Colombia_de_2026"
         }
       ],
-      "sinBase": "Cada medida es una encuesta de una consultora, no un acto de este gobierno: el registro de actos no la documenta ni debe. La procedencia de cada una va en su propio campo `quien`, con la calidad de la medición, que es más de lo que un enlace a una entrada diría."
+      "sinBase": "Cada medida es una encuesta de una consultora, no un acto de este gobierno: el registro de actos no la documenta ni debe. La procedencia de cada una va en su propio campo `quien`, con la calidad de la medición, que es más de lo que un enlace a una entrada diría.",
+      "tono": "neutro",
+      "porQueEseTono": "Es la aprobación del vigilado: pintarla de color sería que el módulo tome partido."
     },
     "consulta": {
       "titulo": "La consulta de URBIS",
       "pregunta": "¿Aprueba usted la gestión del presidente Abelardo de la Espriella?",
-      "color": "#7A4A6B",
       "id": "aprobacion_espriella_2026",
       "aviso": "Esto NO es una encuesta representativa. Responde quien quiere y quien usa URBIS, así que refleja a esta comunidad —sobre todo de Cúcuta y Norte de Santander—, no al país. Se muestra aparte de las encuestadoras justamente por eso.",
       "opciones": [
@@ -10733,12 +10735,13 @@
           "c": "#5F6B72"
         }
       ],
-      "sinBase": "Son respuestas de la consulta propia de URBIS, recogidas en esta aplicación: no son un acto de nadie y no hay entrada del registro que las documente. Su procedencia es la propia consulta, declarada como tal en la advertencia que acompaña al gráfico."
+      "sinBase": "Son respuestas de la consulta propia de URBIS, recogidas en esta aplicación: no son un acto de nadie y no hay entrada del registro que las documente. Su procedencia es la propia consulta, declarada como tal en la advertencia que acompaña al gráfico.",
+      "tono": "neutro",
+      "porQueEseTono": "Encuesta propia de URBIS, sobre el vigilado: misma razón que la aprobación."
     },
     "bombardeos": {
       "titulo": "Bombardeos aéreos autorizados",
       "unidad": "operaciones acumuladas",
-      "color": "#8A5D12",
       "formato": "entero",
       "sentido": "neutro",
       "leyenda": "Cuenta solo bombardeos AÉREOS confirmados por fuentes públicas, no operaciones terrestres ni capturas. No existe un conteo oficial publicado, así que esta cifra es un piso verificable: puede haber más sin reportar.",
@@ -10772,7 +10775,9 @@
           "n": "Infobae · la Defensoría denuncia afectación a civiles",
           "u": "https://www.infobae.com/colombia/2026/08/12/primer-bombardeo-en-el-catatumbo-bajo-el-mando-de-abelardo-de-la-espriella-la-defensoria-del-pueblo-denuncio-afectacion-a-civiles/"
         }
-      ]
+      ],
+      "tono": "neutro",
+      "porQueEseTono": "Un conteo de autorizaciones no tiene sentido favorable ni adverso declarado por ninguna fuente."
     },
     "deuda": {
       "titulo": "Créditos activados para la reconstrucción",
@@ -10807,14 +10812,15 @@
           "u": "https://www.moncloa.com/2026/08/13/reconstruccion-colombia-empresas-espanolas-3414876/"
         }
       ],
-      "sinBase": "Este bloque ES la fuente: de sus líneas sale el total comprometido que la serie `deudaSerie` dibuja, y las dos entradas que documentan el 13 de agosto están enlazadas desde esa serie. Enlazarlas otra vez acá repetiría el mismo enlace a dos clics de distancia."
+      "sinBase": "Este bloque ES la fuente: de sus líneas sale el total comprometido que la serie `deudaSerie` dibuja, y las dos entradas que documentan el 13 de agosto están enlazadas desde esa serie. Enlazarlas otra vez acá repetiría el mismo enlace a dos clics de distancia.",
+      "tono": "neutro",
+      "porQueEseTono": "Créditos activados: es deuda."
     },
     "cocaina": {
       "titulo": "Cocaína incautada al año",
       "unidad": "toneladas",
       "formato": "entero",
       "sentido": "neutro",
-      "color": "#7C2D12",
       "leyenda": "Años completos, para que la comparación sea entre iguales. El gobierno actual todavía no tiene un año cerrado: sus balances son de semanas y no caben en esta serie sin deformarla, así que no se dibujan. Y una advertencia que vale para todos los gobiernos: más toneladas no es automáticamente mejor política. La Silla Vacía calificó de engañoso el logro de Petro en esta materia porque la producción creció más rápido que la capacidad de incautar.",
       "puntos": [
         {
@@ -10843,14 +10849,15 @@
           "u": "https://www.lasillavacia.com/detector-de-mentiras/enganoso/detector-logro-de-petro-en-incautaciones-de-cocaina-es-enganoso/"
         }
       ],
-      "sinBase": "Son años cerrados anteriores a este gobierno, tomados de los balances que las tres fuentes citan: el registro de actos de este gobierno no los documenta ni puede, porque son resultados de otro periodo. Van acá para que la comparación sea entre años completos."
+      "sinBase": "Son años cerrados anteriores a este gobierno, tomados de los balances que las tres fuentes citan: el registro de actos de este gobierno no los documenta ni puede, porque son resultados de otro periodo. Van acá para que la comparación sea entre años completos.",
+      "tono": "neutro",
+      "porQueEseTono": "El propio registro advierte que más toneladas incautadas no es automáticamente mejor política."
     },
     "inflacion": {
       "titulo": "La inflación anual desde la posesión",
       "unidad": "variación anual del IPC, en %",
       "formato": "pct",
       "sentido": "sube-malo",
-      "color": "#C95A55",
       "leyenda": "Tres lecturas del DANE: julio, agosto y septiembre de 2026. La serie sube en las tres y las tres quedan por encima del rango meta del Banco de la República (2 % a 4 %). Va como contexto y no como resultado de este gobierno: la curva empieza antes del 7 de agosto, y esta serie publica el número sin decir de quién es. Es además el dato con el que el eje C descuenta la inflación del presupuesto, así que su última lectura se compara con la que ese eje declara.",
       "fuentes": [
         {
@@ -10894,7 +10901,9 @@
             "ipc-septiembre-2026"
           ]
         }
-      ]
+      ],
+      "tono": "neutro",
+      "porQueEseTono": "El Gobierno se posesionó el 7 de agosto de 2026 y ninguna fuente le atribuye la causa."
     },
     "_notaAnclaje": "Cada punto de serie declara DÓNDE está escrito su hecho en el registro: `base`, con los ids de las entradas cuyo texto lo documenta, o `sinBase`, con la razón de que no haya ninguna. Una serie puede declarar `sinBase` para todos sus puntos a la vez cuando la razón es la misma. Hace falta porque una serie trae sus propias fuentes y vive aparte de las entradas: sin el anclaje son dos codificaciones de un mismo hecho que coinciden el día que se escriben y se separan la tanda siguiente, que es exactamente lo que le pasó a `deudaSerie` y nadie vio durante setenta y dos versiones. Lo que el anclaje NO promete es que el número coincida: el valor de un punto es a veces la cifra publicada y a veces un acumulado que ninguna entrada escribe, y una marca a mano para distinguirlos sería una cifra envejeciendo sola (v903). Promete que el lector pueda ir a comprobarlo en un toque, y que el enlace exista."
   },
@@ -11145,7 +11154,13 @@
           }
         ]
       }
-    ]
+    ],
+    "tonoPorEstado": {
+      "documentada": "neutro",
+      "tension": "neutro",
+      "desmentida": "adverso"
+    },
+    "porQueEseTono": "Una DESMENTIDA es una afirmación que circuló y es falsa: eso es adverso. Las documentadas y las que están en tensión son hechos registrados, no un reproche, así que van neutras."
   },
   "casos": {
     "_nota": "Casos de corrupción atribuidos al gobernante o a su gobierno, con ESTADO PROBATORIO. Pesan en la ficha del gobernante 'confirmado' (uno baja a «poco fiable», dos a «nada fiable») y 'en-investigacion' (menos: uno baja a «dudosa», dos a «poco fiable»); 'senalamiento' se muestra con su etiqueta y no mueve el veredicto. · confirmado: hay fallo, sanción, documento oficial o reconocimiento del propio implicado (se cita cuál en queSeConfirmo y quienLoConfirmo). · en-investigacion: hay proceso abierto por una autoridad (Fiscalía, Procuraduría, Contraloría, Congreso, Corte), con la autoridad en quienLoConfirmo y el número o la fecha de apertura en queSeConfirmo. Una denuncia radicada que la autoridad no ha abierto todavía es un señalamiento, no una investigación. · senalamiento: lo dice un medio o un actor político y ninguna autoridad se ha pronunciado. · archivado: una autoridad lo revisó y lo cerró sin hallazgo; se muestra con su etiqueta y no pesa. Un caso archivado NO se cuenta como señalamiento: leer igual lo que nadie ha mirado y lo que una autoridad ya miró y cerró es injusto con el señalado, y el registro publica lo que lo favorece con la misma letra que lo que no. · por-documentar: el dueño del registro lo nombró, pero todavía no hay título, hecho ni fuente; no se pinta y no pesa hasta que se llene. Subir un caso de estado exige la fuente que lo sostiene, no una convicción. Las denuncias que el propio Gobierno hace contra la administración anterior NO van aquí: son hechos de la categoría 'corrupcion' de la línea de tiempo, no casos suyos. · nivelGobierno: de qué nivel es la decisión —nacional, departamental, distrital o municipal—. Solo pesa en el veredicto la nacional: este es el veredicto de un gobierno nacional, y un desalojo que ordena una alcaldía o un impuesto que aprueba un concejo se muestran enteros y no lo mueven. Se DECLARA, no se deduce del texto: en este mismo registro hay decenas de hechos que nombran una ciudad y son actos del Gobierno nacional ocurridos allá. Sin declarar, el caso sigue pesando como hasta ahora y la ficha dice cuántos están así —ponerle «nacional» por omisión sería afirmar de quién es una decisión sin que nadie lo haya escrito—, y revisar.js se lo exige a todo caso confirmado o en investigación. · fecha: es cuándo una AUTORIDAD se pronunció, que es lo que ordena y recorta la serie; cuándo ocurrió el hecho es otra cosa y va en fechaHecho cuando se conoce y difiere de la anterior.",
@@ -12035,7 +12050,9 @@
           "rol": "acto",
           "u": "https://www.presidencia.gov.co/prensa/Paginas/Gobierno-radica-Presupuesto-de-la-Verdad-para-2027-por-635-billones-260827.aspx"
         }
-      ]
+      ],
+      "tono": "neutro",
+      "porQueEseTono": "El presupuesto no es bueno ni malo por sí mismo."
     },
     "sectores": {
       "titulo": "Los sectores del presupuesto 2027, en pesos y descontada la inflación",
@@ -12109,7 +12126,9 @@
           "u": "https://www.presidencia.gov.co/prensa/Paginas/Gobierno-radica-Presupuesto-de-la-Verdad-para-2027-por-635-billones-260827.aspx"
         }
       ],
-      "_clasificacionSocial": "Cada sector declara si es gasto público social en el sentido del ARTÍCULO 366 de la Constitución, que nombra sus áreas: salud, educación, saneamiento ambiental y agua potable. La clasificación vive acá y no en el código para que se pueda discutir mirando el registro, y lleva su referencia al lado.\n\nY se ajusta a ESA lista y no a una idea más amplia de «gasto social», porque ensanchar la lista es ensanchar el criterio — que es la manera silenciosa de hacer que entren más sectores y el eje baje más fácil. Las dos decisiones discutibles, dichas: TRABAJO queda como NO social aunque su gasto lo sea en sentido amplio, porque el artículo 366 no lo nombra; y DEPORTE tampoco, por lo mismo, aun con su caída real del 43,5 %, que es la mayor de los siete. Si alguna de las dos se cambiara, el nivel del eje C podría moverse: por eso están escritas y no supuestas.\n\nNota de método: POLICÍA no trae variación real, así que no entra en ninguna de las dos ramas del cálculo — ni a favor ni en contra."
+      "_clasificacionSocial": "Cada sector declara si es gasto público social en el sentido del ARTÍCULO 366 de la Constitución, que nombra sus áreas: salud, educación, saneamiento ambiental y agua potable. La clasificación vive acá y no en el código para que se pueda discutir mirando el registro, y lleva su referencia al lado.\n\nY se ajusta a ESA lista y no a una idea más amplia de «gasto social», porque ensanchar la lista es ensanchar el criterio — que es la manera silenciosa de hacer que entren más sectores y el eje baje más fácil. Las dos decisiones discutibles, dichas: TRABAJO queda como NO social aunque su gasto lo sea en sentido amplio, porque el artículo 366 no lo nombra; y DEPORTE tampoco, por lo mismo, aun con su caída real del 43,5 %, que es la mayor de los siete. Si alguna de las dos se cambiara, el nivel del eje C podría moverse: por eso están escritas y no supuestas.\n\nNota de método: POLICÍA no trae variación real, así que no entra en ninguna de las dos ramas del cálculo — ni a favor ni en contra.",
+      "tono": "neutro",
+      "porQueEseTono": "Una variación de presupuesto por sector no tiene tono declarado por ninguna fuente."
     },
     "agregacion": {
       "titulo": "La misma plata, dos agregaciones: dónde queda Defensa según qué se sume",
@@ -12137,7 +12156,9 @@
           "rol": "acto",
           "u": "https://www.presidencia.gov.co/prensa/Paginas/Gobierno-radica-Presupuesto-de-la-Verdad-para-2027-por-635-billones-260827.aspx"
         }
-      ]
+      ],
+      "tono": "neutro",
+      "porQueEseTono": "El presupuesto no es bueno ni malo por sí mismo."
     },
     "deudaBruta": {
       "pct": 60.5,
@@ -12165,7 +12186,9 @@
           "u": "https://occidente.co/empresario/deuda-bruta-del-gobierno-nacional-central-equivale-al-60-5-del-pib/",
           "rol": "acto"
         }
-      ]
+      ],
+      "tono": "neutro",
+      "porQueEseTono": "La deuda no es buena ni mala por sí misma."
     }
   },
   "fuerza": {
@@ -12296,7 +12319,9 @@
           "rol": "acto",
           "u": "https://www.carf.gov.co/documents/d/guest/informe-al-congreso-abril-2026"
         }
-      ]
+      ],
+      "tono": "neutro",
+      "porQueEseTono": "Son DOS fuentes sin reconciliar —la proyección del Gobierno y la estimación del CARF—: la misma razón que la extorsión en disputa."
     },
     "credito": {
       "titulo": "Con cuánta deuda nueva se financia el presupuesto de 2027",
@@ -12333,7 +12358,9 @@
           "rol": "efecto",
           "u": "https://www.elcolombiano.com/negocios/ministerio-hacienda-ampliacion-cupo-endeudamiento-colombia-2027-CG40571232"
         }
-      ]
+      ],
+      "tono": "neutro",
+      "porQueEseTono": "Es deuda."
     }
   },
   "publicacion": {
@@ -13013,7 +13040,9 @@
           "diferenciaCasos": 218,
           "noPublicarPct": "Por eso esta fila no lleva porcentaje: con dos cifras oficiales sin reconciliar, el porcentaje no es verificable. Con la cifra de MinDefensa la caída sería del 62 % y con la de la Policía Nacional del 44,8 %, y esa distancia es justo lo que el gráfico muestra en vez de resolverla.",
           "pctSegunPolicia": -44.8
-        }
+        },
+        "tono": "neutro",
+        "porQueEseTono": "Dos entidades del mismo Gobierno publican cifras distintas para el MISMO mes y nadie ha explicado la diferencia. Con dos cifras oficiales sin reconciliar no se puede decir si la fila es favorable o adversa, así que no se colorea por sentido: el gráfico muestra las dos y el color calla."
       },
       {
         "k": "victimas-masacre",
@@ -13066,7 +13095,9 @@
         "u": "https://www.eltiempo.com/politica/partidos-politicos/revelan-informe-que-valida-la-caida-en-secuestro-extorsion-y-homicidios-presentadas-por-el-gobierno-de-la-espriella-tras-revision-con-mindefensa-3590075"
       }
     ],
-    "_relacionConLaEntrada": "La entrada `delitos-agosto-2026-policia` publica estas mismas cifras en prosa y NO se toca: es lo que esa corrida escribió, con su fecha. Comprobado al registrar el bloque: coinciden homicidios (1.169 contra 1.244), delitos sexuales (2.040 contra 3.253), secuestro (−79 %), el acumulado (9.434 contra 9.256, +2 %), los seis días del gobierno anterior y la disputa de extorsión (499 contra 717, 218 de diferencia). El bloque AGREGA dos filas que la entrada no trae —secuestro extorsivo y víctimas de masacre— y eso no la contradice: la amplía."
+    "_relacionConLaEntrada": "La entrada `delitos-agosto-2026-policia` publica estas mismas cifras en prosa y NO se toca: es lo que esa corrida escribió, con su fecha. Comprobado al registrar el bloque: coinciden homicidios (1.169 contra 1.244), delitos sexuales (2.040 contra 3.253), secuestro (−79 %), el acumulado (9.434 contra 9.256, +2 %), los seis días del gobierno anterior y la disputa de extorsión (499 contra 717, 218 de diferencia). El bloque AGREGA dos filas que la entrada no trae —secuestro extorsivo y víctimas de masacre— y eso no la contradice: la amplía.",
+    "bajarEsFavorable": true,
+    "porQueEseTono": "El tono de cada fila se CALCULA del movimiento real contra el mismo mes del año anterior: si baja es favorable y si sube es adverso, porque `bajarEsFavorable` es cierto para todos estos delitos. No se teclea fila por fila —una cifra tecleada dentro de un texto fijo envejece sola— y por eso el acumulado del año sale ADVERSO sin que nadie lo declare: sube de 9.256 a 9.434. La única fila con tono DECLARADO es la extorsión, y es un override para callar, no para afirmar."
   },
   "subsidios": {
     "_nota": "CIFRAS ESTRUCTURADAS de los subsidios de energía y gas para estratos 1 y 2 en el presupuesto de 2027. El faltante se CALCULA de necesario menos asignado (v903) y no se teclea. Este bloque NO cambia ninguna pantalla todavía.",
@@ -13106,6 +13137,9 @@
         "rol": "dato",
         "u": "https://www.elcolombiano.com/negocios/economia/presupuesto-2027-subsidios-energia-gas-estratos-1-y-2"
       }
-    ]
-  }
+    ],
+    "tonoDelFaltante": "adverso",
+    "porQueEseTono": "Lo adverso es el HUECO: se necesitan 7,29 billones y quedaron asignados 2,26. La barra de lo necesario es la REFERENCIA y va neutra; la de lo asignado y el desglose del faltante llevan el tono adverso, porque es lo que el bloque documenta."
+  },
+  "_notaTono": "TONO · qué color lleva la FIGURA de un gráfico: 'favorable' (azul), 'adverso' (rojo) o 'neutro' (gris azulado). Es una clave NUEVA y no toca `sentido`, que ya existe con otro significado —hacia dónde es mejor que se mueva una serie— y hasta con dos vocabularios distintos en este mismo archivo ('sube-bueno'/'sube-malo' en indicadores, 'bajaMejor'/'subeMejor' en comparacion). Meterle un tercer sentido a esa clave sería la clase B.\n\nLO QUE NO TIENE TONO DECLARADO QUEDA NEUTRO, y es la regla: el dólar, la deuda y el presupuesto no son buenos ni malos por sí mismos, y pintarlos de color sería que la pantalla afirme lo que el registro no dice. El rojo se reserva para lo adverso y para el latido del tope en la escala del veredicto; ningún gráfico lo lleva por defecto.\n\nY EL `color` POR SERIE SE RETIRÓ en la v1145: las ocho lo traían escrito y le ganaba al tono, así que el color seguía decidiéndose serie por serie. Eran dos codificaciones de una decisión —clase B— y la vieja mandaba: dos de ellas eran ROJOS (#C0392B en la deuda y #C95A55 en la inflación) sobre series declaradas NEUTRAS, que es justo lo que el reparto del rojo existe para impedir. El color de una serie sale ahora solo de su tono."
 }

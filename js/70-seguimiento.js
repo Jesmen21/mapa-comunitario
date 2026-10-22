@@ -8629,7 +8629,17 @@
     var pts = (d.puntos || []).filter(function (p) { return p && p.v != null; });
     if (!pts.length) return null;
 
-    var col = d.color || '#0E86BC';
+    /* EL COLOR DE LA LÍNEA SALE DEL TONO declarado, y las ocho series están
+       declaradas NEUTRAS: una tasa de cambio, una deuda o una inflación no
+       son buenas ni malas por sí mismas, y la aprobación del vigilado menos
+       —pintarla de color sería que el módulo tome partido—. `d.color`
+       sobrevive solo si alguna serie lo trae escrito, y hoy ninguna lo hace. */
+    var tonoSerie = d.tono || 'neutro';
+    var COLOR_TONO = { favorable: '#1E88E5', adverso: '#BE1230', neutro: '#66767F' };
+    /* SIN ESCOTILLA: el color sale del tono y de nada más. Dejar un
+       `d.color` que le gane era mantener viva la puerta por la que el color
+       se decidía serie por serie, que es lo que esta tanda vino a cerrar. */
+    var col = COLOR_TONO[tonoSerie] || COLOR_TONO.neutro;
     // Una sola medición no es una línea: se dibuja el punto y se dice que aún
     // no hay serie, en vez de fingir una tendencia con un solo dato.
     if (pts.length === 1) {
@@ -8711,7 +8721,13 @@
       }
 
       if (i === 0 || ultimo || p.hito) {
-        var v = svgEl('text', { x: X(i), y: Y(p.v) - 11, 'text-anchor':
+        /* SEPARADO DE LA PUNTEADA DEL HITO. Con 11 px el número quedaba
+           rozando la guía vertical que marca la posesión —se ve a 390 px en
+           «3.157» y en «3.341»— y dos trazos que se tocan se leen como uno.
+           Los hitos llevan guía, así que su rótulo sube un poco más; los
+           demás se quedan donde estaban. */
+        var sep = p.hito ? 17 : 11;
+        var v = svgEl('text', { x: X(i), y: Math.max(11, Y(p.v) - sep), 'text-anchor':
           i === 0 ? 'start' : (ultimo ? 'end' : 'middle'), class: 'sp-g-val' });
         v.textContent = valorSerie(p.v, d);
         svg.appendChild(v);
@@ -8725,10 +8741,20 @@
   function grafContradicciones() {
     var casos = ((D.contradicciones || {}).casos) || [];
     if (!casos.length) return null;
+    /* EL COLOR SALE DEL REGISTRO, no de esta lista: `tonoPorEstado` declara
+       cuál de los tres estados es adverso —la desmentida, que es una
+       afirmación que circuló y es falsa— y los otros dos quedan neutros,
+       porque un hecho documentado no es un reproche. Los tres colores
+       escritos a mano que había acá decían con el color lo que nadie había
+       declarado. */
+    var tps = (D.contradicciones || {}).tonoPorEstado || {};
+    var colorDeTono = function (t) {
+      return 'var(--sp-tono-' + ({ favorable: 'fav', adverso: 'adv', neutro: 'neu' }[t] || 'neu') + ')';
+    };
     var orden = [
-      { k: 'documentada', t: 'Documentadas', c: '#0E86BC' },
-      { k: 'tension',     t: 'En tensión',   c: '#D99A32' },
-      { k: 'desmentida',  t: 'Desmentidas',  c: '#C95A55' }
+      { k: 'documentada', t: 'Documentadas', c: colorDeTono(tps.documentada) },
+      { k: 'tension',     t: 'En tensión',   c: colorDeTono(tps.tension) },
+      { k: 'desmentida',  t: 'Desmentidas',  c: colorDeTono(tps.desmentida) }
     ];
     var total = casos.length;
     var datos = orden.map(function (o) {
@@ -9014,6 +9040,7 @@
       : (dif > 0 ? 'sube ' : 'baja ') + valorSerie(Math.abs(dif), d);
     var hitos = pts.filter(function (x) { return x.hito; }).length;
     return {
+      porQueEseTono: d.porQueEseTono,
       desc: cn(pts.length, 'punto', 'puntos') + ' entre el ' + fechaCorta(a.f) + ' y el ' +
         fechaCorta(z.f) + ': de ' + valorSerie(a.v, d) + ' a ' + valorSerie(z.v, d) + ', ' + rumbo +
         (hitos ? '. ' + cn(hitos, 'punto va marcado como hito', 'puntos van marcados como hitos') : '') + '.',
@@ -9047,6 +9074,7 @@
     });
     var mn = Math.min.apply(null, vs), mx = Math.max.apply(null, vs);
     return {
+      porQueEseTono: d.porQueEseTono,
       desc: cn(filas.length, 'medición', 'mediciones') + ' repartidas en ' +
         cn(gs.length, 'grupo', 'grupos') +
         (mn === mx ? ', todas en ' + valorSerie(mn, d)
@@ -9138,8 +9166,9 @@
     var pares = orden.map(function (o) {
       return { t: o[1], n: casos.filter(function (x) { return x.estado === o[0]; }).length };
     }).filter(function (x) { return x.n; });
-    return datosDeReparto(pares, ['caso registrado', 'casos registrados'],
-      cn(pares.length, 'estado', 'estados') + ', con cuántos casos hay en cada uno');
+    return conPorQue(datosDeReparto(pares, ['caso registrado', 'casos registrados'],
+      cn(pares.length, 'estado', 'estados') + ', con cuántos casos hay en cada uno'),
+      D.contradicciones);
   }
 
   /* ══ LOS AVISOS: CADA UNO SALE DE SU PROPIO CAMPO ═══════════════════════
@@ -9164,6 +9193,17 @@
     if (!avisos || !avisos.length) return datos;
     var d = datos || {};
     d.avisos = (d.avisos || []).concat(avisos);
+    return d;
+  }
+
+  /* Pega al `datos` la razón del color que el BLOQUE declara. Va por una
+     función y no copiada en cada sitio de llamada: un gráfico nuevo que
+     declare tono hereda su porqué sin que su autor se acuerde (v867). */
+  function conPorQue(datos, bloque) {
+    var r = bloque && bloque.porQueEseTono;
+    if (!r) return datos;
+    var d = datos || {};
+    d.porQueEseTono = r;
     return d;
   }
 
@@ -9319,6 +9359,16 @@
     else mas.appendChild(el('p', 'sp-graf-desc sp-graf-desc-falta',
       'Sin descripción corta todavía: este gráfico no dice nada a quien no lo ve.'));
     if (nota) mas.appendChild(el('p', 'sp-graf-nota', nota));
+    /* POR QUÉ ESE COLOR, dicho donde el lector lo ve y no en un comentario
+       (v926). Un gráfico neutro es una DECISIÓN —«el dólar no es bueno ni
+       malo»— y sin su razón escrita se lee igual que un gráfico al que nadie
+       le puso color. Va dentro del pliegue, con el resto del método. */
+    if (datos && datos.porQueEseTono) {
+      var pt = el('p', 'sp-graf-nota');
+      pt.appendChild(el('b', null, 'Por qué ese color: '));
+      pt.appendChild(document.createTextNode(String(datos.porQueEseTono)));
+      mas.appendChild(pt);
+    }
     if (declara) mas.appendChild(declara);
     if (anclaje) mas.appendChild(anclaje);
     var tb = datos ? tablaAccesible(datos.titulo, datos.columnas, datos.filas) : null;
@@ -9909,6 +9959,77 @@
   function bllns(v, fmt) { return '$' + (fmt || bn)(v) + ' ' + pl(v, 'billón', 'billones'); }
   function anchoRotulo(t) { return String(t).length * 7.4; }
 
+  /* ══ EL TONO DE UNA FIGURA (v1145) ═══════════════════════════════════════
+     Tres papeles de color: azul lo favorable, rojo lo adverso, gris azulado
+     lo neutro y la referencia. La dirección NO se decide acá gráfico por
+     gráfico: sale del registro, de la clave `tono`, y lo que no la declara
+     queda NEUTRO. Eso último no es un descuido con un valor por defecto: es
+     la decisión escrita de que una cifra no es buena ni mala por sí misma
+     —el dólar, la deuda, el presupuesto— y de que pintarla de color sería
+     que la pantalla afirme lo que el registro no dice.
+
+     EL ROJO NO ES EL COLOR POR DEFECTO DE NADA. Se reserva para lo adverso y
+     para el latido del tope de la escala del veredicto. Un rojo que aparece
+     en todas partes deja de señalar, y el latido —que es lo único que marca
+     el borde superior de lo que el método prueba— perdería su fuerza. */
+  var TONOS = { favorable: 'fav', adverso: 'adv', neutro: 'neu' };
+
+  /* De la clave del registro a la clase de la figura. Falla al NEUTRO y no
+     al rojo: un tono mal escrito tiene que apagar el color, nunca encenderlo
+     —el coste de equivocarse hacia el gris es que una figura no diga nada; el
+     de equivocarse hacia el rojo es que diga algo que el registro no dice—. */
+  function claseDeTono(t) { return 'sp-g-' + (TONOS[String(t || '')] || 'neu'); }
+
+  /* La tinta con la que se lee un rótulo DENTRO de una figura de ese tono.
+     Cada tono la declara, que es el contrato de la v1138 dicho para las
+     figuras: sin esto el blanco caería sobre el azul vivo a 3,68:1. */
+  function tintaDeTono(t) { return 'en-' + (TONOS[String(t || '')] || 'neu'); }
+
+  /* EL TONO DE UNA FILA DE DELITOS SE CALCULA del movimiento real, y no se
+     teclea: una cifra tecleada dentro de un texto fijo envejece sola (v903),
+     y acá «envejecer» significa que el mes siguiente el color diga lo
+     contrario de lo que dice el número. El registro declara UNA cosa —si
+     bajar es favorable— y el resto sale de restar.
+
+     El OVERRIDE declarado manda sobre el cálculo, y solo existe para CALLAR:
+     la extorsión trae dos cifras oficiales sin reconciliar, así que no se
+     puede decir si bajó o subió y el color se queda neutro. Un override que
+     sirviera para AFIRMAR —forzar un favorable donde el dato no lo da— sería
+     la salida barata que esta casa tiene prohibida; por eso la función no
+     acepta más que lo declarado, y lo declarado hoy es «neutro». */
+  function tonoPorMovimiento(bloque, declarado, antes, despues) {
+    if (declarado) return declarado;
+    if (!bloque || bloque.bajarEsFavorable !== true) return 'neutro';
+    if (antes == null || despues == null || antes === despues) return 'neutro';
+    var baja = despues < antes;
+    return baja ? 'favorable' : 'adverso';
+  }
+
+  /* La leyenda corta, para el gráfico cuyo rótulo no alcanza a decir qué
+     significa el color. No se pone en todos: donde el rótulo ya lo dice
+     —«lo que quedó asignado», «desmentidas»— una leyenda es ruido. */
+  /* La muestra se pide por su TOKEN y no por el nombre del tono, y eso lo
+     arregló el papel: la primera versión ponía UNA muestra gris para dos
+     grises distintos —el de la referencia del año anterior y el de lo que
+     está en disputa, que son `neu2` y `neu`—, así que la leyenda enseñaba un
+     color que no era el de la mitad de lo que nombraba. Una leyenda que
+     muestra un color equivocado es peor que no tener leyenda. */
+  function leyendaDeTonos(pares) {
+    var ps = (pares || []).filter(function (x) { return x && x[1]; });
+    if (!ps.length) return null;
+    var w = el('div', 'sp-graf-leyt');
+    ps.forEach(function (x) {
+      var sp = el('span');
+      var i = el('i'); i.setAttribute('aria-hidden', 'true');
+      var tk = TONOS[x[0]] || (/^neu2?$|^fav$|^adv$/.test(x[0]) ? x[0] : 'neu');
+      i.style.background = 'var(--sp-tono-' + tk + ')';
+      sp.appendChild(i);
+      sp.appendChild(el('span', null, x[1]));
+      w.appendChild(sp);
+    });
+    return w;
+  }
+
   /* ── QUÉ ETIQUETAS DE EJE CABEN, Y CUÁLES SE OMITEN ────────────────────
      Llegó en captura de celular a 390 px: en el gráfico del dólar «5 ago» se
      montaba sobre «7 ago» y «29 sep» sobre «30 sep». El dibujo ponía una
@@ -10256,10 +10377,17 @@
       var largo = Math.max(2, (Math.abs(x.realPct) / max) * (zona / 2 - 6));
       var neg = x.realPct < 0;
       var bx = neg ? cx - largo : cx;
+      /* DOS NEUTROS Y NO AZUL/ROJO. El presupuesto está declarado neutro en
+         el registro, así que el color no puede decir que un recorte sea malo
+         ni que un aumento sea bueno: eso lo decide quien lee el sector, no
+         esta pantalla. Los dos lados se siguen distinguiendo —por el tono del
+         gris y, sobre todo, por de qué lado del cero cae la barra y por el
+         signo del rótulo—, que es el color dejando de ser el único portador. */
+      var clsDiv = neg ? 'sp-g-neu2' : 'sp-g-neu';
       svg.appendChild(svgEl('rect', { x: bx, y: y, width: largo, height: alto,
-                                      class: (neg ? 'sp-g-baja' : 'sp-g-sube') + ' sp-g-barra' }));
+                                      class: clsDiv + ' sp-g-barra' }));
       if (enTramite(p)) svg.appendChild(svgEl('rect', { x: bx, y: y, width: largo, height: alto,
-                                                        class: (neg ? 'sp-g-baja' : 'sp-g-sube') + ' sp-g-trama' }));
+                                                        class: clsDiv + ' sp-g-trama' }));
       var t = rep.apilado
         ? svgEl('text', { x: 0, y: y - 5, class: 'sp-g-et' })
         : svgEl('text', { x: etq - 10, y: y + 13, class: 'sp-g-et', 'text-anchor': 'end' });
@@ -10279,7 +10407,8 @@
                       : (neg ? bx - 8 : bx + largo + 8);
       var anc = dentro ? (neg ? 'start' : 'end') : (neg ? 'end' : 'start');
       var v = svgEl('text', { x: vx, y: y + 13,
-                              class: dentro ? 'sp-g-et-in' : 'sp-g-val', 'text-anchor': anc });
+                              class: dentro ? ('sp-g-et-in ' + (neg ? 'en-neu2' : 'en-neu'))
+                                            : 'sp-g-val', 'text-anchor': anc });
       v.textContent = txt;
       svg.appendChild(v);
     });
@@ -10382,7 +10511,11 @@
          HTML válido y no lo dice nadie (v895), y el rojo ya significa en este
          tablero la cifra que pesa en contra —es el del héroe y el de las
          variaciones negativas—. */
-      var cls = x.alerta ? 'sp-g-rojo' : (x.k2 ? 'sp-g-agr' : 'sp-g-c1');
+      /* El TONO manda sobre la clase vieja cuando la barra lo trae. La
+         familia `sp-g-c1`/`sp-g-rojo` se queda para las barras que no
+         declaran tono, que son las del presupuesto y las fiscales. */
+      var cls = x.tono ? claseDeTono(x.tono)
+              : (x.alerta ? 'sp-g-rojo' : (x.k2 ? 'sp-g-agr' : 'sp-g-c1'));
       svg.appendChild(svgEl('rect', { x: etq, y: y, width: largo, height: alto,
                                       class: cls + ' sp-g-barra' }));
       if (cfg.trama) svg.appendChild(svgEl('rect', { x: etq, y: y, width: largo, height: alto,
@@ -10396,8 +10529,13 @@
          no cabe se monta encima de su propio rótulo (v898). */
       var txt = fmt(x.v), aw = anchoRotulo(txt);
       var dentro = (etq + largo + 8 + aw > w - 4) && largo >= aw + 14;
+      /* EL RÓTULO DENTRO LLEVA LA TINTA DE SU TONO, no un blanco fijo: sobre
+         el azul vivo, el blanco da 3,68:1 y la casi negra 5,16:1. Cada tono
+         declara con qué se lee encima, que es el contrato de la v1138 dicho
+         para las figuras. Fuera de la barra el fondo es el papel y la tinta
+         es la de siempre. */
       var v = svgEl('text', { x: dentro ? etq + largo - 8 : etq + largo + 8, y: y + 14,
-                              class: dentro ? 'sp-g-et-in' : 'sp-g-val',
+                              class: dentro ? ('sp-g-et-in ' + tintaDeTono(x.tono)) : 'sp-g-val',
                               'text-anchor': dentro ? 'end' : 'start' });
       v.textContent = txt;
       svg.appendChild(v);
@@ -10579,9 +10717,13 @@
     var pieC = 'Fecha de corte: ' + fechaCorta(b.fecha) + ' · dato oficial, convergente entre medios';
     var hh = arriba + alto + 30 + altoDelPie(w, pieF, pieC);
     var svg = svgEl('svg', { viewBox: '0 0 ' + w + ' ' + hh, class: 'sp-g', role: 'img' });
-    svg.appendChild(svgEl('rect', { x: 0, y: arriba, width: w, height: alto, class: 'sp-g-gris sp-g-barra' }));
+    /* LOS DOS NEUTROS, y no el celeste de la familia vieja: la deuda está
+       declarada NEUTRA en el registro —no es buena ni mala por sí misma— y el
+       termómetro necesita dos tonos solo para separar lo lleno de lo que
+       falta, no para decir nada sobre la cifra. */
+    svg.appendChild(svgEl('rect', { x: 0, y: arriba, width: w, height: alto, class: 'sp-g-neu sp-g-barra' }));
     var largo = Math.max(2, (b.pct / 100) * w);
-    svg.appendChild(svgEl('rect', { x: 0, y: arriba, width: largo, height: alto, class: 'sp-g-c1 sp-g-barra' }));
+    svg.appendChild(svgEl('rect', { x: 0, y: arriba, width: largo, height: alto, class: 'sp-g-neu2 sp-g-barra' }));
     var v = svgEl('text', { x: Math.min(largo + 8, w - 4), y: arriba + alto / 2 + 5,
                             class: 'sp-g-val', 'text-anchor': largo + 8 + anchoRotulo(un(b.pct) + ' %') > w ? 'end' : 'start' });
     v.textContent = un(b.pct) + ' %';
@@ -10615,7 +10757,8 @@
       'La deuda ' + b.medida + ', y contra qué no se puede comparar',
       'Porcentaje del PIB. Eje de cero a cien. Deuda ' + b.medida + ', no neta.',
       svg, b.convergencia, b.fuentes, null, null,
-      { avisos: avisosDeDeudaBruta(b),
+      { porQueEseTono: b.porQueEseTono,
+        avisos: avisosDeDeudaBruta(b),
         desc: 'Una barra sobre el PIB entero: la deuda ' + b.medida + ' del ' + b.de +
           ' equivale al ' + un(b.pct) + ' % del PIB al ' + fechaCorta(b.fecha) +
           '. No hay ninguna línea de referencia dibujada, y es a propósito: los umbrales de la ' +
@@ -10657,19 +10800,48 @@
        (v903) y se publica solo donde hay UNA cifra por mes. */
     var grupos = b.filas.map(function (f) {
       var a = f.casos[m0], z = f.casos[m1];
-      var barras = [{ t: mesCorto(m0), v: a, cls: 'sp-g-gris' },
-                    { t: mesCorto(m1), v: z, cls: 'sp-g-c1' }];
+      /* El año ANTERIOR es la referencia y va siempre neutro: es contra lo
+         que se compara, no un hecho de este Gobierno. */
+      var tono = tonoPorMovimiento(b, f.tono, a, z);
+      var barras = [{ t: mesCorto(m0), v: a, cls: 'sp-g-neu2', tono: 'neutro' },
+                    { t: mesCorto(m1), v: z, cls: claseDeTono(tono), tono: tono }];
       var disp = f.disputa;
       if (disp && (disp.cifras || []).length) {
-        barras = [{ t: mesCorto(m0), v: a, cls: 'sp-g-gris' }];
+        barras = [{ t: mesCorto(m0), v: a, cls: 'sp-g-neu2', tono: 'neutro' }];
         disp.cifras.forEach(function (c) {
-          barras.push({ t: mesCorto(m1) + ' · ' + c.fuente, v: c.casos, cls: 'sp-g-rojo' });
+          /* Las dos cifras en disputa van del MISMO tono —el declarado, que
+             hoy es neutro— y no de dos colores distintos: pintarlas distinto
+             sería decir que una vale más que la otra, que es exactamente lo
+             que el bloque existe para no hacer. */
+          barras.push({ t: mesCorto(m1) + ' · ' + c.fuente, v: c.casos,
+                        cls: claseDeTono(tono), tono: tono });
         });
       }
-      return { t: f.t, barras: barras,
+      return { t: f.t, barras: barras, tono: tono,
                pct: disp ? null : (a ? Math.round(((z - a) / a) * 1000) / 10 : null),
                disputa: disp || null };
     });
+
+    /* ── EL ACUMULADO DEL AÑO, DENTRO DEL GRÁFICO ──────────────────────
+       Vivía solo en el texto de abajo, y el texto decía lo que el dibujo
+       callaba: el mes BAJA y el año SUBE. Un lector que mira cinco barras
+       azules y no llega al párrafo se lleva la lectura que el propio dato
+       desmiente — que es la razón por la que la v1064 lo trajo al mismo
+       bloque, dicha ahora para el color. Su tono sale del mismo cálculo que
+       el de las filas, así que es rojo porque SUBIÓ, no porque alguien lo
+       escribiera. */
+    var acu = b.acumulado;
+    if (acu && acu.casos) {
+      var kAcu = Object.keys(acu.casos);
+      var vA = acu.casos[kAcu[0]], vZ = acu.casos[kAcu[kAcu.length - 1]];
+      var tAcu = tonoPorMovimiento(b, null, vA, vZ);
+      grupos.push({
+        t: acu.titulo || 'Acumulado del año', tono: tAcu, disputa: null,
+        pct: vA ? Math.round(((vZ - vA) / vA) * 1000) / 10 : null,
+        barras: [{ t: kAcu[0], v: vA, cls: 'sp-g-neu2', tono: 'neutro' },
+                 { t: kAcu[kAcu.length - 1], v: vZ, cls: claseDeTono(tAcu), tono: tAcu }]
+      });
+    }
 
     var todas = [], rots = [];
     grupos.forEach(function (g) {
@@ -10713,10 +10885,15 @@
        dejó puesta para lo que NO se pliega. */
     var caja = el('div', 'sp-graf-decl');
     var ac = b.acumulado;
+    var tonoAcum = 'neutro';
     if (ac && ac.casos) {
       var ks = Object.keys(ac.casos);
       var a0 = ac.casos[ks[0]], a1 = ac.casos[ks[ks.length - 1]];
       var dif = a1 - a0;
+      /* Y SALE ADVERSO SIN QUE NADIE LO DECLARE: sube de 9.256 a 9.434. Es la
+         prueba de que el cálculo manda sobre la impresión —el mes baja y el
+         año sube, y el color del año no puede heredar el del mes—. */
+      tonoAcum = tonoPorMovimiento(b, null, a0, a1);
       var pac = a0 ? Math.round((dif / a0) * 1000) / 10 : 0;
       var pa = el('p');
       pa.appendChild(el('b', null, ac.titulo + ': '));
@@ -10747,9 +10924,19 @@
     });
     var enDisputa = grupos.filter(function (g) { return g.disputa; }).length;
 
+    /* LA LEYENDA, acá sí: el color dice «bajó» o «subió» y el número solo no
+       lo dice —hay que compararlo con la barra de arriba—. Donde el rótulo ya
+       lo dice, como en subsidios, no se pone. */
+    var ley = leyendaDeTonos([
+      ['favorable', 'bajó frente al mismo mes del año anterior'],
+      ['adverso', 'subió'],
+      ['neu2', 'el año anterior, que es la referencia'],
+      ['neu', 'en disputa entre dos fuentes oficiales: el color calla']
+    ]);
     return tarjetaGrafica(b.titulo, b.unidad + '. Eje desde cero. ' +
-      'Carácter del dato: ' + b.caracter + '.', svg, null, b.fuentes, null, null,
-      { avisos: avisosDeDelitos(b, dd),
+      'Carácter del dato: ' + b.caracter + '.', svg, null, b.fuentes, ley, null,
+      { porQueEseTono: b.porQueEseTono,
+        avisos: avisosDeDelitos(b, dd),
         desc: cn(grupos.length, 'delito', 'delitos') + ' con sus casos en ' + mesCorto(m0) +
           ' y en ' + mesCorto(m1) + '. ' +
           (enDisputa
@@ -10771,8 +10958,9 @@
     var b = (dd || D).subsidios;
     if (!b || typeof b.necesarioBn !== 'number' || typeof b.asignadoBn !== 'number') return null;
     var falta = Math.round((b.necesarioBn - b.asignadoBn) * 100) / 100;
-    var filas = [{ t: 'Lo que se necesita', v: b.necesarioBn },
-                 { t: 'Lo que quedó asignado', v: b.asignadoBn, alerta: true }];
+    var tonoFalta = b.tonoDelFaltante || 'neutro';
+    var filas = [{ t: 'Lo que se necesita', v: b.necesarioBn, tono: 'neutro' },
+                 { t: 'Lo que quedó asignado', v: b.asignadoBn, tono: tonoFalta }];
     var fmt = function (v) { return '$' + dos(v); };
 
     var caja = el('div', 'sp-graf-decl');
@@ -10801,7 +10989,8 @@
       barras: filas, fmt: fmt, trama: b.estadoProcesal === 'proyecto-de-presupuesto',
       corte: corteDe(b), fuentes: b.fuentes, declara: caja, avisos: avisosDeEstado(b),
       nota: 'NO es todavía ley.',
-      datos: { desc: 'Dos barras: se necesitan ' + bllns(b.necesarioBn, dos) + ' y quedaron asignados ' +
+      datos: { porQueEseTono: b.porQueEseTono,
+        desc: 'Dos barras: se necesitan ' + bllns(b.necesarioBn, dos) + ' y quedaron asignados ' +
           bllns(b.asignadoBn, dos) + ', así que faltan ' + bllns(falta, dos) +
           ((b.desglose || []).length
             ? ', repartidos entre ' + b.desglose.map(function (x) { return x.t.toLowerCase(); }).join(' y ')

@@ -1,4 +1,4 @@
-const URBIS_CACHE = 'urbis-v1144-de-quien-es-y-el-latido';
+const URBIS_CACHE = 'urbis-v1145-tres-papeles-de-color';
 const URBIS_ASSETS = [
   './',
   './index.html',

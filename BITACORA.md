@@ -29697,3 +29697,131 @@ decir si es piso o dictamen— salen en rojo.
   `cerrado en v1144 · medido y declinado`
 * **No publica nada a `main`.** Sigue en `09697cd` (v1143b) hasta el «súbalo».
   `pendiente`
+
+## v1145 · tres papeles de color: azul lo favorable, rojo lo adverso, gris lo neutro
+
+Pedida así, viendo los gráficos en el celular: «la paleta es muy apagada; el
+rojo oscuro con azul grisáceo no llama la atención». Y con una condición que
+es la que ordena toda la tanda: **la dirección sale de un campo del registro,
+no se decide gráfico por gráfico.**
+
+### La clave es NUEVA, y eso no fue una preferencia
+
+`sentido` ya existía —y con DOS vocabularios en el mismo archivo:
+`'sube-bueno'|'sube-malo'|'neutro'` en los indicadores y
+`'bajaMejor'|'subeMejor'` en comparación—, y colorea la flechita del delta.
+Meterle un tercer significado habría sido la clase B escrita a mano. La clave
+nueva es **`tono`**, con tres valores: `favorable | adverso | neutro`.
+
+**Lo que no declara tono queda NEUTRO**, y eso tampoco es un valor por
+defecto perezoso: es la decisión escrita de que una cifra no es buena ni mala
+por sí misma. El dólar, la deuda, el presupuesto y la aprobación del propio
+vigilado van neutros, y el registro dice de cada uno **por qué**.
+
+### El favorable no se declara: se CALCULA
+
+Para los delitos, «favorable» depende de si el número bajó — y eso es dato, no
+opinión. El registro declara UNA cosa, `bajarEsFavorable: true`, y el tono de
+cada fila sale de restar. Así el color no puede envejecer: el mes que una
+cifra suba, su barra cambia sola.
+
+**Y el cálculo manda sobre la impresión**, que es lo que esta tanda hizo
+visible: el mes BAJA en cinco delitos y el acumulado del año SUBE, así que el
+acumulado sale **rojo sin que nadie lo declare** —de 9.256 a 9.434—. Hasta
+ahora ese dato vivía solo en el párrafo de abajo, donde un lector que mira
+cinco barras azules no llega: se subió al gráfico, porque el texto decía lo
+que el dibujo callaba.
+
+El único tono DECLARADO de ese bloque es la extorsión, y es un override **para
+callar**: dos entidades del mismo Gobierno publican cifras distintas para el
+mismo mes, así que no se puede decir si bajó o subió. Las dos barras van del
+mismo gris; pintarlas distinto sería decir que una vale más que la otra.
+
+### El rojo está reservado, y por eso el latido conserva su fuerza
+
+El rojo vivo es de lo adverso y del latido del tope en la escala del
+veredicto, y de nada más. Un rojo que aparece en todas partes deja de
+señalar. La guarda lo ata de dos maneras: el tono desconocido cae al
+**neutro** y nunca al rojo —el coste de equivocarse hacia el gris es que una
+figura no diga nada; hacia el rojo, que diga algo que el registro no dice—, y
+**ningún sitio puede escribir `sp-g-adv` a mano**: la clase no existe como
+literal, se arma en `claseDeTono`.
+
+### Lo que la medición obligó a cambiar, contra lo aprobado
+
+Tres veces el número mandó sobre el gusto, y las tres se dicen porque las tres
+tocan valores que el lector ya había aprobado:
+
+| | qué pasó |
+|---|---|
+| **El azul B** | `#1E88E5` con la tinta normal del sitio da **4,42:1**. No pasa. Va con tinta casi negra `#0B1116` → 5,16:1, y esa tinta no se usa en ninguna otra parte del sitio |
+| **El neutro** | `#6B7C8C` es un tono MEDIO y no puede llevar rótulo dentro con NINGUNA tinta —4,30 con blanco, 4,42 con la casi negra—. Va un paso más oscuro, `#66767F` (4,71 con blanco) |
+| **El segundo neutro** | nació en `#A9B6C1`, que da 1,95:1 contra marfil: un neutro que no se separa del papel no distingue nada. Va en `#3F4E5C` |
+
+Y **el azul queda en el borde**: 3,47:1 contra marfil, cuatro décimas sobre el
+umbral de figura. Queda anotado EN LA GUARDA y no en un comentario, porque es
+lo que la próxima tanda necesita saber antes de tocarlo: **no se puede
+aclarar más** — desde `#3D9BE9` cae por debajo de 3:1.
+
+### Dos cosas que encontró el barrido y nadie había pedido
+
+* **Las ocho series traían un `color` escrito que le ganaba al tono**, así que
+  el color seguía decidiéndose serie por serie. Dos de ellos eran ROJOS
+  —`#C0392B` en la deuda, `#C95A55` en la inflación— sobre series declaradas
+  NEUTRAS. Se retiraron los siete, y se quitó también la escotilla `d.color`
+  del código: dejarla viva era mantener abierta la puerta que esta tanda vino
+  a cerrar.
+* **`sp-g-gris` (#9AA7AE) daba 2,47:1** y no cruza el umbral de figura que
+  esta misma tanda puso. Apunta al token del neutro: no es un color nuevo, y
+  deja de haber dos grises que significan lo mismo.
+
+### Lo que encontró MIRAR EL PAPEL
+
+* **La leyenda enseñaba un color que no era.** Una sola muestra gris para DOS
+  grises distintos —la referencia del año anterior y lo que está en disputa—,
+  así que la mitad de lo que nombraba salía con el color equivocado. Una
+  leyenda que muestra un color que no es, es peor que no tener leyenda.
+* **El dólar seguía azul** después de declararlo neutro, que fue como se
+  encontró el `color` por serie de arriba.
+
+### Y la SEGUNDA inyección que salió verde en dos tandas
+
+La guarda de «el código falla al neutro y nunca al rojo» se inyectó —cambiar
+el valor por defecto de `claseDeTono` a `'adv'`— y salió **VERDE**. El patrón
+corría sobre TODO `js/70`, así que encontró el `|| 'neu'` de `tintaDeTono`,
+que no se había tocado: **un patrón suelto encuentra el de la función de al
+lado** (v854), y acá la función de al lado es casi idéntica. Rehecha sobre el
+cuerpo de cada función, y midiendo LAS DOS —si solo `claseDeTono` cayera al
+neutro, un tono mal escrito pintaría la barra gris y le pondría encima la
+tinta del rojo—. Las dos inyecciones salen rojas.
+
+Van dos en dos tandas, y conviene decir qué tienen en común: **las dos
+inyecciones fallaron por cómo la guarda BUSCA, no por lo que mide.** Una por
+el nombre de la aserción, otra por el alcance del patrón.
+
+### Lo medido
+
+| | v1144 | v1145 |
+|---|---|---|
+| Pares de paleta declarados | 24 | **28** + 4 figuras con su umbral propio |
+| Umbrales en la guarda | uno (4,5) | **dos**: 4,5 texto · 3 figura |
+| Figuras medidas en el navegador | — | **65 a 390 y a 1440, 0 bajo 3:1, mínimo 3,68** |
+| Texto medido en el navegador | 407, mín. 5,75 | **413, mín. 5,75** |
+| Tonos declarados en el registro | 0 | **19** —adverso · neutro—, ninguno fuera de la tabla |
+| `tseg` | 128/128 | **128/128** |
+| Inyecciones en rojo | 11 | **8** |
+
+### Lo que esta versión NO hace
+
+* **Las variaciones por sector del presupuesto pasaron de azul/rojo a dos
+  neutros.** Es consecuencia de que el presupuesto esté declarado neutro: el
+  color no puede decir que un recorte sea malo. Los dos lados se siguen
+  distinguiendo por de qué lado del cero cae la barra y por el signo del
+  rótulo. Se dice por si al verlo se prefiere otra cosa.
+  `cerrado en v1145 · medido y declinado`
+* **La aprobación y la consulta propia quedan neutras.** Son la aprobación del
+  vigilado: pintarlas de color sería que el módulo tome partido. Decisión del
+  lector, 22 de octubre de 2026.
+  `cerrado en v1145 · medido y declinado`
+* **No publica nada a `main`.** Sigue en `8053f23` (v1144) hasta el «súbalo».
+  `pendiente`

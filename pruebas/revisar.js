@@ -1862,6 +1862,108 @@ console.log('\n  -- la ficha del gobernante --');
             ? 'el sello se imprime y ninguna regla lo pinta (v895)'
             : 'imprime «Falta evidencia» y la hoja tiene su regla');
 
+    /* ── v1145 · EL TONO DE UNA FIGURA ────────────────────────────────
+       Tres papeles de color y una regla: lo que no declara tono queda
+       NEUTRO. Lo que esta guarda impide es la deriva que haría inútil al
+       rojo — que empiece a aparecer como color por defecto de algún gráfico
+       y deje de señalar lo adverso, que es lo único para lo que está y lo
+       que le da su fuerza al latido del tope. */
+    {
+      const regT = JSON.parse(leer('assets/data/seguimiento-presidencial.json'));
+      const nota = String(regT._notaTono || '');
+      const j70t = soloCodigo(leer('js/70-seguimiento.js'));
+
+      comprobar('MATERIAL · el registro declara qué es el tono de una figura',
+        nota.length > 400,
+        nota.length ? 'la nota del esquema son ' + nota.length + ' caracteres'
+                    : 'no hay `_notaTono`: el esquema del color no está escrito en ninguna parte');
+
+      /* LA NOTA DICE LAS TRES COSAS QUE HACEN FALTA para no repetir los
+         errores que este esquema estuvo a punto de cometer: que `tono` es una
+         clave NUEVA y no toca `sentido` —que ya tiene dos vocabularios—, que
+         lo no declarado queda neutro, y que el rojo está reservado. Se mide
+         que las tres estén, no cómo se redacten. */
+      const DICE = [
+        ['que `tono` no toca `sentido`', /`sentido`/.test(nota) && /clase B|NUEVA/.test(nota)],
+        ['que lo no declarado queda NEUTRO', /NEUTRO/.test(nota)],
+        ['que el rojo está reservado', /reserva/i.test(nota) && /latido/.test(nota)]
+      ];
+      const faltan = DICE.filter((x) => !x[1]).map((x) => x[0]);
+      comprobar('y la nota del esquema dice las tres cosas que lo hacen comprobable',
+        nota.length > 400 && faltan.length === 0,
+        !nota.length ? 'NO PUDO CORRER: no hay `_notaTono`'
+          : faltan.length ? 'le falta decir ' + faltan.join(' · ')
+          : 'dice que la clave es nueva, que lo no declarado queda neutro y que el rojo está reservado');
+
+      /* Y EL CÓDIGO LA CUMPLE. Dos cosas que se pueden romper por separado:
+         que el valor por defecto sea el neutro —no el rojo—, y que ningún
+         gráfico pinte el rojo sin que el registro lo declare adverso. */
+      /* SE BUSCA DENTRO DEL TROZO, y esto lo arregló una inyección que salió
+         VERDE: el patrón corría sobre TODO js/70, así que al cambiar el valor
+         por defecto de `claseDeTono` a 'adv' la guarda seguía pasando porque
+         encontraba el `|| 'neu'` de `tintaDeTono`, que no se había tocado. Un
+         patrón suelto encuentra el de la función de al lado (v854), y acá la
+         función de al lado es casi idéntica. */
+      const cuerpoDe70 = (n) => {
+        const i = j70t.indexOf('function ' + n + '(');
+        if (i < 0) return '';
+        const j = j70t.indexOf('\n', i);
+        return j < 0 ? j70t.slice(i) : j70t.slice(i, j + 1);
+      };
+      const cuerpoClase = cuerpoDe70('claseDeTono');
+      const cuerpoTinta = cuerpoDe70('tintaDeTono');
+      /* LAS DOS, porque las dos reparten color y las dos tienen que caer al
+         neutro: si solo `claseDeTono` lo hiciera, un tono mal escrito pintaría
+         la barra gris y le pondría encima la tinta del rojo. */
+      const porDefectoNeutro = /\|\| 'neu'\)/.test(cuerpoClase) && /\|\| 'neu'\)/.test(cuerpoTinta);
+      /* EL ROJO NO PUEDE ESCRIBIRSE A MANO EN NINGÚN GRÁFICO. La clase
+         `sp-g-adv` no existe como literal en js/70 —se arma en `claseDeTono`
+         con `'sp-g-' + …`—, así que CUALQUIER aparición escrita a mano es
+         alguien saltándose la puerta del tono para encender el rojo donde el
+         registro no lo declara. Por eso lo que se exige es CERO, y la cuenta
+         se dice tal cual: la primera redacción decía «0 usos, todos por la
+         puerta del tono», que presentaba un cero como si fuera un recuento de
+         usos correctos. */
+      const rojoSuelto = (j70t.match(/'sp-g-adv'|"sp-g-adv"|--sp-tono-adv\)/g) || []).length;
+      comprobar('y el código falla al NEUTRO y nunca al rojo',
+        porDefectoNeutro && /function claseDeTono/.test(j70t) && rojoSuelto === 0,
+        !cuerpoClase || !cuerpoTinta ? 'NO PUDO CORRER: no se encontró claseDeTono o tintaDeTono'
+          : !porDefectoNeutro
+            ? 'el tono desconocido NO cae en neutro: un tono mal escrito encendería un color que el registro no declara'
+            : rojoSuelto
+              ? rojoSuelto + ' sitio(s) escriben el rojo a mano, saltándose la puerta del tono'
+              : 'un tono que no esté en la tabla cae en neutro, y NINGÚN sitio escribe el rojo a mano: ' +
+                'solo sale de `claseDeTono`, que lo da cuando el registro declara adverso');
+
+      /* LO QUE DECLARA TONO, LO DECLARA DE LA TABLA. Un `tono: "adversa"` mal
+         escrito caería en neutro sin decirlo, y eso se lee igual que una
+         decisión. */
+      const VALIDOS = ['favorable', 'adverso', 'neutro'];
+      const tonos = [];
+      const camina = (o, ruta) => {
+        if (!o || typeof o !== 'object') return;
+        if (Array.isArray(o)) { o.forEach((x, i) => camina(x, ruta + '[' + i + ']')); return; }
+        Object.keys(o).forEach((k) => {
+          if (k === 'tono' || k === 'tonoDelFaltante') tonos.push([ruta + '.' + k, o[k]]);
+          else if (k === 'tonoPorEstado' && o[k] && typeof o[k] === 'object') {
+            Object.keys(o[k]).forEach((e) => tonos.push([ruta + '.tonoPorEstado.' + e, o[k][e]]));
+          } else camina(o[k], ruta + '.' + k);
+        });
+      };
+      camina(regT, '');
+      const malos = tonos.filter((x) => VALIDOS.indexOf(x[1]) < 0);
+      comprobar('y todo tono declarado es uno de los tres de la tabla',
+        tonos.length >= 10 && malos.length === 0,
+        tonos.length < 10 ? 'solo ' + tonos.length + ' tonos declarados: la comprobación casi no mira nada'
+          : malos.length ? malos.length + ' fuera de la tabla: ' +
+              malos.map((x) => x[0] + ' = «' + x[1] + '»').join(' · ')
+          : tonos.length + ' tonos declarados —' +
+            [...new Set(tonos.map((x) => x[1]))].sort().join(' · ') + '—, todos de la tabla. ' +
+            'NO aparece ninguno «favorable» y es correcto: el favorable no se declara, se CALCULA ' +
+            'del movimiento real de cada fila de delitos, así que el registro solo escribe lo que ' +
+            'el cálculo no puede dar');
+    }
+
     /* ── v1144 · EL NOMBRE DEL HTML ATADO AL REGISTRO ─────────────────
        El `<title>`, `og:title` y `twitter:title` llevan el nombre ESCRITO en
        el HTML, y es la única excepción a «sale del registro». La razón es de
@@ -15391,6 +15493,24 @@ console.log('\n  -- el contraste de las paletas propuestas (v1138) --');
   const TINTAS = ['--sp-tx', '--sp-tx2', '--sp-ac-tx'];
   const FONDOS = ['--sp-s1', '--sp-s2', '--sp-s3'];
   const malos = [], medidos = [];
+  /* ── DOS UMBRALES, NO UNO (v1145) ────────────────────────────────────────
+     Un TEXTO sobre un fondo pide 4,5:1. Una FIGURA —una barra, una línea, un
+     punto— solo tiene que separarse del papel, y la norma pide 3:1: exigirle
+     4,5 dejaría fuera cualquier color vivo y empujaría a una paleta apagada,
+     que es justo lo que había que arreglar.
+
+     Los dos se miden, y cada par dice con cuál se mide. Un par de figura que
+     ADEMÁS lleve texto encima se mide con los dos, y por eso los tonos
+     declaran su tinta: el azul vivo contra blanco da 3,68:1 y contra la tinta
+     casi negra 5,16:1, así que el rótulo interior va en la segunda. */
+  const figuras = [];
+  const parFigura = (kFig, kFondo, nombre, tok, hexf, ratiof) => {
+    const f = hexf(tok[kFig]), b3 = hexf(tok[kFondo]);
+    if (!f || !b3) return;
+    const r = ratiof(f, b3);
+    figuras.push({ nombre, k: kFig, r });
+    if (r < 3) malos.push(nombre + ' · FIGURA ' + kFig + ' sobre ' + kFondo + ' = ' + r.toFixed(2) + ':1 (mínimo 3)');
+  };
   archivos.forEach(([nombre, ruta]) => {
     const css = leer(ruta);
     const tok = {};
@@ -15415,7 +15535,32 @@ console.log('\n  -- el contraste de las paletas propuestas (v1138) --');
       par('--sp-fi' + i + '-tx', '--sp-fi' + i);
       par('--sp-fi-te-tx', '--sp-fi' + i + '-te');
     }
+    /* Los TONOS de figura (v1145): cada uno con sus DOS medidas —la figura
+       contra el papel del sitio, y su rótulo interior contra la figura—. */
+    ['fav', 'adv', 'neu', 'neu2'].forEach((t) => {
+      par('--sp-tono-' + t + '-tx', '--sp-tono-' + t);          // el rótulo, 4,5:1
+      parFigura('--sp-tono-' + t, '--sp-s1', nombre, tok, hex, ratio);  // la figura, 3:1
+    });
   });
+
+  /* EL MARGEN MÁS JUSTO, DICHO Y NO ESCONDIDO. El azul favorable está en
+     3,47:1 contra marfil: pasa el umbral de figura por cuatro décimas, y es
+     el borde de lo que se puede aclarar. Queda anotado acá y no en un
+     comentario suelto, porque es el dato que la próxima tanda necesita antes
+     de tocar ese color: **no se puede aclarar más**. Medido: desde #3D9BE9 la
+     figura cae por debajo de 3:1 y el azul deja de separarse del papel. */
+  {
+    const flojo = figuras.slice().sort((a2, b2) => a2.r - b2.r)[0];
+    comprobar('y toda FIGURA se separa del papel al menos 3:1, con su margen más justo dicho',
+      figuras.length >= 4 && figuras.every((f) => f.r >= 3),
+      figuras.length < 4 ? 'solo ' + figuras.length + ' figuras medidas: faltan tonos por declarar'
+        : figuras.some((f) => f.r < 3)
+          ? 'por debajo de 3:1: ' + figuras.filter((f) => f.r < 3)
+              .map((f) => f.k + ' = ' + f.r.toFixed(2)).join(' · ')
+          : figuras.length + ' figuras medidas · la más justa es ' + flojo.k + ' con ' +
+            flojo.r.toFixed(2) + ':1 — pasa por poco y NO se puede aclarar más: desde #3D9BE9 ' +
+            'el azul cae por debajo de 3:1 y deja de separarse del marfil');
+  }
 
   comprobar('ningún par declarado de una paleta baja de 4,5:1',
     archivos.length > 0 && medidos.length >= 12 && malos.length === 0,
