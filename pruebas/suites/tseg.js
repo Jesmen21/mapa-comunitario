@@ -831,6 +831,46 @@ const server = http.createServer((req, res) => {
       (selloReg ? (sello.visible.includes(selloReg) ? '«' + selloReg.slice(0, 54) + '…»'
                                                     : 'el registro declara uno y la pantalla pinta otro')
                 : 'el registro no declara `estadoSello`') + ')');
+  /* ── v1149 · CADA TARJETA DICE DE QUÉ CIFRA HABLA ──────────────────────
+     Dos frases sobre el mismo hecho en la misma tarjeta es peor que una vieja:
+     el pie decía «en trámite legislativo» mientras la salvedad decía «aprobado
+     por las dos cámaras», y un lector no tiene cómo saber cuál vale. Y la de
+     subsidios publicaba $2,26 billones con el sello de «proyecto de
+     presupuesto» sin decir que esa cifra NO se actualizó con lo aprobado.
+
+     Las dos se miden contra lo que el REGISTRO declara, no contra una frase
+     escrita acá (v890): si mañana el decreto sale y alguien corrige el
+     registro, la guarda sigue valiendo. */
+  const tarjetas = await pg.evaluate(() => {
+    const dame = (busca) => {
+      const c = [...document.querySelectorAll('.sp-graf')]
+        .find((x) => (x.textContent || '').includes(busca));
+      if (!c) return null;
+      const sal = c.querySelector('.sp-graf-sal');
+      return { pie: (c.textContent || '').match(/Fecha de corte:[^]{0,160}/)[0],
+               visible: sal ? sal.textContent : '', plegado: !!(sal && sal.closest('details')) };
+    };
+    return { sector: dame('Variación real por sector'), sub: dame('Subsidios de energía') };
+  });
+  const tramaReg = (reg148.presupuesto || {}).tramaTexto || '';
+  const subReg = reg148.subsidios || {};
+  chk(!!tarjetas.sector && !!tarjetas.sub,
+      'MATERIAL · están en pantalla la tarjeta de sectores y la de subsidios');
+  chk(!!tramaReg && (tarjetas.sector || {}).pie.includes(tramaReg),
+      'y el pie de la tarjeta de sectores dice lo mismo que su salvedad, desde el registro (' +
+      (tramaReg ? ((tarjetas.sector || {}).pie.includes(tramaReg) ? '«' + tramaReg.slice(0, 50) + '…»'
+                                                                 : 'el pie sigue con su frase vieja')
+                : 'el registro no declara `tramaTexto`') + ')');
+  chk(!/en trámite legislativo/.test((tarjetas.sector || {}).pie || ''),
+      'y ya no quedan dos frases distintas sobre el mismo estado en la misma tarjeta');
+  chk(!!(subReg.estadoSello) && (tarjetas.sub || {}).visible.includes(subReg.estadoSello) &&
+      !(tarjetas.sub || {}).plegado,
+      'y la tarjeta de subsidios dice VISIBLE de qué cifra habla, desde el registro (' +
+      ((tarjetas.sub || {}).visible || 'sin salvedad visible').slice(0, 70) + '…)');
+  chk(/PROYECTO/.test((tarjetas.sub || {}).visible || '') &&
+      /sancionad/.test((tarjetas.sub || {}).visible || ''),
+      'y no deja «NO es todavía ley» solo: nombra el proyecto y la falta de sanción');
+
   chk(!!ultIpc && sello.visible.includes(ultIpc),
       'y cuando el deflactor tiene reemplazo, la pantalla NOMBRA la cifra nueva del registro (' +
       (ultIpc ? (sello.visible.includes(ultIpc) ? 'la serie va en ' + ultIpc + ' % y la línea lo dice'

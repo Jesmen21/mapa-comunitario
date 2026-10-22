@@ -10044,9 +10044,23 @@
     });
     svg.appendChild(g);
   }
+  /* LA LEYENDA DE LA TRAMA SE ARMA EN UNA FUNCIÓN, y sale del registro.
+     Estaba escrita en dos sitios —acá y en `corteDe`— con la misma frase, y
+     las dos decían «en trámite legislativo» mirando solo el `estadoProcesal`.
+     Dos codificaciones de qué significa el rayado (clase B), y las dos viejas
+     a la vez: el pie decía «en trámite legislativo» mientras la salvedad de
+     la misma tarjeta decía «aprobado por las dos cámaras». Un lector tiene
+     dos frases sobre el mismo hecho y ninguna manera de saber cuál vale.
+
+     Ahora el bloque puede declarar `tramaTexto`, que es lo que el rayado
+     significa HOY; sin él, la frase genérica de antes. Y la pregunta se hace
+     en un solo sitio, así que las dos superficies no pueden separarse. */
+  function leyendaDeTrama(x) {
+    if (x && x.tramaTexto) return x.tramaTexto + ' (trama rayada)';
+    return enTramite(x) ? 'en trámite legislativo (trama rayada)' : 'en firme';
+  }
   function corteTexto(p) {
-    return 'Fecha de corte: ' + fechaCorta(p.corte) +
-           ' · ' + (enTramite(p) ? 'en trámite legislativo (trama rayada)' : 'en firme');
+    return 'Fecha de corte: ' + fechaCorta(p.corte) + ' · ' + leyendaDeTrama(p);
   }
   function fuenteCorta(lista) {
     var ns = (lista || []).map(function (f) { return String(f.n || '').split(' · ')[0].split(' — ')[0].trim(); });
@@ -10777,8 +10791,8 @@
   function corteDe(x) {
     return 'Fecha de corte: ' + fechaCorta(x.corte) + ' · ' +
       (x.estadoProcesal === 'en-tramite-legislativo'
-        ? 'en trámite legislativo (trama rayada)'
-        : (x.estadoProcesal || 'en firme'));
+        ? leyendaDeTrama(x)
+        : (x.tramaTexto || x.estadoProcesal || 'en firme'));
   }
 
   function grafDeficit(f) {

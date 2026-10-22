@@ -30195,3 +30195,95 @@ el borrador tenía entonces.
 * **No rehace las variaciones por sector con el deflactor de septiembre.**
   Pide el monto de 2026 de cada sector, que el registro no guarda.
   `pendiente`
+
+---
+
+## v1149 · De qué cifra habla cada tarjeta
+
+Cuatro correcciones de Daniel sobre la v1148, y las cuatro de **leer el papel**:
+ninguna se veía en el código.
+
+### 1 · La alerta de Transparencia no estaba donde él la vio
+
+Comprobado línea por línea: en el registro **real** la entrada de la fundación
+—línea 131— **no** trae la alerta de los 768 contratos ni la fuente de El País.
+Lo que Daniel leyó es el **borrador** que le mandé: al mover lo cargado a
+`_yaCargadas` guardé las entradas **como se redactaron**, no como se cargaron.
+Un archivo que dice «esto ya está en el registro» y muestra otra cosa es peor
+que no tenerlo.
+
+Y revisando esa entrada apareció un defecto que sí estaba en el registro:
+`estadoProcesal` llevaba `rendicion-de-cuentas-propia-con-solicitud-de-informacion-radicada`,
+que **no es una de las cinco** de `ESTADO_PROCESAL`. Se coló porque la guarda
+de vocabulario solo mira las entradas que **declaran indicador**, y esta lleva
+la lista vacía. El denominador correcto para *exigir* los tres insumos es ese;
+para comprobar que un valor escrito sea conocido, es demasiado estrecho — la
+ficha pinta el campo venga de donde venga. Es la forma del denominador
+equivocado que este repositorio lleva seis veces, **con el signo cambiado**.
+
+Al corregirlo salió lo de fondo: la entrada estaba declarada como `actividad`,
+y una rendición de cuentas de una fundación privada no es actividad del
+Gobierno. Pasa a `contexto-estructural`, y con eso **pierde el nivel y la lista
+de indicadores por cálculo y no a mano**: el módulo ya sabe que a un tercero no
+se le exigen.
+
+### 2 y 3 · Dos frases sobre el mismo hecho, en la misma tarjeta
+
+El pie de la tarjeta de sectores decía «en trámite legislativo (trama rayada)»
+mientras su propia salvedad decía «aprobado por las dos cámaras el 20 oct».
+**Un lector tiene dos frases y ninguna manera de saber cuál vale.** La leyenda
+estaba escrita en dos sitios del código con la misma cadena —clase B— y las dos
+miraban solo `estadoProcesal`. Ahora el bloque declara `tramaTexto`, la
+pregunta se hace en **una** función y las dos superficies no pueden separarse.
+
+La de subsidios publicaba **$2,26 billones** con el sello «Proyecto de
+presupuesto: NO es todavía ley» y corte 10 sep, sin decir que esa cifra no se
+actualizó. Se verificó qué pasó con esa partida, y el resultado es más
+interesante que un número nuevo: el Congreso aprobó el presupuesto **con $3
+billones adicionales** para subsidios de energía y gas —el sector pasa de $7,5
+a $10,51 billones—, **sin desglose por estrato**; y el decreto que el Gobierno
+anunció tomaría el texto del primer debate, que según El Tiempo **no incluye
+esos traslados**. El mismo 20 de octubre Hacienda pidió al Congreso aprobar con
+urgencia $1,2 billones para subsidios eléctricos.
+
+**Mientras las dos vías den cifras distintas, lo honesto es publicar la del
+proyecto diciendo que es la del proyecto.** El número no se tocó; lo que cambió
+es que la tarjeta dice de qué habla.
+
+### 4 · La nota de Pauta es chilena
+
+Verificada, y **no entra** como fuente de la entrada colombiana: es de un medio
+chileno y quien habla es **Francisco Pérez Mackenna, canciller de Chile**, ante
+el Senado chileno, sobre la adhesión de **Chile**. No es Omar Bula. Ponerla ahí
+le atribuiría a Colombia lo que otro gobierno dijo de su propio caso.
+
+Puede entrar como **contexto comparado**, rotulado como tal —otro miembro de la
+coalición describiendo el mismo instrumento como declaración política no
+vinculante y sin tropas, igual que el canciller del Perú—, y queda propuesto en
+el borrador con esa etiqueta. Es un argumento por analogía, no un hecho sobre
+Colombia.
+
+Corrección de autoría, que Daniel pidió dejar escrita: **la nota de Pauta la
+nombré yo, no él.**
+
+### Lo medido
+
+| | v1148 | v1149 |
+|---|---|---|
+| Entradas con `estadoProcesal` fuera de las cinco | 1 | **0** |
+| Entradas donde se vigila el vocabulario | las que declaran indicador | **las 54 que escriben el campo** |
+| Tarjetas con dos frases distintas sobre su estado | 2 | **0** |
+| `tseg` | 141/141 | **146/146** |
+| Inyecciones contra las guardas nuevas | — | **3 en rojo + control en verde** |
+
+### Lo que esta versión NO hace
+
+* **No sube el asignado de subsidios de $2,26 billones.** Ninguna fuente
+  desglosa por estrato lo aprobado, y el decreto anunciado tomaría un texto que
+  no lleva esos traslados. `cerrado en v1149 · medido y declinado`
+* **No carga la entrada del informe de Transparencia por Colombia.** Queda
+  propuesta en el borrador, con la advertencia de que el registro ya cita un
+  informe anterior de la misma organización —402 contratos— y de que no son dos
+  hallazgos independientes. `pendiente`
+* **No agrega la nota chilena a la entrada colombiana.** Queda propuesta como
+  contexto comparado. `pendiente`

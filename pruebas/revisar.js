@@ -2475,6 +2475,36 @@ console.log('\n  -- la ficha del gobernante --');
       malos2.length ? malos2.join(' · ')
         : 'estadoProcesal (' + proc.join(' | ') + ') y tipoEvidencia (' + evid.join(' | ') + ')');
 
+    /* Y EL VOCABULARIO SE VIGILA SOBRE TODAS LAS QUE ESCRIBEN EL CAMPO, no
+       solo sobre las que declaran indicador. El denominador de arriba es el
+       correcto para EXIGIR los tres insumos —solo se le piden a quien declara
+       un criterio—, y es demasiado estrecho para comprobar que un valor
+       escrito sea de los conocidos: la ficha pinta `estadoProcesal` venga de
+       donde venga, y un valor inventado sale sin etiqueta y sin que nada lo
+       diga. Se coló así `rendicion-de-cuentas-propia-con-solicitud-de-informacion-radicada`
+       en una carga, con la lista de indicadores vacía: la guarda de arriba la
+       saltó entera. Es la misma forma del denominador equivocado que este
+       repositorio lleva seis veces (v999, v1060, v1061, v1064, v1075, v1109),
+       con el signo cambiado — allá medía de más, acá de menos. */
+    const malosVoc = [], escriben = { ep: 0, te: 0 };
+    REGISTROS.forEach((ruta) => {
+      const quien = ruta.split('-').pop().replace('.json', '');
+      ((JSON.parse(leer(ruta)).entradas) || []).forEach((e) => {
+        const donde = quien + '/' + (e.fecha || '?');
+        const ep = String(e.estadoProcesal || '').trim();
+        const te = String(e.tipoEvidencia || '').trim();
+        if (ep) { escriben.ep++; if (proc.indexOf(ep) < 0) malosVoc.push(donde + ' estadoProcesal=' + ep); }
+        if (te) { escriben.te++; if (evid.indexOf(te) < 0) malosVoc.push(donde + ' tipoEvidencia=' + te); }
+      });
+    });
+    comprobar('MATERIAL · hay entradas que escriben estado procesal y tipo de evidencia',
+      escriben.ep > 0 && escriben.te > 0,
+      escriben.ep + ' escriben estadoProcesal y ' + escriben.te + ' tipoEvidencia, en los dos registros');
+    comprobar('y TODA entrada que escribe uno de los dos usa un valor declarado, declare indicador o no',
+      malosVoc.length === 0,
+      malosVoc.length ? malosVoc.join(' · ') + ' — un valor inventado se pinta sin etiqueta y nada lo dice'
+        : 'las ' + escriben.ep + ' y las ' + escriben.te + ' caen en las cinco de cada tabla');
+
     /* La constancia de búsqueda. `ausente` AFIRMA que el Gobierno no
        respondió, y una afirmación sobre una persona real necesita algo
        detrás: dónde se buscó y cuándo. Un `ausente` a secas se ve y no pesa,

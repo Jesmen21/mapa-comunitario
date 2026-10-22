@@ -129,12 +129,8 @@
       "categoria": "emergencia",
       "titulo": "La fundación que dirige la primera dama rinde cuentas de 54.589 millones de pesos en donaciones privadas para la reconstrucción, y un senador radica una solicitud formal de información",
       "id": "fundacion-primera-dama-rinde-cuentas-54589-millones",
-      "nivelGobierno": "nacional",
       "categoriaProbatoria": "hecho-probado",
-      "tipoMedicion": "actividad",
-      "indicadores": [],
-      "_porQueListaVacia": "Corrida la vara de los cinco criterios escritos sobre esta entrada el 22 de octubre de 2026, no cae en ninguna vía, y por una razón anterior a los cinco: los cinco miden actos del EJECUTIVO, y esta entrada registra la rendición de cuentas de una fundación privada y la solicitud de información de un senador. No es un decreto (I-04), el senador no es un órgano autónomo declarando afectada su autonomía (I-05), la solicitud fue radicada y no consta negada ni tutelada (I-07), no hay instrucción sobre información técnica (I-13) y no hay muerte en una operación (I-14). El día que una autoridad niegue la información pedida y eso se tutele, I-07 sí la alcanzaría.",
-      "estadoProcesal": "rendicion-de-cuentas-propia-con-solicitud-de-informacion-radicada",
+      "tipoMedicion": "contexto-estructural",
       "tipoEvidencia": "reporte-periodistico",
       "detalle": "El 17 de octubre de 2026 la Fundación Colombia Luz y Sonrisas, que dirige la primera dama Ana Lucía Pineda, rindió cuentas de la campaña «Colombia, un solo corazón»: 54.589 millones de pesos, declarados como aportes enteramente del sector privado y sin recursos públicos. Según su rendición, un solo donante —el Grupo Gilinski— representa el 81 % del total. La fundación reportó la movilización de 5.652,2 toneladas de ayuda humanitaria para más de 48.000 personas en 80 municipios. La campaña se declara SEPARADA del Fondo Milagro, el mecanismo del Gobierno administrado por Fiducoldex.",
       "tipoFuente": "disputado",
@@ -12088,6 +12084,7 @@
     "estadoProcesal": "en-tramite-legislativo",
     "estadoTexto": "Monto aprobado por las comisiones económicas el 14 de septiembre de 2026, y aprobado por las plenarias de las dos cámaras el 20 de octubre. NO consta sancionado como ley: el 21 de octubre el Gobierno anunció que lo expedirá por DECRETO tras detectar un error de trámite legislativo. Estas cifras son las del trámite, y pueden cambiar.",
     "estadoSello": "Aprobado por las dos cámaras el 20 oct · NO consta sancionado como ley",
+    "tramaTexto": "aprobado en el Congreso el 20 oct, sin sanción, con decreto anunciado",
     "base": "pgn-2027-monto-aprobado-comisiones",
     "totalBn": 634.9,
     "deflactorPct": 6.24,
@@ -12239,7 +12236,8 @@
       "tono": "neutro",
       "porQueEseTono": "Una variación de presupuesto por sector no tiene tono declarado por ninguna fuente.",
       "estadoTexto": "Cifras del proyecto de presupuesto radicado, con el reparto por sector del trámite en comisiones. El monto fue aprobado por las dos cámaras el 20 de octubre y NO consta sancionado como ley: el Gobierno anunció el 21 de octubre que lo expedirá por decreto. El reparto por sector de la versión final no está publicado, así que estas cifras siguen siendo las del trámite.",
-      "estadoSello": "Aprobado por las dos cámaras el 20 oct · NO consta sancionado como ley"
+      "estadoSello": "Aprobado por las dos cámaras el 20 oct · NO consta sancionado como ley",
+      "tramaTexto": "aprobado en el Congreso el 20 oct, sin sanción, con decreto anunciado"
     },
     "agregacion": {
       "titulo": "La misma plata, dos agregaciones: dónde queda Defensa según qué se sume",
@@ -13221,6 +13219,26 @@
     "anio": 2027,
     "corte": "2026-09-10",
     "estadoProcesal": "proyecto-de-presupuesto",
+    "estadoSello": "Cifra del PROYECTO, corte 10 sep · el Congreso aprobó el presupuesto el 20 oct con $3 billones adicionales para subsidios de energía y gas, sin desglose por estrato · NO consta sancionado",
+    "tramaTexto": "cifra del proyecto, no del texto aprobado",
+    "estadoTexto": "Las dos cifras de esta tarjeta —lo necesario y lo asignado— son las del PROYECTO de presupuesto con corte al 10 de septiembre de 2026, y NO se actualizaron. El Congreso aprobó el Presupuesto General de 2027 el 20 de octubre y, según el comunicado del Ministerio de Hacienda, el sector de Minas y Energía recibió $3 billones adicionales para subsidios de energía y gas —gas por red, GLP y transporte de combustibles líquidos en zonas de frontera—, pasando de $7,5 a $10,51 billones. NO SE PUDO VERIFICAR cuánto de eso corresponde a los estratos 1 y 2, que es lo que esta tarjeta mide: ninguna fuente consultada lo desglosa, así que subir el número sería inventarlo. Y hay una segunda razón para no moverlo: el presupuesto no consta sancionado, el Gobierno anunció el 21 de octubre que lo expedirá por decreto tomando el texto del primer debate, y según El Tiempo ese texto NO incluye los traslados de $3 billones para subsidios eléctricos. El mismo 20 de octubre el Ministerio pidió al Congreso aprobar con urgencia $1,2 billones para subsidios eléctricos. Mientras las dos vías den cifras distintas, lo honesto es publicar la del proyecto diciendo que es la del proyecto.",
+    "_fuentesDelEstado": [
+      {
+        "n": "Minhacienda · Congreso de la República aprueba Presupuesto General de la Nación para 2027 por $634,9 billones",
+        "u": "https://www.minhacienda.gov.co/w/congreso-aprueba-presupuesto-general-de-la-nacion-para-2027",
+        "rol": "acto"
+      },
+      {
+        "n": "El Tiempo · Presupuesto 2027 se expedirá por decreto: ¿qué se puede hacer para incluir nuevamente los cambios que se habían concertado en el Congreso?",
+        "u": "https://www.eltiempo.com/amp/economia/presupuesto-para-2027-que-efectos-tendra-la-expedicion-por-decreto-del-gobierno-y-que-advierten-los-expertos-3595227",
+        "rol": "efecto"
+      },
+      {
+        "n": "La República · La plenaria del Senado aprobó el Presupuesto General de la Nación para 2027",
+        "u": "https://www.larepublica.co/economia/la-plenaria-del-senado-aprobo-el-presupuesto-general-de-la-nacion-para-2027-4506548",
+        "rol": "dato-de-apoyo"
+      }
+    ],
     "necesarioBn": 7.29,
     "asignadoBn": 2.26,
     "desglose": [
