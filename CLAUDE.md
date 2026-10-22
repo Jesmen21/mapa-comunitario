@@ -1045,6 +1045,12 @@ versión: el caso que la pagó está en `BITACORA.md`.
   envejece: se corta por el `<h2>`, por la función, por el punto y coma.
 * **Se busca DENTRO del trozo** (v854). Un patrón suelto encuentra el de la
   caja de al lado, y un extractor que casa por prefijo lee la figura vecina.
+* **Se recoge POR FORMA, nunca por nombre de clave** (v1149, v1153, v1158). Una
+  guarda que nombra las claves que existían el día que se escribió deja fuera
+  la que se añada mañana: se recorre el objeto y se recoge por lo que la cosa
+  ES —cadenas largas, objetos con `n` y `u`—. Van **cinco veces** el mismo
+  denominador estrecho, y la quinta tenía cinco roles inventados publicados en
+  once bloques que la guarda no alcanzaba.
 * **El detalle del fallo dice qué mitad falló** (v973, v1051). Seis veces una
   aserción de este repositorio imprimió el texto del verde estando en rojo.
 * **La guarda lee el CÓDIGO y no los comentarios** (v926). Una capacidad

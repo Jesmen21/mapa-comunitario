@@ -3437,7 +3437,7 @@
       "tipoMedicion": "actividad",
       "indicadores": [],
       "nivelGobierno": "nacional",
-      "detalle": "La Policía Nacional, a través de su Dirección de Antinarcóticos, con apoyo de la Fiscalía General y de la Fuerza Aérea, ejecutó el 21 de septiembre un registro y allanamiento en el sector de Quebrada del Sol, corregimiento de Guachaca (Santa Marta), contra las Autodefensas Conquistadoras de la Sierra Nevada (ACSN), también llamadas 'los Pachenca'. El operativo dejó siete integrantes de la organización muertos —entre ellos José Luis Pérez Villanueva, alias 'Cholo' o 'Comando 25', señalado como segundo cabecilla y responsable de las finanzas del grupo tras la captura de alias 'Muñeca'— y tres capturados, además de la incautación de diez fusiles (uno de ellos calibre .50), dos lanzagranadas, dos pistolas y ocho granadas de 40 mm. El presidente Abelardo de la Espriella confirmó la baja de 'Cholo', convocó un consejo de seguridad extraordinario en Santa Marta y le envió un mensaje directo al máximo cabecilla de las ACSN, Fredy Castillo Carrillo, alias 'Pinocho', advirtiéndole que tiene fecha de vencimiento y que las autoridades van tras él. Tras el operativo, las ACSN anunciaron un paro armado de 48 horas en el Magdalena, con bloqueos y quema de vehículos en la Ruta del Sol, ante lo cual el presidente advirtió que «el que no se someta va a terminar en una bolsa y muerto».",
+      "detalle": "La Policía Nacional, a través de su Dirección de Antinarcóticos, con apoyo de la Fiscalía General y de la Fuerza Aérea, ejecutó el 21 de septiembre un registro y allanamiento en el sector de Quebrada del Sol, corregimiento de Guachaca (Santa Marta), contra las Autodefensas Conquistadoras de la Sierra Nevada (ACSN), también llamadas 'los Pachenca'. El operativo dejó siete integrantes de la organización muertos —entre ellos José Luis Pérez Villanueva, alias 'Cholo' o 'Comando 25', señalado como segundo cabecilla y responsable de las finanzas del grupo tras la captura de alias 'Muñeca'— y tres capturados, además de la incautación de diez fusiles (uno de ellos calibre .50), dos lanzagranadas, dos pistolas y ocho granadas de 40 mm. El presidente Abelardo de la Espriella confirmó la baja de 'Cholo', convocó un consejo de seguridad extraordinario en Santa Marta y le envió un mensaje directo al máximo cabecilla de las ACSN, Fredy Castillo Carrillo, alias 'Pinocho', advirtiéndole que tiene fecha de vencimiento y que las autoridades van tras él. Tras el operativo, las ACSN anunciaron un paro armado de 48 horas en el Magdalena, con bloqueos y quema de vehículos en la Ruta del Sol, ante lo cual el presidente advirtió que «el que no se someta va a terminar en una bolsa y muerto». El 22 de septiembre, en la ciudad y en el corredor que la comunica con La Guajira, se registraron intimidaciones a comerciantes, disparos contra establecimientos, cierre del comercio y quema de vehículos —entre los casos reportados, una tractomula en la Troncal del Caribe y un taxi—, con afectaciones a la movilidad. Las autoridades atribuyeron esos hechos a las ACSN, y los medios consultados reportaron la circulación de un panfleto del grupo que ordenaba cerrar el comercio durante 48 horas; las fuentes consultadas no identifican a quién ejecutó cada ataque. El consejo de seguridad que el presidente convocó el 21 se realizó el 22 en el Batallón Córdova de Santa Marta, encabezado por él, con la gobernadora del Magdalena, Margarita Guerra, y el alcalde Carlos Pinedo Cuello; tras el consejo se anunció el despliegue de unos 600 policías y más de 500 militares en Santa Marta, la Troncal del Caribe y Ciénaga, que los medios consultados reportaron como más de 1.100 uniformados. El 23 de septiembre las autoridades informaron nueve personas capturadas por esos hechos: el alcalde Pinedo Cuello dio la cifra —«van nueve capturados, entre ellos una persona que quemó una mula»— y el presidente las anunció tras el consejo de seguridad. No consta en las fuentes consultadas decisión judicial sobre su responsabilidad. Las tres capturas ya citadas corresponden al operativo del 21 en Guachaca y las nueve a los ataques del 22 en la ciudad. En paralelo, la Alcaldía de Santa Marta dictó tres decretos distritales: el 431 del 21 de septiembre, que prohibió el parrillero por 24 horas; el 432 del 22, que prohibió la circulación de motocicletas y vehículos similares en todo el Distrito y se anunció hasta el jueves 24; y el 433 del 23, que según las fuentes consultadas levantó esa prohibición total ese mismo día y mantuvo la del parrillero hombre. El 23 de septiembre el alcalde pidió al comercio reabrir y declaró que «todo va llegando a la normalidad».",
       "tipoFuente": "verificado",
       "fuentes": [
         {
@@ -3464,8 +3464,69 @@
           "n": "El Universal · Paro armado en Santa Marta: De La Espriella toma medidas tras caída de alias Cholo",
           "u": "https://www.eluniversal.com.co/colombia/2026/09/21/paro-armado-en-santa-marta-de-la-espriella-toma-medidas-tras-caida-de-alias-cholo/",
           "rol": "efecto"
+        },
+        {
+          "n": "El Heraldo · Nueve personas capturadas tras quema de vehículos y ataques a comercios en Santa Marta",
+          "u": "https://www.elheraldo.co/colombia/2026/09/23/nueve-personas-capturadas-tras-quema-de-vehiculos-y-ataques-a-comercios-en-santa-marta/",
+          "rol": "efecto"
+        },
+        {
+          "n": "Publimetro · Santa Marta: nueve capturados tras quema de vehículos y ataques a comercios",
+          "u": "https://www.publimetro.co/noticias/2026/09/23/santa-marta-en-alerta-quemaron-vehiculos-atacaron-comercios-y-ya-hay-nueve-capturados/",
+          "rol": "efecto"
+        },
+        {
+          "n": "El Espectador · Nueve capturados y 1.100 uniformados en Santa Marta tras muerte de alias «Cholo»",
+          "u": "https://www.elespectador.com/judicial/nueve-capturados-y-1-100-uniformados-en-santa-marta-tras-muerte-de-alias-cholo/",
+          "rol": "efecto"
+        },
+        {
+          "n": "Al Día · Nueve capturados tras ataques contra vehículos y comercios en Santa Marta",
+          "u": "https://www.aldia.co/pa-lante/nueve-capturados-tras-ataques-contra-vehiculos-y-comercios-en-santa-marta-128321",
+          "rol": "efecto"
+        },
+        {
+          "n": "Vanguardia · Alcalde de Santa Marta anuncia refuerzo de seguridad tras jornada de violencia: «todo va llegando a la normalidad»",
+          "u": "https://www.vanguardia.com/colombia/2026/09/23/alcalde-de-santa-marta-anuncia-refuerzo-de-seguridad-tras-jornada-de-violencia-todo-va-llegando-a-la-normalidad/",
+          "rol": "efecto"
+        },
+        {
+          "n": "Minuto60 · Así fue el Consejo de Seguridad liderado por De La Espriella en Santa Marta: definió nuevas acciones",
+          "u": "https://www.minuto60.com/colombia/consejo-seguridad-santa-marta-liderado-espriella/16020",
+          "rol": "acto"
+        },
+        {
+          "n": "El Universal · Más de mil uniformados refuerzan la seguridad en Santa Marta",
+          "u": "https://www.eluniversal.com.co/colombia/2026/09/23/mas-de-mil-uniformados-refuerzan-la-seguridad-en-santa-marta/",
+          "rol": "acto"
+        },
+        {
+          "n": "El Tiempo · Santa Marta busca recuperar la normalidad tras dos días de tensión: alcalde defiende refuerzo militar y pide al comercio reabrir sus puertas",
+          "u": "https://www.eltiempo.com/amp/colombia/barranquilla/santa-marta-busca-recuperar-la-normalidad-tras-dos-dias-de-tension-alcalde-defiende-refuerzo-militar-y-pide-al-comercio-reabrir-sus-puertas-3588438",
+          "rol": "contexto"
+        },
+        {
+          "n": "RCN Radio · Santa Marta restringe circulación de motos durante tres días: esto se sabe",
+          "u": "https://newsroom.rcnradio.com/colombia/santa-marta-restringe-circulacion-de-motos-durante-tres-dias-esto-se-sabe",
+          "rol": "acto"
+        },
+        {
+          "n": "Seguimiento.co · Alcaldía prohíbe totalmente la circulación de motos en Santa Marta hasta el jueves",
+          "u": "https://seguimiento.co/la-samaria/alcaldia-prohibe-totalmente-la-circulacion-de-motos-en-santa-marta-hasta-el-jueves-89416",
+          "rol": "acto"
+        },
+        {
+          "n": "France 24 · Colombia: la turística Santa Marta es militarizada ante la arremetida de un grupo narcoparamilitar",
+          "u": "https://www.france24.com/es/am%C3%A9rica-latina/20260924-colombia-la-tur%C3%ADstica-santa-marta-es-militarizada-ante-la-arremetida-de-un-grupo-narcoparamilitar",
+          "rol": "contexto"
+        },
+        {
+          "n": "Infobae · Calles desoladas y turistas atrapados: así está Santa Marta este miércoles 23 de septiembre luego del anuncio de Los Pachenca de un paro armado",
+          "u": "https://www.infobae.com/colombia/2026/09/23/calles-desoladas-y-turistas-atrapados-asi-esta-santa-marta-este-miercoles-23-de-septiembre-luego-del-anuncio-de-los-pachenca-de-un-paro-armado/",
+          "rol": "efecto"
         }
-      ]
+      ],
+      "id": "operativo-cholo-acsn-paro-armado-santa-marta-2026-09-21"
     },
     {
       "fecha": "2026-09-21",
@@ -13384,12 +13445,12 @@
     "fuentes": [
       {
         "n": "El Heraldo · Homicidios bajaron 6 % en el primer mes del gobierno de Abelardo de la Espriella",
-        "rol": "dato",
+        "rol": "contexto",
         "u": "https://www.elheraldo.co/colombia/2026/09/26/homicidios-bajaron-6-en-el-primer-mes-del-gobierno-de-abelardo-de-la-espriella/"
       },
       {
         "n": "El Tiempo · Revelan informe que valida la caída en secuestro, extorsión y homicidios presentadas por el Gobierno De la Espriella tras revisión con MinDefensa",
-        "rol": "dato",
+        "rol": "contexto",
         "u": "https://www.eltiempo.com/politica/partidos-politicos/revelan-informe-que-valida-la-caida-en-secuestro-extorsion-y-homicidios-presentadas-por-el-gobierno-de-la-espriella-tras-revision-con-mindefensa-3590075"
       }
     ],
@@ -13422,7 +13483,7 @@
       {
         "n": "La República · La plenaria del Senado aprobó el Presupuesto General de la Nación para 2027",
         "u": "https://www.larepublica.co/economia/la-plenaria-del-senado-aprobo-el-presupuesto-general-de-la-nacion-para-2027-4506548",
-        "rol": "dato-de-apoyo"
+        "rol": "contexto"
       }
     ],
     "necesarioBn": 7.29,
@@ -13448,12 +13509,12 @@
     "fuentes": [
       {
         "n": "El Tiempo · Presupuesto para 2027 subió $59,3 billones, pero no hay plata para pagar subsidios de energía y gas de las familias más pobres",
-        "rol": "dato",
+        "rol": "contexto",
         "u": "https://www.eltiempo.com/economia/sectores/presupuesto-para-2027-subio-59-3-billones-pero-no-hay-plata-para-pagar-subsidios-de-energia-y-gas-de-las-familias-mas-pobres-3584328"
       },
       {
         "n": "El Colombiano · el faltante de subsidios de energía y gas en el presupuesto de 2027",
-        "rol": "dato",
+        "rol": "contexto",
         "u": "https://www.elcolombiano.com/negocios/economia/presupuesto-2027-subsidios-energia-gas-estratos-1-y-2"
       }
     ],

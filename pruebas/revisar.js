@@ -5163,34 +5163,49 @@ console.log('\n  -- la ficha del gobernante --');
       });
     });
 
-    /* Y LAS SERIES TAMBIÉN DECLARAN ROL, y nadie las miraba. `indicadores`
-       lleva sus propias `fuentes` con `rol` —la del dólar trae ocho—, y el
-       barrido de arriba solo recorre `entradas`: un rol inventado en una
-       serie pasaba sin que nada lo dijera, igual que pasó con
-       `estadoProcesal` en la v1149. Es el mismo denominador estrecho, en otro
-       sitio, y se arregla igual: se mide donde el campo se escribe. */
-    const malRolSerie = [];
-    let conRolSerie = 0;
+    /* Y TODA FUENTE DEL REGISTRO DECLARA ROL, DONDE SEA QUE VIVA.
+
+       Tres versiones de esta guarda y tres veces el mismo defecto. Miraba
+       `entradas`; la v1153 le agregó `indicadores[k].fuentes` porque las series
+       también declaran rol; y seguía sin ver ONCE bloques más
+       —`delitosAltoImpacto`, `subsidios`, `presupuesto.*`, `fiscal.*`,
+       `contradicciones.casos`—, donde había CINCO roles inventados: cuatro
+       `dato` y un `dato-de-apoyo`, publicados. Medido: 40 fuentes sin vigilar
+       de 1.247.
+
+       La causa es siempre la misma y por eso la regla quedó escrita en
+       CLAUDE.md: la guarda nombraba las CLAVES que existían el día que se
+       escribió. Ahora recorre el registro entero y recoge POR FORMA —todo
+       objeto con `n` y `u`, que es lo que hace a una fuente una fuente—, así
+       que un bloque nuevo entra sin que su autor se acuerde (v867). */
+    const malRolSerie = [], bloques = new Set();
+    let conRolSerie = 0, totalFuentes = 0;
+    const recogeFuentes = (o, ruta, quien) => {
+      if (o === null || typeof o !== 'object') return;
+      if (Array.isArray(o)) { o.forEach((x) => recogeFuentes(x, ruta, quien)); return; }
+      if (typeof o.n === 'string' && typeof o.u === 'string') {
+        totalFuentes++;
+        const r = String(o.rol || '').trim();
+        if (!r) return;
+        if (ruta.indexOf('entradas') !== 0) { conRolSerie++; bloques.add(ruta); }
+        if (ROLES_FUENTE.indexOf(r) < 0) malRolSerie.push(quien + '/' + ruta + ' rol «' + r + '»');
+        return;
+      }
+      Object.keys(o).forEach((k) => recogeFuentes(o[k], ruta ? ruta + '.' + k : k, quien));
+    };
     REGISTROS.forEach((ruta) => {
-      const d = JSON.parse(leer(ruta));
-      const quien = ruta.split('-').pop().replace('.json', '');
-      Object.keys(d.indicadores || {}).forEach((k) => {
-        const fs = ((d.indicadores[k] || {}).fuentes) || [];
-        fs.forEach((f) => {
-          const r = String(f.rol || '').trim();
-          if (!r) return;
-          conRolSerie++;
-          if (ROLES_FUENTE.indexOf(r) < 0) malRolSerie.push(quien + '/' + k + ' rol «' + r + '»');
-        });
-      });
+      recogeFuentes(JSON.parse(leer(ruta)), '', ruta.split('-').pop().replace('.json', ''));
     });
-    comprobar('MATERIAL · las series de indicadores declaran el rol de sus fuentes',
-      conRolSerie > 0, conRolSerie + ' fuentes de serie con rol declarado');
-    comprobar('y ningún rol de una fuente de SERIE sale de la lista conocida',
+    comprobar('MATERIAL · hay fuentes con rol FUERA de las entradas, que es lo que esta guarda añade',
+      conRolSerie > 0,
+      conRolSerie + ' fuentes con rol en ' + bloques.size + ' bloques que no son `entradas`: ' +
+        [...bloques].sort().join(', '));
+    comprobar('ninguna fuente del registro, viva donde viva, declara un rol fuera de la lista',
       malRolSerie.length === 0,
-      malRolSerie.length ? malRolSerie.join(' · ') + ' — el vocabulario es el mismo para una ' +
-        'entrada y para una serie, y un rol inventado se pinta sin etiqueta'
-        : 'las ' + conRolSerie + ' caen en ' + ROLES_FUENTE.join(' | '));
+      malRolSerie.length ? malRolSerie.join(' · ') + ' — el vocabulario es el mismo donde sea que ' +
+        'la fuente viva, y un rol inventado se pinta sin etiqueta'
+        : 'las ' + totalFuentes + ' fuentes de los dos registros, recogidas POR FORMA y no por nombre ' +
+          'de clave, caen en ' + ROLES_FUENTE.join(' | '));
 
     comprobar('MATERIAL · hay entradas que declaran el rol de sus fuentes',
       conRol > 0, conRol + ' entradas con rol declarado en sus fuentes');
