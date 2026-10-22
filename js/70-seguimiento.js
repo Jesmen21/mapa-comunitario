@@ -651,6 +651,7 @@
       cont.appendChild(d);
     });
 
+    pintarTituloPortada();
     pintarPlacaPortada();
     pintarEscalaVeredicto();
     bloqueDeGraficos(vaciar($('sp-portada-graf')));
@@ -6667,6 +6668,53 @@
      peldaño nuevo aparece solo (v1091). Si el veredicto no publica nivel,
      la escala lo dice en vez de desaparecer: ausente se lee igual que si
      nunca hubiera existido (v1064). */
+  /* ── DE QUIÉN ES EL SEGUIMIENTO ─────────────────────────────────────────
+     El h1 decía «Seguimiento Presidencial» y nada más: desde la portada no
+     se sabía sobre quién. En un módulo cuyo objeto es el juicio público
+     sobre una persona con nombre, eso no es una omisión de estilo — es la
+     pregunta que la pantalla existe para contestar.
+
+     El nombre, el cargo y el período salen del REGISTRO y no del HTML: son
+     tres hechos sobre una persona real, y un hecho tecleado dentro de una
+     plantilla envejece sin que nadie lo note (v903). El día que cambie el
+     gobierno, el título cambia solo.
+
+     El h1 del HTML se queda con la parte que no depende de nadie —«Seguimiento
+     presidencial»— y es el respaldo si el módulo no llega a pintar: una
+     página sin encabezado es un defecto de accesibilidad, así que el nombre
+     se AÑADE y no reemplaza al encabezado entero. */
+  function nombreDelGobernante(reg) { return ((reg || D) || {}).presidente || ''; }
+
+  /* «Veredicto sobre Fulano» cuando hay nombre, y «Veredicto» a secas cuando
+     no: las DOS redacciones escritas (v970), porque un registro sin nombre
+     no puede inventarse uno y tampoco debe imprimir «Veredicto sobre ». */
+  function sobreQuien(frase) {
+    var nom = nombreDelGobernante(D);
+    return nom ? frase + ' sobre ' + nom : frase;
+  }
+
+  function pintarTituloPortada() {
+    var h = $('sp-h1'); if (!h) return;
+    var nom = nombreDelGobernante(D);
+    if (!nom) return;                      // sin nombre, se queda el genérico
+    h.textContent = 'Seguimiento presidencial · ' + nom;
+
+    /* El subtítulo se REHACE en cada pintada y no se acumula: sin esto, dos
+       pasadas por la portada dejarían dos subtítulos. */
+    var viejo = document.querySelector('.sp-h1-sub');
+    if (viejo && viejo.parentNode) viejo.parentNode.removeChild(viejo);
+    var cargo = D.cargo || '';
+    /* El guion del período se escribe en el registro con espacios —«2026 –
+       2030»— y acá va pegado, que es como se lee un rango dentro de una
+       frase. Es una decisión de composición sobre el MISMO dato, no una
+       segunda copia de él. */
+    var per = String(D.periodo || '').replace(/\s*–\s*/, '–');
+    var txt = cargo && per ? cargo + ', ' + per : (cargo || per);
+    if (!txt) return;
+    var sub = el('p', 'sp-h1-sub', txt);
+    if (h.parentNode) h.parentNode.insertBefore(sub, h.nextSibling);
+  }
+
   function pintarEscalaVeredicto() {
     var host = $('sp-veredicto-escala'); if (!host) return;
     vaciar(host);
@@ -6689,7 +6737,7 @@
     if (i < 0) {
       /* LAS DOS REDACCIONES, y esta es la de cero (v970): el día que el
          veredicto no publique nivel, la escala lo DICE. */
-      cap.appendChild(el('b', null, 'El veredicto no publica peldaño todavía'));
+      cap.appendChild(el('b', null, sobreQuien('El veredicto') + ' no publica peldaño todavía'));
       fig.appendChild(cap);
       fig.appendChild(el('p', 'sp-vesc-sin',
         'La escala se dibuja cuando alguno de los ejes de realidad publica nivel.'));
@@ -6699,7 +6747,15 @@
 
     var esPiso = !hayDictamen(vg);
     var nom = ESCALERA[i].t;
-    cap.appendChild(el('b', null, esPiso ? 'No puede ser mejor que «' + nom + '»' : 'Dictamen: «' + nom + '»'));
+    /* EL NOMBRE SE ANTEPONE Y LA REDACCIÓN DEL PISO NO SE TOCA. Decir
+       «Abelardo de la Espriella es poco fiable» sería convertir un TOPE en un
+       dictamen sobre una persona real, que es exactamente lo que este módulo
+       lleva cuarenta versiones evitando: un piso promete una sola cosa —que
+       el dictamen final no quedará por encima de ese peldaño— y «es» promete
+       otra. Así que el nombre entra como complemento del veredicto, nunca
+       como sujeto de un predicado. */
+    cap.appendChild(el('b', null, sobreQuien('Veredicto') + ': ' +
+      (esPiso ? 'no puede ser mejor que «' + nom + '»' : 'dictamen «' + nom + '»')));
     fig.appendChild(cap);
 
     /* <ul> y no <ol>: los peldaños no son pasos que se recorran en orden,
@@ -6708,7 +6764,18 @@
     var esc = el('ul', 'sp-vesc-esc');
     ESCALERA.forEach(function (p, k) {
       var est = k < i ? 'fuera' : (k === i ? 'tope' : 'posible');
-      var li = el('li', 'sp-vesc-p sp-vesc-' + est + (k === i ? ' sp-niv-' + (k + 1) : ''));
+      /* EL COLOR DE FIABILIDAD VA EN TODOS LOS PELDAÑOS, no solo en el tope,
+         y sale de la POSICIÓN en la escala —`k`— y nunca de un peldaño fijo:
+         si el tope se mueve, el color pleno y el latido se mueven con él sin
+         que nadie toque nada. Antes solo el tope llevaba clase de color, con
+         la escala monocroma `sp-niv-N`; esa escala se queda donde estaba —la
+         ficha la usa— y la del veredicto pasa a la paleta de fiabilidad, que
+         es lo que el lector pidió para que el ojo lo sienta.
+
+         Lo que NO cambia es que el color no lleva el significado solo: cada
+         peldaño sigue escribiendo su estado al lado —EL TOPE, DESCARTADO,
+         POSIBLE— y el tachado sigue marcando lo descartado. */
+      var li = el('li', 'sp-vesc-p sp-vesc-' + est + ' sp-vesc-c' + (k + 1));
       li.appendChild(el('span', 'sp-vesc-n', p.t));
       li.appendChild(el('span', 'sp-vesc-e',
         est === 'fuera' ? 'descartado' : est === 'tope' ? 'el tope' : 'posible'));
@@ -8612,6 +8679,15 @@
     svg.appendChild(svgEl('path', { d: dLine, fill: 'none', stroke: col, 'stroke-width': 2,
       'stroke-linejoin': 'round', 'stroke-linecap': 'round' }));
 
+    /* Las etiquetas del eje se deciden ANTES del bucle, porque la decisión
+       de cada una depende de sus vecinas: dentro del bucle solo se puede
+       mirar hacia atrás, y la última manda sobre la penúltima. */
+    var rotuloDe = function (p) { return fechaCorta(p.f).replace(' 2026', ''); };
+    var anclaDe = function (i) { return i === 0 ? 'start' : (i === pts.length - 1 ? 'end' : 'middle'); };
+    var verRotulo = etiquetasQueCaben(pts.map(function (p, i) {
+      return cajaDeRotulo(X(i), rotuloDe(p), anclaDe(i));
+    }));
+
     pts.forEach(function (p, i) {
       // La posesión se marca con una guía vertical: es el punto de referencia
       // de todo el módulo.
@@ -8627,11 +8703,12 @@
       /* El tamaño sale de la misma escala tipográfica que el resto de los
          gráficos y no de un número escrito acá: dos tamaños para el texto de
          un gráfico se separan a la tanda siguiente. */
-      var t = svgEl('text', { x: X(i), y: H - mB + 15, 'text-anchor':
-        i === 0 ? 'start' : (ultimo ? 'end' : 'middle'), class: 'sp-g-pie-t',
-        'font-weight': '600' });
-      t.textContent = fechaCorta(p.f).replace(' 2026', '');
-      svg.appendChild(t);
+      if (verRotulo[i]) {
+        var t = svgEl('text', { x: X(i), y: H - mB + 15, 'text-anchor': anclaDe(i),
+          class: 'sp-g-pie-t', 'font-weight': '600' });
+        t.textContent = rotuloDe(p);
+        svg.appendChild(t);
+      }
 
       if (i === 0 || ultimo || p.hito) {
         var v = svgEl('text', { x: X(i), y: Y(p.v) - 11, 'text-anchor':
@@ -9831,6 +9908,58 @@
      a la tanda siguiente (v879). */
   function bllns(v, fmt) { return '$' + (fmt || bn)(v) + ' ' + pl(v, 'billón', 'billones'); }
   function anchoRotulo(t) { return String(t).length * 7.4; }
+
+  /* ── QUÉ ETIQUETAS DE EJE CABEN, Y CUÁLES SE OMITEN ────────────────────
+     Llegó en captura de celular a 390 px: en el gráfico del dólar «5 ago» se
+     montaba sobre «7 ago» y «29 sep» sobre «30 sep». El dibujo ponía una
+     etiqueta por punto sin mirar si cabía, así que la densidad de la serie
+     decidía la legibilidad — y una fecha encima de otra no es una fecha
+     ilegible, son DOS fechas que no se pueden leer.
+
+     La regla, y va en UNA función para todos los gráficos de serie: se
+     conservan SIEMPRE la primera y la última —son los extremos del período y
+     sin ellas el eje no dice de cuándo a cuándo va—, y de las de en medio se
+     omite la que no quepa. Como la última es intocable, una penúltima que
+     choque con ella es la que cae, que es lo que el lector pidió.
+
+     Lo que NO se toca son los PUNTOS ni los números de valor: lo que sobra es
+     el rótulo, no el dato. Una serie con diez puntos y tres fechas sigue
+     dibujando sus diez puntos.
+
+     Se decide sobre CAJAS y no sobre distancias entre centros, porque el
+     ancla cambia el lado por el que crece el rótulo: el primero crece a la
+     derecha, el último a la izquierda y los de en medio a los dos lados. Con
+     distancias entre centros, el primero y el último parecerían caber
+     siempre. */
+  function cajaDeRotulo(x, texto, ancla) {
+    var w = anchoRotulo(texto);
+    if (ancla === 'start') return { a: x, z: x + w };
+    if (ancla === 'end') return { a: x - w, z: x };
+    return { a: x - w / 2, z: x + w / 2 };
+  }
+
+  function etiquetasQueCaben(cajas, margen) {
+    var n = (cajas || []).length;
+    var ver = [];
+    for (var k = 0; k < n; k++) ver.push(false);
+    if (!n) return ver;
+    ver[0] = true;
+    if (n === 1) return ver;
+    ver[n - 1] = true;
+    var m = margen == null ? 6 : margen;
+    /* Se recorre de izquierda a derecha llevando el borde derecho de la
+       última PUESTA, y se exige además no invadir a la última, que ya está
+       puesta y no se mueve. */
+    var topeIzqUltima = cajas[n - 1].a;
+    var derPuesta = cajas[0].z;
+    for (var i = 1; i < n - 1; i++) {
+      if (cajas[i].a >= derPuesta + m && cajas[i].z + m <= topeIzqUltima) {
+        ver[i] = true;
+        derPuesta = cajas[i].z;
+      }
+    }
+    return ver;
+  }
 
   /* ── El ancho del dibujo se MIDE, no se fija (v990) ──────────────────────
      Un texto dentro de un SVG con `viewBox` se escala con el dibujo. Con 720

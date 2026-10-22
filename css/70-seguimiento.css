@@ -831,6 +831,16 @@ a.sp-fuente:hover svg{ color:var(--verde-hi); }
    El ámbar puro no alcanza para texto (2,3:1 sobre marfil), así que la letra
    va en el ámbar oscurecido —#8A5D12, 6,4:1 sobre blanco— y el ámbar claro
    se queda en la raya, que es decoración y no texto. */
+/* ── El subtítulo del h1 de la portada (v1144) ────────────────────────────
+   Dice el cargo y el período de quien se vigila. Va pegado al h1 y en el gris
+   secundario: es una aposición del título, no un segundo titular, y con el
+   mismo peso competiría con él. `text-wrap:balance` para que en teléfono no
+   parta «2026–2030» en dos renglones. */
+.sp-h1-sub{
+  margin:2px 0 0; font-size:var(--t-7); font-weight:500; color:var(--ink-2);
+  line-height:1.35; text-wrap:balance;
+}
+
 .sp-graf-sal{
   margin:10px 0 0; padding:8px 0 8px 12px;
   border-left:3px solid var(--ambar);
@@ -2810,6 +2820,20 @@ a.sp-fuente:hover svg{ color:var(--verde-hi); }
   --sp-n4:#546B82; --sp-n4-tx:#FFFFFF;
   --sp-n5:#2E4257; --sp-n5-tx:#FFFFFF;
 
+  /* LA PALETA DE FIABILIDAD de la escala del veredicto (v1144). Tres tokens
+     por peldaño porque son tres decisiones distintas: el PLENO, la tinta que
+     se lee sobre él, y el TENUE del descartado. La tinta del tenue es una
+     sola para los cinco —`--sp-fi-te-tx`— porque los cinco tenues son tintes
+     claros del mismo valor. Van acá, en `:root`, y no sueltos dentro de las
+     clases: es donde la guarda de contraste declara que mide, y un token
+     fuera de su sitio es un par que nadie comprueba. */
+  --sp-fi1:#2C6E8F; --sp-fi1-tx:#FFFFFF; --sp-fi1-te:#E8F0F5;
+  --sp-fi2:#2F6F62; --sp-fi2-tx:#FFFFFF; --sp-fi2-te:#E7F0EE;
+  --sp-fi3:#8A5D12; --sp-fi3-tx:#FFFFFF; --sp-fi3-te:#F6EFE2;
+  --sp-fi4:#8E2F2A; --sp-fi4-tx:#FFFFFF; --sp-fi4-te:#F3E6E5;
+  --sp-fi5:#A62B22; --sp-fi5-tx:#FFFFFF; --sp-fi5-te:#F6E4E2;
+  --sp-fi-te-tx:#152229;
+
   --marfil:var(--sp-s1); --sup:var(--sp-s2);
   --ink:var(--sp-tx); --ink-2:var(--sp-tx2);
   --linea:var(--sp-bd); --linea-2:var(--sp-bd2);
@@ -2924,24 +2948,88 @@ body{ background:var(--sp-s1); color:var(--sp-tx); }
    Y NO LLEVA NUMERACIÓN: es un `<ul>`, porque los peldaños no son pasos que
    se recorran en orden sino una escala, y el «1. 2. 3.» del navegador decía
    lo contrario. */
-.sp-vesc{ margin:0 0 26px; }
+/* El margen de arriba lo puso la v1144: con el subtítulo nuevo pegado al h1,
+   «Presidente de Colombia, 2026–2030» y «Veredicto sobre…» quedaban a dos
+   píxeles y se leían como un solo bloque —el cargo parecía parte de la frase
+   del veredicto—. Lo vio el papel, no el código. */
+.sp-vesc{ margin:18px 0 26px; }
 .sp-vesc-cap{ font-size:var(--t-7); font-weight:700; color:var(--ink); margin:0 0 10px; }
 .sp-vesc-esc{ list-style:none; margin:0 0 10px; padding:0; display:grid; gap:5px; }
 .sp-vesc-p{
   display:flex; align-items:baseline; justify-content:space-between; gap:10px;
   padding:9px 13px; border-radius:var(--r-s); border:1px solid var(--linea);
 }
-/* El fondo va en los DOS estados que no son el tope, y no en `.sp-vesc-p`:
-   el tope se pinta con la escala secuencial `sp-niv-N`, que se declara antes
-   en este archivo, y un fondo genérico más abajo se la comería. */
-.sp-vesc-fuera, .sp-vesc-posible{ background:var(--linea-2); }
+/* ── LA PALETA DE FIABILIDAD DE LA ESCALA (v1144) ──────────────────────────
+   Pedida para que el ojo lo sienta: celeste, verde azulado, ámbar apagado y
+   dos rojos sangre. Va en TOKENS y no suelta, y los tokens son tres por
+   peldaño porque son tres decisiones distintas: el color PLENO, la tinta que
+   se lee encima de él, y el TENUE del descartado.
+
+   Dentro de «Papel»: desaturados y oscuros, nada de rojo señal. Los cinco
+   plenos se miden contra el blanco y los cinco tenues contra la tinta, y
+   ninguno baja de 4,5:1 —el más flojo es el celeste, 5,62—.
+
+   Y UNA DECISIÓN QUE CONVIENE DECIR: el descartado NO lleva `opacity`. La
+   llevaba, y rebajaba también la letra; con el tenue medido la tinta plena
+   da 13,2:1 y con la apagada daba 4,47 en el peldaño 5, por debajo del
+   umbral. Lo que marca que está descartado no es que se vea mal: es el
+   tachado, la etiqueta DESCARTADO y el tinte pálido. El color no lleva el
+   significado solo en ninguno de los cinco. */
+.sp-vesc-c1{ --fi:var(--sp-fi1); --fi-tx:var(--sp-fi1-tx); --fi-te:var(--sp-fi1-te); --fi-halo:rgba(44,110,143,.42); }
+.sp-vesc-c2{ --fi:var(--sp-fi2); --fi-tx:var(--sp-fi2-tx); --fi-te:var(--sp-fi2-te); --fi-halo:rgba(47,111,98,.42); }
+.sp-vesc-c3{ --fi:var(--sp-fi3); --fi-tx:var(--sp-fi3-tx); --fi-te:var(--sp-fi3-te); --fi-halo:rgba(138,93,18,.42); }
+.sp-vesc-c4{ --fi:var(--sp-fi4); --fi-tx:var(--sp-fi4-tx); --fi-te:var(--sp-fi4-te); --fi-halo:rgba(142,47,42,.46); }
+.sp-vesc-c5{ --fi:var(--sp-fi5); --fi-tx:var(--sp-fi5-tx); --fi-te:var(--sp-fi5-te); --fi-halo:rgba(166,43,34,.46); }
+
+/* El DESCARTADO: su color, pero tenue, y con el tachado de siempre. */
+.sp-vesc-fuera{ background:var(--fi-te); color:var(--sp-fi-te-tx); border-color:var(--fi-te); }
+.sp-vesc-fuera .sp-vesc-e{ color:var(--ink-2); }
+.sp-vesc-fuera .sp-vesc-n{ text-decoration:line-through; }
+
+/* El POSIBLE: color pleno. Sigue en juego, así que no se apaga. Hoy el único
+   posible es «Nada fiable» y el lector lo pidió en rojo encendido; la regla
+   se escribe por ESTADO y no para ese peldaño, de modo que si el tope sube,
+   los que queden debajo se encienden solos. */
+.sp-vesc-posible{ background:var(--fi); color:var(--fi-tx); border-color:var(--fi); }
+.sp-vesc-posible .sp-vesc-e{ color:inherit; opacity:.92; }
+
 .sp-vesc-n{ font-size:var(--t-8); font-weight:600; }
 .sp-vesc-e{ font-size:var(--t-9); text-transform:uppercase; letter-spacing:.08em; color:var(--ink-2); }
-.sp-vesc-fuera{ opacity:.6; }
-.sp-vesc-fuera .sp-vesc-n{ text-decoration:line-through; }
-.sp-vesc-tope{ border:2px solid var(--ink); }
+
+/* ── EL TOPE: color pleno y LATIDO ─────────────────────────────────────────
+   Un halo que crece y se apaga, 2,5 s, ease-in-out, infinito. Es un LATIDO y
+   no un parpadeo, y la diferencia es medible: 1/2,5 = 0,4 ciclos por segundo,
+   muy por debajo de los 3 destellos por segundo que la norma pone como
+   techo para no provocar una crisis fotosensible. Nada de `opacity` ni de
+   cambios de color: lo único que se mueve es la sombra, que no altera la
+   legibilidad del texto en ningún fotograma.
+
+   Y LATE SOLO EL TOPE, que es lo que separa esta pantalla de un adorno: el
+   módulo publica un PISO, no un dictamen, así que lo que se señala es el
+   borde superior de lo que el método prueba. Si «Nada fiable» latiera por
+   estar todavía posible, la pantalla estaría diciendo más de lo que el
+   registro sostiene. */
+@keyframes sp-latido{
+  0%   { box-shadow:0 0 0 0 var(--fi-halo); }
+  70%  { box-shadow:0 0 0 13px rgba(0,0,0,0); }
+  100% { box-shadow:0 0 0 0 rgba(0,0,0,0); }
+}
+.sp-vesc-tope{
+  background:var(--fi); color:var(--fi-tx);
+  border:2px solid var(--ink);
+  animation:sp-latido 2.5s ease-in-out infinite;
+}
 .sp-vesc-tope .sp-vesc-n{ font-weight:700; }
 .sp-vesc-tope .sp-vesc-e{ color:inherit; font-weight:700; opacity:.9; }
+
+/* Quien pidió menos movimiento no lo recibe. El tope NO pierde nada por eso:
+   conserva su color pleno y gana borde, que es el mismo dato dicho sin
+   animación. Una pantalla que solo distinguiera el tope por el latido se
+   quedaría sin decirlo acá, y eso sería que el movimiento lleva el
+   significado solo. */
+@media (prefers-reduced-motion: reduce){
+  .sp-vesc-tope{ animation:none; box-shadow:none; border-width:3px; }
+}
 .sp-vesc-sin{ font-size:var(--t-8); color:var(--ink-2); }
 
 @media (min-width: 768px){

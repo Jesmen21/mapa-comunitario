@@ -3,7 +3,18 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>Seguimiento Presidencial</title>
+<!-- EL NOMBRE VA ESCRITO ACÁ, Y ES LA ÚNICA EXCEPCIÓN A «sale del registro».
+     La razón es de mecánica y no de criterio: WhatsApp, Telegram, Slack y X
+     NO ejecutan JavaScript —traen el HTML suelto y leen estas etiquetas—, así
+     que un og:title pintado por js/70 saldría vacío en la tarjeta justo donde
+     más se comparte el módulo. El <title> acompaña por lo mismo: es el
+     respaldo que esos rastreadores usan cuando falta og:title.
+     Lo que impide que esta copia se separe del registro es una guarda:
+     `revisar.js` comprueba que el nombre de estas tres etiquetas sea EL MISMO
+     que `presidente` en el registro. Son dos codificaciones de un hecho
+     (clase B) y van atadas, no derivadas, porque derivarlas es justo lo que
+     el rastreador no puede hacer. -->
+<title>Seguimiento presidencial · Abelardo de la Espriella · URBIS</title>
 <!-- La tarjeta del enlace (v1136). WhatsApp, Telegram, Slack y X la arman con
      estas etiquetas: sin og:image no sale miniatura, y sin og:description se
      muestra el <title> solo. Las URL van ABSOLUTAS porque quien lee la tarjeta
@@ -15,7 +26,7 @@
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="URBIS">
 <meta property="og:locale" content="es_CO">
-<meta property="og:title" content="Seguimiento Presidencial · URBIS">
+<meta property="og:title" content="Seguimiento presidencial · Abelardo de la Espriella · URBIS">
 <meta property="og:description" content="Registro público de actos del Gobierno de Abelardo de la Espriella, cada uno con su fecha, su fuente y su estado procesal. El veredicto no se escribe: se calcula sobre el registro.">
 <meta property="og:url" content="https://urbispro.city/seguimiento.html">
 <meta property="og:image" content="https://urbispro.city/assets/og/og-seguimiento.png">
@@ -23,14 +34,14 @@
 <meta property="og:image:height" content="630">
 <meta property="og:image:alt" content="Tarjeta de URBIS: el nombre del módulo y el peldaño que hoy publica la ficha, sobre el fondo marfil del sitio.">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="Seguimiento Presidencial · URBIS">
+<meta name="twitter:title" content="Seguimiento presidencial · Abelardo de la Espriella · URBIS">
 <meta name="twitter:description" content="Registro público de actos del Gobierno de Abelardo de la Espriella, cada uno con su fecha, su fuente y su estado procesal. El veredicto no se escribe: se calcula sobre el registro.">
 <meta name="twitter:image" content="https://urbispro.city/assets/og/og-seguimiento.png">
 <meta name="theme-color" content="#0B3D32">
 <meta name="description" content="Línea de tiempo documentada de las actuaciones, decisiones y posiciones del gobierno.">
 <link rel="manifest" href="manifest.json">
 <link rel="icon" href="assets/icons/icon-192.png">
-<link rel="stylesheet" href="css/70-seguimiento.css?v=1143-la-portada-grafica">
+<link rel="stylesheet" href="css/70-seguimiento.css?v=1144-de-quien-es-y-el-latido">
 </head>
 <body>
 
@@ -80,7 +91,7 @@
          de ninguna pestaña. Quitarla sin mudarla los dejaba huérfanos. -->
     <div class="sp-pes-host"></div>
 
-    <h1 id="sp-h1" class="sp-h1-portada">Seguimiento Presidencial</h1>
+    <h1 id="sp-h1" class="sp-h1-portada">Seguimiento presidencial</h1>
 
     <div id="sp-veredicto-escala"></div>
     <div id="sp-portada-graf"></div>
@@ -383,6 +394,6 @@
      «Fuentes y método» (v1140), con enlace propio. El botón de información
      de la barra lleva allá. -->
 
-<script src="js/70-seguimiento.js?v=1143-la-portada-grafica"></script>
+<script src="js/70-seguimiento.js?v=1144-de-quien-es-y-el-latido"></script>
 </body>
 </html>

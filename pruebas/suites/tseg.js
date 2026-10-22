@@ -390,16 +390,23 @@ const server = http.createServer((req, res) => {
         .filter(n => !/sp-graficas|sp-heroe|sp-graf-falta-t/.test(n.className)).length : 0,
       grafRecuento: graf ? graf.querySelectorAll(':scope > .sp-graf-falta-t').length : 0,
       grafSellos: graf ? graf.querySelectorAll('.sp-graf .sp-sello').length : 0,
-      grafRecuentoTxt: graf ? ((graf.querySelector(':scope > .sp-graf-falta-t') || {}).textContent || '') : ''
+      grafRecuentoTxt: graf ? ((graf.querySelector(':scope > .sp-graf-falta-t') || {}).textContent || '') : '',
+      subtitulo: home.querySelectorAll(':scope > .sp-h1-sub').length
     };
   });
   console.log('\n── La portada (v1143) ───────────────────────────');
   console.log('  hijos: ' + port.ids);
   console.log('  ' + port.grafTarjetas + ' gráficas · escala: ' + port.escCap);
 
-  chk(port.nHijos === 4,
-      'la portada tiene exactamente cuatro piezas: tira, título, escala y gráficos (' +
-      port.nHijos + ')');
+  /* CINCO desde la v1144, no cuatro: entró el SUBTÍTULO del h1, que dice el
+     cargo y el período de quien se vigila. Se sube el número y se nombra la
+     pieza nueva, que es lo contrario de aflojar: la aserción sigue
+     rechazando cualquier pieza que nadie haya declarado —el muro, la placa,
+     la rejilla de secciones—, y ahora también una SEXTA que aparezca sin
+     que alguien venga a declararla acá. */
+  chk(port.nHijos === 5 && port.subtitulo === 1,
+      'la portada tiene exactamente cinco piezas: tira, título, subtítulo, escala y gráficos (' +
+      port.nHijos + ' · ' + port.subtitulo + ' subtítulo)');
   chk(!port.placa && !port.muro && !port.irFicha && !port.stats && !port.nav,
       'y ninguna de las que la v1143 sacó: placa, muro, enlace a la ficha, cifras ni nav');
   chk(port.tira === 5 && port.tiraMarcada === 0,
@@ -409,7 +416,12 @@ const server = http.createServer((req, res) => {
   chk(port.escPeldanos === 5 && port.escTope === 1,
       'el veredicto sale como ESCALA, con sus cinco peldaños y uno marcado como tope (' +
       port.escPeldanos + ' · ' + port.escTope + ')');
-  chk(/No puede ser mejor que|Dictamen/.test(port.escCap),
+  /* SIN distinguir mayúsculas desde la v1144: la frase pasó a llevar el
+     nombre delante —«Veredicto sobre Fulano: no puede ser mejor que…»— y la
+     inicial del peldaño quedó dentro de la oración. Lo que la aserción mide
+     no cambia: que la escala DIGA cuál de los dos estados publica, que es la
+     distinción de la v876. */
+  chk(/no puede ser mejor que|dictamen/i.test(port.escCap),
       'y la escala dice si es un piso o un dictamen, que no son lo mismo (' + port.escCap + ')');
   chk(port.grafTarjetas >= 12,
       'el bloque trae TODO lo que el registro puede graficar, no una muestra (' +
@@ -427,6 +439,191 @@ const server = http.createServer((req, res) => {
   chk(/^\s*\d+ gráficos? lleva/.test(port.grafRecuentoTxt),
       'y el recuento abre con la cifra, no con la explicación (' +
       port.grafRecuentoTxt.slice(0, 48) + '…)');
+
+  /* ── v1144 · DE QUIÉN ES EL SEGUIMIENTO ───────────────────────────────
+     El h1 decía «Seguimiento Presidencial» y nada más. El nombre, el cargo y
+     el período salen del REGISTRO, así que la aserción los compara contra el
+     registro y no contra un literal: con el nombre escrito acá, el día que
+     cambie el gobierno la suite diría que está mal justo cuando está bien. */
+  const tit = await pg.evaluate(() => ({
+    h1: (document.getElementById('sp-h1') || {}).textContent || '',
+    sub: (document.querySelector('.sp-h1-sub') || {}).textContent || '',
+    subs: document.querySelectorAll('.sp-h1-sub').length,
+    cap: (document.querySelector('#sp-veredicto-escala .sp-vesc-cap') || {}).textContent || '',
+    doc: document.title,
+    og: (document.querySelector('meta[property="og:title"]') || {}).content || '',
+    tw: (document.querySelector('meta[name="twitter:title"]') || {}).content || ''
+  }));
+  const nom = d.presidente, cargo = d.cargo, per = String(d.periodo || '').replace(/\s*–\s*/, '–');
+  console.log('\n── El título (v1144) ────────────────────────────');
+  console.log('  ' + tit.h1 + '\n  ' + tit.sub + '\n  ' + tit.cap);
+
+  chk(!!nom && tit.h1.includes(nom) && /Seguimiento presidencial/i.test(tit.h1),
+      'el h1 dice de quién es el seguimiento (' + tit.h1 + ')');
+  chk(!!cargo && tit.sub.includes(cargo) && !!per && tit.sub.includes(per) && tit.subs === 1,
+      'y el subtítulo trae el cargo y el período del registro, una sola vez (' +
+      tit.sub + ' · ' + tit.subs + ')');
+  chk(tit.cap.includes(nom), 'la escala dice sobre quién es el veredicto (' + tit.cap + ')');
+  /* LA REDACCIÓN DE PISO NO SE TOCA, y es la aserción que más importa de las
+     cinco: un piso promete que el dictamen no quedará POR ENCIMA de ese
+     peldaño, y «X es poco fiable» promete otra cosa sobre una persona real.
+     Se comprueba que mientras no haya dictamen la frase diga «no puede ser
+     mejor que» y NUNCA el nombre seguido de «es». */
+  /* EL NOMBRE DE LA ASERCIÓN NO CAMBIA CON LA RAMA, y esto lo arregló una
+     inyección que salió VERDE: la primera versión tenía dos mensajes
+     distintos —uno por rama— y al inyectar «Fulano es «Poco fiable»» el
+     mensaje cambió de texto, así que el arnés no encontró la línea y lo leyó
+     como aprobado. Es «una salida vacía no es una salida buena» entrando por
+     el NOMBRE de la comprobación en vez de por su resultado. El nombre se
+     queda fijo y la rama se dice en el detalle (v973, v1051). */
+  const esPiso = /no puede ser mejor que/i.test(tit.cap);
+  const hayDictamen = /dictamen/i.test(tit.cap);
+  const comoSujeto = new RegExp(nom.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '\\s+(es|era|resulta)\\b', 'i')
+    .test(tit.cap);
+  chk((esPiso || hayDictamen) && !comoSujeto,
+      'el veredicto se publica como PISO o como DICTAMEN, nunca como predicado sobre la persona (' +
+      (comoSujeto ? 'DICE «' + nom + ' es …»: convierte un tope en un juicio'
+        : esPiso ? 'piso: «no puede ser mejor que»'
+        : hayDictamen ? 'dictamen, nombrado como tal'
+        : 'no dice ninguna de las dos cosas') + ')');
+  chk(tit.doc.includes(nom) && tit.og.includes(nom) && tit.tw.includes(nom),
+      'y el nombre llega a la pestaña del navegador y a la tarjeta del enlace (' +
+      tit.doc.slice(0, 40) + '…)');
+
+  /* ── v1144 · EL COLOR Y EL LATIDO DE LA ESCALA ────────────────────────
+     Tres cosas que se pueden romper por separado, y la tercera es la que de
+     verdad importa: que LATA SOLO EL TOPE. El módulo publica un PISO —el
+     borde superior de lo que el método prueba— y si «Nada fiable» latiera
+     por estar todavía posible, la pantalla estaría afirmando más de lo que
+     el registro sostiene. Es el mismo criterio que la frase de arriba. */
+  const anim = await pg.evaluate(() => {
+    const vivos = [];
+    document.querySelectorAll('.sp-view.on *').forEach(n => {
+      const cs = getComputedStyle(n);
+      if (cs.animationName && cs.animationName !== 'none') {
+        const dur = parseFloat(cs.animationDuration) || 0;
+        vivos.push({ cls: String(n.className), dur, nombre: cs.animationName,
+                     hz: dur > 0 ? 1 / dur : Infinity,
+                     timing: cs.animationTimingFunction, iter: cs.animationIterationCount });
+      }
+    });
+    const p = [...document.querySelectorAll('.sp-vesc-p')].map(n => ({
+      est: n.classList.contains('sp-vesc-tope') ? 'tope'
+         : n.classList.contains('sp-vesc-fuera') ? 'fuera' : 'posible',
+      color: n.className.match(/sp-vesc-c(\d)/) ? +n.className.match(/sp-vesc-c(\d)/)[1] : 0,
+      bg: getComputedStyle(n).backgroundColor,
+      etiqueta: ((n.querySelector('.sp-vesc-e') || {}).textContent || '').trim(),
+      tachado: /line-through/.test(getComputedStyle(n.querySelector('.sp-vesc-n')).textDecorationLine),
+      anim: getComputedStyle(n).animationName
+    }));
+    return { vivos, p, borde: (() => { const t = document.querySelector('.sp-vesc-tope');
+      return t ? getComputedStyle(t).borderTopWidth : ''; })() };
+  });
+  const topes = anim.p.filter(x => x.est === 'tope');
+  const late = anim.p.filter(x => x.anim !== 'none');
+  console.log('\n── La escala: color y latido (v1144) ────────────');
+  anim.p.forEach(x => console.log('  ' + String(x.color) + ' ' + x.est.padEnd(8) + x.bg.padEnd(22) +
+    x.etiqueta.padEnd(12) + 'anim=' + x.anim));
+
+  chk(anim.p.length === 5 && anim.p.every(x => x.color >= 1 && x.color <= 5) &&
+      new Set(anim.p.map(x => x.color)).size === 5,
+      'los cinco peldaños llevan su color de fiabilidad, uno distinto cada uno (' +
+      anim.p.map(x => x.color).join(',') + ')');
+  chk(topes.length === 1 && late.length === 1 && late[0].est === 'tope',
+      'y LATE SOLO EL TOPE: ni los descartados ni el que sigue posible (' +
+      late.length + ' con animación · ' + (late[0] ? late[0].est : '—') + ')');
+  /* El TECHO DE DESTELLOS. Se mide sobre TODA la vista y no solo sobre la
+     escala: una animación rápida en cualquier otro sitio es el mismo riesgo
+     para quien tiene fotosensibilidad. */
+  const rapidas = anim.vivos.filter(v => v.hz > 3);
+  chk(rapidas.length === 0 && anim.vivos.length >= 1,
+      !anim.vivos.length ? 'MATERIAL · no hay ninguna animación que medir'
+        : 'y ninguna animación de la vista pasa de 3 ciclos por segundo (' +
+          anim.vivos.map(v => v.nombre + ' ' + v.dur + 's = ' + Math.round(v.hz * 100) / 100 + ' Hz').join(' · ') + ')');
+  /* EL COLOR NO LLEVA EL SIGNIFICADO SOLO: la etiqueta de estado se queda en
+     los cinco, y el tachado en los descartados. Sin esto, la paleta sería la
+     única portadora y la escala dejaría de leerse en blanco y negro. */
+  chk(anim.p.every(x => x.etiqueta.length > 3) &&
+      anim.p.filter(x => x.est === 'fuera').every(x => x.tachado),
+      'y el color no es el único portador: los cinco escriben su estado y los descartados van tachados (' +
+      anim.p.map(x => x.etiqueta).join(' · ') + ')');
+
+  /* QUIEN PIDIÓ MENOS MOVIMIENTO NO LO RECIBE, y el tope no pierde nada:
+     conserva su color y gana borde. */
+  await pg.emulateMedia({ reducedMotion: 'reduce' });
+  await pg.waitForTimeout(500);
+  const red = await pg.evaluate(() => {
+    let n = 0;
+    document.querySelectorAll('.sp-view.on *').forEach(x => {
+      const cs = getComputedStyle(x);
+      if (cs.animationName && cs.animationName !== 'none') n++;
+    });
+    const t = document.querySelector('.sp-vesc-tope');
+    return { n, borde: t ? parseFloat(getComputedStyle(t).borderTopWidth) : 0,
+             bg: t ? getComputedStyle(t).backgroundColor : '',
+             etiqueta: t ? ((t.querySelector('.sp-vesc-e') || {}).textContent || '').trim() : '' };
+  });
+  chk(red.n === 0 && red.borde >= 3 && red.bg === (topes[0] || {}).bg && red.etiqueta.length > 3,
+      'con prefers-reduced-motion no queda ninguna animación, y el tope conserva color y gana borde (' +
+      red.n + ' animaciones · borde ' + red.borde + 'px · ' + red.bg + ')');
+  await pg.emulateMedia({ reducedMotion: 'no-preference' });
+  await pg.waitForTimeout(400);
+
+  /* ── v1144 · NINGUNA ETIQUETA DE EJE SE MONTA SOBRE OTRA ───────────────
+     Llegó en captura de celular: «5 ago» sobre «7 ago» y «29 sep» sobre
+     «30 sep» en el gráfico del dólar. Se mide EN EL NAVEGADOR y a los DOS
+     anchos, porque el defecto depende del ancho: a 1440 no existía y a 390
+     sí, así que una suite que midiera uno solo lo habría dado por bueno.
+
+     Y se mide con `getBoundingClientRect`, no con el cálculo que usa el
+     módulo para decidir: si la aserción usara la misma estimación que la
+     función que arregla, estaría comprobando que la función coincide consigo
+     misma (v878). */
+  const solapesDe = async (ancho) => {
+    await pg.setViewportSize({ width: ancho, height: 1200 });
+    await pg.waitForTimeout(900);
+    await pg.evaluate(() => window.dispatchEvent(new Event('resize')));
+    await pg.waitForTimeout(1200);
+    return pg.evaluate(() => {
+      const malos = []; let nEt = 0, nLienzos = 0;
+      document.querySelectorAll('.sp-view.on .sp-graf').forEach(sec => {
+        const t = ((sec.querySelector('.sp-graf-h') || {}).textContent || '').slice(0, 30);
+        sec.querySelectorAll('svg').forEach(svg => {
+          const ets = [...svg.querySelectorAll('text.sp-g-pie-t[font-weight="600"]')]
+            .map(x => ({ txt: x.textContent, r: x.getBoundingClientRect() }))
+            .filter(x => x.r.width > 0);
+          if (ets.length < 2) return;
+          nLienzos++; nEt += ets.length;
+          const filas = {};
+          ets.forEach(x => { const k = Math.round(x.r.top); (filas[k] = filas[k] || []).push(x); });
+          Object.keys(filas).forEach(k => {
+            const f = filas[k].sort((a, z) => a.r.left - z.r.left);
+            for (let i = 1; i < f.length; i++) {
+              if (f[i].r.left < f[i - 1].r.right) {
+                malos.push(t + ' → «' + f[i - 1].txt + '» / «' + f[i].txt + '» ' +
+                  Math.round(f[i - 1].r.right - f[i].r.left) + ' px');
+              }
+            }
+          });
+        });
+      });
+      return { malos, nEt, nLienzos };
+    });
+  };
+  const anchoOriginal = pg.viewportSize();
+  for (const ancho of [390, 1440]) {
+    const s = await solapesDe(ancho);
+    /* MATERIAL primero (v920): sin etiquetas que mirar, la comprobación
+       pasaría por no tener nada delante. */
+    chk(s.nLienzos >= 2 && s.nEt >= 6,
+        'MATERIAL · a ' + ancho + ' px hay ejes con varias etiquetas que podrían montarse (' +
+        s.nLienzos + ' lienzos · ' + s.nEt + ' etiquetas)');
+    chk(s.malos.length === 0,
+        'y a ' + ancho + ' px ninguna etiqueta de eje se monta sobre otra (' +
+        (s.malos.length ? s.malos.slice(0, 3).join(' · ') : s.nEt + ' etiquetas, 0 solapes') + ')');
+  }
+  await pg.setViewportSize(anchoOriginal);
+  await pg.waitForTimeout(600);
 
   /* ── LO ÚLTIMO PUBLICADO, AHORA EN «HOY» ─────────────────────────────
      La capacidad es la misma que medía la portada hasta la v1142:

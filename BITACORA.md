@@ -29549,3 +29549,151 @@ dice lo que parece— con una forma que este archivo no tenía escrita:
   `pendiente`
 * **No publica nada a `main`.** Sigue en `29f33ce` (v1142) hasta el «súbalo».
   `pendiente`
+
+## v1144 · de quién es el seguimiento, el latido de la escala y las fechas que se montaban
+
+Tres encargos, los tres salidos de mirar la portada en un teléfono.
+
+### 1 · El título no decía de quién era
+
+El h1 decía «Seguimiento Presidencial» y nada más: desde la portada no se
+sabía sobre quién. En un módulo cuyo objeto es el juicio público sobre una
+persona con nombre, eso no es una omisión de estilo — es la pregunta que la
+pantalla existe para contestar.
+
+El nombre, el cargo y el período salen del REGISTRO. `cargo` es un campo
+nuevo —no existía: la ficha lo tenía tecleado en el código— y vive junto a
+`presidente` y `periodo`, que es donde está la identidad. El día que cambie
+el gobierno, el título cambia solo.
+
+**Y UNA EXCEPCIÓN QUE HAY QUE DECIR**: el `<title>`, `og:title` y
+`twitter:title` llevan el nombre ESCRITO en el HTML. La razón es de mecánica
+y no de criterio: WhatsApp, Telegram, Slack y X **no ejecutan JavaScript**
+—traen el HTML suelto y leen esas etiquetas—, así que un `og:title` pintado
+por js/70 saldría vacío en la tarjeta, que es justo donde más se comparte el
+módulo. Son dos codificaciones de un hecho (clase B) y no se pueden DERIVAR
+—derivarlas es precisamente lo que el rastreador no puede hacer—, así que se
+ATAN: una guarda comprueba que las tres citen el mismo nombre que el
+registro, y otra que el CARGO no esté tecleado en el HTML.
+
+**La redacción de PISO no se tocó, y es lo que más importa de esta tanda.**
+La placa dice «Veredicto sobre Abelardo de la Espriella: no puede ser mejor
+que "Poco fiable"». No dice «es». Un piso promete UNA cosa comprobable —que
+el dictamen final no quedará por encima de ese peldaño— y «X es poco fiable»
+promete otra sobre una persona real. El nombre entra como complemento del
+veredicto, nunca como sujeto de un predicado.
+
+### 2 · Las fechas del eje se montaban unas sobre otras
+
+Llegó en captura de celular: en el gráfico del dólar «5 ago» se montaba sobre
+«7 ago» y «29 sep» sobre «30 sep». El dibujo ponía una etiqueta por punto sin
+mirar si cabía, así que la densidad de la serie decidía la legibilidad — y
+una fecha encima de otra no es una fecha ilegible: son DOS fechas que no se
+pueden leer.
+
+La regla va en UNA función, `etiquetasQueCaben`, y no gráfico por gráfico: se
+conservan siempre la primera y la última —son los extremos del período, y sin
+ellas el eje no dice de cuándo a cuándo va—, y de las de en medio se omite la
+que no quepa; como la última es intocable, una penúltima que choque con ella
+es la que cae. **Los puntos y los números de valor no se tocan**: lo que
+sobra es el rótulo, no el dato.
+
+Se decide sobre CAJAS y no sobre distancias entre centros, porque el ancla
+cambia el lado por el que crece el rótulo: con distancias entre centros, el
+primero y el último parecerían caber siempre.
+
+**Medido en el navegador, contra la versión publicada:** a 390 px, 2 solapes
+—exactamente los dos de la captura— y después 0; a 1440 px había 0 antes y 0
+después, y no se omitió ninguna etiqueta (16 → 16). El defecto dependía del
+ancho, así que una guarda que midiera uno solo lo habría dado por bueno.
+
+### 3 · El color y el latido de la escala
+
+Pedida una paleta de fiabilidad para que el ojo lo sienta: celeste, verde
+azulado, ámbar apagado y dos rojos sangre. Va en TOKENS en `:root` y no
+suelta dentro de las clases — y eso no es orden por el orden: **es donde la
+guarda de contraste declara que mide**, y un token fuera de su sitio es un
+par que nadie comprueba.
+
+* **Descartados**: su color, tenue, con el tachado de siempre.
+* **El tope**: color pleno y **latido** —un halo que crece y se apaga, 2,5 s,
+  ease-in-out, infinito—.
+* **Posibles**: color pleno, sin latido.
+
+**LATE SOLO EL TOPE, y es una decisión de método y no de estética.** El
+módulo publica un PISO, no un dictamen, así que lo que se señala es el borde
+superior de lo que el método prueba. Si «Nada fiable» latiera por estar
+todavía posible, la pantalla estaría afirmando más de lo que el registro
+sostiene. Y todo sale de `pisoI`/`nivelI`: el color pleno y el latido se
+mueven con el tope si el tope se mueve, sin que nadie toque nada.
+
+**Es un latido y no un parpadeo, y la diferencia es medible**: 1/2,5 = **0,4
+ciclos por segundo**, muy por debajo de los 3 destellos por segundo que la
+norma pone como techo para no provocar una crisis fotosensible. Lo único que
+se mueve es la sombra: ningún fotograma altera la legibilidad del texto.
+
+**Accesibilidad, las cuatro medidas:**
+
+| | |
+|---|---|
+| `prefers-reduced-motion: reduce` | **0 animaciones** en la vista; el tope conserva su color y pasa de borde 2 px a 3 px |
+| El color nunca va solo | los cinco peldaños escriben su estado —EL TOPE, DESCARTADO, POSIBLE— y los descartados van tachados |
+| Contraste | **24 pares declarados** en la guarda `--paleta` (eran 14), ninguno bajo 4,5:1; y **407 pares reales** en el navegador a 390 y a 1440, mínimo **5,75:1** |
+| Techo de destellos | medido sobre TODA la vista, no solo sobre la escala |
+
+**Y una decisión que conviene decir: el descartado NO lleva `opacity`.** La
+llevaba, y rebajaba también la letra. Con el tenue medido, la tinta plena da
+13,2:1 y la apagada daba **4,47** en el peldaño 5 — por debajo del umbral. Lo
+que marca que un peldaño está descartado no es que se vea mal: es el tachado,
+la etiqueta y el tinte pálido. Lo cazó la guarda `--paleta` al inyectarle esa
+misma tinta.
+
+### Lo que encontró una INYECCIÓN QUE SALIÓ VERDE
+
+La más cara de la tanda, y es sobre el arnés y no sobre el código. La guarda
+del PISO —la que impide publicar «Fulano es "Poco fiable"»— se inyectó y
+salió **VERDE**. No lo estaba: la aserción tenía **dos mensajes distintos,
+uno por rama**, así que al inyectar el defecto el texto cambió, el `grep` del
+arnés no encontró la línea, y «no aparece» se leyó como «pasó».
+
+Es «una salida vacía no es una salida buena» entrando por el NOMBRE de la
+comprobación en vez de por su resultado, y en la guarda que protege la frase
+más delicada del módulo. Dos reglas:
+
+* **el nombre de una aserción no cambia con la rama** — la rama se dice en el
+  detalle (v973, v1051);
+* y **el arnés distingue TRES estados**: `ROJO`, `VERDE` y `AUSENTE` (v1090).
+  Con dos, una aserción que deja de imprimirse pasa por aprobada.
+
+Reescrita así, las dos inyecciones —publicar el piso como predicado, y no
+decir si es piso o dictamen— salen en rojo.
+
+### Lo medido
+
+| | v1143b | v1144 |
+|---|---|---|
+| Solapes de etiquetas a 390 px | 2 | **0** |
+| Solapes a 1440 px | 0 | **0** (16 etiquetas, ninguna omitida) |
+| Elementos con animación en la vista | 0 | **1**, el tope · 2,5 s · 0,4 Hz |
+| Con `prefers-reduced-motion` | — | **0 animaciones**, borde 3 px |
+| Pares de paleta declarados | 14 | **24**, ninguno bajo 4,5:1 |
+| Contraste real en el navegador | 407 pares, mín. 5,52 | **407 pares, mín. 5,75** |
+| `tseg` | 123/123 | **128/128** |
+| Inyecciones en rojo | — | **11** |
+
+### Lo que esta versión NO hace
+
+* **El rótulo de un HITO no tiene prioridad sobre los demás al decidir qué
+  etiqueta se omite.** Hoy, en el gráfico del dólar, la fecha de la posesión
+  —7 ago— es la que cae, y lo que queda en su lugar es la guía vertical a
+  trazos y su valor impreso, que siguen ahí. La regla que el lector escribió
+  no menciona los hitos y no se amplía sola: dársela sería escribir un
+  criterio nuevo el día que su resultado incomoda (v1121).
+  `pendiente`
+* **Los dos rojos del tope y del posible se parecen** —#8E2F2A y #A62B22—.
+  Se distinguen por el borde, el halo y la etiqueta, que es lo que la regla
+  del color pide; separarlos más sacaría el segundo de la gama «sangre» que
+  se pidió. Queda dicho por si se prefiere al verlo en otro teléfono.
+  `cerrado en v1144 · medido y declinado`
+* **No publica nada a `main`.** Sigue en `09697cd` (v1143b) hasta el «súbalo».
+  `pendiente`

@@ -1862,6 +1862,53 @@ console.log('\n  -- la ficha del gobernante --');
             ? 'el sello se imprime y ninguna regla lo pinta (v895)'
             : 'imprime «Falta evidencia» y la hoja tiene su regla');
 
+    /* ── v1144 · EL NOMBRE DEL HTML ATADO AL REGISTRO ─────────────────
+       El `<title>`, `og:title` y `twitter:title` llevan el nombre ESCRITO en
+       el HTML, y es la única excepción a «sale del registro». La razón es de
+       mecánica: WhatsApp, Telegram, Slack y X no ejecutan JavaScript —traen
+       el HTML suelto—, así que un og:title pintado por js/70 saldría vacío
+       en la tarjeta, que es justo donde más se comparte el módulo.
+
+       Son dos codificaciones de un hecho (clase B) y se separan el día que
+       cambie el gobierno: el h1 diría un nombre y la tarjeta de WhatsApp
+       otro, sin que nada falle. Como no se pueden DERIVAR —derivarlas es
+       precisamente lo que el rastreador no puede hacer—, se ATAN (v879). */
+    {
+      const html70 = leer('seguimiento.html');
+      const regTit = JSON.parse(leer('assets/data/seguimiento-presidencial.json'));
+      const nomReg = String(regTit.presidente || '');
+      const campos = [
+        ['el <title>', (html70.match(/<title>([^<]*)<\/title>/) || [])[1] || ''],
+        ['og:title', (html70.match(/property="og:title" content="([^"]*)"/) || [])[1] || ''],
+        ['twitter:title', (html70.match(/name="twitter:title" content="([^"]*)"/) || [])[1] || '']
+      ];
+      const sinNombre = campos.filter((c) => !nomReg || c[1].indexOf(nomReg) < 0);
+
+      comprobar('MATERIAL · el registro declara de quién es el seguimiento',
+        nomReg.length > 3,
+        nomReg ? 'el registro nombra a «' + nomReg + '»'
+               : 'el registro no trae `presidente`: no hay nombre que atar');
+
+      comprobar('y las tres etiquetas estáticas del HTML llevan EL MISMO nombre que el registro',
+        nomReg.length > 3 && sinNombre.length === 0,
+        !nomReg ? 'NO PUDO CORRER: el registro no trae `presidente`'
+          : sinNombre.length
+            ? sinNombre.length + ' no lo llevan: ' + sinNombre.map((c) => c[0]).join(' · ') +
+              ' — la tarjeta de WhatsApp diría un nombre y el h1 otro'
+            : 'las tres citan a «' + nomReg + '», igual que el registro');
+
+      /* Y el CARGO y el PERÍODO viven en el registro y NO en el HTML: si
+         alguien los teclea en la plantilla, vuelven a ser un hecho que
+         envejece sin que nadie lo note (v903). */
+      const cargoReg = String(regTit.cargo || '');
+      comprobar('y el cargo sale del registro, no del HTML',
+        cargoReg.length > 3 && html70.indexOf(cargoReg) < 0,
+        !cargoReg ? 'el registro no trae `cargo`: el subtítulo no tendría de dónde salir'
+          : html70.indexOf(cargoReg) >= 0
+            ? 'el cargo está TECLEADO en seguimiento.html: dos copias de un hecho que cambia con el gobierno'
+            : '«' + cargoReg + '» vive solo en el registro, y js/70 lo pinta');
+    }
+
     /* ── v1143b · LA LÍNEA VISIBLE DE SALVEDAD ────────────────────────
        La tarjeta pliega la descripción larga, la nota, la caja, la tabla y
        las fuentes, y deja visible UNA línea. Plegar está bien —`details` es
@@ -15358,6 +15405,16 @@ console.log('\n  -- el contraste de las paletas propuestas (v1138) --');
     };
     TINTAS.forEach((t) => FONDOS.forEach((b2) => par(t, b2)));
     for (let i = 1; i <= 5; i++) par('--sp-n' + i + '-tx', '--sp-n' + i);
+    /* La paleta de FIABILIDAD de la escala del veredicto (v1144), con sus
+       DOS estados: el pleno —que es el que pinta el tope y el que sigue
+       posible— y el tenue del descartado. Los dos se miden, porque los dos
+       llevan texto encima: medir solo el pleno dejaría el tenue sin
+       comprobar, y es justo el que la tanda estuvo a punto de publicar con
+       la tinta apagada a 4,47:1. */
+    for (let i = 1; i <= 5; i++) {
+      par('--sp-fi' + i + '-tx', '--sp-fi' + i);
+      par('--sp-fi-te-tx', '--sp-fi' + i + '-te');
+    }
   });
 
   comprobar('ningún par declarado de una paleta baja de 4,5:1',

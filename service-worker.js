@@ -1,4 +1,4 @@
-const URBIS_CACHE = 'urbis-v1143-la-portada-grafica';
+const URBIS_CACHE = 'urbis-v1144-de-quien-es-y-el-latido';
 const URBIS_ASSETS = [
   './',
   './index.html',
