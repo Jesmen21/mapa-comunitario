@@ -39,70 +39,10 @@
         }
       ],
       "_verificadoEn": "2026-10-22",
-      "_estadoSonda": "CONFIRMADO POR PRENSA, SIN DOCUMENTO",
+      "_estadoSonda": "RETENIDA · espera fuente de primer nivel (decisión de Daniel, 22 oct 2026)",
       "_loQueNoSePuedeAfirmar": "Que existan «contratos mineros confidenciales». Lo que está bajo reserva son los MEMORANDOS, que por su propia naturaleza no asignan contratos. Confundir las dos cosas sería afirmar un hecho que ninguna fuente sostiene.",
-      "_mismaFechaRevisada": "Revisada la única entrada del registro con fecha 9 de octubre de 2026: el decreto que moderniza el régimen de concesiones portuarias, presentado en Cartagena. No tiene relación con la reserva de los memorandos. El hecho es otro."
-    },
-    {
-      "fecha": "2026-09-24",
-      "precision": "exacta",
-      "categoria": "creditos",
-      "id": "banco-mundial-200-millones-adicionales-terremoto",
-      "titulo": "El Banco Mundial aprueba un financiamiento adicional de 200 millones de dólares para la respuesta al terremoto, sobre un préstamo Cat DDO ya desembolsado",
-      "detalle": "El 24 de septiembre de 2026 el Grupo Banco Mundial aprobó 200 millones de dólares adicionales para apoyar la respuesta de Colombia al terremoto del 10 de agosto. El monto se suma a un préstamo de Políticas de Desarrollo para la Gestión del Riesgo de Desastres con Opción de Desembolso Diferido ante Catástrofes (Cat DDO), aprobado en febrero de 2025 y ya desembolsado.",
-      "contrapunto": "Las cifras que circulan NO son comparables entre sí y conviene no sumarlas: en agosto el ministro de Hacienda habló de un crédito de hasta 450 millones de dólares, otra nota reportó una solicitud de ampliación por 250 millones, y el BID ofreció 300 millones en financiamiento contingente del que no consta desembolso. Son momentos distintos del mismo proceso —ofrecido, solicitado, aprobado y desembolsado— y las fuentes no aclaran cuáles se acumulan.",
-      "tipoFuente": "verificado",
-      "nivelGobierno": "nacional",
-      "estadoProcesal": "aprobado-por-el-organismo",
-      "tipoEvidencia": "comunicado-oficial-del-organismo",
-      "fuentes": [
-        {
-          "n": "Banco Mundial · El Grupo Banco Mundial amplía su apoyo a Colombia para fortalecer la respuesta ante el terremoto",
-          "u": "https://www.bancomundial.org/es/news/press-release/2026/09/24/world-bank-group-provides-additional-financing-to-support-colombia-earthquake",
-          "rol": "acto"
-        },
-        {
-          "n": "El Nuevo Siglo · Banco Mundial aprueba US$200 millones a Colombia tras el terremoto",
-          "u": "https://www.elnuevosiglo.com.co/nacion/banco-mundial-aprueba-us200-millones-colombia-tras-el-terremoto",
-          "rol": "contexto"
-        }
-      ],
-      "_verificadoEn": "2026-10-22",
-      "_estadoSonda": "CONFIRMADO",
-      "_mismaFechaRevisada": "Revisadas las tres entradas del registro con fecha 24 de septiembre de 2026 —el rechazo de la FLIP al uso de solicitudes de rectificación, el discurso del vicepresidente en la ONU, y el rechazo del Congreso a las objeciones a la ley de mérito—. Ninguna es este hecho. LO QUE SÍ HAY QUE DIRIMIR no es una coincidencia de fecha sino de CIFRA: `credito-banco-mundial-200-terremoto`, del 13 de agosto, registra un desembolso de los mismos USD 200 millones como primer giro de una línea contingente. Por eso esta entrada sigue retenida: ver `_solapesPorDecidir`."
-    },
-    {
-      "fecha": "2026-08-13",
-      "precision": "exacta",
-      "categoria": "emergencia",
-      "id": "nicky-jam-grupo-argos-adopta-un-hogar",
-      "titulo": "Grupo Argos y Nicky Jam anuncian 13.000 millones de pesos para reconstruir viviendas tras el terremoto, con meta de 26.000 millones; la primera vivienda se entrega el 15 de octubre en Circasia",
-      "detalle": "El 13 de agosto de 2026 Grupo Argos y el artista Nicky Jam anunciaron la campaña «Adopta un Hogar», con un aporte inicial de 13.000 millones de pesos para reparación y reconstrucción de viviendas en Chocó, el Eje Cafetero y Valle del Cauca, que se igualaría con aportes de ciudadanos y empresas hasta una meta de 26.000 millones. El proyecto busca entregar 1.000 soluciones habitacionales. La primera vivienda se entregó el 15 de octubre de 2026 en Circasia, Quindío. El artista también envió ayuda humanitaria en avión privado a Quibdó y otras ciudades.",
-      "contrapunto": "Es una donación PRIVADA y no un acto de Gobierno: entra al registro como contexto de la emergencia, no como gestión del Ejecutivo. Hay una discrepancia entre fuentes sobre el destino de los fondos —una nota los vincula al Fondo Milagro y las demás los presentan como financiación directa de la reconstrucción— y no se pudo dirimir. Ninguna fuente consultada reporta que el presidente o el Gobierno se hayan atribuido esta ayuda.",
-      "tipoFuente": "verificado",
-      "nivelGobierno": "no-aplica-actor-privado",
-      "estadoProcesal": "donacion-privada-anunciada-y-con-primera-entrega",
-      "tipoEvidencia": "cobertura-de-prensa-convergente",
-      "fuentes": [
-        {
-          "n": "El Colombiano · Grupo Argos y Nicky Jam donarán $13.000 millones para reconstruir viviendas",
-          "u": "https://www.elcolombiano.com/negocios/grupo-argos-nicky-jam-donaran-13000-millones-viviendas-terremoto-IB39927780",
-          "rol": "acto"
-        },
-        {
-          "n": "Diario de Colombia · Nicky Jam y Grupo Argos entregan la primera de las mil viviendas para damnificados colombianos",
-          "u": "https://www.diariodecolombia.com/nicky-jam-y-grupo-argos-entregan-la-primera-de-las-mil-viviendas-para-damnificados-colombianos/",
-          "rol": "contexto"
-        },
-        {
-          "n": "El Nacional · Nicky Jam llevó ayuda humanitaria en su avión privado a damnificados por terremoto en Colombia",
-          "u": "https://www.elnacional.com/2026/08/nicky-jam-llevo-ayuda-humanitaria-en-su-avion-privado-a-damnificados-por-terremoto-en-colombia/",
-          "rol": "contexto"
-        }
-      ],
-      "_verificadoEn": "2026-10-22",
-      "_estadoSonda": "CONFIRMADO",
-      "_mismaFechaRevisada": "Revisadas las cuatro entradas del registro con fecha 13 de agosto de 2026 —la revocatoria de la reserva del páramo de Santurbán, el desembolso del Banco Mundial, la activación del BID y el anuncio de la emergencia económica—. Ninguna es esta donación privada. El solape que sí existe es con la entrada del 13 de SEPTIEMBRE, que menciona «la donación de 1.000 viviendas por parte de la Fundación Argos» dentro de un balance presidencial del Valle del Cauca: probablemente las mismas 1.000 viviendas, vistas desde el balance oficial y no desde el anuncio privado. Está en `_solapesPorDecidir`, y Daniel ya decidió que esta entrada no se carga."
+      "_mismaFechaRevisada": "Revisada la única entrada del registro con fecha 9 de octubre de 2026: el decreto que moderniza el régimen de concesiones portuarias, presentado en Cartagena. No tiene relación con la reserva de los memorandos. El hecho es otro.",
+      "_retenidaHasta": "Decisión de Daniel del 22 de octubre de 2026: no entra hasta tener fuente de PRIMER NIVEL —comunicado de la Cancillería, el Diario Oficial, o prensa reconocida que CITE el documento—. Hoy lo que hay es prensa que reporta la reserva sin citar el acto que la declara, y eso no alcanza para una entrada sobre reserva documental. No es un trámite ante un tercero: es investigación, y se sigue haciendo."
     }
   ],
   "_noEntran": [
@@ -203,15 +143,22 @@
     },
     {
       "item": "18 · Escudo de las Américas",
-      "estado": "CONFIRMADO parcialmente · ENTRADA NO ESCRITA",
+      "estado": "CONFIRMADO parcialmente · PRECISIONES REDACTADAS como actualización (no entrada nueva)",
       "razon": "Consta la firma de la adhesión el 12 de agosto de 2026 por el ministro de Defensa Jorge Eduardo Mora, y el debate sobre si requiere aval del Congreso. El secretario de Guerra de EE. UU., Pete Hegseth, afirmó que el presidente autorizó «operaciones militares conjuntas»; el canciller Omar Bula sostiene que la alianza no implica que tropas estadounidenses operen en el país. NO se halló el texto del acuerdo, ni la cita textual del ministro Mora que el prompt atribuye a NTN24 del 18 de septiembre, ni ninguna declaración de Honorio Henríquez. El arancel de 12,5 % SÍ está confirmado —rige desde el 24 de julio de 2026, bajo la Sección 301, por investigaciones de trabajo forzoso— pero es ANTERIOR a la posesión.",
-      "queFaltaria": "El texto del acuerdo y las dos citas que el prompt da por buenas. No se escribe la entrada hasta tenerlas: media entrada sobre soberanía es peor que ninguna."
+      "queFaltaria": "Solo el TEXTO DEL ACUERDO, que sigue sin hallarse y no se alcanza desde este contenedor. Las dos citas ya están, y las precisiones van como actualización a las dos entradas del 12 de agosto, a la espera del «cárguelas».",
+      "correccionALoQueDeciaEsteRenglon": "Este renglón decía que no se halló «ni la cita textual del ministro Mora que el prompt atribuye a NTN24 del 18 de septiembre, ni ninguna declaración de Honorio Henríquez». Las dos existen: la de Mora la aportó Daniel con su enlace, y la de Henríquez la halló la sonda en Infobae del 13 de agosto de 2026, con la fecha que Daniel indicó. El renglón estaba viejo y se corrige."
     },
     {
       "item": "1 · IPC y canasta",
       "estado": "CONFIRMADO con UNA cifra en disputa · ENTRADA NO ESCRITA",
       "razon": "El IPC anual de septiembre de 2026 es 6,29 % (DANE), contra 5,18 % en septiembre de 2025; variación mensual 0,37 %; acumulado enero-septiembre 5,74 %. Alimentos y bebidas no alcohólicas: 6,74 % anual, 0,78 % mensual, 8,00 % en el acumulado. PERO la cifra de la papa NO es consistente entre fuentes: 78,24 % anual en El Colombiano, 67,70 % en INCP sin precisar si es anual o acumulado, y 7,29 % mensual en el boletín técnico. Son medidas distintas y mezclarlas publicaría un número sin decir de qué es.",
       "queFaltaria": "Abrir el boletín del DANE y leer la papa en la MISMA medida que las demás. Desde este contenedor el proxy no deja descargar el PDF. Sobre las causas: Fedepapa atribuye el alza al efecto base de la sobreoferta de 2025 —unas 146.000 toneladas— y a menor abastecimiento desde mayo; el DANE citó lluvias que dificultaron la recolección. NINGUNA fuente atribuye la causa al Gobierno, y el módulo tampoco lo hará."
+    },
+    {
+      "item": "11 · donaciones de artistas",
+      "estado": "DESCARTADO por decisión de Daniel",
+      "razon": "El hecho estaba confirmado y solapaba con la entrada del 13 de septiembre, que ya registra la donación de 1.000 viviendas de la Fundación. Daniel decidió el 22 de octubre que no entra, ni como entrada nueva ni como actualización.",
+      "queFaltaria": "Nada. El ítem queda cerrado."
     }
   ],
   "_actualizanUnaEntradaExistente": [
@@ -241,7 +188,7 @@
         {
           "n": "Noticias RCN · Estado de Emergencia en Colombia: medidas del Decreto 1261",
           "u": "https://www.noticiasrcn.com/colombia/estado-de-emergencia-en-colombia-medidas-del-decreto-1261-1055982",
-          "rol": "dato"
+          "rol": "contexto"
         }
       ],
       "_verificadoEn": "2026-10-22",
@@ -279,12 +226,12 @@
         {
           "n": "El Colombiano · Estos son los detalles del acuerdo entre Colombia y EE. UU. por minerales críticos y energía nuclear",
           "u": "https://www.elcolombiano.com/negocios/colombia-eeuu-memorando-minerales-criticos-inversion-energia-nuclear-DO40823617",
-          "rol": "dato"
+          "rol": "contexto"
         },
         {
           "n": "Infobae · Gobiernos de Colombia y Estados Unidos firmaron memorandos de cooperación en minerales críticos y energía nuclear: qué acordaron",
           "u": "https://www.infobae.com/colombia/2026/09/09/gobiernos-de-colombia-y-estados-unidos-firmaron-memorandos-de-cooperacion-en-minerales-criticos-y-energia-nuclear-que-acordaron/",
-          "rol": "dato"
+          "rol": "contexto"
         },
         {
           "n": "Semana · Colombia y el Acuerdo 123: de la simbología a la generación real de energía nuclear",
@@ -450,6 +397,88 @@
         "Las tres capturas del 21 y las nueve del 22 se dicen como hechos distintos, para que nadie 'corrija' una cifra con la otra (v1085)."
       ],
       "correccionALoQueDeciaUNAsolaFuente": "Vanguardia sola dejaba entender que la restricción de motos corría hasta la medianoche del 24. La secuencia convergente es de TRES decretos y el 433 levantó la prohibición total el 23, antes de la fecha anunciada. Escribir solo «hasta el 24» habría sido falso sobre lo que de verdad pasó.",
+      "estado": "REDACTADO · espera el «cárguelas» de Daniel"
+    },
+    {
+      "deQueSonda": "ítem 2 · ayudas del terremoto (crédito del Banco Mundial)",
+      "entradaQueSeActualiza": "2026-08-13 · `credito-banco-mundial-200-terremoto` · «El Banco Mundial desembolsa USD 200 millones para la emergencia»",
+      "porQueSIaportaDatoNuevo": [
+        "Es un ACTO DISTINTO y posterior: el 24 de septiembre de 2026 el Banco Mundial APROBÓ 200 millones adicionales. La entrada del 13 de agosto registra un DESEMBOLSO de 200 millones. Dos hechos, dos fechas, y la misma cifra — que es exactamente por qué se confunden y por qué hay que decirlo.",
+        "Nombra el INSTRUMENTO, que la entrada no tiene: un préstamo Cat DDO (Políticas de Desarrollo para la Gestión del Riesgo de Desastres con Opción de Desembolso Diferido ante Catástrofes), aprobado en febrero de 2025 y ya desembolsado.",
+        "Y responde la pregunta que la propia entrada deja abierta: su contrapunto dice que «la cifra del techo queda sin dirimir» entre 450 y 420 millones. Con el instrumento nombrado se ve que las cifras que circulan son momentos distintos del mismo proceso —ofrecido, solicitado, aprobado, desembolsado— y NO se suman."
+      ],
+      "cambio1_detalle": {
+        "comoSeAplica": "Se apende al `detalle` actual, sin tocar lo ya verificado.",
+        "textoQueSeAgrega": "El 24 de septiembre de 2026 el Grupo Banco Mundial aprobó 200 millones de dólares adicionales para la respuesta al terremoto del 10 de agosto. Es una aprobación posterior y distinta del desembolso de agosto, por el mismo monto. Se suma a un préstamo de Políticas de Desarrollo para la Gestión del Riesgo de Desastres con Opción de Desembolso Diferido ante Catástrofes (Cat DDO), aprobado en febrero de 2025 y ya desembolsado."
+      },
+      "cambio2_contrapunto": {
+        "comoSeAplica": "Se apende al `contrapunto` actual, que ya dice que el techo no está dirimido.",
+        "textoQueSeAgrega": "Las cifras que circulan no son comparables entre sí y no se suman: el ministro de Hacienda habló en agosto de un crédito de hasta 450 millones de dólares, otra nota reportó una solicitud de ampliación por 250 millones, el BID ofreció 300 millones en financiamiento contingente del que no consta desembolso, y el 24 de septiembre el Banco Mundial aprobó 200 millones adicionales. Son momentos distintos del mismo proceso —ofrecido, solicitado, aprobado y desembolsado— y las fuentes consultadas no aclaran cuáles se acumulan."
+      },
+      "cambio3_fuentes": {
+        "comoSeAplica": "Se agregan a las cinco que ya tiene. La primera es de PRIMER NIVEL —el propio Banco Mundial—, que la entrada no tenía: sus cinco fuentes son de prensa.",
+        "nuevas": [
+          {
+            "n": "Banco Mundial · El Grupo Banco Mundial amplía su apoyo a Colombia para fortalecer la respuesta ante el terremoto",
+            "u": "https://www.bancomundial.org/es/news/press-release/2026/09/24/world-bank-group-provides-additional-support-to-colombia-earthquake-response",
+            "rol": "acto"
+          },
+          {
+            "n": "El Nuevo Siglo · Banco Mundial aprueba US$200 millones a Colombia tras el terremoto",
+            "u": "https://www.elnuevosiglo.com.co/nacion/banco-mundial-aprueba-us200-millones-colombia-tras-el-terremoto",
+            "rol": "contexto"
+          }
+        ]
+      },
+      "elCanalSeDECLARA": "El comunicado del Banco Mundial se halló POR BÚSQUEDA y su página NO se abrió: el proxy de este contenedor niega todos los dominios. Sostiene QUE la aprobación ocurrió —el estándar de la v1003—, no que se leyera el comunicado. Va dicho porque un enlace de primer nivel presentado como leído es peor que ninguno.",
+      "laTensionQueNOresuelvoYO": "Meter un acto del 24 de septiembre dentro de una entrada fechada el 13 de agosto deja una entrada con DOS actos de fechas distintas, y la convención del registro es una entrada por hecho. Daniel decidió que ninguna retenida entra como entrada nueva, así que va como actualización — y la tensión queda escrita en vez de resuelta por mi cuenta.",
+      "estado": "REDACTADO · espera el «cárguelas» de Daniel"
+    },
+    {
+      "deQueSonda": "ítem 18 · Soberanía / Escudo de las Américas",
+      "porQueActualizacionYNoEntrada": "Decisión de Daniel: las precisiones van como ACTUALIZACIONES a las entradas que ya existen. Son dos entradas del 12 de agosto de 2026 y ninguna tiene `id`, así que lo primero que se les da es eso: sin id no pueden ser citadas ni sostener una afirmación firmada (v1127).",
+      "entradasQueSeActualizan": [
+        {
+          "cual": "2026-08-12 · «Colombia entra a la coalición contra los carteles; Medellín será sede regional»",
+          "idNuevo": "adhesion-escudo-de-las-americas-2026-08-12",
+          "yaDice": "Que la adhesión la formalizó el ministro de Defensa Jorge Mora, que Colombia entró como miembro 19 de la A3C, y que Medellín es la única sede concreta anunciada, sin acto administrativo.",
+          "textoQueSeAgregaAlDetalle": "La adhesión se firmó el 12 de agosto de 2026. El texto del acuerdo no se halló: no está publicado en ninguna de las fuentes consultadas y este contenedor no alcanza los dominios oficiales, así que no consta qué obligaciones establece. El 18 de septiembre el ministro de Defensa, Jorge Eduardo Mora, declaró sobre la adhesión: «no estamos vendiendo ni la soberanía ni aquí van a pasar tropas» (NTN24, 18 de septiembre de 2026).",
+          "fuentesNuevas": [
+            {
+              "n": "NTN24 · Ministro de Defensa de Colombia aclaró la posible llegada de tropas de Estados Unidos con la adhesión al Escudo de las Américas: «no estamos vendiendo ni la soberanía ni aquí van a pasar tropas»",
+              "u": "https://www.ntn24.com/noticias-actualidad/ministro-de-defensa-de-colombia-aclaro-la-posible-llegada-de-tropas-de-estados-unidos-con-la-adhesion-al-escudo-de-las-americas-no-estamos-vendiendo-ni-la-soberania-ni-aqui-van-a-pasar-tropas-651478",
+              "rol": "acto"
+            }
+          ]
+        },
+        {
+          "cual": "2026-08-12 · «Hegseth anuncia desde Panamá que Colombia autorizó operaciones militares conjuntas en su territorio»",
+          "idNuevo": "hegseth-operaciones-conjuntas-panama-2026-08-12",
+          "yaDice": "Que las dos versiones están enfrentadas y ningún tercero las ha dirimido: Hegseth afirma que el presidente «ya solicitó» autorizar operaciones conjuntas, y el Gobierno colombiano publicó después un comunicado sosteniendo que no existe ningún acuerdo que autorice operaciones militares extranjeras. La entrada ya está marcada `disputado`.",
+          "textoQueSeAgregaAlContrapunto": "La contradicción es entre DOS DECLARACIONES, cada una con su fuente, y no entre un hecho y una versión: Pete Hegseth dijo el 12 de agosto en Ciudad de Panamá que Colombia solicitó operaciones militares conjuntas (CNN en Español y El Tiempo, 12 de agosto de 2026); el ministro de Defensa, Jorge Eduardo Mora, dijo el 18 de septiembre que «no estamos vendiendo ni la soberanía ni aquí van a pasar tropas» (NTN24, 18 de septiembre de 2026). El 13 de agosto el presidente del Congreso, Honorio Henríquez, respaldó la cooperación y advirtió que el ingreso de tropas extranjeras requiere autorización del Senado, «así lo establece la Constitución», y dijo no tener el detalle de si la cooperación incluye tropas (Infobae, 13 de agosto de 2026). El texto del acuerdo no se halló, así que no consta cuál de las dos declaraciones describe lo firmado.",
+          "fuentesNuevas": [
+            {
+              "n": "NTN24 · Ministro de Defensa de Colombia aclaró la posible llegada de tropas de Estados Unidos con la adhesión al Escudo de las Américas",
+              "u": "https://www.ntn24.com/noticias-actualidad/ministro-de-defensa-de-colombia-aclaro-la-posible-llegada-de-tropas-de-estados-unidos-con-la-adhesion-al-escudo-de-las-americas-no-estamos-vendiendo-ni-la-soberania-ni-aqui-van-a-pasar-tropas-651478",
+              "rol": "contexto"
+            },
+            {
+              "n": "Infobae · Presidente del Senado apoyó oferta de Estados Unidos contra el crimen en Colombia, pero advirtió sobre el ingreso de tropas extranjeras: «Así lo establece la Constitución»",
+              "u": "https://www.infobae.com/colombia/2026/08/13/presidente-del-senado-apoyo-oferta-de-estados-unidos-contra-el-crimen-en-colombia-pero-advirtio-sobre-el-ingreso-de-tropas-extranjeras-asi-lo-establece-la-constitucion/",
+              "rol": "contexto"
+            }
+          ]
+        }
+      ],
+      "disciplinaAplicada": [
+        "Las dos citas van SOLO con su fuente y su fecha. No se dice cuál tiene razón.",
+        "El texto del acuerdo se declara «no se halló» —un hecho sobre nuestra búsqueda— y no «no existe» ni «el Gobierno no lo publicó», que serían afirmaciones sobre la conducta de otro (v961, v1123).",
+        "Sin evaluación: ninguna frase dice al lector qué concluir de poner las dos declaraciones juntas (v1152).",
+        "El arancel de 12,5 % NO entra: rige desde el 24 de julio de 2026, ANTERIOR a la posesión del 7 de agosto, y atribuirlo a este Gobierno sería el defecto que la v1145 vino a corregir.",
+        "No se escribe entrada nueva sobre soberanía: media entrada sobre soberanía es peor que ninguna, y lo que falta es el texto del acuerdo."
+      ],
+      "unaDiscrepanciaQueNOcorrijoYO": "La entrada del registro llama a Hegseth «secretario de Defensa de EE. UU.» y la cobertura más reciente lo llama «secretario de Guerra», por el cambio de nombre del departamento. Las dos redacciones circulan y no sé en qué fecha exacta cambió el título, así que no toco el cargo: lo señalo para que Daniel decida.",
+      "elCanalSeDECLARA": "Las dos notas —NTN24 del 18 de septiembre e Infobae del 13 de agosto— se hallaron por BÚSQUEDA y sus páginas NO se abrieron. La de NTN24 la aportó Daniel con su enlace; la de Infobae la halló esta sonda, y su fecha coincide exactamente con la que Daniel indicó. Sostienen QUE las declaraciones se hicieron, no que se leyeran las páginas.",
       "estado": "REDACTADO · espera el «cárguelas» de Daniel"
     }
   ],
@@ -649,6 +678,39 @@
       "ademas": "Y hay una segunda razón para no mezclarla con las otras: IMAGEN POSITIVA no es APROBACIÓN DE GESTIÓN. Es la misma confusión que la cobertura de septiembre de AtlasIntel —que tituló con un 54 % de imagen cuando la aprobación del desempeño era 51,8 %—, y por eso esa salvedad quedó escrita dentro de la medición cargada.",
       "queLaHariaCargable": "Que la consultora publique la ficha con un trabajo de campo de octubre, o que aclare que la fecha consignada es un error. Entonces entra, con su etiqueta de metodología cuestionada como la de agosto.",
       "estado": "SEÑAL · se registra acá y no en el registro"
+    }
+  ],
+  "_comoSeNumeraronLosItems": {
+    "porQue": "Daniel pidió numerar los ítems 2, 6 y 11 SOLO si se reconstruían con certeza del texto original de la sonda, y marcar «sin número» si no.",
+    "comoSeHizo": "Se recuperó el mensaje original de la sonda —PARTE 2 · SONDA DE VERIFICACIÓN (19 ítems)— del registro de la sesión, y los diecinueve renglones están numerados ahí uno por uno. No se adivinó ninguno: cada uno se leyó de su renglón.",
+    "reconstruidos": [
+      {
+        "item": 2,
+        "textoOriginal": "Fondo Milagro / fundación de la primera dama / ayudas del terremoto: qué recursos llegaron, cuáles no, quién los gestiona, préstamo para la emergencia (monto, entidad, fecha), denuncias de dinero desaparecido… Decreto 1261 del 19 ago (emergencia económica): confirmar texto.",
+        "dondeQuedo": "CARGADO en la v1148 como `fundacion-primera-dama-rinde-cuentas-54589-millones`, más la extensión del contrapunto del Decreto 1261."
+      },
+      {
+        "item": 6,
+        "textoOriginal": "Presupuesto: la tarjeta «Proyecto de presupuesto: NO es todavía ley» puede estar vieja. Verificar estado actual (aprobado, desfinanciado, decreto de congelación).",
+        "dondeQuedo": "CARGADO en la v1148 como `congreso-aprueba-presupuesto-2027`, y la tarjeta se corrigió con `estadoSello` y `tramaTexto`."
+      },
+      {
+        "item": 11,
+        "textoOriginal": "Donaciones de artistas (Nicky Jam y otros): qué donaron, a quién, y si el presidente o el Gobierno se atribuyó esa ayuda. Si no aparece fuente, pedir a Daniel el enlace del video.",
+        "dondeQuedo": "DESCARTADO por decisión de Daniel el 22 de octubre de 2026. El ítem queda cerrado sin entrada."
+      }
+    ],
+    "sinNumero": "Ninguno. Los diecinueve tienen su número leído del texto original.",
+    "ojo": "El ítem 10 —personas aún en la calle— sigue SIN MEDIR aunque la entrada de la UNGRD se cargara: lo que se cargó es la ASIGNACIÓN de los $100.000 millones, y lo que el ítem pide es el conteo de subsidios GIRADOS frente a los prometidos. No son lo mismo y la segunda sigue sin fuente alcanzable."
+  },
+  "_descartadasPorDecision": [
+    {
+      "item": 11,
+      "id": "nicky-jam-grupo-argos-adopta-un-hogar",
+      "quienLaDescarto": "Daniel, el 22 de octubre de 2026.",
+      "queDecia": "Grupo Argos y Nicky Jam anuncian 13.000 millones de pesos para reconstruir viviendas tras el terremoto, con meta de 26.000 millones; la primera vivienda se entrega el 15 de octubre en Circasia",
+      "porQueSeDeja": "Se deja escrita y no se borra. Borrar la haría indistinguible de un hecho que nadie buscó, que es justo lo que la sonda existe para evitar.",
+      "estado": "DESCARTADA · no se carga ni como entrada ni como actualización"
     }
   ]
 }

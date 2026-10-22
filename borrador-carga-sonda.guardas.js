@@ -5,16 +5,31 @@ const R = '/home/user/mapa-comunitario/';
 const reg = JSON.parse(fs.readFileSync(R + 'assets/data/seguimiento-presidencial.json', 'utf8'));
 const bor = JSON.parse(fs.readFileSync(R + 'borrador-carga-sonda.json', 'utf8'));
 const nuevas = bor.entradas;
-/* EL DENOMINADOR. Las actualizaciones a entradas ya registradas publican texto y
-   fuentes igual que una entrada nueva, y hasta la v1156 el barrido solo recorria
-   `entradas`: mismo denominador estrecho de la v1149 y la v1153, en un tercer sitio.
-   Se arman aqui para que las guardas 3 y 5 las vean sin que su autor se acuerde. */
+/* EL DENOMINADOR, PERSIGUIENDO LA FORMA Y NO EL NOMBRE DE LA CLAVE.
+
+   Primer intento (v1156): leia `cambio2_detalle.textoQueSeAgrega` y
+   `cambio3_fuentes.nuevas` por su nombre. Mordio en el acto —cuatro fuentes
+   con `rol: "dato"`— y aun asi estaba mal: la actualizacion del item 18 usa
+   `entradasQueSeActualizan[].fuentesNuevas`, otra forma, y sus tres fuentes NO
+   se barrian. Cuarta vez que el denominador se queda corto (v1149, v1153, y dos
+   veces aqui), y la causa es siempre la misma: la guarda nombra las claves que
+   existian el dia que se escribio.
+
+   Asi que no las nombra. Recorre el objeto entero y recoge POR FORMA: toda
+   cadena, y todo objeto que tenga `n` y `u` —que es lo que hace a una fuente
+   una fuente—. Una clave nueva entra sin que su autor se acuerde (v867). */
+const recoge = (o, textos, fuentes, ruta) => {
+  if (o == null) return;
+  if (typeof o === 'string') { if (o.length > 40) textos.push({ t: o, d: ruta }); return; }
+  if (Array.isArray(o)) { o.forEach((x, i) => recoge(x, textos, fuentes, ruta + '[' + i + ']')); return; }
+  if (typeof o !== 'object') return;
+  if (typeof o.n === 'string' && typeof o.u === 'string') { fuentes.push({ f: o, d: ruta }); return; }
+  Object.keys(o).forEach(k => recoge(o[k], textos, fuentes, ruta + '.' + k));
+};
 const actus = bor._actualizanUnaEntradaExistente || [];
-const textoActus = actus.map(a => [a.entradaQueSeActualiza,
-  a.cambio2_detalle && a.cambio2_detalle.textoQueSeAgrega].filter(Boolean).join(' '));
-const fuentesActus = [];
-actus.forEach((a, i) => ((a.cambio3_fuentes && a.cambio3_fuentes.nuevas) || [])
-  .forEach((f, j) => fuentesActus.push({ f: f, d: 'actualizacion[' + i + '].fuente[' + j + ']' })));
+const textoActus = [], fuentesActus = [];
+actus.forEach((a, i) => recoge(a, textoActus, fuentesActus, 'actualizacion[' + i + ']'));
+
 let fallos = 0;
 const ok = (n, c, d) => { console.log((c ? '  ✓ ' : '  ✗ ') + n + '  — ' + d); if (!c) fallos++; };
 
@@ -60,12 +75,12 @@ ok('toda entrada trae fecha, precisión, título, detalle y contrapunto', !incom
 // 5 · la vara penal: ninguna etiqueta penal sobre persona identificable
 const PENAL = /\b(homicidio|peculado|concierto para delinquir|lavado de activos|cohecho|enriquecimiento il[ií]cito)\b/i;
 const penales = nuevas.filter(e => PENAL.test(e.titulo + ' ' + e.detalle)).map(e => e.id);
-textoActus.forEach((t, i) => { if (PENAL.test(t)) penales.push('actualizacion[' + i + ']'); });
+textoActus.forEach(x => { if (PENAL.test(x.t)) penales.push(x.d); });
 ok('ningún título ni detalle califica penalmente a nadie, tampoco en las actualizaciones',
    !penales.length,
    penales.length ? 'revisar: ' + penales.join(' · ')
      : 'ninguna de las seis etiquetas vigiladas aparece, en ' + nuevas.length +
-       ' entradas y ' + textoActus.length + ' actualizaciones');
+       ' entradas y ' + textoActus.length + ' textos de actualizacion');
 
 // 6 · ninguna atribuye causa al Gobierno en un periodo anterior a la posesión
 const pos = reg.posesion;
