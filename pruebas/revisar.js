@@ -16389,6 +16389,123 @@ console.log('\n  -- la resta del desplazamiento mide la barra ENTERA (v1157) --'
         ', así que una sesión nueva no tiene dónde leer el reparto y vuelve a inventarlo');
 })();
 
+
+/* LA HOJA NO SE EXTIENDE, Y UN `leeDe` RESUELVE (v1164)
+   =====================================================
+
+   Daniel decidió el 23 de octubre de 2026 que **Sheets no se extiende a nada
+   nuevo**: lo que ya está en la hoja se queda, y todo módulo nuevo va a
+   Postgres. Eso parte el almacén en dos, y conviene decir qué sigue siendo
+   «una sola capa»: **el REGISTRO**, que declara quién es dueño de qué y quién
+   puede leerlo, viva el dato donde viva.
+
+   La guarda del backend es un TRINQUETE ABSOLUTO y eso es legítimo acá
+   (v965): la lista de los que ya usan la hoja no puede crecer sin que alguien
+   haga algo mal, porque la decisión es justamente que no crezca. Si un módulo
+   tuviera que entrar, se sube la lista con su razón escrita y se ve en el
+   diff.
+
+   NO comprueba que un módulo con `backend: 'postgres'` de verdad escriba en
+   Postgres: eso vive en el repositorio del motor y no se ve desde acá. */
+(function () {
+  let MOD = null, errCarga = '';
+  try {
+    const caja = { window: {} };
+    new Function('window', leer('js/03h-registro-modulos.js'))(caja.window);
+    MOD = caja.window.URBIS_MODULOS;
+  } catch (e) { errCarga = String(e && e.message || e); }
+
+  const ids = MOD ? Object.keys(MOD) : [];
+
+  comprobar('MATERIAL · cada módulo declara en qué almacén vive',
+    !!MOD && ids.length > 0 && ids.every((k) => !!MOD[k].backend),
+    MOD
+      ? ids.length + ' módulos, todos con `backend`: ' +
+        [...new Set(ids.map((k) => MOD[k].backend))].sort().join(' · ')
+      : 'el registro no se pudo ejecutar: ' + errCarga);
+
+  if (MOD) {
+    /* Los ocho que ya estaban en la hoja el día que se tomó la decisión.
+       Escritos acá y no contados del registro: contarlos del registro sería
+       medir el número en vez de la propiedad, y la propiedad es que esta
+       lista no crece. */
+    const EN_LA_HOJA = ['reportes', 'eventos', 'vitrina', 'peticiones',
+                        'interaccion', 'social', 'presencia', 'curso'];
+    const nuevosEnHoja = ids.filter((k) => MOD[k].backend === 'hoja' && EN_LA_HOJA.indexOf(k) === -1);
+    const faltan = EN_LA_HOJA.filter((k) => !MOD[k] || MOD[k].backend !== 'hoja');
+
+    comprobar('ningún módulo NUEVO entra a la hoja: Sheets no se extiende',
+      nuevosEnHoja.length === 0,
+      nuevosEnHoja.length === 0
+        ? 'los ' + EN_LA_HOJA.length + ' de siempre y ninguno más. Lo nuevo va a Postgres; ' +
+          'lo compartido no es el almacén, es el registro. NO comprueba que un módulo de ' +
+          'Postgres escriba de verdad en Postgres: eso vive en el repositorio del motor'
+        : 'módulo(s) nuevo(s) declarando la hoja: ' + nuevosEnHoja.join(' · ') +
+          '. La hoja se congeló para datos nuevos el 23 de octubre de 2026; si de verdad ' +
+          'hace falta, se agrega a EN_LA_HOJA con su razón escrita y se ve en el diff');
+
+    /* La guarda de la guarda del trinquete: si alguien MUEVE uno de los ocho
+       fuera de la hoja sin decirlo, la lista de arriba se queda midiendo un
+       conjunto que ya no existe y el verde dejaría de significar algo. */
+    comprobar('y los ocho de la hoja siguen declarándola',
+      faltan.length === 0,
+      faltan.length === 0
+        ? 'los ocho siguen en `hoja`, así que la lista congelada mide el conjunto que dice medir'
+        : 'estos ya no declaran la hoja: ' + faltan.join(' · ') + '. Si se migraron, se ' +
+          'retiran de EN_LA_HOJA con su razón; si es un descuido, es una migración sin declarar');
+
+    /* `leeDe` RESUELVE, en las dos mitades. Una lectura declarada contra un
+       módulo que no existe, o contra un campo que ese módulo no comparte, es
+       una puerta que no abre — y desde afuera se lee igual que una que sí
+       (clase C). Lo declaró Daniel para Viviendas: lee el análisis de
+       ubicación de Empresas «a través del registro, sin copiarlo», y eso solo
+       vale si la puerta existe de verdad. */
+    const rotas = [];
+    let declaradas = 0;
+    ids.forEach((k) => (MOD[k].leeDe || []).forEach((r) => {
+      declaradas++;
+      const otro = MOD[r.modulo];
+      if (!otro) { rotas.push(k + ' lee de «' + r.modulo + '», que no es un módulo'); return; }
+      if ((otro.comparte || []).indexOf(r.campo) === -1) {
+        rotas.push(k + ' declara leer ' + r.modulo + '.' + r.campo + ', y ' + r.modulo +
+                   ' no lo comparte' +
+                   ((otro.privado || []).indexOf(r.campo) !== -1 ? ' (lo tiene en privado)' : ''));
+      }
+    }));
+
+    if (!declaradas) {
+      anotarSinMaterial('toda lectura declarada entre módulos resuelve',
+        'ningún módulo declara `leeDe` todavía. Cero puertas declaradas es un estado ' +
+        'legítimo, no un defecto');
+    } else {
+      comprobar('toda lectura declarada entre módulos resuelve',
+        rotas.length === 0,
+        rotas.length === 0
+          ? declaradas + ' lectura(s) declarada(s) y todas apuntan a un campo que el otro ' +
+            'módulo comparte. NO comprueba que el código la use: comprueba que la puerta exista'
+          : rotas.join(' · '));
+    }
+
+    /* Un módulo que declara datos solo simulados lo dice en su nota, para que
+       llegue a quien lo lea y no se quede en una bandera que nadie pinta
+       (clase C). Va acá y no como comentario: la decisión de Daniel es que la
+       v1 del político NO guarda datos reales de votantes. */
+    const simulados = ids.filter((k) => MOD[k].soloSimulado);
+    if (!simulados.length) {
+      anotarSinMaterial('un módulo de solo datos simulados lo dice en su nota',
+        'ningún módulo declara `soloSimulado` hoy');
+    } else {
+      const mudos = simulados.filter((k) => !/SIMULADO|simulad/.test(String(MOD[k].nota || '')));
+      comprobar('un módulo de solo datos simulados lo dice en su nota',
+        mudos.length === 0,
+        mudos.length === 0
+          ? simulados.join(' · ') + ': la bandera y la nota dicen lo mismo, así que quien lea ' +
+            'el registro se entera sin tener que leer el código'
+          : 'declaran `soloSimulado` y su nota no lo dice: ' + mudos.join(' · '));
+    }
+  }
+})();
+
 /* Las dos cuentas van APARTE porque piden cosas distintas: una fallada hay
    que arreglarla, una sin material hay que mirarla —o se quedó sin él porque
    el registro mejoró, o porque la función dejó de ver lo que medía—. Sumarlas
