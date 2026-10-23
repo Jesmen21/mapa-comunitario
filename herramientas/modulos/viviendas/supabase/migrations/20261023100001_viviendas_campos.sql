@@ -36,6 +36,7 @@ alter table public.viviendas
     (parqueaderos is null or parqueaderos >= 0) and
     (area_m2 is null or area_m2 > 0));
 
+comment on table public.viviendas is 'Las viviendas del módulo de URBIS.';
 comment on column public.viviendas.precio_cop is
   'En venta, el precio de venta. En arriendo, el canon mensual.';
 comment on column public.viviendas.administracion_cop is

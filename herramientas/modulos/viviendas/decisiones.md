@@ -225,3 +225,47 @@ confirmar** (están todas en tablas, se cambian sin migración):
   consulta.
 - Los pesos de las categorías: educación y transporte 1,0, comercio y zonas
   verdes 0,8, y salud y seguridad en 0 mientras no haya datos.
+
+## 2026-10-23 · Segundas respuestas de Daniel
+
+| # | Decisión | Qué ata |
+|---|---|---|
+| 4-01 | Aprueba la escritura del conector de Supabase: aplicar las 14 migraciones en vivo, una por una, midiendo después de cada una | ver «Cómo quedó la aplicación en vivo», abajo |
+| 4-02 | Acepta los tres valores por defecto de la Fase 1: distancias y puntaje desde el punto público; teléfono y correo solo de quien pidió visita; 5 solicitudes por día y 1 abierta por vivienda | dejan de ser propuesta. Siguen en tablas (`ajustes`, `categorias_poi`) y se cambian sin migración |
+| 4-03 | Panel con React (Vite) y gráficas con Chart.js | cierra la elección del anexo D. La tabla accesible y el respeto a `prefers-reduced-motion` van en el paquete compartido |
+| 4-04 | «Hoy» en el panel es la fecha real, y los datos de ejemplo no llevan fechas futuras | maquetas corregidas: la actividad de los usuarios se corrió 14 días atrás (mismo día de la semana, mismo orden). Los vencimientos del calendario de pagos SÍ son futuros: son próximos pagos |
+| 4-05 | Las 10 preguntas de las maquetas, para contestarlas | anexo E; la primera queda contestada por 4-04 |
+| 4-06 | Repositorio privado `Jesmen21/urbis-viviendas`, creado y vacío: mover ahí el trabajo de la rama con su historial | la mudanza, abajo |
+
+### Cómo quedó la aplicación en vivo
+
+MEDIDO: el conector de Supabase pide confirmación antes de cualquier `delete
+from` (también dentro del cuerpo de una función) y de cualquier `drop` de un
+objeto (también `drop policy if exists` sobre una política que no existe), y
+esa confirmación no le llega a la sesión: la llamada se corta a los 60 s sin
+tocar la base. `grant delete`, `revoke` y `alter column … drop default` sí
+entran.
+
+| Migración | En vivo |
+|---|---|
+| 001 partes 1 a 3 (columnas, slug, parqueaderos) | aplicada por el conector y medida |
+| 001 parte 4 (la función que borra lo de ejemplo) | pendiente: trae `delete from` |
+| 002 roles | aplicada y medida: anon ya no lee la ubicación exacta, ni hace TRUNCATE, ni inserta solicitudes |
+| 003 perfiles y favoritos | aplicada y medida: 8 tablas, dos disparadores sobre auth.users |
+| 004 a 014 y los datos de ejemplo | pendientes: la 004 trae `drop policy` y todo lo que sigue depende de ella |
+
+Lo pendiente va en UN archivo para el editor SQL de Supabase,
+`supabase/aplicar-en-editor.sql`, en una sola transacción. Arranca con una
+guarda que se niega a correr fuera de orden o dos veces. **Ensayado en local**
+sobre una base en el mismo estado que la viva: sale con 22 tablas, 5
+viviendas en venta y 1 en arriendo, el bucket retirado y la sal puesta. La
+batería da 70 de 70 sobre esa base, y una segunda corrida se niega.
+
+La historia de migraciones de la base viva tiene además dos entradas de
+MEDICIÓN del conector, `viviendas_campos_5_prueba_revoke` y
+`prueba_grant_delete`, que no cambian nada: una adelanta un `revoke` que la 002
+hace de todos modos y la otra concede un permiso que ya estaba. Y el
+comentario de la tabla `viviendas` se aplicó por SQL directo al medir; quedó
+escrito en la 001 para que el repositorio diga lo mismo que la base. Al montar
+la CLI de Supabase (Fase 3), la historia se alinea con los nombres de los
+archivos usando `supabase migration repair`.
