@@ -26,17 +26,17 @@ siguiente la vuelve a preguntar, o peor, la resuelve sola.
 **dos campos y no uno con una bandera**: un campo con bandera se publica
 entero el día que alguien lee mal la bandera.
 
-### 2 · Viviendas · dónde viven los datos  ·  **CORREGIDA EN PARTE**
+### 2 · Viviendas · dónde viven los datos
 
 > Postgres (Supabase), no Sheet. Ya está decidido que **Sheets no se extiende
 > a nada nuevo**.
 
-> **Corrección del mismo día, 2.ª tanda:** *«reemplaza la decisión 2 solo en lo
-> que toca a Viviendas. Usa el almacén de la Vitrina (hoja), transitorio, con
-> el modelo independiente del almacén para pasarlo a Postgres después. El
-> resto de la decisión 2 sigue vigente.»* Está desarrollada abajo, en la
-> segunda tanda. **La regla general no se tocó**: la hoja sigue congelada para
-> todos los demás.
+**Vigente y sin excepciones.** La 2.ª tanda la corrigió durante unas horas
+—Viviendas iba a usar la hoja de la vitrina de forma transitoria— y Daniel
+**retiró esa corrección el mismo día**: Viviendas usa Supabase. Queda escrito
+en la decisión 9, abajo, en vez de borrarse, porque la excepción llegó a estar
+escrita en el código y quien lea esa historia tiene que poder saber por qué
+apareció y por qué se fue.
 
 **Qué ata, y es lo más grande de las ocho:** parte el almacén en dos. La hoja
 se queda con lo que ya tiene —ocho módulos— y **se congela para datos
@@ -126,26 +126,40 @@ Diecisiete decisiones más. Dos **corrigen** decisiones de la primera tanda y
 se marcan arriba en el renglón que corrigen, para que nadie lea la vieja sin
 enterarse — que es como una decisión escrita hace daño.
 
-### 9 · CORRECCIÓN · Viviendas usa la hoja, transitoriamente
+### 9 · ~~CORRECCIÓN · Viviendas usa la hoja, transitoriamente~~  ·  **RETIRADA**
 
-> Usa el almacén de la Vitrina (hoja), **transitorio**, con el modelo
-> independiente del almacén para pasarlo a Postgres después.
+> **Retirada por Daniel el mismo 23 de octubre de 2026:** *«Viviendas usa
+> Supabase, no la hoja.»*
 
-**Qué ata:** `viviendas.backend` pasa de `postgres` a `hoja`, y el trinquete
-de «Sheets no se extiende» **admite esta excepción y ninguna otra**. La forma
-importa y es la que este proyecto ya usa para las exenciones (v1094, v1109):
-va **por ítem y con su razón escrita**, nunca como una regla. Una regla que
-dijera «los módulos de inmuebles pueden» abriría la puerta a todos de una vez;
-un renglón con nombre y razón hay que pensarlo uno por uno y se ve en el diff.
+La corrección había dicho que Viviendas usaría el almacén de la Vitrina —la
+hoja— de forma transitoria, con el modelo independiente del almacén. **Ya no.**
+La decisión 2 vuelve a valer entera: Viviendas va a Supabase y **la hoja no
+tiene ninguna excepción**.
 
-Y lleva una segunda mitad que la hace honesta: **la razón tiene que estar en
-el REGISTRO, no solo en la guarda**, y los dos textos tienen que coincidir.
-Una autorización escrita solo donde nadie la lee es la clase C.
+**Qué se deshizo, en los tres sitios donde la excepción había quedado escrita:**
 
-La parte que no se puede comprobar desde acá y por eso va dicha: **«modelo
-independiente del almacén» es una promesa sobre cómo se escribirá el código**,
-y ninguna guarda la mide hoy. Lo que sí se mide es que la excepción esté
-declarada y sea única.
+| Sitio | Qué decía | Qué dice |
+|---|---|---|
+| `js/03h-registro-modulos.js` | `backend: 'hoja'` + `transitorio` | `backend: 'postgres'`, sin `transitorio` |
+| `pruebas/revisar.js` | `TRANSITORIOS = { viviendas: … }` | `TRANSITORIOS = {}` |
+| este archivo | la 2 marcada «corregida en parte» | la 2 vigente y sin excepciones |
+
+**Por qué se deja escrita en vez de borrarla, y qué se aprende:** la excepción
+estuvo en el código, con su guarda y con su inyección en rojo. Borrarla sin
+rastro dejaría a quien lea el historial preguntándose por qué el trinquete
+tiene un mecanismo de exenciones que nadie usó nunca.
+
+Y el mecanismo **se queda, vacío**: `TRANSITORIOS = {}`. Eso no es un resto
+olvidado — es lo que obliga a que la próxima excepción se escriba ahí, por
+ítem y con su razón, en vez de inventar un camino nuevo. Además pone a correr
+la **redacción de CERO** de esa guarda, que es justamente la que hace falta el
+día que una excepción desaparece (v970), y hoy imprime «los 8 de siempre y
+ninguno más».
+
+**Lo que sí sobrevive de la 2.ª tanda:** la decisión 10 no se tocó. Viviendas
+sigue siendo módulo propio en datos, con **tipo de fila y permiso propios** —
+solo que ahora son sus clases de fila en su propia tabla de Postgres y no
+valores del campo `tipo` de la hoja, a la que no escribe.
 
 ### 10 · Viviendas · qué es y qué no
 

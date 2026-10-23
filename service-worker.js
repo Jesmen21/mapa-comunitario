@@ -1,4 +1,4 @@
-const URBIS_CACHE = 'urbis-v1165-el-service-worker-que-no-devolvia-respuesta';
+const URBIS_CACHE = 'urbis-v1166-la-excepcion-de-la-hoja-retirada-el-mismo-dia';
 const URBIS_ASSETS = [
   './',
   './index.html',
