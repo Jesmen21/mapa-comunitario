@@ -73,6 +73,10 @@ const CASOS = [
    [`      try { return nueva(JSON.parse(d.slice(PREFIJO.length))); } catch (e) { return null; }`,
     `      try { var o = JSON.parse(d.slice(PREFIJO.length)); delete o.banos; return nueva(o); } catch (e) { return null; }`]],
 
+  ['el tipo de fila que el módulo escribe es suyo según el registro',
+   'el emoji que el módulo tenía escrito antes de atarlo: de vista igual, para duenoDe otro tipo',
+   [`var TIPO_FILA = '🏠 Vivienda URBIS';`, `var TIPO_FILA = '🏘️ Vivienda URBIS';`]],
+
   ['el módulo calcula si tiene entrada en el registro',
    'el estado escrito a mano en vez de calculado, que es la v903',
    [`    if (reg[MODULO_ID]) {`, `    if (false) {`]],

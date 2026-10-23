@@ -41,7 +41,10 @@ tiene que decir de dónde sale.
 
 ## Lo que le pido a la cabeza
 
-Son tres cosas y las tres son archivos compartidos, así que se piden
+La entrada en el registro **ya está** —la escribió la cabeza en `js/03h`, con
+`backend: 'hoja'` y `transitorio: 'transitorio, salida a postgres'`, que es la
+exención por ítem que Daniel autorizó—. Lo que sigue abierto es esto, y las
+cuatro cosas son archivos compartidos, así que se piden
 (`COORDINACION-MODULOS.md` §3 y §5).
 
 ### 1 · Mover el archivo a `js/` y engancharlo
@@ -50,49 +53,64 @@ Son tres cosas y las tres son archivos compartidos, así que se piden
 git mv herramientas/modulos/viviendas/83-viviendas.js js/83-viviendas.js
 ```
 
-y con él, las dos líneas que lo cargan: el `<script src="js/83-viviendas.js">`
-en `index.html` y su ruta en el precaché de `service-worker.js`. **No está en
-`js/` todavía justamente porque falta eso**: la guarda de archivos huérfanos
-—techo CERO— se pone roja con un archivo de `js/` que ninguna página carga, y
-tiene razón. La guarda del módulo lo busca en las dos rutas y dice en cuál lo
-encontró, así que el movimiento no rompe nada.
+y con él, las dos líneas que lo cargan —el `<script src="js/83-viviendas.js">`
+de `index.html` y su ruta en el precaché de `service-worker.js`— y
+`archivos: ['js/83-viviendas.js']` en su entrada del registro, que hoy está
+vacía. **No está en `js/` todavía justamente porque falta eso**: la guarda de
+archivos huérfanos, con techo CERO, se pone roja con un archivo de `js/` que
+ninguna página carga, y tiene razón. La guarda del módulo lo busca en las dos
+rutas y dice en cuál lo encontró, así que el movimiento no rompe nada.
 
-Y lleva un salto de versión, porque el navegador tiene que descargar un
-archivo nuevo: **el número lo pone la cabeza** (§2).
+Lleva salto de versión, porque el navegador descarga un archivo nuevo: **el
+número lo pone la cabeza** (§2).
 
-### 2 · La entrada en el registro de la capa de mapeos (`js/03h`)
+### 2 · El tipo de fila: confirmado uno, y falta el de la FOTO
 
-Pedida con la forma que pide el protocolo —id, tipos, qué comparte y qué es
-privado—. Medido antes de pedirla: ningún otro módulo reclama estos dos tipos,
-y **no se pisan con los de la Vitrina** (`🛍️ Emprendimiento URBIS`,
-`🛍️ Portafolio URBIS`, `🛍️ Logo URBIS`) ni con el tipo
-`Vivienda y Residencial`, que es de `reportes` y es una categoría de la Matriz
-de Usos, no un inmueble en venta.
+El registro trae `tipoPropuesto: true` y pide que esta sesión confirme el
+texto antes de escribir la primera fila. **Confirmado `🏠 Vivienda URBIS`**, y
+el adaptador ya escribe exactamente ese texto; la guarda se lo pregunta a
+`duenoDe` del registro de verdad, así que los dos no se pueden separar.
 
-```js
-    viviendas: {
-      titulo: 'Viviendas en venta y en arriendo',
-      archivos: ['js/83-viviendas.js'],
-      tipos: ['🏘️ Vivienda URBIS', '🏘️ Foto de vivienda URBIS'],
-      prefijos: [],
-      /* Lo que cualquier módulo puede leer: lo que ya está en la calle en el
-         anuncio. Publicarlo y después negárselo a otro módulo no protegería
-         nada. */
-      comparte: ['tipo', 'operacion', 'precio', 'areaConstruida', 'habitaciones',
-                 'banos', 'parqueaderos', 'direccionPublica'],
-      /* PRIVADO por decisión de Daniel del 23 de octubre de 2026: la
-         dirección exacta solo se entrega después del contacto, y el punto
-         exacto ES la dirección —seis decimales son once centímetros—. Van las
-         dos: taparle el texto a un lector y dejarle la coordenada sería
-         declarar la mitad de la reserva, que es peor que no declarar ninguna. */
-      privado: ['direccionExacta', 'puntoExacto', 'duenio'],
-      nota: 'escribe solo Daniel y quien él autorice; el permiso propio es ' +
-            '«viviendas», como «vitrina». Hoy el módulo no escribe ninguna fila: ' +
-            'este renglón declara el reparto para cuando escriba.'
-    },
-```
+Se separaron una vez, el mismo día: el módulo escribía `🏘️ Vivienda URBIS`
+—la casita de barrio— y el registro `🏠 Vivienda URBIS` —la casa sola—. De
+vista son el mismo emoji y para `duenoDe` son dos tipos, así que esa fila
+habría quedado sin dueño. Ya está atado.
 
-### 3 · El permiso `viviendas` en el servidor
+**Falta un tipo para la FOTO.** La Vitrina ya midió por qué cada foto va en su
+propia fila: una foto comprimida casi llena una celda. Pido
+`🏠 Foto de vivienda URBIS`. Mientras no esté registrado, el módulo no lo
+nombra —un tipo sin dueño es lo que la guarda rechaza—, así que hoy el
+adaptador escribe un solo tipo.
+
+Y una pregunta sobre el segundo que el registro propone,
+`🏠 Permiso Vivienda URBIS`: la Vitrina **no** entrega su permiso con un tipo
+de fila propio, lo hace con `urbisDarPermiso(usuario, 'vitrina')`, y el tipo
+`🔑 Permiso` ya es de `social`. ¿Hace falta un tipo de fila aparte, o el
+permiso `viviendas` va por el mismo camino que el de la vitrina?
+
+### 3 · `lat` y `lng` deberían estar en `privado`
+
+Medido contra el esquema. El registro declara
+`privado: ['direccionExacta', 'contactoPropietario']`, y con eso
+`puedeLeer('<otro módulo>', 'viviendas', 'lat')` devuelve **true**. Pero
+**seis decimales son once centímetros**: la coordenada cruda ES la dirección
+exacta, así que taparle el texto a otro módulo y dejarle el punto declara la
+mitad de la reserva, que es peor que no declarar ninguna (v867). Del lado de
+lo que se publica ya está cerrado —`paraPublicar` solo emite el punto
+redondeado por `puntoPublico`, y hay guarda—; lo que falta es que el registro
+diga lo mismo.
+
+### 4 · Los nombres de `comparte` y `privado` no son los del esquema
+
+El registro nombra `ubicacionAproximada`, `tipoInmueble` y
+`contactoPropietario`; el esquema los llama `direccionPublica`, `tipo` y
+—todavía— no tiene campo de contacto. Hoy no rompe nada porque nadie lee
+viviendas aún, pero son dos codificaciones de un mismo reparto y se separan en
+cuanto alguien llame a `puedeLeer`. ¿Alineo el esquema a los nombres del
+registro, o la cabeza alinea el registro a los del esquema? No lo decido sola
+porque `js/03h` es compartido.
+
+### 5 · El permiso `viviendas` en el servidor
 
 Igual que `vitrina`: sin candado, cualquiera podría publicar una vivienda con
 la palabra URBIS avalándola. El servidor es el Apps Script y **no está en este

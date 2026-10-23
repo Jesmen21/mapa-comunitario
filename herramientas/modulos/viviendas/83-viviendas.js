@@ -432,13 +432,23 @@
      `aFila`/`desdeFila` son el par, y la prueba los corre en redondo: una
      vivienda que va y vuelve tiene que ser la misma. Un adaptador que solo se
      mide en una dirección pasa en verde con la mitad rota. */
-  var TIPO_FILA = '🏘️ Vivienda URBIS';
-  var TIPO_FILA_FOTO = '🏘️ Foto de vivienda URBIS';
+  /* EL TEXTO DEL TIPO LO MANDA EL REGISTRO, NO ESTE ARCHIVO. Son dos
+     codificaciones de un solo hecho —la clase B— y ya se habían separado el
+     mismo día: acá decía «🏘️ Vivienda URBIS» con la casita de barrio y el
+     registro de la cabeza dice «🏠 Vivienda URBIS» con la casa sola. Nadie
+     hizo nada mal; coincidían de vista y una fila escrita con el emoji que
+     no es queda sin dueño, que es exactamente lo que el registro existe para
+     impedir. Manda el registro, y `revisar.js` ata los dos.
+
+     La FOTO no está acá y es a propósito: su tipo de fila no está registrado
+     todavía —el registro propone «🏠 Permiso Vivienda URBIS», que es otra
+     cosa— y escribir un tipo sin dueño es lo que la guarda rechaza. Está
+     pedido en herramientas/modulos/viviendas.md. */
+  var TIPO_FILA = '🏠 Vivienda URBIS';
   var PREFIJO = 'VIVIENDA_URBIS:';
 
   var ALMACEN_VITRINA = {
     tipo: TIPO_FILA,
-    tipoFoto: TIPO_FILA_FOTO,
     prefijo: PREFIJO,
     aFila: function (viv) {
       return {

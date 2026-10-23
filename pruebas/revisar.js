@@ -16898,6 +16898,48 @@ console.log('\n  -- el módulo de viviendas: el esquema, y lo que no sale a la c
         : (!igual ? 'el viaje redondo no devuelve lo mismo' : 'claves que nombran el almacén: ' + sucias.join(' · ')));
   }
 
+  /* ── 8b · EL TIPO DE FILA LO MANDA EL REGISTRO (v879) ────────────────────
+     El texto del tipo está escrito en DOS sitios —el adaptador de este módulo
+     y `js/03h`— y son dos codificaciones de un solo hecho. Ya se habían
+     separado el mismo día que se escribieron: el módulo decía «🏘️ Vivienda
+     URBIS» y el registro «🏠 Vivienda URBIS», dos emojis que de vista se
+     confunden y que para `duenoDe` son dos tipos distintos. Una fila escrita
+     con el que no es queda sin dueño declarado, que es justo lo que el
+     registro existe para impedir.
+
+     No se pueden derivar —el módulo no puede cargar `js/03h` sin la página—,
+     así que se ATAN: el dueño del tipo que este módulo escribe tiene que ser
+     `viviendas`, preguntándoselo al registro de verdad. La guarda mira hacia
+     la dirección que importa: lo que el módulo ESCRIBE tiene que estar
+     registrado. Que el registro declare tipos que el módulo todavía no
+     escribe es correcto y no se denuncia —la foto y el permiso están
+     pedidos—, igual que la atadura con la Matriz de Usos es asimétrica. */
+  {
+    let reg = null, err = '';
+    try {
+      const w = {};
+      new Function('window', leer('js/03h-registro-modulos.js'))(w);
+      reg = w.URBIS_CAMPOS && w.URBIS_MODULOS ? w : null;
+    } catch (e) { err = String(e && e.message || e); }
+    if (!reg) {
+      anotarSinMaterial('MATERIAL · el registro de módulos se deja leer para atarle el tipo de fila',
+        err || 'js/03h no deja URBIS_CAMPOS ni URBIS_MODULOS en window');
+    } else {
+      const tipo = V.ALMACEN_VITRINA.tipo;
+      const dueno = reg.URBIS_CAMPOS.duenoDe(tipo);
+      const entrada = reg.URBIS_MODULOS.viviendas;
+      const ok = dueno === 'viviendas' && !!entrada;
+      comprobar('el tipo de fila que el módulo escribe es suyo según el registro de la capa',
+        ok,
+        ok ? '«' + tipo + '» → dueño «' + dueno + '». El registro declara ' + entrada.tipos.length +
+             ' tipo(s) para viviendas y el módulo escribe 1; los demás están pedidos y todavía no se escriben'
+          : (!entrada ? 'el registro no tiene entrada «viviendas»'
+             : '«' + tipo + '» → dueño «' + (dueno || 'NINGUNO') + '», y el registro declara ' +
+               entrada.tipos.map((t) => '«' + t + '»').join(' · ') +
+               ' — una fila escrita así queda sin dueño'));
+    }
+  }
+
   /* ── 9 · EL ESTADO DEL REGISTRO SE CALCULA (v903) ─────────────────────────
      Recibe el registro por parámetro justamente para poder medir las DOS
      ramas; contra el registro de verdad solo se mediría la de hoy, que es la
