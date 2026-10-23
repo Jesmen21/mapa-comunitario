@@ -1494,28 +1494,87 @@
      el mismo resultado puede exportarse en los dos informes, y entonces la
      comparación contra el archivo del analista se colaría en el que va al
      cliente. Quién puede verla es una decisión del informe, no del dato. */
+  /* ── El discriminante de la v875 llega a la banda (v1164) ───────────────
+     Hasta la v1163 esta banda publicaba «Flujo peatonal 7/100» con la capa
+     del radio VACÍA, cuatro líneas debajo de la sección 1, que para el mismo
+     resultado imprimía SIN MEDIR y se negaba a publicar el score. Las dos
+     cosas en el mismo papel: **el informe se contradecía consigo mismo**, y
+     es justo lo que deslegitima un análisis ante alguien que conoce la zona.
+
+     El discriminante ya venía en el MISMO objeto —`capaVaciaAIA(r)` y
+     `f.avisoDatos`, que `bloqueFlujo` y `bloqueClave` leen desde antes— y
+     esta función no lo miraba: la clase A, y la cura no toca el motor.
+
+     TRES ESTADOS Y NO DOS, porque piden acciones distintas (v899):
+       · la cifra está            → se publica;
+       · el campo NO vino         → `SIN MEDIR`, el análisis no la trajo;
+       · la capa está vacía       → `SIN MEDIR`, y lo que se calcularía no
+                                    mide el sector, mide una capa vacía.
+     `(f.peatonal || 0)` juntaba el segundo con un cero medido, que es la
+     regla 6 de Daniel al revés: un campo ausente salía impreso como «0».
+
+     Y A QUIÉN SE LE APLICA LA CAPA VACÍA, que es la mitad que discrimina:
+     solo a los dos FLUJOS. `capaVaciaAIA` cuenta usos, comercio y
+     competidores, y el flujo lo modela el motor a partir de los usos — sin
+     usos no mide nada. Las vías arterias y las paradas salen de la TRAZA,
+     que es otra consulta: cero usos mapeados no implica cero vías, así que
+     marcarlas sería un falso positivo. Habitantes sale del censo DANE, que
+     tampoco depende de los usos. */
+  const SM_AUSENTE = 'el análisis no trajo esta cifra';
+
   function seisDatos(r, edu){
-    const s = r.stats, f = (s.movilidad && s.movilidad.flujo) || {};
+    const s = r.stats;
+    /* `mov` puede no venir, y este archivo no se ponía de acuerdo consigo
+       mismo: la línea de abajo lo protegía y dieciséis líneas después
+       `s.movilidad.nViasArterias` lo leía a pelo, así que un resultado sin
+       movilidad reventaba la composición entera con un TypeError. Son dos
+       codificaciones de «¿puede faltar?» en la MISMA función (clase B).
+       Cuál de las dos tiene razón no se puede medir desde este contenedor
+       —`stats.movilidad` lo produce el motor, que vive en el repositorio
+       privado y no está acá—, así que se resuelve por la regla de la v880:
+       falla CERRADO. Si viene, se publica; si no, la banda lo dice y el
+       informe sigue en pie. */
+    const mov = s.movilidad || null, f = (mov && mov.flujo) || {};
     const radioTxt = r.meta.radioM >= 1000 ? (r.meta.radioM / 1000) + ' km' : r.meta.radioM + ' m';
+    const vacia = capaVaciaAIA(r);
+    /* UNA redacción para la razón de la capa vacía, y sale del MISMO
+       discriminante que la usa la sección 1: con dos textos, el que se
+       quedaría viejo es el de acá, porque nadie lo vuelve a mirar (v879). */
+    const smVacia = 'no mide el sector: dentro del radio no hay ' +
+      vacia.join(', ni ') + ' en el mapa abierto';
+    /* El aviso del motor viaja CON la cifra y se pinta a su lado (v867,
+       v1088): es el motor el que sabe cuándo la zona está poco mapeada, y su
+       umbral no se puede leer desde acá — inventarle otro sería el número a
+       ojo de la v869. */
+    const avisoFlujo = f.avisoDatos ? 'poco mapeada: el flujo real puede ser mayor' : '';
+    const flujo = (valor, nivel, etq) =>
+      valor == null ? { t: etq, sm: SM_AUSENTE }
+      : vacia.length ? { t: etq, sm: smVacia }
+      : { n: valor + ' / 100', t: etq, s: nivel || '—', c: colFlujo(valor),
+          aviso: avisoFlujo };
+    /* Cero vías o cero paradas es un HALLAZGO y se pinta en rojo a propósito;
+       el campo ausente es otra cosa y pide otra acción (v899). Por eso se
+       compara contra null y no con `!valor`, que juntaría las dos. */
+    const conteo = (valor, etq, sub) =>
+      valor == null ? { t: etq, sm: mov ? SM_AUSENTE : 'el análisis no trajo la capa de movilidad' }
+      : { n: valor, t: etq, s: sub, c: valor > 0 ? T.acento : T.bad };
     const cajas = [
-      { n: numEs(s.poblacionEstimada), t: 'Habitantes',
-        // Con proyección, la cifra es la de HOY y hay que decirlo: presentar
-        // un dato de 2018 como si fuera actual subestima la demanda.
-        s: s.poblacionProyectada
-             ? 'DANE ' + s.censoAnio + ' proyectado a ' + s.anioProyeccion
-             : (s.poblacionEsCensal ? 'DANE ' + s.censoAnio : 'estimación URBIS'),
-        c: T.acento },
-      { n: (f.peatonal || 0) + ' / 100', t: 'Flujo peatonal',
-        s: f.nivelPeatonal || '—', c: colFlujo(f.peatonal || 0) },
-      { n: (f.vehicular || 0) + ' / 100', t: 'Flujo vehicular',
-        s: f.nivelVehicular || '—', c: colFlujo(f.vehicular || 0) },
-      { n: numEs(s.total), t: 'Usos identificados',
-        s: 'en ' + radioTxt, c: T.acento },
-      { n: s.movilidad.nViasArterias, t: 'Vías arterias',
-        s: 'en el radio', c: s.movilidad.nViasArterias > 0 ? T.acento : T.bad },
-      // Cero paradas es un hallazgo, no un hueco: se pinta en rojo a propósito.
-      { n: s.movilidad.paradasBus, t: 'Paradas de transporte',
-        s: 'identificadas', c: s.movilidad.paradasBus > 0 ? T.acento : T.bad }
+      s.poblacionEstimada == null
+        ? { t: 'Habitantes', sm: SM_AUSENTE }
+        : { n: numEs(s.poblacionEstimada), t: 'Habitantes',
+            // Con proyección, la cifra es la de HOY y hay que decirlo: presentar
+            // un dato de 2018 como si fuera actual subestima la demanda.
+            s: s.poblacionProyectada
+                 ? 'DANE ' + s.censoAnio + ' proyectado a ' + s.anioProyeccion
+                 : (s.poblacionEsCensal ? 'DANE ' + s.censoAnio : 'estimación URBIS'),
+            c: T.acento },
+      flujo(f.peatonal, f.nivelPeatonal, 'Flujo peatonal'),
+      flujo(f.vehicular, f.nivelVehicular, 'Flujo vehicular'),
+      s.total == null
+        ? { t: 'Usos identificados', sm: SM_AUSENTE }
+        : { n: numEs(s.total), t: 'Usos identificados', s: 'en ' + radioTxt, c: T.acento },
+      conteo(mov && mov.nViasArterias, 'Vías arterias', 'en el radio'),
+      conteo(mov && mov.paradasBus, 'Paradas de transporte', 'identificadas')
     ];
     /* La referencia contra los sectores que el curso ya levantó, cuando el
        informe es el del curso y hay al menos tres con qué comparar. Un
@@ -1523,13 +1582,20 @@
        es poco o es lo normal en su ciudad. */
     const refs = edu ? (r.referencias || null) : null;
     return '<div class="seis">' + cajas.map(c => {
-      const ref = refs ? refs[c.t] : '';
+      /* Una baldosa SIN MEDIR no lleva referencia contra otros sectores:
+         comparar lo que no se midió contra el archivo del curso publicaría
+         una comparación sin uno de sus dos términos. */
+      const ref = refs && !c.sm ? refs[c.t] : '';
+      if (c.sm) {
+        return '<div class="dato dato-sm"><b>SIN MEDIR</b>' +
+          '<span>' + esc(c.t) + '</span><small>' + esc(c.sm) + '</small></div>';
+      }
       return '<div class="dato"><b style="color:' + c.c + '">' + numEs(c.n) + '</b>' +
         '<span>' + esc(c.t) + '</span><small>' + esc(c.s) + '</small>' +
+        (c.aviso ? '<small class="dato-aviso">⚠️ ' + esc(c.aviso) + '</small>' : '') +
         (ref ? '<i class="dato-ref">' + esc(ref) + '</i>' : '') + '</div>';
     }).join('') + '</div>';
   }
-
   // ── 3. Oportunidad urbana ───────────────────────────────────────────────
   // El aro y la lista van en filas SEPARADAS. Antes compartían caja con un
   // elemento de ancho completo y la barra terminaba cruzando el aro por la
@@ -2937,6 +3003,14 @@ pie(4, r, autor, true),
 '.dato b{display:block;font-size:15px;font-weight:900;line-height:1.1}',
 '.dato span{display:block;font-size:7.6px;font-weight:700;color:', T.tinta, ';margin-top:3px}',
 '.dato small{display:block;font-size:6.8px;color:', T.txt3, ';margin-top:1px}',
+/* La baldosa SIN MEDIR: el mismo ambar a trazos con el que la seccion 1
+   avisa de la capa vacia, para que las dos superficies del mismo informe se
+   lean como lo mismo y no como dos avisos distintos (v879). El rotulo va en
+   el hueco del numero, no encima: una baldosa que dejara el 0 y pusiera la
+   marca debajo seguiria publicando el cero. */
+'.dato-sm{border-style:dashed;border-color:', T.warn, ';background:#fff8ec}',
+'.dato-sm b{font-size:8.2px;letter-spacing:.7px;color:', T.warn, ';padding-top:3px}',
+'.dato-aviso{color:', T.warn, ' !important;font-weight:700}',
 /* 3 · Oportunidad urbana — aro arriba, lista debajo, nunca superpuestos */
 '.oport-cab{display:flex;align-items:center;gap:10px;margin-bottom:6px}',
 '.oport-cab .aro{width:19mm;height:19mm}',

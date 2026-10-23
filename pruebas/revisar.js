@@ -16505,6 +16505,140 @@ console.log('\n  -- la resta del desplazamiento mide la barra ENTERA (v1157) --'
     }
   }
 })();
+/* ─────────────────────────────────────────────────────────────────────────
+   MODULO EMPRESAS · la banda de los seis datos no publica sobre capa vacia
+   (el numero de version lo pone la cabeza al integrar)
+
+   EL DEFECTO QUE LA PAGO. El informe de empresas se contradecia consigo
+   mismo en la MISMA pagina: la seccion 1 imprimia SIN MEDIR y se negaba a
+   publicar el score de viabilidad, y la seccion 2 —cuatro lineas despues—
+   publicaba «Flujo peatonal 7/100». El discriminante venia en el MISMO
+   objeto (`capaVaciaAIA` y `f.avisoDatos`, que `bloqueFlujo` y `bloqueClave`
+   ya leian) y `seisDatos` no lo miraba: la clase A de CLAUDE.md.
+
+   Va en ROJO y no con `?`: se mide contra CODIGO SERVIDO, que no puede
+   vaciarse por una mejora del registro (v965, v970).
+
+   DE QUE NO RESPONDE, escrito al lado (v945, v952):
+   · no comprueba que la cifra del motor sea correcta —su formula vive en el
+     repositorio privado y no esta en este contenedor—, solo que no se
+     publique cuando lo que la alimenta esta vacio;
+   · no cubre los otros dos sitios de js/63 que leen `movilidad` a pelo
+     —`pngCalor` y el panel de la lectura clave—, que son el mismo defecto de
+     clase en otras dos funciones y quedan declarados a Daniel sin tocar;
+   · y no comprueba que el texto se LEA bien: eso lo dice el papel, que esta
+     compuesto y leido en los seis casos de la bitacora. */
+console.log('\n  -- la banda de los seis datos no publica sobre capa vacia --');
+{
+  const j63 = leer('js/63-analisis-ia-informe.js');
+  /* Se busca DENTRO del trozo de la funcion y no en el archivo (v854): un
+     patron suelto encuentra el `capaVaciaAIA` de la caja de al lado, que son
+     justamente los paneles que ya lo leian antes de esta tanda. */
+  const iF = j63.indexOf('function seisDatos(r, edu){');
+  const iFin = iF < 0 ? -1 : j63.indexOf('\n  }', iF);
+  const trozo = iF < 0 || iFin < 0 ? '' : j63.slice(iF, iFin);
+  /* El CODIGO y no los comentarios (v926): la mitad de esta funcion es la
+     explicacion de por que mira el discriminante, y una capacidad
+     demostrada por el parrafo que habla de ella no esta demostrada. */
+  const codigo = soloCodigo(trozo);
+  /* Las seis cajas se cuentan por su ROTULO, que es lo que el lector ve, y
+     los rotulos viven en dos formas: literal dentro de la caja (`t: '...'`)
+     y como argumento de los dos ayudantes que arman flujo y conteo. Contar
+     solo la primera daba cuatro de seis y dejaba la guarda SIN MATERIAL
+     teniendo la banda entera delante. */
+  /* Se cuentan los rotulos DISTINTOS, y no las veces que aparecen: el
+     rotulo de una caja vive a veces en la caja y a veces en la llamada al
+     ayudante que la arma, asi que sumar las dos formas daba OCHO para una
+     banda de SEIS. Ocho era defendible como umbral y mentia como cifra
+     publicada, que es la clase A cometida dentro de la guarda. */
+  const rotulos = new Set(
+    (codigo.match(/t:\s*'[^']+'/g) || []).map((x) => x.slice(x.indexOf("'") + 1, -1))
+      .concat((codigo.match(/'(Flujo [a-z]+|Vías arterias|Paradas de transporte)'/g) || [])
+        .map((x) => x.slice(1, -1))));
+  const cajas = rotulos.size;
+
+  if (!trozo || cajas < 6) {
+    anotarSinMaterial('MATERIAL · la banda de los seis datos se deja leer',
+      !trozo ? 'no se encontro seisDatos en js/63: si se renombro, esta guarda ya no vigila nada'
+             : 'la banda trae ' + cajas + ' caja(s) rotuladas y la banda son seis');
+  } else {
+    comprobar('MATERIAL · la banda de los seis datos se deja leer',
+      true, cajas + ' cajas rotuladas, leidas del codigo de la funcion y no del archivo entero');
+
+    /* 1 · el discriminante de la capa vacia (el defecto de la v1163). */
+    comprobar('la banda consulta el discriminante de capa vacia antes de publicar el flujo',
+      /capaVaciaAIA\s*\(\s*r\s*\)/.test(codigo),
+      /capaVaciaAIA\s*\(\s*r\s*\)/.test(codigo)
+        ? 'lo consulta, como `bloqueFlujo` y `bloqueClave`, asi que las dos secciones del informe no pueden contradecirse'
+        : 'NO lo consulta: publica el flujo con la capa vacia mientras la seccion 1 del MISMO informe imprime SIN MEDIR');
+
+    /* 2 · el aviso del motor, que viaja con la cifra (v867, v1088). */
+    comprobar('y lee el aviso del motor sobre la zona poco mapeada',
+      /avisoDatos/.test(codigo),
+      /avisoDatos/.test(codigo)
+        ? 'lo lee y lo pinta al lado de la cifra; el umbral lo decide el motor y no se inventa otro acá (v869)'
+        : 'NO lo lee, teniendolo en el mismo objeto `f` que ya usa: el panel de flujo avisaba y esta banda callaba');
+
+    /* 3 · AUSENTE no es CERO (regla 6 de Daniel, y la v875). */
+    const porNull = (codigo.match(/==\s*null/g) || []).length;
+    const ceroFalso = /\(\s*f\.(peatonal|vehicular)\s*\|\|\s*0\s*\)/.test(codigo);
+    comprobar('y distingue AUSENTE de CERO: ningun campo del motor se imprime como cero cuando no vino',
+      porNull >= 4 && !ceroFalso,
+      ceroFalso
+        ? 'un campo ausente se imprime como «0 / 100»: `(f.peatonal || 0)` junta el cero medido con el que no llego'
+        : porNull >= 4
+          ? porNull + ' comparaciones contra null, y ningun `|| 0` sobre las cifras del motor. Un cero MEDIDO sigue publicandose —y en rojo, que es un hallazgo— y solo el ausente sale SIN MEDIR'
+          : 'solo ' + porNull + ' comparacion(es) contra null: las seis cajas leen campos del motor y cada una tiene que poder faltar');
+
+    /* 4 · la capa de movilidad protegida (la contradiccion interna). */
+    const pelado = /s\.movilidad\.[A-Za-z]/.test(codigo);
+    comprobar('y la capa de movilidad va protegida en toda la banda',
+      !pelado,
+      pelado
+        ? 'la lee a pelo: esta funcion protegia `s.movilidad && s.movilidad.flujo` y dieciseis lineas despues leia `s.movilidad.nViasArterias`, dos codificaciones de «puede faltar» en la MISMA funcion (clase B)'
+        : 'una sola lectura, con su guarda. Cual de las dos tenia razon no se puede medir desde acá —`stats.movilidad` lo produce el motor— asi que falla CERRADO (v880)');
+
+    /* 5 · UNA redaccion, no dos (v879). La razon de la capa vacia tiene que
+       SALIR del discriminante y no ser un texto escrito al lado, porque con
+       dos el que se queda viejo es el que nadie vuelve a mirar. */
+    const deriva = /vacia\.join\(/.test(codigo);
+    comprobar('y la razon de la capa vacia SALE del discriminante, no de un texto propio',
+      deriva,
+      deriva
+        ? 'se arma con lo que `capaVaciaAIA` devolvio, asi que la banda no puede nombrar una capa distinta de la que la seccion 1 nombra'
+        : 'la razon esta escrita aparte: dos textos para un mismo hecho se separan en cuanto el discriminante cambie (v879)');
+
+    /* 6 · GUARDA DE LA GUARDA (v878): que la marca LLEGUE al papel. Sin
+       esto todo lo de arriba sigue en verde sobre una cifra que se calcula
+       y no se pinta, que es la clase C — y la v1101 ya se quedo en verde
+       con un bloque construido y sin enganchar. */
+    const pinta = /class="dato dato-sm"/.test(codigo) && /SIN MEDIR/.test(codigo);
+    const conCss = /\.dato-sm\{/.test(j63);
+    comprobar('y la marca SIN MEDIR llega al papel, con su clase y su CSS',
+      pinta && conCss,
+      pinta && conCss
+        ? 'la baldosa se pinta con `dato-sm` y la clase tiene su regla en la hoja del informe: el ambar a trazos de la seccion 1'
+        : !pinta ? 'la banda decide SIN MEDIR y no lo pinta: calculado y sin llegar a ningun lector (clase C)'
+                 : 'la clase `dato-sm` se pinta y no tiene CSS: la baldosa sale sin el ambar que la distingue');
+
+    /* 7 · Y LA MITAD QUE DISCRIMINA. La capa vacia cuenta usos, comercio y
+       competidores; las vias y las paradas salen de la TRAZA, que es otra
+       consulta. Marcarlas con el discriminante de los usos seria un falso
+       positivo, y una guarda que solo exige «mira el discriminante» lo
+       aplaudiria. Se mide que las cajas de conteo NO pasen por el. */
+    const iConteo = codigo.indexOf('const conteo =');
+    const finConteo = iConteo < 0 ? -1 : codigo.indexOf(';', codigo.indexOf('{ n: valor', iConteo));
+    const trozoConteo = iConteo < 0 || finConteo < 0 ? '' : codigo.slice(iConteo, finConteo);
+    const limpio = !!trozoConteo && !/vacia/.test(trozoConteo);
+    comprobar('y la capa vacia NO alcanza a las cajas que no dependen de los usos',
+      limpio,
+      !trozoConteo
+        ? 'no se encontro la rama de conteo: si se reescribio, esta mitad ya no vigila nada'
+        : limpio
+          ? 'las vias arterias y las paradas salen de la traza y no de los usos, asi que cero usos mapeados no las marca: aplicarles el discriminante seria un falso positivo'
+          : 'les aplica el discriminante de los usos: cero usos mapeados no implica cero vias, y marcarlas esconde un conteo que si se midio');
+  }
+}
 
 /* Las dos cuentas van APARTE porque piden cosas distintas: una fallada hay
    que arreglarla, una sin material hay que mirarla —o se quedó sin él porque
