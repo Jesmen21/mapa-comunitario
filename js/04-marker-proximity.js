@@ -908,7 +908,15 @@
     /* El TRAMO de la vía (v1002): `lat,lng;lat,lng;…`. Una sola casilla,
        porque una geometría es un solo hecho; la codificación y su vuelta
        viven en js/03g y no acá. */
-    viaTramo:               BASE_OFFSET + TIMELINE_EXTRA_OFFSET + 26
+    viaTramo:               BASE_OFFSET + TIMELINE_EXTRA_OFFSET + 26,
+    /* LA ÚLTIMA CASILLA POSICIONAL QUE SE ABRE EN ESTE PROYECTO (v1162).
+       Dentro va el ESPACIO CON NOMBRE de cada módulo —`modulo:campo=valor`,
+       codificado—, que vive en js/03h. Desde acá un campo nuevo no nace como
+       una posición que alguien tiene que contar: nace con su nombre y con su
+       módulo dueño declarados. Las 27 de arriba se quedan como están, porque
+       hay datos guardados en ellas y reordenarlas los perdería.
+       `revisar.js` se pone rojo si esta tabla crece por debajo de acá. */
+    espacioConNombre:       BASE_OFFSET + TIMELINE_EXTRA_OFFSET + 27
   };
   // La casilla que las tres funciones se disputaban. Se conserva con nombre
   // propio porque hay registros viejos con validaciones o con código de carpeta

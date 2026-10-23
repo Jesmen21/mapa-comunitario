@@ -8,21 +8,31 @@ que no está acá, está en `CLAUDE.md` y en `BITACORA.md`.
 
 ## 1 · Dónde está el repositorio AHORA MISMO
 
-**Nada de esto está publicado.** La rama `main-r3g781` va **cuatro commits
-adelante** de `origin`, `main` está intacta y `urbispro.city` sigue sirviendo
-la **v1137**.
+**Esta sección estaba vieja y se reescribió el 23 de octubre de 2026.** Decía
+que nada estaba publicado y que había que subir «solo hasta `3f6a7e1`»: las dos
+cosas dejaron de ser ciertas. Se deja dicho porque es exactamente la forma que
+este proyecto persigue —una lista honesta se vuelve vieja la primera vez que
+alguien implementa algo (v868)— y porque una instrucción de publicación vieja
+es de las que se obedecen sin volver a mirar.
 
-| Commit | Qué trae | ¿Se publica? |
-|---|---|---|
-| `e0d3980` | bloques `delitosAltoImpacto` y `subsidios` | sí |
-| `f28b7b9` | guarda de contraste y paletas candidatas | sí |
-| `3f6a7e1` | **v1138** · paleta «Papel» aplicada | **sí — hasta acá** |
-| `b4e49f3` | **v1139** · las dos guardas previas | **NO** |
+**Lo medido hoy:**
 
-> **LA REGLA DE PUBLICACIÓN, literal:** cuando Daniel diga **«súbalo»**, se
-> publica **solo hasta `3f6a7e1`** con `git merge --ff-only 3f6a7e1` sobre
-> `main`, dejando `b4e49f3` esperando en la rama. Lo pidió así y no se
-> interpreta de otra manera.
+* `3f6a7e1` (**v1138**, la paleta «Papel») **ya está en `origin/main`**, con
+  todo lo anterior. Se publicó cuando Daniel dijo «súbalo».
+* `b4e49f3` (**v1139**) y `c1978e0` (**v1140**, el texto en cinco pestañas)
+  **también están en `origin/main`**.
+* La rutina diaria —que es otra sesión y empuja varias veces al día— siguió
+  encima y `origin/main` va por **v1161**.
+* Lo único que la rama de trabajo tiene y `main` no son **tres commits de
+  documentación**: la bitácora, la nota de la rutina y el texto para pegar.
+  Ningún código.
+* No hace falta ninguna rama nueva con «solo la paleta»: la paleta está
+  publicada y la rama de trabajo nunca se fusionó en `main`.
+
+> **LA REGLA DE PUBLICACIÓN, hoy:** se desarrolla en `main-r3g781` y se empuja
+> a `main-r3g781`. **Nada va a `main` sin un «súbalo» explícito de Daniel**, y
+> cuando lo diga, se trae `origin/main` primero —la rutina diaria escribe
+> encima— y se comprueba la HISTORIA y no el mensaje de `git merge`.
 
 **No se empuja sin un «súbalo» explícito.** Acá empujar ES publicar: `main`
 sirve el sitio por GitHub Pages. El hook de git lo va a pedir en cada turno;
@@ -224,8 +234,17 @@ material porque ya no quedan entradas con esquema antiguo. Es el estado bueno.
 
 ## 9 · El texto de arranque para la sesión nueva
 
-**La rama es `main-r3g781`** y está en GitHub con los cinco commits. `main`
-NO los tiene: sigue en `b9a8edf` (v1137), que es lo que sirve el sitio.
+> **GASTADO. El texto de abajo pedía la v1140 y la v1140 ya está hecha y
+> publicada** (`c1978e0`, las cinco pestañas), igual que la v1139. Se conserva
+> entero porque sus conteos base y su forma siguen valiendo, pero **no se pega
+> tal cual**: los cinco commits que manda comprobar están hoy dentro de
+> `origin/main`, y la rutina diaria siguió encima hasta la v1161.
+>
+> **Lo que de verdad sigue abierto es la v1141**, la portada gráfica, y
+> necesita el visto bueno de Daniel antes de empezarse.
+
+**La rama es `main-r3g781`.** Lo que tiene y `main` no son tres commits de
+documentación; todo el código está publicado.
 
 ```
 Continúo el módulo presidencial de URBIS.
@@ -260,5 +279,6 @@ inalcanzable en verde con su inyección, el papel leído en las cinco
 pestañas, verdes y ?, y el veredicto en el piso.
 
 No subas nada a main. Puedes subir a main-r3g781. Cuando yo diga
-«súbalo» se publica solo hasta 3f6a7e1.
+«súbalo» se publica lo que haya en main-r3g781, trayendo origin/main
+primero.
 ```
