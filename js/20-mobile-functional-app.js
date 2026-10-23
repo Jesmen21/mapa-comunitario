@@ -2608,12 +2608,24 @@
                           && window.urbisPreguntaPorVictimas(item.id)
                           && typeof window.urbisBloqueVictimas === 'function')
       ? window.urbisBloqueVictimas() : '';
+    /* CUÁNTO DURA ESTE TIPO, no «8 horas» para todos (v1163). El letrero
+       decía ocho horas a los 126 tipos del catálogo y solo 95 duran eso: los
+       otros 31 van de 12 a 336 horas. Un secuestro anunciado como «activo 8
+       horas» se lee como que a las ocho ya no le importa a nadie, y lo que
+       pasa de verdad es que dura tres días.
+       La cifra NO se calcula acá: sale de `urbisHorasVigencia` (js/03c), que
+       es la misma que usa `enviarDatos` para escribir la fecha de
+       vencimiento en la fila. Si se calculara acá serían dos cuentas, y el
+       día que una cambie el letrero volvería a mentir — que es exactamente
+       como empezó esto. Sin js/03c se cae a la redacción de siempre. */
+    const vigenciaTexto = (typeof window.urbisVigenciaEnPalabras === 'function')
+      ? window.urbisVigenciaEnPalabras(item.label) : '8 horas';
     const photoLabelText = photoRequired ? '📷 Foto obligatoria *' : '📷 Evidencia opcional';
     const photoClass = photoRequired ? 'u52-quick-photo required' : 'u52-quick-photo';
     panel.innerHTML = `
       <div class="u52-quick-report-head">
         <button type="button" data-u52-call="quick-report-back" aria-label="Volver">‹</button>
-        <div><b>Nuevo reporte</b><small>Activo durante 8 horas</small></div>
+        <div><b>Nuevo reporte</b><small>Activo durante ${esc(vigenciaTexto)}</small></div>
         <button type="button" data-u52-call="quick-report-close" aria-label="Cerrar">×</button>
       </div>
       <div class="u52-quick-report-selected"><span>${item.icon}</span><div><b>${esc(item.label)}</b><small>${esc(item.dim.replace(/^\S+\s*/, ''))}</small></div></div>

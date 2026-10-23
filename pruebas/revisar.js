@@ -16389,6 +16389,118 @@ console.log('\n  -- la resta del desplazamiento mide la barra ENTERA (v1157) --'
         ', así que una sesión nueva no tiene dónde leer el reparto y vuelve a inventarlo');
 })();
 
+/* ══ LA VIGENCIA QUE SE ANUNCIA ES LA QUE SE ESCRIBE (v1163) ═════════════
+   Módulo Reportes/Eventos.
+
+   El panel de reporte rápido anunciaba «Activo durante 8 horas» con un
+   literal, a los 126 tipos del catálogo. Medido: 95 duran 8 h y 31 NO —12,
+   24, 48, 72, 120, 168 y 336 horas—, así que el letrero mentía en 31 de 126,
+   y en los que peor se lee: un secuestro anunciado como «activo 8 horas»
+   dice que a las ocho deja de importar, cuando dura tres días.
+
+   Debajo del letrero había una clase B: la cascada que decide las horas
+   estaba escrita dentro de `enviarDatos` (js/12) y el letrero era un texto
+   fijo en js/20. Dos codificaciones de un hecho, ya separadas. Ahora la
+   cascada vive UNA vez, en js/03c con el catálogo que define los tipos, y
+   las dos la leen.
+
+   De qué NO responde esta guarda (v945, v952): no comprueba que 72 h sea el
+   número correcto para un secuestro —eso es decisión de producto, de
+   Daniel—, solo que el número que se anuncia y el que se escribe en la fila
+   salgan del mismo sitio. */
+console.log('\n  -- la vigencia que se anuncia es la que se escribe (v1163) --');
+(function () {
+  const j03c = leer('js/03c-reportes-rapidos.js');
+  const j12 = soloCodigo(leer('js/12-spa-ui.js'));
+  const j20 = soloCodigo(leer('js/20-mobile-functional-app.js'));
+  const c03c = soloCodigo(j03c);
+
+  /* MATERIAL. Sin tipos que duren algo distinto de 8 h, todo lo de abajo
+     pasaría por no tener nada delante: un letrero fijo que dijera «8 horas»
+     sería cierto para todos. Va en ROJO y no con `?` porque el material es
+     CÓDIGO SERVIDO —el catálogo de js/03c— y no un registro que pueda
+     vaciarse por una mejora (v965, v970). */
+  let tipos = [];
+  try {
+    const win = {};
+    new Function('window', j03c)(win);
+    const secciones = win.URBIS_QUICK_REPORT_SECTIONS || [];
+    secciones.forEach(function (s) {
+      (s.items || []).forEach(function (it) {
+        tipos.push({ label: it[2], horas: win.urbisHorasVigencia(it[2]),
+                     palabras: win.urbisVigenciaEnPalabras(it[2]) });
+      });
+    });
+  } catch (e) { tipos = []; }
+  const distintos = tipos.filter(function (t) { return t.horas !== 8; });
+  const reparto = {};
+  tipos.forEach(function (t) { reparto[t.horas] = (reparto[t.horas] || 0) + 1; });
+
+  comprobar('MATERIAL · el catálogo tiene tipos que NO duran 8 horas',
+    tipos.length > 0 && distintos.length > 0,
+    tipos.length === 0
+      ? 'no se pudo evaluar js/03c, así que las comprobaciones de abajo no miden nada'
+      : distintos.length + ' de ' + tipos.length + ' duran algo distinto de 8 h · reparto en horas: ' +
+        Object.keys(reparto).map(Number).sort(function (a, b) { return a - b; })
+          .map(function (h) { return h + 'h×' + reparto[h]; }).join(' · '));
+
+  /* UNA SOLA CODIFICACIÓN. La cascada completa es reconocible por sus dos
+     cortes del conflicto, 168 y 72, con sus listas de palabras. Se busca
+     sobre el CÓDIGO y no sobre los comentarios (v926): los comentarios de
+     js/12 y de js/03c explican la cascada y citan los números. */
+  const cascadaEn = function (src) {
+    return /168/.test(src) && /\b72\b/.test(src) &&
+           /mina antipersona/i.test(src) && /reclutamiento/i.test(src);
+  };
+  comprobar('la cascada de horas vive en js/03c y NO está copiada en js/12',
+    cascadaEn(c03c) && !cascadaEn(j12),
+    cascadaEn(c03c) && !cascadaEn(j12)
+      ? 'una sola codificación: `urbisHorasVigencia` en js/03c, y js/12 la llama. Hasta la ' +
+        'v1162 estaba en js/12 y el letrero de js/20 era un literal, que es la clase B'
+      : (!cascadaEn(c03c) ? 'js/03c ya no tiene la cascada: `urbisHorasVigencia` es quien decide las horas y debe vivir ahí'
+                          : 'js/12 volvió a llevar su propia cascada: dos codificaciones de un hecho, y el día ' +
+                            'que una cambie el letrero vuelve a mentir'));
+
+  comprobar('y js/12 escribe la fila con esa misma función',
+    /urbisHorasVigencia\s*\(\s*i\s*\)/.test(j12),
+    /urbisHorasVigencia\s*\(\s*i\s*\)/.test(j12)
+      ? 'la fecha de vencimiento de la fila sale de `urbisHorasVigencia`, la misma que anuncia el panel'
+      : 'js/12 ya no llama a `urbisHorasVigencia`: lo que se anuncia y lo que se escribe pueden separarse');
+
+  /* GUARDA DE LA GUARDA (v1029, v1101): que el letrero se CONSTRUYA no basta,
+     tiene que estar ENGANCHADO. Se exigen las dos cosas —que js/20 pida el
+     texto y que lo interpole en la cabecera del panel—, porque una guarda que
+     solo mire la primera se queda verde con el literal de vuelta. */
+  const pide = /urbisVigenciaEnPalabras\s*\(/.test(j20);
+  const interpola = /Activo durante \$\{esc\(vigenciaTexto\)\}/.test(j20);
+  const literalViejo = /Activo durante 8 horas<\/small>/.test(j20);
+  comprobar('el letrero del panel sale de la función, y está enganchado en la cabecera',
+    pide && interpola && !literalViejo,
+    pide && interpola && !literalViejo
+      ? 'js/20 pide `urbisVigenciaEnPalabras` y la interpola en la cabecera; el literal «Activo durante 8 horas» ya no está'
+      : (!pide ? 'js/20 no llama a `urbisVigenciaEnPalabras`'
+         : !interpola ? 'js/20 calcula el texto y NO lo interpola en la cabecera: construido y sin enganchar, ' +
+                        'que desde afuera se lee igual que no haberlo hecho'
+         : 'volvió el literal «Activo durante 8 horas», que miente en ' + distintos.length + ' de ' + tipos.length + ' tipos'));
+
+  /* LAS DOS REDACCIONES (v970): la de horas y la de días. La segunda es la
+     que hace falta para los 31 que no duran 8 h, y sin un caso FABRICADO la
+     rama de días podría estar rota sin que el catálogo de hoy lo muestre. */
+  let hs = '', ds = '', un = '';
+  try {
+    const win2 = {};
+    new Function('window', j03c)(win2);
+    hs = win2.urbisVigenciaEnPalabras('Hueco en la vía');
+    ds = win2.urbisVigenciaEnPalabras('Mina antipersona (MAP/MUSE)');
+    un = win2.urbisVigenciaEnPalabras('Atentado con explosivos');
+  } catch (e) {}
+  comprobar('y las dos redacciones están escritas: horas, días y el singular',
+    hs === '8 horas' && ds === '7 días' && un === '1 día',
+    hs === '8 horas' && ds === '7 días' && un === '1 día'
+      ? 'horas «' + hs + '» · días «' + ds + '» · singular «' + un + '», medidas sobre casos fabricados y no sobre el catálogo'
+      : 'alguna redacción no sale: horas «' + hs + '» · días «' + ds + '» · singular «' + un + '»');
+})();
+
 /* Las dos cuentas van APARTE porque piden cosas distintas: una fallada hay
    que arreglarla, una sin material hay que mirarla —o se quedó sin él porque
    el registro mejoró, o porque la función dejó de ver lo que medía—. Sumarlas

@@ -692,13 +692,14 @@
     // solo el sismo y el incendio duraban más de 8 horas: una inundación se
     // borraba del mapa la misma tarde en que se reportó, cuando la emergencia
     // apenas estaba empezando.
-    const _horasAlerta = (typeof window.urbisHorasAlertaNacional === 'function')
-      ? window.urbisHorasAlertaNacional(i) : 0;
-    const horasTTLQuick = /atentado|artefacto explosivo/i.test(String(i||'')) ? 24
-      : _horasAlerta ? _horasAlerta
-      : /mina antipersona|reten ilegal|retén ilegal|grupo armado|confinamiento|desplazamiento forzado/i.test(String(i||'')) ? 168
-      : /secuestro|extorsion|extorsión|masacre|homicidio|desaparicion|desaparición|amenaza|reclutamiento|ejecucion extrajudicial|ejecución extrajudicial|combate armado|panfleto/i.test(String(i||'')) ? 72
-      : 8;
+    // La cascada entera vive en js/03c, con el catálogo que define los tipos
+    // (`urbisHorasVigencia`). Estaba escrita acá y el panel de Android
+    // anunciaba «8 horas» con un literal: dos codificaciones de un hecho, y
+    // el letrero mentía en 31 de los 126 tipos. Si js/03c no cargó se usan
+    // las 8 horas de siempre —publicar no se puede caer por esto— y
+    // revisar.js se pone rojo si la función desaparece.
+    const horasTTLQuick = (typeof window.urbisHorasVigencia === 'function')
+      ? window.urbisHorasVigencia(i) : 8;
     let descripcionFinal = (ctxForm.quickReport && typeof asegurarCamposTemporalesPersonalizados === 'function')
         ? asegurarCamposTemporalesPersonalizados(arrData.join(' | '), cat, i, fechaCreacion, horasTTLQuick, ctxForm.quickIcon || obtenerIconoReporte(cat, i) || 'Reporte')
         : asegurarCamposTemporales(arrData.join(' | '), cat, i, fechaCreacion);

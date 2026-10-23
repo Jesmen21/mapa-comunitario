@@ -355,6 +355,58 @@
     const f = window.urbisFichaAlertaNacional(item);
     return f ? f.horas : 0;
   };
+  /* CUÁNTO DURA UN REPORTE RÁPIDO EN EL MAPA · `urbisHorasVigencia`
+     ─────────────────────────────────────────────────────────────────────
+     Vive acá, con el catálogo que define los tipos, y NO donde se escribe la
+     fila. Hasta la v1163 la cascada estaba escrita dentro de `enviarDatos`
+     (js/12) y el panel de Android anunciaba «Activo durante 8 horas» con un
+     literal: dos codificaciones de un solo hecho —la clase B— que ya se
+     habían separado. Medido sobre los 126 tipos del catálogo: 95 duran 8 h y
+     31 NO, de 12 a 336 horas, así que el letrero mentía en 31 de 126.
+
+     El orden de la cascada IMPORTA y es el que ya corría:
+       1. atentado o artefacto explosivo    → 24 h
+       2. alerta nacional del catálogo      → sus horas (12 a 336)
+       3. hechos del conflicto que no pasan → 168 h
+       4. el resto de hechos del conflicto  → 72 h
+       5. cualquier otro reporte            → 8 h
+     El paso 1 va ANTES del 2 a propósito: un atentado también está en la
+     tabla de alertas, y el pedido explícito fue 24 h.
+
+     Devuelve SIEMPRE un número de horas, nunca 0 ni null: quien la llama la
+     usa para calcular una fecha de vencimiento, y un 0 publicaría un reporte
+     ya vencido. `urbisHorasAlertaNacional` sí devuelve 0 —«no es alerta
+     nacional»— y por eso las dos funciones no se pueden confundir. */
+  var HORAS_POR_DEFECTO = 8;
+  var CONFLICTO_LARGO = /mina antipersona|reten ilegal|retén ilegal|grupo armado|confinamiento|desplazamiento forzado/i;
+  var CONFLICTO_MEDIO = /secuestro|extorsion|extorsión|masacre|homicidio|desaparicion|desaparición|amenaza|reclutamiento|ejecucion extrajudicial|ejecución extrajudicial|combate armado|panfleto/i;
+  var ATENTADO = /atentado|artefacto explosivo/i;
+
+  window.urbisHorasVigencia = function (item) {
+    var t = String(item || '');
+    if (ATENTADO.test(t)) return 24;
+    var nacional = window.urbisHorasAlertaNacional(t);
+    if (nacional) return nacional;
+    if (CONFLICTO_LARGO.test(t)) return 168;
+    if (CONFLICTO_MEDIO.test(t)) return 72;
+    return HORAS_POR_DEFECTO;
+  };
+
+  /* El mismo dato en palabras, para el letrero del panel. Se escribe acá y no
+     en la pantalla porque la pantalla son tres —Android, escritorio y la
+     ficha— y una frase copiada tres veces es la clase B otra vez.
+     Redondea hacia ABAJO en días solo cuando la cuenta es exacta: «5 días» es
+     cierto para 120 h; para 100 h diría 4 días y se habría perdido lo que el
+     lector necesita, así que esas se quedan en horas. */
+  window.urbisVigenciaEnPalabras = function (item) {
+    var h = window.urbisHorasVigencia(item);
+    if (h % 24 === 0 && h >= 24) {
+      var d = h / 24;
+      return d === 1 ? '1 día' : d + ' días';
+    }
+    return h === 1 ? '1 hora' : h + ' horas';
+  };
+
   window.URBIS_ALERTAS_NACIONALES = ALERTAS_NACIONALES;
   window.URBIS_VICTIMAS_IDS = VICTIMAS_IDS;
 })();
