@@ -51,11 +51,26 @@ Una hoja (`window.URBIS_SEGURIDAD.abrir()`) que lee y no escribe:
 * **Los teléfonos**: `tel:123` y `tel:165` en la cabecera de la hoja, en
   todos los estados.
 
-Lo miden `pruebas/suites/tseguridad.js` (20 aserciones, sobre la aplicación
+Lo miden `pruebas/suites/tseguridad.js` (22 aserciones, sobre la aplicación
 entera con un barrio fabricado) y el bloque «seguridad (js/83)» al final de
 `pruebas/revisar.js` (5 comprobaciones). Las dos demostradas en rojo con
-inyecciones fieles: 6 en `revisar.js` y 5 en la suite, todas ROJO, ninguna
+inyecciones fieles: 6 en `revisar.js` y 7 en la suite, todas ROJO, ninguna
 MURIÓ.
+
+**Lo que encontró LEER EL PAPEL, y ninguna aserción:** la primera versión daba
+20/20 y en la captura no se veía. Dos defectos, los dos de la pantalla y no
+del código que la compone:
+
+* el mapa (`#map`, `z-index: 2147482000`, css/14) tapaba la hoja entera: el
+  texto estaba en el DOM y nada en la pantalla. Va ahora en `2147483645`, el
+  escalón de `.urbis-dup-overlay` (css/01), uno por debajo del login;
+* las reglas globales con `!important` de css/42 (`p, small, span, label`
+  casi blancos) y de css/01 (`h3` con sombra) dejaban ilegibles las
+  distancias, las antigüedades, la nota y las cifras (contraste 1,0:1). Se
+  neutralizan dentro de la hoja, como hace css/53 con el registro.
+
+Las dos quedaron con su aserción —«la hoja se VE» por `elementFromPoint`, y
+«se LEE» por contraste WCAG ≥ 4,5:1— y su inyección en rojo.
 
 ### Lo que esta versión NO hace
 

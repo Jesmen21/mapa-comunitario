@@ -1,5 +1,9 @@
 /* URBIS · Seguridad (js/83). La hoja que lee lo reportado cerca. */
-#urbis-seguridad { position: fixed; inset: 0; z-index: 10050; background: rgba(15, 23, 42, .55);
+/* La carcasa móvil y el mapa (#map, 2147482000) viven en z-index cercanos al
+   máximo: con un valor «normal» la hoja quedaba pintada DEBAJO del mapa, con
+   el texto en el DOM y nada en la pantalla. Mismo escalón que .urbis-dup-overlay
+   (css/01): uno por debajo del login, que nunca debe taparse. */
+#urbis-seguridad { position: fixed; inset: 0; z-index: 2147483645; background: rgba(15, 23, 42, .55);
   display: flex; align-items: flex-end; justify-content: center; }
 #urbis-seguridad[hidden] { display: none; }
 .urb-seg-hoja { background: #fff; color: #0f172a; width: 100%; max-width: 560px; max-height: 92vh; overflow: auto;
@@ -21,3 +25,24 @@
 .urb-seg-sec li small { grid-column: 2; color: #475569; }
 .urb-seg-cero { color: #475569; margin: 0; }
 .urb-seg-nota { color: #475569; font-size: 13px; margin-top: 14px; }
+
+/* Dos reglas GLOBALES con !important se cuelan en cualquier tarjeta clara
+   (las mismas que css/53 neutraliza en el registro): css/42 pinta todo
+   `p, small, span, label` casi blanco, y css/01 le pone a todo `h3` color,
+   raya y sombra. Sobre esta hoja blanca dejaban ilegibles las distancias, las
+   antigüedades, la nota y las propias cifras: lo encontró la captura. No se
+   tocan las globales —moverían media aplicación—; se neutralizan acá dentro,
+   y lo mide tseguridad con el contraste contra el fondo. */
+#urbis-seguridad .urb-seg-hoja p,
+#urbis-seguridad .urb-seg-hoja small,
+#urbis-seguridad .urb-seg-hoja span,
+#urbis-seguridad .urb-seg-hoja b { color: #0f172a !important; -webkit-text-fill-color: currentColor; text-shadow: none !important; }
+#urbis-seguridad .urb-seg-lineas small,
+#urbis-seguridad .urb-seg-sec li small,
+#urbis-seguridad .urb-seg-nota,
+#urbis-seguridad .urb-seg-cero { color: #475569 !important; }
+#urbis-seguridad .urb-seg-sec h3 { color: #0f172a !important; text-shadow: none !important; border-bottom: 0 !important; }
+#urbis-seguridad .urb-seg-tel { color: #fff !important; }
+#urbis-seguridad .urb-seg-sinmedir,
+#urbis-seguridad .urb-seg-sinmedir b,
+#urbis-seguridad .urb-seg-aviso { color: #78350f !important; }

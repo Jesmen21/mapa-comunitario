@@ -101,6 +101,18 @@ const escritas = [];
   await pg.addStyleTag({ path: REPO + '/css/83-seguridad.css' });
   await pg.addScriptTag({ path: REPO + '/js/83-seguridad.js' });
 
+
+  /* LO QUE SE VE, no lo que está en el DOM. La primera versión de esta hoja
+     daba 20/20 y no se veía: el mapa (z-index 2147482000) la tapaba entera.
+     Lo encontró la captura, no una aserción; ahora lo mide una. */
+  const seVe = () => pg.evaluate(() => {
+    const h = document.querySelector('#urbis-seguridad .urb-seg-hoja');
+    if (!h) return 'no hay hoja';
+    const b = h.getBoundingClientRect();
+    const e = document.elementFromPoint(b.x + b.width / 2, b.y + Math.min(b.height / 2, 60));
+    return e && e.closest('#urbis-seguridad') ? 'se ve' : 'la tapa ' + (e ? (e.id || e.className || e.tagName) : 'nada');
+  });
+
   /* ── Antes de leer: SIN MEDIR, y los teléfonos igual ──────────────────── */
   const sinLeer = await pg.evaluate(() => {
     const SEG = window.URBIS_SEGURIDAD;
@@ -111,9 +123,10 @@ const escritas = [];
                 ns: [...r.querySelectorAll('.urb-seg-n')].map(x => x.textContent) };
     SEG.configurar({ estadoLectura: () => ({ ok: false, desdeCache: false }), cargados: () => true });
     o.fallo = SEG.medir().sinMedir;
-    SEG.cerrar();
     return o;
   });
+  const veSinLeer = await seVe();
+  await pg.evaluate(() => window.URBIS_SEGURIDAD.cerrar());
   chk(sinLeer.tel123 && sinLeer.tel165, 'el 123 y el 165 están a la vista aunque no se haya leído nada');
   chk(sinLeer.ns.length === 3 && sinLeer.ns.every(n => n === 'SIN MEDIR') && /SIN MEDIR · los reportes todavía no se han leído/.test(sinLeer.texto),
       'sin leer, las tres cifras dicen SIN MEDIR y la causa, no 0 — ' + sinLeer.ns.join(' · '));
@@ -137,6 +150,24 @@ const escritas = [];
     return { visibles, texto: raiz.textContent, seg: sec('security'), con: sec('conflicto'), via: sec('vial'),
              tel123: !!raiz.querySelector('a[href="tel:123"]'), tel165: !!raiz.querySelector('a[href="tel:165"]') };
   }, { C });
+  const veMapa = await seVe();
+  /* Y que se LEA: la hoja de estilos global pinta `small`, `span` y `p` casi
+     blancos con !important y le pone sombra a los h3 (css/42, css/01). Se
+     mide el contraste WCAG de cada texto contra el blanco de la hoja. */
+  const legible = await pg.evaluate(() => {
+    const lum = c => { const m = c.match(/[\d.]+/g).map(Number); const a = m[3] == null ? 1 : m[3];
+      const ch = m.slice(0, 3).map(v => { v = (v * a + 255 * (1 - a)) / 255; return v <= .03928 ? v / 12.92 : Math.pow((v + .055) / 1.055, 2.4); });
+      return .2126 * ch[0] + .7152 * ch[1] + .0722 * ch[2]; };
+    const malos = [];
+    ['.urb-seg-lineas small', '.urb-seg-sec h3', '.urb-seg-n', '.urb-seg-sec li b', '.urb-seg-sec li small', '.urb-seg-nota', '.urb-seg-ref']
+      .forEach(sel => { const e = document.querySelector('#urbis-seguridad ' + sel); if (!e) { malos.push(sel + ' no está'); return; }
+        const c = getComputedStyle(e); const r = (1.05) / (lum(c.color) + .05);
+        if (r < 4.5 || c.textShadow !== 'none') malos.push(sel + ' ' + r.toFixed(1) + ':1' + (c.textShadow !== 'none' ? ' con sombra' : '')); });
+    return malos;
+  });
+  chk(veSinLeer === 'se ve' && veMapa === 'se ve',
+      'la hoja se VE, en la portada y encima del mapa — portada: ' + veSinLeer + ' · mapa: ' + veMapa);
+  chk(legible.length === 0, 'y se LEE: cada texto con contraste de 4,5:1 o más contra el fondo, sin sombra — ' + (legible.join(' · ') || 'los siete textos medidos'));
   chk(r.visibles.length >= 8 && r.visibles.indexOf('Robo') !== -1,
       'MATERIAL · el mapa ve el barrio (' + r.visibles.length + ' reportes visibles: ' + r.visibles.join(', ') + ')');
   chk(r.visibles.filter(v => v === 'Robo').length === 2,
