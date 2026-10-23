@@ -479,6 +479,32 @@ cambiarlas: editar `motor-reglas.js`, correr `node construir.js`, y
 **reiniciar el servidor**. `revisar.js` comprueba que ninguna regla se haya
 colado en un archivo servido.
 
+## La capa de mapeos: un dueño por tipo (v1162)
+
+La capa es UNA y siempre lo fue: todo módulo escribe por `urbisGuardarFila`
+(js/12) y lee por `urbisDBRead`. Lo que la v1162 agregó es saber **de quién es
+qué** dentro de ella, en `js/03h-registro-modulos.js`. Tres reglas que una
+tanda necesita antes de tocar nada:
+
+* **Un tipo tiene un dueño y uno solo.** Si un módulo nuevo escribe filas, su
+  `tipo` va en el registro —exacto, o como prefijo si lo fabrica por fila, que
+  es lo que hacen la presencia y el curso—. `revisar.js` se pone rojo con dos
+  dueños, y también con un tipo escrito que nadie registró.
+* **NO se abren casillas posicionales nuevas.** `URBIS_SLOTS` quedó congelada
+  en 23 y la última es `espacioConNombre`. Un campo nuevo entra ahí, por
+  NOMBRE (`modulo:campo=valor`, codificado), con su módulo dueño declarado.
+  La tabla por posición ya se pisó los datos una vez.
+* **Lo privado de un módulo no lo lee otro.** Cada módulo declara qué comparte
+  y qué no. El educativo comparte lo MEDIDO EN CAMPO y guarda para sí las
+  geometrías de intención de diseño, los paneles de percepción, lo no
+  confirmado y los borradores — porque una propuesta leída desde otro módulo
+  se vería como lo mapeado.
+
+Lo viejo **no se migra**: se queda en sus casillas y se sigue leyendo igual.
+Y si hace falta saber si hay puntos repetidos, se mide con
+`herramientas/medir-duplicados.html`, que hay que abrir donde la hoja se
+alcance: desde este contenedor el proxy rechaza `script.google.com`.
+
 ## Secretos
 
 Nunca en el repositorio, ni en capturas, ni en el chat: `URBIS_SECRETO`, las

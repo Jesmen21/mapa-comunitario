@@ -30812,3 +30812,111 @@ Daniel se aplicó.
   medido, así que se anota y no se cambia. `pendiente`
 * **No publica nada a `main`.** Queda en `6338029` (v1160) hasta el «súbalo».
   `pendiente`
+
+## v1162 · un dueño por tipo en la capa de mapeos, y la última casilla posicional
+
+Lo pidió el usuario: una sola capa de mapeos compartida por todos los módulos
+para no duplicar contenido, pero con lo propio de cada módulo separado «para
+que no confunda». **La capa compartida YA EXISTÍA** y conviene decirlo antes
+que nada: hay un solo camino de escritura (`urbisGuardarFila`, js/12) y uno de
+lectura (`urbisDBRead`), con nueve archivos escribiendo y cinco leyendo. Lo que
+no existía era saber **de quién es qué** dentro de ella.
+
+El defecto real no es la capa: es que cada módulo se reparte el campo
+`descripcion` **por POSICIÓN**, con la tabla `URBIS_SLOTS` de js/04. Eso ya se
+cobró datos una vez —tres funciones contaron «la primera casilla libre» y las
+tres llegaron al mismo número, así que un punto de Pro City publicado dentro de
+una carpeta borraba la materialidad del edificio—. Es la **clase B**: dos
+módulos codificando cosas distintas en el mismo sitio, que coinciden el día que
+se escriben.
+
+**Esta versión no migra nada**, por decisión del usuario: lo viejo se queda en
+sus 23 casillas —hay datos guardados en ellas y reordenarlas los perdería— y lo
+nuevo entra por el espacio con nombre. Lo que hace es:
+
+* **`js/03h-registro-modulos.js`** — diez módulos declarados con sus tipos
+  (29 exactos y 2 prefijos: la presencia fabrica «ubicacion_<usuario>» y el
+  curso «comentario de curso …», y sin la forma de prefijo esos dos quedarían
+  fuera del registro, que es el denominador estrecho de la v1149).
+* **`URBIS_SLOTS.espacioConNombre`** — UNA casilla posicional más, declarada la
+  última que se abre en este proyecto. Dentro van los campos por NOMBRE,
+  `modulo:campo=valor`, con clave y valor codificados, así que ningún contenido
+  puede inventar un separador ni colarse en ` | ` ni en `~~~`.
+* **El reparto del educativo**, que el usuario fijó: comparte lo MEDIDO EN
+  CAMPO —alturas por manzana, perfil vial, andén, rutas y frecuencia,
+  equipamientos, actividad en primer piso— y guarda para sí las geometrías de
+  intención de diseño, los paneles de percepción, lo no confirmado y los
+  borradores. **El educativo todavía no escribe en la capa** —sus fichas viven
+  en `pcr_fichas_v1`, en el teléfono— y eso va dicho en el propio registro: el
+  renglón declara a qué se compromete el día que escriba, no un reparto
+  vigente. Declararlo ANTES de tener material es la regla del orden (v1077).
+
+Las tres guardas que pidió el usuario, con lo que cada una NO cubre escrito al
+lado (v945, v952), más la guarda de la guarda:
+
+| Guarda | Qué no cubre |
+|---|---|
+| un tipo tiene un dueño y uno solo | que el dueño sea el correcto: eso se discute mirando el registro |
+| nadie lee el espacio privado de otro | lo que el servidor devuelva: un módulo que pida la fila entera no pasa por acá |
+| no nacen casillas por posición | que nadie reutilice una casilla vieja para otra cosa |
+| *(de la guarda)* el registro llega al navegador y al caché | — |
+| *(de la guarda)* todo tipo escrito está registrado | — |
+
+La última de la tabla es la que hace que la primera signifique algo: **un
+módulo que se olvide de registrarse no choca con nadie —porque no está— y la
+comprobación de choques seguiría en verde sobre una capa incompleta.**
+
+El registro se **EJECUTA** dentro de la guarda, no se lee con una expresión
+regular: lo que decide es el objeto, y un barrido de texto sobre un literal de
+200 líneas mide cómo quedó partida la línea (v1097).
+
+**Demostradas en rojo con seis inyecciones fieles**, con el arnés que distingue
+ROJO / VERDE / MURIÓ (v1090): dos módulos reclamando «🛍️ Logo URBIS»; un
+escritor usando «🎁 Regalo URBIS» sin registrar; una casilla posicional nueva;
+el registro borrado de `index.html`; una lectura de `educativo.borrador` desde
+otro módulo; y `puedeLeer` devolviendo siempre `true`. Las seis en rojo.
+
+La guarda de lectura sale con **`?` y no en verde**: hoy hay cero llamadas a
+`URBIS_CAMPOS.leer` porque el espacio con nombre se abre en esta versión. Cero
+lectores es el estado de hoy y no un defecto, y un rojo ahí pondría la salida
+barata en escribir una lectura para tener algo que medir (v970, v1097). **La
+rama con material se mide contra un caso FABRICADO** —otro módulo no puede leer
+`educativo.borrador`, sí puede leer `educativo.anden`, y el educativo se lee a
+sí mismo entero—, no contra el repositorio, que sería volver a medir el número.
+
+### Los puntos repetidos: NO SE PUDO MEDIR desde este contenedor
+
+El usuario pidió medir primero cuántos puntos duplicados hay hoy —mismo tipo, a
+pocos metros— y proponer la guarda con la cifra delante. **No se pudo medir, y
+eso se dice en vez de dar un número**: los puntos viven en la hoja detrás del
+Apps Script, y el proxy de este contenedor rechaza `script.google.com`
+(`connect_rejected`, medido el 23 de octubre de 2026). No hay copia local.
+
+Lo que sí se hizo es dejar la medición lista para correr donde la hoja sí se
+alcanza: **`herramientas/medir-duplicados.html`**. Cuenta pares del mismo tipo a
+0, 5, 10, 25 y 50 m, por tipo, con los 40 más cercanos y un CSV. Dos cosas que
+no son adorno:
+
+* **descarta las filas que NO son puntos y las cuenta aparte.** Comentarios,
+  relaciones, permisos y avatares usan lat/lng como casillas de otra cosa (0, o
+  la fila a la que responden): contarlas daría miles de «repetidos exactos» en
+  0,0 que no son puntos. Es el discriminante de la clase A, y va contado, no
+  descartado en silencio;
+* **una lectura que falla NO se lee como «no hay repetidos»**: dice NO SE PUDO
+  MEDIR y escribe que eso no quiere decir que no haya, quiere decir que no se
+  contaron.
+
+### Lo que esta versión NO hace
+
+* **No propone todavía la guarda de punto repetido.** `pendiente` — el umbral
+  sale de la cifra, y elegirlo sin ella sería ponerlo a ojo, que es lo que la
+  v882 prohíbe. Lo que sí está escrito de antemano es la forma: avisa antes de
+  crear, no borra ni fusiona nada, y tiene que poder vivir con el cero sin
+  ponerse roja, porque cero repetidos es el estado BUENO (v970).
+* **No migra ninguna casilla vieja al espacio con nombre.** `pendiente` — es
+  otra tanda y el usuario pidió expresamente no hacerla sin pedirla.
+* **No registra el módulo nuevo.** `pendiente` — no tiene nombre, ni tipos, ni
+  campos propios. Un módulo registrado sin tipos sería una fila vacía que se
+  lee como un módulo sin nada que mapear.
+* **No impide que un módulo ESCRIBA en el espacio de otro.** `pendiente` — eso
+  lo decide el servidor, no el navegador, y vive en el Apps Script.
