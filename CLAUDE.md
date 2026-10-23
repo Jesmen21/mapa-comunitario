@@ -145,32 +145,6 @@ histórica del eje B, la fuente del eje C— pide archivo y fuente, no código, 
 vive en las secciones de la v964 y la v965. Lo del módulo educativo y del
 mapeo vive en **la lista viva**, al final.
 
-## Las ocho reglas de trabajo · valen para TODAS las sesiones de URBIS
-
-Las fijó el usuario el 23 de octubre de 2026 y van acá, cerca del principio,
-para que cualquier sesión o colaborador nuevo las herede. URBIS tiene ocho
-módulos y hay una sesión aparte por módulo: **cada sesión toca solo lo de su
-módulo.**
-
-1. **Medir antes de asumir.** Se mide el estado real antes de proponer o
-   tocar.
-2. **Batería completa de pruebas antes de publicar.** Nada se publica con la
-   batería en rojo.
-3. **Demostrar en rojo.** Una inyección fiel por cada aserción nueva, para
-   probar que la guarda muerde.
-4. **Numerar siempre por encima de `origin/main`.** Si otra sesión publicó
-   versiones, se traen y se sube por encima. Nunca se baja la propia.
-5. **Nada de reemplazos masivos.** Un cambio por peldaño, medido.
-6. **Una cifra sin medir se imprime «SIN MEDIR», no se rellena.** Se distingue
-   cero de ausente.
-7. **No se inventan métodos ni datos oficiales.** Si algo no se puede
-   verificar desde el contenedor, se dice y se deja anotado.
-8. **Una decisión editorial o de producto no se resuelve sola**: se anota con
-   su medición y se le pregunta a Daniel.
-
-**Si quien lee esto es una persona y no una sesión de código:** antes de tocar
-archivos, avisa a Daniel y coordina con él la numeración de versiones.
-
 ## Antes de tocar nada: traer lo de arriba
 
 ```bash
