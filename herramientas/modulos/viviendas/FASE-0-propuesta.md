@@ -335,26 +335,60 @@ dice.
 
 **Flujo** (como lo pediste): explorar libre; cuenta solo al pedir visita;
 crear cuenta pide correo + usuario + contraseña; código de seis dígitos al
-correo; al confirmar, sigue la acción que había empezado. Supabase Auth con
-correo y contraseña; el código de seis dígitos se envía con la plantilla
-`{{ .Token }}` y se verifica con `verifyOtp(type: 'email')`, expiración
-configurable hasta 86.400 s (fuente primaria: docs de Supabase). Entrar con
-usuario resuelve usuario→correo en una función `SECURITY DEFINER` que
-responde igual exista o no. TOTP para admin y gerencia con políticas RLS
-`as restrictive` que exigen `aal2` en las tablas del panel (fuente primaria).
-Límites por defecto medidos en la documentación: 360 OTP/hora, 360
-verificaciones/hora por IP, 15 intentos de MFA por minuto; con SMTP propio
-**30 correos/hora** hasta que se suba el límite. Captcha: Turnstile tiene
-integración nativa en Auth. **Protección contra contraseñas filtradas: solo
-en Pro** (fuente primaria) — una razón más para pasar a Pro antes de clientes.
+correo; al confirmar, sigue la acción que había empezado. Cómo se hace, con
+fuente primaria en cada punto:
+
+- **Supabase Auth nativo** con correo y contraseña. **No hace falta
+  `signInWithOtp`:** `signUp` con «Confirmar correo» activado y la plantilla
+  «Confirm signup» editada con `{{ .Token }}` (6 dígitos; la plantilla decide
+  si va código o enlace) → `verifyOtp({ email, token, type: 'email' })`.
+  Recuperación: `resetPasswordForEmail` + `verifyOtp(type: 'recovery')` +
+  `updateUser`. El código evita además el fallo más común de los enlaces: los
+  escáneres de seguridad del correo los abren antes que el usuario.
+- **Entrar con usuario o correo:** Supabase no tiene inicio por nombre de
+  usuario. La resolución usuario→correo va en una **Edge Function `entrar`**
+  que busca en `perfiles.usuario` (único, sin mayúsculas) con `service_role`,
+  **siempre** llama a `signInWithPassword` (con un correo inexistente fijo si
+  no hubo coincidencia, para igualar tiempos) y devuelve el mismo error
+  genérico. **Nunca una función SQL que devuelva el correo** (la doc advierte
+  sobre `SECURITY DEFINER` expuestas). `signUp` sobre un correo ya confirmado
+  devuelve un usuario ofuscado y no un error: no revela cuentas.
+- **Roles:** tabla `roles_usuario` leída por `es_admin()` / `es_gerencia()`
+  `SECURITY DEFINER` con `search_path = ''`, en un esquema **no expuesto**, y
+  envuelta en `(select es_admin())` dentro de cada política (Supabase mide
+  que sin envolver una política tardó minutos sobre un millón de filas y
+  envuelta ~2 ms). Por qué tabla y no claim en el JWT: la tabla **revoca al
+  instante**; una claim vive hasta que el token expire (1 h por defecto).
+- **TOTP obligatorio** para admin y gerencia: la API TOTP es **gratis en
+  todos los planes**; las tablas del panel llevan una política `AS
+  RESTRICTIVE` con `(select auth.jwt()->>'aal') = 'aal2'` **además** del rol.
+  La app manda a inscribir el factor en el primer acceso: Supabase no obliga
+  solo.
+- **Turnstile** integrado en Auth (registro, inicio y restablecimiento), con
+  el token en `options.captchaToken`. Gratis e ilimitado.
+- **Eliminar mi cuenta:** Edge Function que toma el `uid` del JWT verificado
+  (nunca del cuerpo), borra lo propio en `public` y llama
+  `auth.admin.deleteUser` con `service_role`; el access token ya emitido
+  sigue vivo hasta expirar.
+- **Protección contra contraseñas filtradas: solo en Pro** — una razón más
+  para subir antes de clientes.
+- **Límites de tasa:** la página de límites y el checklist de producción
+  **no coinciden** (30 verificaciones y 150 tokens por 5 minutos por IP,
+  frente a 360 y 1.800 por hora); la expiración del OTP (1 h frente a 24 h)
+  y su longitud (6 frente a 8) tampoco entre documentos. **Se miden en el
+  proyecto antes de escribir la interfaz**, no se escriben de memoria. Con
+  SMTP propio: 30 correos/hora hasta que se suba.
+- **Dos proyectos gratis en total** entre todas las organizaciones donde seas
+  dueño: el de movilidad ocupa uno; `urbis-viviendas` es el segundo y no cabe
+  un tercero gratis.
 
 **Unificar la cuenta entre módulos** (P4, decisión tuya con la sesión URBIS):
 
 | Opción | Qué es | Costo | Riesgo |
 |---|---|---|---|
-| (a) **Cuentas separadas ligadas por `urbis_id`** — *recomendada para empezar* | cada módulo con su cuenta; `perfiles.urbis_id` nulo hasta que URBIS lo entregue | cero | hoy **no existe un ID URBIS aparte**: el identificador es el nombre de usuario (`js/02:131`); hay que acordar uno |
-| (b) Third-Party Auth | Supabase verifica JWT **asimétricos** de Clerk, Firebase, Auth0, Cognito o WorkOS (fuente primaria); un JWT genérico emitido por Apps Script **no está en la lista** | US$0,00325 por usuario activo de terceros sobre cuota | obliga a cambiar la autenticación de todo URBIS; no sirve con el Apps Script de hoy |
-| (c) Migrar cuentas | traer usuarios y pedirles restablecer contraseña (nunca copiar contraseñas) | trabajo + fricción | no aplica mientras el resto de URBIS siga en Apps Script |
+| (a) **Cuentas separadas ligadas por `urbis_id`** — *recomendada para empezar* | cada módulo con su cuenta; `perfiles.urbis_id` nulo hasta que URBIS lo entregue (un uuid acordado) | cero; no toca el Apps Script ni el otro proyecto | hoy **no existe un ID URBIS aparte**: el identificador es el nombre de usuario (`js/02:131`); dos contraseñas para la misma persona; sin inicio único |
+| (b) Third-Party Auth | Supabase verifica JWT de Clerk, Firebase, Auth0, Cognito, WorkOS **y un OIDC genérico**, pero exige firma **asimétrica**, `kid`, URL de discovery con JWKS y la claim `role`; las claves rotadas tardan 30 min | US$0,00325 por usuario activo de terceros sobre cuota | **Apps Script tendría que convertirse en un proveedor OIDC completo**: riesgo y costo altos para decenas de viviendas. La variante seria, si algún día se unifica, es un proveedor real (Clerk/WorkOS/Auth0) delante de **todos** los módulos |
+| (c) Migrar cuentas | `auth.admin.createUser` con `email_confirm: true` y el `urbis_id` en `app_metadata`, más invitación o código para fijar contraseña (nunca copiar contraseñas; solo se importan hashes bcrypt/Argon2, y no se hará) | un correo por usuario | solo cuando se decida consolidar; mientras el resto siga en Apps Script no aplica |
 
 ## 10 · Correo, avisos, respaldos, monitoreo
 
