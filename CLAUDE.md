@@ -3,6 +3,61 @@
 Notas para cualquier sesión que retome el proyecto. Están acá porque cada una
 de ellas costó tiempo averiguarla o romper algo.
 
+## Las ocho reglas de trabajo · valen para TODAS las sesiones de URBIS
+
+Las fijó Daniel el 23 de octubre de 2026, al abrir la sesión del módulo
+Empresas, y las puso acá para que cualquier sesión o colaborador nuevo las
+herede sin que nadie se las tenga que contar. **Son transversales**: no son del
+módulo comercial ni del presidencial ni de Visión Territorial, son de cómo se
+trabaja. Van primero porque se leen antes de tocar nada.
+
+1. **Medir antes de asumir**: mide el estado real antes de proponer o tocar.
+2. **Batería completa de pruebas antes de publicar.** Nada se publica con la
+   batería en rojo.
+3. **Demostrar en rojo**: una inyección fiel por cada aserción nueva, para
+   probar que la guarda muerde.
+4. **Numerar siempre por encima de `origin/main`.** Si otra sesión publicó
+   versiones, trae esas y sube por encima. Nunca bajes la tuya.
+5. **Nada de reemplazos masivos.** Un cambio por peldaño, medido.
+6. **Una cifra sin medir se imprime «SIN MEDIR», no se rellena.** Distingue
+   cero de ausente.
+7. **No inventes métodos ni datos oficiales**: si algo no se puede verificar
+   desde el contenedor, dilo y déjalo anotado.
+8. **Si aparece una decisión editorial o de producto, no la resuelvas sola**:
+   anótala con su medición y pregúntale a Daniel.
+
+Y cómo se reporta al cerrar una tanda, que Daniel fijó en la misma sesión:
+**qué salió, qué mediste, qué queda pendiente y qué decisión necesitas de
+él. Corto y con cifras.**
+
+Ninguna de las ocho es nueva en este repositorio —cada una tiene abajo su
+sección con el caso que la pagó, y la 1 es la v916, la 3 la v993, la 6 la
+v875— y eso es justamente por lo que se escriben juntas y arriba: **estaban
+repartidas en treinta secciones y una sesión nueva no las encontraba hasta
+después de romper algo.** Lo de abajo explica cada una con su precio medido;
+esto es la lista que se lee primero.
+
+### Los módulos, y que no se tocan entre sesiones
+
+Hay una sesión por módulo y cada una trabaja solo en el suyo. El módulo
+**Empresas (comercial)** es `analisis-ia.html` con `js/59`, `js/61`, `js/62`,
+`js/63`, `js/66`, `js/67` y `js/69`; su socio del lado de negocios es Miguel
+Peñaranda, y es el módulo donde la lógica de «socio por módulo» ya corre.
+Su preocupación central va escrita porque decide los canjes:
+
+> **Si el informe se contradice con lo que se ve en el mapa, la gente que
+> conoce la zona deslegitima el análisis.** Cualquier cifra o conclusión debe
+> poder defenderse frente a alguien de la zona. Si un dato no es verificable,
+> se marca así; no se maquilla.
+
+Tres decisiones vigentes de ese módulo, que no se vuelven a discutir sin
+Daniel: es un producto **aparte de DM Studio** y no parte del estudio; las
+salidas de funciones de versión paga llevan **marca de agua** (idea adoptada
+como referencia, **todavía sin implementar** — medido el 23 de octubre de
+2026: el informe lleva logo en la cabecera, no marca de agua); y el destino
+de toda la plataforma es **Supabase**, con este módulo migrando por etapas
+**después** de Visión Territorial.
+
 ## Lo que sigue, y en este orden · `LISTA-QUE-SIGUE`
 
 **El registro es hoy el cuello de botella, no el código**, y sigue siéndolo:
