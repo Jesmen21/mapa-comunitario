@@ -3,6 +3,44 @@
 Notas para cualquier sesión que retome el proyecto. Están acá porque cada una
 de ellas costó tiempo averiguarla o romper algo.
 
+## Las ocho reglas de trabajo · `REGLAS-URBIS`
+
+Las fijó Daniel el 23 de octubre de 2026 y **valen para TODAS las sesiones de
+URBIS**, no solo para la del módulo en que se escribieron. Van arriba porque
+se leen antes de trabajar, y van textuales porque reescribirlas es la forma
+silenciosa de aflojarlas.
+
+1. **Medir antes de asumir**: mide el estado real antes de proponer o tocar.
+2. **Batería completa de pruebas antes de publicar.** Nada se publica con la
+   batería en rojo.
+3. **Demostrar en rojo**: una inyección fiel por cada aserción nueva, para
+   probar que la guarda muerde.
+4. **Numerar siempre por encima de `origin/main`.** Si otra sesión publicó
+   versiones, trae esas y sube por encima. Nunca bajes la tuya.
+5. **Nada de reemplazos masivos.** Un cambio por peldaño, medido.
+6. **Una cifra sin medir se imprime «SIN MEDIR»**, no se rellena. Distingue
+   cero de ausente.
+7. **No inventes métodos ni datos oficiales**: si algo no se puede verificar
+   desde el contenedor, dilo y déjalo anotado.
+8. **Si aparece una decisión editorial o de producto, no la resuelvas sola**:
+   anótala con su medición y pregúntale a Daniel.
+
+Cómo reportar al cerrar una tanda: **qué salió, qué mediste, qué queda
+pendiente y qué decisión necesitas de Daniel.** Corto y con cifras.
+
+**Si quien lee esto es una persona y no la sesión de código:** este archivo
+define cómo se trabaja. Antes de tocar archivos, avisa a Daniel y coordina
+con él la numeración de versiones.
+
+### Hay una sesión por módulo
+
+Cada módulo de URBIS tiene su propia sesión y **ninguna toca lo que no es
+suyo**. La del módulo **Visión Territorial** trabaja en
+`vision-territorial.html`, `js/90-vt-app.js`, `css/90-vt.css`, `sw-vt.js`,
+`manifest-gobierno.json`, `pruebas/suites/tvision.js`, el bloque «Visión
+Territorial, aparte» de `revisar.js` y la carpeta `vt/` del repositorio
+privado del motor. Nada más.
+
 ## Lo que sigue, y en este orden · `LISTA-QUE-SIGUE`
 
 **El registro es hoy el cuello de botella, no el código**, y sigue siéndolo:
