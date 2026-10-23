@@ -479,7 +479,7 @@ cambiarlas: editar `motor-reglas.js`, correr `node construir.js`, y
 **reiniciar el servidor**. `revisar.js` comprueba que ninguna regla se haya
 colado en un archivo servido.
 
-## La capa de mapeos: un dueño por tipo (v1162)
+## La capa de mapeos: un dueño por tipo
 
 La capa es UNA y siempre lo fue: todo módulo escribe por `urbisGuardarFila`
 (js/12) y lee por `urbisDBRead`. Lo que la v1162 agregó es saber **de quién es
