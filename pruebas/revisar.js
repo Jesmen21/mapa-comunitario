@@ -16330,6 +16330,65 @@ console.log('\n  -- la resta del desplazamiento mide la barra ENTERA (v1157) --'
   }
 })();
 
+
+/* LAS OCHO REGLAS SE ESCRIBEN UNA SOLA VEZ (v1163)
+   ================================================
+
+   El 23 de octubre de 2026 Daniel abrió una sesión por módulo y le dictó a
+   cada una las mismas ocho reglas. SIETE de las nueve ramas las escribieron
+   en `CLAUDE.md`, cada una con su redacción y su título, entre 26 y 55
+   líneas: siete codificaciones de un solo hecho —la clase B— en el archivo
+   que toda sesión carga y que ya tuvo que mudarse a `BITACORA.md` por tamaño.
+
+   Nadie hizo nada mal: cada sesión oyó el dictado y lo anotó donde se anota
+   lo que vale para todos. Lo que faltaba era que hubiera UN sitio y que algo
+   lo defendiera, porque la octava copia se ve exactamente igual que la
+   primera.
+
+   Se mide POR FORMA y no por el título (v874, v1149): los siete títulos eran
+   distintos —«REGLAS-DE-DANIEL», «REGLAS-URBIS», «valen para TODAS las
+   sesiones»— y lo que no cambió en ninguno es el texto de las reglas. Se
+   cuenta una frase de una regla, no el encabezado.
+
+   NO comprueba que las ocho estén bien redactadas ni que estén todas: eso se
+   discute leyéndolas. Comprueba que no haya dos listas. */
+(function () {
+  const md = leer('CLAUDE.md');
+  const HUELLAS = ['Nada de reemplazos masivos', 'Medir antes de asumir',
+                   'Demostrar en rojo'];
+  const cuentas = HUELLAS.map((h) => ({ h: h, n: md.split(h).length - 1 }));
+  const repes = cuentas.filter((c) => c.n > 1);
+
+  comprobar('MATERIAL · las ocho reglas están escritas en CLAUDE.md',
+    cuentas.every((c) => c.n >= 1),
+    cuentas.every((c) => c.n >= 1)
+      ? 'las tres huellas de la lista están en el archivo'
+      : 'faltan: ' + cuentas.filter((c) => c.n < 1).map((c) => '«' + c.h + '»').join(' · ') +
+        '. Sin la lista, la comprobación de abajo pasaría por no tener nada delante');
+
+  comprobar('las ocho reglas aparecen UNA sola vez en CLAUDE.md',
+    repes.length === 0,
+    repes.length === 0
+      ? 'una sola lista. Siete ramas de módulo escribieron la suya el 23 de octubre de 2026 y ' +
+        'la cabeza las unificó; la octava copia se ve igual que la primera, por eso hay guarda. ' +
+        'NO comprueba que las ocho estén bien redactadas: eso se discute leyéndolas'
+      : 'hay más de una lista: ' + repes.map((c) => '«' + c.h + '» ×' + c.n).join(' · ') +
+        '. Las ocho reglas se escriben una vez y las escribe la cabeza; lo propio de un módulo ' +
+        'va en herramientas/modulos/<modulo>.md');
+
+  /* GUARDA DE LA GUARDA · que el protocolo exista y que CLAUDE.md lo nombre.
+     Sin esto, una sesión que llegue nueva lee «lo de siempre» y vuelve a
+     escribir su copia, que es el defecto que esta guarda vigila. */
+  const hayDoc = fs.existsSync(R('herramientas/COORDINACION-MODULOS.md'));
+  const nombrado = md.indexOf('herramientas/COORDINACION-MODULOS.md') !== -1;
+  comprobar('el protocolo entre sesiones existe y CLAUDE.md lo nombra',
+    hayDoc && nombrado,
+    hayDoc && nombrado
+      ? 'una sesión nueva sabe dónde está la regla de ramas, de versión y de archivos compartidos'
+      : (!hayDoc ? 'falta herramientas/COORDINACION-MODULOS.md' : 'CLAUDE.md no lo nombra') +
+        ', así que una sesión nueva no tiene dónde leer el reparto y vuelve a inventarlo');
+})();
+
 /* Las dos cuentas van APARTE porque piden cosas distintas: una fallada hay
    que arreglarla, una sin material hay que mirarla —o se quedó sin él porque
    el registro mejoró, o porque la función dejó de ver lo que medía—. Sumarlas

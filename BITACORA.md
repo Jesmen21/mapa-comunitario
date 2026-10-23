@@ -30920,3 +30920,73 @@ no son adorno:
   lee como un módulo sin nada que mapear.
 * **No impide que un módulo ESCRIBA en el espacio de otro.** `pendiente` — eso
   lo decide el servidor, no el navegador, y vive en el Apps Script.
+
+## v1163 · una cabeza para nueve sesiones, y las ocho reglas escritas una vez
+
+Daniel abrió **una sesión de Claude Code por módulo** y dejó dicho que esta
+—«Urbis project», rama `main-r3g781`— **es la cabeza**: la que coordina y le
+dice a las demás. La primera cosa que hizo la cabeza fue medir, y lo medido
+valía la tanda.
+
+**Nueve ramas de módulo, el 23 de octubre de 2026:**
+
+| Lo medido | Cifra |
+|---|---|
+| ramas de módulo | 9 |
+| bloqueadas esperando una decisión de Daniel | 9 |
+| que habían escrito su propia copia de «las ocho reglas» en `CLAUDE.md` | **7** |
+| líneas que añade cada copia | 26 a 55 |
+| que preguntaban «¿qué rama manda?» | 5 |
+| que preguntaban «¿documentación lleva salto de versión?» | 4 |
+
+Siete sesiones oyeron el mismo dictado y lo anotaron donde se anota lo que
+vale para todos. **Son siete codificaciones de un solo hecho —la clase B— en
+el archivo que toda sesión carga**, y al fusionarlas habrían sido siete
+conflictos en el mismo sitio, con el resultado pareciéndose a las ocho reglas
+escritas ocho veces. En el archivo que ya tuvo que mudarse a `BITACORA.md`
+porque no cabía.
+
+**Nadie hizo nada mal**, y conviene dejarlo escrito porque es la forma del
+defecto: cada sesión hizo lo correcto por separado. Lo que faltaba era que
+hubiera UN sitio y que algo lo defendiera.
+
+Lo que esta versión hace:
+
+* **las ocho reglas, canónicas y una sola vez**, al principio de `CLAUDE.md`.
+  Se reconstruyeron comparando las siete redacciones: las ocho coinciden en
+  sustancia en las siete, solo cambia cómo están escritas;
+* **`herramientas/COORDINACION-MODULOS.md`** — el protocolo. Contesta de una
+  vez las tres preguntas repetidas (cada módulo en SU rama; **ninguna sesión
+  de módulo sube el token de versión**, lo pone la cabeza al integrar; avisar
+  a otra sesión le toca a la cabeza), lista los **diez archivos compartidos**
+  que no se tocan sin pedirlo, y manda las notas propias de cada módulo a
+  `herramientas/modulos/<modulo>.md`, que es la misma mudanza que se hizo con
+  la bitácora;
+* **la guarda**, que mide POR FORMA y no por el título: los siete títulos eran
+  distintos —`REGLAS-DE-DANIEL`, `REGLAS-URBIS`, «valen para TODAS las
+  sesiones»— y lo que no cambia en ninguno es el texto de las reglas, así que
+  se cuenta una frase de una regla. Más la guarda de la guarda: que el
+  protocolo exista y que `CLAUDE.md` lo nombre, porque sin eso una sesión
+  nueva lee «lo de siempre» y vuelve a escribir su copia.
+
+**Demostradas en rojo con inyecciones FIELES**: la primera no es un caso
+inventado, es la copia REAL de la rama `claude/dreamy-meitner-fc5txm` pegada
+al archivo —que es exactamente lo que pasaría al fusionarla—, y salió roja con
+las tres huellas en ×2. La segunda renombra el protocolo en el texto y deja la
+guarda de la guarda en rojo.
+
+Un dato más que salió al medir y que no se veía desde ninguna sesión:
+**`js/61-analisis-ia-datos.js` es de Empresas y el educativo lo llama 28
+veces** desde `js/68` y `js/64`. Queda escrito en el protocolo con su cifra:
+Empresas lo cambia avisando, el educativo no lo cambia.
+
+### Lo que esta versión NO hace
+
+* **No fusiona ninguna rama de módulo.** `pendiente` — las nueve están
+  bloqueadas esperando decisiones de Daniel, y fusionar antes de que las tome
+  sería integrar trabajo que todavía puede cambiar de forma.
+* **No contesta las decisiones de producto que cada sesión pidió.** `pendiente`
+  — son de Daniel por la regla 8, y están listadas en el reporte.
+* **No declara el reparto de archivos de los módulos nuevos** —Político,
+  Seguridad familiar, Viviendas—. `pendiente` — todavía no tienen archivos ni
+  tipos; se declaran cuando los tengan, igual que el módulo nuevo de la capa.

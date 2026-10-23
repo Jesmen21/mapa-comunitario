@@ -3,6 +3,65 @@
 Notas para cualquier sesión que retome el proyecto. Están acá porque cada una
 de ellas costó tiempo averiguarla o romper algo.
 
+## Las ocho reglas de trabajo · `REGLAS-URBIS`
+
+Las dictó Daniel el 23 de octubre de 2026 al abrir las sesiones por módulo.
+**Son transversales**: no son del comercial, ni del presidencial, ni de Visión
+Territorial. Van primero porque se leen antes de tocar nada.
+
+1. **Medir antes de asumir.** Se mide el estado real antes de proponer o de
+   tocar.
+2. **Batería completa de pruebas antes de publicar.** Nada se publica con la
+   batería en rojo.
+3. **Demostrar en rojo.** Una inyección fiel por cada aserción nueva, para
+   probar que la guarda muerde.
+4. **Numerar siempre por encima de `origin/main`.** Si otra sesión publicó
+   versiones, se traen y se sube por encima. Nunca se baja la propia.
+5. **Nada de reemplazos masivos.** Un cambio por peldaño, medido.
+6. **Una cifra sin medir se imprime «SIN MEDIR», no se rellena.** Se distingue
+   el cero del ausente.
+7. **No se inventan métodos ni datos oficiales.** Lo que no se pueda verificar
+   desde el contenedor se dice y se deja anotado.
+8. **Una decisión editorial o de producto no la resuelve la sesión sola.** Se
+   anota con su medición y se le pregunta a Daniel.
+
+Y cómo se cierra una tanda: **qué salió, qué mediste, qué queda pendiente y
+qué decisión necesitas de él. Corto y con cifras.**
+
+Ninguna de las ocho es nueva acá —la 1 es la v916, la 3 la v993, la 6 la
+v875— y por eso se escriben juntas y arriba: estaban repartidas en treinta
+secciones y una sesión nueva no las encontraba hasta después de romper algo.
+
+**ESTA LISTA SE ESCRIBE UNA SOLA VEZ Y LA ESCRIBE LA CABEZA.** El 23 de
+octubre de 2026 siete sesiones de módulo escribieron cada una su propia
+versión de estas ocho reglas en este mismo archivo, entre 26 y 55 líneas cada
+una: las ocho eran las mismas y solo cambiaba la redacción. Son **siete
+codificaciones de un solo hecho** —la clase B— en el archivo que toda sesión
+carga, y al fusionarlas habrían sido siete conflictos en el mismo sitio.
+`revisar.js` se pone rojo si la lista aparece más de una vez.
+
+## Hay una sesión por módulo, y esta no es la cabeza de todas
+
+Daniel abrió una sesión de Claude Code por módulo. **La cabeza es la sesión
+«Urbis project», en la rama `main-r3g781`**: coordina, decide lo compartido e
+integra. Lo que toda sesión necesita saber antes de empezar está en
+**`herramientas/COORDINACION-MODULOS.md`**, y en resumen es:
+
+* **cada módulo trabaja en SU rama `claude/…`**, nunca en `main-r3g781` ni en
+  `main`;
+* **ninguna sesión de módulo sube el token de versión.** Lo pone la cabeza al
+  integrar: el token vive en nueve archivos que tienen que decir lo mismo, y
+  nueve sesiones subiéndolo en paralelo son nueve conflictos;
+* **los archivos compartidos se piden, no se tocan**: este archivo,
+  `js/00-config.js`, `urbisGuardarFila`/`urbisDBRead` (js/12), `URBIS_SLOTS`
+  (js/04), el registro de módulos (js/03h), la lista de `<script>` de
+  `index.html`, el precaché del service worker, `css/main.css` y los nueve del
+  token;
+* **las notas propias de un módulo van en `herramientas/modulos/<modulo>.md`**,
+  no acá. Es la misma mudanza que se hizo con `BITACORA.md`;
+* y si una sesión encuentra algo que es de otro módulo, **no lo arregla y no le
+  escribe a la otra sesión**: se lo dice a la cabeza.
+
 ## Lo que sigue, y en este orden · `LISTA-QUE-SIGUE`
 
 **El registro es hoy el cuello de botella, no el código**, y sigue siéndolo:
