@@ -3,6 +3,53 @@
 Notas para cualquier sesión que retome el proyecto. Están acá porque cada una
 de ellas costó tiempo averiguarla o romper algo.
 
+## Las ocho reglas de trabajo · `REGLAS-URBIS`
+
+Las fijó Daniel el 23 de octubre de 2026 y **valen para todas las sesiones de
+URBIS, no solo para la del módulo en que se escribieron**. Van acá arriba y no
+en la bitácora porque son lo primero que hereda una sesión nueva o un
+colaborador nuevo, antes de tocar un archivo.
+
+1. **Medir antes de asumir**: se mide el estado real antes de proponer o tocar.
+2. **Batería completa de pruebas antes de publicar.** Nada se publica con la
+   batería en rojo.
+3. **Demostrar en rojo**: una inyección fiel por cada aserción nueva, para
+   probar que la guarda muerde.
+4. **Numerar siempre por encima de `origin/main`.** Si otra sesión publicó
+   versiones, se traen esas y se sube por encima. Nunca se baja la propia.
+5. **Nada de reemplazos masivos.** Un cambio por peldaño, medido.
+6. **Una cifra sin medir se imprime «SIN MEDIR»**, no se rellena. Se distingue
+   cero de ausente.
+7. **No se inventan métodos ni datos oficiales**: si algo no se puede verificar
+   desde el contenedor, se dice y se deja anotado.
+8. **Una decisión editorial o de producto no la resuelve la sesión sola**: se
+   anota con su medición y se le pregunta a Daniel.
+
+Las ocho coinciden con reglas que este archivo ya tenía dispersas —la medición
+antes de actuar de la v916, la demostración en rojo de la v993, el «SIN MEDIR»
+de la v1064, la numeración por encima de lo publicado—. Lo que agregan es que
+están **juntas, numeradas y arriba**, de modo que citarlas no obliga a conocer
+el resto del archivo.
+
+### Los módulos van en sesiones aparte
+
+Cada módulo de URBIS se trabaja en su propia sesión y **ninguna toca lo que no
+es suyo**. Lo que una sesión necesite de otro módulo se pide, no se cambia:
+
+| Módulo | Dónde vive |
+|---|---|
+| Reportes / Eventos | `js/03c`, `js/09`, `js/11`, `js/13b`–`js/13f`, `js/20`, y la Matriz en `js/04` |
+| Movilidad (taxis) | `js/06`, `js/21`, `js/22`, `js/23`, `js/36`, `js/37`, `js/39` |
+| Educativo / pliego | `js/64`, `js/65`, `js/68` |
+| Presidencial | `js/70-seguimiento.js`, `assets/data/seguimiento-*.json` |
+| Visión Territorial | `js/90-vt-app.js`, y `vt/` en el repositorio del motor |
+
+**La matriz de tipos de evento es contrato compartido** entre Reportes y
+Movilidad: vive en `dimensiones` (`js/04-marker-proximity.js`) y el catálogo
+ciudadano que la alimenta en `js/03c-reportes-rapidos.js`. **No se cambia sin
+avisar a Daniel**, porque Movilidad publica reportes con esos mismos tipos y un
+tipo renombrado deja sus reportes viejos sin icono y fuera de los recuentos.
+
 ## Lo que sigue, y en este orden · `LISTA-QUE-SIGUE`
 
 **El registro es hoy el cuello de botella, no el código**, y sigue siéndolo:
