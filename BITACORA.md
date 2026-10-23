@@ -30990,3 +30990,196 @@ Empresas lo cambia avisando, el educativo no lo cambia.
 * **No declara el reparto de archivos de los módulos nuevos** —Político,
   Seguridad familiar, Viviendas—. `pendiente` — todavía no tienen archivos ni
   tipos; se declaran cuando los tengan, igual que el módulo nuevo de la capa.
+
+## v1164 · la hoja no se extiende, y las ocho decisiones escritas una vez
+
+Daniel contestó de una vez las decisiones de producto que tenían bloqueadas a
+las nueve sesiones. La tanda hace dos cosas: **escribirlas donde no se vuelvan
+a preguntar**, y **atarlas donde obligan**.
+
+**Sobre el número:** el token salta de 1162 a 1164 y no es un descuido. La
+v1163 —la coordinación entre sesiones— fue de solo documentación, y la regla
+que esa misma tanda escribió dice que una tanda así no sube el token: no hay
+caché de navegador que romper. La sección existe en esta bitácora sin token,
+que es lo correcto, y queda dicho acá para que el hueco no se lea como una
+versión perdida.
+
+### Lo que se escribió una vez
+
+`herramientas/DECISIONES-DANIEL.md`: las ocho, con su fecha, textuales donde
+importa, y **qué ata cada una en el código**. Existe por lo mismo que las ocho
+reglas: **una decisión que vive solo en un chat no la hereda nadie** — la
+sesión siguiente la vuelve a preguntar, o peor, la resuelve sola.
+
+Y la sección «Lo que estas ocho NO contestan», con las seis que siguen
+abiertas, porque una lista de decisiones sin ella se lee como que todo quedó
+resuelto.
+
+### Lo que ataron en el código
+
+**La más grande es la 2, y no se pidió como estructural:** «Sheets no se
+extiende a nada nuevo» parte el almacén en dos. La hoja se queda con sus ocho
+módulos y se congela para datos nuevos; lo nuevo va a Postgres. Eso obliga a
+decir qué sigue siendo «una sola capa», porque si no **la frase deja de ser
+cierta sin que nadie lo note**: lo compartido no es el almacén, es el
+REGISTRO. Cada módulo declara ahora su `backend` —`hoja`, `postgres`, `motor`
+o `local`— y el registro gobierna los cuatro.
+
+**La 7 trajo una corrección de vocabulario que había que hacer YA.** «Social es
+el paraguas de runner, minijuegos, Patitas y orientación comunal» choca con
+que en el registro `social` era otra cosa: la infraestructura de comentarios,
+relaciones y permisos de js/12. **Dos cosas distintas con un solo nombre es la
+clase B entrando por la puerta del vocabulario**, y el día que alguien leyera
+«social» no sabría cuál de las dos es. Se renombró a `interaccion`, y `rush` y
+`premio` se plegaron en un solo `social`. **Se hizo hoy porque hoy no cuesta
+nada**: el espacio con nombre se abrió en la v1162 y todavía no tiene un solo
+lector, así que ningún dato depende de esos ids. Mañana sí costaría.
+
+Lo demás, entrada por entrada: `viviendas` con `direccionExacta` en privado y
+`ubicacionAproximada` compartida —**dos campos y no uno con bandera**, porque
+un campo con bandera se publica entero el día que alguien la lee mal—;
+`empresas` entra al registro aunque no escriba en la hoja, para que Viviendas
+pueda leer su análisis de ubicación por una puerta declarada en vez de
+copiarlo; `politico` con `soloSimulado`; `seguridad` con `tipos: []` leyendo
+los de `reportes`.
+
+### Las cuatro guardas, y lo que no cubren
+
+| Guarda | Qué no cubre |
+|---|---|
+| ningún módulo NUEVO entra a la hoja | que un módulo de Postgres escriba de verdad en Postgres: eso vive en el motor |
+| y los ocho de la hoja siguen declarándola | — es la guarda de la guarda del trinquete |
+| toda lectura declarada entre módulos resuelve | que el código la use: comprueba que la puerta exista |
+| un módulo de solo simulados lo dice en su nota | que los datos sean simulados de verdad |
+
+El trinquete de la hoja **es absoluto y eso es legítimo acá** (v965): la lista
+de los ocho no puede crecer sin que alguien haga algo mal, porque la decisión
+es justamente que no crezca. Y lleva su guarda de la guarda, porque si alguien
+saca uno de los ocho sin decirlo, la lista congelada mediría un conjunto que
+ya no existe y el verde dejaría de significar algo.
+
+La de `leeDe` persigue la clase C: **una lectura declarada contra un campo que
+el otro módulo no comparte es una puerta que no abre, y desde afuera se lee
+igual que una que sí.**
+
+**Cinco inyecciones fieles, las cinco en rojo:** Viviendas declarando la hoja;
+el curso saliéndose de la hoja sin decirlo; Viviendas declarando leer
+`empresas.reglasDeClasificacion`, que es privado; el político perdiendo la
+palabra SIMULADO de su nota; y `empresas` renombrado con la puerta de
+Viviendas apuntándole.
+
+**838 verdes, 2 sin material, 0 fallos** (eran 830).
+
+### Lo que esta versión NO hace
+
+* **No crea nada en Supabase.** `pendiente` — la decisión 8 es esperar hasta
+  que Daniel confirme que el proyecto nuevo cabe en el plan gratuito. Esperar
+  es la decisión, no una tarea sin hacer.
+* **No declara los archivos de Viviendas, Político ni Seguridad.** `pendiente`
+  — todavía no tienen. Sus entradas existen con `archivos: []` para que el
+  reparto esté declarado antes de la primera línea, que es el orden de la
+  v1077 aplicado a un módulo.
+* **No contesta las seis decisiones que siguen abiertas.** `pendiente` — están
+  listadas en `DECISIONES-DANIEL.md` y son de Daniel.
+* **No fusiona ninguna rama de módulo.** `pendiente` — las nueve tienen que
+  traer primero el protocolo y retirar su copia de las ocho reglas.
+
+## v1165 · el service worker que no devolvía respuesta, y diecisiete decisiones más
+
+Daniel mandó una segunda tanda de decisiones. Dos **corrigen** decisiones de
+la primera, y una le asigna trabajo de código a la cabeza.
+
+### El defecto que dos sesiones midieron por separado
+
+`caches.match` resuelve con **`undefined`** cuando no hay nada guardado, y
+`respondWith(undefined)` **lanza un TypeError dentro del service worker**. Lo
+que ve quien usa la aplicación no es «no hay conexión»: es un error de red del
+navegador, con la petición rota y sin explicación, y en la consola un fallo
+del worker que no se parece en nada a su causa. Es la familia de los éxitos
+aparentes del CLAUDE.md, por el lado contrario: **un fallo que miente sobre sí
+mismo.**
+
+Estaba en los dos service workers con caché y en tres sitios:
+
+| Dónde | Qué pasaba |
+|---|---|
+| `service-worker.js`, rama de assets | `.catch(() => caches.match(request))` sin nada detrás |
+| `service-worker.js`, rama de HTML | `hit \|\| caches.match('./index.html')` — si `index.html` tampoco estaba, `undefined` igual |
+| `sw-vt.js` | `.catch(() => hit)`, y `hit` podía ser `undefined` |
+
+La cura es una **Response 503 con su texto**, que es la que dice la verdad: la
+petición no se pudo servir, ni por la red ni por lo guardado.
+
+**La guarda mide POR FORMA y no el caso:** recorta CADA llamada a
+`respondWith(` **contando paréntesis** —un recorte por distancia o hasta el
+`;` se parte con el primer literal que traiga un paréntesis adentro (v935)— y
+exige que el valor no pueda ser `undefined`. Acepta las dos maneras válidas:
+cerrar en el ayudante, o cerrar en un `fetch`, que devuelve Response o
+rechaza. Con su guarda de la guarda: que el ayudante exista y devuelva una
+503, porque buscar un nombre no es comprobar que haga su trabajo (v926).
+
+**Lo que NO se pudo hacer, y va dicho:** vendorizar Leaflet y Chart.js. El
+proxy de este contenedor **niega `unpkg.com` y `cdn.jsdelivr.net`** —medido,
+código 000 en los dos—, así que los archivos no se pueden traer desde acá.
+Queda pendiente con su razón, que es lo contrario de quedar sin hacer y sin
+decirlo.
+
+### La excepción al trinquete, y cómo se hizo que costara
+
+Daniel corrigió la decisión 2 **solo para Viviendas**: usa la hoja de la
+vitrina, transitoriamente. El trinquete de la v1164 mordió en el acto, que es
+la señal de que estaba bien puesto, y la pregunta era cómo abrirlo sin
+abrirlo.
+
+Se abre **por ítem y con su razón escrita, nunca por regla** (v1094, v1109):
+una regla que dijera «los módulos de inmuebles pueden» eximiría a todos de una
+vez; un renglón con nombre y razón hay que pensarlo uno por uno y se ve en el
+diff. Y con una segunda mitad que es la que de verdad la hace honesta: **la
+razón tiene que estar también en el REGISTRO y coincidir palabra por palabra**
+con la de la guarda. Una autorización escrita solo donde nadie la lee es la
+clase C.
+
+Lo que la guarda **no** cubre va dicho al lado: «modelo independiente del
+almacén» es una promesa sobre cómo se escribirá el código, y ninguna
+comprobación la mide hoy.
+
+### Lo demás que ataron las decisiones
+
+`politico` queda `enPausa` con su fecha —una pausa escrita no es lo mismo que
+un módulo que nadie mira (v899)—; el paraguas de `social` cambia de contenido
+—entra el chat, **sale** la orientación comunal, y Patitas queda sin botón de
+donar, en Próximamente y fuera del APK—; `seguridad` precisa que a lo sumo
+lleva un «Llamar al 123», que es marcar y no prometer respuesta; y `viviendas`
+estrena dos tipos propios.
+
+**Y una cosa que la cabeza propuso y NO decidió:** el texto exacto de esos dos
+tipos lo escribió ella para que el registro no quedara vacío, y va marcado
+`tipoPropuesto: true`. La sesión de Viviendas lo confirma antes de escribir la
+primera fila.
+
+**Y una que se negó a resolver sola:** «chat» entra al paraguas de Social, y
+en el registro ya existe `interaccion` —los comentarios de js/12—. Si son lo
+mismo cambia de dueño un tipo, y eso no lo decide la cabeza por una suposición:
+es exactamente el choque que el registro existe para impedir. **No se movió
+nada**, y la pregunta queda escrita.
+
+**Cuatro inyecciones fieles, las cuatro en rojo:** el estado real de la v1164
+—la rama de assets sin fallback—; el ayudante devolviendo 200 en vez de 503;
+la exención de Viviendas escrita en la guarda y no en el registro; y Seguridad
+colándose a la hoja sin exención.
+
+**841 verdes, 2 sin material, 0 fallos** (eran 838).
+
+### Lo que esta versión NO hace
+
+* **No vendoriza Leaflet ni Chart.js.** `pendiente` — el proxy niega los dos
+  CDN, medido. Hace falta que alguien con red los baje al repositorio.
+* **No clasifica las 12 rojas heredadas.** `pendiente` — ninguna sesión pasó
+  la lista, y `correr.js` no corre en este contenedor porque falta
+  `../urbis-motor`. Clasificarlas de memoria sería inventarlas.
+* **No construye nada sobre la ubicación.** `pendiente` — depende de que
+  Daniel verifique el Apps Script y pase la función de `db_read` abierto.
+* **No decide qué es «chat» en el paraguas de Social.** `pendiente` — cambia
+  de dueño un tipo y lo decide Daniel o esa sesión.
+* **No toca la caducidad de los tipos de reportes.** `pendiente` — es de esa
+  sesión; acá solo queda escrito que la matriz es un contrato compartido.
