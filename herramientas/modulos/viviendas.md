@@ -21,7 +21,7 @@ Mientras ese repositorio no exista, lo del módulo se prepara en
 
 | Qué | Dónde |
 |---|---|
-| El registro de decisiones, con fecha y razón | `herramientas/modulos/viviendas/docs/decisiones.md` |
+| El registro de decisiones, con fecha y razón | `herramientas/modulos/viviendas/decisiones.md` (va a `docs/` en el repositorio nuevo) |
 | La propuesta de la Fase 0, con la verificación de costos en su anexo C | `herramientas/modulos/viviendas/FASE-0-propuesta.md` |
 | Las migraciones y las pruebas de la Fase 1 | `herramientas/modulos/viviendas/supabase/` |
 
