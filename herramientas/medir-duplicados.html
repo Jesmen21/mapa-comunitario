@@ -1,0 +1,232 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>URBIS · ¿Hay puntos repetidos en la capa de mapeos?</title>
+<style>
+  :root{
+    --tinta:#12212B; --tinta-2:#3B4A5A; --tinta-3:#6B7A8A;
+    --papel:#FFFFFF; --fondo:#F3F8FB; --linea:#DCE7EF;
+    --hondo:#0A6F9E; --bien:#177245; --mal:#B3282C; --duda:#B07D18;
+  }
+  *{box-sizing:border-box}
+  body{
+    margin:0 auto; max-width:1000px; padding:16px; background:var(--fondo); color:var(--tinta);
+    font:15px/1.55 Inter,-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
+  }
+  header{border-bottom:3px solid var(--hondo); padding-bottom:12px; margin-bottom:16px}
+  h1{font-size:1.45rem; margin:0 0 6px; letter-spacing:-.01em}
+  h2{font-size:1rem; margin:22px 0 8px; color:var(--hondo)}
+  p{margin:0 0 10px; color:var(--tinta-2)}
+  section{background:var(--papel); border:1px solid var(--linea); border-radius:10px; padding:14px; margin-bottom:14px}
+  button{font:inherit; font-weight:700; cursor:pointer; padding:12px 18px; border-radius:8px;
+         border:1px solid var(--hondo); background:var(--hondo); color:#fff}
+  button.secundario{background:var(--papel); color:var(--hondo)}
+  button[disabled]{opacity:.5; cursor:default}
+  table{border-collapse:collapse; width:100%; font-size:.85rem; margin-top:8px}
+  th,td{border:1px solid var(--linea); padding:6px 8px; text-align:left; vertical-align:top}
+  th{background:var(--fondo); font-size:.75rem; text-transform:uppercase; letter-spacing:.06em; color:var(--tinta-3)}
+  td.n{text-align:right; font-variant-numeric:tabular-nums}
+  .cifra{font-size:2rem; font-weight:800; font-variant-numeric:tabular-nums; line-height:1.1}
+  .pista{font-size:.85rem; color:var(--tinta-3)}
+  .mal{color:var(--mal)} .bien{color:var(--bien)} .duda{color:var(--duda)}
+  pre{background:var(--fondo); border:1px solid var(--linea); border-radius:8px; padding:10px;
+      font-size:.78rem; overflow:auto; max-height:340px; white-space:pre}
+</style>
+</head>
+<body>
+<header>
+  <h1>¿Hay puntos repetidos en la capa de mapeos?</h1>
+  <p>Mide cuántos pares de puntos comparten <strong>el mismo tipo</strong> y están a pocos metros uno
+  del otro. <strong>No borra ni fusiona nada</strong>: solo cuenta y lista.</p>
+</header>
+
+<section>
+  <p class="pista">Se lee la misma hoja que lee el mapa, con <code>action: db_read</code> contra el
+  Apps Script de <code>js/00-config.js</code>. Si abre esta página desde <code>urbispro.city</code>
+  toma el endpoint de la configuración; si la abre como archivo suelto, péguelo abajo.</p>
+  <p><input id="ep" style="width:100%;font:inherit;font-size:.85rem;padding:9px 10px;border:1px solid var(--linea);border-radius:8px" placeholder="URL del Apps Script (se rellena sola si está disponible)"></p>
+  <p><button id="ir">Medir los puntos repetidos</button>
+     <button id="csv" class="secundario" disabled>Bajar el detalle en CSV</button></p>
+  <p id="estado" class="pista"></p>
+</section>
+
+<div id="salida"></div>
+
+<script src="../js/00-config.js"></script>
+<script>
+(function(){
+  'use strict';
+
+  // Los umbrales que se miden. La cifra que sale de acá es la que decide el
+  // umbral de la guarda: se mide ANTES de elegirlo, que es la regla de la
+  // v882 — un umbral escogido con el resultado delante mide la conveniencia.
+  var METROS = [0, 5, 10, 25, 50];
+
+  // Una fila de la hoja no siempre es un PUNTO. Comentarios, relaciones,
+  // permisos y avatares usan lat/lng como casillas de otra cosa (0, o el id
+  // de la fila a la que responden). Contarlas como puntos daría miles de
+  // "repetidos" exactos en 0,0 que no son puntos repetidos: es el
+  // discriminante de la clase A, y va dicho y contado aparte, no descartado
+  // en silencio.
+  function esPunto(f){
+    var la = parseFloat(f.lat), lo = parseFloat(f.lng);
+    if(!isFinite(la) || !isFinite(lo)) return false;
+    if(Math.abs(la) < 1e-4 && Math.abs(lo) < 1e-4) return false;  // el 0,0 centinela
+    if(Math.abs(la) > 90 || Math.abs(lo) > 180) return false;
+    return true;
+  }
+
+  function metros(a, b){
+    var R = 6371000, rad = Math.PI/180;
+    var dLa = (b.la - a.la) * rad;
+    var dLo = (b.lo - a.lo) * rad;
+    var m = Math.sin(dLa/2)*Math.sin(dLa/2) +
+            Math.cos(a.la*rad)*Math.cos(b.la*rad)*Math.sin(dLo/2)*Math.sin(dLo/2);
+    return 2 * R * Math.atan2(Math.sqrt(m), Math.sqrt(1-m));
+  }
+
+  var $ = function(id){ return document.getElementById(id); };
+  var CSV = '';
+
+  try{
+    var c = (window.URBIS_CONFIG && window.URBIS_CONFIG.AUTH && window.URBIS_CONFIG.AUTH.APPS_SCRIPT_ENDPOINT) || '';
+    if(c) $('ep').value = c;
+  }catch(e){}
+
+  $('ir').onclick = function(){
+    var url = String($('ep').value || '').trim();
+    if(!url){ $('estado').textContent = 'Falta la URL del Apps Script.'; return; }
+    $('ir').disabled = true;
+    $('estado').textContent = 'Leyendo la hoja…';
+    fetch(url, { method:'POST', headers:{'Content-Type':'text/plain;charset=utf-8'},
+                 body: JSON.stringify({ action:'db_read' }) })
+      .then(function(r){ return r.text(); })
+      .then(function(t){
+        var out;
+        try{ out = JSON.parse(t); }
+        catch(e){ throw new Error('respuesta que no es JSON: ' + t.slice(0,160)); }
+        if(!(out && out.ok && Array.isArray(out.data))) throw new Error('respuesta sin datos');
+        medir(out.data);
+      })
+      .catch(function(e){
+        // Una lectura que falla NO se lee como "no hay repetidos": se dice.
+        $('estado').innerHTML = '<span class="mal">NO SE PUDO MEDIR</span> — ' +
+          String(e && e.message || e) + '. Esto no quiere decir que no haya repetidos: ' +
+          'quiere decir que no se contaron.';
+        $('ir').disabled = false;
+      });
+  };
+
+  function medir(filas){
+    var puntos = [], noPuntos = 0, porTipoNoPunto = {};
+    filas.forEach(function(f, i){
+      var tipo = String(f.tipo || '(sin tipo)');
+      if(!esPunto(f)){
+        noPuntos++;
+        porTipoNoPunto[tipo] = (porTipoNoPunto[tipo] || 0) + 1;
+        return;
+      }
+      puntos.push({ i:i, tipo:tipo, la:parseFloat(f.lat), lo:parseFloat(f.lng),
+                    d:String(f.descripcion||'').slice(0,60), fecha:String(f.fecha||'') });
+    });
+
+    // Agrupar por tipo y comparar dentro del grupo. El tipo es el
+    // discriminante: dos cosas distintas en la misma esquina no son un
+    // repetido, y la petición dice "mismo tipo".
+    var grupos = {};
+    puntos.forEach(function(p){ (grupos[p.tipo] = grupos[p.tipo] || []).push(p); });
+
+    var cuenta = {}, pares = [];
+    METROS.forEach(function(m){ cuenta[m] = 0; });
+
+    Object.keys(grupos).forEach(function(tipo){
+      var g = grupos[tipo];
+      for(var a=0; a<g.length; a++){
+        for(var b=a+1; b<g.length; b++){
+          var d = metros(g[a], g[b]);
+          if(d > METROS[METROS.length-1]) continue;
+          for(var k=0;k<METROS.length;k++){
+            if(d <= METROS[k] + 1e-9){ cuenta[METROS[k]]++; }
+          }
+          pares.push({ tipo:tipo, m:d, a:g[a], b:g[b] });
+        }
+      }
+    });
+    pares.sort(function(x,y){ return x.m - y.m; });
+
+    // Por tipo, cuántos pares a 25 m o menos.
+    var porTipo = {};
+    pares.forEach(function(p){ if(p.m <= 25) porTipo[p.tipo] = (porTipo[p.tipo]||0)+1; });
+
+    var h = [];
+    h.push('<section><h2>Lo que se contó</h2>');
+    h.push('<table><tr><th>Cosa</th><th>Filas</th></tr>');
+    h.push('<tr><td>Filas leídas de la hoja</td><td class="n">' + filas.length + '</td></tr>');
+    h.push('<tr><td>Filas que SÍ son un punto en el mapa</td><td class="n">' + puntos.length + '</td></tr>');
+    h.push('<tr><td>Filas que NO son un punto (comentarios, relaciones, permisos, avatares: lat/lng es otra cosa)</td><td class="n">' + noPuntos + '</td></tr>');
+    h.push('<tr><td>Tipos distintos con puntos</td><td class="n">' + Object.keys(grupos).length + '</td></tr>');
+    h.push('</table>');
+    h.push('<p class="pista">Las filas que no son un punto se descartan <em>y se cuentan</em>: ' +
+           'contarlas daría miles de repetidos exactos en 0,0 que no son puntos del mapa.</p>');
+    h.push('</section>');
+
+    h.push('<section><h2>Pares del MISMO tipo que están cerca</h2>');
+    h.push('<table><tr><th>A no más de</th><th>Pares</th></tr>');
+    METROS.forEach(function(m){
+      var et = m === 0 ? 'la misma coordenada exacta' : m + ' m';
+      var cl = cuenta[m] > 0 ? 'duda' : 'bien';
+      h.push('<tr><td>' + et + '</td><td class="n ' + cl + '"><strong>' + cuenta[m] + '</strong></td></tr>');
+    });
+    h.push('</table>');
+    if(cuenta[25] === 0){
+      h.push('<p class="bien"><strong>Cero pares a 25 m o menos.</strong> Hoy no hay puntos ' +
+             'repetidos que medir, y eso es el estado BUENO: la guarda que se escriba para esto ' +
+             'tiene que poder vivir con el cero sin ponerse roja.</p>');
+    }
+    h.push('</section>');
+
+    if(Object.keys(porTipo).length){
+      h.push('<section><h2>Por tipo (pares a 25 m o menos)</h2><table><tr><th>Tipo</th><th>Pares</th></tr>');
+      Object.keys(porTipo).sort(function(a,b){ return porTipo[b]-porTipo[a]; }).forEach(function(t){
+        h.push('<tr><td>' + t.replace(/</g,'&lt;') + '</td><td class="n">' + porTipo[t] + '</td></tr>');
+      });
+      h.push('</table></section>');
+    }
+
+    if(pares.length){
+      h.push('<section><h2>Los 40 pares más cercanos</h2><table>' +
+             '<tr><th>m</th><th>Tipo</th><th>A</th><th>B</th></tr>');
+      pares.slice(0,40).forEach(function(p){
+        h.push('<tr><td class="n">' + p.m.toFixed(1) + '</td><td>' + p.tipo.replace(/</g,'&lt;') +
+               '</td><td>' + p.a.d.replace(/</g,'&lt;') + '<br><span class="pista">' + p.a.fecha + '</span></td>' +
+               '<td>' + p.b.d.replace(/</g,'&lt;') + '<br><span class="pista">' + p.b.fecha + '</span></td></tr>');
+      });
+      h.push('</table></section>');
+    }
+
+    CSV = 'metros,tipo,lat_a,lng_a,fecha_a,desc_a,lat_b,lng_b,fecha_b,desc_b\n' +
+      pares.map(function(p){
+        var q = function(s){ return '"' + String(s).replace(/"/g,'""') + '"'; };
+        return [p.m.toFixed(2), q(p.tipo), p.a.la, p.a.lo, q(p.a.fecha), q(p.a.d),
+                p.b.la, p.b.lo, q(p.b.fecha), q(p.b.d)].join(',');
+      }).join('\n');
+    $('csv').disabled = !pares.length;
+
+    $('salida').innerHTML = h.join('');
+    $('estado').textContent = 'Medido sobre ' + filas.length + ' filas.';
+    $('ir').disabled = false;
+  }
+
+  $('csv').onclick = function(){
+    var a = document.createElement('a');
+    a.href = URL.createObjectURL(new Blob([CSV], {type:'text/csv;charset=utf-8'}));
+    a.download = 'urbis-puntos-repetidos.csv';
+    a.click();
+  };
+})();
+</script>
+</body>
+</html>
