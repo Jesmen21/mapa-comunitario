@@ -62,6 +62,12 @@ integra. Lo que toda sesión necesita saber antes de empezar está en
 * y si una sesión encuentra algo que es de otro módulo, **no lo arregla y no le
   escribe a la otra sesión**: se lo dice a la cabeza.
 
+**Y lo que Daniel ya decidió no se vuelve a preguntar**: está en
+`herramientas/DECISIONES-DANIEL.md`, cada decisión con su fecha y con qué ata
+en el código. Dos de ellas obligan a toda sesión: **Sheets no se extiende a
+nada nuevo** —la hoja se congeló para datos nuevos el 23 de octubre de 2026 y
+lo nuevo va a Postgres— y **ningún secreto en el repositorio**, que ya estaba.
+
 ## Lo que sigue, y en este orden · `LISTA-QUE-SIGUE`
 
 **El registro es hoy el cuello de botella, no el código**, y sigue siéndolo:

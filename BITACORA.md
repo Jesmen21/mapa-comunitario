@@ -30990,3 +30990,96 @@ Empresas lo cambia avisando, el educativo no lo cambia.
 * **No declara el reparto de archivos de los módulos nuevos** —Político,
   Seguridad familiar, Viviendas—. `pendiente` — todavía no tienen archivos ni
   tipos; se declaran cuando los tengan, igual que el módulo nuevo de la capa.
+
+## v1164 · la hoja no se extiende, y las ocho decisiones escritas una vez
+
+Daniel contestó de una vez las decisiones de producto que tenían bloqueadas a
+las nueve sesiones. La tanda hace dos cosas: **escribirlas donde no se vuelvan
+a preguntar**, y **atarlas donde obligan**.
+
+**Sobre el número:** el token salta de 1162 a 1164 y no es un descuido. La
+v1163 —la coordinación entre sesiones— fue de solo documentación, y la regla
+que esa misma tanda escribió dice que una tanda así no sube el token: no hay
+caché de navegador que romper. La sección existe en esta bitácora sin token,
+que es lo correcto, y queda dicho acá para que el hueco no se lea como una
+versión perdida.
+
+### Lo que se escribió una vez
+
+`herramientas/DECISIONES-DANIEL.md`: las ocho, con su fecha, textuales donde
+importa, y **qué ata cada una en el código**. Existe por lo mismo que las ocho
+reglas: **una decisión que vive solo en un chat no la hereda nadie** — la
+sesión siguiente la vuelve a preguntar, o peor, la resuelve sola.
+
+Y la sección «Lo que estas ocho NO contestan», con las seis que siguen
+abiertas, porque una lista de decisiones sin ella se lee como que todo quedó
+resuelto.
+
+### Lo que ataron en el código
+
+**La más grande es la 2, y no se pidió como estructural:** «Sheets no se
+extiende a nada nuevo» parte el almacén en dos. La hoja se queda con sus ocho
+módulos y se congela para datos nuevos; lo nuevo va a Postgres. Eso obliga a
+decir qué sigue siendo «una sola capa», porque si no **la frase deja de ser
+cierta sin que nadie lo note**: lo compartido no es el almacén, es el
+REGISTRO. Cada módulo declara ahora su `backend` —`hoja`, `postgres`, `motor`
+o `local`— y el registro gobierna los cuatro.
+
+**La 7 trajo una corrección de vocabulario que había que hacer YA.** «Social es
+el paraguas de runner, minijuegos, Patitas y orientación comunal» choca con
+que en el registro `social` era otra cosa: la infraestructura de comentarios,
+relaciones y permisos de js/12. **Dos cosas distintas con un solo nombre es la
+clase B entrando por la puerta del vocabulario**, y el día que alguien leyera
+«social» no sabría cuál de las dos es. Se renombró a `interaccion`, y `rush` y
+`premio` se plegaron en un solo `social`. **Se hizo hoy porque hoy no cuesta
+nada**: el espacio con nombre se abrió en la v1162 y todavía no tiene un solo
+lector, así que ningún dato depende de esos ids. Mañana sí costaría.
+
+Lo demás, entrada por entrada: `viviendas` con `direccionExacta` en privado y
+`ubicacionAproximada` compartida —**dos campos y no uno con bandera**, porque
+un campo con bandera se publica entero el día que alguien la lee mal—;
+`empresas` entra al registro aunque no escriba en la hoja, para que Viviendas
+pueda leer su análisis de ubicación por una puerta declarada en vez de
+copiarlo; `politico` con `soloSimulado`; `seguridad` con `tipos: []` leyendo
+los de `reportes`.
+
+### Las cuatro guardas, y lo que no cubren
+
+| Guarda | Qué no cubre |
+|---|---|
+| ningún módulo NUEVO entra a la hoja | que un módulo de Postgres escriba de verdad en Postgres: eso vive en el motor |
+| y los ocho de la hoja siguen declarándola | — es la guarda de la guarda del trinquete |
+| toda lectura declarada entre módulos resuelve | que el código la use: comprueba que la puerta exista |
+| un módulo de solo simulados lo dice en su nota | que los datos sean simulados de verdad |
+
+El trinquete de la hoja **es absoluto y eso es legítimo acá** (v965): la lista
+de los ocho no puede crecer sin que alguien haga algo mal, porque la decisión
+es justamente que no crezca. Y lleva su guarda de la guarda, porque si alguien
+saca uno de los ocho sin decirlo, la lista congelada mediría un conjunto que
+ya no existe y el verde dejaría de significar algo.
+
+La de `leeDe` persigue la clase C: **una lectura declarada contra un campo que
+el otro módulo no comparte es una puerta que no abre, y desde afuera se lee
+igual que una que sí.**
+
+**Cinco inyecciones fieles, las cinco en rojo:** Viviendas declarando la hoja;
+el curso saliéndose de la hoja sin decirlo; Viviendas declarando leer
+`empresas.reglasDeClasificacion`, que es privado; el político perdiendo la
+palabra SIMULADO de su nota; y `empresas` renombrado con la puerta de
+Viviendas apuntándole.
+
+**838 verdes, 2 sin material, 0 fallos** (eran 830).
+
+### Lo que esta versión NO hace
+
+* **No crea nada en Supabase.** `pendiente` — la decisión 8 es esperar hasta
+  que Daniel confirme que el proyecto nuevo cabe en el plan gratuito. Esperar
+  es la decisión, no una tarea sin hacer.
+* **No declara los archivos de Viviendas, Político ni Seguridad.** `pendiente`
+  — todavía no tienen. Sus entradas existen con `archivos: []` para que el
+  reparto esté declarado antes de la primera línea, que es el orden de la
+  v1077 aplicado a un módulo.
+* **No contesta las seis decisiones que siguen abiertas.** `pendiente` — están
+  listadas en `DECISIONES-DANIEL.md` y son de Daniel.
+* **No fusiona ninguna rama de módulo.** `pendiente` — las nueve tienen que
+  traer primero el protocolo y retirar su copia de las ocho reglas.
