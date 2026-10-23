@@ -3,6 +3,48 @@
 Notas para cualquier sesión que retome el proyecto. Están acá porque cada una
 de ellas costó tiempo averiguarla o romper algo.
 
+## Las ocho reglas de trabajo, dictadas por Daniel · `REGLAS-DANIEL`
+
+Valen para **todas** las sesiones de URBIS, no solo para la que las recibió.
+Las dictó Daniel el 23 de octubre de 2026 al abrir la sesión del módulo de
+viviendas, y están acá —y no en la bitácora de esa tanda— porque son de las
+que hay que leer ANTES de trabajar. Van citadas, sin reescribir:
+
+1. **Medir antes de asumir**: mide el estado real antes de proponer o tocar.
+2. **Batería completa de pruebas antes de publicar.** Nada se publica con la
+   batería en rojo.
+3. **Demostrar en rojo**: una inyección fiel por cada aserción nueva, para
+   probar que la guarda muerde.
+4. **Numerar siempre por encima de `origin/main`.** Si otra sesión publicó
+   versiones, trae esas y sube por encima. Nunca bajes la tuya.
+5. **Nada de reemplazos masivos.** Un cambio por peldaño, medido.
+6. **Una cifra sin medir se imprime «SIN MEDIR»**, no se rellena. Distingue
+   cero de ausente.
+7. **No inventes métodos ni datos oficiales**: si algo no se puede verificar
+   desde el contenedor, dilo y déjalo anotado.
+8. **Si aparece una decisión editorial o de producto, no la resuelvas sola**:
+   anótala con su medición y pregúntale a Daniel.
+
+Siete de las ocho ya estaban aplicadas en secciones de más abajo —la 1 en
+«Cómo se mide una premisa», la 2 y la 4 en «Antes de tocar nada» y «La versión
+va en NUEVE archivos», la 3 en «Cómo se escribe una guarda acá», la 6 en «Lo
+que se declara, y no se calla», la 7 en el estándar de `_pendientesFuente`, la
+8 en `DECISIONES-PENDIENTES.md`—. **Se dejan acá enteras igual**, y por la
+razón de siempre: una regla repartida en ocho secciones se cumple a trozos, y
+quien llega nuevo no las encuentra. La que no tenía sitio propio es la 5.
+
+**Cómo se reporta al cerrar una tanda**, también dictado: qué salió, qué
+mediste, qué queda pendiente y qué decisión necesitas de Daniel. Corto y con
+cifras.
+
+### Una sesión por módulo
+
+Hay **más de una sesión** trabajando a la vez y cada una tiene su módulo
+asignado; una sesión no toca lo que no es suyo. Eso es además la otra mitad de
+la regla 4: la numeración se coordina con Daniel, y el `git fetch` del
+principio deja de ser higiene y pasa a ser la única manera de saber por dónde
+va la otra.
+
 ## Lo que sigue, y en este orden · `LISTA-QUE-SIGUE`
 
 **El registro es hoy el cuello de botella, no el código**, y sigue siéndolo:
