@@ -1800,17 +1800,28 @@
     if(!yo || !usuario) return;
     if(!confirm('¿Eliminar a @' + usuario + ' de sus contactos?')) return;
     const yo_l = yo.toLowerCase(), ellos_l = String(usuario).toLowerCase();
-    // Borrar ambos lados en memoria local
+    // Borrar ambos lados en memoria local, guardando la descripción EXACTA de
+    // cada fila que se va: es la que el servidor tiene que casar.
+    const aBorrar = {};
     window.urbisRelaciones = (window.urbisRelaciones||[]).filter(r => {
       const p = _metaSplit(r.descripcion);
       const d = (p[0]||'').toLowerCase(), c = (p[1]||'').toLowerCase();
-      return !((d === yo_l && c === ellos_l) || (d === ellos_l && c === yo_l));
+      const sale = (d === yo_l && c === ellos_l) || (d === ellos_l && c === yo_l);
+      if(sale && r.descripcion) aBorrar[String(r.descripcion)] = true;
+      return !sale;
     });
-    // Borrar la relación (Apps Script db_delete) por el campo descripcion
-    const descKey = yo + '~~~' + usuario + '~~~amigo';
-    window.urbisDBDelete('descripcion', descKey).catch(()=>{});
-    const descKey2 = usuario + '~~~' + yo + '~~~amigo';
-    window.urbisDBDelete('descripcion', descKey2).catch(()=>{});
+    /* Borrar la relación (Apps Script db_delete) por el campo descripcion.
+       Hasta el 23 de octubre de 2026 solo se borraba «…~~~amigo»: una relación
+       guardada como familia no casaba, seguía en la hoja y el familiar volvía
+       a aparecer al recargar. Se borran los DOS tipos en los dos sentidos
+       —cada lado puede haber guardado el suyo— además de lo que había en
+       memoria, por si las relaciones todavía no se habían leído. Lo mide
+       pruebas/suites/tcontactofamilia.js. */
+    ['amigo', 'familia'].forEach(t => {
+      aBorrar[yo + '~~~' + usuario + '~~~' + t] = true;
+      aBorrar[usuario + '~~~' + yo + '~~~' + t] = true;
+    });
+    Object.keys(aBorrar).forEach(k => { window.urbisDBDelete('descripcion', k).catch(()=>{}); });
     // Notificar Apps Script (best-effort)
     try{
       const ep = (typeof URBIS_CONFIG !== 'undefined' && URBIS_CONFIG.AUTH && URBIS_CONFIG.AUTH.APPS_SCRIPT_ENDPOINT) || '';

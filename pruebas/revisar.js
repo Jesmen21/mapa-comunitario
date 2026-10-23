@@ -16389,6 +16389,93 @@ console.log('\n  -- la resta del desplazamiento mide la barra ENTERA (v1157) --'
         ', así que una sesión nueva no tiene dónde leer el reparto y vuelve a inventarlo');
 })();
 
+/* ── Seguridad (js/83): lee, no escribe, y los teléfonos siempre ─────────
+   Bloque del módulo Seguridad, agregado el 23 de octubre de 2026. La
+   pantalla es el primer peldaño que aprobó Daniel: lee los reportes de
+   seguridad y los accidentes vigentes cerca, con su antigüedad, y deja el 123
+   y el 165 a la vista. Cero datos nuevos. Cuatro cosas que tienen que seguir
+   siendo ciertas el día que alguien la toque:
+
+     1. no escribe en la capa ni sigue el GPS (guarda de fuga, v1024);
+     2. el 123 y el 165 son enlaces de marcado y salen en la hoja;
+     3. qué es «de seguridad» lo dice el catálogo de Reportes (js/03c), no una
+        lista copiada acá: una copia es la clase B, y Reportes es el dueño de
+        esas pestañas por decisión de Daniel;
+     4. lo que no se pudo medir se imprime SIN MEDIR.
+
+   NO comprueba que lo que pinta sea correcto: eso lo mide tseguridad en el
+   navegador, contra un barrio con lo que tiene que contar y lo que tiene
+   que callar. */
+console.log('\n  -- seguridad (js/83) --');
+(function () {
+  const RUTA = 'js/83-seguridad.js';
+  if (!fs.existsSync(R(RUTA))) {
+    comprobar('MATERIAL · el módulo de seguridad existe', false, 'falta ' + RUTA);
+    return;
+  }
+  const codigo = soloCodigo(leer(RUTA));
+  comprobar('MATERIAL · el módulo de seguridad existe y se publica en window.URBIS_SEGURIDAD',
+    /window\.URBIS_SEGURIDAD\s*=/.test(codigo), RUTA);
+
+  /* La forma de `guardaDeFuga` (v1024) —mira algo, reconoce su caso conocido,
+     y recién entonces busca—, pero sobre el CÓDIGO y no sobre el archivo
+     entero: la cabecera de js/83 nombra estas funciones justamente para decir
+     que no las usa, y una guarda que obligara a borrar esa explicación
+     empujaría a quitarla (v926). */
+  const ESCRIBE = /urbisGuardarFila|urbisDBUpdate|urbisDBDelete|urbisDBWrite|db_write|socialAPI|watchPosition|localStorage\.setItem|sessionStorage\.setItem/;
+  const reconoce = ESCRIBE.test('window.urbisGuardarFila(fila)');
+  const hallado = codigo.match(ESCRIBE);
+  comprobar('la pantalla de seguridad no escribe en la capa, no guarda nada y no sigue el GPS',
+    reconoce && codigo.length > 2000 && !hallado,
+    !reconoce ? 'NO PUDO CORRER: el patrón ya no reconoce su caso conocido'
+      : codigo.length <= 2000 ? 'NO PUDO CORRER: el código leído trae ' + codigo.length + ' caracteres'
+      : hallado ? 'el código llama a «' + hallado[0] + '»: esta pantalla solo lee'
+      : 'ninguna escritura, ningún guardado y ningún seguimiento del GPS en el código de ' + RUTA);
+
+  const t123 = /href="tel:123"/.test(codigo), t165 = /href="tel:165"/.test(codigo);
+  const enHoja = /innerHTML\s*=[\s\S]{0,400}?lineas\(\)\s*\+/.test(codigo);
+  comprobar('el 123 y el 165 son enlaces de marcado y la hoja los compone siempre',
+    t123 && t165 && enHoja,
+    t123 && t165 && enHoja
+      ? 'tel:123 y tel:165, y `lineas()` va en la composición de la hoja. Que salgan en todos los estados lo mide tseguridad'
+      : 'falta: ' + [!t123 && 'tel:123', !t165 && 'tel:165', !enHoja && 'lineas() dentro de la hoja'].filter(Boolean).join(' · '));
+
+  /* Las etiquetas del catálogo se leen del catálogo mismo, cargado en node
+     como lo carga el navegador. */
+  let etiquetas = [];
+  try {
+    const vm = require('vm');
+    const caja = { window: {} };
+    vm.runInNewContext(leer('js/03c-reportes-rapidos.js'), caja);
+    const secs = caja.window.URBIS_QUICK_REPORT_SECTIONS || [];
+    secs.forEach((s) => {
+      if (s.id === 'security' || s.id === 'conflicto') s.items.forEach((it) => etiquetas.push(it[2]));
+      if (s.id === 'vial') s.items.filter((it) => it[0] === 'traffic-crash').forEach((it) => etiquetas.push(it[2]));
+    });
+  } catch (e) { etiquetas = []; }
+  const lee = /URBIS_QUICK_REPORT_SECTIONS/.test(codigo);
+  if (etiquetas.length < 30) {
+    comprobar('MATERIAL · el catálogo de Reportes trae las pestañas de seguridad', false,
+      'se leyeron ' + etiquetas.length + ' etiquetas de js/03c; sin ellas la comprobación de abajo no mira nada');
+  } else {
+    const copiadas = etiquetas.filter((e) => codigo.indexOf("'" + e + "'") !== -1 || codigo.indexOf('"' + e + '"') !== -1);
+    comprobar('qué es «de seguridad» lo dice el catálogo de Reportes, no una lista copiada en js/83',
+      lee && copiadas.length === 0,
+      !lee ? 'js/83 no lee URBIS_QUICK_REPORT_SECTIONS'
+        : copiadas.length ? 'js/83 escribe etiquetas del catálogo: ' + copiadas.join(' · ')
+        : etiquetas.length + ' etiquetas de js/03c, ninguna copiada; el módulo lee el catálogo');
+  }
+
+  const constante = /var\s+SIN_MEDIR\s*=\s*'SIN MEDIR'/.test(codigo);
+  const usos = (codigo.match(/SIN_MEDIR/g) || []).length;
+  comprobar('lo que no se pudo medir sale como SIN MEDIR',
+    constante && usos >= 3,
+    constante && usos >= 3
+      ? 'la constante vale «SIN MEDIR» y el código la usa ' + usos + ' veces. Que un cero leído no salga como SIN MEDIR, ni al revés, lo mide tseguridad'
+      : !constante ? 'SIN_MEDIR no vale «SIN MEDIR»: lo que falta se imprimiría rellenado'
+      : 'la constante se usa ' + usos + ' veces, menos de las tres ramas que la necesitan');
+})();
+
 /* Las dos cuentas van APARTE porque piden cosas distintas: una fallada hay
    que arreglarla, una sin material hay que mirarla —o se quedó sin él porque
    el registro mejoró, o porque la función dejó de ver lo que medía—. Sumarlas
