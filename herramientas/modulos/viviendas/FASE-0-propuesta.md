@@ -3,8 +3,9 @@
 Sesión del módulo Viviendas · rama `claude/fervent-allen-74qgwm` · 23 de
 octubre de 2026. **Sin código.** Lo que está medido lleva su medición; lo que
 no se pudo verificar desde este contenedor lo dice. Las cifras de proveedores
-externos salen de la investigación con verificación adversarial (anexo B);
-donde todavía dice `[INVESTIGACIÓN]` es porque esa corrida no ha terminado.
+externos salen de la búsqueda web y se cruzaron con una segunda fuente (anexos
+C y D); la verificación adversarial con agentes aparte NO corrió;
+las marcas de investigación se cerraron el 2026-10-23 con los anexos D y E.
 
 **Estado de la investigación al escribir esto:** Supabase, R2/Cloudflare,
 mapas, 360° y correo/avisos tienen investigación hecha con fuentes primarias
@@ -61,7 +62,15 @@ arriendo con el mismo modelo.
 
 ## 2 · Stack y hosting
 
-`[INVESTIGACIÓN · framework por aplicación y monorepo: en curso]`
+**Investigado el 2026-10-23 (anexo D, sin verificación cruzada completa):** la
+plataforma pública en **Astro con `@astrojs/cloudflare`**, con el mapa como
+isla de cliente y las fichas **prerenderizadas** siempre que se pueda: un
+archivo estático no ejecuta el Worker, así que no gasta CPU ni cuenta contra
+las 100.000 peticiones del día. Cloudflare dice que un renderizado en servidor
+típico usa 10 a 20 ms, por encima de los 10 ms del plan gratis; **la CPU de una
+ficha real está SIN MEDIR** y se mide con `wrangler tail` antes de cerrar la
+elección. El panel en **Vite con React** (React o Svelte lo decide Daniel). El
+monorepo con **pnpm workspaces**, sin Turborepo hasta que el CI lo pida.
 
 Lo que la investigación de Cloudflare ya fijó del **hosting**: Cloudflare
 manda los proyectos nuevos a **Workers con Static Assets** y no a Pages
@@ -478,7 +487,10 @@ fuente primaria en cada punto:
   transición concreta lo exige, y con su peso justificado.
 - **Capas (`z-index`) por variables:** contenido 0 · mapa 50 · barra fija 100
   · tarjeta de precio 200 · hoja inferior 300 · modal 400 · aviso 500.
-- **Gráficas:** `[INVESTIGACIÓN · librería]`; paleta categórica Okabe-Ito,
+- **Gráficas:** **Chart.js** (anexo D). Ninguna de las cinco comparadas trae la
+  tabla alternativa ni respeta `prefers-reduced-motion` sola, así que esas dos
+  piezas van en el paquete compartido. La alternativa es ECharts si Daniel
+  prefiere la accesibilidad hecha, a cambio de unas tres veces el peso. Paleta categórica Okabe-Ito,
   etiquetas directas, texto además de color, tabla alternativa.
 
 ## 12 · Pruebas (la suite en verde o no se publica)
@@ -500,7 +512,7 @@ fuente primaria en cada punto:
 |---|---|---|---|
 | C1–C4 | los cuatro choques de la sección 0 | Daniel (+ cabeza para el registro) | las de la tabla |
 | P1 | Dónde vive la capa y cómo la lee cada módulo | sesión URBIS | **Contestado desde el repositorio** (anexo A); falta solo cuántos puntos hay |
-| P2 | `callAuthAPI` desde afuera y cuotas | sesión URBIS | se puede (es un POST HTTPS); cuotas `[INVESTIGACIÓN]`; etapa 1 por archivo |
+| P2 | `callAuthAPI` desde afuera y cuotas | sesión URBIS | se puede (es un POST HTTPS); cuotas en el anexo D: 6 min por ejecución y 30 simultáneas por usuario; etapa 1 por archivo |
 | P3 | Formato del ID de usuario | sesión URBIS | **no existe uno aparte del nombre de usuario**; `urbis_id` nulo y `generarIdUrbis()` reemplazable |
 | P4 | Unificar cuentas | URBIS + Daniel | opción (a) |
 | P5 | Quién entra al panel además de Daniel | Daniel | solo `admin`; `gerencia` construido y sin asignar |
@@ -539,7 +551,11 @@ fusionada):
    `actualizado_en`.
 3. **`callAuthAPI` desde afuera.** Sí: es un POST HTTPS al `/exec`, con JSON y
    `session_token` para escribir; el navegador ya lo hace así. Cuotas de Apps
-   Script: `[INVESTIGACIÓN]`.
+   Script (anexo D): 6 minutos por ejecución, 30 ejecuciones simultáneas por
+   usuario y 1.000 por script, verificadas. El tamaño máximo de respuesta y un
+   límite de llamadas entrantes quedan SIN MEDIR: ninguna fuente lo publica, y
+   el proxy de este contenedor no deja probarlo. Por eso la capa se exporta UNA
+   vez a un JSON y no se lee en vivo.
 4. **Fotos de los mapeos.** Viajan como `data:image` base64 **dentro de la
    celda** (reportes en `js/11`; la vitrina guarda una fila por foto porque
    una sola casi llena una celda). No están en Drive. Se pueden mostrar como
@@ -610,8 +626,9 @@ fusionada):
   (y `…/non-template-messages`), `whatsapp.com/legal/messaging-guidelines`;
   Twilio WhatsApp: `twilio.com/en-us/whatsapp/pricing`; Web Push en Apple:
   `developer.apple.com/documentation/usernotifications/sending-web-push-notifications-in-web-apps-and-browsers`.
-- `[INVESTIGACIÓN · stack/hosting, cuentas, gráficas/pruebas y Apps Script se
-  agregan con su corrida]`
+- Las fuentes de stack, gráficas y Apps Script están en el anexo D
+  (`FASE-0-anexo-D-investigacion.md`), cada cifra con sus dos fuentes y su estado:
+  14 verificadas, 35 no verificadas y 8 SIN MEDIR.
 
 ## Anexo C · Verificación de costos y cuotas con una segunda fuente (2026-10-23)
 

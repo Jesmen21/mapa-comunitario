@@ -176,10 +176,10 @@ hecha. Su reporte es un resumen de cinco líneas.
 
 | Pendiente | Estado al 2026-10-23 |
 |---|---|
-| Framework de cada aplicación | sin investigar del todo |
-| Librería de gráficas | sin investigar |
-| Cuotas de Apps Script | sin investigar |
-| Revisar las 6 maquetas que faltan (mapa, ficha, panel: resumen, finanzas, usuarios, línea de tiempo) | escritas, pasan el formato, sin revisar contra la especificación |
+| Framework de cada aplicación | investigado (anexo D): Astro para la pública, Vite con React o Svelte para el panel, pnpm workspaces. Falta medir la CPU de una ficha con `wrangler tail`, y que Daniel elija React o Svelte |
+| Librería de gráficas | investigado (anexo D): Chart.js, o ECharts si Daniel prefiere la accesibilidad hecha a cambio de unas tres veces el peso |
+| Cuotas de Apps Script | investigado (anexo D): 6 min por ejecución y 30 simultáneas, verificadas; tamaño de respuesta SIN MEDIR. La capa se exporta una vez a un archivo |
+| Revisar las 6 maquetas que faltan (mapa, ficha, panel: resumen, finanzas, usuarios, línea de tiempo) | revisadas el 2026-10-23: 28 correcciones y 10 preguntas para Daniel (anexo E); publicadas en el lienzo |
 | Las tres paletas lado a lado, con recomendación | por hacer; el coral oscurecido a `#D1364F` está aprobado |
 | Resumen de tres páginas de la propuesta, con el detalle como anexo | por hacer |
 
@@ -189,3 +189,39 @@ hecha. Su reporte es un resumen de cinco líneas.
   cerrado paga administración aunque se venda. La migración 001 crea
   `administracion_cop` sin atarla a la operación, así que la columna sirve
   para las dos respuestas. Falta que Daniel diga si se muestra en venta.
+
+## 2026-10-23 · Estado de la Fase 1
+
+**Escrita y probada en local, NO aplicada a la base viva.**
+
+- Las 14 migraciones aprobadas, la línea base, los datos de ejemplo (las seis
+  viviendas de las maquetas) y la batería están en
+  `herramientas/modulos/viviendas/supabase/`.
+- La batería tiene 70 aserciones: seguridad por rol, fórmula, importador, y
+  mapa con datos. Pasan las 70 en un Postgres 16 con PostGIS que imita lo
+  medido en la base viva. Las 70 están demostradas en rojo con una inyección
+  fiel cada una.
+- **Qué la frena:** toda escritura por el conector de Supabase se corta a los
+  60 s sin llegar a la base. Pasa igual por la vía de migraciones y por SQL
+  directo, en tres intentos. Las lecturas contestan al instante, y la base
+  quedó intacta: sin columnas nuevas, sin historia de migraciones y sin nada
+  corriendo. La explicación más probable es una aprobación pendiente en la
+  pantalla de Daniel para las herramientas que escriben.
+- **Qué hace falta:** que Daniel apruebe la escritura del conector, por
+  ejemplo marcando «permitir siempre» en `apply_migration`. Al aplicarlas, la
+  historia de migraciones se reconcilia con `supabase migration repair` si
+  alguna entra por SQL directo.
+
+**Decisiones de producto que la Fase 1 tomó por defecto y que Daniel tiene que
+confirmar** (están todas en tablas, se cambian sin migración):
+- Toda distancia pública se mide desde el punto público y no desde el exacto,
+  y eso incluye el puntaje. Medido: tres distancias redondeadas a 50 m bastan
+  para triangular la casa con más precisión que el desplazamiento de 80 a 150 m.
+- El admin ve el teléfono y el correo solo de quien pidió una visita, que es
+  la regla más estrecha del prompt (§7). El §6.2 dice «solo el admin», sin
+  decir de quiénes.
+- El límite de solicitudes: 5 por día y 1 abierta por vivienda.
+- Los puntos de interés se piden desde el zoom 14, con un tope de 800 por
+  consulta.
+- Los pesos de las categorías: educación y transporte 1,0, comercio y zonas
+  verdes 0,8, y salud y seguridad en 0 mientras no haya datos.
