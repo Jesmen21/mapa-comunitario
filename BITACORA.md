@@ -31183,3 +31183,50 @@ colándose a la hoja sin exención.
   de dueño un tipo y lo decide Daniel o esa sesión.
 * **No toca la caducidad de los tipos de reportes.** `pendiente` — es de esa
   sesión; acá solo queda escrito que la matriz es un contrato compartido.
+
+## v1166 · la excepción de la hoja, retirada el mismo día que se escribió
+
+Daniel retiró la corrección de la 2.ª tanda: **Viviendas usa Supabase, no la
+hoja.** La decisión 2 vuelve a valer entera y **la hoja no tiene ninguna
+excepción**.
+
+Se deshizo en los tres sitios donde la excepción había quedado escrita:
+
+| Sitio | Decía | Dice |
+|---|---|---|
+| `js/03h-registro-modulos.js` | `backend: 'hoja'` + `transitorio` | `backend: 'postgres'`, sin `transitorio` |
+| `pruebas/revisar.js` | `TRANSITORIOS = { viviendas: … }` | `TRANSITORIOS = {}` |
+| `herramientas/DECISIONES-DANIEL.md` | la 2 marcada «corregida en parte» y la 9 vigente | la 2 vigente sin excepciones, la 9 marcada RETIRADA |
+
+**Lo que NO se borró, y por qué.** La excepción llegó a estar en el código,
+con su guarda y con su inyección en rojo. Borrarla sin rastro dejaría a quien
+lea el historial preguntándose por qué el trinquete tiene un mecanismo de
+exenciones que nadie usó nunca, y esa pregunta sin respuesta es cómo un
+mecanismo se retira «por limpieza» justo antes de que haga falta.
+
+**Y el mecanismo se queda vacío a propósito**, que es lo que de verdad importa
+de esta tanda: `TRANSITORIOS = {}` no es un resto olvidado. Obliga a que la
+próxima excepción se escriba ahí —por ítem, con su razón, y repetida en el
+registro— en vez de inventar un camino nuevo. Y pone a correr **la redacción
+de CERO**, que es la que hace falta el día que una excepción desaparece
+(v970): hoy imprime «los 8 de siempre y ninguno más», y hasta esta versión esa
+rama nunca se había ejecutado.
+
+**La guarda sigue mordiendo con la tabla vacía**, que era lo único que había
+que comprobar: la inyección que devuelve `viviendas` a la hoja sale en rojo
+con «sin exención». Vaciar la lista no la desarmó.
+
+Y la decisión 10 **no se tocó**: Viviendas sigue siendo módulo propio en datos,
+con tipo de fila y permiso propios — solo que ahora son sus clases de fila en
+su propia tabla de Postgres y no valores del campo `tipo` de la hoja, a la que
+no escribe. Siguen marcados `tipoPropuesto: true`.
+
+**841 verdes, 2 sin material, 0 fallos**, igual que la v1165: esta tanda no
+agrega guardas, retira una excepción.
+
+### Lo que esta versión NO hace
+
+* **No confirma los dos tipos de Viviendas.** `pendiente` — los propuso la
+  cabeza y los confirma esa sesión; con el almacén en Postgres habría que
+  revisar además si el nombre con emoji sigue teniendo sentido fuera de la
+  hoja.

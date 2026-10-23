@@ -233,24 +233,23 @@
             'js/61 es suyo y el educativo lo llama 28 veces (medido el 23 oct 2026).'
     },
 
-    /* CORRECCIÓN DE DANIEL, 23 de octubre de 2026 (2.ª tanda): Viviendas usa
-       el almacén de la Vitrina —la hoja— de forma TRANSITORIA, con el modelo
-       escrito independiente del almacén para pasarlo a Postgres después. Es
-       la única excepción a «Sheets no se extiende»: va declarada acá, por
-       ítem y con su razón, nunca como una regla que abra la puerta a todos
-       (v1094, v1109). El trinquete la exige escrita, así que no se puede
-       colar una segunda sin decirlo. */
+    /* Viviendas va a SUPABASE, no a la hoja (Daniel, 23 de octubre de 2026).
+       La 2.ª tanda había corregido la decisión 2 para dejarla usar la hoja de
+       la vitrina de forma transitoria, y esa corrección quedó RETIRADA el
+       mismo día: la regla general vuelve a valer entera y sin excepciones.
+       Se deja dicho y no se borra en silencio, porque el trinquete de
+       `revisar.js` tuvo una exención escrita durante unas horas y quien lea
+       su historia tiene que poder saber por qué apareció y por qué se fue. */
     viviendas: {
       titulo: 'Viviendas · venta y arriendo',
-      backend: 'hoja',
-      transitorio: 'transitorio, salida a postgres',
+      backend: 'postgres',
       archivos: [],
-      /* Tipo y permiso PROPIOS, por decisión de Daniel: comparte el almacén
-         con la vitrina, no su identidad. El texto exacto del tipo lo PROPONE
-         la cabeza y lo confirma la sesión de Viviendas antes de escribir la
-         primera fila; va acá y no en blanco porque un tipo sin registrar es
-         lo que la guarda rechaza, y porque declararlo antes es el orden que
-         este proyecto ya usa para los criterios (v1077). */
+      /* Tipo y permiso PROPIOS, por la decisión 10, que no se corrigió: el
+         módulo tiene su propia clase de fila y su propio permiso. Con el
+         almacén en Postgres esto NO son valores del campo `tipo` de la hoja
+         —a la hoja no escribe— sino sus clases de fila en su propia tabla.
+         El texto exacto lo PROPONE la cabeza y lo confirma la sesión de
+         Viviendas antes de escribir la primera fila. */
       tipos: ['🏠 Vivienda URBIS', '🏠 Permiso Vivienda URBIS'],
       tipoPropuesto: true,
       prefijos: [],
@@ -263,9 +262,9 @@
       privado: ['direccionExacta', 'contactoPropietario'],
       nota: 'módulo propio en DATOS —tipo de fila y permiso propios— y sin página ni ' +
             'service worker propios por ahora. Primero venta; el arriendo después con el ' +
-            'mismo modelo. Publica solo Daniel o quien él autorice. El almacén es la hoja ' +
-            'de la vitrina y es transitorio: el modelo se escribe independiente del ' +
-            'almacén para poder pasarlo a Postgres sin reescribirlo.'
+            'mismo modelo. Publica solo Daniel o quien él autorice. El almacén es SUPABASE: ' +
+            'la excepción que lo dejaba usar la hoja de la vitrina se retiró el mismo día ' +
+            'que se escribió.'
     },
 
     politico: {

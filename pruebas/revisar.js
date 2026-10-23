@@ -16432,17 +16432,21 @@ console.log('\n  -- la resta del desplazamiento mide la barra ENTERA (v1157) --'
     const EN_LA_HOJA = ['reportes', 'eventos', 'vitrina', 'peticiones',
                         'interaccion', 'social', 'presencia', 'curso'];
     /* LA EXCEPCIÓN VA POR ÍTEM Y CON SU RAZÓN ESCRITA, NUNCA POR REGLA
-       (v1094, v1109, v1127). Daniel autorizó el 23 de octubre de 2026, en la
-       segunda tanda, que Viviendas use la hoja de la vitrina de forma
-       transitoria. Una regla que dijera «los módulos de inmuebles pueden»
-       abriría la puerta a todos de una vez; un renglón con nombre y razón hay
-       que pensarlo uno por uno, y se ve en el diff.
+       (v1094, v1109, v1127). Una regla que dijera «los módulos de inmuebles
+       pueden» abriría la puerta a todos de una vez; un renglón con nombre y
+       razón hay que pensarlo uno por uno, y se ve en el diff. Y la razón no
+       basta con que esté acá: el módulo tiene que declarar su propio
+       `transitorio` en el registro y los dos textos tienen que coincidir, o
+       la autorización no la ve quien lee el registro (clase C).
 
-       Y la razón no basta con que esté acá: el módulo tiene que declarar su
-       propio `transitorio` en el registro, y los dos textos tienen que
-       coincidir. Una autorización escrita solo en la guarda no la ve quien
-       lee el registro, que es la clase C. */
-    const TRANSITORIOS = { viviendas: 'transitorio, salida a postgres' };
+       HOY NO HAY NINGUNA, y la tabla se queda vacía a propósito. Tuvo una
+       —Viviendas con la hoja de la vitrina— durante unas horas del 23 de
+       octubre de 2026, hasta que Daniel la retiró: va a Supabase. Dejar la
+       tabla escrita y vacía es lo que hace que la próxima excepción tenga que
+       escribirse acá en vez de inventarse un mecanismo nuevo, y además pone a
+       correr la redacción de CERO, que es la que hace falta el día que una
+       excepción desaparezca (v970). */
+    const TRANSITORIOS = {};
     const nuevosEnHoja = [], sinDeclarar = [];
     ids.forEach((k) => {
       if (MOD[k].backend !== 'hoja' || EN_LA_HOJA.indexOf(k) !== -1) return;
