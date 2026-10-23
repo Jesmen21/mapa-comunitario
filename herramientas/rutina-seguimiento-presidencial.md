@@ -1,5 +1,62 @@
 # La rutina diaria del Seguimiento Presidencial
 
+> ## ESTE ARCHIVO ESTÁ VIEJO, y lo de abajo también · medido el 23 oct 2026
+>
+> El texto de abajo es el de la v795 —dice «los siete archivos de versión» y
+> son nueve desde la v1140— y la rutina **ya no se edita en la web**: el 22 de
+> octubre de 2026 se reemplazó por dos tareas programadas creadas desde una
+> sesión, que son las que corren hoy. Se conserva entero porque es el
+> historial de qué pedía esta rutina y cuándo.
+>
+> ### Por qué la primera corrida de la rutina nueva no publicó nada
+>
+> **Las dos tareas dispararon el 23 de octubre y ninguna publicó.** Medido:
+>
+> | | Alertas | Seguimiento |
+> |---|---|---|
+> | disparó | 11:40 UTC | 12:36 UTC |
+> | terminó | 11:42 | 12:38 |
+> | duró | 1 min 40 s | 2 min 6 s |
+> | estado de la corrida | SUCCEEDED | SUCCEEDED |
+> | commits en `main` | ninguno | ninguno |
+>
+> **La causa está en la etiqueta de las dos sesiones que se crearon:
+> `config:no-git-repo`.** Una tarea programada que crea una sesión nueva en
+> cada disparo la crea **SIN repositorio adjunto**, y los repositorios de una
+> sesión se eligen cuando arranca. Así que las dos corridas no tenían el
+> archivo que vienen a editar: `git rev-parse` falla, y clonar tampoco sirve
+> porque sin el repositorio adjunto no hay credenciales y el clon de un
+> repositorio privado contesta 404, que se lee como que no existe.
+>
+> **Y conviene no confundir dos cosas**, porque es la trampa de los éxitos
+> aparentes de `CLAUDE.md` y acá NO aplica: `SUCCEEDED` es el estado de la
+> CORRIDA —el turno terminó sin reventar—, no una afirmación de que publicó.
+> Las dos corridas pueden haber reportado honestamente que no pudieron
+> publicar: su propio texto se lo exige en la primera sección. Lo que no se
+> puede leer desde acá es su resumen.
+>
+> **El arreglo NO es el texto de la rutina.** El texto está bien y ya exige
+> decirlo cuando no se puede publicar. El arreglo es de ENTORNO, y tiene dos
+> caminos:
+>
+> 1. **el durable, y lo hace Daniel:** agregar `Jesmen21/mapa-comunitario`
+>    bajo *Repositories* en los ajustes del entorno —el menú del entorno en la
+>    barra de título de la sesión, «Edit»—. Desde ahí toda sesión nueva de ese
+>    entorno arranca con el repositorio, rutinas incluidas, y ninguna otra
+>    sesión programada vuelve a nacer ciega. Una llave o una variable guardada
+>    NO lo trae;
+> 2. **el de la propia rutina:** las sesiones que las tareas crean sí tienen
+>    la herramienta `add_repo`, así que el texto podría adjuntarse el
+>    repositorio solo antes de hacer nada. No se cambió acá a propósito: el
+>    texto vivo son unos 10.000 caracteres y reescribirlo a mano para tocarle
+>    la primera sección es justo donde se cae un párrafo sin que nadie lo
+>    note. Si el camino 1 no alcanza, se hace el 2 con el texto delante.
+>
+> **Un dato más que salió al medir y que nadie pidió:** las dos corridas se
+> sirvieron con **Sonnet 5.5**, no con Opus. La tarea no declara modelo, así
+> que toma el de por defecto. No se cambió: el modelo de una tarea se cambia
+> solo si Daniel lo pide con esas palabras.
+
 Este es el texto que la Routine «URBIS · Seguimiento Presidencial (diaria)»
 manda cada día a las 13:00 UTC (8 de la mañana en Colombia). Vive acá para
 que no se pierda y para que se vea en el historial cuándo cambió y por qué:
