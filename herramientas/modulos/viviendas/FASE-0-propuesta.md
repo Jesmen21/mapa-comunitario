@@ -69,7 +69,7 @@ manda los proyectos nuevos a **Workers con Static Assets** y no a Pages
 peticiones a archivos estáticos son **gratis e ilimitadas**; solo cuentan las
 que ejecutan código: **100.000 al día** en Free con 10 ms de CPU por
 invocación (el HTML con Open Graph por vivienda cabe ahí; si se pasa, Workers
-Paid son **US$5/mes** con 10 millones incluidas). Pages Functions comparten
+Paid parte de **US$5/mes**; cuántas peticiones incluye quedó **sin verificar**: la tabla oficial dice 20 millones y una calculadora dice 10, ver anexo C). Pages Functions comparten
 esa misma cuota. No se encontró prohibición de uso comercial en los planes
 gratuitos de Workers/Pages/R2 (términos leídos por extracto, no en vivo: ver
 anexo B). Turnstile es gratis y su propia página dice «most production
@@ -452,7 +452,9 @@ fuente primaria en cada punto:
   `pg_database_size` (solo admin y gerencia) + Edge Function con token de
   solo lectura de Cloudflare para R2; tarjeta en Salud con barra y
   porcentaje; alerta en pantalla y por correo al 70 % y crítica al 90 %.
-  Límite del gratis: 500 MB de base → solo lectura; 10 GB de ancho de banda.
+  Límite del gratis: 500 MB de base → solo lectura; **5 GB de egreso y 5 GB
+  de egreso en caché, dos cuotas aparte** (decía «10 GB de ancho de banda»:
+  era la suma de las dos, corregido en el anexo C).
 
 ## 11 · Sistema visual
 
@@ -610,3 +612,63 @@ fusionada):
   `developer.apple.com/documentation/usernotifications/sending-web-push-notifications-in-web-apps-and-browsers`.
 - `[INVESTIGACIÓN · stack/hosting, cuentas, gráficas/pruebas y Apps Script se
   agregan con su corrida]`
+
+## Anexo C · Verificación de costos y cuotas con una segunda fuente (2026-10-23)
+
+Lo pidió Daniel antes de gastar en la Fase 1. **Método:** para cada cifra se
+buscó una página distinta de la que usó la primera investigación. Una cifra
+queda **verificada** cuando las dos fuentes coinciden. Queda **no verificada**
+cuando la segunda no aparece o cuando las fuentes se contradicen. El canal fue
+la búsqueda web: desde este contenedor el proxy no deja abrir supabase.com.
+
+**Supabase**
+
+| Cifra | Estado | Segunda fuente |
+|---|---|---|
+| Free: 500 MB de base; al pasarlos, solo lectura | verificada | doc «Database size» y guía de Medium |
+| Free: pausa tras 7 días de inactividad | verificada | CloudZero, Jet Admin |
+| Free: 2 proyectos activos | verificada | CloudZero, Jet Admin |
+| Free: 50.000 usuarios activos al mes | verificada | página de precios y CloudZero |
+| Free: **5 GB de egreso + 5 GB de egreso en caché** | **corregida**: la propuesta decía 10 GB | página de precios y CloudZero; una fuente vieja dice 2 GB |
+| Free: sin respaldos automáticos | verificada | SimpleBackups |
+| Pro: US$25 al mes por organización, con US$10 de cómputo que cubren un Micro | verificada | FAQ de facturación y nocode.mba (2 proyectos = US$35) |
+| Pro: 100.000 usuarios, 8 GB de disco, 250 GB de egreso | verificada | página de precios y Jet Admin |
+| Pro: respaldo diario guardado 7 días | verificada | SimpleBackups |
+| PITR: desde US$100 al mes | verificada como piso | página de precios; un blog estima US$140 |
+| Tope de gasto activado por defecto en Pro | **no verificada** | solo una guía de terceros lo dice |
+| Correo integrado: 2 por hora, solo al equipo | verificada | SendLayer, Brevo; una fuente vieja dice 3 |
+| Con SMTP propio: 30 por hora por defecto | verificada | SendLayer, Brevo |
+| Plantillas de Auth no editables en proyectos gratis nuevos desde el 2026-06-03 | verificada | changelog de Supabase, discusión 46599 y Dreamlit |
+| Protección contra contraseñas filtradas solo en Pro | verificada | GuardLayer y otra guía |
+| Verificación en dos pasos (TOTP) gratis | **no verificada** | la doc no la ata a ningún plan, pero no dice «gratis» |
+| Transformaciones de imagen solo en Pro | **no verificada** | no apareció segunda fuente; no cambia nada porque se usa R2 |
+| Usuarios de Auth de terceros: US$0,00325 cada uno | verificada | changelog 33959 y página de precios |
+
+**Cloudflare R2**
+
+| Cifra | Estado | Segunda fuente |
+|---|---|---|
+| Gratis: 10 GB-mes, 1 millón de clase A y 10 millones de clase B al mes, solo en Standard | verificada | Filebase y vinfrastructure |
+| Después: US$0,015 por GB-mes, US$4,50 y US$0,36 por millón | verificada | Filebase, flarecalc |
+| Egreso gratis | verificada | Filebase y doc de precios |
+| `r2.dev` no es para producción y se frena con 429 | verificada | doc de límites y dos guías |
+
+**Correo: Resend**
+
+| Cifra | Estado | Segunda fuente |
+|---|---|---|
+| Free: 3.000 correos al mes con tope de 100 al día | verificada | UserJot, WP Mail SMTP |
+| Free: 3 dominios | verificada | changelog del 2026-08-25; las páginas viejas dicen 1 |
+| Free: registros guardados 30 días | verificada | página de precios; las reseñas viejas dicen 1 día |
+| Pro: US$20 al mes por 50.000 correos | verificada | WP Mail SMTP, Flexprice |
+
+**Fuera de lo que pidió Daniel, pero en la propuesta**
+
+| Cifra | Estado |
+|---|---|
+| Workers Free: 100.000 peticiones al día, 10 ms de CPU; los estáticos son gratis | verificada |
+| Workers Paid: US$5 al mes con 10 millones de peticiones | **no verificada**: la tabla oficial dice 20 millones |
+
+**Lo que cambia por esta verificación:** dos cifras de la propuesta se
+corrigieron arriba. Ninguna de las dos mueve el plan: el egreso real de la
+Fase 1 es casi cero, y Workers Paid no se usa en el plan gratis.

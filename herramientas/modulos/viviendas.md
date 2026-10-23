@@ -7,157 +7,48 @@ entre sesiones en `herramientas/COORDINACION-MODULOS.md`; acá no se repiten.
 
 Las viviendas que Daniel va a vender —y después a arrendar—, publicadas para
 el ciudadano. **El diferenciador es que cada vivienda muestra sus fortalezas y
-el análisis de ubicación del sector**, apoyado en el análisis que URBIS ya
-tiene. Un portal cualquiera dice «excelente ubicación»; acá cada fortaleza
-tiene que decir de dónde sale.
+el análisis de su ubicación**. Un portal cualquiera dice «excelente
+ubicación»; acá cada fortaleza dice de dónde sale.
 
-## Decisiones de Daniel · 23 de octubre de 2026
+## Dónde vive desde el 2026-10-23
 
-1. **Módulo propio en los datos**, con la mecánica de la Vitrina: tipo de fila
-   y permiso `viviendas` propios. Sin página ni service worker propios por
-   ahora.
-2. **Almacén: el de la Vitrina, transitorio.** El modelo no depende del
-   almacén y tiene que poder pasar a Postgres sin rehacerse.
-3. **Dirección pública aproximada** (cuadra o barrio); exacta solo tras
-   contacto.
-4. **Primero VENTA.** Arriendo después, con el mismo modelo (`operacion` más
-   administración y depósito).
-5. **Publica solo Daniel** y quien él autorice. Nada de terceros todavía.
-6. Rama `claude/fervent-allen-74qgwm`, sin salto de versión.
-7. Modelo de datos aprobado: puntero al análisis, fortalezas con `base` o
-   `sinBase`, cada cifra con su origen, aviso de procedencia. Primer peldaño:
-   el registro del módulo y el esquema, con pruebas y sin interfaz.
+**Fuera de este repositorio.** Daniel decidió que los datos van en Supabase,
+proyecto `urbis-viviendas`, y el código en un repositorio privado nuevo,
+`urbis-viviendas`, con dos aplicaciones y un paquete compartido.
 
-## Estado medido
+Mientras ese repositorio no exista, lo del módulo se prepara en
+`herramientas/modulos/viviendas/` de esta rama:
 
-| Qué | Dónde | Estado |
-|---|---|---|
-| El esquema de la vivienda | `herramientas/modulos/viviendas/83-viviendas.js` | escrito y medido |
-| Su guarda | `pruebas/revisar.js`, bloque «El módulo de viviendas» | escrita, demostrada en rojo |
-| El archivo en `js/` | `js/83-viviendas.js` | **pedido a la cabeza**, abajo |
-| La entrada en el registro de la capa | `js/03h-registro-modulos.js` | **pedida a la cabeza**, abajo |
-| Interfaz | — | no empieza; es el peldaño siguiente |
-| Una sola vivienda cargada | — | ninguna, y es correcto: sin almacén enganchado no se carga nada |
+| Qué | Dónde |
+|---|---|
+| El registro de decisiones, con fecha y razón | `herramientas/modulos/viviendas/docs/decisiones.md` |
+| La propuesta de la Fase 0, con la verificación de costos en su anexo C | `herramientas/modulos/viviendas/FASE-0-propuesta.md` |
+| Las migraciones y las pruebas de la Fase 1 | `herramientas/modulos/viviendas/supabase/` |
+
+**Todo eso se muda al repositorio nuevo en su primer commit**, y de acá se
+retira. En `mapa-comunitario` el módulo no deja código.
+
+## El primer peldaño se retiró
+
+El esquema `83-viviendas.js`, su arnés de inyecciones y su bloque de
+`pruebas/revisar.js` estaban escritos para la hoja de la Vitrina. Con la
+decisión de Supabase sobraban, y se retiraron el 2026-10-23. La batería
+estática pasó de 853 a 840 comprobaciones, todas en verde: las 13 que bajaron
+eran las del bloque retirado. Sus cuatro reglas pasan a SQL en las migraciones
+005, 010 y 011.
 
 ## Lo que le pido a la cabeza
 
-La entrada en el registro **ya está** —la escribió la cabeza en `js/03h`, con
-`backend: 'hoja'` y `transitorio: 'transitorio, salida a postgres'`, que es la
-exención por ítem que Daniel autorizó—. Lo que sigue abierto es esto, y las
-cuatro cosas son archivos compartidos, así que se piden
-(`COORDINACION-MODULOS.md` §3 y §5).
+Los pedidos anteriores (mover el archivo a `js/`, el tipo de la foto, `lat` y
+`lng` en privado, los nombres de `comparte`) **ya no aplican**: el módulo no
+escribe en la hoja. Queda uno, y son tres archivos compartidos:
 
-### 1 · Mover el archivo a `js/` y engancharlo
+* **Retirar la excepción de Viviendas en la hoja.** Es la decisión 9 de
+  `herramientas/DECISIONES-DANIEL.md`, la entrada `viviendas` de
+  `js/03h-registro-modulos.js` con `backend: 'hoja'` y sus dos tipos de fila,
+  y el renglón `viviendas` de `TRANSITORIOS` en `pruebas/revisar.js`. Hoy no
+  rompen nada, pero declaran un dueño de la hoja que ya no la va a usar.
 
-```
-git mv herramientas/modulos/viviendas/83-viviendas.js js/83-viviendas.js
-```
-
-y con él, las dos líneas que lo cargan —el `<script src="js/83-viviendas.js">`
-de `index.html` y su ruta en el precaché de `service-worker.js`— y
-`archivos: ['js/83-viviendas.js']` en su entrada del registro, que hoy está
-vacía. **No está en `js/` todavía justamente porque falta eso**: la guarda de
-archivos huérfanos, con techo CERO, se pone roja con un archivo de `js/` que
-ninguna página carga, y tiene razón. La guarda del módulo lo busca en las dos
-rutas y dice en cuál lo encontró, así que el movimiento no rompe nada.
-
-Lleva salto de versión, porque el navegador descarga un archivo nuevo: **el
-número lo pone la cabeza** (§2).
-
-### 2 · El tipo de fila: confirmado uno, y falta el de la FOTO
-
-El registro trae `tipoPropuesto: true` y pide que esta sesión confirme el
-texto antes de escribir la primera fila. **Confirmado `🏠 Vivienda URBIS`**, y
-el adaptador ya escribe exactamente ese texto; la guarda se lo pregunta a
-`duenoDe` del registro de verdad, así que los dos no se pueden separar.
-
-Se separaron una vez, el mismo día: el módulo escribía `🏘️ Vivienda URBIS`
-—la casita de barrio— y el registro `🏠 Vivienda URBIS` —la casa sola—. De
-vista son el mismo emoji y para `duenoDe` son dos tipos, así que esa fila
-habría quedado sin dueño. Ya está atado.
-
-**Falta un tipo para la FOTO.** La Vitrina ya midió por qué cada foto va en su
-propia fila: una foto comprimida casi llena una celda. Pido
-`🏠 Foto de vivienda URBIS`. Mientras no esté registrado, el módulo no lo
-nombra —un tipo sin dueño es lo que la guarda rechaza—, así que hoy el
-adaptador escribe un solo tipo.
-
-Y una pregunta sobre el segundo que el registro propone,
-`🏠 Permiso Vivienda URBIS`: la Vitrina **no** entrega su permiso con un tipo
-de fila propio, lo hace con `urbisDarPermiso(usuario, 'vitrina')`, y el tipo
-`🔑 Permiso` ya es de `social`. ¿Hace falta un tipo de fila aparte, o el
-permiso `viviendas` va por el mismo camino que el de la vitrina?
-
-### 3 · `lat` y `lng` deberían estar en `privado`
-
-Medido contra el esquema. El registro declara
-`privado: ['direccionExacta', 'contactoPropietario']`, y con eso
-`puedeLeer('<otro módulo>', 'viviendas', 'lat')` devuelve **true**. Pero
-**seis decimales son once centímetros**: la coordenada cruda ES la dirección
-exacta, así que taparle el texto a otro módulo y dejarle el punto declara la
-mitad de la reserva, que es peor que no declarar ninguna (v867). Del lado de
-lo que se publica ya está cerrado —`paraPublicar` solo emite el punto
-redondeado por `puntoPublico`, y hay guarda—; lo que falta es que el registro
-diga lo mismo.
-
-### 4 · Los nombres de `comparte` y `privado` no son los del esquema
-
-El registro nombra `ubicacionAproximada`, `tipoInmueble` y
-`contactoPropietario`; el esquema los llama `direccionPublica`, `tipo` y
-—todavía— no tiene campo de contacto. Hoy no rompe nada porque nadie lee
-viviendas aún, pero son dos codificaciones de un mismo reparto y se separan en
-cuanto alguien llame a `puedeLeer`. ¿Alineo el esquema a los nombres del
-registro, o la cabeza alinea el registro a los del esquema? No lo decido sola
-porque `js/03h` es compartido.
-
-### 5 · El permiso `viviendas` en el servidor
-
-Igual que `vitrina`: sin candado, cualquiera podría publicar una vivienda con
-la palabra URBIS avalándola. El servidor es el Apps Script y **no está en este
-repositorio**, así que acá solo queda dicho.
-
-## Decisiones que necesito de Daniel
-
-### A · ¿Qué precisión lleva el punto publicado?
-
-**Medido al escribir el esquema, y no lo decido sola.** La decisión 3 dice
-dirección pública aproximada. Pero **el punto del mapa ES la dirección**:
-`guardarTrazo` guarda seis decimales, que son once centímetros, así que
-publicar `lat`/`lng` entrega la puerta de la casa aunque el texto diga «barrio
-Caobos». Declarar la mitad de la reserva y callar la otra es el fallo de la
-v867 en otro sitio.
-
-El esquema no elige: `precisionPunto` es un campo **exigido sin valor por
-omisión**, así que una vivienda sin esa declaración no pasa `validar` y por lo
-tanto no publica. Las dos opciones están escritas y medidas:
-
-| Valor | Decimales | Qué entrega |
-|---|---|---|
-| `manzana` | 3 | unos 110 m: ubica la cuadra, no la puerta |
-| `exacto` | 6 | la puerta |
-
-### B · ¿La administración también aplica en VENTA?
-
-El esquema sigue tu decisión 4 al pie: `administracion` y `deposito` solo en
-arriendo. Medido: un apartamento en **conjunto cerrado** en venta también paga
-administración, y es de lo primero que pregunta un comprador. Cambiarlo es una
-línea; no lo hago porque dijiste arriendo.
-
-## Lo que este peldaño NO hace
-
-* **Interfaz** — ninguna pantalla, ningún formulario, ninguna gota en el mapa.
-  Es lo que pediste. `pendiente`
-* **Escribir o leer del almacén** — el adaptador de la Vitrina está escrito y
-  probado de ida y vuelta, pero nadie lo llama: llamar a `urbisGuardarFila`
-  pide el permiso y la entrada del registro, que son los pedidos de arriba.
-  `pendiente`
-* **Comprobar que el análisis citado exista** — la guarda comprueba que la
-  clave que cita una fortaleza sea una de las que el análisis produce, y que
-  el ancla de esa clave exista de verdad en `js/68`. Lo que NO comprueba es
-  que ESTA vivienda traiga ese dato: eso pide leer su ficha de
-  `pcr_fichas_v1`, y la ficha llega con la interfaz. `pendiente`
-* **Fotos** — declarado el tipo de fila (`🏘️ Foto de vivienda URBIS`) y nada
-  más. La Vitrina ya midió por qué cada foto va en su propia fila: una foto
-  comprimida casi llena una celda del Sheet. `pendiente`
-* **El arriendo abierto** — el modelo está escrito y medido con un caso
-  fabricado; lo que falta es tu decisión de abrirlo. `pendiente`
+Lo que sí sigue siendo de la capa de URBIS es la **lectura de los mapeos**,
+por un archivo de intercambio y en un solo sentido. El contrato está en la
+sección 8 de la propuesta.
