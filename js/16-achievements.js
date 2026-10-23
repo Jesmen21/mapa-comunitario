@@ -132,8 +132,54 @@
     ['explore_50','🧭','Cartógrafo ciudadano','Explore 50 puntos del mapa.','Exploración','Épico','mapPointsOpened',50]
   ];
   EXTRA_TIERS.forEach(([id, icon, name, desc, cat, rarity, metric, value, requiresApproval]) => {
-    ACHIEVEMENTS.push(make(id, icon, name, desc, cat, rarity, stats => Number(stats[metric] || 0) >= value, { requiresApproval: !!requiresApproval }));
+    ACHIEVEMENTS.push(make(id, icon, name, desc, cat, rarity, stats => Number(stats[metric] || 0) >= value, { requiresApproval: !!requiresApproval, metrica: metric }));
   });
+
+  /* ── Los logros EN PAUSA ──────────────────────────────────────────────────
+     Medido el 23 de octubre de 2026: de los 92 logros publicados, 58 leían un
+     contador que NINGUNA línea de la aplicación incrementa. No estaban rotos:
+     eran imposibles. Un logro que no se puede ganar se lee igual que uno
+     dificilísimo, y el perfil prometía 92 premios teniendo 34.
+
+     Decisión de Daniel: se OCULTAN, no se borran. Cada uno vuelve solo el día
+     que exista la función que mueve su contador.
+
+     Y el estado se CALCULA (v903): acá se declara qué métricas tienen quien
+     las escriba —eso es un hecho del código, no una opinión— y de ahí se
+     deriva qué logro es alcanzable, leyendo la propia condición del logro. Una
+     bandera `oculto: true` por logro sería una cifra tecleada envejeciendo
+     sola, y además habría que acordarse de bajarla 58 veces.
+
+     `revisar.js` ata esta lista a la realidad (v1091): se pone roja si alguien
+     declara acá una métrica que nadie escribe, o si escribe un `recordMetric`
+     nuevo y se olvida de declararla —que es justo el día en que su logro tiene
+     que volver a aparecer—. */
+  const METRICAS_CON_FUENTE = new Set([
+    // Las escribe `recordMetric` en algún sitio de js/
+    'govModeActivated', 'eduModeActivated', 'moodLogs', 'lowMoodLogs',
+    'gratitudeNotes', 'selfcareLogs', 'reportsReviewed',
+    // Las calcula `buildStats` con valor propio, de los reportes aprobados
+    'approvedReports', 'approvedWithPhoto', 'approvedLiked', 'approvedPopular',
+    'approvedTemporal', 'approvedCategories', 'approvedPlaces', 'approvedByKind',
+    'prizeWins'
+  ]);
+
+  /* Qué contador lee un logro. Los de `EXTRA_TIERS` lo traen como dato porque
+     su condición lo toma de una variable de cierre y no se ve en el código. */
+  function metricasQueLee(a) {
+    if(a.metrica) return [a.metrica];
+    return (String(a.condition || '').match(/stats\.([A-Za-z0-9_]+)/g) || [])
+      .map(t => t.slice(6));
+  }
+  /* Falla cerrado (v880): un logro cuya condición no nombra ningún contador
+     —porque alguien la escribió de otra forma— se queda en pausa y APARECE en
+     el recuento, en vez de colarse como alcanzable sin que nadie lo mire. */
+  function tieneQuienLoDesbloquee(a) {
+    const ms = metricasQueLee(a);
+    return ms.length > 0 && ms.every(m => METRICAS_CON_FUENTE.has(m));
+  }
+  const LOGROS_VISIBLES = ACHIEVEMENTS.filter(tieneQuienLoDesbloquee);
+  const LOGROS_EN_PAUSA = ACHIEVEMENTS.filter(a => !tieneQuienLoDesbloquee(a));
 
   function userKey() {
     const raw = [window.userEmailGlobal, window.userCedulaGlobal, window.userNameGlobal, window.userBarrioGlobal]
@@ -295,7 +341,7 @@
     const stats = buildStats();
     const unlocked = unlockedStore();
     const newlyUnlocked = [];
-    ACHIEVEMENTS.forEach(achievement => {
+    LOGROS_VISIBLES.forEach(achievement => {
       if(unlocked[achievement.id]) return;
       let ok = false;
       try { ok = !!achievement.condition(stats); } catch(e) { ok = false; }
@@ -327,9 +373,9 @@
     if(!container) return;
     const unlocked = unlockedStore();
     const stats = buildStats();
-    const unlockedCount = ACHIEVEMENTS.filter(a => unlocked[a.id]).length;
-    if(progress) progress.textContent = `${unlockedCount}/${ACHIEVEMENTS.length}`;
-    const ordered = ACHIEVEMENTS.slice().sort((a,b) => {
+    const unlockedCount = LOGROS_VISIBLES.filter(a => unlocked[a.id]).length;
+    if(progress) progress.textContent = `${unlockedCount}/${LOGROS_VISIBLES.length}`;
+    const ordered = LOGROS_VISIBLES.slice().sort((a,b) => {
       const au = unlocked[a.id] ? 0 : 1;
       const bu = unlocked[b.id] ? 0 : 1;
       if(au !== bu) return au - bu;
@@ -342,7 +388,23 @@
         <div class="ac-icon">${a.icon}</div>
         <div><b>${escapeHTML(a.name)}</b><small>${escapeHTML(a.description)}</small><small class="ac-status">${status}</small></div>
       </div>`;
-    }).join('');
+    }).join('') + notaDePausa();
+  }
+
+  /* Ocultar en silencio se lee igual que no haber tenido nunca esos logros, y
+     este proyecto tiene escrito que una comprobación desactivada lo dice y se
+     cuenta. Van las DOS redacciones (v970): la de N es la de hoy, y la de cero
+     es justo la que hace falta el día que alguien escriba los contadores que
+     faltan — si no estuviera escrita, ese día el renglón diría una cifra vieja
+     o desaparecería sin que nadie lo notara. */
+  function notaDePausa() {
+    const n = LOGROS_EN_PAUSA.length;
+    const texto = n === 0
+      ? `Los ${LOGROS_VISIBLES.length} logros de URBIS se pueden ganar: ninguno está en pausa.`
+      : `${n} ${n === 1 ? 'logro está' : 'logros están'} en pausa y por eso no ${n === 1 ? 'aparece' : 'aparecen'} en la lista: la aplicación todavía no lleva la cuenta que ${n === 1 ? 'lo' : 'los'} desbloquea. No se borraron — ${n === 1 ? 'vuelve' : 'vuelven'} el día que esa función exista.`;
+    return `<div class="achievement-card ac-pausa"><div class="ac-icon">\u23F8\uFE0F</div>
+      <div><b>${n === 0 ? 'Nada en pausa' : 'En pausa'}</b><small>${escapeHTML(texto)}</small></div>
+    </div>`;
   }
 
   function onReportApproved(punto) {
@@ -354,6 +416,12 @@
   }
 
   window.urbisAchievementsCatalog = ACHIEVEMENTS;
+  /* Lo que una prueba necesita leer se AGREGA acá, en vez de alcanzarlo por un
+     lado (la regla de `R.estado()`): sin esto, una suite tendría que volver a
+     derivar la lista y serían dos codificaciones del mismo hecho. */
+  window.urbisLogrosVisibles = LOGROS_VISIBLES;
+  window.urbisLogrosEnPausa = LOGROS_EN_PAUSA;
+  window.urbisMetricasConFuente = METRICAS_CON_FUENTE;
   window.urbisEvaluateAchievements = evaluateAchievements;
   window.urbisRecordMetric = recordMetric;
   window.urbisNotifyAchievement = notifyAchievement;

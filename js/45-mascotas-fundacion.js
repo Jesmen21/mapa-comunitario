@@ -1,7 +1,11 @@
 /* ============================================================================
    URBIS · Módulo MASCOTAS / Fundación animalista (perritos 🐶 y gaticos 🐱)
-   Ecosistema propio: animalitos que necesitan ayuda, donaciones, reportar un
-   peludito, muro de apoyo y fundaciones aliadas. Estética cálida propia.
+   Ecosistema propio: animalitos que necesitan ayuda, reportar un peludito,
+   muro de apoyo y fundaciones aliadas. Estética cálida propia.
+   SIN DONACIONES: la sección de donar, sus métodos de pago y toda cifra de
+   dinero salieron el 23 de octubre de 2026 por decisión de Daniel. El módulo
+   no cobra, no recauda y no declara haber recaudado. Volver a ponerlas es una
+   decisión suya, no de una tanda.
    Persistencia local (localStorage) para funcionar ya; preparado para migrar
    a Apps Script (mismas funciones de datos) cuando quieras nube compartida.
    ============================================================================ */
@@ -13,8 +17,7 @@
 
   var LS = {
     animales: 'urbis_mascotas_animales_v2',
-    mensajes: 'urbis_mascotas_mensajes_v2',
-    aportes:  'urbis_mascotas_aportes_v2'
+    mensajes: 'urbis_mascotas_mensajes_v2'
   };
   var _seccionActiva = 'ayuda';
   // El módulo puede vivir en el sidebar (#mascotas-root) o en la pantalla móvil
@@ -25,7 +28,6 @@
   function rootEl(){ return document.getElementById(_rootId); }
 
   // ---- utilidades ----
-  function pesos(n){ return '$' + (Number(n)||0).toLocaleString('es-CO'); }
   function leer(key, fallback){
     try{ var raw = localStorage.getItem(key); if(!raw) return fallback; var v = JSON.parse(raw); return v == null ? fallback : v; }
     catch(e){ return fallback; }
@@ -50,17 +52,12 @@
   function setAnimales(a){ guardar(LS.animales, a); }
   function getMensajes(){ var m = leer(LS.mensajes, null); if(!m){ m = mensajesSemilla(); guardar(LS.mensajes, m); } return m; }
   function setMensajes(m){ guardar(LS.mensajes, m); }
-  function getAportes(){ return leer(LS.aportes, []); }
-  function setAportes(a){ guardar(LS.aportes, a); }
 
   // ---- métricas ----
   function metricas(){
     var animales = getAnimales();
-    var aportes = getAportes();
-    var totalDonado = aportes.reduce(function(s,a){ return s + (Number(a.monto)||0); }, 0);
     var enHogar = animales.filter(function(a){ return a.estado === 'hogar'; }).length;
-    var ayudados = aportes.length;
-    return { peluditos:animales.length, donado:totalDonado, ayudados:ayudados, hogares:enHogar };
+    return { peluditos:animales.length, hogares:enHogar };
   }
 
   // ============================ RENDER ============================
@@ -82,18 +79,15 @@
         '<div class="paw-stats">' +
           '<div class="paw-stat" style="animation-delay:.05s"><b>' + m.peluditos + '</b><span>' +
             pl(m.peluditos, 'Peludito activo', 'Peluditos activos') + '</span></div>' +
-          '<div class="paw-stat" style="animation-delay:.12s"><b>' + (m.donado>0?pesos(m.donado):'$0') + '</b><span>Recaudado con usted</span></div>' +
           '<div class="paw-stat" style="animation-delay:.19s"><b>' + m.hogares + '</b><span>Buscan hogar</span></div>' +
         '</div>' +
         '<div class="paw-nav">' +
           navBtn('ayuda','💗 Ayudar') +
-          navBtn('donar','🎁 Donar') +
           navBtn('reportar','📣 Reportar') +
           navBtn('muro','💬 Muro') +
           navBtn('fundaciones','🏠 Fundaciones') +
         '</div>' +
         seccionAyuda() +
-        seccionDonar() +
         seccionReportar() +
         seccionMuro() +
         seccionFundaciones() +
@@ -114,7 +108,7 @@
       : '<div class="paw-empty"><div class="paw-empty-ic">🐾</div><b>Aún no hay peluditos reportados</b><small>Cuando alguien reporte un perrito o gatico que necesita ayuda, aparecerá aquí. ¿Conoce a uno? Toque “📣 Reportar”.</small></div>';
     return '<div class="paw-section" data-paw-section="ayuda">' +
       '<div class="paw-section-title">💗 Animalitos que necesitan ayuda</div>' +
-      '<p class="paw-section-help">Cada peludito tiene una historia. Apadrine con una donación, ofrézcase a ayudar o dele un hogar. Lo que para usted es poco, para ellos lo es todo.</p>' +
+      '<p class="paw-section-help">Cada peludito tiene una historia. Ofrézcase a ayudar o dele un hogar.</p>' +
       cuerpo +
     '</div>';
   }
@@ -124,15 +118,11 @@
               : a.estado === 'hogar' ? '<span class="paw-badge hogar">Busque hogar</span>'
               : '<span class="paw-badge proceso">En proceso</span>';
     var needs = (a.necesita||[]).map(function(n){ return '<span class="paw-need">' + escapar(n) + '</span>'; }).join('');
-    var goal = '';
-    if(a.meta && a.meta > 0){
-      var pct = Math.min(100, Math.round((a.recaudado / a.meta) * 100));
-      goal = '<div class="paw-goal"><div class="paw-goal-bar"><div class="paw-goal-fill" style="width:' + pct + '%"></div></div>' +
-        '<div class="paw-goal-text"><span>' + pesos(a.recaudado) + ' recaudado</span><span>Meta ' + pesos(a.meta) + '</span></div></div>';
-    }
+    /* Sin barra de «recaudado / meta»: era la cifra de dinero de cada ficha,
+       y se fue con la donacion (23 de octubre de 2026, decision de Daniel). */
     var btnPrincipal = a.estado === 'hogar'
       ? '<button class="paw-btn primary" onclick="mascotaAdoptar(\'' + a.id + '\')">🏠 Quiero adoptar</button>'
-      : '<button class="paw-btn primary" onclick="mascotaDonarA(\'' + a.id + '\')">🎁 Apadrinar</button>';
+      : '';
     return '<div class="paw-card">' +
         '<div class="paw-card-top">' +
           '<div class="paw-avatar' + (esCat?' cat':'') + '">' + (a.emoji || (esCat?'🐱':'🐶')) + '</div>' +
@@ -143,51 +133,10 @@
         '</div>' +
         '<p class="paw-story">' + escapar(a.historia) + '</p>' +
         '<div class="paw-needs">' + needs + '</div>' +
-        goal +
         '<div class="paw-card-actions">' +
           btnPrincipal +
           '<button class="paw-btn soft" onclick="mascotaAyudar(\'' + a.id + '\')">🙌 Ayudar</button>' +
         '</div>' +
-    '</div>';
-  }
-
-  // -------- Sección: Donar --------
-  function seccionDonar(){
-    var opciones = [
-      { v:5000,  k:'1 día de comida 🍚' },
-      { v:10000, k:'Desparasitar 💊' },
-      { v:20000, k:'Vacuna 💉' },
-      { v:50000, k:'Media cirugía 🏥' }
-    ];
-    var chips = opciones.map(function(o){
-      return '<div class="paw-amount" data-monto="' + o.v + '" onclick="mascotaSetMonto(this,' + o.v + ')"><div>' + pesos(o.v) + '</div><small>' + o.k + '</small></div>';
-    }).join('');
-    return '<div class="paw-section" data-paw-section="donar">' +
-      '<div class="paw-section-title">🎁 Hacer una donación</div>' +
-      '<p class="paw-section-help">Elija cuánto quiere aportar. El 100% va para comida, atención veterinaria y rescate de los peluditos.</p>' +
-      '<div class="paw-donate-card">' +
-        '<div class="paw-amounts">' + chips + '</div>' +
-        '<div class="paw-field"><label>Otro valor (COP)</label><input id="paw-monto-otro" type="number" inputmode="numeric" placeholder="Ej: 30000" oninput="mascotaMontoLibre(this.value)"></div>' +
-        '<div class="paw-field" style="margin-top:6px"><label>¿A nombre de quién? (opcional)</label><input id="paw-donante" type="text" placeholder="Su nombre o anónimo"></div>' +
-        '<div style="font-weight:800;font-size:.82rem;margin:14px 0 6px;color:var(--paw-ink)">Métodos de pago</div>' +
-        '<div class="paw-pay">' +
-          payRow('💜','Nequi','3001234567 · configure su número','3001234567') +
-          payRow('❤️','Daviplata','3007654321 · configure su número','3007654321') +
-          payRow('💛','Bancolombia Ahorros','000-000000-00 · configure su cuenta','000-000000-00') +
-        '</div>' +
-        '<button class="paw-btn primary block" style="margin-top:14px" onclick="mascotaConfirmarDonacion()">💛 Confirmar mi donación</button>' +
-        '<div class="paw-transparency">' +
-          '<b>🔎 Así se usa su donación</b>' +
-          '<ul><li>Comida y concentrado para los rescatados</li><li>Vacunas, desparasitación y esterilización</li><li>Urgencias y cirugías veterinarias</li><li>Transporte y kits de rescate</li></ul>' +
-        '</div>' +
-      '</div>' +
-    '</div>';
-  }
-  function payRow(ic, nombre, detalle, copia){
-    return '<div class="paw-pay-row" onclick="mascotaCopiar(\'' + copia + '\',this)">' +
-      '<div class="paw-pay-ic">' + ic + '</div>' +
-      '<div><b>' + nombre + '</b><span>' + escapar(detalle) + '</span></div>' +
-      '<div class="paw-copy">Copiar</div>' +
     '</div>';
   }
 
@@ -313,40 +262,6 @@
   // ---- handlers expuestos ----
   window.mascotaTab = function(id, btn){ activarSeccion(id); };
 
-  window.mascotaSetMonto = function(el, valor){
-    var root = rootEl();
-    root.querySelectorAll('.paw-amount').forEach(function(a){ a.classList.remove('active'); });
-    el.classList.add('active');
-    var otro = document.getElementById('paw-monto-otro'); if(otro) otro.value = '';
-    root._pawMonto = valor;
-  };
-  window.mascotaMontoLibre = function(v){
-    var root = rootEl();
-    root.querySelectorAll('.paw-amount').forEach(function(a){ a.classList.remove('active'); });
-    root._pawMonto = Number(v)||0;
-  };
-  window.mascotaConfirmarDonacion = function(){
-    var root = rootEl();
-    var monto = Number(root._pawMonto)||0;
-    if(monto < 1000){ toast('Elija un monto 🐾','Toque un valor o escriba cuánto quiere donar.','🤔'); return; }
-    var donante = (document.getElementById('paw-donante')||{}).value || 'Anónimo';
-    var aportes = getAportes();
-    aportes.push({ monto:monto, donante:donante, fecha:Date.now(), destino:'general' });
-    setAportes(aportes);
-    corazones();
-    toast('¡Gracias, ' + yoNombre() + '! 💛', 'Su aporte de ' + pesos(monto) + ' ayuda a un peludito.', '🎉');
-    render();
-  };
-
-  window.mascotaDonarA = function(id){
-    activarSeccion('donar');
-    var a = getAnimales().filter(function(x){ return x.id === id; })[0];
-    setTimeout(function(){
-      var root = rootEl();
-      if(root){ var sh = root.querySelector('[data-paw-section="donar"]'); if(sh) sh.scrollIntoView({behavior:'smooth', block:'start'}); }
-      if(a) toast('Apadrinas a ' + a.nombre + ' ' + (a.emoji||'🐾'), 'Elija su monto abajo. ¡Gracias por su rescate!', '💗');
-    }, 60);
-  };
   window.mascotaAyudar = function(id){
     var a = getAnimales().filter(function(x){ return x.id === id; })[0];
     corazones();
@@ -361,16 +276,6 @@
       var root = rootEl(); var sh = root && root.querySelector('[data-paw-section="muro"]'); if(sh) sh.scrollIntoView({behavior:'smooth'});
     }, 60);
     toast('¡Qué alegría! 🏠','Deje su mensaje en el muro para iniciar la adopción.', '😺');
-  };
-  window.mascotaCopiar = function(texto, el){
-    var done = function(){
-      if(el){ var c = el.querySelector('.paw-copy'); if(c){ var prev=c.textContent; c.textContent='¡Copiado!'; setTimeout(function(){ c.textContent=prev; }, 1500); } }
-      toast('Cuenta copiada 📋', texto + ' · ¡gracias por donar!', '💛');
-    };
-    try{
-      if(navigator.clipboard && navigator.clipboard.writeText){ navigator.clipboard.writeText(texto).then(done, done); }
-      else { var ta=document.createElement('textarea'); ta.value=texto; document.body.appendChild(ta); ta.select(); try{document.execCommand('copy');}catch(e){} document.body.removeChild(ta); done(); }
-    }catch(e){ done(); }
   };
 
   window.mascotaSetTipo = function(el, tipo){
@@ -395,8 +300,7 @@
       sexo:'', edad:'', zona:zona.trim(),
       estado:'urgente',
       historia:historia.trim() + (contacto?(' · Contacto: '+contacto.trim()):''),
-      necesita: necesita.trim() ? necesita.split(/[,·]/).map(function(s){return s.trim();}).filter(Boolean).slice(0,4) : ['Ayuda 💛'],
-      meta:0, recaudado:0
+      necesita: necesita.trim() ? necesita.split(/[,·]/).map(function(s){return s.trim();}).filter(Boolean).slice(0,4) : ['Ayuda 💛']
     });
     setAnimales(animales);
     corazones();

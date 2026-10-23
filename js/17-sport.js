@@ -780,7 +780,57 @@
     renderRunnerShareCard(runnerState.pendingSession);
   };
 
+  /* ── El runner de ESCRITORIO queda escondido (23 de octubre de 2026) ──────
+     Medido: hay DOS runners en la misma aplicación y cada uno guarda en su
+     propia llave, que nunca se sincronizan —este, `urbis_runner_history_v2`,
+     y el móvil de js/20, `urbis_mobile_runner_history_v56`—. Y los dos
+     módulos que dan lo bueno —el replay de js/46 y los récords, la racha y
+     el mapa de calor de js/48— leen SOLO el del móvil, por
+     `window.urbisRunnerLoadHistory`. Así que quien corriera desde el
+     escritorio no aparecía en sus propias estadísticas.
+
+     Dos cosas que conviene tener claras, porque deciden qué se tocó:
+
+     * se esconde el RUNNER, no el módulo de Deporte. La rutina adaptativa, el
+       perfil y el registro de actividades no están duplicados y siguen igual:
+       lo duplicado es el runner y nada más;
+     * y se ESCONDE, no se borra. Daniel lo pidió así y la razón es medible:
+       los recorridos de `urbis_runner_history_v2` siguen en el teléfono de
+       quien los hizo, y borrar el código que los lee los dejaría sin lector
+       antes de que nadie decida qué hacer con ellos.
+
+     Se esconde desde acá y no desde `index.html` a propósito: esa página es
+     un archivo compartido entre las nueve sesiones, y este módulo puede
+     apagar lo suyo sin pedirle permiso a nadie.
+
+     Y se cierran las DOS puertas, no solo la visible: la tarjeta de entrada
+     se oculta con `hidden` —que también la saca del foco del teclado y del
+     lector de pantalla, no como `display:none`— y la función que abría el
+     modo se niega. Esconder el botón y dejar la función viva es la mitad del
+     trabajo: quedaría abierta por consola y por cualquier llamador que se nos
+     haya pasado. */
+  var RUNNER_ESCRITORIO = {
+    oculto: true,
+    porque: 'duplica el runner móvil, y sus recorridos no entran en las estadísticas',
+    llaveDeEste: STORAGE_RUNNER_HISTORY,
+    llaveDelMovil: 'urbis_mobile_runner_history_v56'
+  };
+  window.URBIS_RUNNER_ESCRITORIO = RUNNER_ESCRITORIO;
+
+  function esconderRunnerDeEscritorio() {
+    if(!RUNNER_ESCRITORIO.oculto) return;
+    document.querySelectorAll('.sport-runner-cta-card').forEach(function(c){ c.hidden = true; });
+    var mode = document.getElementById('sport-runner-mode');
+    if(mode) mode.hidden = true;
+  }
+  var abrirDeVerdad = window.abrirModoRunnerUrbis;
+  window.abrirModoRunnerUrbis = function() {
+    if(RUNNER_ESCRITORIO.oculto) { esconderRunnerDeEscritorio(); return false; }
+    return abrirDeVerdad.apply(this, arguments);
+  };
+
   document.addEventListener('DOMContentLoaded', () => {
     setTimeout(window.renderSportModuleUrbis, 120);
+    setTimeout(esconderRunnerDeEscritorio, 140);
   });
 })();

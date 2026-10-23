@@ -16389,6 +16389,182 @@ console.log('\n  -- la resta del desplazamiento mide la barra ENTERA (v1157) --'
         ', así que una sesión nueva no tiene dónde leer el reparto y vuelve a inventarlo');
 })();
 
+/* ══════════════════════════════════════════════════════════════════════════
+   EL MÓDULO SOCIAL, APARTE (23 de octubre de 2026)
+   ──────────────────────────────────────────────────────────────────────────
+   Tres cosas que esta tanda cambió y que la siguiente podría deshacer sin
+   darse cuenta. Van juntas porque son del mismo módulo y separadas en tres
+   comprobaciones porque piden ACCIONES distintas (v899).
+
+   Las tres leen el CÓDIGO y no los comentarios (v926): la cabecera de js/45
+   explica que las donaciones salieron, y una guarda que buscara la palabra
+   suelta se pondría roja por su propia explicación.                        */
+(function () {
+  const j45 = leer('js/45-mascotas-fundacion.js');
+  const c45 = soloCodigo(j45);
+
+  /* ── 1 · Patitas no cobra, no recauda y no dice haber recaudado ────────── */
+  const vivo45 = c45.indexOf('renderMascotasModulo') !== -1;
+  comprobar('MATERIAL · el módulo de Patitas existe y se puede leer',
+    vivo45 && j45.length > 2000,
+    vivo45 && j45.length > 2000
+      ? j45.length + ' bytes, y publica `renderMascotasModulo`'
+      : 'js/45 no trae el módulo. Sin él, la comprobación de abajo pasaría por ' +
+        'no tener nada delante: un archivo borrado no tiene superficie de donación');
+
+  /* Se persigue la CLASE —cualquier superficie de dinero— y no el botón que
+     esta tanda quitó (v874, v885). Volver a poner solo el botón, solo la
+     cifra o solo los números de pago son tres maneras de deshacer lo mismo. */
+  const DINERO = ['mascotaConfirmarDonacion', 'mascotaDonarA', 'mascotaSetMonto',
+                  'mascotaMontoLibre', 'Apadrinar', 'Recaudado', 'recaudado',
+                  'Nequi', 'Daviplata', 'Bancolombia', 'paw-donate', 'paw-amount',
+                  'paw-pay', 'paw-goal', 'seccionDonar', 'toLocaleString'];
+  const hallados = DINERO.filter((t) => c45.indexOf(t) !== -1);
+  comprobar('Patitas no publica ninguna superficie de dinero',
+    hallados.length === 0,
+    hallados.length === 0
+      ? 'ninguna de las ' + DINERO.length + ' marcas de donación —botón, cifra, barra de meta, ' +
+        'métodos de pago y el formateador de pesos— aparece en el código de js/45. Daniel lo ' +
+        'decidió el 23 de octubre de 2026: el módulo no cobra y no declara haber recaudado. ' +
+        'NO comprueba el CSS, donde las clases `paw-*` siguen escritas sin que nada las use'
+      : 'volvió la donación a js/45: ' + hallados.join(' · ') + '. Si es a propósito, lo ' +
+        'decide Daniel y esta lista se cambia con él; si no, es la superficie que la tanda ' +
+        'del 23 de octubre retiró porque agradecía un aporte que nadie cobró');
+
+  /* ── 2 · Lo declarado en los logros está atado a lo que el código escribe ─ */
+  const j16 = leer('js/16-achievements.js');
+  const c16 = soloCodigo(j16);
+
+  /* Lo DECLARADO: la lista que decide qué logro se ve. */
+  const bloque = c16.match(/const METRICAS_CON_FUENTE = new Set\(\[([\s\S]*?)\]\)/);
+  const declaradas = bloque
+    ? (bloque[1].match(/'([A-Za-z0-9_]+)'/g) || []).map((t) => t.slice(1, -1))
+    : [];
+
+  /* Lo MEDIDO, de dos sitios y por FORMA, no por nombre de clave (v1149):
+     toda cadena literal dentro de una llamada a recordMetric —así un ternario
+     cuenta sus dos ramas— y todo campo que `buildStats` calcula con valor
+     propio, sin reenviarlo desde `local`, que nadie escribe. */
+  const medidas = new Set();
+  fs.readdirSync(R('js')).filter((f) => f.endsWith('.js')).forEach((f) => {
+    const src = soloCodigo(leer('js/' + f));
+    /* La mayúscula importa y ya costó dos mediciones mal hechas el mismo día:
+       la función se llama `recordMetric` dentro de js/16 y `urbisRecordMetric`
+       desde fuera, así que un patrón en minúscula no ve SEIS de los siete
+       sitios de llamada y la guarda acusa de inventadas a las que sí tienen
+       quien las escriba. Y se salta la DEFINICIÓN, o el `mode = 'add'` de su
+       firma entra como si fuera una métrica. */
+    const re = /(?:urbisR|\br)ecordMetric\s*\(/g;
+    let m;
+    while ((m = re.exec(src))) {
+      if (/function\s*$/.test(src.slice(Math.max(0, m.index - 12), m.index))) continue;
+      /* Hasta el paréntesis que cierra la llamada, contando anidados: una
+         ventana de N caracteres envejece —se come la línea siguiente— y es la
+         medida por DISTANCIA que este archivo tiene prohibida (v935). */
+      let i = src.indexOf('(', m.index), prof = 0, fin = i;
+      for (; fin < src.length && fin < i + 400; fin++) {
+        if (src[fin] === '(') prof++;
+        else if (src[fin] === ')') { prof--; if (prof === 0) break; }
+      }
+      /* Solo el PRIMER argumento, que es el nombre de la métrica. Recoger toda
+         cadena de la llamada acusaba de métrica al `'gov'` del test de un
+         ternario —`userRole === 'gov' ? 'govModeActivated' : …`—, que es un rol
+         y no un contador. Y dentro del ternario cuentan las dos RAMAS, porque
+         las dos se escriben según por dónde caiga. */
+      let coma = i + 1, p2 = 0;
+      for (; coma < fin; coma++) {
+        if (src[coma] === '(') p2++;
+        else if (src[coma] === ')') p2--;
+        else if (src[coma] === ',' && p2 === 0) break;
+      }
+      const arg = src.slice(i + 1, coma), solo = arg.trim();
+      if (/^'[A-Za-z0-9_]+'$/.test(solo)) medidas.add(solo.slice(1, -1));
+      else {
+        const ram = /[?:]\s*'([A-Za-z0-9_]+)'/g;
+        let k;
+        while ((k = ram.exec(arg))) medidas.add(k[1]);
+      }
+    }
+  });
+  const ret = c16.slice(c16.indexOf('return {'), c16.indexOf('function playAchievementSound'));
+  (ret.match(/^\s{6}([A-Za-z0-9_]+)\s*[,:]/gm) || []).forEach((l) => {
+    const clave = l.trim().replace(/[,:]$/, '');
+    const i = ret.indexOf(l);
+    const resto = ret.slice(i, ret.indexOf('\n', i + 1));
+    if (!/local\./.test(resto)) medidas.add(clave);
+  });
+
+  comprobar('MATERIAL · los logros declaran su lista de métricas con fuente',
+    declaradas.length > 0 && medidas.size > 0,
+    declaradas.length > 0 && medidas.size > 0
+      ? declaradas.length + ' declaradas · ' + medidas.size + ' medidas en el código de js/'
+      : 'no se pudo leer ' + (declaradas.length ? 'lo medido' : 'METRICAS_CON_FUENTE') +
+        '. Sin las dos listas no hay nada que atar y la comprobación de abajo pasaría vacía');
+
+  const sobran = declaradas.filter((d) => !medidas.has(d));
+  const faltan = [...medidas].filter((d) => declaradas.indexOf(d) === -1);
+  comprobar('la lista de métricas con fuente dice lo mismo que el código',
+    sobran.length === 0 && faltan.length === 0,
+    sobran.length === 0 && faltan.length === 0
+      ? 'las ' + declaradas.length + ' declaradas son exactamente las que alguna línea escribe. ' +
+        'Es la atadura de la v1091: la lista decide qué logro se VE, así que una declarada de ' +
+        'más publica un logro imposible, y una de menos deja escondido uno que ya se puede ganar'
+      : (sobran.length ? 'declaradas que NADIE escribe: ' + sobran.join(' · ') + '. ' : '') +
+        (faltan.length ? 'escritas y SIN declarar: ' + faltan.join(' · ') +
+          ' — su logro sigue oculto aunque su contador ya exista, que es el día en que tiene ' +
+          'que volver a aparecer. ' : '') +
+        'Se declara en METRICAS_CON_FUENTE, en js/16');
+
+  /* GUARDA DE LA GUARDA · que el filtro siga APLICADO. Las dos listas pueden
+     estar perfectas y el perfil seguir pintando los 92 si alguien devuelve
+     `ACHIEVEMENTS` al render: ahí todo lo de arriba quedaría en verde sobre
+     documentación (v878). */
+  const filtra = /LOGROS_VISIBLES\.filter\(a => unlocked\[a\.id\]\)/.test(c16) &&
+                 /LOGROS_VISIBLES\.length/.test(c16) &&
+                 /LOGROS_VISIBLES\.forEach/.test(c16);
+  comprobar('y el perfil cuenta, pinta y evalúa sobre los logros VISIBLES',
+    filtra,
+    filtra
+      ? 'el recuento, el orden y la evaluación salen de LOGROS_VISIBLES, no del catálogo entero'
+      : 'el filtro dejó de aplicarse en alguno de los tres sitios y el perfil vuelve a prometer ' +
+        'los logros que nadie puede ganar, con las dos listas de arriba intactas');
+
+  /* Y que el escondite NO sea silencioso, que es la regla que este proyecto
+     tomó cuatro veces por separado. Con las dos redacciones (v970). */
+  const dice = c16.indexOf('notaDePausa') !== -1 && /en pausa/.test(c16) &&
+               /ninguno está en pausa/.test(c16);
+  comprobar('y los logros escondidos se DICEN en la pantalla, con las dos redacciones',
+    dice,
+    dice
+      ? 'el perfil publica cuántos quedaron en pausa y por qué, y trae escrita también la ' +
+        'redacción de CERO —la que hace falta el día que no quede ninguno (v970)—'
+      : 'el escondite quedó mudo: 58 logros que desaparecen sin una línea que lo diga se leen ' +
+        'igual que si nunca hubieran existido');
+
+  /* ── 3 · El runner de escritorio, escondido por las DOS puertas ─────────── */
+  const c17 = soloCodigo(leer('js/17-sport.js'));
+  const hayBandera = /RUNNER_ESCRITORIO\s*=\s*\{/.test(c17);
+  comprobar('MATERIAL · js/17 declara el estado del runner de escritorio',
+    hayBandera,
+    hayBandera
+      ? 'la bandera RUNNER_ESCRITORIO está escrita, con su razón y las dos llaves de historial'
+      : 'no hay bandera que leer. Sin ella la comprobación de abajo no tiene nada delante');
+
+  const puertaVisible = /\.sport-runner-cta-card/.test(c17) && /hidden = true/.test(c17);
+  const puertaDeAtras = /abrirModoRunnerUrbis = function/.test(c17) &&
+                        /RUNNER_ESCRITORIO\.oculto\) \{ esconderRunnerDeEscritorio\(\); return false; \}/.test(c17);
+  comprobar('el runner de escritorio cierra la tarjeta Y la función que lo abría',
+    puertaVisible && puertaDeAtras,
+    puertaVisible && puertaDeAtras
+      ? 'las dos: la tarjeta sale del foco con `hidden` y `abrirModoRunnerUrbis` se niega. ' +
+        'Esconder solo el botón lo dejaría abierto por consola y por cualquier llamador que se ' +
+        'nos haya pasado. NO borra nada: los recorridos de urbis_runner_history_v2 siguen en el ' +
+        'teléfono de quien los hizo, y borrarlos o dejarlos sin lector lo decide Daniel'
+      : 'quedó ' + (puertaVisible ? 'la función abierta' : 'la tarjeta a la vista') +
+        ', así que el runner duplicado vuelve a ser alcanzable y sus recorridos vuelven a ' +
+        'quedarse fuera de las estadísticas, que es por lo que se escondió');
+})();
+
 /* Las dos cuentas van APARTE porque piden cosas distintas: una fallada hay
    que arreglarla, una sin material hay que mirarla —o se quedó sin él porque
    el registro mejoró, o porque la función dejó de ver lo que medía—. Sumarlas
