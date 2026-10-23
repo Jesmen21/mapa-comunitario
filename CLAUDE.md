@@ -3,6 +3,49 @@
 Notas para cualquier sesión que retome el proyecto. Están acá porque cada una
 de ellas costó tiempo averiguarla o romper algo.
 
+## Las ocho reglas de trabajo · `REGLAS-DE-DANIEL`
+
+Las fijó Daniel el 23 de octubre de 2026 y **valen para TODAS las sesiones de
+URBIS**, no solo para la que las escribió. Van acá arriba —antes que la
+`LISTA-QUE-SIGUE`— porque son las que deciden *cómo* se trabaja, y una sesión
+nueva tiene que heredarlas sin que nadie se acuerde de pegárselas.
+
+1. **Medir antes de asumir.** Se mide el estado real antes de proponer o de
+   tocar.
+2. **Batería completa antes de publicar.** Nada se publica con la batería en
+   rojo.
+3. **Demostrar en rojo.** Una inyección fiel por cada aserción nueva, para
+   probar que la guarda muerde.
+4. **Numerar siempre por encima de `origin/main`.** Si otra sesión publicó
+   versiones, se traen y se sube por encima. Nunca se baja la propia.
+5. **Nada de reemplazos masivos.** Un cambio por peldaño, medido.
+6. **Una cifra sin medir se imprime «SIN MEDIR».** No se rellena, y se
+   distingue el cero de lo ausente.
+7. **No se inventan métodos ni datos oficiales.** Lo que no se pueda
+   verificar desde el contenedor se dice y se deja anotado.
+8. **Una decisión editorial o de producto no la resuelve la sesión sola.** Se
+   anota con su medición y se le pregunta a Daniel.
+
+Y cómo se reporta al cerrar una tanda, que es parte del mismo encargo: **qué
+salió, qué se midió, qué queda pendiente y qué decisión se necesita de
+Daniel.** Corto y con cifras.
+
+**Lo que estas ocho NO reemplazan:** el resto de este archivo. Varias ya
+estaban aplicadas acá con otro nombre y su caso pagado —la 1 es «medir antes
+de actuar» (v916), la 3 es «se demuestra en rojo, con una inyección FIEL»
+(v993), la 6 es la distinción entre «sin dato» y «panel fuera» (v899)—, así
+que donde una sección de abajo diga lo mismo con más detalle, manda el
+detalle. Lo que estas ocho agregan es que **se le exigen a toda sesión**, y no
+solo a quien lea la sección donde el caso quedó escrito.
+
+### Un módulo por sesión, y no se cruzan
+
+También de la misma fecha: hay **una sesión por módulo** trabajando en
+paralelo, y cada una toca lo suyo. Un hallazgo fuera del módulo propio **se
+reporta, no se arregla**: arreglarlo es pisarle el trabajo a otra sesión y
+además rompe la regla 5, porque el cambio no se midió contra el módulo al que
+pertenece. El módulo de esta sesión se declara al abrirla.
+
 ## Lo que sigue, y en este orden · `LISTA-QUE-SIGUE`
 
 **El registro es hoy el cuello de botella, no el código**, y sigue siéndolo:
