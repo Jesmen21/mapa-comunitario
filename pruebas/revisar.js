@@ -16531,7 +16531,13 @@ console.log('\n  -- la resta del desplazamiento mide la barra ENTERA (v1157) --'
 
   /* Y que el escondite NO sea silencioso, que es la regla que este proyecto
      tomó cuatro veces por separado. Con las dos redacciones (v970). */
-  const dice = c16.indexOf('notaDePausa') !== -1 && /en pausa/.test(c16) &&
+  /* Se mide que la nota esté ENGANCHADA, no que exista. La primera versión de
+     esta guarda buscaba `notaDePausa` a secas y se quedó VERDE con la llamada
+     borrada: la función seguía escrita y sin llamador, que es exactamente el
+     defecto que vigila —un dato que ninguna pantalla alcanza (v1029, v1101)—.
+     Lo delató la inyección quirúrgica que borra solo el `+ notaDePausa()`. */
+  const dice = /\.join\(''\)\s*\+\s*notaDePausa\(\)/.test(c16) &&
+               /function notaDePausa/.test(c16) &&
                /ninguno está en pausa/.test(c16);
   comprobar('y los logros escondidos se DICEN en la pantalla, con las dos redacciones',
     dice,
