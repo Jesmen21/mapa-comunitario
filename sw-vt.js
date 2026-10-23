@@ -13,7 +13,7 @@
 
    La versión va acá y en vision-territorial.html, idéntica, como en los
    otros siete archivos de versión del sitio: revisar.js lo comprueba. */
-const VT_CACHE = 'urbis-vt-v1161-la-fecha-del-desembolso-no-la-dirime-ninguna-nota';
+const VT_CACHE = 'urbis-vt-v1162-un-dueno-por-tipo-en-la-capa-de-mapeos';
 const VT_ASSETS = [
   './vision-territorial.html',
   './css/90-vt.css',

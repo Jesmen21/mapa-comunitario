@@ -16125,6 +16125,270 @@ console.log('\n  -- la resta del desplazamiento mide la barra ENTERA (v1157) --'
         'asi que en un telefono con muesca la barra tapa lo que la resta no descuenta');
 })();
 
+
+/* ===================================================================
+   LA CAPA DE MAPEOS: UN DUEÑO POR TIPO, Y EL ESPACIO CON NOMBRE (v1162)
+   ===================================================================
+
+   La capa es una sola y ya lo era. Lo que no estaba escrito es de quién es
+   qué dentro de ella, y esa es la condición que ya se cobró datos: tres
+   funciones contaron «la primera casilla libre» de `URBIS_SLOTS` y llegaron
+   al mismo número, así que un punto de Pro City borraba la materialidad de
+   un edificio. Es la clase B —dos módulos codificando cosas distintas en el
+   mismo sitio—, y lo que la hace barata de repetir es que no hay nada que
+   la rechace.
+
+   Tres guardas, y lo que CADA UNA NO cubre va dicho al lado (v945, v952):
+
+     1. un tipo tiene un dueño y uno solo — no comprueba que el dueño sea el
+        correcto, solo que no haya dos;
+     2. nadie lee el espacio privado de otro módulo — mira el CÓDIGO servido
+        y no lo que el servidor devuelva: un módulo que pidiera la fila
+        entera por su cuenta no pasa por acá;
+     3. no nacen casillas por posición — cuenta la tabla; no sabe si alguien
+        reutiliza una casilla vieja para algo que no es lo suyo.
+
+   Y una guarda de la guarda: que el registro LLEGUE al navegador. Sin eso
+   las tres son documentación, que es el patrón de la v878. */
+(function () {
+  const reg = leer('js/03h-registro-modulos.js');
+  const j04 = leer('js/04-marker-proximity.js');
+  const idx = leer('index.html');
+  const sw  = leer('service-worker.js');
+
+  /* El registro se EJECUTA, no se lee con una expresión regular: lo que
+     decide es el objeto, y un barrido de texto sobre un literal de 200
+     líneas mide cómo quedó partida la línea y no el contenido (v1097). */
+  let MOD = null, API = null, errCarga = '';
+  try {
+    const sandbox = { window: {} };
+    new Function('window', reg)(sandbox.window);
+    MOD = sandbox.window.URBIS_MODULOS;
+    API = sandbox.window.URBIS_CAMPOS;
+  } catch (e) { errCarga = String(e && e.message || e); }
+
+  const ids = MOD ? Object.keys(MOD) : [];
+  const conTipos = ids.filter((k) => (MOD[k].tipos || []).length || (MOD[k].prefijos || []).length);
+
+  comprobar('MATERIAL · el registro de módulos carga y declara dueños',
+    !!MOD && !!API && conTipos.length >= 2,
+    MOD ? ids.length + ' módulos declarados, ' + conTipos.length + ' con tipos o prefijos propios'
+        : 'el registro no se pudo ejecutar: ' + errCarga + ', así que las tres guardas de ' +
+          'abajo no tendrían nada delante y pasarían por no tener nada que rechazar');
+
+  if (MOD && API) {
+
+    /* 1 · UN TIPO, UN DUEÑO ------------------------------------------- */
+    const dueno = {}, choques = [];
+    ids.forEach((k) => (MOD[k].tipos || []).forEach((t) => {
+      if (dueno[t]) choques.push('«' + t + '» lo reclaman ' + dueno[t] + ' y ' + k);
+      else dueno[t] = k;
+    }));
+    /* Y un prefijo que se trague el tipo exacto de otro es el mismo choque
+       dicho de otra manera: «ubicacion_» declarado por dos módulos, o uno que
+       empiece igual que el tipo exacto de un tercero. */
+    ids.forEach((k) => (MOD[k].prefijos || []).forEach((p) => {
+      Object.keys(dueno).forEach((t) => {
+        if (t.indexOf(p) === 0 && dueno[t] !== k) {
+          choques.push('el prefijo «' + p + '» de ' + k + ' se traga «' + t + '», que es de ' + dueno[t]);
+        }
+      });
+      ids.forEach((o) => {
+        if (o === k) return;
+        (MOD[o].prefijos || []).forEach((q) => {
+          if (p !== q && (p.indexOf(q) === 0 || q.indexOf(p) === 0)) {
+            choques.push('los prefijos «' + p + '» (' + k + ') y «' + q + '» (' + o + ') se solapan');
+          }
+        });
+      });
+    }));
+
+    comprobar('un tipo de la capa tiene un dueño y uno solo',
+      choques.length === 0,
+      choques.length === 0
+        ? Object.keys(dueno).length + ' tipos exactos y ' +
+          ids.reduce((n, k) => n + (MOD[k].prefijos || []).length, 0) + ' prefijos, sin dos ' +
+          'módulos reclamando lo mismo. NO comprueba que el dueño sea el correcto: eso se ' +
+          'discute mirando el registro, no se calcula'
+        : choques.length + ' choque(s): ' + choques.join(' · '));
+
+    /* LA GUARDA DE LA GUARDA del punto 1: que todo tipo que algún archivo
+       ESCRIBA de verdad esté en el registro. Sin esto, un módulo nuevo que
+       se olvide de registrarse no choca con nadie —porque no está— y la
+       comprobación de arriba sigue en verde sobre una capa incompleta. Se
+       recoge POR FORMA (v1149): cualquier literal que viaje como `tipo:` en
+       un archivo que llame a `urbisGuardarFila`, no una lista de nombres. */
+    const ESCRITORES = ['js/09-events.js', 'js/12-spa-ui.js', 'js/13g-config-admin.js',
+                        'js/13i-vitrina.js', 'js/13j-premio.js', 'js/20-mobile-functional-app.js',
+                        'js/50-alerta-forzado.js'];
+    const sinRegistrar = [];
+    ESCRITORES.forEach((f) => {
+      const txt = soloCodigo(leer(f));
+      const re = /tipo\s*:\s*'([^']{2,60})'/g;
+      let m;
+      while ((m = re.exec(txt))) {
+        const t = m[1];
+        /* Solo los valores que de verdad son un tipo de la capa: los
+           emoji-prefijados y los nombres de categoría con mayúscula. Un
+           `tipo: 'camara'` de un control vial interno no es una fila. */
+        if (!/^[^\w\s]/.test(t) && !/^[A-ZÁÉÍÓÚÑ]/.test(t)) continue;
+        if (!dueno[t] && !API.duenoDe(t)) sinRegistrar.push(t + ' (' + f + ')');
+      }
+    });
+    comprobar('todo tipo que un archivo escribe está en el registro',
+      sinRegistrar.length === 0,
+      sinRegistrar.length === 0
+        ? ESCRITORES.length + ' archivos escritores barridos sobre su código y ningún tipo ' +
+          'suelto. Es la guarda de la guarda de la de arriba: sin ella, un módulo que no se ' +
+          'registre no choca con nadie y el verde se lee como que no hay choques'
+        : 'tipos escritos y sin dueño declarado: ' + [...new Set(sinRegistrar)].join(' · '));
+
+    /* 2 · NADIE LEE EL ESPACIO PRIVADO DE OTRO ------------------------ */
+    const deArchivo = {};
+    ids.forEach((k) => (MOD[k].archivos || []).forEach((f) => {
+      (deArchivo[f] = deArchivo[f] || []).push(k);
+    }));
+    const FUENTES = fs.readdirSync(R('js')).filter((f) => f.endsWith('.js'));
+    const invasiones = [], llamadas = [];
+    FUENTES.forEach((nombre) => {
+      const f = 'js/' + nombre;
+      const txt = soloCodigo(leer(f));
+      const re = /URBIS_CAMPOS\.leer\(\s*[^,]+,\s*'([A-Za-z]+)'\s*,\s*'([A-Za-z]+)'\s*\)/g;
+      let m;
+      while ((m = re.exec(txt))) {
+        llamadas.push(f + ' → ' + m[1] + '.' + m[2]);
+        const mios = deArchivo[f] || [];
+        if (mios.indexOf(m[1]) !== -1) continue;          // se lee a sí mismo
+        if (!MOD[m[1]]) { invasiones.push(f + ' lee «' + m[1] + '», que no es un módulo'); continue; }
+        if ((MOD[m[1]].privado || []).indexOf(m[2]) !== -1) {
+          invasiones.push(f + ' lee ' + m[1] + '.' + m[2] + ', que es privado de ' + m[1]);
+        }
+      }
+    });
+
+    /* La rama CON material se mide contra un caso FABRICADO y no contra el
+       repositorio (v970): medirla contra el repositorio sería volver a medir
+       el número, y hoy ese número es cero. */
+    const fabricado = API.puedeLeer('reportes', 'educativo', 'borrador') === false &&
+                      API.puedeLeer('reportes', 'educativo', 'anden') === true &&
+                      API.puedeLeer('educativo', 'educativo', 'borrador') === true;
+    comprobar('el reparto distingue lo compartido de lo privado (caso fabricado)',
+      fabricado,
+      fabricado
+        ? 'otro módulo NO puede leer educativo.borrador, SÍ puede leer educativo.anden, y el ' +
+          'educativo se lee a sí mismo entero'
+        : 'la función que decide quién lee qué no separa los dos casos, así que la ' +
+          'comprobación de abajo no distinguiría una invasión de una lectura legítima');
+
+    if (!llamadas.length) {
+      /* `?` y no rojo: el espacio con nombre acaba de abrirse y todavía no lo
+         usa nadie. Cero lectores es el estado de hoy y no un defecto; un rojo
+         acá pondría la salida barata en escribir una lectura para tener algo
+         que medir (v970, v1097). */
+      anotarSinMaterial('ningún módulo lee el espacio con nombre de otro',
+        'cero llamadas a URBIS_CAMPOS.leer en los ' + FUENTES.length + ' archivos de js/: el ' +
+        'espacio con nombre se abre en esta versión y todavía no lo usa nadie. La rama con ' +
+        'material se mide arriba contra el caso fabricado');
+    } else {
+      comprobar('ningún módulo lee el espacio privado de otro',
+        invasiones.length === 0,
+        invasiones.length === 0
+          ? llamadas.length + ' lectura(s) con nombre y ninguna invade lo privado: ' +
+            llamadas.join(' · ') + '. NO mira lo que el servidor devuelva: un módulo que pida ' +
+            'la fila entera por su cuenta no pasa por acá'
+          : invasiones.join(' · '));
+    }
+
+    /* 3 · NO NACEN CASILLAS POR POSICIÓN ------------------------------ */
+    const bloque = (j04.match(/const URBIS_SLOTS = \{[\s\S]*?\n  \};/) || [''])[0];
+    const casillas = [...soloCodigo(bloque).matchAll(/^\s*([A-Za-z][A-Za-z0-9]*):\s*BASE_OFFSET[^,\n]*\+\s*(\d+)/gm)]
+      .map((m) => ({ k: m[1], n: Number(m[2]) }));
+    const CONGELADAS = 23;   // las 22 viejas + `espacioConNombre`. Son 23 claves y la numeración
+                             // va de +5 a +27: empieza en 5 por cómo nació la tabla, así que la
+                             // cuenta es de CLAVES y no del último número, que diría 28.
+    const ultima = casillas.reduce((a, b) => (b.n > a.n ? b : a), { k: '', n: -1 });
+    const ok3 = casillas.length === CONGELADAS && ultima.k === 'espacioConNombre';
+    comprobar('no nacen casillas nuevas por posición: la última es el espacio con nombre',
+      ok3,
+      ok3
+        ? casillas.length + ' casillas y la de mayor posición es `espacioConNombre` (+' + ultima.n +
+          '). Un campo nuevo entra por js/03h con su módulo dueño. NO comprueba que nadie ' +
+          'reutilice una casilla vieja para otra cosa: eso lo vigila el vocabulario de cada una'
+        : 'la tabla tiene ' + casillas.length + ' casillas (se congelaron ' + CONGELADAS +
+          ') y la de mayor posición es `' + ultima.k + '`. Si el campo es nuevo va en el espacio ' +
+          'con nombre de js/03h, no en una casilla; si de verdad hace falta una casilla, se sube ' +
+          'CONGELADAS acá con la razón escrita');
+
+    /* GUARDA DE LA GUARDA · que el registro llegue al navegador ------- */
+    const llega = idx.indexOf('js/03h-registro-modulos.js') !== -1 &&
+                  sw.indexOf('js/03h-registro-modulos.js') !== -1;
+    comprobar('el registro de módulos llega al navegador y al caché',
+      llega,
+      llega ? 'index.html lo carga y el service worker lo guarda'
+            : 'falta en ' + (idx.indexOf('js/03h') === -1 ? 'index.html' : 'service-worker.js') +
+              ': sin eso las tres guardas de arriba vigilan un archivo que nadie ejecuta');
+  }
+})();
+
+
+/* LAS OCHO REGLAS SE ESCRIBEN UNA SOLA VEZ (v1163)
+   ================================================
+
+   El 23 de octubre de 2026 Daniel abrió una sesión por módulo y le dictó a
+   cada una las mismas ocho reglas. SIETE de las nueve ramas las escribieron
+   en `CLAUDE.md`, cada una con su redacción y su título, entre 26 y 55
+   líneas: siete codificaciones de un solo hecho —la clase B— en el archivo
+   que toda sesión carga y que ya tuvo que mudarse a `BITACORA.md` por tamaño.
+
+   Nadie hizo nada mal: cada sesión oyó el dictado y lo anotó donde se anota
+   lo que vale para todos. Lo que faltaba era que hubiera UN sitio y que algo
+   lo defendiera, porque la octava copia se ve exactamente igual que la
+   primera.
+
+   Se mide POR FORMA y no por el título (v874, v1149): los siete títulos eran
+   distintos —«REGLAS-DE-DANIEL», «REGLAS-URBIS», «valen para TODAS las
+   sesiones»— y lo que no cambió en ninguno es el texto de las reglas. Se
+   cuenta una frase de una regla, no el encabezado.
+
+   NO comprueba que las ocho estén bien redactadas ni que estén todas: eso se
+   discute leyéndolas. Comprueba que no haya dos listas. */
+(function () {
+  const md = leer('CLAUDE.md');
+  const HUELLAS = ['Nada de reemplazos masivos', 'Medir antes de asumir',
+                   'Demostrar en rojo'];
+  const cuentas = HUELLAS.map((h) => ({ h: h, n: md.split(h).length - 1 }));
+  const repes = cuentas.filter((c) => c.n > 1);
+
+  comprobar('MATERIAL · las ocho reglas están escritas en CLAUDE.md',
+    cuentas.every((c) => c.n >= 1),
+    cuentas.every((c) => c.n >= 1)
+      ? 'las tres huellas de la lista están en el archivo'
+      : 'faltan: ' + cuentas.filter((c) => c.n < 1).map((c) => '«' + c.h + '»').join(' · ') +
+        '. Sin la lista, la comprobación de abajo pasaría por no tener nada delante');
+
+  comprobar('las ocho reglas aparecen UNA sola vez en CLAUDE.md',
+    repes.length === 0,
+    repes.length === 0
+      ? 'una sola lista. Siete ramas de módulo escribieron la suya el 23 de octubre de 2026 y ' +
+        'la cabeza las unificó; la octava copia se ve igual que la primera, por eso hay guarda. ' +
+        'NO comprueba que las ocho estén bien redactadas: eso se discute leyéndolas'
+      : 'hay más de una lista: ' + repes.map((c) => '«' + c.h + '» ×' + c.n).join(' · ') +
+        '. Las ocho reglas se escriben una vez y las escribe la cabeza; lo propio de un módulo ' +
+        'va en herramientas/modulos/<modulo>.md');
+
+  /* GUARDA DE LA GUARDA · que el protocolo exista y que CLAUDE.md lo nombre.
+     Sin esto, una sesión que llegue nueva lee «lo de siempre» y vuelve a
+     escribir su copia, que es el defecto que esta guarda vigila. */
+  const hayDoc = fs.existsSync(R('herramientas/COORDINACION-MODULOS.md'));
+  const nombrado = md.indexOf('herramientas/COORDINACION-MODULOS.md') !== -1;
+  comprobar('el protocolo entre sesiones existe y CLAUDE.md lo nombra',
+    hayDoc && nombrado,
+    hayDoc && nombrado
+      ? 'una sesión nueva sabe dónde está la regla de ramas, de versión y de archivos compartidos'
+      : (!hayDoc ? 'falta herramientas/COORDINACION-MODULOS.md' : 'CLAUDE.md no lo nombra') +
+        ', así que una sesión nueva no tiene dónde leer el reparto y vuelve a inventarlo');
+})();
+
 /* Las dos cuentas van APARTE porque piden cosas distintas: una fallada hay
    que arreglarla, una sin material hay que mirarla —o se quedó sin él porque
    el registro mejoró, o porque la función dejó de ver lo que medía—. Sumarlas
