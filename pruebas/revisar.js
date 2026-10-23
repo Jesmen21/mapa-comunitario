@@ -16448,18 +16448,34 @@ console.log('\n  -- la vigencia que se anuncia es la que se escribe (v1163) --')
      cortes del conflicto, 168 y 72, con sus listas de palabras. Se busca
      sobre el CÓDIGO y no sobre los comentarios (v926): los comentarios de
      js/12 y de js/03c explican la cascada y citan los números. */
-  const cascadaEn = function (src) {
-    return /168/.test(src) && /\b72\b/.test(src) &&
-           /mina antipersona/i.test(src) && /reclutamiento/i.test(src);
-  };
+  /* El lado POSITIVO se mide por VALOR y no por texto. Buscar «168» y «72»
+     dentro de js/03c no discrimina: la tabla de alertas nacionales ya tiene
+     `horas:168` para el tsunami y `horas:72` para cuatro inundaciones, así
+     que la guarda seguía verde con los dos cortes del conflicto BORRADOS —lo
+     encontró su propia inyección, no la lectura (v1029)—. Se le pregunta a la
+     función, con casos fabricados (v970).
+     El lado NEGATIVO —que js/12 no la haya vuelto a copiar— sí es textual,
+     porque ahí lo que se vigila es que el texto no vuelva. */
+  let cortes = { largo: 0, medio: 0, base: 0 };
+  try {
+    const w = {};
+    new Function('window', j03c)(w);
+    cortes = { largo: w.urbisHorasVigencia('Mina antipersona (MAP/MUSE)'),
+               medio: w.urbisHorasVigencia('Secuestro'),
+               base: w.urbisHorasVigencia('Hueco en la vía') };
+  } catch (e) {}
+  const viveEn03c = cortes.largo === 168 && cortes.medio === 72 && cortes.base === 8;
+  const copiadaEn12 = /168/.test(j12) && /\b72\b/.test(j12) &&
+                      /mina antipersona/i.test(j12) && /reclutamiento/i.test(j12);
   comprobar('la cascada de horas vive en js/03c y NO está copiada en js/12',
-    cascadaEn(c03c) && !cascadaEn(j12),
-    cascadaEn(c03c) && !cascadaEn(j12)
-      ? 'una sola codificación: `urbisHorasVigencia` en js/03c, y js/12 la llama. Hasta la ' +
-        'v1162 estaba en js/12 y el letrero de js/20 era un literal, que es la clase B'
-      : (!cascadaEn(c03c) ? 'js/03c ya no tiene la cascada: `urbisHorasVigencia` es quien decide las horas y debe vivir ahí'
-                          : 'js/12 volvió a llevar su propia cascada: dos codificaciones de un hecho, y el día ' +
-                            'que una cambie el letrero vuelve a mentir'));
+    viveEn03c && !copiadaEn12,
+    viveEn03c && !copiadaEn12
+      ? 'una sola codificación: `urbisHorasVigencia` responde 168 · 72 · 8 a los tres casos fabricados, ' +
+        'y js/12 la llama. Hasta la v1162 estaba en js/12 y el letrero de js/20 era un literal, que es la clase B'
+      : (!viveEn03c ? 'js/03c ya no decide bien las horas: mina ' + cortes.largo + ' (debe 168) · ' +
+                      'secuestro ' + cortes.medio + ' (debe 72) · hueco ' + cortes.base + ' (debe 8)'
+                    : 'js/12 volvió a llevar su propia cascada: dos codificaciones de un hecho, y el día ' +
+                      'que una cambie el letrero vuelve a mentir'));
 
   comprobar('y js/12 escribe la fila con esa misma función',
     /urbisHorasVigencia\s*\(\s*i\s*\)/.test(j12),
