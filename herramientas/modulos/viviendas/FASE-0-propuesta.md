@@ -6,6 +6,13 @@ no se pudo verificar desde este contenedor lo dice. Las cifras de proveedores
 externos salen de la investigación con verificación adversarial (anexo B);
 donde todavía dice `[INVESTIGACIÓN]` es porque esa corrida no ha terminado.
 
+**Estado de la investigación al escribir esto:** Supabase, R2/Cloudflare,
+mapas, 360° y correo/avisos tienen investigación hecha con fuentes primarias
+(cada cifra con su URL en el anexo B) y **la verificación adversarial está
+corriendo**: lo que un escéptico corrija se corrige acá. Stack/hosting,
+cuentas, gráficas/pruebas y las cuotas de Apps Script siguen en
+investigación. Donde una cifra es un SUPUESTO de cálculo propio lo dice.
+
 Las maquetas están en el lienzo
 **https://claude.ai/artifact/54iJvXtrCgqhniP9U9S2WE** (Home en las tres
 paletas, mapa, ficha, y el panel: resumen, finanzas, usuarios, línea de
@@ -54,8 +61,19 @@ arriendo con el mismo modelo.
 
 ## 2 · Stack y hosting
 
-`[INVESTIGACIÓN · se llena con la corrida verificada: framework por aplicación,
-hosting gratuito sin trampa de uso comercial, monorepo]`
+`[INVESTIGACIÓN · framework por aplicación y monorepo: en curso]`
+
+Lo que la investigación de Cloudflare ya fijó del **hosting**: Cloudflare
+manda los proyectos nuevos a **Workers con Static Assets** y no a Pages
+(«Start new projects with Workers», portada de la doc de Pages); las
+peticiones a archivos estáticos son **gratis e ilimitadas**; solo cuentan las
+que ejecutan código: **100.000 al día** en Free con 10 ms de CPU por
+invocación (el HTML con Open Graph por vivienda cabe ahí; si se pasa, Workers
+Paid son **US$5/mes** con 10 millones incluidas). Pages Functions comparten
+esa misma cuota. No se encontró prohibición de uso comercial en los planes
+gratuitos de Workers/Pages/R2 (términos leídos por extracto, no en vivo: ver
+anexo B). Turnstile es gratis y su propia página dice «most production
+applications».
 
 Lo que ya está decidido por restricción y no por gusto: la plataforma pública
 **tiene que entregar título, foto y precio dentro del HTML** (WhatsApp y
@@ -157,8 +175,45 @@ credibilidad). Se valida con el caso de v1 de la especificación de maquetas.
 
 ## 5 · Mapa
 
-`[INVESTIGACIÓN · librería y proveedor de teselas con cuotas y costo a 1k /
-10k / 100k visitas; satélite; geocodificación]`
+**Recomendación por defecto:** **MapLibre GL JS** (BSD-3) + mapa base
+**Protomaps en PMTiles autoalojado en el mismo bucket R2** de las fotos,
+servido directo con dominio propio y regla «Cache Everything» (sin Worker);
+estilo propio derivado del tema claro de Protomaps con la paleta elegida;
+clusters nativos de MapLibre; puntos de interés por área visible desde
+PostGIS a partir del zoom 13; satélite como capa raster de **Esri World
+Imagery** por ArcGIS Location Platform (2 millones de teselas/mes gratis,
+uso comercial permitido con llave y «Powered by Esri»); geocodificación
+**solo en el panel** (Photon público para ubicar una vivienda, resultado
+guardado) y en el sitio público búsqueda contra la tabla propia de barrios.
+
+**Por qué:** es la única pila comercialmente legal a **US$0 de teselas** en
+los tres escenarios. Las trampas, medidas en fuente primaria: el plan Free de
+**MapTiler es solo no comercial** y exige su logo; y con MapLibre puro
+MapTiler **cobra por tesela** (≈40 por visita) y no por sesión, de modo que a
+100.000 visitas son **US$555/mes** (US$217 con su SDK); **Stadia Free y la
+API de Protomaps también son solo no comerciales**; **Mapbox** cobra desde la
+carga 50.001 (US$5 por 1.000) y su licencia desde v2 no es BSD; **Google**
+dejó el crédito de US$200 en marzo de 2025 por 10.000 cargas gratis por SKU y
+después US$7 por 1.000 (≈US$630 a 100.000); el contenido de **Google Places
+no se puede pintar sobre un mapa que no sea de Google** ni guardarse más de
+30 días; el satélite «libre» de EOX Sentinel-2 es **CC BY-NC-SA** (no
+comercial); Nominatim público prohíbe el autocompletar y limita a 1 petición
+por segundo para toda la aplicación.
+
+**Costo (supuesto propio: 1 visita ≈ 1 carga ≈ 40 teselas):** PMTiles en R2
+→ **US$0 / US$0 / US$0** a 1.000 / 10.000 / 100.000 visitas (4 millones de
+GET al mes a 100.000, dentro de los 10 millones gratis de R2). Alternativa
+con proveedor comercial: OpenFreeMap (US$0, un solo mantenedor, sin SLA)
+mientras se construye y **MapTiler Flex US$30/mes** con su SDK desde el
+primer cliente.
+
+**Dos mediciones que la Fase 1 hace primero** (desde acá no se pudieron):
+el tamaño del extracto PMTiles de Colombia o de Norte de Santander
+(`pmtiles extract … --dry-run`; si no cabe en los 10 GB gratis, se baja el
+zoom máximo o se pasa a la alternativa) y que R2 con dominio propio sirva
+peticiones de rango (HTTP 206) desde la caché (`curl -H 'Range: bytes=0-127'`
+y leer `Cf-Cache-Status`). Si cualquiera falla, se usa la alternativa sin
+rediseñar nada: el proveedor vive en un solo módulo.
 
 Decidido por diseño: el mapa va detrás de `AdaptadorMapa` (crear, marcadores,
 clusters, capas por área, volar a un punto, dibujar radio), de modo que
@@ -168,13 +223,73 @@ navegador del público.
 
 ## 6 · Recorrido 360°
 
-`[INVESTIGACIÓN · Photo Sphere Viewer vs Pannellum vs Marzipano: licencia,
-peso, giroscopio en iOS, tours, resoluciones recomendadas]`
+**Recomendación por defecto:** **Photo Sphere Viewer v5** (5.15.1, MIT,
+último commit 22 de octubre de 2026) con los plugins virtual-tour, markers,
+gyroscope, gallery y map; estéreo opcional; empaquetado con Vite/esbuild
+(**≈190–200 kB gz con three incluido**; nunca por el importmap de CDN de su
+guía, que carga 417 kB de three sin minificar). Es el único de los cuatro con
+tour con flechas, galería, plano, giroscopio con el permiso de iOS y estéreo
+ya escritos y mantenidos; hacerlo a mano con three.js no ahorra peso (un
+three mínimo ya pesa 131 kB gz) y sí semanas. **Marzipano queda descartado**
+(archivado el 20 de abril de 2026). **Pannellum** (MIT, 18 kB gz, WebGL 1)
+es la alternativa si PSV falla en iPhone: funciona, pero está congelado
+desde 2019 salvo seguridad y no trae galería ni minimapa.
+
+**Resoluciones y peso (medidos):** por habitación una base 1024×512 (~0,05
+MB) que se muestra primero y una completa **4096×2048** JPEG q80–85 (~0,6–0,8
+MB; WebP ~0,5 MB); el máster 8192 se guarda en R2 y se sirve solo por
+teselas en escritorio. Precarga limitada a la habitación vecina. Formato
+WebP: todo iPhone que pueda abrir PSV lo decodifica.
+
+**Riesgo principal, y su mitigación:** PSV v5 exige **WebGL 2 (iOS 15+)** y
+sube la equirectangular entera a la GPU: una 8192×4096 son **134 MB** de
+memoria (268 con precarga), y Safari mata la pestaña por memoria y la recarga
+en bucle sin avisar al código. Por eso el tope en móvil es 4096 (33,6 MB).
+**Prueba obligatoria en un iPhone real antes del plan Pro**, porque desde este
+contenedor no se pudo: permiso de giroscopio, memoria con dos 4096 y el modo
+estéreo.
+
+**Costo:** licencia US$0; el peso cae en R2 (US$0 en los tres escenarios).
+Lo que sí cuesta es la experiencia: 3–7 MB por visita de tour en datos
+móviles.
 
 ## 7 · Imágenes en Cloudflare R2
 
-`[INVESTIGACIÓN · cuotas vigentes, egreso, dominio propio vs r2.dev, URL
-prefirmadas, respaldo]`
+**Cuotas vigentes (fuente primaria, developers.cloudflare.com/r2/pricing):**
+gratis **10 GB-mes** de almacenamiento, **1 millón** de operaciones clase A
+(subidas) y **10 millones** de clase B (lecturas) al mes, solo en clase
+Standard; después US$0,015/GB-mes, US$4,50 y US$0,36 por millón. **El egreso
+es gratis de verdad** al salir por R2, por un Worker o por el dominio propio;
+lo que cuenta es la lectura que llega al bucket. Trampa: el uso se redondea
+hacia arriba a la unidad de facturación. Activar R2 pide una «R2
+subscription» por el flujo de pago (si exige tarjeta lo dicen terceros, no la
+doc: sin verificar).
+
+**Estimación (supuestos propios):** 50 viviendas × 12 fotos × 3 tamaños WebP
+≈ 0,3 GB (+2,4 GB si se guardan los originales) + 50 panorámicas × 8 MB =
+0,4 GB → **≈0,7–3,1 GB, dentro de los 10 GB**; lecturas a 100.000 visitas
+≈2,6 millones de clase B → **US$0** en los tres escenarios.
+
+**Lo que no se negocia:** (1) **nunca `r2.dev` en producción**: tiene límite
+de tasa variable, responde 429 y no permite caché ni WAF; (2) **dominio
+propio** (tiene que ser una zona en la misma cuenta de Cloudflare, o entrar
+por CNAME parcial) **con una Cache Rule «Cache Everything»** y Smart Tiered
+Cache, porque sin ella cada vista de cada foto es una operación contra el
+bucket; (3) subidas con **URL prefirmada PUT** de 10–15 minutos, con el
+`Content-Type` fijado en la firma y CORS del bucket restringido al origen del
+panel, firmada en una Edge Function de Supabase con `npm:aws4fetch` (las
+prefirmadas solo funcionan contra el endpoint S3, no contra el dominio
+propio; las lecturas públicas van por el dominio); (4) **R2 no tiene
+versionado ni Object Lock**: un `PutObject` sobre la misma clave destruye la
+foto anterior → **bucket lock** indefinido sobre el prefijo de originales,
+token de API acotado al bucket y de solo escritura para el subidor, y un
+`rclone sync` semanal a otro destino.
+
+**Pasos para la cuenta (P12):** crear la cuenta de Cloudflare → añadir el
+dominio como zona (o CNAME parcial) → activar la suscripción de R2 → crear el
+bucket privado → conectar `img.<dominio>` como dominio propio del bucket →
+Cache Rule «Cache Everything» → token de API acotado al bucket → CORS del
+bucket al origen del panel → bucket lock sobre `originales/`.
 
 Decidido por diseño: el navegador genera en WebP miniatura, mediana y grande
 antes de subir; una Edge Function verifica el rol y entrega una URL firmada de
@@ -243,13 +358,41 @@ en Pro** (fuente primaria) — una razón más para pasar a Pro antes de cliente
 
 ## 10 · Correo, avisos, respaldos, monitoreo
 
-- **Correo transaccional:** `[INVESTIGACIÓN · proveedor con cuota gratis,
-  SPF/DKIM/DMARC]`. Decidido: SMTP propio en Supabase Auth desde el día uno
-  (el SMTP por defecto no sirve para producción) y plantillas en español.
-- **Aviso de solicitud (no negociable):** disparador en `interesados` →
-  Database Webhook → Edge Function → correo a Daniel en menos de un minuto +
-  contador en el panel. WhatsApp: `[INVESTIGACIÓN · costo de plantilla
-  utility en Colombia y requisitos]`.
+- **Correo transaccional — el SMTP propio es obligatorio desde el día uno, y
+  no por gusto:** el correo integrado de Supabase entrega **solo a miembros
+  del equipo** y **2 correos por hora**, en Free y en Pro por igual; y
+  **desde el 3 de junio de 2026 los proyectos gratis nuevos no pueden editar
+  las plantillas de Auth** con el correo integrado — el código de 6 dígitos
+  exige `{{ .Token }}` en la plantilla. **Recomendación: Resend Free** (3.000
+  correos/mes con **tope de 100 al día**, 3 dominios, SMTP + API, 30 días de
+  registro, sin tarjeta, con guía propia para Supabase) con dominio propio en
+  Cloudflare y SPF + DKIM + DMARC `p=none` (exigidos por Gmail y Outlook).
+  Descartados con fuente: Brevo Free sella «Sent with Brevo» en cada código;
+  Postmark Free son 100 **al mes**; SendGrid retiró su gratis en mayo de
+  2025; Amazon SES ya no tiene capa gratis para cuentas nuevas desde el 21 de
+  julio de 2026; Mailgun Free guarda registros un solo día. Costo: **US$0** a
+  1.000 y 10.000 visitas (≈4 y 40 correos/día, supuesto propio); a 100.000,
+  Resend Pro US$20. Regla escrita de antemano: dos días seguidos por encima de
+  70 correos (el 70 % del tope diario) → se pasa a Pro.
+- **Aviso de solicitud (no negociable):** **correo a Daniel + notificación
+  push del navegador al panel** (Web Push con claves VAPID propias desde una
+  Edge Function, gratis; en iPhone solo desde iOS 16.4 y con el panel
+  instalado en la pantalla de inicio), más el contador de nuevas. El disparo:
+  Database Webhook (`pg_net`) sobre el INSERT → Edge Function `avisar-
+  solicitud` → fila en una tabla `avisos` con estado; como `pg_net` **no
+  reintenta**, un `pg_cron` cada 5 minutos reenvía los avisos sin confirmar
+  (o el patrón `pgmq` + `pg_cron` que Supabase documenta). Las Edge Functions
+  tienen bloqueados los puertos 25 y 587: el correo sale por la API HTTP del
+  proveedor, no por SMTP.
+- **WhatsApp a Daniel: segunda fase, y ya no es gratis.** Desde el **1 de
+  octubre de 2026** cada número de negocio tiene 1.000 mensajes de servicio
+  gratis al mes y las plantillas `utility` dentro de la ventana de 24 h
+  vuelven a cobrarse; la tarifa exacta de Colombia **no se pudo verificar**
+  (fuentes secundarias: US$0,0008–0,0034 por mensaje; Twilio añade US$0,005).
+  Si se hace: **Meta Cloud API directo**, plantilla `utility` aprobada,
+  método de pago; **nunca una API no oficial** (los términos de WhatsApp las
+  sancionan con bloqueo, y el número de ventas es justo el que no se puede
+  perder).
 - **Respaldos:** el plan gratis **no tiene respaldos automáticos**; Pro,
   diarios con 7 días; PITR es un añadido de US$100/mes por 7 días (fuente
   primaria). Mientras estemos en gratis: una acción programada semanal que
@@ -258,6 +401,19 @@ en Pro** (fuente primaria) — una razón más para pasar a Pro antes de cliente
 - **Pausa por inactividad:** el plan gratis se pausa tras 7 días de poca
   actividad y da 90 días para restaurar (fuente primaria). Antes de una demo:
   pasar a Pro o, como mínimo, una consulta diaria programada.
+- **Qué cuesta Pro de verdad:** **US$25/mes por ORGANIZACIÓN** + cómputo por
+  proyecto, con un crédito de US$10 que cubre exactamente **un** proyecto
+  Micro; una organización tiene un solo plan, así que si `urbis-viviendas`
+  compartiera organización con otro proyecto la factura sería ≥US$35.
+  Verificado el 23 de octubre: el conector ve `vayayvuelva` en **otra**
+  organización, así que no comparten. Spend Cap activado por defecto (bloquea
+  en vez de cobrar; no cubre cómputo ni PITR). Al subir a Pro el proyecto
+  **no se redimensiona solo** de Nano a Micro: es manual y con una pausa
+  corta. Desde mayo de 2026 Supabase cobra impuestos indirectos «donde la ley
+  lo exija» (si aplica a Colombia: ~US$29,75 con IVA; se ve en la factura
+  próxima). **Cuándo subir: al menos 7 días antes de la primera demo** (una
+  ventana completa de pausa + el cambio de cómputo + ver el primer respaldo
+  diario + probar el SMTP con su límite de 30/hora).
 - **Monitoreo al 70 %:** función `SECURITY DEFINER` que lee
   `pg_database_size` (solo admin y gerencia) + Edge Function con token de
   solo lectura de Cloudflare para R2; tarjeta en Salud con barra y
@@ -317,8 +473,8 @@ en Pro** (fuente primaria) — una razón más para pasar a Pro antes de cliente
 | P8 | A quién se cobra la cuota mensual | Daniel | calendario genérico |
 | P9 | Anunciantes: pago, identidad, legal | Daniel | no construir hasta decidir |
 | P10 | Dominios, nombre, logo, WhatsApp, correo | Daniel | un archivo de configuración con marcadores |
-| P11 | Cuándo pasar a Pro | Daniel | antes de la primera demo; el gratis se pausa a los 7 días |
-| P12 | Cuenta de Cloudflare R2 | Daniel | crearla en la Fase 0 (pasos en §7 cuando llegue la investigación) |
+| P11 | Cuándo pasar a Pro | Daniel | **al menos 7 días antes de la primera demo**; US$25/mes en organización propia |
+| P12 | Cuenta de Cloudflare R2 y dominio | Daniel | crearla ya, con los nueve pasos de §7; el dominio tiene que ser zona de esa cuenta |
 | P13 | Paleta A, B o C | Daniel | **ver el lienzo**; mi recomendación: `[se escribe al cerrar las maquetas]` |
 | P14 | Acceso al proyecto `urbis-viviendas` para inspeccionar el esquema real | Daniel | token personal de solo lectura o reconectar el conector con URBISPROCITY |
 | P15 | Crear el repositorio `urbis-viviendas` | Daniel | privado; esta sesión solo alcanza `mapa-comunitario` |
@@ -377,4 +533,46 @@ fusionada):
   asimétricos; US$0,00325/MAU): `…/auth/third-party/overview`.
 - Supabase · Image Transformations (Pro, 100 imágenes origen, US$5/1.000):
   `…/platform/manage-your-usage/storage-image-transformations`.
-- `[INVESTIGACIÓN · el resto se agrega con la corrida verificada]`
+- Supabase · facturación por organización, cómputo y crédito, Spend Cap:
+  `…/platform/billing-on-supabase`, `…/platform/manage-your-usage/compute`,
+  `…/platform/cost-control`; SMTP integrado (2/h, solo equipo):
+  `…/auth/auth-smtp`; plantillas no editables en Free desde 2026-06-03:
+  `supabase.com/changelog/46599-…`; límites de Edge Functions (puertos 25 y
+  587 bloqueados): `…/functions/limits`; webhooks y `pg_net` sin reintentos:
+  `…/database/webhooks`, `…/database/extensions/pg_net`.
+- Cloudflare · precios y cuotas de R2: `developers.cloudflare.com/r2/pricing/`;
+  límites de `r2.dev` y dominio propio: `…/r2/buckets/public-buckets/`,
+  `…/r2/platform/limits/`; prefirmadas: `…/r2/api/s3/presigned-urls/`; sin
+  versionado: `…/r2/api/s3/api/`; bucket locks: `…/r2/buckets/bucket-locks/`;
+  caché sobre R2: `…/cache/interaction-cloudflare-products/r2/`; Workers:
+  `…/workers/platform/limits/`, `…/workers/platform/pricing/`; Pages:
+  `…/pages/platform/limits/`, `…/pages/functions/pricing/`; Turnstile:
+  `…/turnstile/plans/`.
+- Mapas · MapTiler: `maptiler.com/cloud/pricing/`, `maptiler.com/terms/cloud/`,
+  `docs.maptiler.com/guides/account/sessions-vs-requests/`; OpenFreeMap:
+  `github.com/hyperknot/openfreemap`; Protomaps: `github.com/protomaps/docs`,
+  `protomaps.com/api`; Stadia: `stadiamaps.com/pricing/`; Mapbox:
+  `mapbox.com/pricing`, `docs.mapbox.com/help/glossary/map-loads/`, LICENSE
+  de `mapbox-gl-js`; Google: `developers.google.com/maps/billing-and-pricing/
+  march-2025`, `…/pricing`, `cloud.google.com/maps-platform/terms/
+  maps-service-terms`; Esri: `location.arcgis.com/pricing/`; EOX:
+  `eox.at/2025/03/sentinel-2-cloudless-2024/`; Nominatim:
+  `operations.osmfoundation.org/policies/nominatim/`; Photon:
+  `github.com/komoot/photon`.
+- 360° · npm (`@photo-sphere-viewer/core`, `pannellum`, `marzipano`, `three`),
+  código fuente de PSV (`system.ts`, `GyroscopePlugin.ts`), MDN
+  `DeviceOrientationEvent.requestPermission`, caniuse `webgl2` y `webp`,
+  Apple Metal Feature Set Tables, `github.com/google/marzipano` (archivado),
+  `github.com/mrdoob/three.js/pull/22654`; pesos medidos con esbuild por el
+  investigador.
+- Correo y avisos · `resend.com/pricing`, `resend.com/docs/send-with-supabase-smtp`;
+  `help.brevo.com` (límites del plan Free y sello); `postmarkapp.com/pricing`;
+  `static1.twilio.com/en-us/changelog/sendgrid-free-plan`;
+  `aws.amazon.com/ses/pricing/`; `mailgun.com/pricing/`; Gmail:
+  `support.google.com/a/answer/81126`; WhatsApp:
+  `developers.facebook.com/documentation/business-messaging/whatsapp/pricing`
+  (y `…/non-template-messages`), `whatsapp.com/legal/messaging-guidelines`;
+  Twilio WhatsApp: `twilio.com/en-us/whatsapp/pricing`; Web Push en Apple:
+  `developer.apple.com/documentation/usernotifications/sending-web-push-notifications-in-web-apps-and-browsers`.
+- `[INVESTIGACIÓN · stack/hosting, cuentas, gráficas/pruebas y Apps Script se
+  agregan con su corrida]`
