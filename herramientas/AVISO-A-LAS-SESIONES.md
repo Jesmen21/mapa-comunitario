@@ -217,3 +217,161 @@ mapa-comunitario están en CLAUDE.md, escritas una sola vez y por la cabeza. Si
 movia necesita las suyas, son de movia y no se copian desde acá sin que Daniel
 lo diga.
 ```
+
+---
+
+## LAS DECISIONES DE DANIEL DEL 23 DE OCTUBRE · qué pegarle a cada chat
+
+Van **después** del bloque común. Las ocho completas están en
+`herramientas/DECISIONES-DANIEL.md`, que cada sesión lee al traer la rama;
+esto es lo que le toca a cada una.
+
+### Para TODOS los chats
+
+```
+DOS DECISIONES DE DANIEL QUE OBLIGAN A TODAS LAS SESIONES:
+
+1. SHEETS NO SE EXTIENDE A NADA NUEVO. La hoja se congeló para datos nuevos
+   el 23 de octubre de 2026: se queda con los ocho módulos que ya tiene, y
+   todo módulo nuevo va a Postgres. Lo compartido deja de ser el almacén y
+   pasa a ser el REGISTRO (js/03h): quién es dueño de qué y quién puede
+   leerlo, viva el dato donde viva. revisar.js tiene un trinquete: la lista
+   de los ocho no crece.
+2. NINGÚN SECRETO EN EL REPOSITORIO. Contraseñas y llaves van en variables de
+   entorno o en un gestor. Y para cualquier cosa de Supabase: nunca la llave
+   service_role.
+
+Las ocho decisiones completas están en herramientas/DECISIONES-DANIEL.md.
+Lo que ya está decidido NO se vuelve a preguntar.
+```
+
+### Viviendas — `claude/fervent-allen-74qgwm`
+
+```
+Tus seis decisiones están contestadas. De Daniel:
+- DIRECCIÓN: en público va la aproximada (cuadra/barrio). La exacta solo para
+  Daniel o tras contacto con el interesado. En el registro ya quedó así:
+  ubicacionAproximada en comparte, direccionExacta en privado. DOS campos y no
+  uno con bandera: un campo con bandera se publica entero el día que alguien
+  lee mal la bandera.
+- DATOS: Postgres (Supabase), no el Sheet.
+- ALCANCE: módulo propio. Leés el análisis de ubicación de Empresas A TRAVÉS
+  DEL REGISTRO, sin copiarlo. Ya está declarado:
+  viviendas.leeDe = [{ modulo:'empresas', campo:'analisisUbicacion' }], y
+  empresas lo comparte. La guarda comprueba que esa puerta resuelva.
+- RAMA: la tuya.
+Siguen abiertas: si el arriendo usa el mismo formulario que la venta, y quién
+publica. Esas dos sí son de Daniel y todavía no las contestó.
+Tu entrada en el registro ya existe aunque no tengas archivos: está para que
+el reparto esté declarado ANTES de la primera línea.
+```
+
+### Político — `claude/festive-shannon-rbqzwu`
+
+```
+Decisión de Daniel: la v1 va SIN datos reales de votantes. Solo datos
+simulados y rotulados SIMULADO. Guardar datos personales reales es una
+decisión aparte y NO se construye hasta que él la tome.
+Ya quedó en el registro: politico lleva soloSimulado: true, y hay una guarda
+que ata esa bandera a que la nota lo diga — para que la declaración llegue a
+quien lea el registro y no se quede en una bandera que ninguna pantalla pinta.
+Tu decisión 4 queda contestada y es la más dura de las cuatro: no la relajes.
+```
+
+### Seguridad familiar — `claude/beautiful-fermi-pbwars`
+
+```
+Tus decisiones B y C están contestadas por Daniel:
+- BOTÓN DE PÁNICO (tu B): la v1 es SOLO mapa y reportes. No se construye un
+  botón que prometa respuesta de emergencia hasta que haya convenio real con
+  la Policía o el 123. La razón va con la decisión porque es la que impide que
+  vuelva a proponerse: un botón que promete respuesta y no la tiene es peor
+  que no tenerlo. (Precedente ya decidido en Movilidad: con convenio, directo
+  a la Policía; sin convenio, a la central de la cooperativa.)
+- REPORTES (tu C): NO. Reportes/Eventos es dueño de la matriz de tipos y del
+  flujo. Seguridad los MUESTRA y los analiza, y no crea tipos duplicados. Ya
+  quedó en el registro: seguridad tiene tipos: [] y declara
+  leeDe: reportes.categoria y reportes.subtipo.
+Tu A —si el servidor filtra las filas de ubicación— sigue abierta, y además es
+del Apps Script, que no está en este repositorio.
+Y ojo con el almacén: sos módulo nuevo, así que vas a Postgres, no al Sheet.
+```
+
+### Social — `claude/dreamy-meitner-fc5txm`
+
+```
+Decisión de Daniel: SOCIAL ES UN PARAGUAS de runner, minijuegos, Patitas URBIS
+y orientación comunal. NO son módulos separados. Tu decisión 2 queda
+contestada.
+Eso trajo dos cambios en el registro que te tocan:
+- `rush` y `premio` eran dos entradas y ahora son UNA: `social`, con los tipos
+  «🏃 Social Rush» y «🏆 Premio URBIS» y los archivos js/20, js/13j, js/16 y
+  js/17. Patitas y la orientación comunal entran AHÍ cuando tengan tipos
+  propios, no en una entrada nueva.
+- lo que ANTES se llamaba `social` en el registro —comentarios, relaciones y
+  permisos de js/12— se renombró a `interaccion`. Dos cosas distintas con un
+  solo nombre es la clase B por la puerta del vocabulario. Se renombró ya
+  porque hoy no cuesta nada (el espacio con nombre no tiene lectores) y mañana
+  sí.
+Siguen abiertas: la donación de Patitas, si Patitas entra al APK, y si los 51
+logros se implementan o se retiran.
+```
+
+### Visión Territorial — `claude/adoring-tesla-s7c5ea`
+
+```
+Decisión de Daniel sobre tus dos preguntas abiertas:
+- PROYECTO SUPABASE NUEVO, separado del de vayayvuelva. No se mezclan datos de
+  taxistas con datos de municipios.
+- Las contraseñas y llaves van en variables de entorno o en un gestor, NUNCA
+  en el repositorio.
+- Y lo que decide tu próximo paso: NO CREES NADA hasta que Daniel confirme que
+  el proyecto nuevo cabe en el plan gratuito. La decisión es esperar, no
+  avanzar con cuidado.
+Sigue valiendo lo que ya estaba escrito para VT: nunca la llave service_role,
+que salta la RLS y la volvería decorativa.
+```
+
+### Empresas — `claude/admiring-pasteur-32vzed`
+
+```
+Te toca una decisión que no pediste y que te suma trabajo futuro: Viviendas es
+un módulo propio y va a LEER tu análisis de ubicación a través del registro,
+sin copiarlo.
+Por eso entrás al registro de módulos aunque no escribas en la hoja:
+`empresas` declara analisisUbicacion, densidadDeUsos y
+coberturaEquipamientos en COMPARTE, y reglasDeClasificacion y pesosDelMotor en
+PRIVADO —las reglas no se sirven al navegador: eso es lo que se vende—.
+Si cambiás la forma de analisisUbicacion, avisame: hay una guarda que
+comprueba que la puerta de Viviendas resuelva, y se pone roja si el campo deja
+de compartirse.
+Y lo de js/61 sigue igual: es tuyo, el educativo lo llama 28 veces, y lo
+cambiás avisando.
+```
+
+### Reportes/Eventos — `claude/ecstatic-curie-hufat8`
+
+```
+Decisión de Daniel que te confirma dueño: LA MATRIZ DE TIPOS Y EL FLUJO DE
+REPORTE SON TUYOS. Seguridad familiar solo los muestra y los analiza, y no
+crea tipos duplicados; ya quedó en el registro con tipos: [] y leyendo los
+tuyos.
+Eso te da una responsabilidad nueva: si cambiás o renombrás un tipo, hay otro
+módulo leyéndolo. Pedímelo antes.
+Siguen abiertas tus dos de producto: la caducidad de los 23 tipos y si Leaflet
+se vendoriza.
+```
+
+### Educativo — `claude/laughing-turing-5kftp3`
+
+```
+Ninguna de las ocho decisiones nuevas te cambia nada, y eso también se dice.
+Lo tuyo del registro sigue igual que en la v1162: compartís lo medido en campo
+y es privado lo de intención de diseño, percepción, no confirmado y
+borradores.
+Dos cosas que sí te rozan: Empresas entró al registro, así que js/61 ahora
+tiene dueño declarado por escrito; y si alguna vez escribís datos fuera de
+pcr_fichas_v1, van a Postgres y no al Sheet.
+Tus dos puntos —el motor y el piso de 120 mm con la cifra de los doce mapas—
+siguen esperando a Daniel.
+```

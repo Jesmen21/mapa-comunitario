@@ -13,7 +13,7 @@
 
    La versión va acá y en vision-territorial.html, idéntica, como en los
    otros siete archivos de versión del sitio: revisar.js lo comprueba. */
-const VT_CACHE = 'urbis-vt-v1162-un-dueno-por-tipo-en-la-capa-de-mapeos';
+const VT_CACHE = 'urbis-vt-v1165-el-service-worker-que-no-devolvia-respuesta';
 const VT_ASSETS = [
   './vision-territorial.html',
   './css/90-vt.css',
@@ -36,6 +36,15 @@ self.addEventListener('activate', e => {
   );
 });
 
+function sinRedNiCache(req) {
+  return new Response(
+    'Visión Territorial no pudo servir esta petición: no hay conexión y tampoco una copia ' +
+    'guardada de ' + req.url,
+    { status: 503, statusText: 'Sin red y sin copia guardada',
+      headers: { 'Content-Type': 'text/plain; charset=utf-8' } }
+  );
+}
+
 self.addEventListener('fetch', e => {
   const req = e.request;
   if (req.method !== 'GET') return;
@@ -51,7 +60,12 @@ self.addEventListener('fetch', e => {
           caches.open(VT_CACHE).then(c => c.put(req, copia));
         }
         return res;
-      }).catch(() => hit);
+      /* Sin red y sin copia guardada se devuelve una Response, no
+         `undefined`: `respondWith(undefined)` lanza un TypeError dentro del
+         worker y el navegador muestra un error de red genérico que no se
+         parece a su causa. Mismo defecto que el de `service-worker.js`, y por
+         eso se arregla igual en los dos (v1165). */
+      }).catch(() => hit || sinRedNiCache(req));
       return hit || red;
     })
   );

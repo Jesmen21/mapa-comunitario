@@ -117,6 +117,7 @@ hacen:
 | `css/main.css` | la hoja común |
 | los **nueve** archivos del token de versión | `service-worker.js`, `index.html`, `css/main.css`, `analisis-ia.html`, `seguimiento.html`, `reportes.html`, `sw-reportes.js`, `vision-territorial.html`, `sw-vt.js` |
 | `pruebas/revisar.js` | se AGREGA el bloque propio al final; no se tocan los bloques ajenos |
+| la matriz de **126 tipos** de reportes | es de Reportes/Eventos y es contrato compartido con Movilidad y Seguridad: ver 6c |
 
 Y uno que no es de nadie y lo usan dos: **`js/61-analisis-ia-datos.js` es de
 Empresas**, y el educativo lo llama **28 veces** desde `js/68` y `js/64`
@@ -165,6 +166,37 @@ costó algo:
 * **empujar a `main`**.
 
 ---
+
+## 6b · Cuándo puede publicar un módulo · la regla 2 aplicada
+
+Daniel la fijó el 23 de octubre de 2026 (2.ª tanda) y contesta la pregunta que
+una sesión ya había hecho —si «batería en verde» bloquea publicar o basta con
+«ninguna roja nueva»—. **Son las dos cosas:**
+
+* **la suite propia del módulo, en verde**; y
+* **ninguna roja NUEVA** en las demás.
+
+Las dos mitades hacen falta y piden cosas distintas: la primera es sobre tu
+trabajo, la segunda sobre lo que tu trabajo le hizo al de otro. Con solo la
+segunda, un módulo publica con su propia suite rota; con solo la primera,
+publica rompiendo la ajena.
+
+**Las 12 rojas heredadas las clasifica la cabeza**, no cada sesión: doce
+sesiones clasificando las mismas doce es doce veces el mismo trabajo, y con
+doce criterios distintos. Si tu corrida trae una roja que no causaste,
+pásamela con su nombre y su salida; no la arregles y no la aflojes.
+
+**Y el merge a `main` lo hace solo la cabeza.** Ninguna sesión de módulo
+empuja a `main` por ninguna razón.
+
+## 6c · La matriz de tipos es un contrato compartido
+
+Los **126 tipos** de reportes —99 de ellos inyectados en `js/20`— son el
+vocabulario con el que Movilidad y Seguridad leen lo que Reportes/Eventos
+escribe. **Reportes/Eventos sigue siendo su dueño**, y por ser un contrato
+compartido: renombrar, retirar o cambiar el sentido de un tipo **se avisa a la
+cabeza antes**, porque hay otro módulo leyéndolo. Agregar uno no rompe a
+nadie; cambiar uno sí.
 
 ## 7 · Cómo se cierra una tanda, y qué se reporta
 

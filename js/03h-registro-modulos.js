@@ -48,6 +48,7 @@
 
     reportes: {
       titulo: 'Reportes y Matriz de Usos',
+      backend: 'hoja',
       archivos: ['js/11-report-form.js', 'js/12-spa-ui.js', 'js/20-mobile-functional-app.js',
                  'js/06-mobility-traffic.js', 'js/50-alerta-forzado.js'],
       tipos: [
@@ -71,6 +72,7 @@
 
     eventos: {
       titulo: 'Eventos comunitarios',
+      backend: 'hoja',
       archivos: ['js/09-events.js', 'js/12-spa-ui.js', 'js/20-mobile-functional-app.js'],
       tipos: ['🎪 Eventos Comunitarios'],
       prefijos: [],
@@ -81,6 +83,7 @@
 
     vitrina: {
       titulo: 'Vitrina de emprendimientos',
+      backend: 'hoja',
       archivos: ['js/13i-vitrina.js'],
       tipos: ['🛍️ Emprendimiento URBIS', '🛍️ Portafolio URBIS', '🛍️ Logo URBIS'],
       prefijos: [],
@@ -90,18 +93,9 @@
             'inventarse un emprendimiento «verificado por URBIS».'
     },
 
-    premio: {
-      titulo: 'Premio URBIS',
-      archivos: ['js/13j-premio.js'],
-      tipos: ['🏆 Premio URBIS'],
-      prefijos: [],
-      comparte: ['categoria'],
-      privado: [],
-      nota: ''
-    },
-
     peticiones: {
       titulo: 'Buzón de peticiones',
+      backend: 'hoja',
       archivos: ['js/13g-config-admin.js'],
       tipos: ['📩 Petición URBIS'],
       prefijos: [],
@@ -111,8 +105,19 @@
             'por eso no comparte nada.'
     },
 
-    social: {
+    /* SE LLAMABA `social` Y SE RENOMBRÓ EL 23 DE OCTUBRE DE 2026, y la razón
+       vale más que el caso: Daniel decidió que «Social» es el PARAGUAS de
+       producto —runner, minijuegos, Patitas URBIS y orientación comunal—, y
+       este módulo es otra cosa: la infraestructura de comentarios, relaciones
+       y permisos de js/12. Dos cosas distintas con un solo nombre es la clase
+       B entrando por la puerta del vocabulario, y el día que alguien leyera
+       «social» en el registro no sabría cuál de las dos es.
+       Se renombra AHORA porque hoy no cuesta nada: el espacio con nombre se
+       abrió en la v1162 y todavía no tiene un solo lector, así que ningún dato
+       guardado depende de este id. Mañana sí costaría. */
+    interaccion: {
       titulo: 'Comentarios, relaciones y permisos',
+      backend: 'hoja',
       archivos: ['js/12-spa-ui.js'],
       tipos: ['💬 Comentario', '🤝 Relacion', '🔑 Permiso'],
       prefijos: [],
@@ -123,18 +128,31 @@
             'descartarlas, y decir que las descartó.'
     },
 
-    rush: {
-      titulo: 'Social Rush',
-      archivos: ['js/20-mobile-functional-app.js'],
-      tipos: ['🏃 Social Rush'],
+    /* EL PARAGUAS, por decisión de Daniel del 23 de octubre de 2026: el
+       runner, los minijuegos, Patitas URBIS y la orientación comunal NO son
+       módulos separados. Por eso `rush` y `premio`, que estaban aparte, son
+       una sola entrada: tres entradas para un módulo son tres dueños donde
+       hay uno. */
+    social: {
+      titulo: 'Social · runner, minijuegos, Patitas URBIS y orientación comunal',
+      backend: 'hoja',
+      archivos: ['js/20-mobile-functional-app.js', 'js/13j-premio.js',
+                 'js/16-achievements.js', 'js/17-sport.js'],
+      tipos: ['🏃 Social Rush', '🏆 Premio URBIS'],
       prefijos: [],
-      comparte: [],
+      comparte: ['categoria'],
       privado: [],
-      nota: ''
+      nota: 'paraguas de runner, minijuegos, Patitas URBIS y chat (corregido por Daniel ' +
+            'el 23 oct 2026, 2.ª tanda: la orientación comunal SALE del paraguas y queda ' +
+            'pendiente de él, sin construir). Patitas se queda en Próximamente, fuera del ' +
+            'APK, y sin botón de donar ni total donado. Los logros inalcanzables se ' +
+            'ESCONDEN, no se borran. Los runners se unifican hacia el móvil, escondiendo ' +
+            'primero el de escritorio.'
     },
 
     presencia: {
       titulo: 'Presencia en el mapa',
+      backend: 'hoja',
       archivos: ['js/78-presencia.js'],
       tipos: [],
       prefijos: ['ubicacion_'],
@@ -145,6 +163,7 @@
 
     curso: {
       titulo: 'Curso: entregas y comentarios',
+      backend: 'hoja',
       archivos: ['js/81-curso-servidor.js'],
       tipos: [],
       prefijos: ['comentario de curso '],
@@ -163,6 +182,7 @@
        filas diría que comprobó algo que no existe. */
     educativo: {
       titulo: 'Pliego educativo (todavía no escribe en la capa)',
+      backend: 'local',
       archivos: ['js/68-procity-reconocimiento.js', 'js/64-analisis-edu.js', 'js/65-analisis-edu-ui.js'],
       tipos: [],
       prefijos: [],
@@ -181,6 +201,114 @@
                 'datoNoConfirmado', 'borrador'],
       nota: 'sus fichas viven hoy en pcr_fichas_v1 (localStorage). Este renglón ' +
             'declara el reparto para cuando escriba, no un reparto vigente.'
+    },
+
+    /* ------------------------------------------------------------------
+       LOS QUE NO ESCRIBEN EN LA HOJA (decisión de Daniel, 23 oct 2026)
+       ------------------------------------------------------------------
+       «Sheets no se extiende a nada nuevo.» Eso parte el reparto en dos y
+       conviene decirlo entero, porque si no la frase «una sola capa» deja de
+       ser cierta sin que nadie lo note: la HOJA se queda con lo que ya está
+       —congelada para datos nuevos— y lo nuevo va a Postgres. **Lo
+       compartido no es el almacén: es ESTE REGISTRO**, que declara quién es
+       dueño de qué y quién puede leerlo, viva el dato donde viva. Un módulo
+       nuevo con `backend: 'hoja'` sale en rojo. */
+
+    empresas: {
+      titulo: 'Empresas · análisis comercial',
+      backend: 'motor',
+      archivos: ['analisis-ia.html', 'js/59-analisis-ia-catalogo.js',
+                 'js/61-analisis-ia-datos.js', 'js/62-analisis-ia-app.js',
+                 'js/63-analisis-ia-informe.js', 'js/66-analisis-remoto.js',
+                 'js/67-analisis-cliente.js', 'js/69-licencia.js'],
+      tipos: [],
+      prefijos: [],
+      /* Lo que Viviendas lee de acá por decisión de Daniel: el análisis de
+         ubicación, SIN copiarlo. Se declara compartido para que exista una
+         puerta; copiar el cálculo sería la clase B con dos dueños. */
+      comparte: ['analisisUbicacion', 'densidadDeUsos', 'coberturaEquipamientos'],
+      privado: ['reglasDeClasificacion', 'pesosDelMotor'],
+      nota: 'las reglas de clasificación NO se sirven al navegador: eso es lo que se ' +
+            'vende, y por eso van en privado y además viven en el repositorio del motor. ' +
+            'js/61 es suyo y el educativo lo llama 28 veces (medido el 23 oct 2026).'
+    },
+
+    /* CORRECCIÓN DE DANIEL, 23 de octubre de 2026 (2.ª tanda): Viviendas usa
+       el almacén de la Vitrina —la hoja— de forma TRANSITORIA, con el modelo
+       escrito independiente del almacén para pasarlo a Postgres después. Es
+       la única excepción a «Sheets no se extiende»: va declarada acá, por
+       ítem y con su razón, nunca como una regla que abra la puerta a todos
+       (v1094, v1109). El trinquete la exige escrita, así que no se puede
+       colar una segunda sin decirlo. */
+    viviendas: {
+      titulo: 'Viviendas · venta y arriendo',
+      backend: 'hoja',
+      transitorio: 'transitorio, salida a postgres',
+      archivos: [],
+      /* Tipo y permiso PROPIOS, por decisión de Daniel: comparte el almacén
+         con la vitrina, no su identidad. El texto exacto del tipo lo PROPONE
+         la cabeza y lo confirma la sesión de Viviendas antes de escribir la
+         primera fila; va acá y no en blanco porque un tipo sin registrar es
+         lo que la guarda rechaza, y porque declararlo antes es el orden que
+         este proyecto ya usa para los criterios (v1077). */
+      tipos: ['🏠 Vivienda URBIS', '🏠 Permiso Vivienda URBIS'],
+      tipoPropuesto: true,
+      prefijos: [],
+      leeDe: [{ modulo: 'empresas', campo: 'analisisUbicacion' }],
+      /* La dirección EXACTA es privada por decisión de Daniel: en público va
+         la cuadra o el barrio, y la exacta solo para él o tras contacto con el
+         interesado. Son DOS campos y no uno con una bandera: un campo con
+         bandera se publica entero el día que alguien lee mal la bandera. */
+      comparte: ['ubicacionAproximada', 'tipoInmueble', 'precio'],
+      privado: ['direccionExacta', 'contactoPropietario'],
+      nota: 'módulo propio en DATOS —tipo de fila y permiso propios— y sin página ni ' +
+            'service worker propios por ahora. Primero venta; el arriendo después con el ' +
+            'mismo modelo. Publica solo Daniel o quien él autorice. El almacén es la hoja ' +
+            'de la vitrina y es transitorio: el modelo se escribe independiente del ' +
+            'almacén para poder pasarlo a Postgres sin reescribirlo.'
+    },
+
+    politico: {
+      titulo: 'Político · control de votos',
+      backend: 'postgres',
+      archivos: [],
+      tipos: [],
+      prefijos: [],
+      comparte: [],
+      /* La v1 va SIN datos reales de votantes, por decisión de Daniel: solo
+         simulados y rotulados SIMULADO. Guardar datos personales reales es
+         una decisión aparte que todavía no se tomó, así que el campo ni
+         siquiera se declara compartible. */
+      privado: ['votante', 'datoSimulado'],
+      soloSimulado: true,
+      enPausa: 'Daniel lo puso en pausa el 23 de octubre de 2026 (2.ª tanda)',
+      nota: 'EN PAUSA. Y cuando vuelva: v1 sin datos reales de votantes, todo dato ' +
+            'rotulado SIMULADO; guardar datos personales reales no se construye hasta que ' +
+            'Daniel lo decida.'
+    },
+
+    seguridad: {
+      titulo: 'Seguridad familiar',
+      backend: 'postgres',
+      archivos: [],
+      /* CERO TIPOS PROPIOS, por decisión de Daniel: la matriz de tipos y el
+         flujo de reporte son de Reportes/Eventos. Seguridad los MUESTRA y los
+         analiza. Un tipo duplicado acá sería dos dueños para un hecho, que es
+         justo lo que la guarda rechaza — y el registro lo deja escrito en vez
+         de confiar en que alguien se acuerde. */
+      tipos: [],
+      prefijos: [],
+      leeDe: [{ modulo: 'reportes', campo: 'categoria' },
+              { modulo: 'reportes', campo: 'subtipo' }],
+      comparte: [],
+      privado: [],
+      nota: 'no crea tipos: lee los de reportes. Y la v1 es solo mapa y reportes — no ' +
+            'hay botón de pánico CON AVISOS: a lo sumo un «Llamar al 123», que es marcar y no ' +
+            'prometer respuesta. La v1 es una pantalla que lee lo que ya existe. No se ' +
+            'construye nada familiar sobre la ubicación hasta que Daniel verifique el ' +
+            'Apps Script y pase la función de db_read abierto. Sin convenio real con la ' +
+            'Policía o el 123 no hay botón, ' +
+            'porque un botón que promete respuesta y no la tiene es peor que no tenerlo.'
     }
   };
 
