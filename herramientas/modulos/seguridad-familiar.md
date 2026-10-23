@@ -87,6 +87,10 @@ duplicada en la hoja dejaría una copia.
 
 ## Para la cabeza (protocolo, punto 7)
 
+* **El registro (js/03h)** declara `seguridad` con `archivos: []`: ahora
+  existe `js/83-seguridad.js`. Y `backend: 'postgres'` vale para lo que este
+  módulo ESCRIBA algún día; hoy no escribe nada y LEE la hoja por
+  `urbisDatosVisibles`, que es como `leeDe: reportes.*` se cumple.
 * **Archivos compartidos que harían falta**: `index.html` (`<script
   src="js/83-seguridad.js">` y `<link href="css/83-seguridad.css">`), la
   precaché de `service-worker.js`, el token de versión, y un botón de entrada
