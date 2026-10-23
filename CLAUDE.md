@@ -3,6 +3,48 @@
 Notas para cualquier sesión que retome el proyecto. Están acá porque cada una
 de ellas costó tiempo averiguarla o romper algo.
 
+## Las ocho reglas de trabajo · valen para TODAS las sesiones de URBIS
+
+Las fijó Daniel el 23 de octubre de 2026 y van acá, arriba, para que cualquier
+sesión o colaborador nuevo las herede sin que nadie se acuerde de pasarlas.
+Son las mismas ocho, con su número, tal como las dictó:
+
+1. **Medir antes de asumir**: mide el estado real antes de proponer o tocar.
+2. **Batería completa de pruebas antes de publicar.** Nada se publica con la
+   batería en rojo.
+3. **Demostrar en rojo**: una inyección fiel por cada aserción nueva, para
+   probar que la guarda muerde.
+4. **Numerar siempre por encima de `origin/main`.** Si otra sesión publicó
+   versiones, trae esas y sube por encima. Nunca bajes la tuya.
+5. **Nada de reemplazos masivos.** Un cambio por peldaño, medido.
+6. **Una cifra sin medir se imprime `SIN MEDIR`**, no se rellena. Distingue
+   cero de ausente.
+7. **No inventes métodos ni datos oficiales**: si algo no se puede verificar
+   desde el contenedor, dilo y déjalo anotado.
+8. **Si aparece una decisión editorial o de producto, no la resuelvas sola**:
+   anótala con su medición y pregúntale a Daniel.
+
+No son nuevas en el fondo —las secciones de abajo las venían aplicando una por
+una— y por eso conviene decir dónde vive el detalle de cada una, que es lo que
+una sesión necesita para cumplirlas y no solo para citarlas: la 1 en «Cómo se
+mide una premisa», la 2 y la 3 en «Cómo se escribe una guarda acá», la 4 en
+«Antes de tocar nada: traer lo de arriba» y «La versión va en NUEVE archivos»,
+la 6 en «Lo que se declara, y no se calla», la 8 en `DECISIONES-PENDIENTES.md`.
+Lo que las ocho agregan es que están **numeradas y en un solo sitio**, así que
+una sesión puede citar «regla 4» y la siguiente sabe qué es.
+
+### Cómo se reporta al cerrar una tanda
+
+Cuatro cosas, corto y con cifras: **qué salió, qué se midió, qué queda
+pendiente y qué decisión se necesita de Daniel.**
+
+### Una sesión por módulo
+
+Cada módulo de URBIS tiene su propia sesión y su propio socio o inversionista.
+**Una sesión no toca lo que no es de su módulo**, y la numeración de versiones
+se coordina con Daniel, porque hay más de una sesión escribiendo en este
+repositorio —ver «Antes de tocar nada: traer lo de arriba»—.
+
 ## Lo que sigue, y en este orden · `LISTA-QUE-SIGUE`
 
 **El registro es hoy el cuello de botella, no el código**, y sigue siéndolo:
