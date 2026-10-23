@@ -142,9 +142,12 @@
       prefijos: [],
       comparte: ['categoria'],
       privado: [],
-      nota: 'paraguas, no cuatro módulos. Patitas URBIS y la orientación comunal ' +
-            'todavía no escriben tipos propios; cuando los tengan entran acá y no ' +
-            'en una entrada nueva.'
+      nota: 'paraguas de runner, minijuegos, Patitas URBIS y chat (corregido por Daniel ' +
+            'el 23 oct 2026, 2.ª tanda: la orientación comunal SALE del paraguas y queda ' +
+            'pendiente de él, sin construir). Patitas se queda en Próximamente, fuera del ' +
+            'APK, y sin botón de donar ni total donado. Los logros inalcanzables se ' +
+            'ESCONDEN, no se borran. Los runners se unifican hacia el móvil, escondiendo ' +
+            'primero el de escritorio.'
     },
 
     presencia: {
@@ -230,11 +233,26 @@
             'js/61 es suyo y el educativo lo llama 28 veces (medido el 23 oct 2026).'
     },
 
+    /* CORRECCIÓN DE DANIEL, 23 de octubre de 2026 (2.ª tanda): Viviendas usa
+       el almacén de la Vitrina —la hoja— de forma TRANSITORIA, con el modelo
+       escrito independiente del almacén para pasarlo a Postgres después. Es
+       la única excepción a «Sheets no se extiende»: va declarada acá, por
+       ítem y con su razón, nunca como una regla que abra la puerta a todos
+       (v1094, v1109). El trinquete la exige escrita, así que no se puede
+       colar una segunda sin decirlo. */
     viviendas: {
       titulo: 'Viviendas · venta y arriendo',
-      backend: 'postgres',
+      backend: 'hoja',
+      transitorio: 'transitorio, salida a postgres',
       archivos: [],
-      tipos: [],
+      /* Tipo y permiso PROPIOS, por decisión de Daniel: comparte el almacén
+         con la vitrina, no su identidad. El texto exacto del tipo lo PROPONE
+         la cabeza y lo confirma la sesión de Viviendas antes de escribir la
+         primera fila; va acá y no en blanco porque un tipo sin registrar es
+         lo que la guarda rechaza, y porque declararlo antes es el orden que
+         este proyecto ya usa para los criterios (v1077). */
+      tipos: ['🏠 Vivienda URBIS', '🏠 Permiso Vivienda URBIS'],
+      tipoPropuesto: true,
       prefijos: [],
       leeDe: [{ modulo: 'empresas', campo: 'analisisUbicacion' }],
       /* La dirección EXACTA es privada por decisión de Daniel: en público va
@@ -243,8 +261,11 @@
          bandera se publica entero el día que alguien lee mal la bandera. */
       comparte: ['ubicacionAproximada', 'tipoInmueble', 'precio'],
       privado: ['direccionExacta', 'contactoPropietario'],
-      nota: 'módulo propio, en Postgres. Todavía no tiene archivos: la entrada existe ' +
-            'para que su reparto esté declarado ANTES de escribir la primera línea.'
+      nota: 'módulo propio en DATOS —tipo de fila y permiso propios— y sin página ni ' +
+            'service worker propios por ahora. Primero venta; el arriendo después con el ' +
+            'mismo modelo. Publica solo Daniel o quien él autorice. El almacén es la hoja ' +
+            'de la vitrina y es transitorio: el modelo se escribe independiente del ' +
+            'almacén para poder pasarlo a Postgres sin reescribirlo.'
     },
 
     politico: {
@@ -260,8 +281,10 @@
          siquiera se declara compartible. */
       privado: ['votante', 'datoSimulado'],
       soloSimulado: true,
-      nota: 'v1 sin datos reales de votantes. Todo dato va rotulado SIMULADO; guardar ' +
-            'datos personales reales no se construye hasta que Daniel lo decida.'
+      enPausa: 'Daniel lo puso en pausa el 23 de octubre de 2026 (2.ª tanda)',
+      nota: 'EN PAUSA. Y cuando vuelva: v1 sin datos reales de votantes, todo dato ' +
+            'rotulado SIMULADO; guardar datos personales reales no se construye hasta que ' +
+            'Daniel lo decida.'
     },
 
     seguridad: {
@@ -280,7 +303,11 @@
       comparte: [],
       privado: [],
       nota: 'no crea tipos: lee los de reportes. Y la v1 es solo mapa y reportes — no ' +
-            'hay botón de pánico hasta que exista convenio real con la Policía o el 123, ' +
+            'hay botón de pánico CON AVISOS: a lo sumo un «Llamar al 123», que es marcar y no ' +
+            'prometer respuesta. La v1 es una pantalla que lee lo que ya existe. No se ' +
+            'construye nada familiar sobre la ubicación hasta que Daniel verifique el ' +
+            'Apps Script y pase la función de db_read abierto. Sin convenio real con la ' +
+            'Policía o el 123 no hay botón, ' +
             'porque un botón que promete respuesta y no la tiene es peor que no tenerlo.'
     }
   };

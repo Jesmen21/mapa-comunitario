@@ -1,4 +1,4 @@
-const URBIS_CACHE = 'urbis-v1164-la-hoja-no-se-extiende-y-las-ocho-decisiones-escritas';
+const URBIS_CACHE = 'urbis-v1165-el-service-worker-que-no-devolvia-respuesta';
 const URBIS_ASSETS = [
   './',
   './index.html',
@@ -218,6 +218,19 @@ self.addEventListener('activate', event => {
   self.clients.claim();
 });
 
+/* La respuesta que se devuelve cuando no hay ni red ni copia guardada.
+   Existe para que `respondWith` reciba SIEMPRE una Response: con `undefined`
+   el service worker lanza un TypeError y el navegador muestra un error de red
+   genérico, que no se parece en nada a su causa. */
+function sinRedNiCache(request) {
+  return new Response(
+    'URBIS no pudo servir esta petición: no hay conexión y tampoco una copia guardada de ' +
+    request.url,
+    { status: 503, statusText: 'Sin red y sin copia guardada',
+      headers: { 'Content-Type': 'text/plain; charset=utf-8' } }
+  );
+}
+
 self.addEventListener('fetch', event => {
   const request = event.request;
   if (request.method !== 'GET') return;
@@ -236,7 +249,9 @@ self.addEventListener('fetch', event => {
           caches.open(URBIS_CACHE).then(cache => cache.put(request, copy)).catch(() => null);
           return response;
         })
-        .catch(() => caches.match(request).then(hit => hit || caches.match('./index.html')))
+        .catch(() => caches.match(request)
+          .then(hit => hit || caches.match('./index.html'))
+          .then(hit => hit || sinRedNiCache(request)))
     );
     return;
   }
@@ -264,7 +279,20 @@ self.addEventListener('fetch', event => {
     return;
   }
 
-  // Assets: network-first con fallback cacheado.
+  /* SIN RED Y SIN CACHÉ SE DEVUELVE UNA RESPUESTA, NO `undefined` (v1165).
+     Lo midieron por su cuenta las sesiones del social y de reportes, cada una
+     sobre un síntoma distinto, y es el mismo defecto: `caches.match` resuelve
+     con `undefined` cuando no hay nada guardado, y `respondWith(undefined)`
+     lanza un TypeError dentro del service worker. Lo que ve quien usa la
+     aplicación no es «no hay conexión»: es un error de red del navegador, con
+     la petición rota y sin explicación, y en la consola un fallo del worker
+     que no se parece a su causa.
+
+     Lo mismo valía para la rama de HTML: si `./index.html` tampoco estaba en
+     el caché, el `||` dejaba pasar `undefined` igual.
+
+     Una respuesta 503 con su texto es la que dice la verdad: la petición no
+     se pudo servir, ni por la red ni por lo guardado. */
   event.respondWith(
     fetch(request)
       .then(response => {
@@ -272,6 +300,6 @@ self.addEventListener('fetch', event => {
         caches.open(URBIS_CACHE).then(cache => cache.put(request, copy)).catch(() => null);
         return response;
       })
-      .catch(() => caches.match(request))
+      .catch(() => caches.match(request).then(hit => hit || sinRedNiCache(request)))
   );
 });

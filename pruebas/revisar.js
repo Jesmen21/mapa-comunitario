@@ -16431,18 +16431,50 @@ console.log('\n  -- la resta del desplazamiento mide la barra ENTERA (v1157) --'
        lista no crece. */
     const EN_LA_HOJA = ['reportes', 'eventos', 'vitrina', 'peticiones',
                         'interaccion', 'social', 'presencia', 'curso'];
-    const nuevosEnHoja = ids.filter((k) => MOD[k].backend === 'hoja' && EN_LA_HOJA.indexOf(k) === -1);
+    /* LA EXCEPCIÓN VA POR ÍTEM Y CON SU RAZÓN ESCRITA, NUNCA POR REGLA
+       (v1094, v1109, v1127). Daniel autorizó el 23 de octubre de 2026, en la
+       segunda tanda, que Viviendas use la hoja de la vitrina de forma
+       transitoria. Una regla que dijera «los módulos de inmuebles pueden»
+       abriría la puerta a todos de una vez; un renglón con nombre y razón hay
+       que pensarlo uno por uno, y se ve en el diff.
+
+       Y la razón no basta con que esté acá: el módulo tiene que declarar su
+       propio `transitorio` en el registro, y los dos textos tienen que
+       coincidir. Una autorización escrita solo en la guarda no la ve quien
+       lee el registro, que es la clase C. */
+    const TRANSITORIOS = { viviendas: 'transitorio, salida a postgres' };
+    const nuevosEnHoja = [], sinDeclarar = [];
+    ids.forEach((k) => {
+      if (MOD[k].backend !== 'hoja' || EN_LA_HOJA.indexOf(k) !== -1) return;
+      if (!TRANSITORIOS[k]) { nuevosEnHoja.push(k); return; }
+      if (String(MOD[k].transitorio || '') !== TRANSITORIOS[k]) {
+        sinDeclarar.push(k + ' (la guarda dice «' + TRANSITORIOS[k] + '» y el registro dice «' +
+                         String(MOD[k].transitorio || '(nada)') + '»)');
+      }
+    });
     const faltan = EN_LA_HOJA.filter((k) => !MOD[k] || MOD[k].backend !== 'hoja');
 
-    comprobar('ningún módulo NUEVO entra a la hoja: Sheets no se extiende',
-      nuevosEnHoja.length === 0,
-      nuevosEnHoja.length === 0
-        ? 'los ' + EN_LA_HOJA.length + ' de siempre y ninguno más. Lo nuevo va a Postgres; ' +
-          'lo compartido no es el almacén, es el registro. NO comprueba que un módulo de ' +
-          'Postgres escriba de verdad en Postgres: eso vive en el repositorio del motor'
-        : 'módulo(s) nuevo(s) declarando la hoja: ' + nuevosEnHoja.join(' · ') +
-          '. La hoja se congeló para datos nuevos el 23 de octubre de 2026; si de verdad ' +
-          'hace falta, se agrega a EN_LA_HOJA con su razón escrita y se ve en el diff');
+    const nTrans = Object.keys(TRANSITORIOS).length;
+    comprobar('ningún módulo NUEVO entra a la hoja salvo los eximidos uno por uno',
+      nuevosEnHoja.length === 0 && sinDeclarar.length === 0,
+      nuevosEnHoja.length === 0 && sinDeclarar.length === 0
+        ? 'los ' + EN_LA_HOJA.length + ' de siempre y ' +
+          (nTrans ? nTrans + ' eximido(s) con su razón: ' +
+            Object.keys(TRANSITORIOS).map((k) => k + ' («' + TRANSITORIOS[k] + '»)').join(' · ')
+            : 'ninguno más') +
+          '. Lo nuevo va a Postgres; lo compartido no es el almacén, es el registro. NO ' +
+          'comprueba que un módulo de Postgres escriba de verdad en Postgres: eso vive en ' +
+          'el repositorio del motor, ni que un transitorio llegue a migrar'
+        : (nuevosEnHoja.length
+            ? 'módulo(s) nuevo(s) declarando la hoja sin exención: ' + nuevosEnHoja.join(' · ') +
+              '. La hoja se congeló para datos nuevos el 23 de octubre de 2026; una exención ' +
+              'la autoriza Daniel, se escribe en TRANSITORIOS con su razón y el módulo la ' +
+              'repite en su campo `transitorio`. '
+            : '') +
+          (sinDeclarar.length
+            ? 'exención escrita en la guarda y no en el registro: ' + sinDeclarar.join(' · ') +
+              '. Quien lee el registro no se enteraría, que es la clase C.'
+            : ''));
 
     /* La guarda de la guarda del trinquete: si alguien MUEVE uno de los ocho
        fuera de la hoja sin decirlo, la lista de arriba se queda midiendo un
@@ -16504,6 +16536,98 @@ console.log('\n  -- la resta del desplazamiento mide la barra ENTERA (v1157) --'
           : 'declaran `soloSimulado` y su nota no lo dice: ' + mudos.join(' · '));
     }
   }
+})();
+
+
+/* NINGÚN `respondWith` PUEDE RESOLVER EN `undefined` (v1165)
+   ==========================================================
+
+   Lo midieron por su cuenta la sesión del social y la de reportes, cada una
+   sobre un síntoma distinto, y era el mismo defecto: `caches.match` resuelve
+   con `undefined` cuando no hay nada guardado, y `respondWith(undefined)`
+   lanza un TypeError DENTRO del service worker. Lo que ve quien usa la
+   aplicación no es «no hay conexión»: es un error de red del navegador, con
+   la petición rota y sin explicación, y en la consola un fallo del worker que
+   no se parece en nada a su causa — la familia de los éxitos aparentes, del
+   lado del fallo que miente sobre sí mismo.
+
+   Se mide POR FORMA y no por el caso: se recorta CADA llamada a
+   `respondWith(` con sus paréntesis balanceados y se exige que el valor que
+   devuelve no pueda ser `undefined`. Dos maneras válidas, y las dos se
+   aceptan: terminar en el ayudante `sinRedNiCache`, o terminar en un `fetch`,
+   que devuelve una Response o rechaza — y un rechazo lo maneja el navegador
+   como lo que es.
+
+   NO comprueba que la 503 tenga un texto útil, ni que el caché se llene bien:
+   comprueba que haya respuesta. */
+(function () {
+  const SW = ['service-worker.js', 'sw-vt.js', 'sw-reportes.js'];
+
+  /* Recorta el argumento de cada `respondWith(` contando paréntesis. Un
+     recorte por distancia o hasta el `;` se parte con el primer literal que
+     traiga un paréntesis adentro (v935). */
+  function llamadas(txt) {
+    const out = [];
+    let i = 0;
+    while ((i = txt.indexOf('respondWith(', i)) !== -1) {
+      let j = i + 'respondWith('.length, prof = 1;
+      while (j < txt.length && prof > 0) {
+        if (txt[j] === '(') prof++;
+        else if (txt[j] === ')') prof--;
+        j++;
+      }
+      out.push(txt.slice(i, j));
+      i = j;
+    }
+    return out;
+  }
+
+  const hallados = [];
+  const malos = [];
+  SW.forEach((f) => {
+    const txt = soloCodigo(leer(f));
+    llamadas(txt).forEach((c, n) => {
+      hallados.push(f + '#' + (n + 1));
+      const cierra = /sinRedNiCache\s*\(/.test(c) || /\bfetch\s*\(\s*(request|req)\s*\)[\s)]*$/.test(c);
+      if (!cierra) malos.push(f + ' · llamada ' + (n + 1));
+    });
+  });
+
+  comprobar('MATERIAL · los service workers interceptan peticiones',
+    hallados.length > 0,
+    hallados.length
+      ? hallados.length + ' llamada(s) a respondWith en ' + SW.length + ' archivos: ' +
+        hallados.join(' · ')
+      : 'ninguna llamada a respondWith: la comprobación de abajo pasaría por no tener ' +
+        'nada delante');
+
+  comprobar('ningún respondWith puede resolver en undefined',
+    hallados.length > 0 && malos.length === 0,
+    malos.length === 0 && hallados.length
+      ? 'las ' + hallados.length + ' cierran con `sinRedNiCache` o con un `fetch`, así que ' +
+        'sin red y sin copia guardada sale una 503 con su texto y no un TypeError del ' +
+        'worker. NO comprueba que el texto de la 503 sea útil: comprueba que haya respuesta'
+      : 'estas pueden entregar undefined: ' + malos.join(' · ') +
+        '. `caches.match` resuelve con undefined cuando no hay copia, y ' +
+        '`respondWith(undefined)` lanza un TypeError que el navegador muestra como un ' +
+        'error de red sin causa visible');
+
+  /* GUARDA DE LA GUARDA: que el ayudante exista de verdad y devuelva una
+     Response. Sin esto, un `sinRedNiCache` borrado dejaría la de arriba
+     buscando un nombre que no está — y buscar un nombre no es comprobar que
+     haga su trabajo (v926). */
+  const conAyudante = ['service-worker.js', 'sw-vt.js'];
+  const rotos = conAyudante.filter((f) => {
+    const t = soloCodigo(leer(f));
+    const m = t.match(/function sinRedNiCache\s*\([^)]*\)\s*\{[\s\S]{0,600}?\n\}/);
+    return !m || !/new Response\s*\(/.test(m[0]) || !/status:\s*503/.test(m[0]);
+  });
+  comprobar('y el ayudante existe y devuelve una Response 503',
+    rotos.length === 0,
+    rotos.length === 0
+      ? 'los dos service workers con caché lo declaran, con `new Response` y status 503'
+      : 'falta o no devuelve una Response 503 en: ' + rotos.join(' · ') +
+        ', así que la comprobación de arriba estaría buscando un nombre sin trabajo detrás');
 })();
 
 /* Las dos cuentas van APARTE porque piden cosas distintas: una fallada hay

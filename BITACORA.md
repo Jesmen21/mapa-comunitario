@@ -31083,3 +31083,103 @@ Viviendas apuntándole.
   listadas en `DECISIONES-DANIEL.md` y son de Daniel.
 * **No fusiona ninguna rama de módulo.** `pendiente` — las nueve tienen que
   traer primero el protocolo y retirar su copia de las ocho reglas.
+
+## v1165 · el service worker que no devolvía respuesta, y diecisiete decisiones más
+
+Daniel mandó una segunda tanda de decisiones. Dos **corrigen** decisiones de
+la primera, y una le asigna trabajo de código a la cabeza.
+
+### El defecto que dos sesiones midieron por separado
+
+`caches.match` resuelve con **`undefined`** cuando no hay nada guardado, y
+`respondWith(undefined)` **lanza un TypeError dentro del service worker**. Lo
+que ve quien usa la aplicación no es «no hay conexión»: es un error de red del
+navegador, con la petición rota y sin explicación, y en la consola un fallo
+del worker que no se parece en nada a su causa. Es la familia de los éxitos
+aparentes del CLAUDE.md, por el lado contrario: **un fallo que miente sobre sí
+mismo.**
+
+Estaba en los dos service workers con caché y en tres sitios:
+
+| Dónde | Qué pasaba |
+|---|---|
+| `service-worker.js`, rama de assets | `.catch(() => caches.match(request))` sin nada detrás |
+| `service-worker.js`, rama de HTML | `hit \|\| caches.match('./index.html')` — si `index.html` tampoco estaba, `undefined` igual |
+| `sw-vt.js` | `.catch(() => hit)`, y `hit` podía ser `undefined` |
+
+La cura es una **Response 503 con su texto**, que es la que dice la verdad: la
+petición no se pudo servir, ni por la red ni por lo guardado.
+
+**La guarda mide POR FORMA y no el caso:** recorta CADA llamada a
+`respondWith(` **contando paréntesis** —un recorte por distancia o hasta el
+`;` se parte con el primer literal que traiga un paréntesis adentro (v935)— y
+exige que el valor no pueda ser `undefined`. Acepta las dos maneras válidas:
+cerrar en el ayudante, o cerrar en un `fetch`, que devuelve Response o
+rechaza. Con su guarda de la guarda: que el ayudante exista y devuelva una
+503, porque buscar un nombre no es comprobar que haga su trabajo (v926).
+
+**Lo que NO se pudo hacer, y va dicho:** vendorizar Leaflet y Chart.js. El
+proxy de este contenedor **niega `unpkg.com` y `cdn.jsdelivr.net`** —medido,
+código 000 en los dos—, así que los archivos no se pueden traer desde acá.
+Queda pendiente con su razón, que es lo contrario de quedar sin hacer y sin
+decirlo.
+
+### La excepción al trinquete, y cómo se hizo que costara
+
+Daniel corrigió la decisión 2 **solo para Viviendas**: usa la hoja de la
+vitrina, transitoriamente. El trinquete de la v1164 mordió en el acto, que es
+la señal de que estaba bien puesto, y la pregunta era cómo abrirlo sin
+abrirlo.
+
+Se abre **por ítem y con su razón escrita, nunca por regla** (v1094, v1109):
+una regla que dijera «los módulos de inmuebles pueden» eximiría a todos de una
+vez; un renglón con nombre y razón hay que pensarlo uno por uno y se ve en el
+diff. Y con una segunda mitad que es la que de verdad la hace honesta: **la
+razón tiene que estar también en el REGISTRO y coincidir palabra por palabra**
+con la de la guarda. Una autorización escrita solo donde nadie la lee es la
+clase C.
+
+Lo que la guarda **no** cubre va dicho al lado: «modelo independiente del
+almacén» es una promesa sobre cómo se escribirá el código, y ninguna
+comprobación la mide hoy.
+
+### Lo demás que ataron las decisiones
+
+`politico` queda `enPausa` con su fecha —una pausa escrita no es lo mismo que
+un módulo que nadie mira (v899)—; el paraguas de `social` cambia de contenido
+—entra el chat, **sale** la orientación comunal, y Patitas queda sin botón de
+donar, en Próximamente y fuera del APK—; `seguridad` precisa que a lo sumo
+lleva un «Llamar al 123», que es marcar y no prometer respuesta; y `viviendas`
+estrena dos tipos propios.
+
+**Y una cosa que la cabeza propuso y NO decidió:** el texto exacto de esos dos
+tipos lo escribió ella para que el registro no quedara vacío, y va marcado
+`tipoPropuesto: true`. La sesión de Viviendas lo confirma antes de escribir la
+primera fila.
+
+**Y una que se negó a resolver sola:** «chat» entra al paraguas de Social, y
+en el registro ya existe `interaccion` —los comentarios de js/12—. Si son lo
+mismo cambia de dueño un tipo, y eso no lo decide la cabeza por una suposición:
+es exactamente el choque que el registro existe para impedir. **No se movió
+nada**, y la pregunta queda escrita.
+
+**Cuatro inyecciones fieles, las cuatro en rojo:** el estado real de la v1164
+—la rama de assets sin fallback—; el ayudante devolviendo 200 en vez de 503;
+la exención de Viviendas escrita en la guarda y no en el registro; y Seguridad
+colándose a la hoja sin exención.
+
+**841 verdes, 2 sin material, 0 fallos** (eran 838).
+
+### Lo que esta versión NO hace
+
+* **No vendoriza Leaflet ni Chart.js.** `pendiente` — el proxy niega los dos
+  CDN, medido. Hace falta que alguien con red los baje al repositorio.
+* **No clasifica las 12 rojas heredadas.** `pendiente` — ninguna sesión pasó
+  la lista, y `correr.js` no corre en este contenedor porque falta
+  `../urbis-motor`. Clasificarlas de memoria sería inventarlas.
+* **No construye nada sobre la ubicación.** `pendiente` — depende de que
+  Daniel verifique el Apps Script y pase la función de `db_read` abierto.
+* **No decide qué es «chat» en el paraguas de Social.** `pendiente` — cambia
+  de dueño un tipo y lo decide Daniel o esa sesión.
+* **No toca la caducidad de los tipos de reportes.** `pendiente` — es de esa
+  sesión; acá solo queda escrito que la matriz es un contrato compartido.
