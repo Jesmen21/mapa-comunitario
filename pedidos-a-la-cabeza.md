@@ -13,9 +13,9 @@ listo para pegar tal cual**, para que no haya que reconstruirlos de un chat.
 > (`claude/laughing-turing-5kftp3`) está en `main` sin un solo commit propio.
 >
 > Lo que está **completo y verificado** abajo es el **#7**, que llegó textual.
-> El **#1** está en borrador, armado con la corrección que Daniel dictó más lo
-> que la cabeza puede medir en su propio archivo — **le falta una lista que
-> solo Pro City puede dar**, y así va marcado.
+> El **#1** tiene sus dos preguntas **contestadas** por Daniel el 30 de
+> octubre, leídas del registro de decisiones de Pro City; **sigue sin
+> aplicarse**, esperando su texto completo.
 >
 > **Los demás están como huecos con nombre, no rellenados.** Escribirlos de
 > memoria sería inventar un pedido y dárselo por recibido, que es peor que no
@@ -28,7 +28,7 @@ listo para pegar tal cual**, para que no haya que reconstruirlos de un chat.
 
 | # | Pedido | ¿Tengo el texto? | Depende de |
 |---|---|---|---|
-| 1 | Registro de módulos: `leeDe` en `viviendas`, entrada `procity` con sus campos privados | **Borrador** — falta la lista de campos | — |
+| 1 | Registro de módulos: entrada `procity` nueva, y `leeDe` en `viviendas` | **Respondido** — falta el texto completo | — |
 | 2 | *(sin texto)* | **No** | ? |
 | 3 | *(sin texto)* | **No** | ? |
 | 4 | *(sin texto)* | **No** | ? |
@@ -37,62 +37,89 @@ listo para pegar tal cual**, para que no haya que reconstruirlos de un chat.
 | 6 | Los dos defectos del módulo viejo | **No** | ? |
 | 7 | `urbis-respaldo-2` con campo, trazos y conteos | **Sí, completo** | **del 1**, si la percepción se declara en el registro |
 
-**La única dependencia que puedo afirmar** es la del 7 con el 1: el respaldo
-tiene que rotular la percepción como PRIVADA, y quién declara qué es privado
-de un módulo es el registro (`js/03h-registro-modulos.js`). Si el 1 nombra
-esos campos, el 7 los lee de ahí en vez de repetir la lista — dos listas de lo
-mismo se separan a la tanda siguiente (clase B). Si el 1 no llega primero, el
-7 se puede hacer igual, declarando la lista en el respaldo y atándola después.
+**La única dependencia que puedo afirmar** es la del 7 con el 1, y con las
+respuestas del 30 de octubre quedó **más chica de lo que parecía**: el
+respaldo del 7 rotula la percepción del módulo VIEJO —`educativo`, donde es
+privada y sigue siéndolo—, mientras que la percepción que `procity` comparte
+es la suya. Así que el 7 **no espera** al 1. Lo que sí sigue valiendo es de
+dónde sale la lista: quien declara qué es privado de un módulo es el registro
+(`js/03h-registro-modulos.js`), y el respaldo la lee de ahí en vez de repetirla
+— dos listas de lo mismo se separan a la tanda siguiente (clase B).
+
+Y queda una pregunta abierta que podría volver a juntarlos, anotada en el 1:
+si `procity` leyera o heredara la percepción del almacén viejo, las dos
+percepciones serían una y habría que decidir cuál manda.
 
 Las demás dependencias **no las puedo marcar**: no sé qué piden el 2, el 3, el
 4, el 5, el del token ni el 6.
 
 ---
 
-## 1 · El registro de módulos · BORRADOR DE LA CABEZA, le falta una lista
+## 1 · El registro de módulos · RESPONDIDO, sin aplicar
 
-> **Esto no es el pedido de Pro City: es lo que la cabeza pudo reconstruir.**
-> Daniel dictó la corrección —«`leeDe` en la entrada `viviendas`; la entrada
-> `procity` lista sus campos privados»— y el resto sale de leer el archivo.
-> **Pro City confirma o corrige la lista de campos privados antes de que esto
-> se aplique.**
+Daniel contestó las dos preguntas el 30 de octubre, leyéndolas del registro de
+decisiones de Pro City. **No se aplicó nada**: el texto completo del pedido
+llega aparte, y hasta entonces esto queda escrito y quieto.
 
-### Lo que está medido hoy en `js/03h-registro-modulos.js`
+### Las respuestas, tal como llegaron
 
-* La entrada **`viviendas`** ya declara
-  `leeDe: [{ modulo: 'empresas', campo: 'analisisUbicacion' }]`, y la guarda
-  comprueba que esa puerta resuelva. Si el pedido es **otro** `leeDe` —otro
-  módulo u otro campo—, hay que decir cuál: la guarda rechaza un `leeDe` que
-  apunte a un campo que el otro módulo no comparte.
-* **No existe ninguna entrada `procity`.** La que hay es **`educativo`**, con
-  `backend: 'local'`, declarando que todavía no escribe en la capa (sus fichas
-  viven en `pcr_fichas_v1`) y con este reparto, que decidió Daniel el 23 de
-  octubre:
-  * comparte: `alturaPorManzana`, `perfilVial`, `anden`, `rutasYFrecuencia`,
-    `equipamientos`, `actividadPrimerPiso`
-  * privado: `geometriaIntencionDiseno`, `panelPercepcion`,
-    `datoNoConfirmado`, `borrador`
+1. **`procity` es un módulo NUEVO**, distinto de `educativo`. **`educativo`
+   sigue vivo: no se toca ni se apaga.**
+2. **Entrada `procity`:** `backend: 'postgres'`, **sin tipos propios**.
+   * **Comparte:** el punto y sus campos, la percepción rotulada
+     «percepción», y las medidas de campo.
+   * **Privado:** sector, lote, geometrías, estructura de las plantillas,
+     resultado del post-sector, lámina y rasters.
+3. **Entrada `viviendas`:** `leeDe` con `{ modulo: 'procity', campo:
+   'percepcion' }` y `{ modulo: 'procity', campo: 'medidas' }`.
 
-### Las dos preguntas que hay que contestar para poder aplicarlo
+### Lo que eso resuelve, cotejado contra el registro
 
-1. **¿`procity` es un módulo NUEVO, o es el nombre correcto de `educativo`?**
-   Si es lo segundo, es un renombrado y sale barato hoy: el espacio con nombre
-   no tiene todavía un solo lector, así que ningún dato depende de ese id —
-   mañana sí costaría. Si es un módulo nuevo, hay que repartir los tipos entre
-   los dos, porque un tipo tiene un dueño y uno solo.
-2. **¿Qué campos privados lista `procity`?** Si son los cuatro de `educativo`,
-   se dice y se cierra. Si son otros, van con su nombre.
+* **Dos módulos y no un renombrado**, así que no hay nada que mudar: el
+  reparto de `educativo` del 23 de octubre se queda como está, con su
+  `backend: 'local'` y sus cuatro campos privados.
+* **Sin tipos propios y en Postgres**, así que `procity` no toca la hoja: el
+  trinquete sigue en los ocho de siempre y no hace falta ninguna exención.
+  Un módulo sin tipos es una forma que el registro ya admite —`seguridad` es
+  igual—, y la guarda del dueño único no tiene nada que repartir.
+* **El `leeDe` resuelve**, que es lo que la guarda comprueba: `percepcion` y
+  `medidas` están en el `comparte` de `procity`. Si alguno de los dos se
+  moviera a privado, la guarda se pondría roja y diría cuál.
 
-### Lo que la cabeza hace en cuanto tenga esas dos respuestas
+### DOS COSAS QUE LA CABEZA NO RESUELVE, y hay que mirar antes de aplicar
 
-* la entrada en el registro, con `backend`, `tipos`, `comparte`, `privado` y
-  su nota;
-* la guarda ya existente las vigila sin tocarla: un tipo con dos dueños, un
-  tipo escrito sin registrar, un `leeDe` que no resuelve y una lectura de lo
-  privado de otro módulo ya salen en rojo;
-* y la inyección fiel de cada cosa nueva, como el resto del bloque.
+**La primera, y es la que importa: la percepción cambia de lado.** En
+`educativo`, `panelPercepcion` es **PRIVADO** por decisión del 23 de octubre,
+y la razón quedó escrita: un panel de percepción es *lo que alguien sintió*, y
+leído desde otro módulo se vería como lo mapeado. En `procity` la percepción
+va **COMPARTIDA**, y Viviendas la va a leer.
 
----
+No es necesariamente una contradicción —son dos módulos y Daniel puede decidir
+distinto en cada uno—, pero **el argumento que hizo privada a una aplica igual
+a la otra**, así que vale decidirlo mirando y no de paso. Lo que la cabeza
+puede ofrecer sin cambiar la decisión: que el campo compartido viaje **con su
+rótulo pegado**, de modo que quien lo lea desde Viviendas no pueda confundir
+una percepción con una medición. Eso es la regla de que el aviso viaja con la
+cifra y no con la pantalla, y no le quita a nadie el acceso.
+
+**La segunda: cómo se cruza esto con el pedido 7.** El 7 pide que la
+percepción quede **rotulada PRIVADA en el archivo de respaldo**. La lectura de
+la cabeza es que **no choca**, porque son dos percepciones distintas: la del
+respaldo es la del **módulo VIEJO** —`pcr_campo_v1`, los tres paneles de
+`educativo`, que son privados— y la que `procity` comparte es la **suya**, de
+un módulo nuevo que guarda en Postgres. **Es una lectura, no un hecho**: si
+`procity` va a leer o heredar la percepción del almacén viejo, entonces sí
+chocan y hay que decidir cuál manda. **Confírmelo con el texto completo.**
+
+### Lo que falta para poder aplicarlo, y es poco
+
+Los nombres de los otros campos **llegaron en prosa y el registro necesita
+claves**: «el punto y sus campos», «sector», «lote», «geometrías», «estructura
+de las plantillas», «resultado del post-sector», «lámina», «rasters». Los dos
+que importan hoy ya vienen como clave —`percepcion` y `medidas`, porque el
+`leeDe` los nombra— así que el resto se puede cerrar con el texto completo sin
+bloquear nada. La cabeza **no los va a inventar**: un nombre de campo escrito
+de memoria es la falta que este proyecto tiene medida desde la v863.
 
 ## 2 · *(sin texto)*
 
