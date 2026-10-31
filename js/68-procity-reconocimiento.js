@@ -4823,8 +4823,62 @@
     if (!sp || !sp.horas || !sp.horas.length) return '';
     var util = sp.horas.filter(function (h) { return !h.bajo; });
     if (!util.length) return '';
-    // El mismo dibujo que en el pliego: una medición se presenta igual en
-    // los dos documentos, o el informe archivado queda diciendo menos.
+
+    /* SIN LA NORMA PUESTA NO SE IMPRIME EL VOLUMEN (v1167).
+       ─────────────────────────────────────────────────────────────────
+       Lo encontró Pro City y es la clase A de la v903 otra vez, a medio
+       arreglar: `sombraDelProyecto` CALCULA el discriminante y lo expone
+       —`normaPuesta: faltanIndices.length === 0`—, la LÁMINA lo mira en tres
+       sitios, y este informe no lo miraba. Así que con los índices de ejemplo
+       la lámina declaraba un vacío y el informe imprimía «Volumen que permite
+       la norma» con la cifra del ejemplo, como si alguien hubiera ido a buscar
+       el POT.
+
+       Y el comentario que estaba acá —«el mismo dibujo que en el pliego: una
+       medición se presenta igual en los dos documentos»— AFIRMABA la paridad
+       que el código rompía. Un comentario no es una guarda (v926), y este
+       además decía lo contrario de lo que pasaba.
+
+       Tres cosas que se copian de la lámina y no se inventan acá:
+
+       · **el dibujo también se cae.** La lámina lo dice con sus palabras:
+         dejar la sombra mientras la caja se vuelve un vacío sería desmentir
+         el aviso con la figura de al lado — una sombra dibujada se mira y se
+         cree, más que el párrafo que la acompaña.
+       · **el `<h2>` se queda.** Una sección que desaparece se lee como que no
+         había nada que decir, y lo que hay que decir es que falta un
+         documento. Es la regla de las dos redacciones (v970): la de cero
+         también se escribe.
+       · **y se dice CUÁL falta**, no «faltan índices»: `faltanIndices` ya
+         trae los nombres, igual que en la lámina.
+
+       Falla CERRADO con la marca ausente, no solo con la marca en falso
+       (v880). Hoy no puede pasar —la ficha guarda `indicesPuestos` y la
+       sombra se recalcula, así que `normaPuesta` siempre viene—, pero el día
+       que alguien pase un `sombraProyecto` guardado, no imprimir un volumen
+       que sí estaba autorizado es una pérdida; imprimir uno que nadie
+       autorizó es una afirmación falsa sobre el POT de un predio real. */
+    if (!sp.normaPuesta) {
+      var faltan = (sp.faltanIndices && sp.faltanIndices.length)
+        ? (sp.faltanIndices.length === 3
+            ? 'los tres siguen en el ejemplo con el que llega la herramienta'
+            : 'todavía falta ' + sp.faltanIndices.join(' y '))
+        : 'no consta que se hayan escrito';
+      return '<h2>La sombra que arroja el proyecto</h2>' +
+        '<p class="pie"><b>Sin dato oficial disponible: no se imprime el volumen.</b> ' +
+        'Haría falta los índices de ocupación y construcción y la altura máxima del predio ' +
+        '—la ficha normativa del POT, o un concepto de norma urbanística de la curaduría ' +
+        'urbana del municipio; donde no hay curaduría, la Secretaría de Planeación—. Sin los ' +
+        'tres no hay volumen permitido, y ' + faltan + '. Mientras llega sirve la sombra de lo ' +
+        'CONSTRUIDO hoy, en la banda ambiental: sale de la altura que de verdad se repite en el ' +
+        'sector, y es una cota medida de lo que hay y NO de lo que la norma deja levantar. Con ' +
+        'los tres índices escritos en «Qué cabe en el lote» esta sección vuelve sola, con la ' +
+        'sombra hora por hora y los vecinos que toca.</p>';
+    }
+
+    // Con la norma puesta, el mismo dibujo que en el pliego: una medición se
+    // presenta igual en los dos documentos, o el informe archivado queda
+    // diciendo menos.
     return '<h2>La sombra que arroja el proyecto</h2>' + sombraHorasDibujada(sp) + '<table>' +
       '<tr><td>Volumen que permite la norma</td><td class="n">' + sp.pisos + ' pisos · ' +
         sp.alturaM + ' m</td></tr>' +

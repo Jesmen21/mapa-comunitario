@@ -31230,3 +31230,98 @@ agrega guardas, retira una excepción.
   cabeza y los confirma esa sesión; con el almacén en Postgres habría que
   revisar además si el nombre con emoji sigue teniendo sentido fuera de la
   hoja.
+
+## v1167 · el informe no afirma el volumen de la norma sin la norma
+
+Hallazgo del módulo educativo, confirmado por la cabeza leyendo el código. Es
+**la clase A de la v903 a medio arreglar**, y llevaba desde entonces.
+
+### El defecto
+
+`sombraDelProyecto` **calcula el discriminante y lo expone**:
+`normaPuesta: faltanIndices.length === 0` (js/68:26484).
+
+| Superficie | ¿Lo miraba? |
+|---|---|
+| La lámina | **Sí**, en tres sitios: `if (spM && spM.normaPuesta && …)`, `if (!sp.normaPuesta)` y la caja que pasa a `caja-vacio` |
+| El informe | **No**, en ninguno |
+
+Así que con los índices de ejemplo —los que trae la herramienta— la lámina
+declaraba un vacío con su trámite, y el informe imprimía **«Volumen que
+permite la norma»** con la cifra del ejemplo, **como si alguien hubiera ido a
+buscar el POT de ese predio**. Dos documentos del mismo análisis diciendo
+cosas distintas sobre un dato que decide un proyecto.
+
+**Y el remate, que es lo que lo hizo invisible:** el comentario de esa misma
+función decía *«El mismo dibujo que en el pliego: una medición se presenta
+igual en los dos documentos, o el informe archivado queda diciendo menos»*.
+**El comentario AFIRMABA la paridad que el código rompía.** Un comentario no
+es una guarda (v926); éste además decía lo contrario de lo que pasaba.
+
+### El arreglo, con tres cosas copiadas de la lámina y no inventadas
+
+* **el dibujo también se cae.** La lámina lo tiene escrito: dejar la sombra
+  mientras la caja se vuelve un vacío sería desmentir el aviso con la figura
+  de al lado — una sombra dibujada se mira y se cree más que el párrafo;
+* **el `<h2>` se queda.** Una sección que desaparece se lee como que no había
+  nada que decir, y lo que hay que decir es que falta un documento. Las dos
+  redacciones se escriben (v970);
+* **se dice CUÁL falta**, con `faltanIndices`, igual que la lámina.
+
+Y **falla cerrado con la marca AUSENTE y no solo en falso** (v880). Hoy no
+puede pasar —la ficha guarda `indicesPuestos` y la sombra se recalcula, así
+que `normaPuesta` siempre viene—, pero el día que alguien pase un
+`sombraProyecto` guardado: no imprimir un volumen autorizado es una pérdida;
+imprimir uno que nadie autorizó es una afirmación falsa sobre el POT de un
+predio real.
+
+### La guarda persigue la CLASE, y su alcance va declarado
+
+**Toda función que afirme el volumen que permite la norma tiene que ramificar
+sobre `normaPuesta`.** Medido antes de escribirla: son **dos y ninguna más**,
+así que no hay falsos positivos que excusar.
+
+Dos cosas que la hicieron morder de verdad, y las dos las encontró una
+inyección y no la lectura:
+
+1. **Se lee sobre `soloCodigo`**, y acá no es formalidad: el arreglo vino con
+   un comentario que nombra `normaPuesta` muchas veces. Una guarda que leyera
+   comentarios habría pasado en verde con la comprobación borrada — el
+   defecto que vigila.
+2. **No basta con que la palabra ESTÉ: tiene que RAMIFICAR.** La primera
+   versión buscaba el nombre suelto, y cambiar `if (!sp.normaPuesta)` por
+   `if (false)` la dejaba verde. Ahora se exige el nombre en posición de
+   condición.
+
+**Y lo que NO cubre, medido y dicho en el detalle del verde:** su alcance es
+POR FUNCIÓN. En `sombraProyectoImpresa` —treinta líneas, una puerta— basta.
+En `laminaImprimible` **no**: tiene tres puertas y miles de líneas, y una
+inyección que le quitó dos **se quedó VERDE por la tercera**. Cuando una
+inyección fiel no consigue poner algo en rojo, lo que falta no es la
+inyección: es lo que la aserción mide (v1029) — y acá lo que falta no se
+puede medir leyendo, pide componer el papel.
+
+**Tres inyecciones, dos en rojo y una verde que se declara:** el estado fiel
+de la v1166 (sin la comprobación, con el comentario intacto) → ROJO; la
+comprobación desactivada con `if (false)` → ROJO; la lámina sin dos de sus
+tres puertas → VERDE, y por eso el alcance queda escrito.
+
+Y una del método: la primera vez que intenté la segunda inyección **el parche
+no entró** —el ancla `if (!sp.normaPuesta) {` no era única, está en el informe
+y en la lámina— y la corrida siguiente dio un verde que no medía nada. Lo
+delató el `AssertionError` impreso encima. Es la regla de `CLAUDE.md` sobre el
+parche por anclas, cobrándose una vez más: la confirmación se comprueba antes
+de creerle a la corrida.
+
+**843 verdes, 2 sin material, 0 fallos** (eran 842).
+
+### Lo que esta versión NO hace
+
+* **No arregla el 6.2** —si la caja «Qué cabe» distingue los índices de
+  ejemplo de los escritos—. `pendiente` — no se resuelve leyendo: el
+  discriminante SÍ llega a dos de los cálculos que se encontraron, así que la
+  afirmación puede ser falsa. Lo decide componer la lámina y el informe con
+  los índices de ejemplo y leerlos.
+* **No toca la lámina.** `pendiente` — sus tres puertas están bien; lo que
+  falta es una comprobación con mejor granularidad que la de función, y eso
+  es el papel.

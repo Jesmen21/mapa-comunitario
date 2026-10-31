@@ -16634,6 +16634,87 @@ console.log('\n  -- la resta del desplazamiento mide la barra ENTERA (v1157) --'
         ', así que la comprobación de arriba estaría buscando un nombre sin trabajo detrás');
 })();
 
+
+/* EL VOLUMEN DE LA NORMA NO SE IMPRIME SIN LA NORMA (v1167)
+   =========================================================
+
+   Lo encontró Pro City y es la clase A de la v903 a medio arreglar.
+   `sombraDelProyecto` calcula el discriminante y lo expone —`normaPuesta`—;
+   la LÁMINA lo miraba en tres sitios y el INFORME no lo miraba en ninguno,
+   así que con los índices de ejemplo la lámina declaraba un vacío y el
+   informe imprimía «Volumen que permite la norma» con la cifra del ejemplo,
+   como si alguien hubiera ido a buscar el POT del predio.
+
+   Se persigue la CLASE y no el caso (v874): **toda función que afirme el
+   volumen que permite la norma tiene que mirar `normaPuesta`.** Medido antes
+   de escribirla, son DOS y ninguna más —`sombraProyectoImpresa` y
+   `laminaImprimible`—, así que no hay falsos positivos que excusar.
+
+   Se lee sobre `soloCodigo`, y acá eso no es una formalidad: el arreglo vino
+   con un comentario largo que nombra `normaPuesta` muchas veces. Si la guarda
+   leyera los comentarios, pasaría en verde con la comprobación borrada
+   (v926) — que es exactamente el defecto que vigila.
+
+   NO comprueba que el texto del vacío sea bueno ni que diga el trámite: eso
+   lo dice el papel. Comprueba que el volumen no se afirme a ciegas.
+
+   Y UNA SEGUNDA COSA QUE NO CUBRE, medida y no supuesta: su alcance es POR
+   FUNCIÓN. En `sombraProyectoImpresa`, que son treinta líneas y una sola
+   puerta, eso basta — dos inyecciones lo demuestran: quitarle la
+   comprobación la pone roja, y desactivarla con `if (false)` dejando la
+   palabra escrita también. En `laminaImprimible` NO basta: tiene tres
+   puertas y miles de líneas, y una inyección que le quitó dos se quedó
+   VERDE por la tercera. Cuando una inyección fiel no consigue poner algo en
+   rojo, lo que falta no es la inyección — es lo que la aserción mide
+   (v1029), y acá lo que falta no se puede medir leyendo: pide componer el
+   papel. Queda dicho en el detalle del verde, donde se lee. */
+(function () {
+  const AFIRMA = 'que permite la norma';
+  /* NO basta con que la palabra ESTÉ: tiene que RAMIFICAR sobre ella. Lo
+     cazó una inyección: cambiar `if (!sp.normaPuesta)` por `if (false)` deja
+     la palabra en el comentario y en el resto de la función, así que una
+     guarda que buscara el nombre suelto se habría quedado en verde con la
+     comprobación desactivada — una guarda que no puede fallar es un verde
+     (v878). Se exige el nombre en posición de condición: negado, en una
+     conjunción o dentro de un paréntesis de control. */
+  const MIRA = /[!&|(]\s*[A-Za-z_$][\w$]*\.normaPuesta/;
+  const codigo = soloCodigo(leer('js/68-procity-reconocimiento.js'));
+
+  /* Se parte por la declaración de función de nivel de módulo, que es como
+     js/68 las escribe. Un recorte por distancia se cortaría por el primer
+     literal con un paréntesis adentro (v935). */
+  const trozos = codigo.split(/\n  function /).map(function (t, i) {
+    return { nombre: i === 0 ? '(cabecera)' : String(t.split(/[(\s]/)[0] || '?'), cuerpo: t };
+  });
+
+  const afirman = trozos.filter(function (t) { return t.cuerpo.indexOf(AFIRMA) !== -1; });
+  const ciegas = afirman.filter(function (t) { return !MIRA.test(t.cuerpo); });
+
+  comprobar('MATERIAL · alguna superficie afirma el volumen que permite la norma',
+    afirman.length > 0,
+    afirman.length
+      ? afirman.length + ' función(es) lo afirman: ' +
+        afirman.map(function (t) { return t.nombre; }).join(' · ')
+      : 'ninguna lo afirma, así que la comprobación de abajo pasaría por no tener nada ' +
+        'delante — y el defecto que vigila es justamente afirmarlo');
+
+  comprobar('ninguna superficie afirma el volumen de la norma sin mirar `normaPuesta`',
+    afirman.length > 0 && ciegas.length === 0,
+    ciegas.length === 0 && afirman.length
+      ? 'las ' + afirman.length + ' miran el discriminante: ' +
+        afirman.map(function (t) { return t.nombre; }).join(' · ') +
+        '. Leído sobre el CÓDIGO y no sobre los comentarios, y exigiendo el discriminante en ' +
+        'posición de CONDICIÓN y no solo nombrado. SU ALCANCE ES POR FUNCIÓN, y eso lo hace ' +
+        'fuerte en `sombraProyectoImpresa` —que es corta, y dos inyecciones lo demuestran— y ' +
+        'FLOJO en `laminaImprimible`, que tiene tres puertas y miles de líneas: una inyección ' +
+        'que le quitó dos se quedó VERDE por la tercera. Ahí la comprobación efectiva es ' +
+        'componer el papel y leerlo, no esta guarda'
+      : 'afirman el volumen sin mirar `normaPuesta`: ' +
+        ciegas.map(function (t) { return t.nombre; }).join(' · ') +
+        '. Con los índices de ejemplo eso imprime la cifra del ejemplo como si fuera el POT ' +
+        'del predio');
+})();
+
 /* Las dos cuentas van APARTE porque piden cosas distintas: una fallada hay
    que arreglarla, una sin material hay que mirarla —o se quedó sin él porque
    el registro mejoró, o porque la función dejó de ver lo que medía—. Sumarlas
