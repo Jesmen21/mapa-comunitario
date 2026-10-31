@@ -31563,3 +31563,71 @@ parte de lo que mide no está leyendo el papel: está leyéndose a sí mismo.**
   silencio.
 * **No toca el formato de la ficha.** `cerrado en v1169` — las fichas del v2
   son las mismas que las del v1, byte a byte, y por eso pasan tal cual.
+
+## v1169b · 6.2 medido en el papel: el informe imprime otros números que la lámina
+
+**Esta tanda no arregla nada**: se midió y se pregunta, que es lo que el pedido
+pedía («verificar antes de arreglar»). Lo que sigue salió de **componer** las
+dos superficies y **leerlas**, no de leer el código.
+
+### El reporte decía «no distingue». Es peor que eso
+
+Con el lote de prueba y **ningún índice escrito a mano** —`deEjemplo: true`,
+`0 de 6` confirmados, y `faltan` nombra los seis—, el discriminante **está
+calculado y expuesto** por `URBIS_QUE_CABE.calcular`: `deEjemplo`,
+`confirmados`, `delPot` y `faltan`.
+
+**El texto plano sí lo dice**, y hay que reconocerlo porque acota el hallazgo:
+`comoTexto` titula «QUÉ CABE EN EL LOTE — CUENTA DE EJEMPLO» y abre con tres
+renglones en mayúsculas. **Las dos superficies de HTML no leen ninguno de los
+cuatro campos.** Y no se callan: afirman lo contrario.
+
+* **El informe**, en negrita y arriba: «Los índices de esta cuenta **los puso a
+  mano quien hizo el informe** y salen del POT del municipio.» Y al pie otra
+  vez, desde `avisos`: «Los índices **los puso usted**…». Dos veces falso en la
+  misma hoja.
+* **La lámina**: «Los índices **los puso quien hizo la lámina** y salen del
+  POT…».
+
+Es la clase C con un agravante: no es un dato que no llega, es la **afirmación
+contraria** impresa en su lugar. El texto está escrito para el caso confirmado
+y se imprime en los dos.
+
+### Y una prueba decisiva que no estaba en el pedido
+
+Misma ficha, mismo instante, con sus **propios** índices (IO 0,42) y los seis
+marcados a mano. Las dos superficies imprimen **números distintos**:
+
+| | ocupación | huella | construible | viviendas | personas |
+|---|---|---|---|---|---|
+| la lámina (pasa `f.indices`) | 0,42 | 521 m² | 1.612 m² | 26 | 91 |
+| **el informe** (no los pasa) | **0,6** | **744 m²** | **2.480 m²** | **41** | **144** |
+
+El informe de una ficha archivada imprime **los índices de EJEMPLO** aunque la
+ficha traiga los suyos, porque su camino nunca los pasa: `queCabeImpreso(lote,
+o.indices)` recibe `undefined` y cae en `S.indices || Q.porDefecto()`. **54 % de
+diferencia en el área construible, y 144 personas contra 91**, en la hoja con la
+que se aprueba un proyecto.
+
+**Y la fuente se pierde igual.** Con `indicesFuente` escrito en la ficha —POT de
+Cúcuta, Acuerdo 089, 2011, Consolidación 2— **las dos** siguen imprimiendo
+«Estos índices se escribieron a mano y **nadie anotó de dónde salieron**»:
+ninguno de los dos caminos pasa ese campo tampoco, y cae en `S.indicesFuente`.
+
+**Lo que la ficha SÍ guarda**, con su comentario escrito: `indicesPuestos`
+(js/68:2575) e `indicesFuente`. El defecto está entero en los dos caminos de
+reimpresión, no en el guardado. El propio comentario del camino de la lámina
+dice tres renglones antes que una ficha archivada no debe salir con el estado
+del sector de hoy — y sale.
+
+### Lo que esta versión NO hace
+
+* **No arregla ninguno de los cuatro.** `pendiente` — se midió y se pregunta
+  (regla 8). El arreglo son campos que faltan por pasar en dos sitios, más leer
+  `deEjemplo` en las dos superficies, y toca lo que se imprime en una hoja de
+  aprobación: no lo decide la sesión sola.
+* **No mide la contradicción del cierre de la lámina.** `pendiente` — el cierre
+  dice «Norma urbana sin dato oficial: lo que cabe está calculado **sin índices
+  ni aislamientos**» con la caja de arriba mostrando ocupación 0,42 y
+  aislamientos 5/2/4. Es un tercer texto que no concuerda con los otros dos, y
+  si se toca el conjunto hay que leerlo entero otra vez.
