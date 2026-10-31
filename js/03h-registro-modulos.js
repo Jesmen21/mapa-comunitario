@@ -183,6 +183,19 @@
     educativo: {
       titulo: 'Pliego educativo (todavía no escribe en la capa)',
       backend: 'local',
+      /* LA ATADURA VA COMO DATO Y NO COMO COMENTARIO (v1168).
+         `soloCodigo()` borra los comentarios, así que una advertencia escrita
+         ahí no la vigila nadie (v926). Y hace falta porque «procity» ya
+         nombra TRES cosas en el código viejo —los archivos `procity-*` y las
+         claves `pcr_*` de este módulo, el subconjunto de categorías de
+         `reportes`, y el global que lo enciende—: un módulo nuevo llamado
+         igual sería el cuarto significado. */
+      noConfundirCon: {
+        modulo: 'campus',
+        porque: 'los archivos de ESTE módulo se llaman `procity-*` por historia ' +
+                '—js/68-procity-reconocimiento.js es suyo, y «Pro City» es su nombre ' +
+                'público desde el principio—. No es el módulo nuevo, y sigue vivo.'
+      },
       archivos: ['js/68-procity-reconocimiento.js', 'js/64-analisis-edu.js', 'js/65-analisis-edu-ui.js'],
       tipos: [],
       prefijos: [],
@@ -201,6 +214,43 @@
                 'datoNoConfirmado', 'borrador'],
       nota: 'sus fichas viven hoy en pcr_fichas_v1 (localStorage). Este renglón ' +
             'declara el reparto para cuando escriba, no un reparto vigente.'
+    },
+
+    /* EL MÓDULO NUEVO. Su id es `campus` y NO `procity`, por la razón que la
+       nota de `educativo` declara arriba. Lo único de este producto que entra
+       al repositorio público es esta entrada, porque la capa compartida la
+       exige: un módulo que no declara su reparto no puede ser leído por otro
+       sin que la guarda lo rechace.
+
+       Las siete claves de lo privado se derivaron de la lista en prosa que
+       llegó —sector, lote, geometrías, estructura de las plantillas,
+       resultado del post-sector, lámina y rasters— y van 1:1 con ella. Se
+       confirman con su sesión antes de que las lea algún código. */
+    campus: {
+      titulo: 'Campus · el producto nuevo',
+      backend: 'postgres',
+      noConfundirCon: {
+        modulo: 'educativo',
+        porque: 'los archivos `procity-*`, las claves `pcr_*` y las clases `.pcr-` son ' +
+                'del módulo VIEJO, que sigue vivo. Este no es dueño de ninguno.'
+      },
+      /* Y lo que la nota promete, en forma de PREFIJO para que una guarda
+         pueda comprobarlo en vez de confiar en la frase. */
+      noPosee: { archivos: 'procity-', claves: 'pcr_', clases: '.pcr-' },
+      archivos: [],
+      /* Sin tipos propios: no escribe en la hoja. Va a Postgres, así que el
+         trinquete de «Sheets no se extiende» no tiene nada que decir de él. */
+      tipos: [],
+      prefijos: [],
+      /* UN SOLO CAMPO `punto` y no siete: es la fila que viaja a la capa
+         compartida, con su tipo, ubicación, precisión, método, fecha, autor
+         público y sello adentro. Decisión de Daniel del 31 de octubre; la
+         granularidad importa porque `leeDe` autoriza POR CAMPO. */
+      comparte: ['punto', 'percepcion', 'medidas'],
+      privado: ['sector', 'lote', 'geometrias', 'estructuraPlantillas',
+                'resultadoPostSector', 'lamina', 'rasters'],
+      nota: 'de este producto solo entra al repositorio público esta entrada. Su nombre ' +
+            'comercial, su subdominio y el esquema de su propia base no se tocan acá.'
     },
 
     /* ------------------------------------------------------------------
@@ -253,7 +303,9 @@
       tipos: ['🏠 Vivienda URBIS', '🏠 Permiso Vivienda URBIS'],
       tipoPropuesto: true,
       prefijos: [],
-      leeDe: [{ modulo: 'empresas', campo: 'analisisUbicacion' }],
+      leeDe: [{ modulo: 'empresas', campo: 'analisisUbicacion' },
+               { modulo: 'campus', campo: 'percepcion' },
+               { modulo: 'campus', campo: 'medidas' }],
       /* La dirección EXACTA es privada por decisión de Daniel: en público va
          la cuadra o el barrio, y la exacta solo para él o tras contacto con el
          interesado. Son DOS campos y no uno con una bandera: un campo con
@@ -376,13 +428,44 @@
       }
       return '';
     },
-    /* ¿Puede `quienLee` leer `campo` de `modulo`? Un módulo siempre puede
-       leerse a sí mismo. */
+    /* ¿Puede `quienLee` leer `campo` de `modulo`?
+       ─────────────────────────────────────────────────────────────────
+       HASTA LA v1167 ESTO NO MIRABA `leeDe` (lo encontró el módulo nuevo):
+       devolvía verdadero para cualquier módulo siempre que el campo no fuera
+       privado. Es decir, `comparte` significaba «lo lee quien quiera» y el
+       `leeDe` era **decorativo para el permiso** — se usaba solo para
+       comprobar que la puerta resolviera, nunca para autorizar.
+
+       Ahora `compartir` y `autorizar` son dos cosas: un campo en `comparte`
+       es un campo que su dueño ESTÁ DISPUESTO a dar, y `leeDe` es a quién se
+       le dio. Las dos hacen falta.
+
+       LA REGLA PARA UN LECTOR FUTURO, que es lo que evita el desconcierto:
+       si su módulo necesita un campo de otro, **declara su `leeDe`** en su
+       propia entrada —nunca en la del dueño (v1168)— y se lo pide a la
+       cabeza, que es quien toca este archivo. Mientras no esté declarado,
+       esta función dice NO, y eso no es un defecto: es la diferencia entre
+       un campo que se puede compartir y uno que se compartió con alguien.
+
+       Se cambió cuando no costaba nada, y eso fue medido: 3 `leeDe`
+       declarados y CERO llamadas a `URBIS_CAMPOS.leer` en los 92 archivos de
+       `js/`. El día que haya lectores de verdad, cada uno sin su `leeDe` se
+       rompe — y entonces el cambio ya no es gratis. */
     puedeLeer: function (quienLee, modulo, campo) {
-      if (quienLee === modulo) return true;
-      var m = MODULOS[modulo];
-      if (!m) return false;
-      return (m.privado || []).indexOf(String(campo)) === -1;
+      if (quienLee === modulo) return true;          // a sí mismo, entero
+      var m = MODULOS[modulo], yo = MODULOS[quienLee];
+      if (!m || !yo) return false;                   // un módulo que no existe no lee
+      var c = String(campo);
+      if ((m.privado || []).indexOf(c) !== -1) return false;   // lo privado, nunca
+      /* Y lo compartido, solo a quien lo declaró. Que el campo esté en
+         `comparte` se comprueba también: un `leeDe` que apunte a un campo
+         que el dueño no comparte es una puerta que no abre, y la guarda del
+         registro ya lo rechaza — acá se respeta igual, para que las dos
+         digan lo mismo. */
+      if ((m.comparte || []).indexOf(c) === -1) return false;
+      return (yo.leeDe || []).some(function (r) {
+        return r && r.modulo === modulo && r.campo === c;
+      });
     }
   };
 })();

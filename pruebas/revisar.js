@@ -16268,17 +16268,36 @@ console.log('\n  -- la resta del desplazamiento mide la barra ENTERA (v1157) --'
 
     /* La rama CON material se mide contra un caso FABRICADO y no contra el
        repositorio (v970): medirla contra el repositorio sería volver a medir
-       el número, y hoy ese número es cero. */
-    const fabricado = API.puedeLeer('reportes', 'educativo', 'borrador') === false &&
-                      API.puedeLeer('reportes', 'educativo', 'anden') === true &&
-                      API.puedeLeer('educativo', 'educativo', 'borrador') === true;
-    comprobar('el reparto distingue lo compartido de lo privado (caso fabricado)',
-      fabricado,
-      fabricado
-        ? 'otro módulo NO puede leer educativo.borrador, SÍ puede leer educativo.anden, y el ' +
-          'educativo se lee a sí mismo entero'
-        : 'la función que decide quién lee qué no separa los dos casos, así que la ' +
-          'comprobación de abajo no distinguiría una invasión de una lectura legítima');
+       el número, y hoy ese número es cero.
+
+       SON CUATRO PROPIEDADES Y NO TRES DESDE LA v1168, y la que se agregó es
+       la que importa: hasta entonces `puedeLeer` no miraba `leeDe`, así que
+       un campo en `comparte` lo leía cualquiera y `comparte` significaba «lo
+       lee quien quiera». El caso fabricado viejo pasaba con eso —afirmaba
+       que `reportes` SÍ podía leer `educativo.anden`, que era cierto y era
+       el defecto—. Se hizo más preciso y no más laxo: una prueba que falla
+       por un cambio legítimo se aprieta. */
+    const casos = [
+      ['un módulo se lee a sí mismo, entero, incluido lo privado',
+       API.puedeLeer('educativo', 'educativo', 'borrador'), true],
+      ['lo PRIVADO no lo lee nadie, ni con `leeDe` declarado',
+       API.puedeLeer('viviendas', 'campus', 'lamina'), false],
+      ['lo COMPARTIDO sin `leeDe` declarado tampoco: compartir no es autorizar',
+       API.puedeLeer('empresas', 'campus', 'percepcion'), false],
+      ['lo COMPARTIDO con su `leeDe` declarado, sí',
+       API.puedeLeer('viviendas', 'campus', 'percepcion'), true]
+    ];
+    const malos = casos.filter(function (c) { return c[1] !== c[2]; });
+    comprobar('el reparto separa compartir de AUTORIZAR (cuatro casos fabricados)',
+      malos.length === 0,
+      malos.length === 0
+        ? 'las cuatro: ' + casos.map(function (c) { return c[0]; }).join(' · ') +
+          '. La tercera es la que la v1168 agregó, y es la que distingue un campo que su ' +
+          'dueño está dispuesto a dar de uno que ya le dio a alguien'
+        : 'fallan: ' + malos.map(function (c) {
+            return '«' + c[0] + '» dio ' + c[1] + ' y se esperaba ' + c[2];
+          }).join(' · ') + '. Sin esto, la comprobación de abajo no distinguiría una ' +
+          'invasión de una lectura legítima');
 
     if (!llamadas.length) {
       /* `?` y no rojo: el espacio con nombre acaba de abrirse y todavía no lo
@@ -16713,6 +16732,119 @@ console.log('\n  -- la resta del desplazamiento mide la barra ENTERA (v1157) --'
         ciegas.map(function (t) { return t.nombre; }).join(' · ') +
         '. Con los índices de ejemplo eso imprime la cifra del ejemplo como si fuera el POT ' +
         'del predio');
+})();
+
+
+/* LAS DOS NOTAS QUE IMPIDEN CONFUNDIR DOS MÓDULOS (v1168)
+   =======================================================
+
+   «procity» nombra TRES cosas en el código viejo —los archivos `procity-*` y
+   las claves `pcr_*` del educativo, el subconjunto de categorías de
+   `reportes`, y el global que enciende el educativo—, así que el módulo nuevo
+   se llama `campus` y no `procity`. Lo que impide que alguien los lea como
+   uno son dos notas, y van como DATO: `soloCodigo()` borra los comentarios,
+   de modo que una advertencia escrita ahí no la vigila nadie (v926).
+
+   SON DOS COMPROBACIONES PORQUE PIDEN COSAS DISTINTAS (v899), y una de las
+   dos no puede morder todavía:
+
+   · LA ATADURA, en rojo. Cada entrada nombra a la otra y dice por qué. Es
+     código, no datos, así que no puede vaciarse por una mejora del registro
+     (v965, v970): si alguien borra una nota, o renombra un módulo y deja la
+     otra apuntando al aire, sale en rojo.
+   · LA PROMESA DE PREFIJOS, con su `?`. `campus` declara no poseer nada que
+     empiece por `procity-`, `pcr_` ni `.pcr-`, y eso se CONTRASTA contra lo
+     que declare. Hoy `campus.archivos` está vacío, así que no hay nada que
+     contrastar: un rojo ahí pondría la salida barata en inventarle archivos
+     al módulo para que la guarda tenga algo que rechazar (v970, v1097). La
+     rama CON material se mide contra un caso fabricado.
+
+   NO comprueba que las razones escritas sean buenas ni que el reparto sea el
+   correcto: eso se discute mirando el registro. */
+(function () {
+  let MOD = null, err = '';
+  try {
+    const caja = { window: {} };
+    new Function('window', leer('js/03h-registro-modulos.js'))(caja.window);
+    MOD = caja.window.URBIS_MODULOS;
+  } catch (e) { err = String(e && e.message || e); }
+
+  const PAR = ['educativo', 'campus'];
+  const hay = MOD && PAR.every((k) => !!MOD[k]);
+
+  comprobar('MATERIAL · los dos módulos que se pueden confundir están en el registro',
+    !!hay,
+    hay ? PAR.join(' y ') + ', los dos declarados'
+        : (MOD ? 'falta ' + PAR.filter((k) => !MOD[k]).join(' y ')
+               : 'el registro no se pudo ejecutar: ' + err) +
+          ', así que las comprobaciones de abajo pasarían por no tener nada delante');
+
+  if (hay) {
+    /* ── LA ATADURA, en rojo ───────────────────────────────────────── */
+    const rotas = [];
+    PAR.forEach((k) => {
+      const n = MOD[k].noConfundirCon;
+      if (!n || typeof n !== 'object') { rotas.push(k + ' no declara `noConfundirCon`'); return; }
+      if (!MOD[n.modulo]) { rotas.push(k + ' apunta a «' + n.modulo + '», que no es un módulo'); return; }
+      /* La razón se mide como TEXTO y no con `String(x)`: la v1117 dio por
+         buena una razón en blanco porque `String({})` es verdadero. */
+      if (typeof n.porque !== 'string' || n.porque.trim().length < 20) {
+        rotas.push(k + ' apunta a ' + n.modulo + ' con la razón en blanco o demasiado corta');
+      }
+    });
+    /* Y que se nombren MUTUAMENTE: con una sola dirección, renombrar el otro
+       módulo deja la nota superviviente apuntando al aire y nada lo dice. */
+    const mutua = !rotas.length &&
+      MOD[PAR[0]].noConfundirCon.modulo === PAR[1] &&
+      MOD[PAR[1]].noConfundirCon.modulo === PAR[0];
+
+    comprobar('las dos notas existen, traen su razón y se nombran mutuamente',
+      rotas.length === 0 && mutua,
+      rotas.length === 0 && mutua
+        ? PAR[0] + ' → ' + PAR[1] + ' y ' + PAR[1] + ' → ' + PAR[0] + ', las dos con su razón ' +
+          'escrita. Van como DATO, así que `soloCodigo` no se las lleva y esta guarda las ve'
+        : (rotas.length ? rotas.join(' · ') : 'las notas no se nombran mutuamente: ' +
+            PAR.map((k) => k + '→' + MOD[k].noConfundirCon.modulo).join(' y ') +
+            ', así que renombrar un módulo dejaría la otra apuntando al aire'));
+
+    /* ── LA PROMESA DE PREFIJOS ────────────────────────────────────── */
+    const np = MOD.campus.noPosee || {};
+    const declara = typeof np.archivos === 'string' && typeof np.claves === 'string' &&
+                    typeof np.clases === 'string';
+    comprobar('campus declara QUÉ no posee, en forma de prefijo comprobable',
+      declara,
+      declara ? 'archivos «' + np.archivos + '» · claves «' + np.claves + '» · clases «' +
+                np.clases + '», tres prefijos que una guarda puede contrastar en vez de ' +
+                'confiar en una frase'
+              : 'falta `noPosee` con sus tres prefijos, así que la nota de campus es una ' +
+                'promesa que nada comprueba');
+
+    /* Contrastarla pide material: lo que `campus` declare. */
+    const mios = (MOD.campus.archivos || []);
+    const choca = (lista) => lista.filter((f) => String(f).indexOf(np.archivos) !== -1);
+    if (declara && !mios.length) {
+      anotarSinMaterial('y ningún archivo de campus empieza por el prefijo que dice no poseer',
+        '`campus.archivos` está vacío, así que los tres prefijos no tienen nada que ' +
+        'contrastar. La rama CON material se mide contra el caso fabricado de abajo');
+      /* El caso FABRICADO, que es lo que impide que esto sea documentación:
+         con un archivo del módulo viejo adentro, la cuenta tiene que verlo. */
+      const fab = choca(['js/68-procity-reconocimiento.js', 'js/90-campus.js']);
+      comprobar('y la cuenta lo detectaría (caso fabricado)',
+        fab.length === 1 && fab[0].indexOf('procity-') !== -1,
+        fab.length === 1
+          ? 'con `js/68-procity-reconocimiento.js` metido en su lista, la cuenta lo señala y ' +
+            'deja pasar `js/90-campus.js`: el prefijo discrimina de verdad'
+          : 'la cuenta no distingue: halló ' + fab.length + ' en vez de 1, así que con ' +
+            'material real no diría nada');
+    } else if (declara) {
+      comprobar('y ningún archivo de campus empieza por el prefijo que dice no poseer',
+        choca(mios).length === 0,
+        choca(mios).length === 0
+          ? mios.length + ' archivo(s) declarado(s) y ninguno con el prefijo «' + np.archivos + '»'
+          : 'campus declara archivos del módulo viejo: ' + choca(mios).join(' · ') +
+            ', que es exactamente lo que su nota promete que no pasa');
+    }
+  }
 })();
 
 /* Las dos cuentas van APARTE porque piden cosas distintas: una fallada hay

@@ -31325,3 +31325,96 @@ de creerle a la corrida.
 * **No toca la lámina.** `pendiente` — sus tres puertas están bien; lo que
   falta es una comprobación con mejor granularidad que la de función, y eso
   es el papel.
+
+## v1168 · compartir no es autorizar, y la atadura entre dos módulos
+
+Dos cambios en la capa compartida. **El reparto del módulo que los motivó no
+se reproduce acá**, por la regla del 30 de octubre: de un producto nuevo solo
+entra al repositorio público su entrada del registro, no su diseño. Lo que
+sigue es la mecánica de la capa, que sí es de todos.
+
+### Compartir no es autorizar
+
+El defecto estaba en `js/03h` desde la v1162 y lo encontró otra sesión
+leyendo el registro:
+
+```js
+// hasta la v1167
+puedeLeer: function (quienLee, modulo, campo) {
+  if (quienLee === modulo) return true;
+  var m = MODULOS[modulo];
+  if (!m) return false;
+  return (m.privado || []).indexOf(String(campo)) === -1;   // ← no mira leeDe
+}
+```
+
+Un campo en `comparte` lo leía **cualquier** módulo. El `leeDe` solo servía
+para comprobar que la puerta resolviera: **era decorativo para el permiso.**
+
+Ahora son dos cosas distintas: `comparte` es lo que su dueño **está dispuesto
+a dar**, `leeDe` es **a quién se lo dio**, y hacen falta las dos. Y se
+comprueba además que el campo esté en `comparte`, para que `puedeLeer` y la
+guarda del registro digan lo mismo.
+
+**Se cambió cuando no costaba nada, y eso fue medido**: 3 `leeDe` declarados y
+**cero llamadas** a `URBIS_CAMPOS.leer` en los 92 archivos de `js/`. El día
+que haya lectores de verdad, cada uno sin su `leeDe` se rompe — y entonces ya
+no sería gratis.
+
+**El caso fabricado pasó de tres propiedades a cuatro**, y la que se agregó es
+la que importa. El viejo afirmaba que un módulo **sí** podía leer un campo
+compartido de otro sin declararlo — era cierto, y era el defecto. Una prueba
+que falla por un cambio legítimo **se aprieta, no se afloja**:
+
+| Caso fabricado | Esperado |
+|---|---|
+| un módulo se lee a sí mismo, entero, incluido lo privado | sí |
+| lo PRIVADO no lo lee nadie, ni con `leeDe` declarado | no |
+| lo COMPARTIDO **sin** `leeDe` tampoco | **no** ← la nueva |
+| lo COMPARTIDO **con** su `leeDe`, sí | sí |
+
+### La atadura entre dos módulos que se pueden confundir
+
+`procity` ya nombra **tres** cosas en este repositorio —los archivos
+`procity-*` y las claves `pcr_*` del educativo, el subconjunto de categorías
+de `reportes`, y el global que enciende el educativo—, así que un módulo nuevo
+no puede llamarse igual: sería el cuarto significado. Las dos entradas se atan
+con una nota **en los dos sentidos**, y van como DATO porque `soloCodigo()`
+borra los comentarios (v926): una advertencia escrita ahí no la vigila nadie.
+
+**Son dos comprobaciones porque piden cosas distintas** (v899), y una de las
+dos no puede morder todavía:
+
+* **la atadura, en ROJO** — cada entrada nombra a la otra, el módulo nombrado
+  existe, y la razón es texto de verdad y no `[object Object]`, que es cómo la
+  v1117 dio por buena una razón en blanco. Es código y no datos, así que no
+  puede vaciarse por una mejora del registro;
+* **la promesa de prefijos, con su `?`** — la entrada nueva declara `noPosee`
+  con los prefijos del módulo viejo, y eso se CONTRASTA contra lo que declare.
+  Hoy no declara archivos: un rojo pondría la salida barata en inventárselos
+  para que la guarda tenga algo que rechazar (v970, v1097). La rama con
+  material se mide contra un caso fabricado, que mete
+  `js/68-procity-reconocimiento.js` en la lista y comprueba que el prefijo lo
+  señale y deje pasar el que no lo lleva.
+
+### Lo medido
+
+**Seis inyecciones fieles, las seis en rojo:** el estado v1167 de `puedeLeer`;
+un `leeDe` retirado; la entrada nueva sin `noPosee`; su nota apuntando a un
+módulo que no existe; la atadura dejando de ser mutua; y la entrada nueva
+declarando un archivo del módulo viejo.
+
+Y lo que **no** cambió, comprobado: `educativo.panelPercepcion` **sigue
+privado** —el pedido que lo abría se retiró— y nadie lo lee; y el `leeDe` que
+ya existía, `viviendas` → `empresas.analisisUbicacion`, **sigue funcionando**.
+
+**847 verdes, 3 sin material, 0 fallos** (eran 843 y 2).
+
+### Lo que esta versión NO hace
+
+* **No toca el Apps Script ni la hoja.** `pendiente` — el módulo que entró va
+  a Postgres y no declara tipos, así que el trinquete de «Sheets no se
+  extiende» no tiene nada que decir de él.
+* **No confirma las claves de su reparto.** `pendiente` — se derivaron de una
+  lista en prosa y las confirma su propia sesión antes de que las lea algún
+  código.

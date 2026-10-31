@@ -559,6 +559,23 @@ tanda necesita antes de tocar nada:
   en 23 y la última es `espacioConNombre`. Un campo nuevo entra ahí, por
   NOMBRE (`modulo:campo=valor`, codificado), con su módulo dueño declarado.
   La tabla por posición ya se pisó los datos una vez.
+* **Compartir no es autorizar** (v1168). Un campo en `comparte` es un campo
+  que su dueño **está dispuesto a dar**; `leeDe` es **a quién se lo dio**, y
+  `puedeLeer` exige las dos. **La regla para un lector nuevo:** si su módulo
+  necesita un campo de otro, declara su `leeDe` **en su propia entrada** —
+  nunca en la del dueño — y se lo pide a la cabeza, que es quien toca ese
+  archivo. Mientras no esté declarado, `puedeLeer` dice NO, y eso no es un
+  defecto. Hasta la v1167 no miraba `leeDe`, así que un campo compartido lo
+  leía cualquiera y la declaración era decorativa para el permiso.
+* **Y dos módulos que se puedan confundir se atan con una nota en los DOS
+  sentidos, como DATO** (v1168). `procity` ya nombra tres cosas en este
+  repositorio —los archivos `procity-*` y las claves `pcr_*` del educativo,
+  el subconjunto de categorías de `reportes`, y el global que enciende el
+  educativo—, así que un módulo nuevo no puede llamarse igual. Cada entrada
+  declara `noConfundirCon` con su razón, y la del módulo nuevo declara además
+  `noPosee` con los prefijos que no le pertenecen, para que una guarda lo
+  contraste en vez de creerle a una frase. **Como dato y no como comentario**:
+  `soloCodigo()` borra los comentarios.
 * **Lo privado de un módulo no lo lee otro.** Cada módulo declara qué comparte
   y qué no. El educativo comparte lo MEDIDO EN CAMPO y guarda para sí las
   geometrías de intención de diseño, los paneles de percepción, lo no
