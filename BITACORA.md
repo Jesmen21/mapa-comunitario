@@ -31418,3 +31418,148 @@ ya existía, `viviendas` → `empresas.analisisUbicacion`, **sigue funcionando**
 * **No confirma las claves de su reparto.** `pendiente` — se derivaron de una
   lista en prosa y las confirma su propia sesión antes de que las lea algún
   código.
+## v1169 · el respaldo se lleva la salida entera, y de verdad
+
+El `urbis-respaldo-1` llevaba **solo las fichas**, y el aviso de la pestaña
+decía «es la copia de la salida entera, con las marcas, los recorridos del
+curso y los lotes». No viajaban tres almacenes del teléfono: las plantillas y
+la percepción (`pcr_campo_v1`, hasta 120 por sector), los trazos guardados sin
+analizar (`pcr_trazos_v1`) y los conteos (`pcr_conteos_v1`). Un teléfono que
+se perdía se llevaba una tarde de plantillas **con el respaldo hecho**, y eso
+no se veía porque el archivo se presentaba como completo — que es la forma del
+aviso parcial de la v867: declarar parte de lo que se lleva y callar el resto
+es peor que no declarar nada.
+
+### Dos formatos entran y uno sale
+
+El token que sale subió a `urbis-respaldo-2`. La puerta de entrada **acepta
+los dos**, y eso no es cortesía: comparada contra el token que sale, un archivo
+bajado ayer deja de restaurar, y un respaldo que no lee sus propios archivos
+viejos no es un respaldo. Son dos cosas distintas y por eso son dos constantes:
+`RESPALDO_FORMATO` es el que sale, `RESPALDO_FORMATOS` los que entran.
+
+**Las fichas PASAN tal cual.** No se copian con arreglos, y eso es lo que hace
+que el formato de la ficha no haya cambiado: las del v2 son las mismas que las
+del v1, byte a byte. El atajo que lo rompe es «de paso le agrego la cuenta»
+—un `.map` sobre las fichas— y desde afuera no se ve, porque el archivo sigue
+abriéndose.
+
+### La percepción se archiva, y sale rotulada
+
+Lo medido en campo y la percepción viven mezclados en `pcr_campo_v1`, así que
+el paquete los **reparte**: las plantillas por un lado y la percepción en su
+propio bloque, con su rótulo.
+
+**El rótulo no se escribe: se le PREGUNTA al registro de módulos.** Un rótulo
+escrito a mano y la declaración de js/03h son dos codificaciones de un solo
+hecho (clase B) y se separan el día que una de las dos cambie: el archivo
+seguiría diciendo «privada» de algo que el registro ya comparte, o al revés. Y
+**falla cerrado**: sin registro cargado se archiva como privada, que es la
+dirección segura — rotular «no privada» sin poder comprobarlo es la que filtra.
+Con **las dos redacciones** escritas (v970), que es lo que impide que el día
+que el registro cambie de opinión el archivo salga sin rótulo ninguno.
+
+**Y los paneles de percepción se LEEN, no se copian.** `PANELES_DE_PERCEPCION`
+se deriva de sus títulos; una copia de esa lista dentro del reparto coincide el
+día que se escribe y se separa el día que se agregue un panel — y entonces el
+panel nuevo sale del montón que no le toca, es decir **sin el rótulo**, que es
+exactamente el fallo que el rótulo existe para impedir. Es la clase B en el
+sitio más caro de este cambio.
+
+### Lo que trae de más se ignora, Y SE DICE
+
+Traer un v2 en el módulo viejo **restaura solo las fichas**. Eso es correcto
+—el pedido era extender el respaldo, no reescribir el módulo— y la percepción,
+además, solo se archiva. Pero **ignorar en silencio se lee igual que no traer
+nada**: el hueco donde tendría que estar la advertencia, con el lector
+completándolo con lo que espera. Así que el resultado lleva `noRestaurado`
+—cosa por cosa, con su cuenta y marcando cuál es privada— y la pestaña lo
+imprime.
+
+Y no escribe ninguno de los tres almacenes. Escribe `pcr_fichas_v1`, que es su
+trabajo; `pcr_campo_v1`, `pcr_trazos_v1` y `pcr_conteos_v1` quedan como
+estaban. El atajo de «ya que estamos, restauremos todo» pisaría una tarde de
+plantillas de este teléfono con lo que trajo el archivo de otro.
+
+### Y dos retoques de la v1168
+
+* **El encabezado de `js/03h` decía que no conocía al módulo nuevo** «porque
+  todavía no tiene nombre ni tipos». Ya lo conoce, y la razón de que esté sin
+  tipos propios está escrita en su entrada —va a Postgres y no escribe en la
+  hoja—, que no es lo mismo que una fila vacía. Es la forma de la v868 otra
+  vez: **un texto honesto se vuelve viejo la primera vez que alguien
+  implementa algo**, y acá el texto viejo era el que toda sesión lee primero
+  al abrir ese archivo.
+* **Y un comentario de ese archivo bajó a una línea**, dejando la razón
+  —`leeDe` autoriza por campo— y quitando lo demás.
+
+### Lo medido
+
+**Ocho inyecciones fieles.** Siete ponen en rojo la mitad ESTÁTICA, cada una
+sobre su propia aserción y ninguna sobre otra: la puerta comparada contra un
+solo formato (el estado de ayer); el resultado sin `noRestaurado`; traer
+escribiendo `CAMPO_KEY`; las fichas copiadas con un campo añadido; el reparto
+con la lista de paneles escrita a mano; y **las dos mitades del rótulo por
+separado** —una sola redacción escrita a mano, y el estado puesto a mano en vez
+de preguntado al registro—, que es por qué su detalle nombra cuál de las dos
+falló y no «el rótulo está mal» (v973, v1051).
+
+Y una que **no** pone en rojo la mitad estática y **sí** la del navegador:
+volcar `pcr_campo_v1` entero sin repartir. Queda dicho porque es justamente el
+reparto de trabajo entre las dos guardas: leyendo el repositorio no se puede
+saber si el reparto reparte, solo que no haya una segunda lista que se pueda
+separar. Lo mide `trespaldo.js`, donde tira tres aserciones a la vez.
+
+**Y una corrección de método:** la primera inyección del rótulo salió VERDE y
+la leí como un hueco de la aserción. No lo era: la inyección **no era fiel**
+—dejaba las dos redacciones escritas en la función—, así que la guarda tenía
+razón en no morder. Es la otra cara de la v1029: antes de culpar a lo que la
+aserción mide, hay que comprobar que la inyección borre de verdad lo que dice
+borrar.
+
+### El papel, que encontró cuatro defectos que el código no mostraba
+
+Dos avisos cambiaron, así que se compusieron y se **leyeron**. Salieron cuatro
+cosas, y **ninguna se ve leyendo el código**:
+
+* **«Trae 1 plantillas de campo»** — cada cosa de la lista tenía una sola
+  forma. Ahora lleva su singular y su plural, y el número se concuerda con
+  `pl`, que ya estaba escrito en el módulo.
+* **«Trae 2 trazos guardados: quedan archivadas»** — el participio tenía
+  género y los sustantivos no coincidían. La cura no es acertarle al género de
+  cada cosa: es **quitar el participio**. «Se queda» y «no entra» no tienen
+  nada que acertar, así que una cosa nueva en la lista nace bien escrita sin
+  que su autor se acuerde, que es lo único que impide que vuelva a pasar
+  (v867, v1088).
+* **«Se bajaron 1 sector»** y **«Entraron 1 sector»** — el plural iba en el
+  sustantivo y no en el verbo. Las dos **venían de antes** y llevaban ahí desde
+  la v707; estaban impresas en el papel todo este tiempo.
+
+Y una **corrección de método** que vale más que los cuatro: el primer arnés
+del papel **reteclaba una de las frases**, así que después de arreglar
+«Entraron 1 sector» seguía imprimiendo la versión vieja — estaba leyendo mi
+texto y no el del módulo. El arnés definitivo no escribe **ni una palabra** del
+aviso: saca del archivo el ayudante, el tope y el bloque entero que lo arma, y
+los evalúa sobre el resultado real de `traerRespaldo`. **Un arnés que copia
+parte de lo que mide no está leyendo el papel: está leyéndose a sí mismo.**
+
+### Lo que esta versión NO hace
+
+* **No corrió `trespaldo.js` en este contenedor.** `pendiente` — sus siete
+  aserciones nuevas están escritas y comprobadas una por una contra el
+  navegador de verdad, con `localStorage` de verdad, pero la suite registrada
+  necesita el directorio de trabajo con Leaflet y `playwright-core`, y acá no
+  hay ninguno de los dos: medido, el proxy niega `unpkg.com` y
+  `cdnjs.cloudflare.com` (000, rechazo de conexión) y no existe ninguna copia
+  de Leaflet en la máquina. La mitad estática, que es la que sí corre acá, está
+  en `revisar.js` con sus siete inyecciones. Va como `pendiente` y no como «no
+  se pudo»: la limitación es de ESTE contenedor, no del trabajo — una sesión con
+  el directorio de trabajo la corre, y hasta que alguien la corra el renglón
+  sigue abierto. Decirlo al revés sería cerrar por decreto lo único que queda
+  sin medir.
+* **No restaura lo que el archivo trae de más.** `cerrado en v1169 · medido y
+  declinado` — es lo pedido: el módulo viejo no se reescribe, y la percepción
+  solo se archiva. Lo que la versión sí hace es decirlo en vez de ignorarlo en
+  silencio.
+* **No toca el formato de la ficha.** `cerrado en v1169` — las fichas del v2
+  son las mismas que las del v1, byte a byte, y por eso pasan tal cual.

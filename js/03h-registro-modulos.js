@@ -31,10 +31,15 @@
    no sabe si un punto está repetido —eso se mide con
    `herramientas/medir-duplicados.html`, que lee la hoja de verdad—, no
    impide que un módulo ESCRIBA en el espacio de otro (eso lo decide el
-   servidor, no el navegador) y no conoce al módulo nuevo, que todavía no
-   tiene nombre ni tipos: hasta que los tenga, no está acá, porque un módulo
-   registrado sin tipos sería una fila vacía que se lee como un módulo sin
-   nada que mapear. */
+   servidor, no el navegador) y no autoriza a nadie: `puedeLeer` dice quién
+   PUEDE leer qué, y quien escriba el lector es quien tiene que preguntárselo.
+
+   Y una corrección de lo que este encabezado decía hasta la v1168: decía que
+   no conocía al módulo nuevo «porque todavía no tiene nombre ni tipos». Ya lo
+   conoce: está como `campus`, y la razón de que esté sin tipos propios está
+   escrita en su entrada —va a Postgres y no escribe en la hoja—, que no es lo
+   mismo que una fila vacía. Lo que de ese producto entra acá es su entrada y
+   nada más. */
 (function () {
   'use strict';
 
@@ -242,10 +247,7 @@
          trinquete de «Sheets no se extiende» no tiene nada que decir de él. */
       tipos: [],
       prefijos: [],
-      /* UN SOLO CAMPO `punto` y no siete: es la fila que viaja a la capa
-         compartida, con su tipo, ubicación, precisión, método, fecha, autor
-         público y sello adentro. Decisión de Daniel del 31 de octubre; la
-         granularidad importa porque `leeDe` autoriza POR CAMPO. */
+      /* Un solo campo `punto` y no siete, porque `leeDe` autoriza POR CAMPO. */
       comparte: ['punto', 'percepcion', 'medidas'],
       privado: ['sector', 'lote', 'geometrias', 'estructuraPlantillas',
                 'resultadoPostSector', 'lamina', 'rasters'],

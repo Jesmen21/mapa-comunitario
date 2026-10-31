@@ -145,6 +145,65 @@ for(let i=0;i<40;i++){ const a=i*9*Math.PI/180, d=(140+(i%4)*50)/111320;
     o.rechaza=!!r3.error && /no es un respaldo/i.test(r3.error);
     const r4=R.traerRespaldo('esto no es json');
     o.rechazaBasura=!!r4.error;
+
+    /* ── EL RESPALDO 2: lo que no viajaba ────────────────────────────────
+       Los paneles de percepción se le PREGUNTAN al módulo, que los publica
+       en el propio paquete. Copiar la lista acá sería la misma separación
+       que el respaldo evita leyéndola: el día que se agregue un panel, la
+       prueba seguiría sembrando los tres viejos y el nuevo se iría sin
+       rótulo con la suite en verde. */
+    o.paneles=(paq.percepcion||{}).paneles||[];
+    if(o.paneles.length){
+      const fichasAhora=R.leerFichas();
+      localStorage.setItem('pcr_campo_v1',JSON.stringify({ 'sector-de-prueba': { v:1, entradas:[
+        { id:'e-p', hueco:o.paneles[0], sub:'nota', estado:'confirmado',
+          valor:'Acá dicen que de noche no se puede pasar',
+          fuente:{quien:'Ana',cuando:'2026-10-28'}, ts:'2026-10-28T09:00:00Z' },
+        { id:'e-c', hueco:'perfil-via', sub:'calzada', estado:'confirmado', valor:'7.2',
+          fuente:{quien:'Luis',cuando:'2026-10-28'}, ts:'2026-10-28T09:30:00Z' }
+      ]}}));
+      localStorage.setItem('pcr_trazos_v1',JSON.stringify([{ id:'t-1', nombre:'La manzana',
+        ts:'2026-10-28T08:00:00Z', forma:'poligono', pts:[], areaM2:9200, centro:null }]));
+      localStorage.setItem('pcr_conteos_v1',JSON.stringify({ 'sector-de-prueba':{total:40,ts:'x'} }));
+
+      const p2=R.respaldoDeTodo(fichasAhora);
+      o.v2Formato=p2.formato;
+      // Las fichas, serializadas aparte: el v1 y el v2 tienen que traer los
+      // mismos bytes, y para eso las fichas pasan TAL CUAL.
+      o.fichasV2=JSON.stringify(p2.fichas);
+      o.fichasDeMano=JSON.stringify(fichasAhora);
+      o.v2Trazos=(p2.trazos||[]).length;
+      o.v2Conteos=Object.keys(p2.conteos||{}).length;
+      const cuenta=g=>Object.keys(g||{}).reduce((n,k)=>n+((g[k].entradas||[]).length),0);
+      o.v2Campo=cuenta(p2.campo);
+      o.v2Percepcion=cuenta((p2.percepcion||{}).porSector);
+      o.v2Privada=(p2.percepcion||{}).privada;
+      o.v2Rotulo=String((p2.percepcion||{}).rotulo||'');
+
+      /* Traer el v2 en el módulo VIEJO. Los tres almacenes se dejan con una
+         marca reconocible: si traerlo los tocara, la marca cambiaría. */
+      const archivoV2=JSON.stringify(p2);
+      const archivoV1=JSON.stringify({ formato:'urbis-respaldo-1', app:'', cuando:p2.cuando,
+                                       quien:p2.quien, fichas:fichasAhora });
+      o.fichasV1=JSON.stringify(JSON.parse(archivoV1).fichas);
+      localStorage.removeItem('pcr_fichas_v1');
+      localStorage.setItem('pcr_campo_v1','{"marca":"no-me-toques"}');
+      localStorage.setItem('pcr_trazos_v1','[{"id":"marca"}]');
+      localStorage.setItem('pcr_conteos_v1','{"marca":1}');
+      const rV2=R.traerRespaldo(archivoV2);
+      o.v2Entra=!!rV2.ok; o.v2Nuevas=rV2.nuevas||0; o.v2Error=rV2.error||'';
+      o.v2FichasTras=(R.leerFichas()||[]).length;
+      o.v2NoRestaurado=(rV2.noRestaurado||[]).map(x=>({que:x.que,cuantas:x.cuantas,privada:!!x.privada}));
+      o.v2CampoIntacto=localStorage.getItem('pcr_campo_v1')==='{"marca":"no-me-toques"}';
+      o.v2TrazosIntacto=localStorage.getItem('pcr_trazos_v1')==='[{"id":"marca"}]';
+      o.v2ConteosIntacto=localStorage.getItem('pcr_conteos_v1')==='{"marca":1}';
+
+      // Y el v1 de hoy sigue entrando igual, con el almacén vuelto a vaciar.
+      localStorage.removeItem('pcr_fichas_v1');
+      const rV1=R.traerRespaldo(archivoV1);
+      o.v1Entra=!!rV1.ok; o.v1Nuevas=rV1.nuevas||0; o.v1Error=rV1.error||'';
+      o.v1FichasTras=(R.leerFichas()||[]).length;
+    }
     return o;
   });
 
@@ -213,9 +272,12 @@ for(let i=0;i<40;i++){ const a=i*9*Math.PI/180, d=(140+(i%4)*50)/111320;
   console.log('\n  -- llevarse la salida entera --');
   T('el botón arma un archivo con nombre de respaldo',
     /^urbis-respaldo-\d{4}-\d{2}-\d{2}\.json$/.test(resp.nombreArchivo||''), resp.nombreArchivo||'ninguno');
+  /* Decía `=== 'urbis-respaldo-1'` y el formato subió a 2. Se aprieta en vez
+     de aflojarse: además del token que SALE, se comprueba que el v1 siga
+     ENTRANDO, que es la propiedad que la aserción vieja no medía. */
   T('con el formato declarado y los sectores dentro',
-    resp.formato==='urbis-respaldo-1' && resp.traeFichas===resp.fichasAntes && resp.traeFichas>0,
-    resp.traeFichas+' sectores · '+resp.pesoKB+' KB');
+    resp.formato==='urbis-respaldo-2' && resp.traeFichas===resp.fichasAntes && resp.traeFichas>0,
+    'formato «'+resp.formato+'» · '+resp.traeFichas+' sectores · '+resp.pesoKB+' KB');
   T('y con lo que no se puede volver a pedir: las marcas', resp.traeLasMarcas===1);
 
   console.log('\n  -- y volver a traerla --');
@@ -231,6 +293,68 @@ for(let i=0;i<40;i++){ const a=i*9*Math.PI/180, d=(140+(i%4)*50)/111320;
     JSON.stringify(resp.otraVez||'no se pudo probar'));
   T('y un archivo que no es un respaldo se rechaza con su motivo',
     resp.rechaza===true && resp.rechazaBasura===true);
+
+  /* ── El respaldo 2 ───────────────────────────────────────────────────
+     Lo que el 1 dejaba en el teléfono: las plantillas y la percepción, los
+     trazos guardados sin analizar y los conteos. Un teléfono que se perdía
+     se llevaba una tarde de plantillas aunque el respaldo estuviera hecho,
+     y el archivo decía «la copia de la salida entera». */
+  console.log('\n  -- lo que el respaldo 1 dejaba atrás --');
+  const sinMaterial = !(resp.paneles||[]).length;
+  if (sinMaterial) {
+    T('MATERIAL · el módulo publica sus paneles de percepción', false,
+      'no publicó ninguno, así que no hay con qué sembrar el reparto');
+  } else {
+    T('MATERIAL · los paneles de percepción se leen del módulo, no se copian acá',
+      true, resp.paneles.join(' · '));
+    T('el paquete lleva las plantillas, los trazos y los conteos',
+      resp.v2Campo===1 && resp.v2Trazos===1 && resp.v2Conteos===1,
+      resp.v2Campo+' plantilla(s) · '+resp.v2Trazos+' trazo(s) · '+resp.v2Conteos+' conteo(s)');
+    /* La percepción es privada del educativo y en el archivo va rotulada. El
+       rótulo no se escribe: se le pregunta al registro de módulos (js/03h),
+       porque un rótulo escrito a mano y la declaración del registro son dos
+       codificaciones de un solo hecho y se separan. */
+    T('la percepción sale aparte y rotulada PRIVADA',
+      resp.v2Privada===true && /PRIVADA/.test(resp.v2Rotulo) && resp.v2Percepcion===1,
+      'privada='+resp.v2Privada+' · '+(/PRIVADA/.test(resp.v2Rotulo)
+        ? 'el rótulo dice PRIVADA' : 'el rótulo NO dice PRIVADA: «'+resp.v2Rotulo+'»')+
+      ' · '+resp.v2Percepcion+' anotación(es) en el bloque privado');
+    T('y el reparto no se equivoca de lado',
+      resp.v2Campo===1 && resp.v2Percepcion===1,
+      resp.v2Campo+' en campo y '+resp.v2Percepcion+' en percepción, de una de cada');
+    /* Las fichas PASAN, no se copian con arreglos: es lo que hace que el v1 y
+       el v2 traigan exactamente las mismas y que el formato de la ficha no
+       haya cambiado. */
+    T('las fichas del v2 son idénticas byte a byte a las del v1',
+      resp.fichasV2===resp.fichasV1 && resp.fichasV2===resp.fichasDeMano,
+      resp.fichasV2===resp.fichasV1
+        ? (resp.fichasV2.length+' bytes, los mismos en los dos archivos')
+        : ('v1 '+(resp.fichasV1||'').length+' bytes · v2 '+(resp.fichasV2||'').length));
+
+    console.log('\n  -- y traerlo en el módulo viejo --');
+    T('un archivo v1 de hoy sigue restaurando exactamente igual',
+      resp.v1Entra===true && resp.v1Nuevas===resp.fichasAntes && resp.v1FichasTras===resp.fichasAntes,
+      resp.v1Error ? ('RECHAZÓ el v1: '+resp.v1Error)
+                   : ('entraron '+resp.v1Nuevas+' de '+resp.fichasAntes+' y quedaron '+resp.v1FichasTras));
+    T('un archivo v2 también restaura sus fichas',
+      resp.v2Entra===true && resp.v2Nuevas===resp.fichasAntes && resp.v2FichasTras===resp.fichasAntes,
+      resp.v2Error ? ('RECHAZÓ el v2: '+resp.v2Error)
+                   : ('entraron '+resp.v2Nuevas+' de '+resp.fichasAntes+' y quedaron '+resp.v2FichasTras));
+    /* IGNORA lo de más, y LO DICE. Ignorar en silencio se lee igual que no
+       traer nada: es el hueco donde tendría que estar la advertencia, con el
+       lector completándolo con lo que espera. */
+    const nr=resp.v2NoRestaurado||[];
+    T('IGNORA lo que trae de más, y lo dice cosa por cosa con su cuenta',
+      nr.length===4 && nr.some(x=>x.privada===true),
+      nr.length ? nr.map(x=>x.cuantas+' '+x.que).join(' · ')
+                : 'no declaró nada de lo que ignoró');
+    T('y no toca pcr_campo_v1, pcr_trazos_v1 ni pcr_conteos_v1',
+      resp.v2CampoIntacto && resp.v2TrazosIntacto && resp.v2ConteosIntacto,
+      'campo '+(resp.v2CampoIntacto?'intacto':'PISADO')+
+      ' · trazos '+(resp.v2TrazosIntacto?'intacto':'PISADO')+
+      ' · conteos '+(resp.v2ConteosIntacto?'intacto':'PISADO')+
+      '. Escribe pcr_fichas_v1, que es su trabajo');
+  }
 
   console.log('\n  -- el trazo a medio dibujar --');
   T('cinco esquinas sin cerrar quedan escritas', trazo.hayLapiz && trazo.guardado===5,

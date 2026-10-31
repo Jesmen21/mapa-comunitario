@@ -1,4 +1,4 @@
-const URBIS_CACHE = 'urbis-v1168-compartir-no-es-autorizar-y-las-dos-notas';
+const URBIS_CACHE = 'urbis-v1169-el-respaldo-se-lleva-la-salida-entera';
 const URBIS_ASSETS = [
   './',
   './index.html',

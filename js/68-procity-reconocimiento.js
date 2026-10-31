@@ -2754,16 +2754,139 @@
 
      Medido: las doce fichas que caben pesan 522 KB y el paquete se arma en
      dos milisegundos. Cabe en un correo. */
-  var RESPALDO_FORMATO = 'urbis-respaldo-1';
+  var RESPALDO_FORMATO = 'urbis-respaldo-2';
+  /* DOS FORMATOS ENTRAN Y UNO SALE.
+     ────────────────────────────────────────────────────────────────────
+     El `urbis-respaldo-1` llevaba solo las fichas. No viajaban las
+     plantillas y la percepción (`pcr_campo_v1`), los trazos guardados sin
+     analizar (`pcr_trazos_v1`) ni los conteos (`pcr_conteos_v1`): un
+     teléfono que se pierde se llevaba una tarde de plantillas aunque el
+     respaldo estuviera hecho, y eso no se veía porque el archivo decía
+     «respaldo de la salida entera».
+
+     El de hoy es el que SALE. Los dos ENTRAN, y eso no es cortesía: un
+     archivo bajado ayer tiene que seguir restaurando igual, o el respaldo
+     no sirve para lo único que sirve, que es volver atrás. */
+  var RESPALDO_FORMATOS = ['urbis-respaldo-1', 'urbis-respaldo-2'];
+
+  /* ¿El registro de módulos declara PRIVADO este campo del educativo?
+     ────────────────────────────────────────────────────────────────────
+     Se PREGUNTA, no se escribe. El rótulo del archivo y la declaración del
+     registro (js/03h) son dos codificaciones de un solo hecho, y se
+     separarían el día que una de las dos cambie: el archivo seguiría
+     diciendo «privada» de algo que el registro ya comparte, o al revés.
+
+     Y FALLA CERRADO: sin registro cargado se archiva como privada, que es
+     la dirección segura. Rotular «no privada» sin poder comprobarlo es la
+     que filtra. */
+  function campoPrivadoDelEducativo(campo) {
+    try {
+      var m = window.URBIS_MODULOS && window.URBIS_MODULOS.educativo;
+      if (!m || !Object.prototype.toString.call(m.privado).match(/Array/)) return true;
+      return m.privado.indexOf(String(campo)) !== -1;
+    } catch (e) { return true; }
+  }
+
+  /* LAS DOS REDACCIONES, la de privada y la de no privada (v970). La
+     segunda es la que hace falta el día que el registro cambie de opinión,
+     y escribirla ahora es lo que impide que ese día el archivo salga sin
+     rótulo ninguno. Las dos dicen la otra mitad, que no depende del
+     registro: que la percepción se ARCHIVA y no se restaura. */
+  function rotuloDePercepcion(privada) {
+    return (privada
+      ? 'PRIVADA. El registro de módulos la declara privada del módulo educativo: '
+        + 'ningún otro módulo la lee. '
+      : 'No privada: el registro de módulos ya no la declara privada del módulo '
+        + 'educativo. ')
+      + 'Es lo que la gente del sector dijo, no un dato medido. Viaja en este '
+      + 'archivo para ARCHIVARLA: al traer el respaldo no se restaura.';
+  }
+
+  /* Reparte las entradas de campo de cada sector en dos montones: la
+     percepción y lo demás.
+
+     LOS PANELES DE PERCEPCIÓN SE LEEN, NO SE COPIAN. `PANELES_DE_PERCEPCION`
+     se deriva de sus títulos, y una copia de esa lista acá se separaría el
+     día que se agregue un panel: el panel nuevo saldría del montón que no le
+     toca, es decir SIN el rótulo de privada, que es exactamente el fallo que
+     el rótulo existe para impedir. */
+  function repartirCampo(todo) {
+    var paneles = PANELES_DE_PERCEPCION || [];
+    var r = { campo: {}, percepcion: {}, paneles: paneles };
+    Object.keys(todo || {}).forEach(function (llave) {
+      var g = todo[llave];
+      var ent = (g && g.entradas && g.entradas.length !== undefined) ? g.entradas : [];
+      var ver = (g && g.v) || 1, p = [], c = [], i;
+      for (i = 0; i < ent.length; i++) {
+        if (ent[i] && paneles.indexOf(ent[i].hueco) !== -1) p.push(ent[i]);
+        else c.push(ent[i]);
+      }
+      if (c.length) r.campo[llave] = { v: ver, entradas: c };
+      if (p.length) r.percepcion[llave] = { v: ver, entradas: p };
+    });
+    return r;
+  }
 
   function respaldoDeTodo(fichas) {
+    var r = repartirCampo(leerCampoTodo());
+    var priv = campoPrivadoDelEducativo('panelPercepcion');
     return {
       formato: RESPALDO_FORMATO,
       app: (window.URBIS_APP_VERSION || ''),
       cuando: new Date().toISOString(),
       quien: quienSoy() || '',
-      fichas: fichas || []
+      /* LAS FICHAS VIAJAN TAL CUAL, sin tocar ni una clave: el formato de la
+         ficha no cambia. Es lo que hace que un archivo v2 y uno v1 traigan
+         exactamente las mismas fichas, y por eso es un paso y no una copia
+         con arreglos. */
+      fichas: fichas || [],
+      campo: r.campo,
+      percepcion: {
+        privada: priv,
+        rotulo: rotuloDePercepcion(priv),
+        paneles: r.paneles.slice(),
+        porSector: r.percepcion
+      },
+      trazos: leerTrazos(),
+      conteos: leerConteos()
     };
+  }
+
+  /* LO QUE EL ARCHIVO TRAE DE MÁS SE IGNORA, Y SE DICE.
+     ────────────────────────────────────────────────────────────────────
+     Un v2 trae plantillas, trazos y conteos además de las fichas, y este
+     módulo no los restaura: el pedido era extender el RESPALDO, no
+     reescribir el módulo viejo — y la percepción, además, solo se archiva.
+
+     Pero ignorar en silencio se lee igual que no traer nada: es la exención
+     silenciosa de siempre, un hueco donde tendría que estar la advertencia y
+     el lector completándolo con lo que espera. Así que la cuenta de lo NO
+     restaurado viaja en el resultado y la pestaña la imprime. */
+  function cuantasEntradas(g) {
+    var n = 0;
+    Object.keys((g && typeof g === 'object') ? g : {}).forEach(function (k) {
+      var e = g[k] && g[k].entradas;
+      if (e && e.length !== undefined) n += e.length;
+    });
+    return n;
+  }
+  /* CADA COSA LLEVA SU SINGULAR Y SU PLURAL, y no una sola forma.
+     Lo encontró LEER EL PAPEL y no se veía en el código: con una sola forma
+     el aviso decía «Trae 1 plantillas de campo». `que` es el plural —que es
+     como ya se llamaba— y `uno` el singular. */
+  function loNoRestaurado(d) {
+    var fuera = [], n;
+    n = cuantasEntradas(d && d.campo);
+    if (n) fuera.push({ uno: 'plantilla de campo', que: 'plantillas de campo', cuantas: n });
+    n = cuantasEntradas(d && d.percepcion && d.percepcion.porSector);
+    if (n) fuera.push({ uno: 'anotación de percepción', que: 'anotaciones de percepción',
+                        cuantas: n, privada: true });
+    n = (d && d.trazos && d.trazos.length) || 0;
+    if (n) fuera.push({ uno: 'trazo guardado', que: 'trazos guardados', cuantas: n });
+    n = (d && d.conteos && typeof d.conteos === 'object')
+      ? Object.keys(d.conteos).length : 0;
+    if (n) fuera.push({ uno: 'conteo', que: 'conteos', cuantas: n });
+    return fuera;
   }
 
   /* Traer un respaldo. Las fichas que ya están NO se duplican ni se pisan: se
@@ -2774,7 +2897,7 @@
     var d;
     try { d = JSON.parse(String(texto || '')); }
     catch (e) { return { error: 'Ese archivo no es un respaldo de URBIS: no se pudo leer.' }; }
-    if (!d || d.formato !== RESPALDO_FORMATO || !Array.isArray(d.fichas)) {
+    if (!d || RESPALDO_FORMATOS.indexOf(d.formato) === -1 || !Array.isArray(d.fichas)) {
       return { error: 'Ese archivo no es un respaldo de URBIS. Busque el que dice «urbis-respaldo».' };
     }
     var buenas = d.fichas.filter(function (f) { return f && f.id && f.stats; });
@@ -2798,7 +2921,8 @@
     var g = escribirFichas(todas);
     if (!g.ok) return { error: g.error };
     return { ok: true, nuevas: nuevas.length, repetidas: repetidas,
-             noCupieron: noCupieron, guardado: g };
+             noCupieron: noCupieron, guardado: g,
+             formato: d.formato, noRestaurado: loNoRestaurado(d) };
   }
 
   function borrarFicha(id) {
@@ -12998,8 +13122,11 @@ function donaHTML(datos, colorDe, nombreDe) {
         if (r.error) { S.avisoPestana = arch.name + ': ' + r.error; }
         else {
           var partes = [];
+          /* Y el mismo defecto que el «Se bajaron 1 sector»: el plural iba en
+             el sustantivo y no en el verbo. Los dos estaban en el papel. */
           partes.push(r.nuevas
-            ? ('Entraron ' + r.nuevas + ' sector' + (r.nuevas === 1 ? '' : 'es') + '.')
+            ? (pl(r.nuevas, 'Entró ', 'Entraron ') + r.nuevas +
+               ' sector' + pl(r.nuevas, '', 'es') + '.')
             : 'No entró ninguno nuevo.');
           if (r.repetidas) {
             partes.push(r.repetidas + (r.repetidas === 1 ? ' ya estaba' : ' ya estaban') +
@@ -13009,6 +13136,22 @@ function donaHTML(datos, colorDe, nombreDe) {
             partes.push('Se quedaron fuera ' + r.noCupieron + ' por el tope de ' + MAX_FICHAS +
                         ' sectores: los más viejos.');
           }
+          /* Lo que el archivo traía de más y este módulo no restaura. Se
+             nombra cosa por cosa con su cuenta —no «hay datos extra»—,
+             porque lo que el lector necesita saber es qué se quedó en el
+             archivo y sigue estando ahí. */
+          /* EL VERBO VA SIN GÉNERO, a propósito. Decía «quedan archivadas»,
+             y sobre «2 trazos» y «2 conteos» —que son masculinos— el papel
+             imprimía «trazos … archivadas». Con un participio hay que
+             acertarle al género de cada cosa; con `queda` y `entra` no hay
+             nada que acertar, y una cosa nueva en la lista nace bien escrita
+             sin que su autor se acuerde. El número sí se concuerda, con `pl`. */
+          (r.noRestaurado || []).forEach(function (x) {
+            partes.push('Trae ' + x.cuantas + ' ' + pl(x.cuantas, x.uno, x.que) +
+              (x.privada ? ', que el módulo guarda para sí' : '') +
+              ': ' + pl(x.cuantas, 'se queda', 'se quedan') + ' en el archivo y ' +
+              pl(x.cuantas, 'no entra', 'no entran') + ' acá.');
+          });
           S.avisoPestana = partes.join(' ');
           // Lo que el archivado tenga que decir de la falta de espacio.
           contarLoGuardado(r.guardado);
@@ -32813,9 +32956,15 @@ function donaHTML(datos, colorDe, nombreDe) {
       var listo = descargarArchivo(paqR, 'urbis-respaldo-' +
         window.URBIS_FECHA.hoyCO() + '.json', 'application/json');
       S.avisoPestana = listo
-        ? ('Se bajaron ' + fichasR.length + ' sector' + (fichasR.length === 1 ? '' : 'es') +
+        /* Decía «Se bajaron 1 sector»: el plural estaba en el sustantivo y no
+           en el verbo. Lo encontró leer el papel, y llevaba ahí desde la
+           v707. */
+        ? (pl(fichasR.length, 'Se bajó ', 'Se bajaron ') + fichasR.length +
+           ' sector' + pl(fichasR.length, '', 'es') +
            ' en un archivo de ' + kb + ' KB. Guárdelo fuera del teléfono: es la copia de la ' +
-           'salida entera, con las marcas, los recorridos del curso y los lotes.')
+           'salida entera, con las marcas, los recorridos del curso y los lotes, y ' +
+           'desde hoy también las plantillas de campo, los trazos guardados y los ' +
+           'conteos. La percepción va rotulada como privada y solo se archiva.')
         : 'Este navegador no dejó bajar el archivo. Copie el texto de abajo y guárdelo a mano.';
       if (!listo) S.textoPlano = paqR;
       repintar(); return true;

@@ -16847,6 +16847,143 @@ console.log('\n  -- la resta del desplazamiento mide la barra ENTERA (v1157) --'
   }
 })();
 
+/* EL RESPALDO QUE SE LLEVA LA SALIDA ENTERA, Y DE VERDAD (v1169)
+   ==============================================================
+
+   El `urbis-respaldo-1` llevaba solo las fichas, y el aviso de la pestaña
+   decía «la copia de la salida entera». No viajaban las plantillas y la
+   percepción (`pcr_campo_v1`), los trazos guardados sin analizar
+   (`pcr_trazos_v1`) ni los conteos (`pcr_conteos_v1`): un teléfono que se
+   perdía se llevaba una tarde de plantillas con el respaldo hecho.
+
+   ESTA GUARDA ES LA MITAD ESTÁTICA, y conviene decir cuál es la otra (v945).
+   Lo que se puede leer del repositorio son cinco propiedades del código; lo
+   que PASA al armar y traer un archivo lo mide `trespaldo.js` en el
+   navegador, con sus siete aserciones. Las dos hacen falta y ninguna sustituye
+   a la otra: acá no se puede saber si un v1 restaura, y allá no se puede
+   saber si alguien dejó una lista copiada que todavía coincide.
+
+   Se lee sobre `soloCodigo`: el arreglo vino con comentarios largos que
+   nombran todo lo que la guarda busca, y leyéndolos pasaría en verde con el
+   código borrado (v926). */
+(function () {
+  const codigo = soloCodigo(leer('js/68-procity-reconocimiento.js'));
+  const trozo = function (nombre) {
+    const i = codigo.indexOf('\n  function ' + nombre + '(');
+    if (i === -1) return '';
+    const j = codigo.indexOf('\n  function ', i + 12);
+    return codigo.slice(i, j === -1 ? codigo.length : j);
+  };
+  const armar = trozo('respaldoDeTodo');
+  const traer = trozo('traerRespaldo');
+  const repartir = trozo('repartirCampo');
+
+  comprobar('MATERIAL · se encuentran las tres funciones del respaldo',
+    !!(armar && traer && repartir),
+    (armar ? 'respaldoDeTodo' : 'FALTA respaldoDeTodo') + ' · ' +
+    (traer ? 'traerRespaldo' : 'FALTA traerRespaldo') + ' · ' +
+    (repartir ? 'repartirCampo' : 'FALTA repartirCampo') +
+    '. Sin ellas las cinco de abajo pasarían por no tener nada delante');
+
+  if (armar && traer && repartir) {
+    /* 1 · DOS FORMATOS ENTRAN. El token que sale subió a 2, así que la puerta
+       de entrada tenía que dejar de compararse contra UNO: comparada contra
+       `RESPALDO_FORMATO` sola, un archivo bajado ayer deja de restaurar, y un
+       respaldo que no lee sus propios archivos viejos no es un respaldo. */
+    const listaEntran = /var RESPALDO_FORMATOS = \[([^\]]*)\]/.exec(codigo);
+    const cuantosEntran = listaEntran
+      ? listaEntran[1].split(',').filter(function (x) { return /respaldo-\d/.test(x); }).length : 0;
+    const puertaMira = /RESPALDO_FORMATOS\.indexOf\(\s*d\.formato\s*\)/.test(traer);
+    comprobar('la puerta de entrada acepta los DOS formatos, no solo el que sale',
+      cuantosEntran >= 2 && puertaMira,
+      (cuantosEntran >= 2 && puertaMira)
+        ? cuantosEntran + ' formatos declarados en `RESPALDO_FORMATOS` y la puerta los mira con ' +
+          '`indexOf`, no contra el token que sale. NO comprueba que un v1 de verdad restaure: ' +
+          'eso lo mide `trespaldo.js` con un archivo armado a mano'
+        : (!puertaMira
+            ? 'la puerta compara contra un solo formato, así que un archivo bajado antes de ' +
+              'este cambio deja de restaurar sin decir por qué'
+            : 'solo ' + cuantosEntran + ' formato(s) en la lista de los que entran'));
+
+    /* 2 · LAS FICHAS PASAN TAL CUAL. Es lo que hace que el formato de la
+       ficha no haya cambiado y que un v1 y un v2 traigan los mismos bytes. Un
+       `.map` sobre ellas —«de paso le agrego la cuenta»— los separa, y desde
+       afuera no se ve: el archivo sigue abriéndose. */
+    const pasanTalCual = /fichas:\s*fichas\s*\|\|\s*\[\]/.test(armar);
+    comprobar('las fichas PASAN tal cual al paquete, sin copiarlas con arreglos',
+      pasanTalCual,
+      pasanTalCual
+        ? 'el paquete las toma sin tocarlas, así que las del v2 son las mismas que las del v1. ' +
+          'La igualdad byte a byte la mide `trespaldo.js`; acá se mide que no haya por dónde ' +
+          'separarse'
+        : 'las fichas se transforman antes de guardarlas en el paquete: el formato de la ficha ' +
+          'cambió, que es justamente lo que el pedido decía no tocar');
+
+    /* 3 · LOS PANELES DE PERCEPCIÓN SE LEEN, NO SE COPIAN. `PANELES_DE_PERCEPCION`
+       se deriva de sus títulos. Una copia acá coincide el día que se escribe
+       y se separa el día que se agregue un panel —clase B—, y entonces el
+       panel nuevo sale del montón que no le toca: SIN el rótulo de privada,
+       que es el fallo que el rótulo existe para impedir. */
+    const losLee = /PANELES_DE_PERCEPCION/.test(repartir);
+    const losCopia = /['"][a-z]+-[a-z-]+['"]\s*,\s*['"][a-z]+-[a-z-]+['"]/.test(repartir);
+    comprobar('los paneles de percepción se LEEN de su lista derivada, no se copian',
+      losLee && !losCopia,
+      (losLee && !losCopia)
+        ? 'el reparto nombra `PANELES_DE_PERCEPCION`, que sale de los títulos: un panel nuevo ' +
+          'cae del lado privado sin que su autor se acuerde. NO comprueba que la lista derivada ' +
+          'sea la correcta, solo que no haya una segunda copia que se pueda separar'
+        : (losCopia ? 'el reparto lleva una lista de slugs escrita a mano: el día que se agregue ' +
+                      'un panel saldrá sin rótulo y esta guarda seguiría en verde'
+                    : 'el reparto no nombra `PANELES_DE_PERCEPCION`: reparte por otra cosa'));
+
+    /* 4 · LO QUE SE IGNORA SE DICE. El módulo viejo no restaura lo de más, y
+       eso es correcto —el pedido era extender el respaldo, no reescribirlo—,
+       pero ignorarlo en silencio se lee igual que no traer nada: el hueco
+       donde tendría que estar la advertencia, con el lector completándolo. */
+    const loDice = /noRestaurado:\s*loNoRestaurado\(/.test(traer);
+    comprobar('lo que el archivo trae de más se ignora Y SE DICE, no en silencio',
+      loDice,
+      loDice
+        ? 'el resultado de traer lleva `noRestaurado`, cosa por cosa con su cuenta. Que la ' +
+          'pestaña lo IMPRIMA es la guarda de la guarda y la mide `trespaldo.js`'
+        : 'traer un v2 no declara lo que dejó fuera: desde afuera se lee igual que si el ' +
+          'archivo no lo trajera');
+
+    /* 5 · Y NO ESCRIBE LOS TRES ALMACENES. El atajo de «ya que estamos,
+       restauremos todo» pisaría una tarde de plantillas con lo que trajo un
+       archivo de otro teléfono. Escribe `pcr_fichas_v1`, que es su trabajo. */
+    const pisa = ['CAMPO_KEY', 'TRAZOS_KEY', 'CONTEOS_KEY'].filter(function (k) {
+      return new RegExp('setItem\\(\\s*' + k).test(traer) ||
+             new RegExp('escribir(Campo(Todo)?|Trazos|Conteos)\\s*\\(').test(traer);
+    });
+    comprobar('y traer un respaldo no escribe pcr_campo_v1, pcr_trazos_v1 ni pcr_conteos_v1',
+      pisa.length === 0,
+      pisa.length === 0
+        ? 'traer solo escribe las fichas, que es su trabajo. Los tres almacenes del teléfono ' +
+          'quedan como estaban, y `trespaldo.js` lo comprueba con una marca reconocible en ' +
+          'cada uno'
+        : 'traer escribe en ' + pisa.join(' · ') + ': un archivo de otro teléfono pisaría una ' +
+          'tarde de plantillas de este');
+
+    /* Y LAS DOS REDACCIONES DEL RÓTULO (v970). La de «no privada» es la que
+       hace falta el día que el registro cambie de opinión, y escribirla ahora
+       es lo que impide que ese día el archivo salga sin rótulo ninguno. */
+    const rot = trozo('rotuloDePercepcion');
+    const dos = !!rot && /PRIVADA/.test(rot) && /No privada/.test(rot);
+    const pregunta = /URBIS_MODULOS/.test(trozo('campoPrivadoDelEducativo'));
+    comprobar('el rótulo de la percepción tiene las dos redacciones y se le PREGUNTA al registro',
+      dos && pregunta,
+      (dos && pregunta)
+        ? 'las dos redacciones escritas —la de privada y la de no privada— y el estado sale de ' +
+          '`URBIS_MODULOS`, no de una copia: el rótulo del archivo y la declaración del ' +
+          'registro no pueden separarse'
+        : (!dos ? 'falta una de las dos redacciones: el día que el registro cambie, el archivo ' +
+                  'sale sin rótulo' 
+                : 'el rótulo no le pregunta al registro: es una segunda codificación de lo que ' +
+                  'js/03h ya declara, y se separan'));
+  }
+})();
+
 /* Las dos cuentas van APARTE porque piden cosas distintas: una fallada hay
    que arreglarla, una sin material hay que mirarla —o se quedó sin él porque
    el registro mejoró, o porque la función dejó de ver lo que medía—. Sumarlas
