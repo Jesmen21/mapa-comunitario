@@ -1,4 +1,4 @@
-const URBIS_CACHE = 'urbis-v1172-el-cierre-del-lote-dice-lo-mismo-que-la-caja';
+const URBIS_CACHE = 'urbis-v1173-ningun-cierre-de-banda-afirma-sin-mirar-un-dato';
 const URBIS_ASSETS = [
   './',
   './index.html',

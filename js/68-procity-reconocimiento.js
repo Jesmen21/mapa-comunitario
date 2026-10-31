@@ -10210,7 +10210,29 @@ function donaHTML(datos, colorDe, nombreDe) {
               ? 'Lo que el sitio le pone al proyecto: ' + partes.join(' · ') + '.'
               : 'Sin terreno, clima ni foto leída, la banda muestra lo poco que hay y no alcanza para una conclusión propia.';
           case 'tiempo':
-            return 'Las estampas comparan el mismo encuadre año a año: lo que cambió de color es lo que se construyó, se taló o se pavimentó. Leer la dirección del cambio es tarea de quien proyecta.';
+            /* DESCRIBÍA UNA FIGURA QUE PUEDE NO ESTAR. La frase era fija y
+               explicaba cómo leer unas estampas año a año; con la serie
+               satelital sin leer la banda sale con CERO imágenes y su propio
+               contenido dice «Huella construida · serie satelital no leída».
+               Así que la hoja se contradecía sola: el cuerpo declaraba la
+               ausencia y el cierre enseñaba a leer lo ausente. Compuesta y
+               leída, no hacía falta el código para verlo.
+               El discriminante ya estaba y ya se usaba en otro sitio
+               —`presionDeCrecimiento(...).medidas`, que js/18 mira para
+               decidir si la caja está lista—: es la clase C, un dato que el
+               sistema calcula y que esta superficie no alcanzaba. */
+            var pres = null;
+            try { pres = presionDeCrecimiento(evoDe(o), st); } catch (eT) {}
+            var medidas = pres ? Number(pres.medidas) : 0;
+            if (!medidas) {
+              return 'Ninguno de los tres proxies de presión está medido todavía, así que esta ' +
+                     'banda dice qué haría falta y no cuánto creció el sector. Cada renglón trae ' +
+                     'cómo se consigue el suyo.';
+            }
+            return pl(medidas, 'El proxy medido', 'Los ' + medidas + ' proxies medidos') +
+                   ' compara' + pl(medidas, '', 'n') + ' el mismo sector entre dos fechas: lo que ' +
+                   'cambió es lo que se construyó, se taló o se pavimentó. Ninguno mide la presión ' +
+                   'directamente, y leer la dirección del cambio es tarea de quien proyecta.';
           case 'movilidad':
             var ac = st.accesibilidad, mv = st.movilidad;
             if (ac && (ac.categorias || []).length) {
@@ -10249,7 +10271,23 @@ function donaHTML(datos, colorDe, nombreDe) {
             if (st.mezcla && st.mezcla.usos >= 1)
               partes.push('mezcla ' + (st.mezcla.indice >= 0.55 ? 'alta' : st.mezcla.indice < 0.35 ? 'baja' : 'media') +
                 ' (índice ' + num(st.mezcla.indice) + ')');
-            return partes.length ? partes.join(' · ') + '.' : 'Sin censo ni usos clasificados no hay lectura demográfica que hacer.';
+            /* CULPABA A LOS USOS, QUE SÍ ESTABAN. Decía «Sin censo ni usos
+               clasificados no hay lectura demográfica que hacer» y en el papel
+               que lo delató el sector traía 120 usos clasificados en tres
+               grupos: lo que faltaba era el ancla del censo y los índices que
+               el motor deriva de ella, no los usos. Nombrar una causa falsa
+               manda a buscar lo que ya está (v861).
+               Y las dos causas se dicen APARTE porque piden cosas distintas
+               (v899): el ancla del DANE se consigue, y un reparto que el motor
+               no devolvió se vuelve a correr. */
+            if (partes.length) return partes.join(' · ') + '.';
+            var hayUsos = Number(st.total || 0) > 0;
+            return 'Sin el ancla de población del censo' +
+              (hayUsos
+                ? ' —y sin el reparto por uso que el motor deriva de ella— no hay lectura ' +
+                  'demográfica que hacer, aunque el sector tenga ' + fmt(st.total) + ' ' +
+                  pl(st.total, 'uso registrado', 'usos registrados') + '.'
+                : ' ni usos clasificados no hay lectura demográfica que hacer.');
           case 'forma':
             var ll = trz && trz.llenos;
             if (ll && ll.pctLleno != null) partes.push(num(ll.pctLleno) + ' % del suelo construido');

@@ -17240,6 +17240,119 @@ console.log('\n  -- la resta del desplazamiento mide la barra ENTERA (v1157) --'
                      'que archivar un sector visto y sin editar lo deja en `no-se-sabe`')));
 })();
 
+/* NINGÚN CIERRE DE BANDA AFIRMA SIN MIRAR UN DATO (v1173)
+   =======================================================
+
+   Cada banda del pliego abre con su pregunta y cierra con su conclusión, y la
+   conclusión es lo último que lee quien mira la lámina colgada. Compuestas y
+   leídas las doce, DOS afirmaban material que no habían comprobado:
+
+   · el cierre del TIEMPO explicaba cómo leer unas estampas año a año con la
+     serie satelital sin leer: la banda salía con CERO imágenes y su propio
+     cuerpo decía «Huella construida · serie satelital no leída». La hoja se
+     contradecía sola;
+   · el DEMOGRÁFICO decía «Sin censo ni usos clasificados» sobre un sector con
+     120 usos clasificados en tres grupos: nombraba una causa falsa, que manda
+     a buscar lo que ya está (v861).
+
+   El del LOTE era el tercero y lo arregló la v1172.
+
+   SE PERSIGUE LA CLASE (v874): **un cierre que no mira ningún dato no puede
+   fallar hacia el lado seguro**, porque no tiene con qué saber si lo que
+   afirma está en la banda. Medido sobre los doce, hoy once miran un dato y
+   queda UNO.
+
+   LA EXENCIÓN VA POR ÍTEM, CON SU RAZÓN Y MEDIDA (v1094), nunca por regla:
+   una regla eximiría los doce de una vez y una razón hay que pensarla una por
+   una. La única eximida es `sintesis` —«Cinco propuestas ordenadas por
+   necesidad medida…»—, y su razón no es una opinión: `propuestasDeUso`
+   devuelve `slice(0, 5)` sobre una lista que **siempre** llega a cinco,
+   comprobado en el navegador con un sector vacío, con usos y con resultado
+   nulo: cinco en los tres. Si algún día devolviera menos, la frase pasaría a
+   ser falsa y la exención habría que retirarla.
+
+   CÓMO SE MIDE, y esto costó una vuelta: **los literales se quitan antes de
+   buscar**. Buscar identificadores sobre el código en crudo caza palabras
+   dentro de la prosa castellana —`traiga(`, `calle.`, `predio,`— y da tres
+   falsos negativos de doce. El descriminante se mide contra sus falsos
+   positivos, no se elige (v874, v885).
+
+   LO QUE NO CUBRE (v945): no comprueba que el dato que mira sea el correcto ni
+   que la frase sea cierta. Eso lo dice el papel, y es lo que encontró estos
+   tres. Comprueba que ningún cierre pueda afirmar a ciegas. */
+(function () {
+  const codigo = soloCodigo(leer('js/68-procity-reconocimiento.js'));
+  const i = codigo.indexOf('function conclusionDeBanda(');
+  const fin = i === -1 ? -1 : codigo.indexOf('\n    function ', i + 10);
+  const cuerpo = i === -1 ? '' : codigo.slice(i, fin > i ? fin : i + 16000);
+  const casos = cuerpo.split(/case '/).slice(1).map(function (p) {
+    const j = p.indexOf("'");
+    return { id: p.slice(0, j), cuerpo: p.slice(j + 1).split('\n          case ')[0] };
+  });
+
+  /* EXENTOS, uno por uno y con su razón. La razón se discute; una regla no. */
+  const EXENTOS = {
+    sintesis: 'describe lo que la banda ES —cinco propuestas— y `propuestasDeUso` ' +
+              'devuelve siempre cinco: medido en el navegador con un sector vacío, con usos ' +
+              'y con resultado nulo'
+  };
+
+  comprobar('MATERIAL · se encuentran los cierres de banda del pliego',
+    casos.length >= 8,
+    casos.length >= 8
+      ? casos.length + ' cierres: ' + casos.map(function (c) { return c.id; }).join(' · ')
+      : 'solo ' + casos.length + ': el recorte no encontró la función, así que la ' +
+        'comprobación de abajo pasaría por no tener nada delante');
+
+  if (casos.length >= 8) {
+    /* Los literales se quitan ANTES de buscar: sin esto, las palabras de la
+       prosa pasan por desreferencias de datos. */
+    const sinTexto = function (t) {
+      return String(t).replace(/'(?:[^'\\]|\\.)*'/g, "''").replace(/"(?:[^"\\]|\\.)*"/g, '""');
+    };
+    const mira = /[A-Za-z_$][\w$]*\s*[.[]/;
+    const ciegos = casos.filter(function (c) {
+      return !EXENTOS[c.id] && !mira.test(sinTexto(c.cuerpo));
+    });
+    const eximidos = casos.filter(function (c) { return !!EXENTOS[c.id]; });
+
+    comprobar('ningún cierre de banda afirma sin mirar un dato',
+      ciegos.length === 0,
+      ciegos.length === 0
+        ? (casos.length - eximidos.length) + ' de ' + casos.length + ' miran un dato, y ' +
+          eximidos.length + ' va' + (eximidos.length === 1 ? '' : 'n') + ' eximido' +
+          (eximidos.length === 1 ? '' : 's') + ' con su razón: ' +
+          eximidos.map(function (c) { return c.id + ' (' + EXENTOS[c.id] + ')'; }).join(' · ') +
+          '. Leído sobre el CÓDIGO y con los literales quitados antes de buscar, porque la ' +
+          'prosa castellana trae palabras seguidas de punto y de paréntesis. ' +
+          'Y LO QUE NO ALCANZA, medido: coge el cierre que no mira NADA —el del tiempo, que ' +
+          'describía estampas ausentes— y NO coge el que mira un dato y nombra una causa ' +
+          'FALSA. El demográfico decía «sin usos clasificados» sobre un sector con 120, y ' +
+          'leía `partes.length`: la inyección que lo devuelve a ese estado sale VERDE acá. ' +
+          'Eso no es un hueco que se pueda cerrar leyendo el repositorio —que una frase sea ' +
+          'cierta solo lo dice el papel— y por eso va escrito donde se lee'
+        : 'afirman sin mirar nada: ' + ciegos.map(function (c) { return c.id; }).join(' · ') +
+          '. Un cierre sin discriminante no puede saber si lo que afirma está en su banda, y ' +
+          'la lámina se contradice sola');
+
+    /* LA GUARDA DE LA GUARDA: que la exención sea por ÍTEM. Si alguien
+       convierte el objeto en una lista de ids sin razón, o en una regla, esto
+       se pone rojo (v1094, v1118). */
+    const conRazon = Object.keys(EXENTOS).filter(function (k) {
+      return typeof EXENTOS[k] === 'string' && EXENTOS[k].trim().length > 24;
+    }).length;
+    comprobar('y cada cierre eximido lleva su razón escrita, no una regla',
+      conRazon === Object.keys(EXENTOS).length,
+      conRazon === Object.keys(EXENTOS).length
+        ? (conRazon === 1 ? 'el único eximido lleva razón de verdad'
+                            : 'los ' + conRazon + ' eximidos llevan razón de verdad') +
+          '. Una regla eximiría los ' +
+          casos.length + ' de una vez; una razón hay que pensarla una por una'
+        : (Object.keys(EXENTOS).length - conRazon) + ' eximido(s) sin razón escrita: eso es ' +
+          'una lista de excepciones, que es como una guarda envejece hasta no significar nada');
+  }
+})();
+
 /* Las dos cuentas van APARTE porque piden cosas distintas: una fallada hay
    que arreglarla, una sin material hay que mirarla —o se quedó sin él porque
    el registro mejoró, o porque la función dejó de ver lo que medía—. Sumarlas

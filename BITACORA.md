@@ -31883,3 +31883,100 @@ los estados, y rehecha muerde: «1 de 5 caminos devuelven sin `cierre`».
 * **No implementa el id ni el `formatoDescripcion`.** `cerrado en v1171 ·
   medido y declinado`.
 * **No mide el re-llaveo por `lat`.** `pendiente` — lo corre Daniel.
+
+## v1173 · ningún cierre de banda afirma sin mirar un dato
+
+Tanda de lectura: se compuso la lámina y se leyeron los cierres de banda uno
+por uno contra lo que su banda enseña de verdad.
+
+### Y la primera corrección es mía: son DOCE, no cinco
+
+Al cerrar la v1172 escribí que quedaban cinco —«ubicacion, usos, gente, forma,
+campo»—. **Está mal de dos maneras**: los cierres son **doce** y dos de los que
+nombré no existen (`usos` y `gente`; la banda de la gente es `demografico` y no
+hay ninguna de usos). Los medí en vez de recordarlos: `ubicacion`, `ambiental`,
+`tiempo`, `movilidad`, `demografico`, `forma`, `lote`, `campo`, `medir`,
+`riesgo`, `coherencia`, `sintesis`. Lo escribo porque una lista de pendientes
+inventada de memoria manda a la tanda siguiente a mirar donde no hay nada.
+
+### Los dos que afirmaban material que no tenían
+
+**El cierre del TIEMPO describía una figura ausente.** Devolvía una frase fija:
+«Las estampas comparan el mismo encuadre año a año: lo que cambió de color es
+lo que se construyó…». Con la serie satelital sin leer, la banda sale con
+**cero imágenes** y su propio cuerpo imprime «Huella construida · **serie
+satelital no leída**». Así que **la hoja se contradecía sola**: el cuerpo
+declaraba la ausencia y el cierre enseñaba a leer lo ausente.
+
+Y el discriminante **ya estaba y ya se usaba en otro sitio**:
+`presionDeCrecimiento(...).medidas`, que js/18 mira para decidir si la caja
+está lista. Es la clase C en un cierre: un dato que el sistema calcula y que
+esta superficie no alcanzaba.
+
+**El DEMOGRÁFICO nombraba una causa falsa.** Decía «Sin censo **ni usos
+clasificados** no hay lectura demográfica que hacer» sobre un sector con **120
+usos clasificados en tres grupos**. Lo que faltaba era el ancla del censo y los
+índices que el motor deriva de ella. Nombrar una causa falsa manda a buscar lo
+que ya está (v861), y las dos causas se dicen **aparte** porque piden cosas
+distintas (v899): un ancla del DANE se consigue; un reparto que el motor no
+devolvió se vuelve a correr.
+
+### Los otros diez, leídos y en pie
+
+Conviene decir que **diez estaban bien**, y dos de ellos notablemente: el de
+`coherencia` imprime «0 de 12 pasan · 12 no se pueden correr y nombran la
+fuente que faltaría. Un chequeo que no se pudo correr no es un chequeo que
+pasa», y el de `ambiental` dice «no alcanza para una conclusión propia» en vez
+de inventarse una. Esa es la redacción que a los dos arreglados les faltaba.
+
+### La guarda, y su exención medida
+
+**Un cierre que no mira ningún dato no puede fallar hacia el lado seguro**,
+porque no tiene con qué saber si lo que afirma está en su banda. Medido sobre
+los doce: hoy **once miran un dato** y queda uno.
+
+La exención va **por ítem, con su razón, y la razón está medida** (v1094): la
+única eximida es `sintesis` —«Cinco propuestas ordenadas por necesidad medida
+y factibilidad del predio»—, y su razón no es una opinión: `propuestasDeUso`
+hace `slice(0, 5)` sobre una lista que **siempre** llega a cinco, comprobado en
+el navegador con un sector vacío, con usos y con resultado nulo: **cinco en los
+tres**. Si algún día devolviera menos, la frase pasaría a ser falsa y la
+exención habría que retirarla. Con su guarda de la guarda: que la exención siga
+siendo una razón y no una lista de ids.
+
+**Y una vuelta que costó medir el discriminante:** buscar identificadores sobre
+el código en crudo caza **palabras de la prosa castellana** —`traiga(`,
+`calle.`, `predio,`— y daba tres falsos negativos de doce, es decir decía que
+`medir`, `coherencia` y `sintesis` no miraban nada cuando dos de los tres sí.
+Los literales se quitan **antes** de buscar. El discriminante se mide contra
+sus falsos positivos, no se elige (v874, v885).
+
+### Lo que la guarda NO alcanza, medido con una inyección
+
+La inyección que devuelve el cierre demográfico a su estado de ayer **sale
+VERDE**. No es un fallo de la inyección: el cierre viejo **sí miraba un dato**
+—`partes.length`—, y su defecto era el CONTENIDO de la frase. Una guarda que
+lee el repositorio puede comprobar que haya discriminante; que lo que se afirma
+sea cierto **solo lo dice el papel**.
+
+Así que de los tres defectos de esta familia, la guarda coge **uno**: el que no
+mira nada. Va escrito en el detalle del verde, donde se lee, en vez de dejar
+que el verde parezca cubrir las tres cosas (v945, v952).
+
+**Dos inyecciones en rojo y una verde declarada**, que es más honesto que tres
+en rojo mal contadas.
+
+**865 verdes, 3 sin material, 0 fallos** (eran 863 y 3).
+
+### Lo que esta versión NO hace
+
+* **No vuelve a leer los diez cierres que estaban bien.** `cerrado en v1173 ·
+  medido y declinado` — se leyeron los doce una vez y diez dicen algo cierto
+  sobre lo que su banda enseña. No hace falta volver.
+* **No lee los cierres con las bandas LLENAS.** `pendiente` — la ficha de
+  prueba de este contenedor no trae terreno, clima, foto ni movilidad, así que
+  los cierres de `ambiental`, `movilidad`, `forma` y `riesgo` se leyeron en su
+  rama de AUSENCIA y no en la de material. Esa mitad pide el motor y un sector
+  de verdad: va en la prueba de humo de Daniel.
+* **No publica nada a `main`.** `pendiente` — espera la prueba de humo y el
+  commit exacto que Daniel nombre.
