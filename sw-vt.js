@@ -13,7 +13,7 @@
 
    La versión va acá y en vision-territorial.html, idéntica, como en los
    otros siete archivos de versión del sitio: revisar.js lo comprueba. */
-const VT_CACHE = 'urbis-vt-v1170-la-procedencia-de-los-indices-no-se-afirma-a-ciegas';
+const VT_CACHE = 'urbis-vt-v1171-los-indices-de-ejemplo-entran-en-pareja';
 const VT_ASSETS = [
   './vision-territorial.html',
   './css/90-vt.css',

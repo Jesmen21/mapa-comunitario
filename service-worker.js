@@ -1,4 +1,4 @@
-const URBIS_CACHE = 'urbis-v1170-la-procedencia-de-los-indices-no-se-afirma-a-ciegas';
+const URBIS_CACHE = 'urbis-v1171-los-indices-de-ejemplo-entran-en-pareja';
 const URBIS_ASSETS = [
   './',
   './index.html',

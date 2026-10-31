@@ -2572,7 +2572,13 @@
          un sector reabierto con los siete índices del POT puestos volvía
          diciendo «cuenta de ejemplo»: la única señal de que un número salió
          de la ficha normativa es que alguien lo escribió. */
-      indicesPuestos: S.indicesPuestos || null,
+      /* CON ÍNDICES, EL REGISTRO VA VACÍO Y NO AUSENTE. `|| null` convertía
+         «ninguno escrito» en «no se sabe» al archivar, y el estado
+         `no-se-sabe` existe solo para las fichas de antes de que esto se
+         guardara. Es la segunda mitad de la pareja de arriba, en el otro
+         extremo: allá se pone al mostrar la hoja, acá se conserva al
+         archivarla. */
+      indicesPuestos: S.indices ? (S.indicesPuestos || {}) : (S.indicesPuestos || null),
       indicesFuente: S.indicesFuente || null,
       /* Las huellas de los edificios y las calles, comprimidas. Ver
          `trazadoParaGuardar`: es lo que hace que un sector reabierto en casa
@@ -5449,6 +5455,32 @@
      trae `indices` propios, los números impresos SON los de ejemplo y eso es
      seguro, no hay nada que no se sepa. Solo cuando trae índices y no trae el
      registro hay una duda de verdad. */
+  /* LOS ÍNDICES DE EJEMPLO ENTRAN EN PAREJA: el valor y el registro VACÍO.
+     ────────────────────────────────────────────────────────────────────
+     Son dos campos y un solo hecho —«la hoja arrancó con los valores de
+     ejemplo y nadie ha escrito ninguno»—, así que ponerlos por separado es la
+     clase B, y se separaron: la hoja hacía
+     `S.indices || (S.indices = Q.porDefecto())` y dejaba `S.indicesPuestos`
+     en **null**. Con eso un sector recién abierto, visto y sin editar caía en
+     `no-se-sabe` y el papel decía «se archivó antes de que URBIS guardara
+     cuáles se escribieron a mano» de una ficha archivada ese mismo día.
+
+     La diferencia entre `{}` y `null` es la que sostiene el cuarto estado:
+     `{}` es «hay registro y dice que ninguno» —eso es una cuenta de ejemplo
+     MEDIDA— y `null` es «no hay registro», que solo puede pasarle a una ficha
+     vieja. Rellenar el valor sin rellenar el registro convierte lo primero en
+     lo segundo.
+
+     `cabe-reiniciar` ya ponía los dos desde que existe; esta función es esa
+     pareja con nombre, para que no haya una tercera copia que se separe. */
+  function ponerIndicesDeEjemplo() {
+    var Q = window.URBIS_QUE_CABE;
+    if (!Q) return null;
+    S.indices = Q.porDefecto();
+    S.indicesPuestos = {};      // PRESENTE y vacío, que no es lo mismo que ausente
+    return S.indices;
+  }
+
   function procedenciaDeIndices(q, puestos, propios) {
     var tot = (q && Number(q.delPot)) || 0;
     var conf = (q && Number(q.confirmados)) || 0;
@@ -13193,7 +13225,7 @@ function donaHTML(datos, colorDe, nombreDe) {
       if (!c) return;
       var Q = window.URBIS_QUE_CABE;
       if (!Q) return;
-      S.indices = S.indices || Q.porDefecto();
+      S.indices = S.indices || ponerIndicesDeEjemplo();
       var v = Number(c.value);
       // Un índice negativo o vacío no es una opinión: es un error de tecleo.
       var cual = c.getAttribute('data-pcr-idx');
@@ -13715,8 +13747,7 @@ function donaHTML(datos, colorDe, nombreDe) {
       if (acc === 'cabe-reiniciar') {
         var QR = window.URBIS_QUE_CABE;
         if (!QR) return;
-        S.indices = QR.porDefecto();
-        S.indicesPuestos = {};
+        ponerIndicesDeEjemplo();
         S.aviso = 'Volvieron los valores de ejemplo. No son la norma de Cúcuta: son un ' +
                   'punto de partida para que la cuenta arranque.';
         guardarFichaViva(); pintar(); return;
@@ -28888,7 +28919,7 @@ function donaHTML(datos, colorDe, nombreDe) {
         'lado: cuánto se puede construir ahí y cuánta gente cabe. <b>Marque el lote</b> y se ' +
         'llena.</p>';
     }
-    var idx = S.indices || (S.indices = Q.porDefecto());
+    var idx = S.indices || ponerIndicesDeEjemplo();
     var q = Q.calcular(la, idx, ctxQueCabe(), S.indicesPuestos);
     if (!q) return '';
 

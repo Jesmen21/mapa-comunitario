@@ -17102,6 +17102,92 @@ console.log('\n  -- la resta del desplazamiento mide la barra ENTERA (v1157) --'
       : faltan.join(' · ') + '. El guardado los tiene; lo que falla es el camino de vuelta');
 })();
 
+/* LOS ÍNDICES DE EJEMPLO ENTRAN EN PAREJA (v1171)
+   ===============================================
+
+   El valor y el registro vacío son dos campos y UN SOLO HECHO —«la hoja
+   arrancó con los de ejemplo y nadie ha escrito ninguno»—, así que ponerlos
+   por separado es la clase B. Y se separaron: la hoja hacía
+   `S.indices || (S.indices = Q.porDefecto())` sin tocar `S.indicesPuestos`,
+   que se quedaba en **null**. Con ese par, un sector recién abierto, visto y
+   sin editar caía en `no-se-sabe`, y el papel decía «se archivó antes de que
+   URBIS guardara cuáles se escribieron a mano» de una ficha archivada ESE
+   MISMO DÍA. Reproducido en el papel antes de tocar nada, en las dos
+   superficies.
+
+   LO QUE SOSTIENE EL CUARTO ESTADO es la diferencia entre `{}` y `null`: `{}`
+   es «hay registro y dice que ninguno» —una cuenta de ejemplo MEDIDA— y
+   `null` es «no hay registro», que solo le puede pasar a una ficha de antes
+   de que esto se guardara. Rellenar el valor sin rellenar el registro
+   convierte lo primero en lo segundo, en silencio.
+
+   LA REGLA, que es lo que se comprueba: **solo `ponerIndicesDeEjemplo` pone
+   los índices de ejemplo**, y pone los dos. Un dueño para la pareja, en vez
+   de tres sitios acordándose.
+
+   LO QUE NO CUBRE (v945): no comprueba qué texto sale de cada estado —eso lo
+   dice el papel, y es lo que encontró este defecto—. Comprueba que la pareja
+   no se pueda volver a separar.
+
+   Se lee sobre `soloCodigo` (v926): el arreglo vino con comentarios que
+   nombran todo lo que la guarda busca. */
+(function () {
+  const codigo = soloCodigo(leer('js/68-procity-reconocimiento.js'));
+  const trozos = codigo.split(/\n  function /).map(function (t, i) {
+    return { nombre: i === 0 ? '(cabecera)' : String(t.split(/[(\s]/)[0] || '?'), cuerpo: t };
+  });
+  const duena = trozos.filter(function (t) { return t.nombre === 'ponerIndicesDeEjemplo'; })[0];
+
+  const poneLasDos = !!duena &&
+    /S\.indices\s*=\s*Q\.porDefecto\(\)/.test(duena.cuerpo) &&
+    /S\.indicesPuestos\s*=\s*\{\s*\}/.test(duena.cuerpo);
+  comprobar('MATERIAL · hay una dueña de la pareja y pone las DOS mitades',
+    poneLasDos,
+    !duena ? 'no existe `ponerIndicesDeEjemplo`: sin ella la comprobación de abajo no tiene ' +
+             'contra qué medir'
+           : (poneLasDos
+              ? 'pone `S.indices` con los de ejemplo y `S.indicesPuestos` en `{}` — registro ' +
+                'PRESENTE y vacío, que no es lo mismo que ausente'
+              : 'existe pero no pone las dos mitades, así que ser la dueña no garantiza nada'));
+
+  /* Y NADIE MÁS los pone. Se busca la FORMA —asignar `porDefecto()` a
+     `S.indices`— y no los sitios que existían el día que se escribió esto
+     (v1149): uno nuevo mañana cae igual. */
+  const RE = /S\.indices\s*=\s*(?:S\.indices\s*\|\|\s*)?[A-Za-z_$][\w$]*\.porDefecto\(\)/g;
+  const fuera = trozos.filter(function (t) {
+    return t.nombre !== 'ponerIndicesDeEjemplo' && new RegExp(RE.source).test(t.cuerpo);
+  });
+  comprobar('y ningún otro sitio pone los índices de ejemplo por su cuenta',
+    poneLasDos && fuera.length === 0,
+    (poneLasDos && fuera.length === 0)
+      ? 'solo la dueña los pone; los tres sitios que los ponían pasan por ella. Un sitio ' +
+        'nuevo que asigne `porDefecto()` a `S.indices` sale en rojo, aunque se acuerde de ' +
+        'poner el registro: lo que se vigila es que la pareja tenga UN dueño'
+      : (fuera.length
+          ? 'los ponen por su cuenta: ' + fuera.map(function (t) { return t.nombre; }).join(' · ') +
+            '. Ahí la pareja se puede separar otra vez, y el síntoma es un sector sin editar ' +
+            'diciendo que no se sabe de dónde salen sus índices'
+          : 'nadie los pone por su cuenta, pero la DUEÑA no pone las dos mitades (ver arriba): ' +
+            'tener un solo dueño no sirve de nada si ese dueño deja el registro sin poner'));
+
+  /* Y AL ARCHIVAR. El otro extremo de la misma pareja: `|| null` a secas
+     convertía «ninguno escrito» en «no se sabe» en el momento de guardar. */
+  const guardar = trozos.filter(function (t) { return t.nombre === 'guardarFicha'; })[0];
+  const linea = guardar ? /indicesPuestos:\s*([^\n]*)/.exec(guardar.cuerpo) : null;
+  const condicionada = !!linea && /S\.indices\s*\?/.test(linea[1]);
+  comprobar('y al archivar, con índices el registro va VACÍO y no ausente',
+    condicionada,
+    !guardar ? 'no se encontró `guardarFicha`'
+      : (!linea ? '`guardarFicha` no escribe `indicesPuestos`: una ficha nueva nacería sin ' +
+                  'registro y caería en `no-se-sabe` para siempre'
+                : (condicionada
+                   ? 'la escribe condicionada a que haya índices: con índices, `{}`; sin ' +
+                     'ellos, lo que hubiera. Así `no-se-sabe` queda solo para las fichas de ' +
+                     'antes de que esto se guardara'
+                   : 'la escribe sin condición (`' + linea[1].trim().slice(0, 48) + '`), así ' +
+                     'que archivar un sector visto y sin editar lo deja en `no-se-sabe`')));
+})();
+
 /* Las dos cuentas van APARTE porque piden cosas distintas: una fallada hay
    que arreglarla, una sin material hay que mirarla —o se quedó sin él porque
    el registro mejoró, o porque la función dejó de ver lo que medía—. Sumarlas

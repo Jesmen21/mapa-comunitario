@@ -31726,3 +31726,87 @@ uno por aserción.
   (`herramientas/medir-rellaveo-lat.html`), con su papel leído en los tres
   estados —con colisiones, sin ninguna, y con la lectura fallada—, pero la hoja
   no se alcanza desde este contenedor y lo corre Daniel.
+
+## v1171 · los índices de ejemplo entran en pareja
+
+Lo leyó Daniel en el código y **se reprodujo en el papel antes de tocar nada**,
+que es lo que pedía: con una ficha archivada tal como `guardarFicha` la
+escribía tras abrir la hoja y no tocar nada —`indices` con los valores de
+ejemplo, `indicesPuestos` en `null`—, **las dos superficies imprimían**:
+
+> «No se sabe de dónde salen estos índices. Esta hoja trae índices propios,
+> pero **se archivó antes de que URBIS guardara cuáles se escribieron a mano**…»
+
+de una ficha archivada **ese mismo día**, con `0 de 6` confirmados y
+`deEjemplo: true`. Lo que tenía que decir es «Cuenta de ejemplo».
+
+### La causa: dos campos y un solo hecho
+
+`bloqueQueCabe` hacía `S.indices || (S.indices = Q.porDefecto())` —un efecto
+colateral dentro de un `||`— y **no tocaba `S.indicesPuestos`**, que se quedaba
+en `null`. El valor y el registro vacío son **dos campos y un solo hecho**: «la
+hoja arrancó con los de ejemplo y nadie ha escrito ninguno». Ponerlos por
+separado es la clase B, y se separaron.
+
+**Lo que sostiene el cuarto estado es la diferencia entre `{}` y `null`**: `{}`
+es «hay registro y dice que ninguno» —una cuenta de ejemplo MEDIDA— y `null` es
+«no hay registro», que solo le puede pasar a una ficha de antes de que esto se
+guardara. Rellenar el valor sin rellenar el registro convierte lo primero en lo
+segundo, en silencio.
+
+### Un dueño para la pareja
+
+`ponerIndicesDeEjemplo` pone las dos mitades, y **los tres sitios que las
+ponían pasan por ella**. Conviene decir que uno de los tres **ya lo hacía
+bien**: `cabe-reiniciar` ponía el valor y el registro vacío desde que existe, y
+el que escribió esa línea tenía razón. Lo que faltaba no era la idea sino que
+tuviera un solo dueño, para que no hubiera una tercera copia que se separe.
+
+Y la otra mitad, en el otro extremo: al **archivar**, `indicesPuestos` iba con
+un `|| null` a secas, así que guardar un sector visto y sin editar lo dejaba en
+`no-se-sabe` aunque la hoja hubiera puesto `{}`. Ahora va condicionada a que
+haya índices.
+
+### Lo medido
+
+**El papel, siete casos × dos superficies.** A los cinco de la v1170 se suman
+los dos que esta tanda separa, y que antes se leían igual:
+
+| caso | lo que dice ahora |
+|---|---|
+| 6 · hoja vista sin editar (`{}`) | «Cuenta de ejemplo. Ninguno de los 6 índices del POT se escribió a mano…» |
+| 7 · ficha vieja (`null`) | «No se sabe de dónde salen estos índices…» |
+
+Los índices de ejemplo del arnés **se leen del módulo** (`Q.porDefecto()`), no
+se copian: una copia diría otra cosa el día que cambie un valor por defecto.
+
+**Tres inyecciones fieles, las tres en rojo**: el estado de ayer en la hoja
+—que denuncia `bloqueQueCabe` por su nombre—, la dueña poniendo el valor y
+olvidando el registro, y el estado de ayer al archivar.
+
+Y la guarda **persigue la forma y no los sitios** (v1149): un sitio nuevo que
+asigne `porDefecto()` a `S.indices` sale en rojo aunque se acuerde de poner el
+registro, porque lo que se vigila es que la pareja tenga **un** dueño.
+
+### Y un defecto de la propia guarda, que la inyección destapó
+
+La aserción es `poneLasDos && !fuera.length` y **el detalle se decidía solo por
+`fuera.length`**, así que con la dueña rota **imprimió el texto del verde
+estando en rojo**. Es la **octava** vez que este repositorio lo paga (v973,
+v1051), y la primera en una guarda escrita la misma tarde que la regla se cita
+en su propio comentario: **una regla recién escrita no protege a su autor**,
+que es lo que la v1093 dejó dicho sobre otra cosa. Ahora el detalle tiene tres
+ramas y la tercera nombra la mitad que falló.
+
+Lo encontró la **inyección**, no la lectura. Una inyección que pone en rojo lo
+que debe y además revela que el mensaje mentía vale por dos.
+
+### Lo que esta versión NO hace
+
+* **No arregla el cierre de la lámina.** `pendiente` — va en su propio commit,
+  y primero se compone y se leen las dos frases juntas.
+* **No implementa el `formatoDescripcion` ni el id.** `cerrado en v1171 ·
+  medido y declinado` — Daniel decidió esperar a que haya un lector (etapa 2),
+  así que la tabla y la propuesta quedan guardadas y nadie vuelve a medirlas.
+* **No mide el re-llaveo por `lat`.** `pendiente` — el instrumento está escrito
+  y lo corre Daniel; la hoja no se alcanza desde este contenedor.
