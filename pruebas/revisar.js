@@ -17053,6 +17053,40 @@ console.log('\n  -- la resta del desplazamiento mide la barra ENTERA (v1157) --'
         '. Eso vuelve a afirmar que los índices los puso una persona cuando puede que ' +
         'nadie los haya puesto');
 
+  /* EL CIERRE DE LA BANDA DEL LOTE TAMBIÉN (v1172), y hacía falta aparte.
+     La comprobación de arriba es POR FUNCIÓN y el cierre vive ANIDADO dentro
+     de `laminaImprimible`, así que el verde de la lámina lo cubría: el cierre
+     afirmaba «Norma urbana sin dato oficial: lo que cabe está calculado sin
+     índices ni aislamientos» por su cuenta, y esa guarda no podía verlo. Es
+     el límite de alcance que la v1167 dejó escrito en su propio detalle,
+     cobrado.
+
+     Se mide DENTRO del trozo (v854): desde `case 'lote':` hasta el caso
+     siguiente, y `case 'lote':` es único en el archivo. */
+  (function () {
+    const i = codigo.indexOf("case 'lote':");
+    const j = codigo.indexOf("case 'campo':", i);
+    const trozo = (i !== -1 && j > i) ? codigo.slice(i, j) : '';
+    const usaLaFuncion = /procedenciaDeIndices\s*\(/.test(trozo);
+    /* Y LA FRASE FALSA NO VUELVE. Era falsa en TODOS los casos, no solo en
+       uno: el cálculo siempre usa índices y aislamientos —la caja de arriba
+       los imprime— y lo que cambia es de dónde salen. Se busca en el CÓDIGO,
+       así que el comentario que la explica no la resucita (v926). */
+    const FALSA = 'sin índices ni aislamientos';
+    const resucita = codigo.indexOf(FALSA) !== -1;
+    comprobar('y el cierre de la banda del lote sale de la misma función',
+      !!trozo && usaLaFuncion && !resucita,
+      !trozo ? 'no se encontró el cierre de la banda del lote (`case \'lote\':`)'
+        : (resucita
+            ? 'el código vuelve a afirmar «' + FALSA + '», que es falso en todos los casos'
+            : (usaLaFuncion
+                ? 'el cierre nombra `procedenciaDeIndices`, así que dice lo mismo que la caja. ' +
+                  'Hacía falta aparte de la comprobación de arriba, que es por FUNCIÓN y no ' +
+                  'alcanzaba a este trozo por estar anidado en `laminaImprimible`'
+                : 'el cierre no nombra `procedenciaDeIndices`: vuelve a afirmar por su cuenta ' +
+                  'lo que la caja dice con el dato, y las dos frases van en la misma hoja')));
+  })();
+
   /* Y LOS CUATRO ESTADOS, que es la parte que la v1170 agregó: sin el cuarto,
      una ficha archivada sin registro de índices puestos caía en «ejemplo» y el
      papel llamaba ejemplo a unos que podían ser del POT. */
@@ -17062,6 +17096,24 @@ console.log('\n  -- la resta del desplazamiento mide la barra ENTERA (v1157) --'
   })();
   const estados = ['ejemplo', 'propios', 'mezcla', 'no-se-sabe']
     .filter(function (e) { return pr.indexOf("'" + e + "'") !== -1; });
+  /* Cada `return` del objeto, no cada estado: `ejemplo` sale por DOS caminos
+     —sin índices propios, y con registro que dice que ninguno—, así que
+     contar estados deja pasar un camino sin su forma corta. */
+  const devoluciones = pr.split(/return \{/).slice(1);
+  const sinCierre = devoluciones.filter(function (d) { return !/\bcierre:/.test(d); }).length;
+  comprobar('y cada camino trae su forma CORTA para el cierre de banda',
+    !!pr && devoluciones.length > 0 && sinCierre === 0,
+    !pr ? 'no se encontró `procedenciaDeIndices`'
+      : (!devoluciones.length
+          ? 'la función no devuelve ningún objeto: no hay nada que comprobar'
+          : (sinCierre === 0
+             ? 'los ' + devoluciones.length + ' caminos la traen, para ' + estados.length +
+               ' estados. Se cuentan los CAMINOS y no los estados: `ejemplo` sale por dos, así ' +
+               'que contar estados dejaba pasar uno sin forma corta — y la inyección que se lo ' +
+               'quitaba salía VERDE'
+             : sinCierre + ' de ' + devoluciones.length + ' caminos devuelven sin `cierre`: ' +
+               'ese imprimiría «undefined» en el pie de la banda del lote')));
+
   comprobar('y la procedencia tiene los CUATRO estados, no dos',
     !!pr && estados.length === 4,
     !pr ? 'no se encontró `procedenciaDeIndices`'

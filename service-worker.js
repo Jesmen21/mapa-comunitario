@@ -1,4 +1,4 @@
-const URBIS_CACHE = 'urbis-v1171-los-indices-de-ejemplo-entran-en-pareja';
+const URBIS_CACHE = 'urbis-v1172-el-cierre-del-lote-dice-lo-mismo-que-la-caja';
 const URBIS_ASSETS = [
   './',
   './index.html',

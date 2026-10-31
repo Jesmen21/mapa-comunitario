@@ -5491,6 +5491,8 @@
 
     if (!hayPropios) {
       return { estado: 'ejemplo', titulo: 'Cuenta de ejemplo.',
+        cierre: 'Los índices del POT no están puestos, así que lo que cabe está calculado ' +
+                'con los valores de ejemplo y no es de este lote.',
         dice: 'Esta hoja no trae ningún índice escrito: ' + pl(tot, 'el', 'los') + ' ' + tot +
               ' ' + pl(tot, 'índice', 'índices') + ' del POT que usa ' +
               pl(tot, 'es el valor', 'son los valores') + ' de EJEMPLO que trae URBIS. Lo de ' +
@@ -5499,6 +5501,8 @@
     }
     if (!hayRegistro) {
       return { estado: 'no-se-sabe', titulo: 'No se sabe de dónde salen estos índices.',
+        cierre: 'No consta cuáles índices salieron del POT, así que lo que cabe no se puede ' +
+                'presentar como de este lote.',
         dice: 'Esta hoja trae índices propios, pero se archivó antes de que URBIS guardara ' +
               'cuáles se escribieron a mano. Así que no se puede decir si salen del POT ni ' +
               'si son los valores de ejemplo: las dos cosas son posibles y ninguna se puede ' +
@@ -5506,6 +5510,8 @@
     }
     if (conf <= 0) {
       return { estado: 'ejemplo', titulo: 'Cuenta de ejemplo.',
+        cierre: 'Ninguno de los índices del POT se escribió a mano, así que lo que cabe está ' +
+                'calculado con los valores de ejemplo y no es de este lote.',
         dice: 'Ninguno de ' + pl(tot, 'el', 'los') + ' ' + tot + ' ' +
               pl(tot, 'índice', 'índices') + ' del POT se escribió a mano, así que lo de ' +
               'abajo no es de este lote: es lo que daría un lote de este tamaño con unos ' +
@@ -5513,6 +5519,9 @@
     }
     if (conf >= tot) {
       return { estado: 'propios', titulo: 'Índices propios.',
+        cierre: pl(tot, 'El', 'Los') + ' ' + tot + ' ' + pl(tot, 'índice', 'índices') +
+                ' del POT ' + pl(tot, 'está', 'están') + ' puestos a mano, así que lo que ' +
+                'cabe es de este lote. URBIS no los verifica.',
         dice: pl(tot, 'El', 'Los') + ' ' + tot + ' ' + pl(tot, 'índice', 'índices') +
               ' del POT ' + pl(tot, 'lo', 'los') + ' escribió a mano quien hizo esta hoja, ' +
               'así que la cuenta es de ESTE lote. URBIS no los conoce ni los verifica: si ' +
@@ -5520,6 +5529,9 @@
               'Buscarlos y citarlos es parte del trabajo.' };
     }
     return { estado: 'mezcla', titulo: 'Cuenta mezclada.',
+      cierre: 'Faltan ' + faltan.length + ' de ' + pl(tot, 'el', 'los') + ' ' + tot + ' ' +
+              pl(tot, 'índice', 'índices') + ' del POT, así que lo que cabe mezcla la norma ' +
+              'con los valores de ejemplo.',
       dice: conf + ' de ' + pl(tot, 'el', 'los') + ' ' + tot + ' ' +
             pl(tot, 'índice', 'índices') + ' del POT ' + pl(conf, 'lo', 'los') +
             ' escribió a mano quien hizo esta hoja; ' +
@@ -6473,6 +6485,20 @@ function donaHTML(datos, colorDe, nombreDe) {
     var lote = o.lote !== undefined ? o.lote : S.lote;
     var loteA = o.loteAnalisis !== undefined ? o.loteAnalisis
               : (function () { try { return analisisDelLote(); } catch (e) { return null; } })();
+    /* LA PROCEDENCIA DE LOS ÍNDICES, UNA VEZ Y PARA TODA LA LÁMINA.
+       La caja «Qué cabe» la calculaba dentro de su propio paréntesis, así que
+       el CIERRE de la banda del lote —que habla de lo mismo— no la tenía y
+       afirmaba por su cuenta «Norma urbana sin dato oficial: lo que cabe está
+       calculado sin índices ni aislamientos». Compuesta la lámina y leídas las
+       dos frases juntas, se contradecían de dos maneras: con los seis índices
+       del POT puestos y su acuerdo citado, el cierre seguía diciendo que no
+       había dato oficial; y «sin índices ni aislamientos» era falso en TODOS
+       los casos, porque el cálculo siempre los usa —la caja de arriba los
+       imprime— y lo que cambia es de dónde salen.
+       Resuelta acá, las dos la reciben y una caja nueva la hereda sin que su
+       autor se acuerde (v867, v1088). */
+    var puestosL = o.indicesPuestos !== undefined ? o.indicesPuestos : S.indicesPuestos;
+    var propiosL = o.indices !== undefined ? o.indices : S.indices;
     /* Los rumbos con y sin datos: la misma cuenta que hace la ficha. Acá se
        rehace porque la lámina puede imprimirse de un sector guardado, donde
        las zonas no viajan con la ficha pero los puntos sí. */
@@ -7770,8 +7796,6 @@ function donaHTML(datos, colorDe, nombreDe) {
       var Q = window.URBIS_QUE_CABE;
       if (!Q || !loteA) return '';
       var q = null;
-      var puestosL = o.indicesPuestos !== undefined ? o.indicesPuestos : S.indicesPuestos;
-      var propiosL = o.indices !== undefined ? o.indices : S.indices;
       try { q = Q.calcular(loteA, o.indices || S.indices || Q.porDefecto(), ctxQueCabe(), puestosL); }
       catch (e) { return ''; }
       if (!q) return '';
@@ -10238,10 +10262,17 @@ function donaHTML(datos, colorDe, nombreDe) {
             if (mo && mo.orden != null) partes.push('traza ' + (mo.orden >= 0.35 && mo.perpendicular ? 'en cuadrícula' : mo.orden < 0.18 ? 'irregular' : 'mixta'));
             return partes.length ? partes.join(' · ') + '.' : 'Sin trazado medido, la morfología queda en el dibujo y no en la cifra.';
           case 'lote':
-            if (loteA)
+            if (loteA) {
+              /* El renglón de la norma sale de `procedenciaDeIndices`, no de
+                 una frase fija: era la contradicción de arriba. */
+              var QC2 = window.URBIS_QUE_CABE, qC = null;
+              try { qC = QC2 && QC2.calcular(loteA, o.indices || S.indices || QC2.porDefecto(),
+                                             ctxQueCabe(), puestosL); } catch (eC) {}
+              var prC = procedenciaDeIndices(qC, puestosL, propiosL);
               return 'Lote de ' + fmt(loteA.areaM2) + ' m² con ' + (loteA.frentes || []).length + ' frente' +
                 ((loteA.frentes || []).length === 1 ? '' : 's') + (loteA.esquinero ? ', esquinero' : '') +
-                '. Norma urbana sin dato oficial: lo que cabe está calculado sin índices ni aislamientos, y eso lo cambia todo.';
+                '. ' + prC.cierre;
+            }
             return 'Sin lote dibujado esta banda describe el sector; dibujarlo es lo que convierte el análisis en proyecto.';
           case 'campo':
             if (cmp) {

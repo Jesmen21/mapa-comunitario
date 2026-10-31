@@ -31810,3 +31810,76 @@ que debe y además revela que el mensaje mentía vale por dos.
   así que la tabla y la propuesta quedan guardadas y nadie vuelve a medirlas.
 * **No mide el re-llaveo por `lat`.** `pendiente` — el instrumento está escrito
   y lo corre Daniel; la hoja no se alcanza desde este contenedor.
+
+## v1172 · el cierre de la banda del lote dice lo mismo que la caja
+
+Compuesta la lámina y **leídas las dos frases juntas**, como pedía la orden.
+Se contradecían, así que se arregla; y se contradecían **de dos maneras**, que
+es más de lo que el pedido suponía:
+
+* **la contradicción condicional.** Con los seis índices del POT puestos y su
+  acuerdo citado, la caja decía «Índices propios. Los 6 índices del POT los
+  escribió a mano quien hizo esta hoja» y el cierre, en la misma lámina,
+  «**Norma urbana sin dato oficial**».
+* **y una afirmación falsa en TODOS los casos**: «lo que cabe está calculado
+  **sin índices ni aislamientos**». El cálculo **siempre** los usa —la caja de
+  arriba imprime «Índices usados: ocupación 0,42 · construcción 1,3 · 7 pisos»
+  y «Aislamientos 5 / 2 / 4 m»—; lo que cambia es de dónde salen. Esa mitad no
+  era una contradicción sino un error, también en el caso de ejemplo.
+
+### La causa, y por qué la guarda de la v1170 no la vio
+
+La caja calculaba la procedencia **dentro de su propio paréntesis**, así que el
+cierre —que habla de lo mismo— no la tenía y afirmaba por su cuenta. Ahora se
+resuelve **una vez**, donde el lote se resuelve, y las dos la reciben: una caja
+nueva la hereda sin que su autor se acuerde (v867, v1088).
+
+**Y la guarda de la v1170 daba verde sobre este defecto.** Su alcance es POR
+FUNCIÓN y el cierre vive **anidado** dentro de `laminaImprimible`, cuyo cuerpo
+sí nombra `procedenciaDeIndices`: el verde de la lámina lo cubría. Es
+exactamente el límite que esa versión dejó escrito **en su propio detalle**,
+cobrado dos tandas después. La comprobación nueva mide **dentro del trozo**
+(v854), desde `case 'lote':` hasta el caso siguiente.
+
+### Lo medido
+
+**El papel, cinco casos, las dos frases una debajo de la otra:** ejemplo (hoja
+vista sin editar), propios, mezcla, ficha vieja, y la ficha sin ningún índice.
+En los cinco concuerdan y ninguna frase es falsa.
+
+| caso | el cierre dice ahora |
+|---|---|
+| ejemplo | «Ninguno de los índices del POT se escribió a mano, así que lo que cabe está calculado con los valores de ejemplo y no es de este lote.» |
+| propios | «Los 6 índices del POT están puestos a mano, así que lo que cabe es de este lote. URBIS no los verifica.» |
+| mezcla | «Faltan 3 de los 6 índices del POT, así que lo que cabe mezcla la norma con los valores de ejemplo.» |
+| ficha vieja | «No consta cuáles índices salieron del POT, así que lo que cabe no se puede presentar como de este lote.» |
+
+**La forma corta va en la misma función** y no en otra: un cierre de banda es
+un renglón y el `dice` son cuatro frases, así que son cuatro redacciones más
+—no una copia—, con su propia comprobación de que **ningún estado llegue sin
+ella**. Sin eso, un estado nuevo imprimiría «undefined» en el pie de la banda.
+
+**Tres inyecciones fieles, las tres en rojo**: el estado de ayer en el cierre,
+la frase falsa resucitada al lado de la buena, y un estado sin su forma corta.
+
+### Y una aserción que medía lo que no era
+
+La tercera inyección —quitarle la forma corta a un estado— **salió VERDE**. La
+aserción comparaba el número de `cierre:` contra el número de **estados** (4),
+y la función tiene **cinco returns**: `ejemplo` sale por dos caminos —sin
+índices propios, y con registro que dice que ninguno—, así que quitar uno
+dejaba `4 >= 4` y la guarda en verde sobre el defecto que vigila.
+
+**Cuando una inyección fiel no consigue poner algo en rojo, lo que falta no es
+la inyección: es lo que la aserción mide** (v1029). Se cuentan los CAMINOS y no
+los estados, y rehecha muerde: «1 de 5 caminos devuelven sin `cierre`».
+
+### Lo que esta versión NO hace
+
+* **No revisa los otros cinco cierres de banda.** `pendiente` — se arregló el
+  del lote, que es el que contradecía a la caja. Los de `ubicacion`, `usos`,
+  `gente`, `forma` y `campo` no se leyeron frase por frase contra sus cajas, y
+  la lección de esta tanda es que eso solo se ve componiendo.
+* **No implementa el id ni el `formatoDescripcion`.** `cerrado en v1171 ·
+  medido y declinado`.
+* **No mide el re-llaveo por `lat`.** `pendiente` — lo corre Daniel.
