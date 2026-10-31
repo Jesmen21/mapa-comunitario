@@ -193,9 +193,17 @@
     }
 
     // ── Lo que hay que decir siempre ────────────────────────────────────
-    avisos.push('Los índices los puso usted y salen del POT del municipio: URBIS no los ' +
-                'conoce ni los verifica. Si están mal, esta cuenta está mal con la misma ' +
-                'cara de seguridad.');
+    /* UNA SOLA VOZ PARA LA PROCEDENCIA, y no es esta.
+       Decía «Los índices los puso usted y salen del POT», que es FALSO cuando
+       nadie escribió ninguno — y se imprime al pie del informe, así que la
+       hoja lo afirmaba dos veces. El arreglo tampoco es afinar la frase acá:
+       intentarlo dejó la caja diciendo «Cuenta de ejemplo» y este pie diciendo
+       «no se puede afirmar que sean de ejemplo», en la misma hoja, y eso es la
+       clase B —dos sitios codificando un hecho—. `procedenciaDeIndices`
+       (js/68) tiene los DOS discriminantes; este sitio tiene uno solo, así que
+       no puede acertar y no debe intentarlo. Se queda con lo que vale siempre. */
+    avisos.push('URBIS no conoce ni verifica los índices del POT: si están mal, esta ' +
+                'cuenta está mal con la misma cara de seguridad.');
     avisos.push('El área que queda después de los aislamientos es aproximada: se estima con ' +
                 'el perímetro y los frentes. La exacta sale de encoger el polígono lado por ' +
                 'lado, y para eso hay que decidir cuál da al vecino y cuál al fondo — que es ' +

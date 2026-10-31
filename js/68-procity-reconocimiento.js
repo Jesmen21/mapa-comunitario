@@ -5419,17 +5419,99 @@
       an.avisos.map(function (a) { return '<p class="nota">' + esc(a) + '</p>'; }).join('');
   }
 
-  function queCabeImpreso(lote, idx) {
+  /* DE DÓNDE SALEN LOS ÍNDICES · UNA SOLA VEZ PARA LAS TRES SUPERFICIES.
+     ────────────────────────────────────────────────────────────────────
+     `URBIS_QUE_CABE.calcular` CALCULA el discriminante y lo expone
+     —`deEjemplo`, `confirmados`, `delPot`, `faltan`—, la hoja en pantalla lo
+     leía, y **las dos superficies impresas no leían ninguno de los cuatro**:
+     decían «los índices los puso a mano quien hizo la hoja» mirando nada.
+     Eso no es un dato que no llega (clase C) sino la afirmación CONTRARIA
+     impresa en su lugar, en el papel con el que se aprueba un proyecto.
+
+     Va en UNA función y no en tres literales porque son tres superficies que
+     tienen que decir lo mismo: tres copias coinciden el día que se escriben y
+     se separan la tanda siguiente (clase B), y entonces la que se quedó atrás
+     vuelve a afirmar a ciegas. Cada superficie pone su propio envoltorio
+     —`pcr-conc`, `pie`, `nota`—; el CONTENIDO sale de acá.
+
+     SON CUATRO ESTADOS Y NO DOS, porque piden cosas distintas (v899):
+
+     * `ejemplo` — la cuenta sale con los valores que trae la aplicación.
+     * `propios` — los seis del POT los escribió una persona.
+     * `mezcla` — unos sí y otros no, y hay que decir CUÁLES faltan.
+     * `no-se-sabe` — la ficha trae índices propios pero NO el registro de
+       cuáles se escribieron a mano. Se archivó antes de que URBIS guardara
+       eso, así que no se puede afirmar ninguna de las dos cosas. Es el estado
+       que esta tanda agregó: antes caía en `ejemplo` y el papel llamaba
+       «ejemplo» a unos índices que podían ser del POT.
+
+     EL DISCRIMINANTE DE `no-se-sabe` VENÍA EN EL MISMO OBJETO: si la ficha no
+     trae `indices` propios, los números impresos SON los de ejemplo y eso es
+     seguro, no hay nada que no se sepa. Solo cuando trae índices y no trae el
+     registro hay una duda de verdad. */
+  function procedenciaDeIndices(q, puestos, propios) {
+    var tot = (q && Number(q.delPot)) || 0;
+    var conf = (q && Number(q.confirmados)) || 0;
+    var faltan = (q && q.faltan) || [];
+    var hayPropios = !!(propios && typeof propios === 'object' &&
+                        Object.keys(propios).length);
+    var hayRegistro = !!(puestos && typeof puestos === 'object');
+
+    if (!hayPropios) {
+      return { estado: 'ejemplo', titulo: 'Cuenta de ejemplo.',
+        dice: 'Esta hoja no trae ningún índice escrito: ' + pl(tot, 'el', 'los') + ' ' + tot +
+              ' ' + pl(tot, 'índice', 'índices') + ' del POT que usa ' +
+              pl(tot, 'es el valor', 'son los valores') + ' de EJEMPLO que trae URBIS. Lo de ' +
+              'abajo no es de este lote, es lo que daría un lote de este tamaño con unos ' +
+              'números cualesquiera. Sirve para ver cómo funciona; no sirve para una entrega.' };
+    }
+    if (!hayRegistro) {
+      return { estado: 'no-se-sabe', titulo: 'No se sabe de dónde salen estos índices.',
+        dice: 'Esta hoja trae índices propios, pero se archivó antes de que URBIS guardara ' +
+              'cuáles se escribieron a mano. Así que no se puede decir si salen del POT ni ' +
+              'si son los valores de ejemplo: las dos cosas son posibles y ninguna se puede ' +
+              'afirmar. Para saberlo hay que volver a abrir el sector y escribirlos.' };
+    }
+    if (conf <= 0) {
+      return { estado: 'ejemplo', titulo: 'Cuenta de ejemplo.',
+        dice: 'Ninguno de ' + pl(tot, 'el', 'los') + ' ' + tot + ' ' +
+              pl(tot, 'índice', 'índices') + ' del POT se escribió a mano, así que lo de ' +
+              'abajo no es de este lote: es lo que daría un lote de este tamaño con unos ' +
+              'números cualesquiera. Sirve para ver cómo funciona; no sirve para una entrega.' };
+    }
+    if (conf >= tot) {
+      return { estado: 'propios', titulo: 'Índices propios.',
+        dice: pl(tot, 'El', 'Los') + ' ' + tot + ' ' + pl(tot, 'índice', 'índices') +
+              ' del POT ' + pl(tot, 'lo', 'los') + ' escribió a mano quien hizo esta hoja, ' +
+              'así que la cuenta es de ESTE lote. URBIS no los conoce ni los verifica: si ' +
+              'están mal, todo lo que sigue está mal con la misma cara de seguridad. ' +
+              'Buscarlos y citarlos es parte del trabajo.' };
+    }
+    return { estado: 'mezcla', titulo: 'Cuenta mezclada.',
+      dice: conf + ' de ' + pl(tot, 'el', 'los') + ' ' + tot + ' ' +
+            pl(tot, 'índice', 'índices') + ' del POT ' + pl(conf, 'lo', 'los') +
+            ' escribió a mano quien hizo esta hoja; ' +
+            (faltan.length === 1 ? 'el otro' : 'los otros ' + faltan.length) + ' ' +
+            pl(faltan.length, 'sigue', 'siguen') + ' siendo ' +
+            pl(faltan.length, 'el valor', 'los valores') + ' de ejemplo que trae URBIS' +
+            (faltan.length ? ' (' + faltan.join(', ') + ')' : '') + '. Lo de abajo mezcla ' +
+            'las dos cosas, así que no se puede presentar como medido.' };
+  }
+
+  function queCabeImpreso(lote, idx, puestos, propios, fuente) {
     var Q = window.URBIS_QUE_CABE;
     if (!Q || !lote) return '';
     var q = null;
-    try { q = Q.calcular(lote, idx || S.indices || Q.porDefecto(), ctxQueCabe(), S.indicesPuestos); }
+    var puestosQ = (puestos !== undefined) ? puestos : S.indicesPuestos;
+    try { q = Q.calcular(lote, idx || S.indices || Q.porDefecto(), ctxQueCabe(), puestosQ); }
     catch (e) { return ''; }
     if (!q) return '';
+    /* La procedencia va ARRIBA y con su título: el párrafo de antes afirmaba
+       que los había puesto una persona sin mirar si era cierto. */
+    var pr = procedenciaDeIndices(q, puestosQ,
+      (propios !== undefined) ? propios : (idx || S.indices));
     return '<h2>Qué cabe en el lote</h2>' +
-      '<p class="pie"><b>Los índices de esta cuenta los puso a mano quien hizo el informe y ' +
-      'salen del POT del municipio.</b> URBIS no los conoce ni los verifica: si están mal, ' +
-      'todo lo que sigue está mal. Buscarlos y citarlos es parte del trabajo.</p>' +
+      '<p class="pie"><b>' + esc(pr.titulo) + '</b> ' + esc(pr.dice) + '</p>' +
       cabeDibujado(q) +
       '<table>' +
         '<tr><td>Índice de ocupación</td><td class="n">' +
@@ -5461,10 +5543,14 @@
          pueden decir cosas distintas, y un número sin fuente en el informe
          archivado es un número que hay que volver a buscar. */
       (function () {
-        var f = S.indicesFuente || {};
+        var f = ((fuente !== undefined) ? fuente : S.indicesFuente) || {};
         if (!f.documento && !f.fecha && !f.tratamiento) {
-          return '<p class="pie">Estos índices se escribieron a mano y nadie anotó de dónde ' +
-            'salieron: no se pueden citar sin volver a buscar la fuente.</p>';
+          /* Decía «Estos índices SE ESCRIBIERON A MANO y nadie anotó…», que
+             es la misma afirmación a ciegas de más arriba metida en la frase
+             de la fuente: con los valores de ejemplo nadie escribió nada. Lo
+             que falta es la FUENTE, y eso es lo único que esta línea sabe. */
+          return '<p class="pie">Nadie anotó de dónde salen estos índices: no se pueden ' +
+            'citar sin volver a buscar la fuente.</p>';
         }
         return '<p>Según <b>' + esc(f.documento || 'documento sin anotar') + '</b>' +
           (f.fecha ? ', de ' + esc(f.fecha) : '') +
@@ -7652,10 +7738,14 @@ function donaHTML(datos, colorDe, nombreDe) {
       var Q = window.URBIS_QUE_CABE;
       if (!Q || !loteA) return '';
       var q = null;
-      try { q = Q.calcular(loteA, o.indices || S.indices || Q.porDefecto(), ctxQueCabe(), o.indicesPuestos || S.indicesPuestos); }
+      var puestosL = o.indicesPuestos !== undefined ? o.indicesPuestos : S.indicesPuestos;
+      var propiosL = o.indices !== undefined ? o.indices : S.indices;
+      try { q = Q.calcular(loteA, o.indices || S.indices || Q.porDefecto(), ctxQueCabe(), puestosL); }
       catch (e) { return ''; }
       if (!q) return '';
-      return '<div class="kpis">' +
+      var prL = procedenciaDeIndices(q, puestosL, propiosL);
+      return '<p class="lee"><b>' + esc(prL.titulo) + '</b> ' + esc(prL.dice) + '</p>' +
+      '<div class="kpis">' +
       '<div class="k"><b>' + q.huellaM2.toLocaleString('es-CO') + '</b><small>m² de huella</small></div>' +
       '<div class="k"><b>' + q.construibleM2.toLocaleString('es-CO') + '</b><small>m² construibles</small></div>' +
       '<div class="k"><b>' + q.viviendas + '</b><small>' + pl(q.viviendas, 'vivienda', 'viviendas') + '</small></div>' +
@@ -7677,15 +7767,17 @@ function donaHTML(datos, colorDe, nombreDe) {
       (function () {
       var f = (o.indicesFuente !== undefined ? o.indicesFuente : S.indicesFuente) || {};
       if (!f.documento && !f.fecha && !f.tratamiento) {
-      return '<p class="nota">Estos índices se escribieron a mano y <b>nadie anotó de dónde ' +
-      'salieron</b>: no se pueden citar sin volver a buscar la fuente.</p>';
+      return '<p class="nota"><b>Nadie anotó de dónde salen</b> estos índices: no se pueden ' +
+      'citar sin volver a buscar la fuente.</p>';
       }
       return '<p class="lee">Según <b>' + esc(f.documento || 'documento sin anotar') + '</b>' +
       (f.fecha ? ', de ' + esc(f.fecha) : '') +
       (f.tratamiento ? ' · tratamiento <b>' + esc(f.tratamiento) + '</b>' : '') + '.</p>';
       })() +
-      '<p class="nota">Los índices los puso quien hizo la lámina y salen del POT: URBIS no ' +
-      'los conoce ni los verifica. El área después de aislamientos es aproximada.</p>';
+      /* Decía «Los índices los puso quien hizo la lámina y salen del POT»
+         sin mirar nada. Lo que de verdad vale siempre es lo segundo. */
+      '<p class="nota">URBIS no conoce ni verifica los índices del POT. El área después de ' +
+      'aislamientos es aproximada.</p>';
       })(), 'g3') +
       
       caja('Qué le pide el sitio al proyecto',
@@ -12723,7 +12815,14 @@ function donaHTML(datos, colorDe, nombreDe) {
       queCabeImpreso((function () {
         try { return o.loteAnalisis !== undefined ? o.loteAnalisis : analisisDelLote(); }
         catch (e) { return null; }
-      })(), o.indices) +
+      })(), o.indices,
+        /* `!== undefined` y no `||`: una ficha archivada SIN registro de
+           índices puestos tiene que llegar como `null` y quedarse en
+           `no-se-sabe`. Con `||` caería en el estado del sector de hoy, que es
+           el defecto que esta tanda arregla. */
+        o.indicesPuestos !== undefined ? o.indicesPuestos : S.indicesPuestos,
+        o.indices !== undefined ? o.indices : S.indices,
+        o.indicesFuente !== undefined ? o.indicesFuente : S.indicesFuente) +
       loteImpresoIntervenir(o.loteAnalisis !== undefined ? o.loteAnalisis
         : (function () { try { return analisisDelLote(); } catch (e) { return null; } })(),
         o.lote !== undefined ? o.lote : S.lote) +
@@ -21693,7 +21792,7 @@ function donaHTML(datos, colorDe, nombreDe) {
     'Cómo cambió el sitio': { f: 'la misma vista año a año; el verde, medido sobre cada imagen', fu: 'Microsoft Planetary Computer: Sentinel-2 y Landsat', c: 'media', r: 'una década, de 2014 a hoy', e: 'nubes y estación mueven el verde: ±10 %' },
     'El lote a intervenir': { f: 'área, perímetro, frentes por vía y exposición solar por lado', fu: 'el polígono dibujado; vías de OpenStreetMap', c: 'alta en geometría, media en frentes', r: 'lote mínimo del POT: sin dato oficial', e: '±3 % de área por el trazo a mano' },
     'La cuadra del lote': { f: 'continuidad del frente construido 120 m a cada lado del lote', fu: 'huellas de OpenStreetMap, hoy', c: 'media', r: 'frente continuo ≥ 70 %', e: 'una huella que falta se lee como vacío' },
-    'Qué cabe en el lote': { f: 'área × índices de ocupación y de construcción declarados', fu: 'índices puestos por quien analiza; el POT no está consultado', c: 'baja hasta leer la norma', r: 'IO 0,6 a 0,7 · IC 2 a 3 en barrio consolidado', e: 'sin aislamientos ni cesiones de la norma' },
+    'Qué cabe en el lote': { f: 'área × índices de ocupación y de construcción declarados', fu: 'índices del POT escritos a mano en la aplicación; de dónde salen los de ESTA hoja lo dice la propia caja', c: 'baja: URBIS no verifica los índices', r: 'IO 0,6 a 0,7 · IC 2 a 3 en barrio consolidado', e: 'sin aislamientos ni cesiones de la norma' },
     'La sombra que proyecta': { f: 'sombra del volumen permitido a las 9, 12 y 15 h sobre los vecinos', fu: 'sol calculado; alturas de OpenStreetMap', c: 'media', r: 'ningún vecino en sombra al mediodía', e: 'depende de los índices declarados' },
     'Qué le pide el sitio al proyecto': { f: 'determinantes derivadas de las mediciones de esta hoja', fu: 'esta misma lámina', c: 'la de cada medición', r: 'determinantes, no propuestas', e: 'no reemplaza la norma ni el estudio de suelos' },
     'Lo levantado en campo': { f: 'lo mapeado por el curso contra OpenStreetMap: mismo sitio a menos de 40 m y misma categoría', fu: 'levantamiento del curso; OpenStreetMap, hoy', c: 'alta en lo verificado', r: 'coincidencia ≥ 80 %', e: 'el mismo sitio con otro nombre se lee como discrepancia' },
@@ -28824,15 +28923,16 @@ function donaHTML(datos, colorDe, nombreDe) {
          son de este lote o de un ejemplo. Un estudiante que baja hasta los
          números grandes ya se olvidó del párrafo de arriba, y los números
          grandes es lo que copia. */
-      (q.deEjemplo
-        ? '<p class="pcr-conc pcr-ojo"><b>Cuenta de ejemplo.</b> ' +
-          (q.confirmados ? q.faltan.length + ' de los ' + q.delPot + ' índices siguen siendo ' +
-            'los que trae URBIS' : 'Ningún índice se ha cambiado todavía') +
-          ', así que lo de abajo <b>no es de este lote</b>: es lo que daría un lote de este ' +
-          'tamaño con unos números cualesquiera. Sirve para ver cómo funciona; no sirve para ' +
-          'una entrega.</p>'
-        : '<p class="pcr-conc">Los ' + q.delPot + ' índices vienen de la ficha normativa, ' +
-          'así que esta cuenta es de <b>este</b> lote.</p>') +
+      /* De la MISMA función que el informe y la lámina. Era la única de las
+         tres que leía el discriminante, y su redacción es la que las otras dos
+         no tenían; dejarla como un cuarto literal sería la clase B esperando
+         a que alguien mejore una de las cuatro. El envoltorio sigue siendo el
+         suyo —`pcr-ojo` solo cuando hay algo que advertir—. */
+      (function () {
+        var pr = procedenciaDeIndices(q, S.indicesPuestos, S.indices);
+        return '<p class="pcr-conc' + (pr.estado === 'propios' ? '' : ' pcr-ojo') + '">' +
+          '<b>' + esc(pr.titulo) + '</b> ' + esc(pr.dice) + '</p>';
+      })() +
       cabeDibujado(q) +
       '<div class="pcr-kpis">' +
         '<div class="pcr-kpi"><b>' + q.huellaM2.toLocaleString('es-CO') +
@@ -32903,6 +33003,16 @@ function donaHTML(datos, colorDe, nombreDe) {
       if (!f) return true;
       var htmlG = htmlImprimible(comoResultado(f), comoZonas(f),
                                  { nombre: f.nombre || '', cobertura: (f.stats && f.stats.cobertura) || null,
+                                   /* LOS TRES DE LOS ÍNDICES. No viajaba ninguno, así que el
+                                      informe de una ficha archivada imprimía los índices de
+                                      EJEMPLO aunque la ficha trajera los suyos —medido: 0,6
+                                      contra 0,42, y 2.480 m² construibles contra 1.612—, se
+                                      declaraba «puestos a mano» sin saberlo, y perdía la
+                                      fuente anotada. Con `!== undefined` la ausencia llega
+                                      como ausencia y no como el estado de hoy. */
+                                   indices: f.indices !== undefined ? f.indices : null,
+                                   indicesPuestos: f.indicesPuestos !== undefined ? f.indicesPuestos : null,
+                                   indicesFuente: f.indicesFuente !== undefined ? f.indicesFuente : null,
                                    // El trazado y el terreno de ESTA ficha, no los del
                                    // último sector medido.
                                    trazado: f.trazado || null, terreno: f.terreno || null,
@@ -33029,6 +33139,11 @@ function donaHTML(datos, colorDe, nombreDe) {
              salir con las cajas que tenía cuando se archivó, no con las que
              estén puestas ahora en otro sector. */
           indices: f.indices || null,
+          /* Pasaba `indices` y NO estos dos, así que la lámina de una ficha
+             archivada se declaraba con el estado del sector abierto hoy y
+             perdía la fuente anotada. */
+          indicesPuestos: f.indicesPuestos !== undefined ? f.indicesPuestos : null,
+          indicesFuente: f.indicesFuente !== undefined ? f.indicesFuente : null,
           pliegoOff: f.pliegoOff || [],
           pliegoMapasOff: f.pliegoMapasOff || [],
           /* Las fichas de antes de v743 no guardan el tamaño de letra. Se les

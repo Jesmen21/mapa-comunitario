@@ -31631,3 +31631,98 @@ del sector de hoy — y sale.
   ni aislamientos**» con la caja de arriba mostrando ocupación 0,42 y
   aislamientos 5/2/4. Es un tercer texto que no concuerda con los otros dos, y
   si se toca el conjunto hay que leerlo entero otra vez.
+
+## v1170 · ninguna superficie afirma de dónde salen los índices sin mirarlo
+
+Arregla el 6.2 que la v1169b midió. **El guardado no se toca**: tenía
+`indicesPuestos` e `indicesFuente` desde siempre, con su comentario escrito. Lo
+que fallaba era el camino de vuelta.
+
+### Lo que estaba mal, y en `main` también
+
+Medido contra `main` (565f244) antes de tocar: **el defecto está publicado**. El
+camino del PDF de una ficha archivada no pasa ninguno de los tres campos de los
+índices; el de la lámina pasa `indices` y no los otros dos. Idéntico a la rama.
+
+`URBIS_QUE_CABE.calcular` **calcula** el discriminante y lo expone —`deEjemplo`,
+`confirmados`, `delPot`, `faltan`—, la hoja en pantalla lo leía, y **las dos
+superficies impresas no leían ninguno de los cuatro**. No es un dato que no
+llega: es la afirmación **contraria** impresa en su lugar, «los índices los puso
+a mano quien hizo la hoja», en el papel con el que se aprueba un proyecto. En el
+informe, **dos veces** —el párrafo de cabeza y el aviso del pie—.
+
+### Los cuatro estados, y por qué cuatro
+
+`procedenciaDeIndices` en **UNA** función para las **tres** superficies. Tres
+copias coinciden el día que se escriben y se separan la tanda siguiente, y
+entonces la que se queda atrás vuelve a afirmar a ciegas; cada superficie pone
+su envoltorio —`pcr-conc`, `pie`, `lee`— y el contenido sale de un solo sitio.
+
+* `ejemplo` · `propios` · `mezcla`, que es lo que la pantalla ya distinguía;
+* **`no-se-sabe`**, que es nuevo: una ficha que trae índices propios y **no** el
+  registro de cuáles se escribieron a mano. Antes caía en `ejemplo` y el papel
+  llamaba «ejemplo» a unos que podían ser del POT.
+
+**El discriminante de `no-se-sabe` venía en el mismo objeto** (clase A bien
+usada): si la ficha no trae `indices`, los números impresos **son** los de
+ejemplo y de eso no hay duda; la duda existe solo cuando trae índices y no trae
+el registro.
+
+### El papel encontró SEIS defectos más, y tres eran míos
+
+Compuestas las dos superficies en cinco casos y leídas:
+
+1. el informe no recibía `indicesFuente` —lo pasé en el camino y
+   `queCabeImpreso` no lo tomaba—: la lámina citaba el Acuerdo 089 y el informe
+   de la MISMA ficha decía «nadie anotó»;
+2. «Estos índices **se escribieron a mano** y nadie anotó de dónde salieron» era
+   la misma afirmación a ciegas metida en la frase de la fuente. Lo que esa
+   línea sabe es que falta la FUENTE, y nada más;
+3. mi propio aviso de js/78 **invertía el sentido**: «3 de los 6 se escribió a
+   mano: son los valores de ejemplo», cuando esos 3 eran justo los que NO;
+4. y al afinarlo apareció la contradicción de frente: la caja decía «Cuenta de
+   ejemplo» y el pie «no se puede afirmar que sean de ejemplo», **en la misma
+   hoja**. La causa no era la redacción: era que la procedencia se decía en
+   **dos** sitios (clase B), y uno de los dos tiene un solo discriminante. La
+   cura no es afinar el segundo, es que **no lo diga**: js/78 se queda con lo
+   que vale siempre;
+5. el panel de método afirmaba «el POT no está consultado» y «baja hasta leer la
+   norma» **a ciegas**, al lado de «Índices propios». `METODO_PANEL` es una
+   tabla estática, así que su texto solo puede afirmar lo que es cierto siempre:
+   ahora manda a leer la caja, que es la que tiene el dato;
+6. y «el otro **1** sigue siendo», que es la trampa de la v1086 —anteponer la
+   cifra dentro de una frase ya contada— en su forma más chica.
+
+### Lo medido
+
+**Cinco inyecciones fieles, las cinco en rojo** y cada una sobre su propia
+aserción: el informe afirmando a ciegas (el estado de ayer), la lámina igual, el
+cuarto estado retirado, el PDF sin pasar `indices`, y la lámina sin pasar los
+otros dos.
+
+**El papel: cinco casos × dos superficies** —ejemplo, propios, mezcla, ficha
+vieja, y el caso **fabricado** de cinco puestos y uno solo de ejemplo, que es el
+que ejercita la redacción singular; con los seis del POT de hoy `tot` nunca vale
+1, así que esa rama no se alcanza con material real y se mide contra el caso
+fabricado (v970)—. Las dos superficies dicen lo mismo en los cinco.
+
+Y **el trinquete de las cifras en prosa bajó de 307 a 305**: las cuatro
+redacciones concuerdan en número con `pl`, que ya estaba en el módulo.
+
+**858 verdes, 3 sin material, 0 fallos** (eran 854 y 3): cuatro verdes nuevos,
+uno por aserción.
+
+### Lo que esta versión NO hace
+
+* **No arregla la contradicción del cierre de la lámina.** `pendiente` — dice
+  «Norma urbana sin dato oficial: lo que cabe está calculado sin índices ni
+  aislamientos» con la caja mostrando los índices. Es un texto distinto de los
+  dos que esta tanda unificó, vive en otra función, y tocarlo pide volver a leer
+  el pliego entero.
+* **No lleva el id de la capa a ninguna parte.** `pendiente` — la propuesta y su
+  tabla de tipos × formato quedaron medidas y sin implementar, esperando que el
+  registro declare el formato de cada módulo.
+* **No mide el re-llaveo por `lat`.** `pendiente` — el instrumento está escrito
+  (`herramientas/medir-rellaveo-lat.html`), con su papel leído en los tres
+  estados —con colisiones, sin ninguna, y con la lectura fallada—, pero la hoja
+  no se alcanza desde este contenedor y lo corre Daniel.

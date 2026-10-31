@@ -16984,6 +16984,124 @@ console.log('\n  -- la resta del desplazamiento mide la barra ENTERA (v1157) --'
   }
 })();
 
+/* NINGUNA SUPERFICIE AFIRMA DE DÓNDE SALEN LOS ÍNDICES SIN MIRARLO (v1170)
+   =======================================================================
+
+   `URBIS_QUE_CABE.calcular` CALCULA el discriminante y lo expone —`deEjemplo`,
+   `confirmados`, `delPot`, `faltan`—; la hoja en pantalla lo leía y **las dos
+   superficies impresas no leían ninguno de los cuatro**: afirmaban que los
+   índices «los puso a mano quien hizo la hoja» mirando nada. No es un dato que
+   no llega, es la afirmación CONTRARIA impresa en su lugar.
+
+   Y medido en el papel, el informe de una ficha archivada imprimía los índices
+   de EJEMPLO aunque la ficha trajera los suyos —0,6 contra 0,42; 2.480 m²
+   construibles contra 1.612; 144 personas contra 91—, porque su camino no
+   pasaba `indices`. Las dos hojas de la MISMA ficha decían números distintos.
+
+   SE PERSIGUE LA CLASE Y NO EL CASO (v874): **toda superficie que imprima la
+   caja de qué cabe tiene que sacar la procedencia de `procedenciaDeIndices`**,
+   que es la única función que tiene los dos discriminantes. Medido antes de
+   escribirla son TRES —el informe, la lámina y la hoja— y ninguna más.
+
+   Y LOS TRES CAMPOS VIAJAN. Los dos caminos de una ficha archivada tienen que
+   pasar `indices`, `indicesPuestos` e `indicesFuente`: el guardado los tenía
+   desde siempre y los dos caminos de reimpresión no los pasaban.
+
+   LO QUE NO CUBRE, dicho acá (v945): no comprueba que los textos sean buenos
+   ni que los cuatro estados estén bien repartidos —eso lo dice el papel, y es
+   lo que encontró los seis defectos de esta tanda—. Comprueba que ninguna
+   superficie pueda volver a afirmarlo a ciegas y que los campos viajen.
+
+   Se lee sobre `soloCodigo`: el arreglo vino con comentarios largos que
+   nombran todo lo que la guarda busca (v926). */
+(function () {
+  const codigo = soloCodigo(leer('js/68-procity-reconocimiento.js'));
+  const CAJA = 'Qué cabe en el lote';
+
+  /* Las funciones de nivel de módulo, partidas por su declaración y no por
+     distancia: un recorte por caracteres se corta por el primer literal con
+     un paréntesis adentro (v935). */
+  const trozos = codigo.split(/\n  function /).map(function (t, i) {
+    return { nombre: i === 0 ? '(cabecera)' : String(t.split(/[(\s]/)[0] || '?'), cuerpo: t };
+  });
+  /* Las que IMPRIMEN la caja: nombran su título y además arman la cuenta. El
+     título solo lo nombran también tablas y listas, que no imprimen nada. */
+  const pintan = trozos.filter(function (t) {
+    return t.cuerpo.indexOf(CAJA) !== -1 && /URBIS_QUE_CABE|Q\.calcular|QC\.calcular/.test(t.cuerpo);
+  });
+  const sinMirar = pintan.filter(function (t) {
+    return !/procedenciaDeIndices\s*\(/.test(t.cuerpo);
+  });
+
+  comprobar('MATERIAL · alguna superficie imprime la caja de qué cabe',
+    pintan.length > 0,
+    pintan.length
+      ? pintan.length + ' función(es): ' + pintan.map(function (t) { return t.nombre; }).join(' · ')
+      : 'ninguna la imprime, así que la comprobación de abajo pasaría por no tener nada ' +
+        'delante — y el defecto que vigila es justamente imprimirla');
+
+  comprobar('ninguna superficie afirma la procedencia de los índices sin mirarla',
+    pintan.length > 0 && sinMirar.length === 0,
+    (pintan.length && !sinMirar.length)
+      ? 'las ' + pintan.length + ' sacan la procedencia de `procedenciaDeIndices`: ' +
+        pintan.map(function (t) { return t.nombre; }).join(' · ') +
+        '. Una superficie nueva que arme la cuenta y no la llame sale en rojo. Leído sobre ' +
+        'el CÓDIGO y no sobre los comentarios. NO comprueba que los textos sean buenos ni ' +
+        'que los cuatro estados estén bien repartidos: eso lo dice el papel'
+      : 'imprimen la caja sin mirar la procedencia: ' +
+        sinMirar.map(function (t) { return t.nombre; }).join(' · ') +
+        '. Eso vuelve a afirmar que los índices los puso una persona cuando puede que ' +
+        'nadie los haya puesto');
+
+  /* Y LOS CUATRO ESTADOS, que es la parte que la v1170 agregó: sin el cuarto,
+     una ficha archivada sin registro de índices puestos caía en «ejemplo» y el
+     papel llamaba ejemplo a unos que podían ser del POT. */
+  const pr = (function () {
+    const t = trozos.filter(function (x) { return x.nombre === 'procedenciaDeIndices'; })[0];
+    return t ? t.cuerpo : '';
+  })();
+  const estados = ['ejemplo', 'propios', 'mezcla', 'no-se-sabe']
+    .filter(function (e) { return pr.indexOf("'" + e + "'") !== -1; });
+  comprobar('y la procedencia tiene los CUATRO estados, no dos',
+    !!pr && estados.length === 4,
+    !pr ? 'no se encontró `procedenciaDeIndices`'
+        : (estados.length === 4
+            ? 'los cuatro declarados: ' + estados.join(' · ') + '. `no-se-sabe` es el que ' +
+              'separa «no hay registro de cuáles se pusieron» de «hay registro y dice que ' +
+              'ninguno», que se leían igual y piden cosas distintas'
+            : 'solo ' + estados.length + ': ' + estados.join(' · ') +
+              '. Sin los cuatro, dos casos que piden cosas distintas salen con el mismo texto'));
+
+  /* LOS TRES CAMPOS VIAJAN en los dos caminos de una ficha archivada. Se busca
+     DENTRO de cada rama y no en el archivo entero: fuera de ellas los nombres
+     aparecen por todas partes, así que un patrón suelto pasaría siempre. */
+  const rama = function (marca) {
+    const i = codigo.indexOf(marca);
+    if (i === -1) return '';
+    const j = codigo.indexOf("\n    if (name === '", i + 20);
+    return codigo.slice(i, j === -1 ? codigo.length : j);
+  };
+  const CAMPOS = ['indices', 'indicesPuestos', 'indicesFuente'];
+  const caminos = [
+    { que: 'el PDF de una ficha archivada', cuerpo: rama("if (name === 'pdf')") },
+    { que: 'la lámina de una ficha archivada', cuerpo: rama("if (name === 'lamina'") }
+  ];
+  const faltan = [];
+  caminos.forEach(function (c) {
+    if (!c.cuerpo) { faltan.push(c.que + ' (no se encontró la rama)'); return; }
+    CAMPOS.forEach(function (k) {
+      if (!new RegExp(k + ':\\s*f\\.' + k).test(c.cuerpo)) faltan.push(c.que + ' no pasa `' + k + '`');
+    });
+  });
+  comprobar('y los dos caminos de una ficha archivada pasan los tres campos de los índices',
+    caminos.every(function (c) { return !!c.cuerpo; }) && faltan.length === 0,
+    faltan.length === 0
+      ? 'los dos pasan `indices`, `indicesPuestos` e `indicesFuente` desde la ficha. Sin ' +
+        'ellos, las dos hojas de la MISMA ficha imprimían números distintos —medido: 2.480 ' +
+        'm² construibles contra 1.612— y la fuente anotada se perdía'
+      : faltan.join(' · ') + '. El guardado los tiene; lo que falla es el camino de vuelta');
+})();
+
 /* Las dos cuentas van APARTE porque piden cosas distintas: una fallada hay
    que arreglarla, una sin material hay que mirarla —o se quedó sin él porque
    el registro mejoró, o porque la función dejó de ver lo que medía—. Sumarlas

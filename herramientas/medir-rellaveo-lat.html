@@ -1,0 +1,220 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Re-llaveo por lat</title>
+<style>
+  :root{ --hondo:#12161c; --papel:#f6f3ec; --linea:#cfc8ba; --tinta:#1b1f26;
+         --mal:#8e2b1f; --ojo:#9a6b12; --bien:#2a6b3f; }
+  *{box-sizing:border-box}
+  body{margin:0; padding:24px 16px 56px; background:var(--papel); color:var(--tinta);
+       font:16px/1.55 ui-serif, Georgia, "Times New Roman", serif; max-width:52rem; margin-inline:auto}
+  h1{font-size:1.5rem; line-height:1.2; margin:0 0 .4rem}
+  h2{font-size:1.08rem; margin:1.8rem 0 .5rem; border-bottom:1px solid var(--linea); padding-bottom:.3rem}
+  p{margin:.6rem 0}
+  .pista{font-size:.9rem; color:#5a5244}
+  button{font:inherit; font-weight:700; cursor:pointer; padding:12px 18px; border-radius:8px;
+         border:1px solid var(--hondo); background:var(--hondo); color:var(--papel)}
+  button.secundario{background:var(--papel); color:var(--hondo)}
+  button[disabled]{opacity:.5; cursor:default}
+  input{width:100%; font:inherit; font-size:.85rem; padding:9px 10px;
+        border:1px solid var(--linea); border-radius:8px}
+  table{border-collapse:collapse; width:100%; font-size:.9rem; margin:.6rem 0}
+  th,td{border:1px solid var(--linea); padding:6px 8px; text-align:left; vertical-align:top}
+  th{background:#ece7dc}
+  td.n{text-align:right; font-variant-numeric:tabular-nums}
+  .mal{color:var(--mal); font-weight:700}
+  .ojo{color:var(--ojo); font-weight:700}
+  .bien{color:var(--bien); font-weight:700}
+  .cifra{font-size:2rem; font-weight:700; font-variant-numeric:tabular-nums}
+  .caja{border:1px solid var(--linea); border-radius:10px; padding:14px 16px; margin:.8rem 0; background:#fffdf8}
+</style>
+</head>
+<body>
+<h1>¿Cuántas filas comparten <code>lat</code>, y pudo un <code>update</code> tocar más de una?</h1>
+
+<p class="pista">Esto <b>no cambia nada</b>: solo lee la hoja y cuenta. Hay que abrirlo
+donde la hoja se alcance —desde el contenedor de desarrollo el proxy niega
+<code>script.google.com</code>—, así que se abre en el navegador de siempre.</p>
+
+<div class="caja">
+<p><b>Qué se mide y por qué.</b> La capa direcciona filas por <code>urbisDBUpdate('lat', valor, …)</code>
+en 18 sitios del código, y el servidor casa por el <b>texto</b> del valor. Dos cosas se siguen de ahí:
+una fila se re-llavea cuando alguien le cambia la <code>lat</code> —<code>js/10</code> hace exactamente
+eso al mover un marcador—, y <b>un update dirigido a una <code>lat</code> que varias filas comparten
+toca todas</b>. Lo primero se ve leyendo el código; lo segundo solo se puede contar sobre la hoja.</p>
+</div>
+
+<p><input id="ep" placeholder="URL del Apps Script (se rellena sola si está disponible)"></p>
+<p><button id="ir">Medir el re-llaveo</button>
+   <button id="csv" class="secundario" disabled>Bajar el detalle en CSV</button></p>
+<p id="estado" class="pista">Sin medir todavía.</p>
+
+<div id="salida"></div>
+
+<script src="../js/00-config.js"></script>
+<script>
+(function(){
+  'use strict';
+  var $ = function(id){ return document.getElementById(id); };
+  var CSV = '';
+
+  try{
+    var c = (window.URBIS_CONFIG && window.URBIS_CONFIG.AUTH &&
+             window.URBIS_CONFIG.AUTH.APPS_SCRIPT_ENDPOINT) || '';
+    if(c) $('ep').value = c;
+  }catch(e){}
+
+  $('ir').onclick = function(){
+    var url = String($('ep').value || '').trim();
+    if(!url){ $('estado').textContent = 'Falta la URL del Apps Script.'; return; }
+    $('ir').disabled = true;
+    $('estado').textContent = 'Leyendo la hoja…';
+    fetch(url, { method:'POST', headers:{'Content-Type':'text/plain;charset=utf-8'},
+                 body: JSON.stringify({ action:'db_read' }) })
+      .then(function(r){ return r.text(); })
+      .then(function(t){
+        var out;
+        try{ out = JSON.parse(t); }
+        catch(e){ throw new Error('respuesta que no es JSON: ' + t.slice(0,160)); }
+        if(!(out && out.ok && Array.isArray(out.data))) throw new Error('respuesta sin datos');
+        medir(out.data);
+      })
+      .catch(function(e){
+        /* UNA LECTURA QUE FALLA NO ES «NO HAY COLISIONES». Es la trampa que
+           este proyecto tiene escrita desde la v851: un cero que viene de un
+           fallo se lee igual que un cero medido. */
+        $('estado').innerHTML = '<span class="mal">NO SE PUDO MEDIR</span> — ' +
+          String(e && e.message || e) + '. Esto NO quiere decir que no haya colisiones: ' +
+          'quiere decir que no se contaron.';
+        $('ir').disabled = false;
+      });
+  };
+
+  function esc(s){ return String(s == null ? '' : s)
+    .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+  function pl(n, a, b){ return Number(n) === 1 ? a : b; }
+
+  function medir(filas){
+    /* DOS LLAVES, porque el servidor casa por TEXTO y la gente piensa en
+       números: `7.89` y `7.8900000` son la misma coordenada y dos textos
+       distintos, así que un update dirigido a uno no toca al otro. Se cuentan
+       las dos y se dicen aparte: si no coinciden, la diferencia es la medida
+       de cuántas colisiones están escondidas detrás del formato. */
+    var porTexto = {}, porNumero = {}, sinLat = 0;
+    filas.forEach(function(f, i){
+      var crudo = f && f.lat;
+      if(crudo === undefined || crudo === null || String(crudo).trim() === ''){ sinLat++; return; }
+      var txt = String(crudo);
+      var num = Number(crudo);
+      var kn = isFinite(num) ? num.toFixed(7) : ('no-numero:' + txt);
+      (porTexto[txt] = porTexto[txt] || []).push({ i:i, tipo:(f.tipo||''), lat:txt, lng:String(f.lng||'') });
+      (porNumero[kn] = porNumero[kn] || []).push({ i:i, tipo:(f.tipo||''), lat:txt, lng:String(f.lng||'') });
+    });
+
+    var grupos = function(m){ return Object.keys(m).filter(function(k){ return m[k].length > 1; }); };
+    var gT = grupos(porTexto), gN = grupos(porNumero);
+    var afectadasT = gT.reduce(function(a,k){ return a + porTexto[k].length; }, 0);
+    var afectadasN = gN.reduce(function(a,k){ return a + porNumero[k].length; }, 0);
+    var peor = gT.map(function(k){ return { lat:k, n:porTexto[k].length, filas:porTexto[k] }; })
+                 .sort(function(a,b){ return b.n - a.n; });
+
+    /* ¿La colisión es dentro de un mismo tipo o entre tipos? Piden cosas
+       distintas: dentro de un tipo, un update del mismo módulo toca filas
+       hermanas; entre tipos, el update de UN módulo toca la fila de OTRO, que
+       es la que no se puede atribuir a un descuido local. */
+    var mismoTipo = 0, entreTipos = 0, cruces = [];
+    peor.forEach(function(g){
+      var tipos = {};
+      g.filas.forEach(function(x){ tipos[x.tipo] = true; });
+      var ts = Object.keys(tipos);
+      if(ts.length > 1){ entreTipos++; cruces.push({ lat:g.lat, n:g.n, tipos:ts }); }
+      else mismoTipo++;
+    });
+
+    var total = filas.length;
+    var h = '';
+    h += '<h2>El resultado</h2>';
+    h += '<div class="caja"><p><span class="cifra">' + afectadasT + '</span> de ' + total +
+         ' filas comparten su <code>lat</code> con otra, en <b>' + gT.length + '</b> ' +
+         pl(gT.length, 'valor', 'valores') + ' de <code>lat</code> repetidos. ' +
+         (gT.length
+           ? '<span class="mal">Un <code>update</code> dirigido a ' +
+             pl(gT.length, 'ese valor', 'cualquiera de esos valores') + ' toca TODAS sus filas.</span>'
+           : '<span class="bien">Ningún valor de <code>lat</code> está repetido, así que hoy ' +
+             'ningún update por <code>lat</code> pudo tocar más de una fila.</span>') + '</p>';
+    h += '<p class="pista">Contadas por el TEXTO de la <code>lat</code>, que es como casa el ' +
+         'servidor. Contadas por el NÚMERO son ' + afectadasN + ' filas en ' + gN.length + ' ' +
+         pl(gN.length, 'coordenada', 'coordenadas') + '.' +
+         (gN.length > gT.length
+           ? ' <span class="ojo">La diferencia de ' + (gN.length - gT.length) + ' ' +
+             pl(gN.length - gT.length, 'coordenada', 'coordenadas') +
+             ' son colisiones que el formato esconde: misma coordenada, texto distinto. ' +
+             'Hoy no colisionan, y colisionarían el día que alguien normalice el formato.</span>'
+           : ' Las dos cuentas coinciden.') + '</p>';
+    h += '<p class="pista">Filas sin <code>lat</code> legible: ' + sinLat + '. A esas el ' +
+         'direccionamiento por <code>lat</code> no las alcanza nunca.</p></div>';
+
+    h += '<h2>De quién son las colisiones</h2>';
+    h += '<p>' + mismoTipo + ' ' + pl(mismoTipo, 'valor', 'valores') + ' de <code>lat</code> ' +
+         pl(mismoTipo, 'repite', 'repiten') + ' filas de UN MISMO tipo, y <b>' + entreTipos + '</b> ' +
+         pl(entreTipos, 'repite', 'repiten') + ' filas de tipos DISTINTOS. Se cuentan aparte porque ' +
+         'piden cosas distintas: dentro de un tipo el update de un módulo toca filas hermanas; ' +
+         'entre tipos, el update de un módulo toca la fila de otro.</p>';
+    if(cruces.length){
+      h += '<table><tr><th>lat</th><th class="n">filas</th><th>tipos que se tocan</th></tr>';
+      cruces.slice(0, 40).forEach(function(c){
+        h += '<tr><td><code>' + esc(c.lat) + '</code></td><td class="n">' + c.n + '</td><td>' +
+             c.tipos.map(esc).join(' · ') + '</td></tr>';
+      });
+      h += '</table>';
+      if(cruces.length > 40) h += '<p class="pista">y ' + (cruces.length - 40) + ' más; están en el CSV.</p>';
+    } else {
+      h += '<p class="pista">Ninguna colisión cruza dos tipos. Ese renglón se deja a la vista ' +
+           'aunque esté en cero: un cero medido y un renglón que no se pintó se leen igual.</p>';
+    }
+
+    if(peor.length){
+      h += '<h2>Los peores</h2><table><tr><th>lat</th><th class="n">filas</th><th>tipos</th></tr>';
+      peor.slice(0, 15).forEach(function(g){
+        var ts = {}; g.filas.forEach(function(x){ ts[x.tipo] = (ts[x.tipo]||0)+1; });
+        h += '<tr><td><code>' + esc(g.lat) + '</code></td><td class="n">' + g.n + '</td><td>' +
+             Object.keys(ts).map(function(t){ return esc(t||'(sin tipo)') + ' ' + ts[t]; }).join(' · ') +
+             '</td></tr>';
+      });
+      h += '</table>';
+    }
+
+    h += '<h2>Lo que esto NO mide</h2>';
+    h += '<p class="pista">No dice si un update <b>ocurrió</b> —la hoja no guarda historial de ' +
+         'escrituras—, solo si <b>pudo</b> tocar más de una fila. Y no mide el otro re-llaveo, el de ' +
+         'mover un marcador: eso cambia la <code>lat</code> con la que la fila estaba direccionada, ' +
+         'se ve leyendo <code>js/10</code> y no deja rastro en la hoja. Las dos cosas son distintas ' +
+         'y ninguna se deduce de la otra.</p>';
+
+    $('salida').innerHTML = h;
+    $('estado').innerHTML = 'Medido sobre <b>' + total + '</b> ' + pl(total,'fila','filas') +
+      ' leídas de la hoja, el ' + new Date().toLocaleString('es-CO').replace(/\.$/, '') + '.';
+    $('ir').disabled = false;
+
+    CSV = 'lat_texto,filas_que_comparten,tipos\n' + peor.map(function(g){
+      var ts = {}; g.filas.forEach(function(x){ ts[x.tipo] = (ts[x.tipo]||0)+1; });
+      return '"' + g.lat.replace(/"/g,'""') + '",' + g.n + ',"' +
+             Object.keys(ts).map(function(t){ return (t||'(sin tipo)') + ' ' + ts[t]; })
+               .join(' | ').replace(/"/g,'""') + '"';
+    }).join('\n');
+    $('csv').disabled = !CSV;
+  }
+
+  $('csv').onclick = function(){
+    if(!CSV) return;
+    var a = document.createElement('a');
+    a.href = URL.createObjectURL(new Blob([CSV], {type:'text/csv;charset=utf-8'}));
+    a.download = 'urbis-rellaveo-lat.csv';
+    document.body.appendChild(a); a.click(); a.remove();
+  };
+})();
+</script>
+</body>
+</html>
