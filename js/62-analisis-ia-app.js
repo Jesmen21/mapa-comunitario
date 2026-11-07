@@ -1694,10 +1694,13 @@
     // demanda. Se dibujan las dos cifras juntas —lo contado y lo proyectado—
     // porque no valen igual: una se observó y la otra se estima.
     const st = r.stats || {};
-    const bloqueCrecimiento = (st.poblacionProyectada && (st.serieProyeccion || []).length)
+    /* LA CURVA SALE DE LA SERIE DEL DANE, no de la tasa media (v1175): ver
+       `curvaDelSector` en js/61. */
+    const curvaSec = window.AIA_DATOS.curvaDelSector(st);
+    const bloqueCrecimiento = (st.poblacionProyectada && curvaSec.serie.length > 1)
       ? (function(){
           const s = st;
-          const serie = s.serieProyeccion;
+          const serie = curvaSec.serie;
           const min = Math.min.apply(null, serie.map(x => x.poblacion));
           const max = Math.max.apply(null, serie.map(x => x.poblacion));
           const rango = Math.max(1, max - min);
@@ -1742,8 +1745,7 @@
               '<span>' + serie[serie.length - 1].anio + '</span></div>' +
             '<p class="aia-demo-txt">' + window.AIA_MOTOR.verboDeVariacion(s.tasaAnualDane) +
               ' ' + numEs(s.tasaAnualDane * 100, 2) +
-              '% al año de media desde el censo. El tramo punteado es proyección hacia ' +
-              'adelante con esa misma tasa, que es la del pasado. ' +
+              '% al año de media desde el censo hasta hoy. ' + curvaSec.frase + ' ' +
               escHTML(s.advertenciaProyeccion || '') + '</p>' +
           '</div>';
         })()

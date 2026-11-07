@@ -13,7 +13,7 @@
    carga la atienda el service worker de la aplicación. No tiene manejador de
    fetch a propósito: un service worker que no intercepta nada no puede servir
    nada viejo. */
-const CACHE = 'urbis-reportes-v1174-la-proyeccion-del-dane-se-lee-ano-por-ano';   // solo para el revisor de versión
+const CACHE = 'urbis-reportes-v1175-la-curva-del-sector-sale-de-la-serie-y-no-de-la-tasa';   // solo para el revisor de versión
 self.addEventListener('install', function () { self.skipWaiting(); });
 self.addEventListener('activate', function (e) {
   e.waitUntil((async function () {

@@ -17433,23 +17433,31 @@ console.log('\n  -- la resta del desplazamiento mide la barra ENTERA (v1157) --'
        serie. Es la mitad de «nada extrapolado» que un arnés estático puede
        demostrar; la otra la midió el papel. */
     const j61 = soloCodigo(leer('js/61-analisis-ia-datos.js'));
-    const iP = j61.indexOf('async function proyeccionDe(');
+    /* El cuerpo que hace el trabajo es `armarProyeccion` desde la v1175, cuando
+       se partió en dos para que los pintores —que son síncronos— pudieran
+       pedirla sin esperar una promesa; `proyeccionDe` quedó como su envoltorio
+       asíncrono. La guarda siguió apuntando al nombre viejo y se puso ROJA, que
+       es lo que tenía que hacer. Y como el nombre puede volver a moverse, la
+       prohibición de extrapolar se mide sobre TODO js/61 y no sobre el recorte:
+       ese archivo no tiene por qué llamar al extrapolador en ningún sitio. */
+    const iP = j61.indexOf('function armarProyeccion(');
     const cuerpo = iP < 0 ? '' : j61.slice(iP, j61.indexOf('\n  }', iP));
-    const extrapola = /proyectarPoblacion\s*\(/.test(cuerpo) || /tasaAnualDe\s*\(/.test(cuerpo);
+    const extrapola = /proyectarPoblacion\s*\(/.test(j61) || /tasaAnualDe\s*\(/.test(j61);
     const leeSerie = /serieDe\s*\(\s*m\s*\)/.test(cuerpo);
     comprobar('la población del municipio se LEE de la serie y no se extrapola',
       !!cuerpo && leeSerie && !extrapola,
       !cuerpo
-        ? 'no se encontró `proyeccionDe` en js/61: el recorte no mira nada'
+        ? 'no se encontró `armarProyeccion` en js/61: el recorte no mira nada'
         : (extrapola
-            ? 'el cuerpo de `proyeccionDe` vuelve a llamar al extrapolador ' +
-              '(`proyectarPoblacion`) o a la tasa de dos anclas (`tasaAnualDe`)'
+            ? 'js/61 vuelve a llamar al extrapolador (`proyectarPoblacion`) o a la tasa de ' +
+              'dos anclas (`tasaAnualDe`)'
             : (!leeSerie
-                ? 'el cuerpo de `proyeccionDe` ya no lee la serie con `serieDe(m)`'
-                : 'lee `serieDe(m)` y no llama ni a `proyectarPoblacion` ni a `tasaAnualDe`. Y qué ' +
-                  'NO cubre: la proyección del SECTOR y su curva hacia adelante las sigue ' +
-                  'calculando el motor, en otro repositorio, con esta misma tasa; lo que esta ' +
-                  'guarda alcanza es la cifra MUNICIPAL')));
+                ? 'el cuerpo de `armarProyeccion` ya no lee la serie con `serieDe(m)`'
+                : 'lee `serieDe(m)` y js/61 no llama ni a `proyectarPoblacion` ni a ' +
+                  '`tasaAnualDe` en ningún sitio. Y qué NO cubre: la cifra del sector para HOY ' +
+                  'la sigue calculando el motor con esta tasa, en otro repositorio; lo que ' +
+                  'ninguna superficie publica ya es una cifra FUTURA sacada de ella, y eso lo ' +
+                  'vigila el bloque de la curva, más abajo')));
 
     /* 4 · LAS DOS REDACCIONES, en el código (v970). La del descenso hace falta
        hoy; la de la serie que no baja es justo la que hace falta el día que el
@@ -17615,6 +17623,167 @@ console.log('\n  -- la resta del desplazamiento mide la barra ENTERA (v1157) --'
             'documentación: hoy se publica'
           : det.join(' · ') + ', y no hay redacción del descenso que publicarlo');
     }
+  }
+})();
+
+/* ══ NINGUNA SUPERFICIE PUBLICA UNA CIFRA FUTURA SACADA DE LA TASA (v1175) ══
+
+   La v1174 dejó la cifra municipal leída de la serie y la del SECTOR saliendo
+   del motor, que estira la tasa MEDIA hacia adelante. Lo leyó Daniel en el
+   papel: la baldosa publicaba «2035 · 18.042» —el sector CRECIENDO— mientras
+   la serie vigente del DANE tiene a Cúcuta decreciendo desde 2026, de 793.211
+   en 2025 a 771.292 en 2035. Un estudiante se llevaba lo contrario de lo que la
+   fuente dice de su ciudad, y el rótulo condicional de la v1174 —«si siguiera
+   esa media»— no lo arreglaba: la cifra seguía impresa.
+   Desde esta versión la curva se reparte en PROPORCIÓN: sector(X) = conteo del
+   censo × municipio(X) ÷ municipio(año del censo). No hay tasa, no hay interés
+   compuesto y no hay nada escogido.
+
+   Y NO son dos métodos al lado: en el año al que la tasa se midió los dos dan
+   lo mismo, porque esa tasa es la raíz n-ésima de este mismo cociente. La
+   atadura es que `curvaDelSector` los COMPARE en ese año y publique la
+   diferencia —sin ella serían dos codificaciones que se separan a la tanda
+   siguiente, que es la clase B (v879)—.
+
+   LO QUE NO VIGILA: que las cifras del reparto sean correctas —eso lo mide el
+   papel, 2035 = 15.572 para el sector de prueba— ni lo que el motor haga con
+   la tasa en su propio repositorio. */
+(function () {
+  const PINTORES = [
+    ['js/62-analisis-ia-app.js', 'el panel empresarial'],
+    ['js/63-analisis-ia-informe.js', 'el informe'],
+    ['js/65-analisis-edu-ui.js', 'la hoja del curso'],
+    ['js/68-procity-reconocimiento.js', 'la ficha y el pliego']
+  ];
+  const txt = {};
+  PINTORES.forEach(function (p) { txt[p[0]] = soloCodigo(leer(p[0])); });
+  const j61 = soloCodigo(leer('js/61-analisis-ia-datos.js'));
+  const j67 = soloCodigo(leer('js/67-analisis-cliente.js'));
+
+  const llaman = PINTORES.filter(function (p) {
+    return /AIA_DATOS\.curvaDelSector\s*\(/.test(txt[p[0]]);
+  });
+
+  comprobar('MATERIAL · las cuatro superficies de la curva piden `curvaDelSector`',
+    llaman.length === PINTORES.length,
+    llaman.length === PINTORES.length
+      ? 'las ' + PINTORES.length + ': ' + PINTORES.map(function (p) { return p[1]; }).join(' · ')
+      : 'solo ' + llaman.length + ' de ' + PINTORES.length + ': ' +
+        PINTORES.filter(function (p) { return llaman.indexOf(p) < 0; })
+                .map(function (p) { return p[0]; }).join(' · ') +
+        '. Sin eso lo de abajo pasaría por no tener nada delante');
+
+  if (llaman.length === PINTORES.length) {
+    /* 1 · NADIE DIBUJA YA LA SERIE DEL MOTOR. Es la mitad que de verdad
+       muerde: con `curvaDelSector` llamado y `st.serieProyeccion` también
+       leído, un pintor podría seguir dibujando la vieja y nadie lo notaría.
+       Se mira el CÓDIGO y no los comentarios, que la nombran para explicar
+       por qué se retiró (v926). */
+    const conLaVieja = PINTORES.filter(function (p) {
+      return /(?:^|[^.\w])(?:st|s|r\.stats)\.serieProyeccion/.test(txt[p[0]]);
+    });
+    comprobar('y ninguna lee ya la serie compuesta del motor',
+      conLaVieja.length === 0,
+      conLaVieja.length === 0
+        ? 'cero lecturas de `st.serieProyeccion` en los cuatro. Los comentarios sí la nombran ' +
+          '—para decir por qué se retiró— y por eso esto se mide sobre el código'
+        : 'siguen leyendo la serie del motor: ' +
+          conLaVieja.map(function (p) { return p[0]; }).join(' · '));
+
+    /* 2 · EL REPARTO EXISTE Y ES UNA SOLA RUTA. Si cada pintor se armara su
+       cociente, los cuatro divergirían a la tanda siguiente (v879). */
+    const unaRuta = /function serieProporcional\(/.test(j67) &&
+                    /serieProporcional: serieProporcional/.test(j67) &&
+                    /function curvaDelSector\(/.test(j61) &&
+                    /curvaDelSector/.test(j61.slice(j61.indexOf('window.AIA_DATOS = {')));
+    const propios = PINTORES.filter(function (p) {
+      return /serieProporcional\s*\(/.test(txt[p[0]]);
+    });
+    comprobar('y el reparto en proporción vive en UNA ruta, no en cada pantalla',
+      unaRuta && propios.length === 0,
+      !unaRuta
+        ? 'falta `serieProporcional` en js/67 o `curvaDelSector` exportado por js/61, así que ' +
+          'las pantallas no tienen de dónde pedirla'
+        : (propios.length
+            ? 'se arman el reparto por su cuenta: ' +
+              propios.map(function (p) { return p[0]; }).join(' · ')
+            : 'la aritmética en js/67 (`serieProporcional`, cálculo sin criterio propio) y la ' +
+              'lectura de la tabla en js/61 (`curvaDelSector`); las cuatro pantallas solo piden'));
+
+    /* 3 · LA ATADURA CONTRA LA CLASE B. Que `curvaDelSector` compare su cifra
+       de hoy con la del motor y publique la diferencia. Sin esto, el día que
+       las dos rutas se separen nadie se entera: la curva diría una cosa y la
+       baldosa de al lado otra, las dos con cara de dato. */
+    const iC = j61.indexOf('function curvaDelSector(');
+    const cuerpoC = iC < 0 ? '' : j61.slice(iC, j61.indexOf('\n  }', iC));
+    /* SE MIDE LA EXPRESIÓN QUE LO CALCULA, no que los tres nombres aparezcan
+       (v1029). La primera versión de esta aserción buscaba `difHoy`,
+       `poblacionProyectada` y «no coinciden» por separado, y la inyección fiel
+       —`const difHoy = null;`, que deja los tres nombres en pie y la atadura
+       muerta— salió VERDE: en verde sobre exactamente el defecto que vigila.
+       Ahora se exige que la asignación de `difHoy` RESTE las dos cifras, y que
+       el aviso cuelgue de ella. */
+    const ata = /difHoy\s*=\s*\(?[^;]*hoyDeSerie[^;]*poblacionProyectada[^;]*;/.test(cuerpoC) &&
+                /avisoDif\s*=\s*difHoy/.test(cuerpoC) &&
+                /no coinciden/.test(cuerpoC);
+    /* El aviso lo COMPONE js/61 dentro de `frase` y lo IMPRIMEN los pintores:
+       buscar `difHoy` en ellos dejó de medir nada cuando la frase se mudó —la
+       guarda se puso roja, que es lo que tenía que hacer—. Lo que vale es que
+       la frase llegue al papel. */
+    const dicen = PINTORES.filter(function (p) { return /curvaSec\.frase/.test(txt[p[0]]); });
+    comprobar('y la cifra de hoy de la serie se compara contra la del motor, y la diferencia se dice',
+      ata && dicen.length >= 3,
+      !cuerpoC
+        ? 'no se encontró `curvaDelSector` en js/61: el recorte no mira nada'
+        : (!ata
+            ? 'el cuerpo de `curvaDelSector` ya no compara su cifra de hoy contra ' +
+              '`poblacionProyectada`, o ya no escribe el aviso de que no coinciden: las dos ' +
+              'rutas podrían separarse sin que nadie lo note'
+            : (dicen.length < 3
+                ? 'solo ' + dicen.length + ' pantalla(s) imprimen `curvaSec.frase`, que es lo ' +
+                  'que lleva el aviso al papel: calcular la diferencia y no publicarla es la ' +
+                  'clase C'
+                : 'la atadura está en `curvaDelSector` y las ' + dicen.length + ' pantallas ' +
+                  'imprimen su frase. En el año al que la tasa se midió las dos cifras son la misma por ' +
+                  'construcción —la tasa es la raíz del mismo cociente—, así que la diferencia ' +
+                  'solo aparece si algo se separó, y entonces se lee')));
+
+    /* 4 · EL RÓTULO DICE DE DÓNDE SALE LA CIFRA FUTURA (v1093). Un número
+       correcto con el rótulo de otro método se lee mal igual. */
+    const rotulo = /repartida ' \+|repartida en proporci/.test(cuerpoC);
+    const dosRed = /La curva no va más allá de/.test(cuerpoC) &&
+                   /El tramo punteado va/.test(cuerpoC);
+    const sinFrase = PINTORES.filter(function (p) { return !/curvaSec\.frase/.test(txt[p[0]]); });
+    comprobar('y el rótulo de la cifra hacia adelante sale de UN sitio, con sus dos redacciones',
+      rotulo && dosRed && sinFrase.length === 0,
+      !rotulo
+        ? '`curvaDelSector` ya no nombra la proporción: la cifra hacia adelante volvería a ' +
+          'publicarse sin decir de dónde sale'
+        : (!dosRed
+            ? 'falta una de las dos redacciones en `curvaDelSector`: la del tramo que SÍ va ' +
+              'hacia adelante y la de la curva que termina donde termina la serie. Lo encontró ' +
+              'el papel de un caso fabricado —año en curso fuera de la serie—, donde las cuatro ' +
+              'pantallas hablaban de un tramo punteado que no se dibujaba'
+            : (sinFrase.length
+                ? 'no imprimen la frase: ' + sinFrase.map(function (p) { return p[0]; }).join(' · ')
+                : 'la frase se compone en `curvaDelSector` con sus dos redacciones y las cuatro ' +
+                  'pantallas la imprimen; antes el rótulo estaba escrito a mano en los cuatro ' +
+                  'archivos, que es acordarse cuatro veces (v879)')));
+
+    /* 5 · UN AÑO QUE LA SERIE NO TRAE NO SE INVENTA. Es lo que separa «la
+       serie llega hasta 2042» de «la extendí yo», y es una línea que una tanda
+       apurada borraría para que la curva «llegue más lejos». */
+    const iS = j67.indexOf('function serieProporcional(');
+    const cuerpoS = iS < 0 ? '' : j67.slice(iS, j67.indexOf('\n  }', iS));
+    comprobar('y un año que la serie del DANE no trae no entra en la curva',
+      /porAnio\[a\] == null\) continue/.test(cuerpoS),
+      /porAnio\[a\] == null\) continue/.test(cuerpoS)
+        ? 'los años fuera de la serie se saltan, no se extrapolan: por eso la curva termina ' +
+          'donde la fuente termina y no donde el bucle quiera'
+        : (cuerpoS
+            ? '`serieProporcional` ya no salta los años que la serie no trae, así que la curva ' +
+              'puede pasar de donde la fuente llega'
+            : 'no se encontró `serieProporcional` en js/67: el recorte no mira nada'));
   }
 })();
 

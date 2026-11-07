@@ -168,14 +168,19 @@
 
   function bloquePoblacion(r){
     const s = r.stats;
-    if (!s.poblacionProyectada || !(s.serieProyeccion || []).length) {
+    /* LA CURVA SALE DE LA SERIE DEL DANE, no de la tasa media (v1175). Y cuando
+       no hay serie se DICE con su razón, en vez de desaparecer: las dos
+       redacciones (v970). */
+    const curvaSec = window.AIA_DATOS.curvaDelSector(s);
+    if (!s.poblacionProyectada || curvaSec.serie.length < 2) {
       return s.poblacionEsCensal
         ? '<p class="edu-nota">Censo DANE ' + s.censoAnio + ': ' + miles(s.poblacionCenso) +
           (s.poblacionCenso === 1 ? ' habitante' : ' habitantes') +
-          '. Sin proyección para este municipio, así que se usa el conteo tal cual.</p>'
+          '. Sin curva de población: ' + esc(curvaSec.razon || 'no hay proyección para este ' +
+          'municipio') + ', así que se usa el conteo tal cual.</p>'
         : '';
     }
-    const serie = s.serieProyeccion;
+    const serie = curvaSec.serie;
     const min = Math.min.apply(null, serie.map(x => x.poblacion));
     const max = Math.max.apply(null, serie.map(x => x.poblacion));
     const rango = Math.max(1, max - min);
@@ -207,7 +212,7 @@
         '</span><span>' + serie[serie.length - 1].anio + '</span></div>' +
       '<p class="edu-nota">El censo es de ' + s.censoAnio + ' y se trae a hoy con la tasa ' +
       'media del municipio desde entonces (' + numEs(s.tasaAnualDane * 100, 2) + '% al año, ' +
-      'o sea lo que YA pasó, no lo que va a pasar). ' +
+      'o sea lo que YA pasó). ' + curvaSec.frase + ' ' +
       esc(s.advertenciaProyeccion || '') + '</p>' +
       '</div>';
   }

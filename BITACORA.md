@@ -32093,3 +32093,109 @@ corrida limpia pasó de 865 palomitas a **875**.
   `pendiente` — pide salir a la red y una comprobación estática no sale. Lo que
   hay es la medición de esta tanda sobre el archivo descargado, con su URL y su
   fecha de publicación escritas en la tabla.
+
+## v1175 · la curva del sector sale de la serie del DANE, no de la tasa media
+
+**Lo pidió Daniel al leer el papel de la v1174**, y el defecto era real: la
+baldosa publicaba «2035 · 18.042 · *si siguiera esa media*» —el sector
+**creciendo**— mientras la serie vigente del DANE tiene a Cúcuta decreciendo
+desde 2026, de 793.211 en 2025 a 771.292 en 2035. Un estudiante se llevaba lo
+contrario de lo que la fuente dice de su ciudad, y **el rótulo condicional de la
+v1174 no lo arreglaba: la cifra seguía impresa**. Queda dicho porque es la
+lección: cuando una cifra publicada contradice a su fuente, rotularla como
+hipótesis no la vuelve honesta — hay que calcularla bien o no publicarla.
+
+**Qué salió.** La curva se reparte en **PROPORCIÓN**, calculada en el CLIENTE y
+sin tocar `urbis-motor`:
+
+```
+sector(X) = conteo del censo × municipio(X) ÷ municipio(año del censo)
+```
+
+No hay tasa, no hay interés compuesto y no hay nada escogido: si la serie baja,
+el sector baja.
+
+**Y no son dos métodos al lado.** En el año al que la tasa se midió los dos dan
+**exactamente lo mismo**, porque esa tasa es la raíz n-ésima de este mismo
+cociente. Medido: el motor da 15.994 para 2026 y el reparto da 15.994,
+**diferencia 0**. La divergencia aparece solo hacia adelante, que es donde la
+tasa estaba mal. Para que las dos rutas no se separen en silencio —la clase B—
+`curvaDelSector` las **compara en ese año y publica la diferencia** si alguna vez
+deja de ser cero.
+
+**Medido en el papel**, sector de prueba de 14.369 habitantes contados en 2018:
+
+| | v1174 | v1175 |
+|---|---|---|
+| 2026 («hoy») | 15.994 | **15.994** (igual, por construcción) |
+| 2035 | 18.042 | **15.572** |
+| el rótulo | «si siguiera esa media» | **«proyección del DANE, en proporción»** |
+| la dirección de la curva | subía | **baja con la serie** |
+
+15.572 = 14.369 × 771.292 ÷ 711.714, que es la cuenta que Daniel escribió.
+
+**Dónde vive cada cosa, y por qué.** La aritmética en `serieProporcional`
+(js/67), que es el módulo que las cuatro pantallas comparten y donde viven los
+cálculos sin criterio propio; la lectura de la tabla en `curvaDelSector`
+(js/61), que es quien tiene la serie. `proyeccionDe` se partió en dos: una parte
+**síncrona** —`armarProyeccion`— porque los cuatro pintores de la curva
+devuelven HTML y no pueden esperar una promesa, y el envoltorio asíncrono de
+siempre. Las cuatro pantallas **solo piden**.
+
+**La frase también viaja con el dato** (v867), y eso lo encontró el papel de un
+caso fabricado: con el año en curso fuera de la serie —2050 contra una serie que
+termina en 2042— las cuatro pantallas decían «el tramo punteado va…» sobre una
+hoja que **no dibujaba ningún tramo punteado**, porque el rótulo estaba escrito a
+mano en los cuatro archivos y sin mirar el dato. Ahora `curvaDelSector` compone
+la frase con sus **dos redacciones** —la del tramo que sí va hacia adelante y la
+de la curva que termina donde termina la serie— y las cuatro la imprimen.
+
+**Y una frase de la v1174 que envejeció el día que se arregló el defecto que
+describía.** La advertencia decía «el tramo punteado la extiende hacia adelante,
+así que va por encima de lo que la propia serie del DANE proyecta». Era cierto
+entonces y dejó de serlo acá, y **la hoja quedó contradiciéndose sola**: el mismo
+párrafo decía que el tramo sale de la serie y que la extiende con la media. Lo
+cazó componer la ficha y LEERLA, no el código.
+
+**Lo que dejó de guardarse.** `serieProyeccion` del motor ya no se escribe en la
+ficha archivada: ninguna pantalla la lee, la curva se vuelve a repartir en cada
+pintada, y guardarla gastaba cupo del teléfono en una copia que además envejece
+—el día que el DANE publique otra serie, la ficha archivada seguiría dibujando la
+vieja—. No se pierde capacidad: `tasaAnualDane` sigue guardada.
+
+**La guarda** (seis aserciones nuevas, 881 verdes en total): que las cuatro
+superficies pidan `curvaDelSector`; que **ninguna lea ya** `st.serieProyeccion`,
+que es la mitad que de verdad muerde —con las dos cosas en pie un pintor podría
+seguir dibujando la vieja—; que el reparto viva en una sola ruta y ninguna
+pantalla se arme su cociente; **la atadura** contra la clase B; que el rótulo y
+las dos redacciones salgan de un solo sitio; y que un año que la serie no trae
+**no entre en la curva**, que es lo que separa «la serie llega hasta 2042» de «la
+extendí yo».
+
+**Demostrada en rojo con seis inyecciones fieles**, y la cuarta se cobró su
+lección: la aserción de la atadura buscaba los nombres `difHoy`,
+`poblacionProyectada` y «no coinciden» por separado, y la inyección fiel
+—`const difHoy = null;`, que deja los tres nombres en pie y la atadura muerta—
+**salió VERDE**: en verde sobre exactamente el defecto que vigila. Cuando una
+inyección fiel no consigue poner algo en rojo, lo que falta no es la inyección
+(v1029). Ahora la aserción exige que la asignación RESTE las dos cifras y que el
+aviso cuelgue de ella.
+
+### Lo que esta versión NO hace
+
+* **El motor sigue recibiendo la tasa y sigue calculando con ella la cifra de
+  HOY del sector.** `pendiente` — Daniel lo autorizó así: «la tasa que recibe el
+  motor puede quedarse como está, pero ninguna superficie imprime ya una cifra
+  futura sacada de ella». Cerrarlo pide pasar la serie municipal al motor, que
+  vive en el repositorio privado y esta sesión no tiene delante. Mientras tanto
+  la atadura comprueba que las dos cifras de hoy coincidan, y se publica la
+  diferencia si dejan de hacerlo.
+* **Con el año en curso fuera de la serie no hay cifra hacia adelante.**
+  `cerrado en v1175 · medido y declinado` — medido con un caso fabricado en 2050:
+  la curva termina en 2042 y el papel dice «no se extrapola». Extenderla sería
+  inventar años que la fuente no publica, que es justo lo que esta tanda vino a
+  quitar.
+* **Las suites de navegador no corrieron.** `pendiente` — `pruebas/correr.js`
+  pide `../urbis-pruebas` y `../urbis-motor`, y ninguno está en este contenedor.
+  Lo que sí se compuso y se leyó, en Chromium contra el servidor estático, es la
+  ficha, el pliego y el informe, en tres casos.

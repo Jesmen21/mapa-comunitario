@@ -104,6 +104,41 @@
     return out;
   }
 
+  /* ── LA CURVA DEL SECTOR, REPARTIDA EN PROPORCIÓN (v1175) ──────────
+     `serieProyeccion` de arriba estira una TASA MEDIA hacia adelante, y eso
+     publicaba una cifra futura que contradice a la fuente: con la serie
+     vigente del DANE —Cúcuta decrece desde 2026— el pliego imprimía el sector
+     CRECIENDO hasta 2035. Quien lo lee se lleva lo contrario de lo que el DANE
+     dice de su ciudad.
+     Esto lo reparte en PROPORCIÓN: la población del sector en el año X es el
+     conteo del censo por el cociente entre el municipio del año X y el
+     municipio del año del censo. No hay tasa, no hay interés compuesto y no
+     hay nada escogido: si la serie baja, el sector baja.
+     Y no es un método nuevo al lado del otro: en el año al que la tasa se midió
+     los dos dan EXACTAMENTE lo mismo, porque esa tasa es la raíz n-ésima de
+     este mismo cociente. La diferencia aparece solo hacia adelante, que es
+     donde la tasa estaba mal. `curvaDelSector` (js/61) compara los dos en ese
+     año y publica la diferencia si alguna vez dejan de coincidir —la atadura
+     de la clase B, en vez de dos codificaciones sueltas (v879)—.
+     Un año que la serie del DANE no trae NO SE INVENTA: no entra en la curva.
+     Devuelve la misma forma que `serieProyeccion` —`anio`, `poblacion`,
+     `observado`, `futuro`— para que los cuatro pintores no cambien. */
+  function serieProporcional(conteoCenso, anioCenso, serieMunicipal, anioHoy, aniosExtra){
+    if (!conteoCenso || !anioCenso || !serieMunicipal || !serieMunicipal.length) return [];
+    const porAnio = {};
+    serieMunicipal.forEach(function (p) { porAnio[p.anio] = p.poblacion; });
+    const base = porAnio[anioCenso];
+    if (!base) return [];
+    const fin = (anioHoy || anioCenso) + (aniosExtra || 0);
+    const out = [];
+    for (let a = anioCenso; a <= fin; a++) {
+      if (porAnio[a] == null) continue;
+      out.push({ anio: a, poblacion: Math.round(conteoCenso * porAnio[a] / base),
+                 observado: a === anioCenso, futuro: a > anioHoy });
+    }
+    return out;
+  }
+
   // Tablas para escribir bien los nombres: preposiciones que van en minúscula
   // y siglas colombianas que van en mayúscula. No clasifican nada; se vinieron
   // con normalizarNombre, que sin ellas revienta.
@@ -364,6 +399,7 @@
     tasaAnualDe: tasaAnualDe,
     proyectarPoblacion: proyectarPoblacion,
     serieProyeccion: serieProyeccion,
+    serieProporcional: serieProporcional,
     signoDe: signoDe,
     verboDeVariacion: verboDeVariacion,
     normalizarNombre: normalizarNombre,

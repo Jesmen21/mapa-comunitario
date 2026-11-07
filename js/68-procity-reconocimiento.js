@@ -2272,7 +2272,14 @@
       censoAnio: st.censoAnio, anioProyeccion: st.anioProyeccion,
       tasaAnualDane: st.tasaAnualDane, crecimientoPct: st.crecimientoPct,
       advertenciaProyeccion: st.advertenciaProyeccion,
-      serieProyeccion: st.serieProyeccion || [],
+      /* `serieProyeccion` del motor YA NO SE GUARDA (v1175). Ninguna pantalla
+         la lee: la curva se vuelve a repartir de la serie del DANE en cada
+         pintada, así que guardarla era gastar cupo del teléfono en una copia
+         que además envejece —el día que el DANE publique otra serie, la ficha
+         archivada seguiría dibujando la vieja—. No se pierde ninguna
+         capacidad: `tasaAnualDane` sigue guardada, y de ella sale la curva
+         compuesta si alguna vez hiciera falta. Las fichas viejas la traen y
+         tampoco las molesta. */
       viviendasCenso: st.viviendasCenso, personasPorVivienda: st.personasPorVivienda,
       estrato: st.estrato || null, demografia: st.demografia || null,
       /* El resumen de la cobertura sí cabe: son cuatro cifras. La rejilla y
@@ -4831,7 +4838,8 @@
              el censo y la cifra de hoy—, así que no nombra un tramo que acá
              no existe: lo que tiene que decir es que la de hoy no se contó. */
           '<b>La cifra de hoy no es un dato contado</b>: es el conteo de ' +
-          (st.censoAnio || 2018) + ' traído con esa media.'
+          (st.censoAnio || 2018) + ' traído con esa media. Ninguna cifra FUTURA de esta hoja ' +
+          'sale de ella: la curva de la ficha va según la proyección del DANE para el municipio, repartida en proporción.'
         : 'Sin cobertura del censo en este punto: la cifra es una estimación por densidad, no ' +
           'un dato observado.') +
       (st.advertenciaProyeccion ? ' ' + esc(st.advertenciaProyeccion) : '') + '</p>';
@@ -16192,7 +16200,14 @@ function donaHTML(datos, colorDe, nombreDe) {
 
     var censal = st.poblacionEsCensal && st.poblacionCenso;
     var hoy = st.poblacionProyectada || st.poblacionCenso || st.poblacionEstimada;
-    var serie = st.serieProyeccion || [];
+    /* LA CURVA SALE DE LA SERIE DEL DANE, REPARTIDA EN PROPORCIÓN (v1175).
+       Hasta la v1174 salía de `st.serieProyeccion`, que el motor arma estirando
+       la tasa MEDIA hacia adelante: con la serie vigente —Cúcuta decrece desde
+       2026— esta baldosa publicaba «2035 · 18.042», o sea el sector creciendo,
+       y un estudiante se llevaba lo contrario de lo que el DANE dice de su
+       ciudad. Ver `curvaDelSector` en js/61. */
+    var curvaSec = window.AIA_DATOS.curvaDelSector(st);
+    var serie = curvaSec.serie;
 
     /* La curva, con el mismo criterio que el modo empresarial: SÓLIDO lo que
        llega hasta hoy, PUNTEADO lo que va hacia adelante. Un dato observado y
@@ -16253,17 +16268,16 @@ function donaHTML(datos, colorDe, nombreDe) {
             Number(st.poblacionProyectada).toLocaleString('es-CO') + '</b><em>hoy</em></div>' +
           (ultimo && ultimo.futuro
             ? '<span class="pcr-flecha">→</span>' +
-              /* QUÉ ES ESA CIFRA, en su propio rótulo (v1093). Decía
-                 «pronóstico», y no lo es: es el conteo del censo multiplicado
-                 por la tasa MEDIA del municipio entre el censo y hoy, estirada
-                 años hacia adelante. Para Cúcuta la serie del DANE va al
-                 contrario desde 2026 —baja de 793.211 en 2025 a 771.292 en
-                 2035—, así que rotular eso «pronóstico» publica como
-                 previsión lo que la propia fuente desmiente. El rótulo lo
-                 vuelve condicional, y la advertencia de abajo dice el resto. */
+              /* QUÉ ES ESA CIFRA, en su propio rótulo (v1093, v1175). La
+                 v1174 la rotuló «si siguiera esa media» porque salía de
+                 estirar la tasa, y eso seguía publicando una cifra que la
+                 fuente desmiente —el sector creciendo mientras la ciudad
+                 decrece—. Ahora el número YA es el de la serie del DANE
+                 repartida en proporción, así que el rótulo dice de dónde
+                 sale y no una condición. */
               '<div class="pcr-futuro"><small>' + ultimo.anio + '</small><b>' +
                 Number(ultimo.poblacion).toLocaleString('es-CO') +
-                '</b><em>si siguiera esa media</em></div>'
+                '</b><em>proyección del DANE, en proporción</em></div>'
             : '') +
           (st.crecimientoPct != null
             ? '<span class="pcr-delta">' + window.AIA_MOTOR.signoDe(st.crecimientoPct) +
@@ -16309,12 +16323,10 @@ function donaHTML(datos, colorDe, nombreDe) {
       curva +
       '<p class="pcr-pista">' +
         (censal
-          ? 'Parte del censo del DANE; lo demás es proyección con la tasa MEDIA del ' +
-            'municipio desde el censo' +
+          ? 'Parte del censo del DANE; la cifra de hoy sale de la tasa MEDIA del municipio ' +
+            'desde el censo' +
             (st.tasaAnualDane ? ' (' + tasaAnualPct(st.tasaAnualDane) + ' % al año)' : '') +
-            ', que es el crecimiento que YA ocurrió. <b>El tramo punteado estira esa misma ' +
-            'media hacia adelante</b>: no es un dato contado, y tampoco es lo que el DANE ' +
-            'proyecta para el municipio.'
+            ', que es el crecimiento que YA ocurrió. ' + curvaSec.frase
           : 'Sin cobertura del censo en este punto: la cifra es una estimación por densidad, no un dato observado.') +
         (esPol ? ' En un área dibujada se consulta por el centro y un radio de superficie equivalente, así que es aproximada.' : '') +
         (st.advertenciaProyeccion ? ' ' + esc(st.advertenciaProyeccion) : '') +

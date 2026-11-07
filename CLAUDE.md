@@ -1441,6 +1441,18 @@ sección al final de este archivo.
   honesto es condicional, «si siguiera esa media»—. Y el cierre: **la
   dirección de la serie es un dato, y se publica** con sus dos redacciones, la
   del descenso y la de la serie que no baja.
+  **Y la corrección que la v1175 tuvo que hacerle a esa cura** (la dijo Daniel
+  leyendo el papel, y vale como regla aparte): **un rótulo condicional no
+  arregla una cifra que contradice a su fuente.** La v1174 rotuló
+  «2035 · 18.042 · si siguiera esa media» y la cifra seguía impresa, creciendo,
+  sobre una ciudad que la fuente tiene decreciendo: quien lee se lleva el
+  número. O se calcula bien o no se publica. La cura es **repartir la serie en
+  proporción** —`sector(X) = censo × municipio(X) ÷ municipio(año del censo)`—, y
+  lo que la hace comprobable es que **coincide con el método viejo en el año al
+  que la tasa se midió** —la tasa es la raíz n-ésima de ese mismo cociente—, así
+  que las dos rutas se ATAN en ese año y la diferencia se publica si deja de ser
+  cero (v879). Y **un año que la fuente no trae no entra en la curva**: eso es
+  lo que separa «la serie llega hasta 2042» de «la extendí yo».
 * **Dos números que se contradicen piden la MEDIDA antes que el arreglo**
   (v1085). Ante una cifra que no cuadra con otra parte del registro, la
   pregunta no es cuál de las dos está mal: es **de qué mide cada una**. La

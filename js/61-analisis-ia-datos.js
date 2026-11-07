@@ -1497,6 +1497,13 @@
   //
   // Se lee una sola vez por sesión: es un archivo estático y volver a pedirlo
   // en cada análisis no aporta nada.
+  /* Cuántos años hacia adelante dibuja la curva, en un solo sitio. Nueve es lo
+     que el motor usaba, así que con el año en curso en 2026 la hoja sigue
+     cerrando en 2035 y el canje de método no cambia de paso el eje. */
+  const ANIOS_ADELANTE = 9;
+  /* Los miles con el punto de acá, en un solo sitio: lo usan la advertencia de
+     `armarProyeccion` y el aviso de `curvaDelSector`. */
+  const mil = function (x) { return Number(x).toLocaleString('es-CO'); };
   let proyeccionesCache;
   async function leerProyecciones(){
     if (proyeccionesCache !== undefined) return proyeccionesCache;
@@ -1545,8 +1552,12 @@
   // Proyección de población para un municipio. Devuelve null si no está en la
   // tabla: es preferible mostrar el censo tal cual y decir que no hay
   // proyección para ese municipio, antes que aplicarle la de otro.
-  async function proyeccionDe(nombreMunicipio){
-    const tabla = await leerProyecciones();
+  /* ARMADA APARTE Y SIN `await` a propósito (v1175). Los cuatro pintores de la
+     curva son FUNCIONES SÍNCRONAS —devuelven HTML—, así que no pueden esperar
+     una promesa, y la tabla ya está leída y memorizada para cuando se pinta.
+     `proyeccionDe` sigue siendo la puerta asíncrona de siempre: la trae si hace
+     falta y llama a esta. */
+  function armarProyeccion(tabla, nombreMunicipio){
     if (!tabla) return null;
     const k = claveMunicipio(nombreMunicipio);
     const id = (tabla.alias && tabla.alias[k]) || k;
@@ -1587,7 +1598,6 @@
     if (tasa == null) return null;
 
     const baja = tramoQueBaja(serie);
-    const mil = function (x) { return Number(x).toLocaleString('es-CO'); };
 
     /* EL AVISO VIAJA CON LA CIFRA (v867), y por eso la dirección de la serie va
        DENTRO de `advertencia` y no en un campo nuevo. La razón es medida: el
@@ -1607,17 +1617,26 @@
       : 'OJO: ' + anioHoy + ' cae fuera de la serie del DANE (va de ' + primero.anio +
         ' a ' + ultimo.anio + '), así que la cifra del municipio es la de ' + punto.anio +
         ' y no la de hoy. No se extrapoló: se dice de qué año es.';
+    /* Y OJO CON LA SEGUNDA MITAD DE ESTA FRASE: hasta la v1174 decía que el
+       tramo punteado «extiende la tasa hacia adelante, así que va por encima de
+       lo que la propia serie del DANE proyecta». Era cierto entonces y dejó de
+       serlo en la v1175, cuando la curva pasó a repartirse de la serie —y el
+       papel quedó contradiciéndose solo: el mismo párrafo decía que el tramo
+       sale de la serie y que la extiende con la media—. Lo cazó componer la
+       ficha y LEERLA, no el código. Una frase que describe un defecto envejece
+       el día que el defecto se arregla. */
     const fraseSerie = baja
       ? 'Y la dirección: según el DANE esta ciudad DECRECE desde ' + baja.decreceDesde +
         ' — su máximo es ' + mil(baja.poblacionPico) + ' habitantes en ' + baja.anioPico +
         ' y la serie baja año por año hasta ' + mil(baja.poblacionFin) + ' en ' +
         baja.anioFin + '. La tasa de arriba es la MEDIA de ' + base.anio + ' a ' +
-        punto.anio + ', o sea el crecimiento que YA ocurrió; el tramo punteado la ' +
-        'extiende hacia adelante, así que va por encima de lo que la propia serie del ' +
-        'DANE proyecta para el municipio.'
+        punto.anio + ', o sea el crecimiento que YA ocurrió, y no se usa para nada hacia ' +
+        'adelante: lo que va hacia adelante se reparte de esta misma serie, así que BAJA ' +
+        'con ella.'
       : 'Y la dirección: la serie del DANE para esta ciudad no decrece en ningún tramo ' +
         'de ' + primero.anio + ' a ' + ultimo.anio + ', así que la tasa media de ' +
-        base.anio + ' a ' + punto.anio + ' y el tramo punteado apuntan en el mismo sentido.';
+        base.anio + ' a ' + punto.anio + ' y el reparto de la serie hacia adelante apuntan ' +
+        'en el mismo sentido.';
 
     return { tasaAnual: tasa, municipio: m.nombre,
              divipola: m.divipola || '',
@@ -1628,8 +1647,96 @@
              anioPico: baja ? baja.anioPico : null,
              poblacionPico: baja ? baja.poblacionPico : null,
              decreceDesde: baja ? baja.decreceDesde : null,
+             /* LA SERIE ENTERA, para que el cliente pueda repartirla en
+                proporción sin volver a leer el archivo ni pasar por el motor. */
+             serie: serie,
              fuente: tabla.fuente, url: tabla.url,
              advertencia: [tabla.advertencia, fraseLeida, fraseSerie].join(' ') };
+  }
+
+  // Proyección de población para un municipio. Devuelve null si no está en la
+  // tabla: es preferible mostrar el censo tal cual y decir que no hay
+  // proyección para ese municipio, antes que aplicarle la de otro.
+  async function proyeccionDe(nombreMunicipio){
+    return armarProyeccion(await leerProyecciones(), nombreMunicipio);
+  }
+
+  /* ── LA CURVA DEL SECTOR, DE LA SERIE Y NO DE LA TASA (v1175) ──────────
+     Lo pidió Daniel al leer el papel de la v1174: la baldosa decía
+     «2035 · 18.042» —el sector CRECIENDO— cuando el DANE tiene a la ciudad
+     decreciendo desde 2026. Quien lo lee se lleva lo contrario de lo que la
+     fuente dice.
+     Acá la curva sale de la serie municipal repartida en proporción
+     (`AIA_MOTOR.serieProporcional`), año por año. El motor no se toca: sigue
+     mandando su `poblacionProyectada` para HOY, y en ese año las dos cifras
+     coinciden por construcción. Lo que ninguna superficie publica ya es una
+     cifra FUTURA sacada de la tasa.
+     Devuelve SIEMPRE un objeto con `serie` y `estado`, nunca null: así el
+     pintor que se queda sin curva tiene qué decir en vez de desaparecer, que
+     son las dos redacciones (v970). */
+  function curvaDelSector(st){
+    const vacia = function (estado, razon) {
+      return { serie: [], estado: estado, razon: razon, municipio: '',
+               decreceDesde: null, serieHasta: null, hoyDeSerie: null, difHoy: null,
+               hayFuturo: false,
+               frase: '<b>Sin curva de población:</b> ' + razon + '.' };
+    };
+    if (!st || !st.poblacionCenso || !st.censoAnio) {
+      return vacia('sin-censo', 'este sector no tiene conteo censal, así que no hay nada que ' +
+                   'repartir en proporción');
+    }
+    if (!proyeccionesCache) {
+      return vacia('tabla-no-leida', 'la tabla de proyecciones del DANE no se ha leído en esta ' +
+                   'sesión todavía');
+    }
+    const p = armarProyeccion(proyeccionesCache, st.municipioNombre || '');
+    if (!p) {
+      return vacia('sin-municipio', 'este municipio no está en la tabla de proyecciones del ' +
+                   'repositorio, así que no hay serie que repartir —y una curva con la tasa media ' +
+                   'diría lo contrario de lo que el DANE dice de las ciudades que sí están—');
+    }
+    const anioHoy = Number(st.anioProyeccion) || p.anioPoblacion;
+    const serie = window.AIA_MOTOR.serieProporcional(
+      st.poblacionCenso, st.censoAnio, p.serie, anioHoy, ANIOS_ADELANTE);
+    if (serie.length < 2) {
+      return vacia('censo-fuera-de-serie', 'el año del censo de este sector (' + st.censoAnio +
+                   ') no está en la serie del DANE, que va de ' + p.serieDesde + ' a ' +
+                   p.serieHasta + ', así que la proporción no tiene base');
+    }
+    /* LA ATADURA (clase B). En el año al que el motor proyecta, su cifra y la
+       de la serie tienen que ser la misma —la tasa es la raíz del mismo
+       cociente—. Si alguna vez dejan de coincidir no se calla: se publica la
+       diferencia, que es lo único que impide que las dos rutas se separen sin
+       que nadie se entere. */
+    const enHoy = serie.filter(function (x) { return x.anio === anioHoy; })[0] || null;
+    const hoyDeSerie = enHoy ? enHoy.poblacion : null;
+    const difHoy = (hoyDeSerie != null && st.poblacionProyectada != null)
+      ? hoyDeSerie - Number(st.poblacionProyectada) : null;
+
+    /* Y LA FRASE VIAJA CON LA CURVA, no la escribe cada pantalla (v867).
+       Son cuatro superficies y la frase tiene DOS redacciones (v970): la de
+       la curva que sí va hacia adelante y la de la que termina donde termina
+       la serie del DANE. Lo encontró el papel del caso fabricado —un año en
+       curso fuera de la serie—: las cuatro decían «el tramo punteado va…»
+       sobre una hoja que no dibujaba ningún tramo punteado, porque la frase
+       estaba escrita a mano y sin mirar el dato. Escrita cuatro veces habría
+       que acordarse cuatro veces (v879). */
+    const hayFuturo = serie.some(function (x) { return x.futuro; });
+    const frase = hayFuturo
+      ? 'El tramo punteado va <b>según la proyección del DANE para el municipio, repartida ' +
+        'en proporción</b>, año por año y no con esa media: si la serie del DANE baja, el ' +
+        'sector baja.'
+      : 'La curva no va más allá de ' + p.serieHasta + ', que es donde la serie del DANE ' +
+        'termina: <b>no se extrapola</b>. Lo que se dibuja sale de esa serie, repartida en ' +
+        'proporción al conteo del censo.';
+    const avisoDif = difHoy
+      ? ' Ojo: la cifra de hoy del motor y la de la serie no coinciden (' + mil(hoyDeSerie) +
+        ' contra ' + mil(st.poblacionProyectada) + '); se dibuja la de la serie.'
+      : '';
+    return { serie: serie, estado: 'serie-dane', razon: '', municipio: p.municipio,
+             decreceDesde: p.decreceDesde, serieHasta: p.serieHasta,
+             anioHoy: anioHoy, hoyDeSerie: hoyDeSerie, difHoy: difHoy,
+             hayFuturo: hayFuturo, frase: frase + avisoDif };
   }
 
 
@@ -1776,7 +1883,8 @@
                        limpiarCache, buscarDireccion, parsearEnlaceMaps, ubicacionDe,
                        consultarTrazado, consultarTrazadoPoligono, consultarVias, consultarContexto,
                        consultarElevacion, rejillaDe, consultarClima,
-                       consultarDANE, proyeccionDe, manzanasEstrato, ESTRATO_COLOR,
+                       consultarDANE, proyeccionDe, curvaDelSector,
+                       manzanasEstrato, ESTRATO_COLOR,
                        camposDeCapa, censoAmpliado, BLOQUES_CENSO,
                        // La referencia de ciudad, a la vista para poder
                        // comprobarla sin montar un análisis entero.

@@ -1399,8 +1399,10 @@
   // a cualquier tamaño y no depende de que un lienzo se haya renderizado.
   function bloquePoblacion(r){
     const s = r.stats;
-    if (!s.poblacionProyectada || !(s.serieProyeccion || []).length) return '';
-    const serie = s.serieProyeccion;
+    /* LA CURVA SALE DE LA SERIE DEL DANE, no de la tasa media (v1175). */
+    const curvaSec = window.AIA_DATOS.curvaDelSector(s);
+    if (!s.poblacionProyectada || curvaSec.serie.length < 2) return '';
+    const serie = curvaSec.serie;
     const min = Math.min.apply(null, serie.map(x => x.poblacion));
     const max = Math.max.apply(null, serie.map(x => x.poblacion));
     const rango = Math.max(1, max - min);
@@ -1437,8 +1439,8 @@
         '</span><span>' + serie[serie.length - 1].anio + '</span></div>' +
       '<p class="pie-nota">' + window.AIA_MOTOR.verboDeVariacion(s.tasaAnualDane) + ' ' +
         numEs(s.tasaAnualDane * 100, 2) +
-        '% al año de media desde el censo, según la serie de proyecciones municipales del ' +
-        'DANE; el tramo punteado extiende esa misma tasa hacia adelante. ' +
+        '% al año de media desde el censo hasta hoy, según la serie de proyecciones ' +
+        'municipales del DANE. ' + curvaSec.frase + ' ' +
         esc(s.advertenciaProyeccion || '') + '</p>' +
       '</div>';
   }

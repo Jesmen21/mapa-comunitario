@@ -1,4 +1,4 @@
-const URBIS_CACHE = 'urbis-v1174-la-proyeccion-del-dane-se-lee-ano-por-ano';
+const URBIS_CACHE = 'urbis-v1175-la-curva-del-sector-sale-de-la-serie-y-no-de-la-tasa';
 const URBIS_ASSETS = [
   './',
   './index.html',
