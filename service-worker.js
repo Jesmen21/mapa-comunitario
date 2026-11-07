@@ -1,4 +1,4 @@
-const URBIS_CACHE = 'urbis-v1173-ningun-cierre-de-banda-afirma-sin-mirar-un-dato';
+const URBIS_CACHE = 'urbis-v1174-la-proyeccion-del-dane-se-lee-ano-por-ano';
 const URBIS_ASSETS = [
   './',
   './index.html',

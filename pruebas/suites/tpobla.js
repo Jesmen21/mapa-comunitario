@@ -7,6 +7,12 @@ const E = require('../entorno.js');
 // todo que no se pase de lista: que el dato observado no desaparezca, que la
 // gráfica distinga lo medido de lo estimado, y que si no hay tasa nada se
 // invente.
+//
+// Desde la v1174 la tabla del repositorio trae la SERIE AÑO POR AÑO del DANE y
+// no dos anclas, así que la tasa sale de dos años de esa serie —el del censo y
+// el de la lectura— y la población del municipio se LEE. Lo que esta suite
+// mide del lado del motor no cambió: el sector se sigue trayendo con interés
+// compuesto sobre esa tasa.
 /* El motor ya no se sirve al navegador: vive en el repo privado y acá se
    carga directamente en node (ver motor-local.js). La prueba es la misma; lo
    único que aportaba el navegador era la etiqueta <script>. */
@@ -21,7 +27,16 @@ const REPO = E.RAIZ;
   const r = ((tabla) => {
     const M = MOTOR;
     const cuc = tabla.municipios['san jose de cucuta'];
-    const tasa = M.tasaAnualDe(cuc.anclas);
+    /* La tasa SALE DE LA SERIE, entre el año del censo y el año que se lee, que
+       es lo mismo que hace `proyeccionDe` en js/61. Se arma acá con
+       `tasaAnualDe` sobre dos puntos de esa misma serie —no sobre dos anclas de
+       un esquema que ya no existe— para medir la aritmética del motor con la
+       cifra que de verdad le llega. */
+    const ANIO_LECTURA = 2026;
+    const tasa = M.tasaAnualDe([
+      { anio: cuc.anioCenso, poblacion: cuc.serie[String(cuc.anioCenso)] },
+      { anio: ANIO_LECTURA, poblacion: cuc.serie[String(ANIO_LECTURA)] }
+    ]);
 
     // Escenario: mismo entorno, con y sin tasa de proyección.
     const centro = { lat: 7.9168, lng: -72.4727 };
@@ -71,20 +86,36 @@ const REPO = E.RAIZ;
   const chk = (c, t) => (c ? ok : fallo).push(t);
 
   console.log('══ LA TASA ════════════════════════════════════════════════════');
-  console.log('  anclas DANE Cúcuta : ' +
-    tabla.municipios['san jose de cucuta'].anclas.map(a => a.anio + '=' + a.poblacion).join('  →  '));
+  {
+    const cuc = tabla.municipios['san jose de cucuta'];
+    const anios = Object.keys(cuc.serie).map(Number).sort((a, b) => a - b);
+    console.log('  serie DANE Cúcuta  : ' + anios[0] + '–' + anios[anios.length - 1] +
+      ' (' + anios.length + ' años) · censo ' + cuc.anioCenso + '=' + cuc.serie[String(cuc.anioCenso)] +
+      ' · 2026=' + cuc.serie['2026']);
+  }
   console.log('  tasa anual         : ' + (r.tasa * 100).toFixed(3) + '%');
   chk(r.tasa > 0 && r.tasa < 0.05,
       'la tasa es plausible para una ciudad colombiana (' + (r.tasa * 100).toFixed(2) + '%)');
-  // La regla que más fácil se rompe: la tasa NO puede salir de comparar el
-  // conteo censal crudo con una proyección, porque entre los dos hay además
-  // la corrección de omisión censal.
-  const crudo = tabla.municipios['san jose de cucuta'].censoCrudo2018;
-  const falsa = Math.pow(tabla.municipios['san jose de cucuta'].anclas[0].poblacion / crudo, 1 / 2) - 1;
-  console.log('  (si se hubiera mezclado censo crudo con proyección: ' +
-              (falsa * 100).toFixed(2) + '% — nueve veces más)');
-  chk(r.tasa < falsa / 3,
-      'no sale de mezclar el conteo crudo con la serie proyectada');
+  /* La regla que más fácil se rompe: la tasa tiene que salir de DOS AÑOS DE LA
+     MISMA SERIE. Hasta la v1173 esto se demostraba contra `censoCrudo2018`, que
+     ya no está en el archivo —se retiró con las anclas—, así que la trampa que
+     se mide es la que queda: tomar como base un año de la serie distinto del
+     que el archivo declara como el del censo cambia la tasa, y la única tasa
+     que el módulo puede publicar es la del tramo DECLARADO. Se comprueba
+     reproduciéndola exactamente desde la serie. */
+  {
+    const cuc = tabla.municipios['san jose de cucuta'];
+    const rehecha = Math.pow(cuc.serie['2026'] / cuc.serie[String(cuc.anioCenso)],
+                             1 / (2026 - cuc.anioCenso)) - 1;
+    console.log('  rehecha de la serie: ' + (rehecha * 100).toFixed(3) + '%');
+    chk(Math.abs(rehecha - r.tasa) < 1e-12,
+        'la tasa se reproduce exactamente desde la serie, entre el año del censo y el leído');
+    const otroTramo = Math.pow(cuc.serie['2026'] / cuc.serie['2020'], 1 / 6) - 1;
+    console.log('  (desde 2020 en vez del censo daría ' + (otroTramo * 100).toFixed(3) +
+                '% — otro tramo, otra tasa)');
+    chk(Math.abs(otroTramo - r.tasa) > 1e-6,
+        'y el tramo importa: desde otro año base la tasa es distinta, así que el tramo se declara');
+  }
 
   console.log('\n── La aritmética ──────────────────────────────────────────────');
   console.log('  1.000 al 10% durante 8 años → ' + r.compuesto8 + ' (compuesto: 2.144)');
@@ -134,8 +165,30 @@ const REPO = E.RAIZ;
   chk(/dane\.gov\.co/.test(tabla.url || ''), 'la tabla enlaza el archivo original del DANE');
   chk(!!tabla.notaMetodo && /omisi[oó]n censal/i.test(tabla.notaMetodo),
       'y explica por qué no se mezcla el conteo crudo con la proyección');
-  chk((tabla.municipios['san jose de cucuta'].anclas || []).length >= 2,
-      'con al menos dos anclas de la misma serie');
+  {
+    const cuc = tabla.municipios['san jose de cucuta'];
+    const anios = Object.keys(cuc.serie || {}).map(Number).sort((a, b) => a - b);
+    chk(anios.length >= 20 && anios.every((x, i) => i === 0 || x === anios[i - 1] + 1),
+        'la tabla trae la serie año por año y sin huecos (' + anios.length + ' años)');
+    chk(cuc.anclas === undefined && cuc.censoCrudo2018 === undefined,
+        'y ya no conserva el esquema de anclas, que eran dos codificaciones de lo mismo');
+    /* LAS TRES CIFRAS QUE DANIEL PIDIÓ COMPROBAR, leídas del archivo oficial
+       del DANE (PPED 2018-2042, serie «Total», divipola 54001) y verificadas
+       una por una contra el original descargado. */
+    chk(cuc.serie['2020'] === 765533, '2020 = 765.533 (' + cuc.serie['2020'] + ')');
+    chk(cuc.serie['2024'] === 790984, '2024 = 790.984 (' + cuc.serie['2024'] + ')');
+    chk(cuc.serie['2026'] === 792180, '2026 = 792.180 (' + cuc.serie['2026'] + ')');
+    /* Y QUE LA SERIE BAJA, que es lo que una tasa constante no puede
+       representar y la razón de fondo del cambio de esquema. */
+    const pico = anios.reduce((b, a) => cuc.serie[String(a)] > cuc.serie[String(b)] ? a : b, anios[0]);
+    console.log('  máximo de la serie : ' + pico + ' = ' + cuc.serie[String(pico)] +
+                ' · último ' + anios[anios.length - 1] + ' = ' + cuc.serie[String(anios[anios.length - 1])]);
+    chk(pico < anios[anios.length - 1] &&
+        cuc.serie[String(anios[anios.length - 1])] < cuc.serie[String(pico)],
+        'la serie tiene su máximo antes del final y baja después: eso es lo que las dos anclas no podían decir');
+  }
+  chk(/2018-2042/.test(tabla.fuente || '') && !/2020-2035/.test(tabla.fuente || ''),
+      'y la fuente declarada es la serie vigente, no la que el DANE reemplazó');
 
   console.log('\n' + ok.map(t => '✅ ' + t).join('\n'));
   if (fallo.length) console.log('\n' + fallo.map(t => '❌ ' + t).join('\n'));

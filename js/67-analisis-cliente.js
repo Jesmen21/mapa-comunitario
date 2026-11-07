@@ -70,6 +70,29 @@
     return Math.round(base * Math.pow(1 + tasaAnual, anios));
   }
 
+  /* ── El SIGNO y el VERBO de una variación, en una sola ruta ──────────
+     Medido: SIETE sitios escribían el signo A MANO —`'+' + crecimientoPct`— en
+     cuatro archivos, y DOS escribían el verbo —`'Crece ' + tasa`—. Los nueve eran ciertos solo
+     mientras la serie del DANE subiera, y desde la v1174 la tabla trae la serie
+     año por año: la de Cúcuta decrece desde 2026, y un municipio cuya serie
+     baje entre el censo y el año en curso imprimiría «+-2,1 %» y «Crece -0,31 %
+     al año».
+     Un signo o un verbo tecleado al lado de una cifra es una afirmación sobre
+     el dato que nadie vuelve a medir (v903), y siete copias divergen a la tanda
+     siguiente (v879). Va acá —no en cada pantalla— porque este es el módulo que
+     las cuatro comparten, y es un cálculo sin criterio propio.
+     `signoDe` solo devuelve el PREFIJO: el formato de la cifra se queda con
+     cada pantalla, que tiene el suyo, y un número negativo ya trae su menos. */
+  function signoDe(x){
+    if (x == null || !isFinite(Number(x))) return '';
+    return Number(x) > 0 ? '+' : '';
+  }
+  function verboDeVariacion(x){
+    if (x == null || !isFinite(Number(x))) return 'Varía';
+    const n = Number(x);
+    return n > 0 ? 'Crece' : n < 0 ? 'Decrece' : 'No cambia';
+  }
+
   function serieProyeccion(base, anioBase, anioObjetivo, tasaAnual, aniosExtra){
     if (!base || tasaAnual == null) return [];
     const fin = anioObjetivo + (aniosExtra || 0);
@@ -341,6 +364,8 @@
     tasaAnualDe: tasaAnualDe,
     proyectarPoblacion: proyectarPoblacion,
     serieProyeccion: serieProyeccion,
+    signoDe: signoDe,
+    verboDeVariacion: verboDeVariacion,
     normalizarNombre: normalizarNombre,
 
     // El navegador manda ids; el servidor resuelve contra su tabla y no

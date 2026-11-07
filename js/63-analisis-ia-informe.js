@@ -1423,7 +1423,8 @@
         '<div class="fl">&rarr;</div>' +
         '<div><small>' + s.anioProyeccion + '</small><b style="color:' + T.acento + '">' +
           numEs(s.poblacionProyectada) + '</b><em>proyectado</em></div>' +
-        '<div class="delta">+' + numEs(s.crecimientoPct) + '%</div>' +
+        '<div class="delta">' + window.AIA_MOTOR.signoDe(s.crecimientoPct) +
+          numEs(s.crecimientoPct) + '%</div>' +
       '</div>' +
       '<svg class="pobl-svg" viewBox="0 0 ' + W + ' ' + H + '" preserveAspectRatio="none">' +
         '<path d="' + area + '" fill="' + T.acento + '22"/>' +
@@ -1434,9 +1435,11 @@
       '</svg>' +
       '<div class="pobl-eje"><span>' + serie[0].anio + '</span><span>' + hoy.anio +
         '</span><span>' + serie[serie.length - 1].anio + '</span></div>' +
-      '<p class="pie-nota">Crece ' + numEs(s.tasaAnualDane * 100, 2) +
-        '% al año según la serie de proyecciones municipales del DANE; el tramo punteado va ' +
-        'hacia adelante. ' + esc(s.advertenciaProyeccion || '') + '</p>' +
+      '<p class="pie-nota">' + window.AIA_MOTOR.verboDeVariacion(s.tasaAnualDane) + ' ' +
+        numEs(s.tasaAnualDane * 100, 2) +
+        '% al año de media desde el censo, según la serie de proyecciones municipales del ' +
+        'DANE; el tramo punteado extiende esa misma tasa hacia adelante. ' +
+        esc(s.advertenciaProyeccion || '') + '</p>' +
       '</div>';
   }
 

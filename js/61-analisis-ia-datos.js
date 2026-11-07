@@ -1485,10 +1485,18 @@
   // Encadena manzana urbana → sector (incluye rural) → null (el motor cae
   // entonces a su estimación heurística de siempre).
   // ── Proyecciones de población del DANE ──────────────────────────────────
-  // El censo es de 2018. La tabla del repo guarda las anclas de la serie
-  // municipal del DANE y de ahí sale la tasa con la que el motor trae ese
-  // conteo hasta hoy. Se lee una sola vez por sesión: es un archivo estático
-  // y volver a pedirlo en cada análisis no aporta nada.
+  // El censo es de 2018. La tabla del repo guarda la SERIE AÑO POR AÑO de la
+  // proyección municipal del DANE, y la población del año en curso se LEE de
+  // ella: no se extrapola.
+  //
+  // Hasta la v1173 guardaba dos anclas y de ellas salía una tasa constante que
+  // se extendía hacia adelante. Eso no puede representar una serie que BAJA, y
+  // la de Cúcuta baja: su máximo es 793.211 habitantes en 2025 y decrece cada
+  // año desde 2026 hasta 752.748 en 2042. Medido contra la fuente oficial, el
+  // método de las dos anclas divergiía un 7,7 % a 2035.
+  //
+  // Se lee una sola vez por sesión: es un archivo estático y volver a pedirlo
+  // en cada análisis no aporta nada.
   let proyeccionesCache;
   async function leerProyecciones(){
     if (proyeccionesCache !== undefined) return proyeccionesCache;
@@ -1503,9 +1511,40 @@
       .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
       .replace(/[^a-z0-9]+/g, ' ').trim();
   }
-  // Tasa anual de crecimiento para un municipio. Devuelve null si no está en
-  // la tabla: es preferible mostrar el censo tal cual y decir que no hay
-  // proyección para ese municipio, antes que aplicarle la tasa de otro.
+  /* La serie del municipio, ordenada y con los años como números. El archivo
+     la guarda como objeto —año: población— porque así se lee de un vistazo y se
+     corrige un año sin contar posiciones; acá se vuelve lista para recorrerla. */
+  function serieDe(m){
+    const s = (m && m.serie) || null;
+    if (!s) return [];
+    return Object.keys(s)
+      .map(function (k) { return { anio: Number(k), poblacion: Number(s[k]) }; })
+      .filter(function (p) { return p.anio > 1900 && p.poblacion > 0; })
+      .sort(function (a, b) { return a.anio - b.anio; });
+  }
+
+  /* DESDE QUÉ AÑO LA SERIE SOLO BAJA, y cuál fue su máximo.
+     No es «el año del máximo más uno»: en una serie que sube, baja y vuelve a
+     subir eso señalaría un descenso que la fuente no sostiene. Se busca el
+     ÚLTIMO punto a partir del cual CADA año es menor que el anterior, así que
+     si la serie repunta en algún tramo esto devuelve null y ninguna pantalla
+     afirma que la ciudad decrece.
+     Se CALCULA y no se escribe a mano (v903): el día que el DANE publique otra
+     serie, la frase de la lámina cambia sola. */
+  function tramoQueBaja(serie){
+    if (serie.length < 3) return null;
+    let i = serie.length - 1;
+    while (i > 0 && serie[i].poblacion < serie[i - 1].poblacion) i--;
+    if (i === serie.length - 1) return null;
+    const fin = serie[serie.length - 1];
+    return { anioPico: serie[i].anio, poblacionPico: serie[i].poblacion,
+             decreceDesde: serie[i + 1].anio,
+             anioFin: fin.anio, poblacionFin: fin.poblacion };
+  }
+
+  // Proyección de población para un municipio. Devuelve null si no está en la
+  // tabla: es preferible mostrar el censo tal cual y decir que no hay
+  // proyección para ese municipio, antes que aplicarle la de otro.
   async function proyeccionDe(nombreMunicipio){
     const tabla = await leerProyecciones();
     if (!tabla) return null;
@@ -1513,27 +1552,86 @@
     const id = (tabla.alias && tabla.alias[k]) || k;
     const m = tabla.municipios && tabla.municipios[id];
     if (!m) return null;
-    const tasa = window.AIA_MOTOR.tasaAnualDe(m.anclas);
-    if (tasa == null) return null;
-    /* Y la población del MUNICIPIO al año en curso, de las mismas anclas y con
-       la misma tasa con la que se proyecta la del sector. Sin ella el pliego
-       no puede comparar el sector con su ciudad, que es la regla que más
-       barato cuesta romper: «1.200 habitantes» no dice nada hasta que se sabe
-       si eso es el 0,2 % o el 12 % de la ciudad. Se proyecta desde el ancla
-       MÁS RECIENTE, no desde el censo: es la cifra que el DANE ya corrigió. */
-    const orden = (m.anclas || []).slice().sort((x, y) => x.anio - y.anio);
-    const ultima = orden[orden.length - 1] || null;
+    const serie = serieDe(m);
+    if (serie.length < 2) return null;
+
     const anioHoy = new Date().getFullYear();
-    const poblacionHoy = ultima
-      ? window.AIA_MOTOR.proyectarPoblacion(ultima.poblacion, ultima.anio, anioHoy, tasa)
+    const primero = serie[0], ultimo = serie[serie.length - 1];
+    /* La población del MUNICIPIO se LEE del año en curso. Sin ella el pliego no
+       puede comparar el sector con su ciudad, que es la regla que más barato
+       cuesta romper: «1.200 habitantes» no dice nada hasta que se sabe si eso
+       es el 0,2 % o el 12 % de la ciudad.
+       Y si el año en curso cae FUERA de la serie no se extrapola: se usa el
+       extremo más cercano y se dice de qué año es, porque «la serie llega hasta
+       2042» y «la proyecté yo» son dos cosas y solo una es del DANE. */
+    const leido = serie.filter(function (p) { return p.anio === anioHoy; })[0] || null;
+    const punto = leido || (anioHoy < primero.anio ? primero : ultimo);
+    const poblacionHoy = punto.poblacion;
+
+    /* LA TASA, y de qué es. Es la media compuesta entre el año del censo y el
+       año leído, los dos de ESTA MISMA serie: es con la que el motor trae el
+       conteo censal del sector hasta hoy. Mira hacia ATRÁS —es el crecimiento
+       que ya ocurrió— y por eso no dice qué va a pasar: eso lo dice la serie,
+       que para Cúcuta baja. Las dos cosas se publican aparte, y la segunda
+       viaja en la advertencia de más abajo.
+       Los dos años salen de la misma serie a propósito: entre el conteo por
+       manzana de 2018 y una proyección hay además la corrección de omisión
+       censal, y mezclarlas haría pasar por crecimiento lo que es esa
+       corrección. */
+    const anioCenso = Number(m.anioCenso) || primero.anio;
+    const base = serie.filter(function (p) { return p.anio === anioCenso; })[0] || primero;
+    const tramos = punto.anio - base.anio;
+    const tasa = (tramos > 0 && base.poblacion > 0)
+      ? Math.pow(poblacionHoy / base.poblacion, 1 / tramos) - 1
       : null;
+    if (tasa == null) return null;
+
+    const baja = tramoQueBaja(serie);
+    const mil = function (x) { return Number(x).toLocaleString('es-CO'); };
+
+    /* EL AVISO VIAJA CON LA CIFRA (v867), y por eso la dirección de la serie va
+       DENTRO de `advertencia` y no en un campo nuevo. La razón es medida: el
+       objeto `dane` cruza el motor —otro repositorio, que esta sesión no tiene
+       delante— antes de llegar a `st`, y `advertenciaProyeccion` es un campo
+       que YA llega y que YA imprimen las cuatro superficies que publican la
+       proyección: la ficha del sector (js/68), el pliego educativo (js/68), el
+       panel empresarial (js/62), el informe (js/63) y la hoja del curso
+       (js/65). Un campo nuevo podría morir en el motor sin que nada lo diga,
+       que es la clase C.
+       Y se escriben LAS DOS REDACCIONES (v970): la del descenso y la de la
+       serie que no baja, que es justo la que hace falta el día que el DANE
+       publique otra. */
+    const fraseLeida = leido
+      ? 'La cifra del municipio se LEE del año ' + punto.anio + ' de la serie del DANE: ' +
+        'no se extrapola.'
+      : 'OJO: ' + anioHoy + ' cae fuera de la serie del DANE (va de ' + primero.anio +
+        ' a ' + ultimo.anio + '), así que la cifra del municipio es la de ' + punto.anio +
+        ' y no la de hoy. No se extrapoló: se dice de qué año es.';
+    const fraseSerie = baja
+      ? 'Y la dirección: según el DANE esta ciudad DECRECE desde ' + baja.decreceDesde +
+        ' — su máximo es ' + mil(baja.poblacionPico) + ' habitantes en ' + baja.anioPico +
+        ' y la serie baja año por año hasta ' + mil(baja.poblacionFin) + ' en ' +
+        baja.anioFin + '. La tasa de arriba es la MEDIA de ' + base.anio + ' a ' +
+        punto.anio + ', o sea el crecimiento que YA ocurrió; el tramo punteado la ' +
+        'extiende hacia adelante, así que va por encima de lo que la propia serie del ' +
+        'DANE proyecta para el municipio.'
+      : 'Y la dirección: la serie del DANE para esta ciudad no decrece en ningún tramo ' +
+        'de ' + primero.anio + ' a ' + ultimo.anio + ', así que la tasa media de ' +
+        base.anio + ' a ' + punto.anio + ' y el tramo punteado apuntan en el mismo sentido.';
+
     return { tasaAnual: tasa, municipio: m.nombre,
              divipola: m.divipola || '',
-             poblacionHoy: poblacionHoy, anioPoblacion: anioHoy,
-             anclaAnio: ultima ? ultima.anio : null,
-             anclaPoblacion: ultima ? ultima.poblacion : null,
-             fuente: tabla.fuente, url: tabla.url, advertencia: tabla.advertencia };
+             poblacionHoy: poblacionHoy, anioPoblacion: punto.anio,
+             poblacionLeida: !!leido,
+             tasaDesde: base.anio, tasaHasta: punto.anio,
+             serieDesde: primero.anio, serieHasta: ultimo.anio,
+             anioPico: baja ? baja.anioPico : null,
+             poblacionPico: baja ? baja.poblacionPico : null,
+             decreceDesde: baja ? baja.decreceDesde : null,
+             fuente: tabla.fuente, url: tabla.url,
+             advertencia: [tabla.advertencia, fraseLeida, fraseSerie].join(' ') };
   }
+
 
   // ── Manzanas con su estrato, para pintar el mapa ────────────────────────
   //
@@ -1645,7 +1743,18 @@
       municipioNombre: proy ? proy.municipio : '',
       municipioDivipola: proy ? proy.divipola : '',
       poblacionMunicipio: proy ? proy.poblacionHoy : null,
-      anclaMunicipioAnio: proy ? proy.anclaAnio : null,
+      /* De qué AÑO es la cifra municipal. No es `anioProyeccion` —ese es el
+         año al que se proyecta el SECTOR—: cuando el año en curso cae fuera
+         de la serie los dos se separan. Reemplaza a `anclaMunicipioAnio`, que
+         nombraba el ancla más reciente de un esquema que ya no existe y que
+         ninguna línea de este repositorio leía. */
+      anioPoblacionMunicipio: proy ? proy.anioPoblacion : null,
+      /* Desde qué año la serie del DANE BAJA para este municipio, o null si no
+         baja. Va también dicho dentro de `advertenciaProyeccion`, que es el
+         campo que con certeza llega a las pantallas; este de acá es para que
+         una superficie pueda decidir con un dato en vez de leer una frase, el
+         día que el motor lo reenvíe. */
+      municipioDecreceDesde: proy ? proy.decreceDesde : null,
       anioProyeccion: new Date().getFullYear(),
       fuenteProyeccion: proy ? proy.fuente : '',
       urlProyeccion: proy ? proy.url : '',

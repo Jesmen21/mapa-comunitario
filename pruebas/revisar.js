@@ -17353,6 +17353,271 @@ console.log('\n  -- la resta del desplazamiento mide la barra ENTERA (v1157) --'
   }
 })();
 
+/* ══ LA PROYECCIÓN DE POBLACIÓN DEL DANE SE LEE, NO SE EXTRAPOLA (v1174) ══
+
+   El módulo educativo trae el censo de 2018 al año en curso con una tasa del
+   DANE. Hasta la v1173 la tabla del repositorio guardaba DOS ANCLAS de la serie
+   municipal, sacaba de ellas una tasa constante y la extendía hacia adelante.
+   Medido contra el archivo oficial —descargado y leído, no recordado— eso
+   diviergía un 7,7 % a 2035, y la causa no era un número mal transcrito: la
+   serie vigente de Cúcuta BAJA —máximo 793.211 en 2025 y descenso año por año
+   hasta 752.748 en 2042— y una tasa constante positiva no puede representar eso.
+   Además una de las dos anclas (777.106 en 2020) no aparece en ninguna serie
+   oficial, para ningún municipio, año ni área.
+
+   LO QUE ESTO VIGILA, y lo que NO:
+   vigila que la tabla traiga la SERIE año por año, que la cifra municipal se LEA
+   de ella, que la dirección de la serie LLEGUE al papel con sus dos
+   redacciones, y que ningún signo ni verbo de variación quede tecleado al lado
+   de una cifra. NO vigila que las cifras de la serie sean las del DANE —eso
+   pide salir a la red y una comprobación estática no sale— ni la proyección del
+   SECTOR, que la calcula el motor en su propio repositorio con esa tasa: lo que
+   esta tanda pudo hacer con eso es que el papel declare qué es. */
+(function () {
+  const RUTA = 'assets/data/dane-proyecciones.json';
+  let tabla = null, crudo = '';
+  try { crudo = leer(RUTA); tabla = JSON.parse(crudo); } catch (e) { tabla = null; }
+
+  const muns = tabla && tabla.municipios ? Object.keys(tabla.municipios) : [];
+  const conSerie = muns.filter(function (k) {
+    const m = tabla.municipios[k];
+    return m && m.serie && Object.keys(m.serie).length >= 2;
+  });
+
+  comprobar('MATERIAL · la tabla de proyecciones trae municipios con su serie',
+    conSerie.length >= 1,
+    conSerie.length >= 1
+      ? conSerie.length + ' de ' + muns.length + ' municipio(s) con serie: ' +
+        conSerie.map(function (k) {
+          const a = Object.keys(tabla.municipios[k].serie).map(Number).sort(function (x, y) { return x - y; });
+          return k + ' (' + a[0] + '–' + a[a.length - 1] + ', ' + a.length + ' años)';
+        }).join(' · ')
+      : (tabla ? 'ningún municipio con `serie`: todo lo de abajo pasaría por no tener nada delante'
+               : 'no se pudo leer ' + RUTA + ', así que las comprobaciones de abajo no miran nada'));
+
+  if (conSerie.length >= 1) {
+    /* 1 · EL ESQUEMA RETIRADO NO VUELVE. `anclas` y `censoCrudo2018` eran el
+       esquema de dos puntos; dejarlos convivir con la serie es la clase B
+       —dos codificaciones de la población de un año— y el día que se separen
+       manda la que el código lea primero. */
+    const conViejo = muns.filter(function (k) {
+      const m = tabla.municipios[k] || {};
+      return m.anclas !== undefined || m.censoCrudo2018 !== undefined;
+    });
+    comprobar('ningún municipio conserva el esquema de anclas',
+      conViejo.length === 0,
+      conViejo.length === 0
+        ? 'los ' + muns.length + ' van con `serie` y sin `anclas` ni `censoCrudo2018`. Las dos ' +
+          'formas juntas serían dos codificaciones de la población de un año, y mandaría la que ' +
+          'el código leyera primero'
+        : conViejo.join(' · ') + ' siguen con `anclas` o `censoCrudo2018`');
+
+    /* 2 · CADA SERIE ES CONTINUA Y SU AÑO DE CENSO ESTÁ DENTRO. Sin el año del
+       censo en la serie, la tasa saldría del primer año disponible y eso ya no
+       es «entre dos años de la misma serie para el tramo que se declara». */
+    const malas = conSerie.filter(function (k) {
+      const m = tabla.municipios[k];
+      const a = Object.keys(m.serie).map(Number).sort(function (x, y) { return x - y; });
+      const continua = a.every(function (x, i) { return i === 0 || x === a[i - 1] + 1; });
+      return !continua || !Number(m.anioCenso) || m.serie[String(m.anioCenso)] === undefined;
+    });
+    comprobar('y cada serie es continua y contiene el año de su censo',
+      malas.length === 0,
+      malas.length === 0
+        ? 'las ' + conSerie.length + ' van año por año sin huecos y con `anioCenso` dentro, que ' +
+          'es lo que deja sacar la tasa ENTRE DOS AÑOS DE LA MISMA SERIE'
+        : malas.join(' · ') + ': serie con huecos, o sin `anioCenso` dentro de ella');
+
+    /* 3 · LA CIFRA MUNICIPAL SE LEE. Se recorta `proyeccionDe` y se comprueba
+       que NO llame al extrapolador ni a la tasa de dos anclas, y que SÍ lea la
+       serie. Es la mitad de «nada extrapolado» que un arnés estático puede
+       demostrar; la otra la midió el papel. */
+    const j61 = soloCodigo(leer('js/61-analisis-ia-datos.js'));
+    const iP = j61.indexOf('async function proyeccionDe(');
+    const cuerpo = iP < 0 ? '' : j61.slice(iP, j61.indexOf('\n  }', iP));
+    const extrapola = /proyectarPoblacion\s*\(/.test(cuerpo) || /tasaAnualDe\s*\(/.test(cuerpo);
+    const leeSerie = /serieDe\s*\(\s*m\s*\)/.test(cuerpo);
+    comprobar('la población del municipio se LEE de la serie y no se extrapola',
+      !!cuerpo && leeSerie && !extrapola,
+      !cuerpo
+        ? 'no se encontró `proyeccionDe` en js/61: el recorte no mira nada'
+        : (extrapola
+            ? 'el cuerpo de `proyeccionDe` vuelve a llamar al extrapolador ' +
+              '(`proyectarPoblacion`) o a la tasa de dos anclas (`tasaAnualDe`)'
+            : (!leeSerie
+                ? 'el cuerpo de `proyeccionDe` ya no lee la serie con `serieDe(m)`'
+                : 'lee `serieDe(m)` y no llama ni a `proyectarPoblacion` ni a `tasaAnualDe`. Y qué ' +
+                  'NO cubre: la proyección del SECTOR y su curva hacia adelante las sigue ' +
+                  'calculando el motor, en otro repositorio, con esta misma tasa; lo que esta ' +
+                  'guarda alcanza es la cifra MUNICIPAL')));
+
+    /* 4 · LAS DOS REDACCIONES, en el código (v970). La del descenso hace falta
+       hoy; la de la serie que no baja es justo la que hace falta el día que el
+       DANE publique otra, y es la que una tanda apurada se ahorraría. */
+    const decrece = /DECRECE desde/.test(cuerpo);
+    const noDecrece = /no decrece en ning/.test(cuerpo);
+    comprobar('y las DOS redacciones de la dirección están escritas',
+      decrece && noDecrece,
+      decrece && noDecrece
+        ? 'la del descenso y la de la serie que no baja. La segunda no se ejercita con la tabla ' +
+          'de hoy —Cúcuta decrece— y por eso se vigila acá: medida con una serie fabricada que ' +
+          'solo sube, el papel imprime «no decrece en ningún tramo de 2018 a 2042»'
+        : 'falta la redacción de ' + (decrece ? 'la serie que NO baja' : 'el descenso') +
+          ', y una sola rama es un texto que miente en cuanto el dato cambie');
+
+    /* 5 · EL AVISO LLEGA AL PAPEL (v867). Sin esto lo de arriba es
+       documentación: la dirección de la serie viaja dentro de
+       `advertenciaProyeccion` precisamente porque es el campo que las
+       superficies imprimen, y si una deja de imprimirlo su hoja vuelve a
+       declarar el método callando la dirección, que es el fallo de la v866. */
+    const SUPERFICIES = [
+      ['js/62-analisis-ia-app.js', 1],
+      ['js/63-analisis-ia-informe.js', 1],
+      ['js/65-analisis-edu-ui.js', 1],
+      ['js/68-procity-reconocimiento.js', 3]
+    ];
+    const sinAviso = [];
+    let vistos = 0;
+    SUPERFICIES.forEach(function (par) {
+      const t = soloCodigo(leer(par[0]));
+      const n = (t.match(/advertenciaProyeccion/g) || []).length;
+      /* El archivo que GUARDA el campo lo nombra una vez de más, así que se
+         cuenta solo lo que lo IMPRIME: `esc(...)` o `escHTML(...)`. */
+      const imp = (t.match(/esc(?:HTML)?\((?:s|st)\.advertenciaProyeccion/g) || []).length;
+      vistos += n;
+      if (imp < par[1]) sinAviso.push(par[0] + ' (imprime ' + imp + ', esperadas ' + par[1] + ')');
+    });
+    comprobar('y la dirección de la serie LLEGA a las cinco superficies que publican la proyección',
+      sinAviso.length === 0 && vistos > 0,
+      vistos === 0
+        ? 'ninguna mención de `advertenciaProyeccion`: el patrón dejó de reconocer lo que mide'
+        : (sinAviso.length === 0
+            ? 'las seis impresiones están: panel empresarial (js/62), informe (js/63), hoja del ' +
+              'curso (js/65) y las tres de js/68 —el informe impreso, la ficha del sector y la ' +
+              'caja «El sector dentro de la ciudad» del pliego—. Esa última la añadió la v1174: ' +
+              'medido al leer el papel, el pliego publicaba la población del municipio y la tasa ' +
+              'y era la ÚNICA superficie que no decía la dirección, o sea que la hoja que se ' +
+              'imprime era justo la que callaba'
+            : 'no imprimen el aviso: ' + sinAviso.join(' · ')));
+
+    /* 6 · NI UN SIGNO NI UN VERBO TECLEADO. Medido: SIETE sitios en cuatro
+       archivos escribían `'+'` delante de la variación y DOS escribían `'Crece '`
+       delante de la tasa: nueve afirmaciones sobre el dato que nadie volvía a
+       medir (v903), ciertas solo mientras la serie subiera. */
+    const SERVIDOS = ['js/62-analisis-ia-app.js', 'js/63-analisis-ia-informe.js',
+                      'js/65-analisis-edu-ui.js', 'js/68-procity-reconocimiento.js'];
+    const aMano = [];
+    SERVIDOS.forEach(function (ruta) {
+      const t = soloCodigo(leer(ruta));
+      if (/'\+'\s*\+[^;]{0,80}crecimientoPct/.test(t)) aMano.push(ruta + ' (signo)');
+      if (/"\+"\s*\+[^;]{0,80}crecimientoPct/.test(t)) aMano.push(ruta + ' (signo)');
+      if (/class="[a-z-]*delta">\+/.test(t)) aMano.push(ruta + ' (signo en la baldosa)');
+      if (/>Crece\s*'\s*\+/.test(t) || /'Crece\s+'\s*\+/.test(t)) aMano.push(ruta + ' (verbo)');
+    });
+    const j67 = soloCodigo(leer('js/67-analisis-cliente.js'));
+    const unaRuta = /function signoDe\(/.test(j67) && /function verboDeVariacion\(/.test(j67) &&
+                    /signoDe: signoDe/.test(j67) && /verboDeVariacion: verboDeVariacion/.test(j67);
+    const usos = SERVIDOS.reduce(function (acc, ruta) {
+      return acc + (soloCodigo(leer(ruta)).match(/AIA_MOTOR\.(signoDe|verboDeVariacion)\(/g) || []).length;
+    }, 0);
+    comprobar('ningún signo ni verbo de variación queda tecleado al lado de la cifra',
+      aMano.length === 0 && unaRuta && usos >= 9,
+      aMano.length
+        ? 'vuelven a estar escritos a mano: ' + aMano.join(' · ')
+        : (!unaRuta
+            ? 'js/67 ya no expone `signoDe` y `verboDeVariacion`, así que las pantallas no tienen ' +
+              'de dónde sacarlos y lo de arriba pasa por no encontrar nada'
+            : (usos < 9
+                ? 'solo ' + usos + ' usos de la ruta única: eran nueve sitios medidos, así que ' +
+                  'alguno volvió a decidirlo por su cuenta'
+                : 'los ' + usos + ' sitios —siete del signo y dos del verbo— lo piden a ' +
+                  '`window.AIA_MOTOR`, una sola ruta (v879, ' +
+                  'v891). Y LO QUE NO ALCANZA, dicho: un signo escrito dentro de un literal que ' +
+                  'no toque `crecimientoPct` ni la clase `delta` pasaría; lo que se persigue es ' +
+                  'la forma de los nueve casos medidos, no cualquier `+` del repositorio, que ' +
+                  'sería la lista de excepciones que envejece')));
+
+    /* 7 · LA PROCEDENCIA SERVIDA NOMBRA LA SERIE VIGENTE. El panel de método
+       declaraba «proyecciones municipales 2020-2035 (post-COVID)», que es la
+       serie que el DANE ya reemplazó y que su página ya no enlaza. Una
+       procedencia vieja no se ve: se lee igual de fundada que una correcta. */
+    const retirada = [];
+    SERVIDOS.concat(['js/61-analisis-ia-datos.js']).forEach(function (ruta) {
+      const t = leer(ruta);
+      if (/proyecciones municipales 2020-2035/.test(t)) retirada.push(ruta);
+    });
+    const nombraVigente = /2018-2042/.test(leer('js/68-procity-reconocimiento.js')) &&
+                          /2018-2042/.test(crudo);
+    comprobar('y la procedencia que se publica nombra la serie vigente, no la retirada',
+      retirada.length === 0 && nombraVigente,
+      retirada.length
+        ? 'siguen declarando la serie retirada: ' + retirada.join(' · ')
+        : (nombraVigente
+            ? 'ninguna superficie nombra la serie 2020-2035, y el panel de método y la tabla ' +
+              'nombran la 2018-2042 (PPED, base CNPV 2018)'
+            : 'nadie nombra la serie 2018-2042: o la tabla o el panel de método se quedó sin ' +
+              'declarar de dónde sale la cifra'));
+
+    /* 8 · LAS TRES CIFRAS QUE SE LEYERON DEL ORIGINAL, fijadas.
+       Qué hace esta comprobación y qué NO: los tres valores se leyeron el 7 de
+       noviembre de 2026 del archivo oficial descargado —PPED 2018-2042, hoja
+       de proyecciones por área, divipola 54001, serie «Total»— y esto los
+       CLAVA; NO los verifica contra el DANE, porque eso pide salir a la red y
+       una comprobación estática no sale. Sirve para lo que un trinquete sirve:
+       que nadie los cambie en silencio, y que la prueba que Daniel pidió
+       —2020 = 765.533, 2024 = 790.984, 2026 = 792.180— se pueda correr en este
+       contenedor, donde la suite de navegador que la tenía no puede. */
+    const CLAVADAS = { '2020': 765533, '2024': 790984, '2026': 792180 };
+    const cuc = tabla.municipios['san jose de cucuta'];
+    const difieren = cuc && cuc.serie
+      ? Object.keys(CLAVADAS).filter(function (a) { return cuc.serie[a] !== CLAVADAS[a]; })
+      : ['(no está Cúcuta en la tabla)'];
+    comprobar('y las tres cifras leídas del archivo oficial siguen siendo esas',
+      difieren.length === 0,
+      difieren.length === 0
+        ? Object.keys(CLAVADAS).map(function (a) {
+            return a + ' = ' + CLAVADAS[a].toLocaleString('es-CO');
+          }).join(' · ') + '. Leídas del original el 7 de noviembre de 2026 y clavadas acá; ' +
+          'esto no las verifica contra el DANE —una comprobación estática no sale a la red—, ' +
+          'impide que cambien en silencio'
+        : 'ya no coinciden: ' + difieren.map(function (a) {
+            return a + ' dice ' + (cuc && cuc.serie ? cuc.serie[a] : '?') +
+                   ' y debería decir ' + CLAVADAS[a];
+          }).join(' · '));
+
+    /* 9 · Y LA RAMA QUE DEPENDE DEL DATO VA CON SU `?`, NO EN ROJO (v970,
+       v1097). Que alguna serie tenga un tramo que baja es MATERIAL que lo
+       ponen los datos: el día que el DANE publique una serie que solo sube,
+       esta cuenta se queda en cero y eso es una serie nueva, no un defecto.
+       En rojo, la salida barata sería conservar la serie vieja para que la
+       guarda siga teniendo algo que rechazar. */
+    const bajan = conSerie.filter(function (k) {
+      const m = tabla.municipios[k];
+      const a = Object.keys(m.serie).map(Number).sort(function (x, y) { return x - y; });
+      return a.some(function (x, i) { return i > 0 && m.serie[String(x)] < m.serie[String(a[i - 1])]; });
+    });
+    if (!bajan.length) {
+      anotarSinMaterial('alguna serie del DANE tiene un tramo que baja',
+        'ninguna de las ' + conSerie.length + ' baja en ningún tramo. No es un fallo: es la ' +
+        'tabla diciendo que ningún municipio cargado decrece, y entonces la redacción del ' +
+        'descenso no tiene nada que publicar —se vigila que ESTÉ, arriba, no que se use—');
+    } else {
+      const det = bajan.map(function (k) {
+        const m = tabla.municipios[k];
+        const a = Object.keys(m.serie).map(Number).sort(function (x, y) { return x - y; });
+        let i = a.length - 1;
+        while (i > 0 && m.serie[String(a[i])] < m.serie[String(a[i - 1])]) i--;
+        return k + ' (máximo en ' + a[i] + ', baja desde ' + a[i + 1] + ')';
+      });
+      comprobar('alguna serie del DANE tiene un tramo que baja, y el código lo sabe decir',
+        decrece, decrece
+          ? det.join(' · ') + '. Es el material de la redacción del descenso, así que no es ' +
+            'documentación: hoy se publica'
+          : det.join(' · ') + ', y no hay redacción del descenso que publicarlo');
+    }
+  }
+})();
+
 /* Las dos cuentas van APARTE porque piden cosas distintas: una fallada hay
    que arreglarla, una sin material hay que mirarla —o se quedó sin él porque
    el registro mejoró, o porque la función dejó de ver lo que medía—. Sumarlas

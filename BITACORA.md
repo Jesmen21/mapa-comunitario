@@ -31980,3 +31980,116 @@ en rojo mal contadas.
   de verdad: va en la prueba de humo de Daniel.
 * **No publica nada a `main`.** `pendiente` — espera la prueba de humo y el
   commit exacto que Daniel nombre.
+
+## v1174 · la proyección del DANE se LEE año por año, y la ciudad decrece desde 2026
+
+**Qué salió.** La tabla de proyecciones del repositorio pasó de DOS ANCLAS a la
+SERIE AÑO POR AÑO de la fuente vigente, y la población del municipio dejó de
+extrapolarse: se lee del año en curso. Con eso el papel puede decir —y dice— que
+según el DANE Cúcuta decrece desde 2026.
+
+**Lo que se midió antes de tocar** (informe de la tanda anterior, en `docs/`):
+el archivo oficial se descargó y se leyó en el original. La serie «Total» de
+San José de Cúcuta (divipola 54001) va de 2018 a 2042, 25 años, con máximo en
+**2025 (793.211)** y descenso año por año hasta **752.748 en 2042**. De las dos
+anclas que el archivo guardaba, la de 2024 (790.984) **coincide** con la serie
+vigente y la de 2020 (777.106) **no aparece en ninguna de las dos series
+oficiales**, para ningún municipio, año ni área: se retiró en vez de corregirse,
+porque corregirla supondría una transcripción que no está medida.
+
+Y el defecto de fondo no era un número mal transcrito: **una tasa constante
+positiva no puede representar una serie que baja**. Medido, el método de las dos
+anclas divergía un 7,7 % a 2035.
+
+**Lo que cambió en el papel.** Con el mismo sector de prueba —14.369 habitantes
+contados en el censo de 2018— y el año en curso 2026:
+
+| | v1173 | v1174 |
+|---|---|---|
+| población del municipio | 798.016 (extrapolada desde el ancla de 2024) | **792.180** (leída de la serie) |
+| tasa anual | 0,44 % (entre las dos anclas) | **1,35 %** (media 2018→2026 de la serie) |
+| población del sector «hoy» | 14.887 | **15.994** |
+| crecimiento desde el censo | +3,6 % | **+11,3 %** |
+| la baldosa de adelante | «2035 · 15.492 · pronóstico» | «2035 · 18.042 · **si siguiera esa media**» |
+| la dirección de la serie | no se decía en ninguna superficie | **«según el DANE esta ciudad DECRECE desde 2026»**, en las seis impresiones |
+
+La tasa SUBE porque el tramo que mide es otro: 2018→2026 incluye el salto
+migratorio de 2018-2021 (711.714 → 777.903), que las anclas 2020→2024 dejaban
+fuera. Es la media del tramo que se declara, y el papel lo declara: «la tasa
+MEDIA del municipio desde el censo, que es el crecimiento que YA ocurrió».
+
+**Lo que leer el papel encontró, y no se veía en el código.** El pliego educativo
+publicaba «Población de San José de Cúcuta 792.180 (proyectada a 2026)» y la tasa
+anual, y era la **ÚNICA de las seis superficies que no imprimía
+`advertenciaProyeccion`** — o sea que la hoja que se imprime y se cuelga en la
+pared era justo la que no decía la dirección de la serie. Es el fallo de la v866
+repetido: declarar el método y la fecha y callar una parte de la procedencia, que
+se lee más fundado que no declarar nada.
+
+Y dos rótulos que el código daba por buenos: la baldosa de adelante decía
+**«pronóstico»** cuando es el conteo del censo multiplicado por la media del
+pasado estirada hacia adelante —y para Cúcuta la serie oficial va al contrario
+desde 2026—, así que rotularlo «pronóstico» publicaba como previsión lo que la
+propia fuente desmiente; y la caja del pliego afirmaba que las dos cifras «salen
+de la misma serie y del mismo año» cuando una se LEE y la otra se PROYECTA, que
+es la clase A: una cifra correcta que no significa lo que parece.
+
+**El signo, en una sola ruta.** Medido: **siete sitios** en cuatro archivos
+escribían el `+` a mano delante de la variación y **dos** escribían `'Crece '`
+delante de la tasa. Las nueve eran ciertas solo mientras la serie subiera: con
+un municipio cuya serie baje entre el censo y hoy, el papel imprimiría
+«+-2,1 %» y «Crece -0,31 % al año». Ahora el signo y el verbo salen de
+`signoDe` y `verboDeVariacion` en js/67, que es el módulo que las cuatro
+pantallas comparten (v879, v891).
+
+**Una corrección a la nota de método de la tabla, que afirmaba sin medir.**
+Decía que la serie «parte de una población ajustada por cobertura que es mayor»
+que el conteo crudo. Medido: la serie vigente da **711.714** en 2018 y el conteo
+crudo que el archivo declaraba era **711.715** — UNA persona, y la serie es la
+menor. La regla de no mezclar las dos sigue valiendo por la procedencia de cada
+cifra, no por el tamaño de la brecha, y cuánto se separan en otros municipios
+queda **SIN MEDIR** porque este archivo solo trae Cúcuta.
+
+**La guarda** (diez aserciones nuevas en `revisar.js`): que la tabla traiga la
+serie y no el esquema de anclas; que cada serie sea continua y contenga el año de
+su censo; que `proyeccionDe` LEA la serie y no llame al extrapolador; que estén
+escritas **las dos redacciones** de la dirección; que el aviso LLEGUE a las seis
+impresiones; que no quede ningún signo ni verbo tecleado; que la procedencia
+publicada nombre la serie vigente y no la retirada; y que las tres cifras que
+Daniel pidió comprobar —765.533, 790.984 y 792.180— sigan siendo esas, clavadas
+y no verificadas contra el DANE, que una comprobación estática no puede. Y la
+décima va con `?` y no
+en rojo: que alguna serie tenga un tramo que baja es MATERIAL que ponen los
+datos, y el día que el DANE publique una serie que solo sube, ponerla en rojo
+pondría la salida barata en conservar la serie vieja (v970, v1097).
+
+**Demostrada en rojo con diez inyecciones fieles**, cada una nombrando su
+aserción, con tres estados y no dos (ROJO / VERDE / MURIÓ): la tabla de la v1173
+entera, la serie y las anclas conviviendo, un año borrado de la serie, el cuerpo
+de `proyeccionDe` extrapolando otra vez, una sola redacción, el pliego sin
+imprimir el aviso, un signo tecleado, el panel de método nombrando la serie
+2020-2035, una cifra de la serie cambiada en silencio, y una serie que solo
+sube —que tiene que salir `?` y no rojo—. Las diez dieron lo esperado, y la
+corrida limpia pasó de 865 palomitas a **875**.
+
+### Lo que esta versión NO hace
+
+* **La proyección del SECTOR y su curva hacia adelante siguen siendo una
+  extrapolación de la tasa media.** `pendiente` — las calcula el motor, en el
+  repositorio privado, que esta sesión no tiene delante: recibe una tasa y un año
+  base y aplica interés compuesto. «Nada extrapolado» vale para la cifra
+  MUNICIPAL y no para la del sector. Lo que esta tanda pudo hacer es que el papel
+  declare qué es: el rótulo «si siguiera esa media» y la frase de que el tramo
+  punteado «no es lo que el DANE proyecta para el municipio». Cerrarlo pide pasar
+  la serie municipal al motor y que proyecte el sector con la razón de cambio de
+  cada año en vez de con una tasa constante.
+* **Solo Cúcuta.** `pendiente` — decisión de Daniel del 7 de noviembre de 2026:
+  los 1.123 municipios van aparte. La serie de uno pesa unos 400 bytes.
+* **Las suites de navegador no corrieron.** `pendiente` — `pruebas/correr.js`
+  pide `../urbis-pruebas` y `../urbis-motor`, y ninguno está en este contenedor.
+  `tpobla.js` se actualizó al esquema nuevo y **no se pudo ejecutar**: carga
+  `motor-local.js`, que es del repositorio privado.
+* **Que las cifras de la serie sean las del DANE no lo vigila ninguna guarda.**
+  `pendiente` — pide salir a la red y una comprobación estática no sale. Lo que
+  hay es la medición de esta tanda sobre el archivo descargado, con su URL y su
+  fecha de publicación escritas en la tabla.

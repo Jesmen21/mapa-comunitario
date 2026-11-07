@@ -4807,7 +4807,8 @@
           n(st.poblacionProyectada) + '</td></tr>'
         : '<tr><td>Estimadas por densidad</td><td class="n">' + n(st.poblacionEstimada) + '</td></tr>') +
       (st.crecimientoPct != null
-        ? '<tr><td>Crecimiento desde el censo</td><td class="n">+' + conComa(st.crecimientoPct) + '%</td></tr>'
+        ? '<tr><td>Crecimiento desde el censo</td><td class="n">' +
+          window.AIA_MOTOR.signoDe(st.crecimientoPct) + conComa(st.crecimientoPct) + '%</td></tr>'
         : '') +
       (st.tasaAnualDane != null
         ? '<tr><td>Tasa anual del DANE</td><td class="n">' +
@@ -4824,8 +4825,13 @@
       '</table>' +
       '<p class="pie">' +
       (censal
-        ? 'El conteo es censo del DANE por manzana; lo demás es proyección con su tasa de ' +
-          'crecimiento. <b>El pronóstico no es un dato contado.</b>'
+        ? 'El conteo es censo del DANE por manzana; lo demás es proyección con la tasa MEDIA ' +
+          'del municipio desde el censo, que es el crecimiento que YA ocurrió. ' +
+          /* Esta superficie NO dibuja la curva ni la baldosa de adelante —solo
+             el censo y la cifra de hoy—, así que no nombra un tramo que acá
+             no existe: lo que tiene que decir es que la de hoy no se contó. */
+          '<b>La cifra de hoy no es un dato contado</b>: es el conteo de ' +
+          (st.censoAnio || 2018) + ' traído con esa media.'
         : 'Sin cobertura del censo en este punto: la cifra es una estimación por densidad, no ' +
           'un dato observado.') +
       (st.advertenciaProyeccion ? ' ' + esc(st.advertenciaProyeccion) : '') + '</p>';
@@ -8680,9 +8686,22 @@ function donaHTML(datos, colorDe, nombreDe) {
           : '') +
         sobre +
         '<p class="lee">Uno de cada <b>' + mil(Math.max(1, Math.round(ciudad / Math.max(1, hab)))) +
-        '</b> habitantes de ' + esc(nombre) + ' vive en este sector. Las dos cifras salen de la ' +
-        'misma serie del DANE y del mismo año: comparar el censo de 2018 con una proyección de hoy ' +
-        'fabricaría una diferencia que no existe.</p>' +
+        '</b> habitantes de ' + esc(nombre) + ' vive en este sector. Las dos cifras son del MISMO ' +
+        'año, y no se obtienen igual: la de la ciudad se <b>lee</b> del año en curso de la serie ' +
+        'del DANE, y la del sector es el conteo del censo de 2018 traído a ese mismo año con la ' +
+        'tasa media de esa serie. Comparar el censo de 2018 con una proyección de hoy fabricaría ' +
+        'una diferencia que no existe.</p>' +
+        /* EL AVISO VIAJA CON LA CIFRA, Y ESTA ES LA HOJA QUE SE IMPRIME (v867,
+           v1174). Medido al leer el papel de la v1174: el pliego publicaba
+           «Población de San José de Cúcuta 792.180 (proyectada a 2026)» y la
+           tasa anual, y era la ÚNICA de las cinco superficies que NO imprimía
+           `advertenciaProyeccion` — así que la hoja que se cuelga en la pared
+           era justamente la que no decía que, según el DANE, esta ciudad
+           decrece desde 2026. Es el fallo de la v866 repetido: declarar el
+           método y la fecha y callar la dirección. */
+        (st.advertenciaProyeccion
+          ? '<p class="nota">' + esc(st.advertenciaProyeccion) + '</p>'
+          : '') +
         (hayC ? '' : '<p class="vacio-tag">Por qué no hay columna de ciudad</p>' +
           '<p class="vacio-falta">' + esc(razonSinCiudad(C)) + '</p>') +
         '<p class="vacio-tag">Lo que todavía no se puede comparar con la ciudad</p>' +
@@ -9058,7 +9077,8 @@ function donaHTML(datos, colorDe, nombreDe) {
       : (st.poblacionEstimada
       ? fila('Estimadas por densidad', mil(st.poblacionEstimada)) : '')) +
       (st.crecimientoPct != null
-      ? fila('Crecimiento desde el censo', '+' + conComa(st.crecimientoPct) + '%') : '') +
+      ? fila('Crecimiento desde el censo',
+             window.AIA_MOTOR.signoDe(st.crecimientoPct) + conComa(st.crecimientoPct) + '%') : '') +
       (st.tasaAnualDane != null
       ? fila('Tasa anual del DANE', conComa(Number((st.tasaAnualDane * 100).toFixed(2))) + '%') : '') +
       (st.estrato && st.estrato.predominante
@@ -16233,10 +16253,22 @@ function donaHTML(datos, colorDe, nombreDe) {
             Number(st.poblacionProyectada).toLocaleString('es-CO') + '</b><em>hoy</em></div>' +
           (ultimo && ultimo.futuro
             ? '<span class="pcr-flecha">→</span>' +
+              /* QUÉ ES ESA CIFRA, en su propio rótulo (v1093). Decía
+                 «pronóstico», y no lo es: es el conteo del censo multiplicado
+                 por la tasa MEDIA del municipio entre el censo y hoy, estirada
+                 años hacia adelante. Para Cúcuta la serie del DANE va al
+                 contrario desde 2026 —baja de 793.211 en 2025 a 771.292 en
+                 2035—, así que rotular eso «pronóstico» publica como
+                 previsión lo que la propia fuente desmiente. El rótulo lo
+                 vuelve condicional, y la advertencia de abajo dice el resto. */
               '<div class="pcr-futuro"><small>' + ultimo.anio + '</small><b>' +
-                Number(ultimo.poblacion).toLocaleString('es-CO') + '</b><em>pronóstico</em></div>'
+                Number(ultimo.poblacion).toLocaleString('es-CO') +
+                '</b><em>si siguiera esa media</em></div>'
             : '') +
-          (st.crecimientoPct != null ? '<span class="pcr-delta">+' + st.crecimientoPct + '%</span>' : '') +
+          (st.crecimientoPct != null
+            ? '<span class="pcr-delta">' + window.AIA_MOTOR.signoDe(st.crecimientoPct) +
+              conComa(st.crecimientoPct) + '%</span>'
+            : '') +
         '</div>';
     }
 
@@ -16277,9 +16309,12 @@ function donaHTML(datos, colorDe, nombreDe) {
       curva +
       '<p class="pcr-pista">' +
         (censal
-          ? 'Parte del censo del DANE; lo demás es proyección con su tasa de crecimiento' +
+          ? 'Parte del censo del DANE; lo demás es proyección con la tasa MEDIA del ' +
+            'municipio desde el censo' +
             (st.tasaAnualDane ? ' (' + tasaAnualPct(st.tasaAnualDane) + ' % al año)' : '') +
-            '. <b>El tramo punteado es pronóstico hacia adelante</b>, no un dato contado.'
+            ', que es el crecimiento que YA ocurrió. <b>El tramo punteado estira esa misma ' +
+            'media hacia adelante</b>: no es un dato contado, y tampoco es lo que el DANE ' +
+            'proyecta para el municipio.'
           : 'Sin cobertura del censo en este punto: la cifra es una estimación por densidad, no un dato observado.') +
         (esPol ? ' En un área dibujada se consulta por el centro y un radio de superficie equivalente, así que es aproximada.' : '') +
         (st.advertenciaProyeccion ? ' ' + esc(st.advertenciaProyeccion) : '') +
@@ -18835,6 +18870,11 @@ function donaHTML(datos, colorDe, nombreDe) {
      misma cantidad no divergen el día que se escriben, divergen la tanda
      siguiente». Acá divergieron en la tanda siguiente, y el que se equivocó
      fue el nuevo. Ahora hay una sola. */
+  /* Y el SIGNO de una variación NO se teclea acá: lo pone
+     `window.AIA_MOTOR.signoDe`, una sola ruta para las cuatro pantallas
+     (v1174). Este archivo lo escribía a mano en cuatro sitios —`'+' +
+     conComa(st.crecimientoPct)`—, y era cierto solo mientras la serie del
+     DANE subiera. */
   function tasaAnualPct(x) {
     if (x == null || !isFinite(Number(x))) return null;
     return conComa((Number(x) * 100).toFixed(2));
@@ -21834,8 +21874,8 @@ function donaHTML(datos, colorDe, nombreDe) {
       r: 'no hay estándar: es el contenido de la fuente, no una medición del sector',
       e: 'un campo con otro nombre del esperado se leería como ausente; por eso se imprime la muestra de nombres' },
     'El sector dentro de la ciudad': {
-      f: 'población del sector dividida por la del municipio, las dos proyectadas al mismo año con la misma tasa',
-      fu: 'DANE, CNPV 2018 por manzana y proyecciones municipales 2020-2035 (post-COVID), consultado hoy',
+      f: 'población del sector dividida por la del municipio: la del sector se proyecta del censo de 2018 al año en curso con la tasa media del municipio, y la del municipio se LEE del año en curso de la serie del DANE, sin extrapolar',
+      fu: 'DANE, CNPV 2018 por manzana (Esri Colombia Living Atlas) y Proyecciones de población municipal por área 2018-2042 (PPED, base CNPV 2018, publicadas el 8 de agosto de 2025), consultado hoy',
       c: 'alta en el total municipal, media en el del sector',
       r: 'no hay estándar: es una proporción, se lee contra el tamaño del municipio',
       e: 'manzanas cortadas por el borde del sector: ±10 %' },
@@ -22041,8 +22081,11 @@ function donaHTML(datos, colorDe, nombreDe) {
     if (st && st.crecimientoPct != null) {
       filas.push({
         id: 'poblacion', t: 'Población del municipio',
-        v: '+' + conComa(st.crecimientoPct) + ' % desde el censo de 2018',
-        d: tasaAnualPct(st.tasaAnualDane) ? tasaAnualPct(st.tasaAnualDane) + ' % al año' : '',
+        v: window.AIA_MOTOR.signoDe(st.crecimientoPct) + conComa(st.crecimientoPct) +
+           ' % desde el censo de 2018',
+        d: tasaAnualPct(st.tasaAnualDane)
+             ? tasaAnualPct(st.tasaAnualDane) + ' % al año de MEDIA desde el censo'
+             : '',
         proxy: 'proxy de CUÁNTA gente más hay que alojar, del municipio entero y no de este sector',
         limite: 'supone que todos los barrios del municipio crecen igual, y en una ciudad con ' +
                 'borde en expansión eso es falso',

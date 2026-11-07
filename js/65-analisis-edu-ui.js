@@ -194,7 +194,8 @@
         '<div><small>Censo ' + s.censoAnio + '</small><b>' + miles(s.poblacionCenso) + '</b><em>contado</em></div>' +
         '<div class="fl">→</div>' +
         '<div><small>' + s.anioProyeccion + '</small><b class="ac">' + miles(s.poblacionProyectada) + '</b><em>proyectado</em></div>' +
-        '<div class="delta">+' + s.crecimientoPct + '%</div>' +
+        '<div class="delta">' + window.AIA_MOTOR.signoDe(s.crecimientoPct) +
+          numEs(s.crecimientoPct) + '%</div>' +
       '</div>' +
       '<svg class="edu-svg" viewBox="0 0 ' + W + ' ' + H + '" preserveAspectRatio="none" aria-hidden="true">' +
         '<path d="' + hasta + ' L' + px(corte).toFixed(2) + ' ' + H + ' L0 ' + H + ' Z" fill="rgba(34,211,238,.16)"/>' +
@@ -204,8 +205,9 @@
       '</svg>' +
       '<div class="edu-eje"><span>' + serie[0].anio + '</span><span>' + serie[corte].anio +
         '</span><span>' + serie[serie.length - 1].anio + '</span></div>' +
-      '<p class="edu-nota">El censo es de ' + s.censoAnio + ' y se trae a hoy con la tasa de ' +
-      'crecimiento del municipio (' + numEs(s.tasaAnualDane * 100, 2) + '% al año). ' +
+      '<p class="edu-nota">El censo es de ' + s.censoAnio + ' y se trae a hoy con la tasa ' +
+      'media del municipio desde entonces (' + numEs(s.tasaAnualDane * 100, 2) + '% al año, ' +
+      'o sea lo que YA pasó, no lo que va a pasar). ' +
       esc(s.advertenciaProyeccion || '') + '</p>' +
       '</div>';
   }

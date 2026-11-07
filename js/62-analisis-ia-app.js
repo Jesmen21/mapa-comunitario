@@ -1724,7 +1724,8 @@
               '<div class="flecha">→</div>' +
               '<div class="hoy"><small>' + s.anioProyeccion + '</small><b>' +
                 numEs(s.poblacionProyectada) + '</b><em>proyectado</em></div>' +
-              '<div class="delta">+' + numEs(s.crecimientoPct) + '%</div>' +
+              '<div class="delta">' + window.AIA_MOTOR.signoDe(s.crecimientoPct) +
+                numEs(s.crecimientoPct) + '%</div>' +
             '</div>' +
             '<svg class="aia-crece-svg" viewBox="0 0 ' + W + ' ' + H + '" preserveAspectRatio="none" aria-hidden="true">' +
               '<path d="' + area + '" fill="rgba(34,211,238,.16)"/>' +
@@ -1739,8 +1740,10 @@
             '<div class="aia-crece-eje"><span>' + serie[0].anio + '</span>' +
               '<span>' + hoy.anio + '</span>' +
               '<span>' + serie[serie.length - 1].anio + '</span></div>' +
-            '<p class="aia-demo-txt">Crece ' + numEs(s.tasaAnualDane * 100, 2) +
-              '% al año. El tramo punteado es proyección hacia adelante. ' +
+            '<p class="aia-demo-txt">' + window.AIA_MOTOR.verboDeVariacion(s.tasaAnualDane) +
+              ' ' + numEs(s.tasaAnualDane * 100, 2) +
+              '% al año de media desde el censo. El tramo punteado es proyección hacia ' +
+              'adelante con esa misma tasa, que es la del pasado. ' +
               escHTML(s.advertenciaProyeccion || '') + '</p>' +
           '</div>';
         })()

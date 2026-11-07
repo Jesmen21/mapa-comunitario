@@ -1,19 +1,43 @@
 {
-  "_comentario": "Proyecciones de población del DANE para llevar el censo de 2018 al año en curso. El censo tiene ya ocho años: usarlo como si fuera hoy subestima la demanda de cualquier proyecto. El DANE publica la serie municipal completa en un archivo aparte (ver `url`); aquí se guardan los ANCLAS verificadas de esa serie y URBIS interpola entre ellas y extrapola hacia adelante con la tasa que resulta. Cuando se pueda descargar el archivo completo, este archivo se reemplaza por la serie año a año y nada más cambia: el motor solo pide una tasa y un año base.",
-  "fuente": "DANE · Proyecciones de población municipal 2020-2035 (base CNPV 2018, actualización post-COVID-19)",
-  "url": "https://www.dane.gov.co/files/censo2018/proyecciones-de-poblacion/Municipal/DCD-area-proypoblacion-Mun-2020-2035-ActPostCOVID-19.xlsx",
-  "actualizado": "2026-08-23",
-  "notaMetodo": "La tasa se calcula ENTRE DOS AÑOS DE LA MISMA SERIE de proyección, nunca entre el conteo censal crudo y una proyección. Son dos cosas distintas: el conteo por manzana de 2018 es el dato observado, y la serie de proyección parte de una población ajustada por cobertura que es mayor. Mezclarlas haría pasar por crecimiento lo que en realidad es la corrección de omisión censal.",
-  "advertencia": "La tasa es MUNICIPAL. Aplicarla a una manzana supone que ese sector creció como el promedio del municipio, y casi nunca es así: un barrio con proyectos nuevos crece mucho más rápido, y un centro consolidado puede estar perdiendo población. Sirve para no leer 2018 como si fuera hoy, no para reemplazar un estudio de campo.",
+  "_comentario": "Proyecciones de poblacion del DANE para llevar el censo de 2018 al anio en curso. Esto es la SERIE ANIO POR ANIO del municipio, no dos anclas: la poblacion del anio en curso se LEE de la serie y no se extrapola. Hasta la v1173 habia dos anclas y una tasa constante hacia adelante, y eso divergia de la fuente oficial un 7,7 % a 2035, porque la serie vigente tiene a Cucuta decreciendo desde 2026 y una tasa constante positiva no puede representar eso.",
+  "fuente": "DANE · Proyecciones de poblacion municipal por area 2018-2042 (PPED, base CNPV 2018, publicada el 8 de agosto de 2025). Serie \"Total\".",
+  "url": "https://www.dane.gov.co/files/censo2018/proyecciones-de-poblacion/Municipal/PPED-AreaMun-2018-2042_VP.xlsx",
+  "actualizado": "2026-11-07",
+  "_fuenteAnterior": "Hasta la v1173 este archivo declaraba la serie municipal 2020-2035 \"actualizacion post COVID-19\" (DCD-area-proypoblacion-Mun-2020-2035-ActPostCOVID-19.xlsx), que sigue descargandose de su URL pero YA NO esta enlazada en la pagina de proyecciones del DANE: la reemplazo la serie 2018-2042 de agosto de 2025. Y de sus dos anclas, la de 2024 (790.984) coincidia con la serie vigente, mientras la de 2020 (777.106) NO APARECE en ninguna de las dos series oficiales, para ningun municipio, anio ni area: se retiro en vez de corregirse, porque corregirla supondria una transcripcion que no esta medida.",
+  "notaMetodo": "La poblacion del municipio en un anio se LEE de `serie`. La tasa que el motor usa para traer el conteo censal del sector hasta hoy se calcula ENTRE DOS ANIOS DE ESTA MISMA SERIE —del anio del censo al anio en curso—, nunca entre el conteo censal crudo y una proyeccion: son dos operaciones distintas y mezclarlas haria pasar por crecimiento lo que es la correccion de omision censal. Y una correccion de la nota anterior, que afirmaba sin medir: decia que la serie «parte de una poblacion ajustada por cobertura que es mayor» que el conteo crudo, y para Cucuta es FALSO por poco —la serie vigente da 711.714 en 2018 y el conteo crudo que este archivo declaraba hasta la v1173 era 711.715: UNA persona de diferencia, y la serie es la menor—. La regla vale igual por la procedencia de cada cifra, no por el tamano de la brecha; cuanto se separan en otros municipios es SIN MEDIR, porque este archivo solo trae Cucuta.",
+  "advertencia": "La tasa es MUNICIPAL. Aplicarla a una manzana supone que ese sector crecio como el promedio del municipio, y casi nunca es asi: un barrio con proyectos nuevos crece mucho mas rapido, y un centro consolidado puede estar perdiendo poblacion. Sirve para no leer 2018 como si fuera hoy, no para reemplazar un estudio de campo.",
   "municipios": {
     "san jose de cucuta": {
       "nombre": "San José de Cúcuta",
       "divipola": "54001",
-      "censoCrudo2018": 711715,
-      "anclas": [
-        { "anio": 2020, "poblacion": 777106 },
-        { "anio": 2024, "poblacion": 790984 }
-      ]
+      "anioCenso": 2018,
+      "serie": {
+        "2018": 711714,
+        "2019": 736089,
+        "2020": 765533,
+        "2021": 777903,
+        "2022": 783029,
+        "2023": 787444,
+        "2024": 790984,
+        "2025": 793211,
+        "2026": 792180,
+        "2027": 790552,
+        "2028": 788565,
+        "2029": 786358,
+        "2030": 784007,
+        "2031": 781563,
+        "2032": 779061,
+        "2033": 776497,
+        "2034": 773913,
+        "2035": 771292,
+        "2036": 768651,
+        "2037": 766019,
+        "2038": 763377,
+        "2039": 760713,
+        "2040": 758062,
+        "2041": 755417,
+        "2042": 752748
+      }
     }
   },
   "alias": {

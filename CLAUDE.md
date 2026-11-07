@@ -1426,6 +1426,21 @@ sección al final de este archivo.
   porcentajes calculados con una cifra y declarados con otra — peor que
   quedarse viejo. La cura es decirlo, con las dos redacciones, y que la
   guarda se ponga roja si alguien actualiza la etiqueta sin la base.
+* **Y DOS PUNTOS DE UNA SERIE NO SON LA SERIE: guardar anclas esconde su
+  FORMA** (v1174). La tabla de proyecciones del DANE guardaba dos anclas de la
+  serie municipal, sacaba de ellas una tasa compuesta y la extendía hacia
+  adelante. Las dos anclas eran defendibles una por una —una de ellas coincide
+  exactamente con la fuente vigente— y el método divergía igual **un 7,7 % a
+  2035**, porque la serie de Cúcuta tiene su máximo en 2025 y baja año por año
+  después: **una tasa constante positiva no puede representar una serie que
+  baja, y la forma no está en los dos puntos**. La cura no es corregir las
+  anclas: es guardar la serie año por año y **LEER** el año en curso. Dos
+  señales para buscarla: una tabla que guarda «anclas», «los extremos» o «el
+  primero y el último» de algo que la fuente publica completo; y un texto que
+  llama **pronóstico** a lo que es una media del pasado estirada —el rótulo
+  honesto es condicional, «si siguiera esa media»—. Y el cierre: **la
+  dirección de la serie es un dato, y se publica** con sus dos redacciones, la
+  del descenso y la de la serie que no baja.
 * **Dos números que se contradicen piden la MEDIDA antes que el arreglo**
   (v1085). Ante una cifra que no cuadra con otra parte del registro, la
   pregunta no es cuál de las dos está mal: es **de qué mide cada una**. La
